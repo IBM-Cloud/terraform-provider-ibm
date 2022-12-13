@@ -38,6 +38,8 @@ In addition to all argument references listed, you can access the following attr
 * `definitions` - (List) Definition list.
   * Constraints: The maximum length is `128` items. The minimum length is `0` items.
 Nested scheme for **definitions**:
+	* `href` - (String) API URL for interacting with the definition.
+	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `id` - (String) UUID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `source` - (List) Source repository containing the Tekton pipeline definition.
@@ -66,6 +68,9 @@ Nested scheme for **definitions**:
 * `enabled` - (Boolean) Flag whether this pipeline is enabled.
   * Constraints: The default value is `true`.
 
+* `href` - (String) API URL for interacting with the pipeline.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+
 * `name` - (String) String.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
 
@@ -74,6 +79,8 @@ Nested scheme for **definitions**:
 Nested scheme for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed when using `single_select` property type.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
+	* `href` - (String) API URL for interacting with the property.
+	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.

@@ -67,13 +67,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Name of the worker. Computed based on the worker ID.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Type of the worker. Computed based on the worker ID.",
 						},
@@ -181,30 +179,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 										Optional:    true,
 										Description: "Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.",
 									},
-									"blind_connection": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
-									},
-									"hook_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
-									},
-									"tool": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Reference to the repository tool in the parent toolchain.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "ID of the repository tool instance in the parent toolchain.",
-												},
-											},
-										},
-									},
 								},
 							},
 						},
@@ -240,6 +214,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
 							Description:      "Property value. Any string value is valid.",
 						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "API URL for interacting with the trigger property.",
+						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
@@ -255,11 +234,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "API URL for interacting with the trigger property.",
 						},
 					},
 				},
@@ -294,14 +268,14 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			Identifier:                 "type",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			Optional:                   true,
+			Required:                   true,
 			AllowedValues:              "generic, manual, scm, timer",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Optional:                   true,
+			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
@@ -310,7 +284,7 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			Identifier:                 "event_listener",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Optional:                   true,
+			Required:                   true,
 			Regexp:                     `^[-0-9a-zA-Z_.]{1,253}$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
@@ -348,15 +322,9 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 	createTektonPipelineTriggerOptions := &cdtektonpipelinev2.CreateTektonPipelineTriggerOptions{}
 
 	createTektonPipelineTriggerOptions.SetPipelineID(d.Get("pipeline_id").(string))
-	if _, ok := d.GetOk("type"); ok {
-		createTektonPipelineTriggerOptions.SetType(d.Get("type").(string))
-	}
-	if _, ok := d.GetOk("name"); ok {
-		createTektonPipelineTriggerOptions.SetName(d.Get("name").(string))
-	}
-	if _, ok := d.GetOk("event_listener"); ok {
-		createTektonPipelineTriggerOptions.SetEventListener(d.Get("event_listener").(string))
-	}
+	createTektonPipelineTriggerOptions.SetType(d.Get("type").(string))
+	createTektonPipelineTriggerOptions.SetName(d.Get("name").(string))
+	createTektonPipelineTriggerOptions.SetEventListener(d.Get("event_listener").(string))
 	if _, ok := d.GetOk("tags"); ok {
 		tags := []string{}
 		for _, tagsItem := range d.Get("tags").([]interface{}) {
@@ -391,7 +359,7 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 		createTektonPipelineTriggerOptions.SetTimezone(d.Get("timezone").(string))
 	}
 	if _, ok := d.GetOk("source"); ok {
-		sourceModel, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSource(d.Get("source.0").(map[string]interface{}))
+		sourceModel, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototype(d.Get("source.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -493,7 +461,7 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("Error setting timezone: %s", err))
 	}
 	if trigger.Source != nil {
-		sourceMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourceToMap(trigger.Source)
+		sourceMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypeToMap(trigger.Source)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -555,17 +523,11 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
-	if d.HasChange("type") {
+	if d.HasChange("type") || d.HasChange("name") || d.HasChange("event_listener") {
 		newType := d.Get("type").(string)
 		patchVals.Type = &newType
-		hasChange = true
-	}
-	if d.HasChange("name") {
 		newName := d.Get("name").(string)
 		patchVals.Name = &newName
-		hasChange = true
-	}
-	if d.HasChange("event_listener") {
 		newEventListener := d.Get("event_listener").(string)
 		patchVals.EventListener = &newEventListener
 		hasChange = true
@@ -615,7 +577,7 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		hasChange = true
 	}
 	if d.HasChange("source") {
-		source, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSource(d.Get("source.0").(map[string]interface{}))
+		source, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototype(d.Get("source.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -703,10 +665,10 @@ func resourceIBMCdTektonPipelineTriggerMapToGenericSecret(modelMap map[string]in
 	return model, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerMapToTriggerSource(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerSource, error) {
-	model := &cdtektonpipelinev2.TriggerSource{}
+func resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototype(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerSourcePrototype, error) {
+	model := &cdtektonpipelinev2.TriggerSourcePrototype{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	PropertiesModel, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSourceProperties(modelMap["properties"].([]interface{})[0].(map[string]interface{}))
+	PropertiesModel, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototypeProperties(modelMap["properties"].([]interface{})[0].(map[string]interface{}))
 	if err != nil {
 		return model, err
 	}
@@ -714,8 +676,8 @@ func resourceIBMCdTektonPipelineTriggerMapToTriggerSource(modelMap map[string]in
 	return model, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerMapToTriggerSourceProperties(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerSourceProperties, error) {
-	model := &cdtektonpipelinev2.TriggerSourceProperties{}
+func resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototypeProperties(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerSourcePrototypeProperties, error) {
+	model := &cdtektonpipelinev2.TriggerSourcePrototypeProperties{}
 	model.URL = core.StringPtr(modelMap["url"].(string))
 	if modelMap["branch"] != nil && modelMap["branch"].(string) != "" {
 		model.Branch = core.StringPtr(modelMap["branch"].(string))
@@ -758,10 +720,10 @@ func resourceIBMCdTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelin
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerTriggerSourceToMap(model *cdtektonpipelinev2.TriggerSource) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypeToMap(model *cdtektonpipelinev2.TriggerSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
-	propertiesMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model.Properties)
+	propertiesMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypePropertiesToMap(model.Properties)
 	if err != nil {
 		return modelMap, err
 	}
@@ -769,7 +731,7 @@ func resourceIBMCdTektonPipelineTriggerTriggerSourceToMap(model *cdtektonpipelin
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model *cdtektonpipelinev2.TriggerSourceProperties) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypePropertiesToMap(model *cdtektonpipelinev2.TriggerSourceProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["url"] = model.URL
 	if model.Branch != nil {
@@ -777,27 +739,6 @@ func resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model *cdtek
 	}
 	if model.Pattern != nil {
 		modelMap["pattern"] = model.Pattern
-	}
-	if model.BlindConnection != nil {
-		modelMap["blind_connection"] = model.BlindConnection
-	}
-	if model.HookID != nil {
-		modelMap["hook_id"] = model.HookID
-	}
-	if model.Tool != nil {
-		toolMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToolToMap(model.Tool)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["tool"] = []map[string]interface{}{toolMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToolToMap(model *cdtektonpipelinev2.TriggerSourcePropertiesTool) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
 	}
 	return modelMap, nil
 }
@@ -808,15 +749,13 @@ func resourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtekto
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
+	modelMap["href"] = model.Href
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
 	modelMap["type"] = model.Type
 	if model.Path != nil {
 		modelMap["path"] = model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
 	}
 	return modelMap, nil
 }

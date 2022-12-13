@@ -87,6 +87,11 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 					},
 				},
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the definition.",
+			},
 		},
 	}
 }
@@ -120,6 +125,10 @@ func dataSourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *sch
 	}
 	if err = d.Set("source", source); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source %s", err))
+	}
+
+	if err = d.Set("href", definition.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	return nil

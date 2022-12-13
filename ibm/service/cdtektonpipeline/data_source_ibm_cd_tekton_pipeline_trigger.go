@@ -67,6 +67,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Computed:    true,
 							Description: "Property value. Any string value is valid.",
 						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "API URL for interacting with the trigger property.",
+						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -84,11 +89,6 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "API URL for interacting with the trigger property.",
 						},
 					},
 				},
@@ -387,6 +387,9 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtek
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
@@ -395,9 +398,6 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtek
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
 	}
 	return modelMap, nil
 }

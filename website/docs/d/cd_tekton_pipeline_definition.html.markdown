@@ -33,6 +33,9 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cd_tekton_pipeline_definition.
+* `href` - (String) API URL for interacting with the definition.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+
 * `source` - (List) Source repository containing the Tekton pipeline definition.
 Nested scheme for **source**:
 	* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or tag.

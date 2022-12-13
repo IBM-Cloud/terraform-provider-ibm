@@ -40,6 +40,11 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Computed:    true,
 				Description: "Property value. Any string value is valid.",
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the property.",
+			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -87,6 +92,10 @@ func dataSourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schem
 
 	if err = d.Set("value", property.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+	}
+
+	if err = d.Set("href", property.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("type", property.Type); err != nil {

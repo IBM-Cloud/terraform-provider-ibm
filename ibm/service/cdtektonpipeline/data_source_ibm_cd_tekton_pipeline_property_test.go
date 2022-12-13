@@ -14,18 +14,21 @@ import (
 )
 
 func TestAccIBMCdTektonPipelinePropertyDataSourceBasic(t *testing.T) {
+	propertyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	propertyType := "secure"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(""),
+				Config: testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic("", propertyName, propertyType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "property_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type"),
 				),
 			},
@@ -35,8 +38,8 @@ func TestAccIBMCdTektonPipelinePropertyDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCdTektonPipelinePropertyDataSourceAllArgs(t *testing.T) {
 	propertyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	propertyValue := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	propertyType := "text"
+	propertyValue := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	propertyPath := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -44,13 +47,14 @@ func TestAccIBMCdTektonPipelinePropertyDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelinePropertyDataSourceConfig("", propertyName, propertyValue, propertyType, propertyPath),
+				Config: testAccCheckIBMCdTektonPipelinePropertyDataSourceConfig("", propertyName, propertyType, propertyValue, propertyPath),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "property_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "value"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type"),
 				),
 			},
@@ -58,7 +62,7 @@ func TestAccIBMCdTektonPipelinePropertyDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(propertyPipelineID string) string {
+func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(propertyPipelineID string, propertyName string, propertyType string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -100,7 +104,7 @@ func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(propertyPipeli
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfig(propertyPipelineID string, propertyName string, propertyValue string, propertyType string, propertyPath string) string {
+func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfig(propertyPipelineID string, propertyName string, propertyType string, propertyValue string, propertyPath string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`

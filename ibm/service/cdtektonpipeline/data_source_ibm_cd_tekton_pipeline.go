@@ -132,6 +132,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 								},
 							},
 						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "API URL for interacting with the definition.",
+						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -155,6 +160,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Property value. Any string value is valid.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "API URL for interacting with the property.",
 						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
@@ -234,6 +244,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 										Computed:    true,
 										Description: "Property value. Any string value is valid.",
 									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "API URL for interacting with the trigger property.",
+									},
 									"enum": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -251,11 +266,6 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "API URL for interacting with the trigger property.",
 									},
 								},
 							},
@@ -453,6 +463,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 				Computed:    true,
 				Description: "URL for this pipeline showing the list of pipeline runs.",
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the pipeline.",
+			},
 			"build_number": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -593,6 +608,10 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("Error setting runs_url: %s", err))
 	}
 
+	if err = d.Set("href", tektonPipeline.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+
 	if err = d.Set("build_number", flex.IntValue(tektonPipeline.BuildNumber)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting build_number: %s", err))
 	}
@@ -639,6 +658,9 @@ func dataSourceIBMCdTektonPipelineDefinitionToMap(model *cdtektonpipelinev2.Defi
 			return modelMap, err
 		}
 		modelMap["source"] = []map[string]interface{}{sourceMap}
+	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
 	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -700,6 +722,9 @@ func dataSourceIBMCdTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Proper
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
+	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
 	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
@@ -807,6 +832,9 @@ func dataSourceIBMCdTektonPipelineTriggerPropertiesItemToMap(model *cdtektonpipe
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
@@ -815,9 +843,6 @@ func dataSourceIBMCdTektonPipelineTriggerPropertiesItemToMap(model *cdtektonpipe
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
 	}
 	return modelMap, nil
 }
@@ -961,6 +986,9 @@ func dataSourceIBMCdTektonPipelineTriggerManualTriggerPropertiesItemToMap(model 
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
@@ -969,9 +997,6 @@ func dataSourceIBMCdTektonPipelineTriggerManualTriggerPropertiesItemToMap(model 
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
 	}
 	return modelMap, nil
 }
@@ -1041,6 +1066,9 @@ func dataSourceIBMCdTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *cd
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
@@ -1049,9 +1077,6 @@ func dataSourceIBMCdTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *cd
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
 	}
 	return modelMap, nil
 }
@@ -1117,6 +1142,9 @@ func dataSourceIBMCdTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
@@ -1125,9 +1153,6 @@ func dataSourceIBMCdTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
 	}
 	return modelMap, nil
 }
@@ -1197,6 +1222,9 @@ func dataSourceIBMCdTektonPipelineTriggerGenericTriggerPropertiesItemToMap(model
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
@@ -1205,9 +1233,6 @@ func dataSourceIBMCdTektonPipelineTriggerGenericTriggerPropertiesItemToMap(model
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
 	}
 	return modelMap, nil
 }

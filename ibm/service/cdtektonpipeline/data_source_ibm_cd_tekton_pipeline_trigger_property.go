@@ -45,6 +45,11 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Computed:    true,
 				Description: "Property value. Any string value is valid.",
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the trigger property.",
+			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -93,6 +98,10 @@ func dataSourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d
 
 	if err = d.Set("value", triggerProperty.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+	}
+
+	if err = d.Set("href", triggerProperty.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("type", triggerProperty.Type); err != nil {

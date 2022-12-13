@@ -36,8 +36,9 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
+				MinItems:    1,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "Source repository containing the Tekton pipeline definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -95,6 +96,11 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 					},
 				},
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the definition.",
+			},
 			"definition_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -131,13 +137,11 @@ func resourceIBMCdTektonPipelineDefinitionCreate(context context.Context, d *sch
 	createTektonPipelineDefinitionOptions := &cdtektonpipelinev2.CreateTektonPipelineDefinitionOptions{}
 
 	createTektonPipelineDefinitionOptions.SetPipelineID(d.Get("pipeline_id").(string))
-	if _, ok := d.GetOk("source"); ok {
-		sourceModel, err := resourceIBMCdTektonPipelineDefinitionMapToDefinitionSource(d.Get("source.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createTektonPipelineDefinitionOptions.SetSource(sourceModel)
+	sourceModel, err := resourceIBMCdTektonPipelineDefinitionMapToDefinitionSource(d.Get("source.0").(map[string]interface{}))
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	createTektonPipelineDefinitionOptions.SetSource(sourceModel)
 
 	definition, response, err := cdTektonPipelineClient.CreateTektonPipelineDefinitionWithContext(context, createTektonPipelineDefinitionOptions)
 	if err != nil {
@@ -179,14 +183,15 @@ func resourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *schem
 	if err = d.Set("pipeline_id", getTektonPipelineDefinitionOptions.PipelineID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting pipeline_id: %s", err))
 	}
-	if definition.Source != nil {
-		sourceMap, err := resourceIBMCdTektonPipelineDefinitionDefinitionSourceToMap(definition.Source)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("source", []map[string]interface{}{sourceMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source: %s", err))
-		}
+	sourceMap, err := resourceIBMCdTektonPipelineDefinitionDefinitionSourceToMap(definition.Source)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("source", []map[string]interface{}{sourceMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting source: %s", err))
+	}
+	if err = d.Set("href", definition.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 	if err = d.Set("definition_id", definition.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting definition_id: %s", err))
