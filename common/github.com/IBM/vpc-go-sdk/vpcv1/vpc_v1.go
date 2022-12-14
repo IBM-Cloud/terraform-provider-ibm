@@ -30,14 +30,14 @@ import (
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	common "github.com/IBM/vpc-go-sdk/common"
 	"github.com/go-openapi/strfmt"
+	common "github.com/IBM/vpc-go-sdk/common"
 )
 
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2022-11-22
+// API Version: 2022-12-13
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -14837,7 +14837,8 @@ func (vpc *VpcV1) ListSecurityGroupTargetsWithContext(ctx context.Context, listS
 // This request removes a target from a security group. For this request to succeed, the target must be attached to at
 // least one other security group.  The specified target identifier can be:
 //
-// - A network interface identifier
+// - An instance network interface identifier
+// - A bare metal server network interface identifier
 // - A VPN server identifier
 // - An application load balancer identifier
 // - An endpoint gateway identifier
@@ -14962,7 +14963,8 @@ func (vpc *VpcV1) GetSecurityGroupTargetWithContext(ctx context.Context, getSecu
 // CreateSecurityGroupTargetBinding : Add a target to a security group
 // This request adds a resource to an existing security group. The specified target identifier can be:
 //
-// - A network interface identifier
+// - An instance network interface identifier
+// - A bare metal server network interface identifier
 // - A VPN server identifier
 // - An application load balancer identifier
 // - An endpoint gateway identifier
@@ -62720,6 +62722,22 @@ type Volume struct {
 	// `user_managed`.
 	EncryptionKey *EncryptionKeyReference `json:"encryption_key,omitempty"`
 
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VolumeHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this volume.
 	Href *string `json:"href" validate:"required"`
 
@@ -62783,6 +62801,21 @@ const (
 	VolumeEncryptionUserManagedConst     = "user_managed"
 )
 
+// Constants associated with the Volume.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VolumeHealthStateDegradedConst     = "degraded"
+	VolumeHealthStateFaultedConst      = "faulted"
+	VolumeHealthStateInapplicableConst = "inapplicable"
+	VolumeHealthStateOkConst           = "ok"
+)
+
 // Constants associated with the Volume.Status property.
 // The status of the volume.
 //
@@ -62830,6 +62863,14 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 		return
 	}
 	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVolumeHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
 	}
@@ -63529,6 +63570,43 @@ type VolumeCollectionNext struct {
 func UnmarshalVolumeCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeHealthReason : VolumeHealthReason struct
+type VolumeHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VolumeHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VolumeHealthReasonCodeInitializingFromSnapshotConst = "initializing_from_snapshot"
+)
+
+// UnmarshalVolumeHealthReason unmarshals an instance of VolumeHealthReason from the specified map of raw messages.
+func UnmarshalVolumeHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
