@@ -86,7 +86,7 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
@@ -98,12 +98,12 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 		members_disk_allocation_mb   = 61440
 		tags                         = ["one:two"]
 		users {
-		  name     = "user123"
-		  password = "password12"
+			name     = "user123"
+			password = "password12"
 		}
 		allowlist {
-		  address     = "172.168.1.2/32"
-		  description = "desc1"
+			address     = "172.168.1.2/32"
+			description = "desc1"
 		}
 		timeouts {
 			create = "120m"
@@ -119,7 +119,7 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
@@ -133,25 +133,25 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
 		users {
-		  name     = "user123"
-		  password = "password12"
+			name     = "user123"
+			password = "password12"
 		}
 		users {
-		  name     = "user124"
-		  password = "password12"
+			name     = "user124"
+			password = "password12"
 		}
 		allowlist {
-		  address     = "172.168.1.2/32"
-		  description = "desc1"
+			address     = "172.168.1.2/32"
+			description = "desc1"
 		}
 		allowlist {
-		  address     = "172.168.1.1/32"
-		  description = "desc"
+			address     = "172.168.1.1/32"
+			description = "desc"
 		}
 		configuration = <<CONFIGURATION
 		{
-      "mysql_max_binlog_age_sec": 2000,
-      "innodb_buffer_pool_size_percentage": 60
+			"mysql_max_binlog_age_sec": 2000,
+			"innodb_buffer_pool_size_percentage": 60
 		}
 		CONFIGURATION
 		timeouts {
