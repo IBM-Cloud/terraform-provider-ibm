@@ -905,6 +905,7 @@ func Provider() *schema.Provider {
 			"ibm_is_instance":                                    vpc.ResourceIBMISInstance(),
 			"ibm_is_instance_action":                             vpc.ResourceIBMISInstanceAction(),
 			"ibm_is_instance_network_interface":                  vpc.ResourceIBMIsInstanceNetworkInterface(),
+			"ibm_is_instance_network_interface_floating_ip":      vpc.ResourceIBMIsInstanceNetworkInterfaceFloatingIp(),
 			"ibm_is_instance_disk_management":                    vpc.ResourceIBMISInstanceDiskManagement(),
 			"ibm_is_instance_group":                              vpc.ResourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_membership":                   vpc.ResourceIBMISInstanceGroupMembership(),
