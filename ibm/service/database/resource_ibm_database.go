@@ -338,7 +338,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Description:  "User name",
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validation.StringLenBetween(5, 32),
+							ValidateFunc: validation.StringLenBetween(4, 32),
 						},
 						"password": {
 							Description:  "User password",
@@ -489,6 +489,29 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 				ConflictsWith: []string{"whitelist"},
+			},
+			"logical_replication_slot": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Description: "Logical Replication Slot name",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"database_name": {
+							Description: "Database Name",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"plugin_type": {
+							Description: "Plugin Type",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
 			},
 			"group": {
 				Type:          schema.TypeSet,
@@ -1232,6 +1255,12 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql, elasticsearch and cassandra")
 	}
 
+	_, logicalReplicationSet := diff.GetOk("logical_replication_slot")
+
+	if service != "databases-for-postgresql" && logicalReplicationSet {
+		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
+	}
+
 	_, configurationSet := diff.GetOk("configuration")
 
 	if (service != "databases-for-postgresql" && service != "databases-for-redis" && service != "databases-for-enterprisedb") && configurationSet {
@@ -1536,57 +1565,38 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if wl, ok := d.GetOk("whitelist"); ok {
-		whitelist := flex.ExpandWhitelist(wl.(*schema.Set))
-		for _, wlEntry := range whitelist {
-			whitelistReq := icdv4.WhitelistReq{
-				WhitelistEntry: icdv4.WhitelistEntry{
-					Address:     wlEntry.Address,
-					Description: wlEntry.Description,
-				},
-			}
-			task, err := icdClient.Whitelists().CreateWhitelist(icdId, whitelistReq)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database whitelist entry: %s", err))
-			}
-			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", icdId, err))
-			}
-		}
-	} else if al, ok := d.GetOk("allowlist"); ok {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	_, hasWhitelist := d.GetOk("whitelist")
+	_, hasAllowlist := d.GetOk("allowlist")
 
+	if hasWhitelist || hasAllowlist {
+		var ipAddresses *schema.Set
+		if hasWhitelist {
+			ipAddresses = d.Get("whitelist").(*schema.Set)
+		} else {
+			ipAddresses = d.Get("allowlist").(*schema.Set)
+		}
+
+		entries := flex.ExpandAllowlist(ipAddresses)
+
+		setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
+			ID:          &instanceID,
+			IPAddresses: entries,
+		}
+
+		setAllowlistResponse, _, err := cloudDatabasesClient.SetAllowlist(setAllowlistOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database allowlists: %s", err))
 		}
 
-		add := flex.ExpandAllowlist(al.(*schema.Set))
-		for _, entry := range add {
-			holdEntry := &clouddatabasesv5.AllowlistEntry{
-				Address:     core.StringPtr(*entry.Address),
-				Description: core.StringPtr(*entry.Description),
-			}
-			alEntry := &clouddatabasesv5.AddAllowlistEntryOptions{
-				ID:        &instanceID,
-				IPAddress: holdEntry,
-			}
-			addAllowListResponse, _, err := cloudDatabasesClient.AddAllowlistEntry(alEntry)
+		taskId := *setAllowlistResponse.Task.ID
 
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error updating database allowlist entry: (%s)", err))
-			}
-
-			taskID := *addAllowListResponse.Task.ID
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
-			}
+		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
 		}
 	}
+
 	if cpuRecord, ok := d.GetOk("auto_scaling.0.cpu"); ok {
 		params := icdv4.AutoscalingSetGroup{}
 		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
@@ -1603,8 +1613,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf(
 				"[ERROR] Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err))
 		}
-
 	}
+
 	if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
 		params := icdv4.AutoscalingSetGroup{}
 		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
@@ -1642,42 +1652,15 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	}
 
 	if userList, ok := d.GetOk("users"); ok {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 		}
 
 		for _, user := range userList.(*schema.Set).List() {
 			userEl := user.(map[string]interface{})
-			createDatabaseUserRequestUserModel := &clouddatabasesv5.User{
-				Username: core.StringPtr(userEl["name"].(string)),
-				Password: core.StringPtr(userEl["password"].(string)),
-			}
-
-			// User Role only for ops_manager user type
-			if userEl["type"].(string) == "ops_manager" && userEl["role"].(string) != "" {
-				createDatabaseUserRequestUserModel.Role = core.StringPtr(userEl["role"].(string))
-			}
-
-			instanceId := d.Id()
-			createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-				ID:       &instanceId,
-				UserType: core.StringPtr(userEl["type"].(string)),
-				User:     createDatabaseUserRequestUserModel,
-			}
-
-			createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
-
+			err := userUpdateCreate(userEl, instanceID, meta, d)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("CreateDatabaseUser (%s) failed %s\n%s", userEl["name"], err, response))
-			}
-
-			taskID := *createDatabaseUserResponse.Task.ID
-
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), userEl["name"], err))
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -1699,6 +1682,48 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			}
 		} else {
 			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
+		}
+	}
+
+	if _, ok := d.GetOk("logical_replication_slot"); ok {
+		service := d.Get("service").(string)
+		if service != "databases-for-postgresql" {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
+		}
+
+		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+		}
+
+		_, logicalReplicationList := d.GetChange("logical_replication_slot")
+
+		add := logicalReplicationList.(*schema.Set).List()
+
+		for _, entry := range add {
+			newEntry := entry.(map[string]interface{})
+			logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
+				Name:         core.StringPtr(newEntry["name"].(string)),
+				DatabaseName: core.StringPtr(newEntry["database_name"].(string)),
+				PluginType:   core.StringPtr(newEntry["plugin_type"].(string)),
+			}
+
+			createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
+				ID:                     &instanceID,
+				LogicalReplicationSlot: logicalReplicationSlot,
+			}
+
+			createLogicalRepSlotResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] CreateLogicalReplicationSlot (%s) failed %s\n%s", *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err, response))
+			}
+
+			taskID := *createLogicalRepSlotResponse.Task.ID
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err))
+			}
 		}
 	}
 
@@ -1844,23 +1869,22 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
-	if _, ok := d.GetOk("whitelist"); ok {
-		whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database whitelist: %s", err))
-		}
-		d.Set("whitelist", flex.FlattenWhitelist(whitelist))
-	} else {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-		alEntry := &clouddatabasesv5.GetAllowlistOptions{
-			ID: &instanceID,
-		}
+	_, hasWhitelist := d.GetOk("whitelist")
 
-		allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
-		}
-		d.Set("allowlist", flex.FlattenGetAllowlist(*allowlist))
+	alEntry := &clouddatabasesv5.GetAllowlistOptions{
+		ID: &instanceID,
+	}
+
+	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
+
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
+	}
+
+	if hasWhitelist {
+		d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	} else {
+		d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 	}
 
 	var connectionStrings []flex.CsEntry
@@ -2198,177 +2222,44 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	_, whitelistExists := d.GetOk("whitelist")
+	if d.HasChange("whitelist") || d.HasChange("allowlist") {
+		_, hasAllowlist := d.GetOk("allowlist")
+		_, hasWhitelist := d.GetOk("whitelist")
 
-	if whitelistExists && d.HasChange("whitelist") {
-		oldList, newList := d.GetChange("whitelist")
-		oldAllowList, newAllowList := d.GetChange("allowlist")
+		var entries interface{}
 
-		if oldList == nil {
-			oldList = new(schema.Set)
-		}
-		if newList == nil {
-			newList = new(schema.Set)
-		}
-
-		os := oldList.(*schema.Set)
-		ns := newList.(*schema.Set)
-		osw := oldAllowList.(*schema.Set)
-		nsw := newAllowList.(*schema.Set)
-
-		// If the whitelist is empty but allowlist is not, that means
-		// we are migrating from whitelist to allowlist
-		if os.Len() == 0 && osw.Len() > 0 {
-			os = osw
-		}
-		if ns.Len() == 0 && nsw.Len() > 0 {
-			ns = nsw
+		if hasWhitelist {
+			_, entries = d.GetChange("whitelist")
+		} else if hasAllowlist {
+			_, entries = d.GetChange("allowlist")
 		}
 
-		remove := os.Difference(ns).List()
-		add := ns.Difference(os).List()
-
-		if len(add) > 0 {
-			for _, entry := range add {
-				newEntry := entry.(map[string]interface{})
-				wlEntry := icdv4.WhitelistEntry{
-					Address:     newEntry["address"].(string),
-					Description: newEntry["description"].(string),
-				}
-				whitelistReq := icdv4.WhitelistReq{
-					WhitelistEntry: wlEntry,
-				}
-				task, err := icdClient.Whitelists().CreateWhitelist(icdId, whitelistReq)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error updating database whitelist entry %v : %s", wlEntry.Address, err))
-				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) whitelist create task to complete for entry %s : %s", icdId, wlEntry.Address, err))
-				}
-
-			}
-
+		if entries == nil {
+			entries = new(schema.Set)
 		}
 
-		if len(remove) > 0 {
-			for _, entry := range remove {
-				newEntry := entry.(map[string]interface{})
-				wlEntry := icdv4.WhitelistEntry{
-					Address:     newEntry["address"].(string),
-					Description: newEntry["description"].(string),
-				}
-				ipAddress := wlEntry.Address
-				task, err := icdClient.Whitelists().DeleteWhitelist(icdId, ipAddress)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error deleting database whitelist entry: %s", err))
-				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) whitelist delete task to complete for ipAddress %s : %s", icdId, ipAddress, err))
-				}
+		allowlistEntries := flex.ExpandAllowlist(entries.(*schema.Set))
 
-			}
+		setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
+			ID:          &instanceID,
+			IPAddresses: allowlistEntries,
 		}
-	} else if d.HasChange("allowlist") {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 
+		setAllowlistResponse, _, err := cloudDatabasesClient.SetAllowlist(setAllowlistOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database allowlist entry: %s", err))
 		}
 
-		oldList, newList := d.GetChange("allowlist")
-		oldWhiteList, newWhiteList := d.GetChange("whitelist")
+		taskId := *setAllowlistResponse.Task.ID
 
-		if oldList == nil {
-			oldList = new(schema.Set)
-		}
-		if newList == nil {
-			newList = new(schema.Set)
-		}
-
-		// If the allowlist is empty but whitelist is not, that means
-		// we are migrating from allowlist to whitelist
-		os := oldList.(*schema.Set)
-		ns := newList.(*schema.Set)
-		osw := oldWhiteList.(*schema.Set)
-		nsw := newWhiteList.(*schema.Set)
-
-		if os.Len() == 0 && osw.Len() > 0 {
-			os = osw
-		}
-		if ns.Len() == 0 && nsw.Len() > 0 {
-			ns = nsw
-		}
-		remove := os.Difference(ns).List()
-		add := ns.Difference(os).List()
-
-		if len(add) > 0 {
-			for _, entry := range add {
-				newEntry := entry.(map[string]interface{})
-				holdEntry := &clouddatabasesv5.AllowlistEntry{
-					Address:     core.StringPtr(newEntry["address"].(string)),
-					Description: core.StringPtr(newEntry["description"].(string)),
-				}
-				alEntry := &clouddatabasesv5.AddAllowlistEntryOptions{
-					ID:        &instanceID,
-					IPAddress: holdEntry,
-				}
-				addAllowListResponse, response, err := cloudDatabasesClient.AddAllowlistEntry(alEntry)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error updating database allowlist entry (%s) failed %s\n%s", *addAllowListResponse.Task.Description, err, response))
-				}
-
-				taskID := *addAllowListResponse.Task.ID
-				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) allowlist add task to complete for ipAddress %s : %s", instanceID, *addAllowListResponse.Task.Description, err))
-				}
-
-			}
-
-		}
-
-		if len(remove) > 0 {
-			for _, entry := range remove {
-				newEntry := entry.(map[string]interface{})
-				holdEntry := &clouddatabasesv5.AllowlistEntry{
-					Address:     core.StringPtr(newEntry["address"].(string)),
-					Description: core.StringPtr(newEntry["description"].(string)),
-				}
-				alEntry := &clouddatabasesv5.DeleteAllowlistEntryOptions{
-					ID:        &instanceID,
-					Ipaddress: holdEntry.Address,
-				}
-
-				deleteAllowListResponse, response, err := cloudDatabasesClient.DeleteAllowlistEntry(alEntry)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] DeleteAllowlistEntry (%s) failed %s\n%s", *deleteAllowListResponse.Task.Description, err, response))
-				}
-
-				taskID := *deleteAllowListResponse.Task.ID
-				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) allowlist delete task to complete for ipAddress %s : %s", instanceID, *deleteAllowListResponse.Task.Description, err))
-				}
-
-			}
+		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", instanceID, err))
 		}
 	}
 
 	if d.HasChange("users") {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-		}
-
 		oldUsers, newUsers := d.GetChange("users")
 		userChanges := make(map[string]*userChange)
 		userKey := func(raw map[string]interface{}) string {
@@ -2395,48 +2286,8 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		for _, change := range userChanges {
-			// Update Database User password only
-			if change.Old != nil && change.New != nil {
-				// No change
-				if change.Old["password"].(string) == change.New["password"].(string) {
-					continue
-				}
-
-				passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
-					Password: core.StringPtr(change.New["password"].(string)),
-				}
-
-				changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
-					ID:       &instanceID,
-					UserType: core.StringPtr(change.New["type"].(string)),
-					Username: core.StringPtr(change.New["name"].(string)),
-					User:     passwordSettingUser,
-				}
-
-				changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
-
-				if response.StatusCode != 404 {
-					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
-					}
-
-					taskID := *changeUserPasswordResponse.Task.ID
-					_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-					if err != nil {
-						return diag.FromErr(fmt.Errorf(
-							"[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err))
-					}
-
-					continue
-				}
-
-				// User not found, need to reCreate user
-				change.Old = nil
-			}
-
 			// Delete Old User
-			if change.Old != nil {
+			if change.Old != nil && change.New == nil {
 				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteDatabaseUserOptions{
 					ID:       &instanceID,
 					UserType: core.StringPtr(change.Old["type"].(string)),
@@ -2458,36 +2309,100 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 					return diag.FromErr(fmt.Errorf(
 						"[ERROR] Error waiting for database (%s) user (%s) delete task to complete: %s", icdId, *deleteDatabaseUserOptions.Username, err))
 				}
+
+				continue
 			}
 
-			// Create New User
 			if change.New != nil {
-				userEntry := &clouddatabasesv5.User{
-					Username: core.StringPtr(change.New["name"].(string)),
-					Password: core.StringPtr(change.New["password"].(string)),
+				// No change
+				if change.Old != nil && change.Old["password"].(string) == change.New["password"].(string) && change.Old["name"].(string) == change.New["name"].(string) {
+					continue
 				}
 
-				// User Role only for ops_manager user type
-				if change.New["type"].(string) == "ops_manager" && change.New["role"].(string) != "" {
-					userEntry.Role = core.StringPtr(change.New["role"].(string))
-				}
-
-				createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-					ID:       &instanceID,
-					UserType: core.StringPtr(change.New["type"].(string)),
-					User:     userEntry,
-				}
-
-				createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
+				err := userUpdateCreate(change.New, instanceID, meta, d)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response))
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
+	if d.HasChange("logical_replication_slot") {
+		service := d.Get("service").(string)
+		if service != "databases-for-postgresql" {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
+		}
+
+		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+		}
+
+		oldList, newList := d.GetChange("logical_replication_slot")
+
+		if oldList == nil {
+			oldList = new(schema.Set)
+		}
+		if newList == nil {
+			newList = new(schema.Set)
+		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
+
+		remove := os.Difference(ns).List()
+		add := ns.Difference(os).List()
+
+		// Create New Logical Rep Slot
+		if len(add) > 0 {
+			for _, entry := range add {
+				newEntry := entry.(map[string]interface{})
+				logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
+					Name:         core.StringPtr(newEntry["name"].(string)),
+					DatabaseName: core.StringPtr(newEntry["database_name"].(string)),
+					PluginType:   core.StringPtr(newEntry["plugin_type"].(string)),
 				}
 
-				taskID := *createDatabaseUserResponse.Task.ID
+				createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
+					ID:                     &instanceID,
+					LogicalReplicationSlot: logicalReplicationSlot,
+				}
+
+				createLogicalRepSlotResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] CreateLogicalReplicationSlot (%s) failed %s\n%s", *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err, response))
+				}
+
+				taskID := *createLogicalRepSlotResponse.Task.ID
 				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err))
+						"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err))
+				}
+			}
+		}
+
+		// Delete Old Logical Rep Slot
+		if len(remove) > 0 {
+			for _, entry := range remove {
+				newEntry := entry.(map[string]interface{})
+				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteLogicalReplicationSlotOptions{
+					ID:   &instanceID,
+					Name: core.StringPtr(newEntry["name"].(string)),
+				}
+
+				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteLogicalReplicationSlot(deleteDatabaseUserOptions)
+
+				if err != nil {
+					return diag.FromErr(fmt.Errorf(
+						"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Name, err, response))
+				}
+
+				taskID := *deleteDatabaseUserResponse.Task.ID
+				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+				if err != nil {
+					return diag.FromErr(fmt.Errorf(
+						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteDatabaseUserOptions.Name, err))
 				}
 			}
 		}
@@ -3160,6 +3075,70 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 					return err
 				}
 			}
+		}
+	}
+
+	return nil
+}
+
+// Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
+func userUpdateCreate(userData map[string]interface{}, instanceID string, meta interface{}, d *schema.ResourceData) (err error) {
+	cloudDatabasesClient, _ := meta.(conns.ClientSession).CloudDatabasesV5()
+	// Attempt to update user password
+	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
+		Password: core.StringPtr(userData["password"].(string)),
+	}
+
+	changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
+		ID:       &instanceID,
+		UserType: core.StringPtr(userData["type"].(string)),
+		Username: core.StringPtr(userData["name"].(string)),
+		User:     passwordSettingUser,
+	}
+
+	changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
+
+	// user was found but an error occurs while triggering task
+	if response.StatusCode != 404 && err != nil {
+		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
+	}
+
+	taskID := *changeUserPasswordResponse.Task.ID
+	updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	if err != nil {
+		log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+	}
+
+	// Updating the password has failed
+	if !updatePass {
+		//Attempt to create user
+		userEntry := &clouddatabasesv5.User{
+			Username: core.StringPtr(userData["name"].(string)),
+			Password: core.StringPtr(userData["password"].(string)),
+		}
+
+		// User Role only for ops_manager user type
+		if userData["type"].(string) == "ops_manager" && userData["role"].(string) != "" {
+			userEntry.Role = core.StringPtr(userData["role"].(string))
+		}
+
+		createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
+			ID:       &instanceID,
+			UserType: core.StringPtr(userData["type"].(string)),
+			User:     userEntry,
+		}
+
+		createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response)
+		}
+
+		taskID := *createDatabaseUserResponse.Task.ID
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf(
+				"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err)
 		}
 	}
 

@@ -31,6 +31,7 @@ const (
 	clusterDeploying     = "deploying"
 	clusterPending       = "pending"
 	clusterRequested     = "requested"
+	clusterCritical      = "critical"
 
 	workerNormal        = "normal"
 	subnetNormal        = "normal"
@@ -763,7 +764,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		}
 
 	case strings.ToLower(clusterNormal):
-		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed}
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical}
 		_, err = waitForClusterState(d, meta, waitForState, pendingStates)
 		if err != nil {
 			return err

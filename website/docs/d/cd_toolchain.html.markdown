@@ -49,8 +49,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `resource_group_id` - (String) Resource group where the toolchain is located.
 
-* `tags` - (List) Tags associated with the toolchain.
-
 * `ui_href` - (String) URL of a user-facing user interface for this toolchain.
 
 * `updated_at` - (String) Latest toolchain update timestamp.

@@ -63,6 +63,7 @@ In addition to all argument references listed, you can access the following attr
 - `resource_group` -  Filters the collection to resources in the resource group with the specified identifier
 - `security_groups` - (List) Collection of security groups.
 	Nested scheme for `security_groups`:
+	- `access_tags`  - (List) Access management tags associated for the security group.
 	- `created_at` - (String) The date and time that this security group was created.
 	- `crn` - (String) The security group's CRN.
 	- `href` - (String) The security group's canonical URL.

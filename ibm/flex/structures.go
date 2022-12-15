@@ -47,6 +47,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
 const (
@@ -79,6 +80,14 @@ const (
 	isLBProfile                               = "profile"
 	isLBRouteMode                             = "route_mode"
 	isLBType                                  = "type"
+	crnSeparator                              = ":"
+	scopeSeparator                            = "/"
+	crn                                       = "crn"
+)
+
+var (
+	ErrMalformedCRN   = errors.New("malformed CRN")
+	ErrMalformedScope = errors.New("malformed scope in CRN")
 )
 
 // HashInt ...
@@ -239,53 +248,6 @@ func FlattenUsersSet(userList *schema.Set) []string {
 		users = append(users, user.(string))
 	}
 	return users
-}
-
-func ExpandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
-	protocols := make([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, 0, len(configured))
-	var lbMethodToId = make(map[string]string)
-	for _, lRaw := range configured {
-		data := lRaw.(map[string]interface{})
-		p := &datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration{
-			FrontendProtocol: sl.String(data["frontend_protocol"].(string)),
-			BackendProtocol:  sl.String(data["backend_protocol"].(string)),
-			FrontendPort:     sl.Int(data["frontend_port"].(int)),
-			BackendPort:      sl.Int(data["backend_port"].(int)),
-		}
-		if v, ok := data["session_stickiness"]; ok && v.(string) != "" {
-			p.SessionType = sl.String(v.(string))
-		}
-		if v, ok := data["max_conn"]; ok && v.(int) != 0 {
-			p.MaxConn = sl.Int(v.(int))
-		}
-		if v, ok := data["tls_certificate_id"]; ok && v.(int) != 0 {
-			p.TlsCertificateId = sl.Int(v.(int))
-		}
-		if v, ok := data["load_balancing_method"]; ok {
-			p.LoadBalancingMethod = sl.String(lbMethodToId[v.(string)])
-		}
-		if v, ok := data["protocol_id"]; ok && v.(string) != "" {
-			p.ListenerUuid = sl.String(v.(string))
-		}
-
-		var isValid bool
-		if p.TlsCertificateId != nil && *p.TlsCertificateId != 0 {
-			// validate the protocol is correct
-			if *p.FrontendProtocol == "HTTPS" {
-				isValid = true
-			}
-		} else {
-			isValid = true
-		}
-
-		if isValid {
-			protocols = append(protocols, *p)
-		} else {
-			return protocols, fmt.Errorf("tls_certificate_id may be set only when frontend protocol is 'HTTPS'")
-		}
-
-	}
-	return protocols, nil
 }
 
 func ExpandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo {
@@ -1644,53 +1606,28 @@ func FlattenremoteSubnet(vpn *datatypes.Network_Tunnel_Module_Context) []map[str
 }
 
 // IBM Cloud Databases
-func ExpandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
-	for _, iface := range whiteList.List() {
-		wlItem := iface.(map[string]interface{})
-		wlEntry := icdv4.WhitelistEntry{
-			Address:     wlItem["address"].(string),
-			Description: wlItem["description"].(string),
-		}
-		whitelist = append(whitelist, wlEntry)
-	}
-	return
-}
-
-// IBM Cloud Databases
-func ExpandAllowlist(allowList *schema.Set) (allowlist []clouddatabasesv5.AllowlistEntry) {
+func ExpandAllowlist(allowList *schema.Set) (entries []clouddatabasesv5.AllowlistEntry) {
+	entries = make([]clouddatabasesv5.AllowlistEntry, 0, len(allowList.List()))
 	for _, iface := range allowList.List() {
 		alItem := iface.(map[string]interface{})
 		alEntry := &clouddatabasesv5.AllowlistEntry{
 			Address:     core.StringPtr(alItem["address"].(string)),
 			Description: core.StringPtr(alItem["description"].(string)),
 		}
-		allowlist = append(allowlist, *alEntry)
+		entries = append(entries, *alEntry)
 	}
 	return
 }
 
-// Cloud Internet Services
-func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
-	entries := make([]map[string]interface{}, len(whitelist.WhitelistEntrys), len(whitelist.WhitelistEntrys))
-	for i, whitelistEntry := range whitelist.WhitelistEntrys {
-		l := map[string]interface{}{
-			"address":     whitelistEntry.Address,
-			"description": whitelistEntry.Description,
+// IBM Cloud Databases
+func FlattenAllowlist(allowlist []clouddatabasesv5.AllowlistEntry) []map[string]interface{} {
+	entries := make([]map[string]interface{}, 0, len(allowlist))
+	for _, ip := range allowlist {
+		entry := map[string]interface{}{
+			"address":     ip.Address,
+			"description": ip.Description,
 		}
-		entries[i] = l
-	}
-	return entries
-}
-
-// Cloud Internet Services
-func FlattenGetAllowlist(allowlist clouddatabasesv5.GetAllowlistResponse) []map[string]interface{} {
-	entries := make([]map[string]interface{}, len(allowlist.IPAddresses), len(allowlist.IPAddresses))
-	for i, allowlistEntry := range allowlist.IPAddresses {
-		l := map[string]interface{}{
-			"address":     allowlistEntry.Address,
-			"description": allowlistEntry.Description,
-		}
-		entries[i] = l
+		entries = append(entries, entry)
 	}
 	return entries
 }
@@ -1948,6 +1885,72 @@ func GetLocation(instance models.ServiceInstanceV2) string {
 	}
 }
 
+type CRN struct {
+	Scheme          string
+	Version         string
+	CName           string
+	CType           string
+	ServiceName     string
+	Region          string
+	ScopeType       string
+	Scope           string
+	ServiceInstance string
+	ResourceType    string
+	Resource        string
+}
+
+func Parse(s string) (CRN, error) {
+	if s == "" {
+		return CRN{}, nil
+	}
+
+	segments := strings.Split(s, crnSeparator)
+	if len(segments) != 10 || segments[0] != crn {
+		return CRN{}, ErrMalformedCRN
+	}
+
+	crn := CRN{
+		Scheme:          segments[0],
+		Version:         segments[1],
+		CName:           segments[2],
+		CType:           segments[3],
+		ServiceName:     segments[4],
+		Region:          segments[5],
+		ServiceInstance: segments[7],
+		ResourceType:    segments[8],
+		Resource:        segments[9],
+	}
+
+	scopeSegments := segments[6]
+	if scopeSegments != "" {
+		if scopeSegments == "global" {
+			crn.Scope = "global"
+		} else {
+			scopeParts := strings.Split(scopeSegments, scopeSeparator)
+			if len(scopeParts) == 2 {
+				crn.ScopeType, crn.Scope = scopeParts[0], scopeParts[1]
+			} else {
+				return CRN{}, ErrMalformedScope
+			}
+		}
+	}
+
+	return crn, nil
+}
+func GetLocationV2(instance rc.ResourceInstance) string {
+	crn, err := Parse(*instance.CRN)
+	if err != nil {
+		log.Fatal(err)
+	}
+	region := crn.Region
+	cName := crn.CName
+	if cName == "bluemix" || cName == "staging" {
+		return region
+	} else {
+		return cName + "-" + region
+	}
+}
+
 func GetTags(d *schema.ResourceData, meta interface{}) error {
 	resourceID := d.Id()
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
@@ -2014,12 +2017,6 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 // }
 
 func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
-
-	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
-	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
-	}
-
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return nil, err
@@ -2039,23 +2036,11 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 			ListTagsOptions.AccountID = PtrToString(accountID)
 		}
 	}
-	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
 	if err != nil {
-		if strings.Contains(err.Error(), "Too Many Requests") {
-			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
-			if err != nil {
-				return nil, err
-			}
-			return temp, nil
-		}
 		return nil, err
 	}
-	var taglist []string
-	for _, item := range taggingResult.Items {
-		taglist = append(taglist, *item.Name)
-	}
-	log.Println("tagList: ", taglist)
-	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+	return taggingResult, nil
 }
 
 func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
@@ -2324,6 +2309,42 @@ func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 				fmt.Println("Suppresing the TAG diff ")
 				return diff.Clear("tags")
 			}
+		}
+	}
+	return nil
+}
+
+func ResourceValidateAccessTags(diff *schema.ResourceDiff, meta interface{}) error {
+
+	if value, ok := diff.GetOkExists("access_tags"); ok {
+		tagSet := value.(*schema.Set)
+		newTagList := tagSet.List()
+		tagType := "access"
+		gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
+		if err != nil {
+			return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		}
+
+		listTagsOptions := &globaltaggingv1.ListTagsOptions{
+			TagType: &tagType,
+		}
+		taggingResult, _, err := gtClient.ListTags(listTagsOptions)
+		if err != nil {
+			return err
+		}
+		var taglist []string
+		for _, item := range taggingResult.Items {
+			taglist = append(taglist, *item.Name)
+		}
+		existingAccessTags := NewStringSet(ResourceIBMVPCHash, taglist)
+		errStatement := ""
+		for _, tag := range newTagList {
+			if !existingAccessTags.Contains(tag) {
+				errStatement = errStatement + " " + tag.(string)
+			}
+		}
+		if errStatement != "" {
+			return fmt.Errorf("[ERROR] Error : Access tag(s) %s does not exist", errStatement)
 		}
 	}
 	return nil
@@ -3348,7 +3369,7 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
-	mapped := make([]string, len(hostLabels))
+	mapped := make([]string, len(hostLabels)-1)
 	idx := 0
 	for k, v := range hostLabels {
 		if strings.HasPrefix(k, "os") {
@@ -3432,4 +3453,16 @@ func GetResourceInstanceURL(d *schema.ResourceData, meta interface{}) (*string, 
 	}
 
 	return &endpoint, nil
+}
+
+// Converts a struct to a map while maintaining the json alias as keys
+func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
+	data, err := json.Marshal(obj) // Convert to a json string
+
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(data, &newMap) // Convert to a map
+	return
 }

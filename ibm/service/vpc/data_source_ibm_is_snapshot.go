@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -48,6 +49,14 @@ func DataSourceSnapshot() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "If present, the image id from which the data on this volume was most directly provisioned.",
+			},
+
+			isSnapshotAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access tags",
 			},
 
 			isSnapshotOperatingSystem: {
@@ -259,6 +268,12 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 					backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 				}
 				d.Set(isSnapshotBackupPolicyPlan, backupPolicyPlanList)
+				accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
+				if err != nil {
+					log.Printf(
+						"Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
+				}
+				d.Set(isSnapshotAccessTags, accesstags)
 				return nil
 			}
 		}
@@ -319,6 +334,12 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 			backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 		}
 		d.Set(isSnapshotBackupPolicyPlan, backupPolicyPlanList)
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
+		}
+		d.Set(isSnapshotAccessTags, accesstags)
 		return nil
 	}
 }

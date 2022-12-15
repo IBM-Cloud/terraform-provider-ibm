@@ -47,6 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 - `snapshots` - (List) List of snapshots in the IBM Cloud Infrastructure.
   
   Nested scheme for `snapshots`:
+  - `access_tags`  - (Array of Strings) Access management tags associated with the snapshot.
   - `id` - (String) The unique identifier for this snapshot.
   - `backup_policy_plan` - (List) If present, the backup policy plan which created this snapshot.
   

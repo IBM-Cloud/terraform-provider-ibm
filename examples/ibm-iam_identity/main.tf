@@ -2,12 +2,12 @@ provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
 }
 
-// Read iam_account_settings data source
-data "ibm_iam_account_settings" "iam_account_settings_source" {
-}
-
 // Provision iam_account_settings resource instance
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
-  mfa = "LEVEL3"
+  mfa = "NONE"
   restrict_create_service_id = "NOT_RESTRICTED"
+  user_mfa {
+    iam_id = "IBMid-123456789"
+    mfa = "NONE"
+  }
 }

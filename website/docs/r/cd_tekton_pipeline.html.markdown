@@ -25,7 +25,7 @@ resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 
 Review the argument reference that you can specify for your resource.
 
-* `pipeline_id` - (Required, String) ID of current instance.
+* `pipeline_id` - (Required, String) ID of the pipeline tool in your toolchain. Can be referenced from your `ibm_cd_toolchain_tool_pipeline` resource, e.g. `pipeline_id = ibm_cd_toolchain_tool_pipeline.my_pipeline.tool_id`
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `enable_notifications` - (Optional, Boolean) Flag whether to enable notifications for this pipeline. When enabled, pipeline run events are published on all slack integration specified channels in the parent toolchain.
   * Constraints: The default value is `false`.

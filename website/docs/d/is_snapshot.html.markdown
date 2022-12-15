@@ -89,7 +89,7 @@ Review the argument references that you can specify for your data source.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your data source is created.
-
+- `access_tags`  - (Array of Strings) Access management tags associated with the snapshot.
 - `backup_policy_plan` - (List) If present, the backup policy plan which created this snapshot.
   
    Nested scheme for `backup_policy_plan`:

@@ -85,12 +85,6 @@ func ResourceIBMCdToolchain() *schema.Resource {
 				Computed:    true,
 				Description: "Identity that created the toolchain.",
 			},
-			"tags": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Tags associated with the toolchain.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
 		},
 	}
 }
@@ -208,9 +202,6 @@ func resourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData,
 	}
 	if err = d.Set("created_by", toolchain.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
-	}
-	if err = d.Set("tags", toolchain.Tags); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 	}
 
 	return nil

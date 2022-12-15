@@ -35,6 +35,7 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `id` - The unique identifier of the is_vpn_gateway.
+- `access_tags`  - (List) Access management tags associated for the vpn gateway.
 - `connections` - (List) Connections for this VPN gateway.
   Nested scheme for **connections**:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
@@ -89,6 +90,7 @@ In addition to all argument references listed, you can access the following attr
 	- `href` - (String) The URL for this subnet.
 	- `id` - (String) The unique identifier for this subnet.
 	- `name` - (String) The user-defined name for this subnet.
+- `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
 - `vpc` - (String) The VPC this VPN server resides in.
   Nested scheme for `vpc`:
   - `crn` - (String) The CRN for this VPC.

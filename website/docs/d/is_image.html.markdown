@@ -46,6 +46,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `access_tags`  - (List) Access management tags associated for image.
 - `architecture` - (String) The architecture of the image.
 - `catalog_offering` - (List) The catalog offering for this image.
   Nested scheme for **catalog_offering**:

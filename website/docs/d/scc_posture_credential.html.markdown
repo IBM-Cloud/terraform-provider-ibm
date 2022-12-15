@@ -89,13 +89,6 @@ Nested scheme for **display_fields**:
 
 * `enabled` - (Required, Boolean) Credentials status enabled/disbaled.
 
-* `group` - (Required, List) Credential group details.
-Nested scheme for **group**:
-	* `id` - (Required, String) credential group id.
-	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
-	* `passphrase` - (Required, String) passphase of the credential.
-	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
-
 * `name` - (Required, String) Credentials name.
 
 * `purpose` - (Required, String) Purpose for which the credential is created.

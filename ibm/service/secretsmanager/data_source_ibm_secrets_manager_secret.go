@@ -12,6 +12,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -253,24 +254,23 @@ func dataSourceIBMSecretsManagerSecretRead(context context.Context, d *schema.Re
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	rContollerClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	instanceID := d.Get("instance_id").(string)
 	endpointType := d.Get("endpoint_type").(string)
 	var smEndpointURL string
-
-	rContollerAPI := rContollerClient.ResourceServiceInstanceV2()
-
-	instanceData, err := rContollerAPI.GetInstance(instanceID)
-	if err != nil {
-		return diag.FromErr(err)
+	resourceInstanceOptions := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
 	}
-	instanceCRN := instanceData.Crn.String()
+	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceOptions)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error:%s Response: %s", err, resp))
+	}
+	instanceCRN := instanceData.CRN
 
-	crnData := strings.Split(instanceCRN, ":")
+	crnData := strings.Split(*instanceCRN, ":")
 
 	if crnData[4] == "secrets-manager" {
 		if endpointType == "private" {
