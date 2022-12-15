@@ -131,6 +131,9 @@ resource "ibm_is_instance" "example1" {
 
 The following example shows how you can create a virtual server instance with custom security group rules. Note that the security group, security group rules, and the virtual server instance must be created in a specific order to meet the dependencies of the individual resources. To force the creation in a specific order, you use the [`depends_on` parameter](https://www.terraform.io/docs/configuration/resources.html). If you do not provide this parameter, all resources are created at the same time which might lead to resource dependency errors during the provisioning of your virtual server, such as `The security group to attach to is not available`.
 
+~>**Conflict** 
+ IBM Cloud terraform provider currently provides both a standalone `ibm_is_security_group_target` resource and a `security_groups` block defined in-line in the `ibm_is_instance` resource to attach security group to a network interface target. At this time you cannot use the `security_groups` block inline with `ibm_is_instance` in conjunction with the standalone resource `ibm_is_security_group_target`. </br> Doing so will create a **conflict of security groups** attaching to the network interface and will overwrite it.
+
 ```terraform
 
 resource "ibm_is_vpc" "example" {
