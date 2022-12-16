@@ -706,16 +706,8 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_safari":   eventnotification.DataSourceIBMEnSafariDestination(),
 			"ibm_en_destination_msteams":  eventnotification.DataSourceIBMEnMSTeamsDestination(),
 			"ibm_en_subscription_msteams": eventnotification.DataSourceIBMEnFCMSubscription(),
-<<<<<<< HEAD
-<<<<<<< HEAD
 			"ibm_en_destination_cf":       eventnotification.DataSourceIBMEnCFDestination(),
 			"ibm_en_subscription_cf":      eventnotification.DataSourceIBMEnFCMSubscription(),
-=======
->>>>>>> 497042cd (updating msteams resources and data sources and docs)
-=======
-			"ibm_en_destination_cf":       eventnotification.DataSourceIBMEnCFDestination(),
-			"ibm_en_subscription_cf":      eventnotification.DataSourceIBMEnFCMSubscription(),
->>>>>>> a2a82fe3 (adding resources for cloud function destination and adding pre prod option)
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
