@@ -2664,7 +2664,7 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 				return false, fmt.Errorf("[ERROR] Database Task errored: %v", err)
 			}
 
-			if getTaskResponse.Task != nil {
+			if getTaskResponse.Task == nil {
 				return true, nil
 			}
 
