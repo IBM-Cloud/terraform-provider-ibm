@@ -741,10 +741,10 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	// Handle volume attachments
 	if volsintf, ok := d.GetOk(isInstanceTemplateVolumeAttachments); ok {
 		vols := volsintf.([]interface{})
-		var intfs []vpcv1.VolumeAttachmentPrototypeInstanceContext
+		var intfs []vpcv1.VolumeAttachmentPrototype
 		for _, resource := range vols {
 			vol := resource.(map[string]interface{})
-			volInterface := &vpcv1.VolumeAttachmentPrototypeInstanceContext{}
+			volInterface := &vpcv1.VolumeAttachmentPrototype{}
 			deleteVolBool := vol[isInstanceTemplateVolumeDeleteOnInstanceDelete].(bool)
 			volInterface.DeleteVolumeOnInstanceDelete = &deleteVolBool
 			attachmentnamestr := vol[isInstanceTemplateVolAttachmentName].(string)
@@ -752,7 +752,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volIdStr := vol[isInstanceTemplateVolAttVol].(string)
 
 			if volIdStr != "" {
-				volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity{
+				volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeVolume{
 					ID: &volIdStr,
 				}
 			} else {
@@ -761,7 +761,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 				profileName := newvol[isInstanceTemplateVolAttVolProfile].(string)
 				capacity := int64(newvol[isInstanceTemplateVolAttVolCapacity].(int))
 
-				volPrototype := &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext{
+				volPrototype := &vpcv1.VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext{
 					Profile: &vpcv1.VolumeProfileIdentity{
 						Name: &profileName,
 					},
@@ -1215,7 +1215,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			newVolumeArr := []map[string]interface{}{}
 			newVolume := map[string]interface{}{}
 			volumeIntf := volume.Volume
-			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
+			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentPrototypeVolume)
 			if volumeInst.ID != nil {
 				volumeAttach[isInstanceTemplateVolAttVol] = *volumeInst.ID
 			}
