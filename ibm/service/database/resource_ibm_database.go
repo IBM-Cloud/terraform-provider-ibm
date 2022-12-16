@@ -2665,17 +2665,16 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 			}
 
 			if getTaskResponse.Task != nil {
-				switch *getTaskResponse.Task.Status {
-				case "failed":
-					return false, fmt.Errorf("[Error] Database Task failed")
-				case "complete", "":
-					return true, nil
-				case "queued", "running":
-					break
-				}
-			} else {
-				// SDK most likely followed a Redirect if no error and no task present
 				return true, nil
+			}
+
+			switch *getTaskResponse.Task.Status {
+			case "failed":
+				return false, fmt.Errorf("[Error] Database Task failed")
+			case "complete", "":
+				return true, nil
+			case "queued", "running":
+				break
 			}
 		}
 	}
