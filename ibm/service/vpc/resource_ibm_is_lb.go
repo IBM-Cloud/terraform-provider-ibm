@@ -92,6 +92,7 @@ func ResourceIBMISLB() *schema.Resource {
 			"dns": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				MinItems:    1,
 				MaxItems:    1,
 				Description: "The DNS configuration for this load balancer.",
 				Elem: &schema.Resource{
