@@ -57,6 +57,12 @@ You can access the following attribute references after your data source is crea
 	- `profile` - (String) The profile for the boot volume configuration.
 	- `size` - (String) The boot volume size to configure in giga bytes.
 	- `tags` - (String) User Tags associated with the boot_volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+- `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
+
+  Nested scheme for `catalog_offering`:
+    - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
+    - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+   	
 - `crn` - (String) The CRN of the instance template.
 - `default_trusted_profile_auto_link` - (Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default is true. 
 - `default_trusted_profile_target` - (String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
