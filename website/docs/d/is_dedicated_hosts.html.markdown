@@ -32,7 +32,8 @@ data "ibm_is_dedicated_hosts" "example" {
 Review the argument references that you can specify for your data source.
 
 - `host_group` - (Optional, String) The unique identifier of the dedicated host group.
-
+- `resource_group` (Optional, String) The ID of the Resource group this dedicated host belongs to.
+- `name` (Optional, String) The name of the dedicated host
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
@@ -41,6 +42,7 @@ In addition to all argument reference list, you can access the following attribu
 - `dedicated_hosts` -  (List) Collection of dedicated hosts. Nested dedicated_hosts blocks have the following structure.
 
   Nested scheme for `dedicated_hosts`:
+  - `access_tags`  - (List) Access management tags associated for dedicated hosts.
   - `available_memory` -  (String) The amount of memory in GB that is currently available for 
   - `available_vcpu` -  (List) The available `VCPU` for the dedicated host. Nested available_vcpu blocks have the following structure.
 

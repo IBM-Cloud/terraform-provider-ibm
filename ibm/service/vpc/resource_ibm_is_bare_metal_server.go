@@ -75,6 +75,9 @@ const (
 	isBareMetalServerStatusPending           = "pending"
 	isBareMetalServerStatusRestarting        = "restarting"
 	isBareMetalServerStatusFailed            = "failed"
+	isBareMetalServerAccessTags              = "access_tags"
+	isBareMetalServerUserTagType             = "user"
+	isBareMetalServerAccessTagType           = "access"
 )
 
 func ResourceIBMIsBareMetalServer() *schema.Resource {
@@ -101,6 +104,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
 				},
 			),
 		),
@@ -560,6 +568,15 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Tags for the Bare metal server",
 			},
+
+			isBareMetalServerAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
 		},
 	}
 }
@@ -594,6 +611,16 @@ func ResourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              bareMetalServerActions})
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 	ibmISBareMetalServerResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_bare_metal_server", Schema: validateSchema}
 	return &ibmISBareMetalServerResourceValidator
 }
@@ -1036,10 +1063,18 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isBareMetalServerTags); ok || v != "" {
 		oldList, newList := d.GetChange(isBareMetalServerTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *bms.CRN)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *bms.CRN, "", isBareMetalServerUserTagType)
 		if err != nil {
 			log.Printf(
 				"[ERROR] Error on create of resource bare metal server (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isBareMetalServerAccessTags); ok {
+		oldList, newList := d.GetChange(isBareMetalServerAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *bms.CRN, "", isBareMetalServerAccessTagType)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on create of resource bare metal server (%s) access tags: %s", d.Id(), err)
 		}
 	}
 
@@ -1360,12 +1395,19 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	d.Set(isBareMetalServerVPC, *bms.VPC.ID)
 	d.Set(isBareMetalServerZone, *bms.Zone.Name)
 
-	tags, err := flex.GetTagsUsingCRN(meta, *bms.CRN)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerUserTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource bare metal server (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isBareMetalServerTags, tags)
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerAccessTagType)
+	if err != nil {
+		log.Printf(
+			"[ERROR] Error on get of resource bare metal server (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isBareMetalServerAccessTags, accesstags)
 
 	return nil
 }
@@ -1388,7 +1430,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		return err
 	}
 
-	if d.HasChange(isBareMetalServerTags) {
+	if d.HasChange(isBareMetalServerTags) || d.HasChange(isBareMetalServerAccessTags) {
 		bmscrn := d.Get(isBareMetalServerCRN).(string)
 		if bmscrn == "" {
 			options := &vpcv1.GetBareMetalServerOptions{
@@ -1404,11 +1446,21 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			}
 			bmscrn = *bms.CRN
 		}
-		oldList, newList := d.GetChange(isBareMetalServerTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, bmscrn)
-		if err != nil {
-			log.Printf(
-				"Error on update of vpc Bare metal server (%s) tags: %s", id, err)
+		if d.HasChange(isBareMetalServerTags) {
+			oldList, newList := d.GetChange(isBareMetalServerTags)
+			err = flex.UpdateTagsUsingCRN(oldList, newList, meta, bmscrn)
+			if err != nil {
+				log.Printf(
+					"[ERROR] Error on update of vpc Bare metal server (%s) tags: %s", id, err)
+			}
+		}
+		if d.HasChange(isBareMetalServerAccessTags) {
+			oldList, newList := d.GetChange(isBareMetalServerAccessTags)
+			err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, bmscrn, "", isBareMetalServerAccessTagType)
+			if err != nil {
+				log.Printf(
+					"[ERROR] Error on update of resource vpc Bare metal server (%s) access tags: %s", id, err)
+			}
 		}
 	}
 

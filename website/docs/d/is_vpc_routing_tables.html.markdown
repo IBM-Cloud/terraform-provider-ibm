@@ -37,6 +37,7 @@ data "ibm_is_vpc_routing_tables" "example" {
 Review the argument references that you can specify for your data source. 
 
 - `vpc` - (Required, String) The ID of the VPC.
+- `is_default` - (Optional, Boolean) Indicate whether this is the default routing table for this VPC
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 

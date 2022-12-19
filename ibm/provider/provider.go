@@ -645,6 +645,8 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering":          catalogmanagement.DataSourceIBMCmOffering(),
 			"ibm_cm_version":           catalogmanagement.DataSourceIBMCmVersion(),
 			"ibm_cm_offering_instance": catalogmanagement.DataSourceIBMCmOfferingInstance(),
+			"ibm_cm_preset":            catalogmanagement.DataSourceIBMCmPreset(),
+			"ibm_cm_object":            catalogmanagement.DataSourceIBMCmObject(),
 
 			// //Added for Resource Tag
 			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
@@ -903,6 +905,7 @@ func Provider() *schema.Provider {
 			"ibm_is_instance":                                    vpc.ResourceIBMISInstance(),
 			"ibm_is_instance_action":                             vpc.ResourceIBMISInstanceAction(),
 			"ibm_is_instance_network_interface":                  vpc.ResourceIBMIsInstanceNetworkInterface(),
+			"ibm_is_instance_network_interface_floating_ip":      vpc.ResourceIBMIsInstanceNetworkInterfaceFloatingIp(),
 			"ibm_is_instance_disk_management":                    vpc.ResourceIBMISInstanceDiskManagement(),
 			"ibm_is_instance_group":                              vpc.ResourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_membership":                   vpc.ResourceIBMISInstanceGroupMembership(),
@@ -1056,6 +1059,7 @@ func Provider() *schema.Provider {
 			"ibm_cm_offering":          catalogmanagement.ResourceIBMCmOffering(),
 			"ibm_cm_version":           catalogmanagement.ResourceIBMCmVersion(),
 			"ibm_cm_validation":        catalogmanagement.ResourceIBMCmValidation(),
+			"ibm_cm_object":            catalogmanagement.ResourceIBMCmObject(),
 
 			// //Added for enterprise
 			"ibm_enterprise":               enterprise.ResourceIBMEnterprise(),

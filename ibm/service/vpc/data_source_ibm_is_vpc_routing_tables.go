@@ -42,6 +42,11 @@ func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 				Required:    true,
 				Description: "VPC identifier",
 			},
+			isRoutingTableDefault: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Filters the collection to routing tables with the specified is_default value",
+			},
 			isRoutingTables: {
 				Type:        schema.TypeList,
 				Description: "Collection of Routing tables",
@@ -169,11 +174,15 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 	}
 
 	vpcID := d.Get(isVpcID).(string)
+	listOptions := sess.NewListVPCRoutingTablesOptions(vpcID)
 
+	if isDefaultIntf, ok := d.GetOk(isRoutingTableDefault); ok {
+		isDefault := isDefaultIntf.(bool)
+		listOptions.IsDefault = &isDefault
+	}
 	start := ""
 	allrecs := []vpcv1.RoutingTable{}
 	for {
-		listOptions := sess.NewListVPCRoutingTablesOptions(vpcID)
 		if start != "" {
 			listOptions.Start = &start
 		}

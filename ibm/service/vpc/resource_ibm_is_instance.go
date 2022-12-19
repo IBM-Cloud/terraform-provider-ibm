@@ -116,6 +116,10 @@ const (
 	isInstanceDefaultTrustedProfileAutoLink = "default_trusted_profile_auto_link"
 	isInstanceDefaultTrustedProfileTarget   = "default_trusted_profile_target"
 	isInstanceMetadataServiceEnabled        = "metadata_service_enabled"
+
+	isInstanceAccessTags    = "access_tags"
+	isInstanceUserTagType   = "user"
+	isInstanceAccessTagType = "access"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
@@ -172,6 +176,10 @@ func ResourceIBMISInstance() *schema.Resource {
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceTagsCustomizeDiff(diff)
+				}),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
 				}),
 		),
 
@@ -298,6 +306,15 @@ func ResourceIBMISInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance", "tags")},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "list of tags for the instance",
+			},
+
+			isInstanceAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "list of access tags for the instance",
 			},
 
 			isEnableCleanDelete: {
@@ -601,6 +618,12 @@ func ResourceIBMISInstance() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceVolAttVolAutoDelete: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Auto delete boot volume along with instance",
+						},
 						isInstanceBootAttachmentName: {
 							Type:         schema.TypeString,
 							Optional:     true,
@@ -991,6 +1014,16 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			Optional:                   true,
 			AllowedValues:              host_failure})
 
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
@@ -1102,7 +1135,8 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				volTemplate.UserTags = userTagsArray
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -1344,10 +1378,18 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -1462,7 +1504,8 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -1828,7 +1871,8 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				volTemplate.UserTags = userTagsArray
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
@@ -2079,6 +2123,14 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return nil
 }
 
@@ -2185,7 +2237,8 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				ID: &snapshotIdStr,
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -2434,10 +2487,18 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -2873,6 +2934,19 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if instance.BootVolumeAttachment.Volume != nil {
 			bootVol[isInstanceBootAttachmentName] = *instance.BootVolumeAttachment.Volume.Name
 			bootVol[isInstanceBootVolumeId] = *instance.BootVolumeAttachment.Volume.ID
+
+			instanceId := *instance.ID
+			bootVolID := *instance.BootVolumeAttachment.ID
+			getinsVolAttOptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
+				InstanceID: &instanceId,
+				ID:         &bootVolID,
+			}
+			bootVolumeAtt, response, err := instanceC.GetInstanceVolumeAttachment(getinsVolAttOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error getting Instance boot volume attachment : %s\n%s", err, response)
+			}
+
+			bootVol[isInstanceVolAttVolAutoDelete] = *bootVolumeAtt.DeleteVolumeOnInstanceDelete
 			options := &vpcv1.GetVolumeOptions{
 				ID: instance.BootVolumeAttachment.Volume.ID,
 			}
@@ -2898,13 +2972,18 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		bootVolList = append(bootVolList, bootVol)
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
-	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource Instance (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isInstanceTags, tags)
-
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource Instance (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isInstanceAccessTags, accesstags)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -3025,7 +3104,41 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
+	bootVolAutoDel := "boot_volume.0.auto_delete_volume"
+	if d.HasChange(bootVolAutoDel) && !d.IsNewResource() {
+		listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
+			InstanceID: &id,
+		}
+		vols, _, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
+		if err != nil {
+			return err
+		}
 
+		auto_delete := d.Get(bootVolAutoDel).(bool)
+		for _, vol := range vols.VolumeAttachments {
+			if *vol.Type == "boot" {
+				volAttachmentID := *vol.ID
+				updateInstanceVolAttOptions := &vpcv1.UpdateInstanceVolumeAttachmentOptions{
+					InstanceID: &id,
+					ID:         &volAttachmentID,
+				}
+				volAttNamePatchModel := &vpcv1.VolumeAttachmentPatch{
+					DeleteVolumeOnInstanceDelete: &auto_delete,
+				}
+				volAttNamePatchModelAsPatch, err := volAttNamePatchModel.AsPatch()
+				if err != nil || volAttNamePatchModelAsPatch == nil {
+					return fmt.Errorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
+				}
+				updateInstanceVolAttOptions.VolumeAttachmentPatch = volAttNamePatchModelAsPatch
+
+				instanceVolAttUpdate, response, err := instanceC.UpdateInstanceVolumeAttachment(updateInstanceVolAttOptions)
+				if err != nil || instanceVolAttUpdate == nil {
+					log.Printf("[DEBUG] Instance volume attachment updation err %s\n%s", err, response)
+					return err
+				}
+			}
+		}
+	}
 	if d.HasChange(isPlacementTargetDedicatedHost) || d.HasChange(isPlacementTargetDedicatedHostGroup) && !d.IsNewResource() {
 		dedicatedHost := d.Get(isPlacementTargetDedicatedHost).(string)
 		dedicatedHostGroup := d.Get(isPlacementTargetDedicatedHostGroup).(string)
@@ -3594,6 +3707,14 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				"Error on update of resource Instance (%s) tags: %s", d.Id(), err)
 		}
 	}
+	if d.HasChange(isInstanceAccessTags) {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource Instance (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return nil
 }
 
@@ -3685,9 +3806,12 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			return err
 		}
 		if _, ok := d.GetOk(isInstanceBootVolume); ok {
-			_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				return err
+			autoDel := d.Get("boot_volume.0.auto_delete_volume").(bool)
+			if autoDel {
+				_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

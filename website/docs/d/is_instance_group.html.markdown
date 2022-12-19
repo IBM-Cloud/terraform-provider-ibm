@@ -38,6 +38,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (List) Access management tags associated for the instance group.
 - `application_port` - (String) Scales an instances to supply the port for the Load Balancer pool member.
 - `crn`- (String) The CRN for this instance group.
 - `id`- (String) The ID of an instance group.

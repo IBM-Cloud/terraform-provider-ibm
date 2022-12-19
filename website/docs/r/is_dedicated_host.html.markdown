@@ -41,6 +41,13 @@ resource "ibm_is_dedicated_host" "example" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the dedicated host.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `host_group` - (Required, String)The unique ID of the dedicated host group for this dedicated host.
 - `instance_placement_enabled`- (Optional, Bool) If set to **true** instances can be placed on the dedicated host.
 - `name` - (Optional, String) The unique user-defined name for the dedicated host. If unspecified, the name will be a hyphenated list of randomly selected words.
