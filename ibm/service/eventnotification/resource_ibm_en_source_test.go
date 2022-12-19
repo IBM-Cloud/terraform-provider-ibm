@@ -18,38 +18,38 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnAPNSDestinationAllArgs(t *testing.T) {
-	var config en.Destination
+func TestAccIBMEnSourceAllArgs(t *testing.T) {
+	var config en.Source
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	newName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	newDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-
+	enabled := true
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnAPNSDestinationDestroy,
+		CheckDestroy: testAccCheckIBMEnSourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnAPNSDestinationConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnSourceConfig(instanceName, name, description, enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnAPNSDestinationExists("ibm_en_apns_destination.en_destination_resource_apns", config),
-					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "type", "push_ios"),
-					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "description", description),
+					testAccCheckIBMEnSourceExists("ibm_en_source.en_source_resource_1", config),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "enabled"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnAPNSDestinationConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnSourceConfig(instanceName, newName, newDescription, enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "type", "push_ios"),
-					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "enabled"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_destination_ios.en_destination_resource_apns",
+				ResourceName:      "ibm_en_source.en_source_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -57,35 +57,25 @@ func TestAccIBMEnAPNSDestinationAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnAPNSDestinationConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnSourceConfig(instanceName, name, description string, enabled bool) string {
 	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "en_destination_resource" {
+	resource "ibm_resource_instance" "en_source_resource" {
 		name     = "%s"
 		location = "us-south"
 		plan     = "standard"
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination_ios" "en_destination_resource_apns" {
+	resource "ibm_en_source" "en_source_resource_1" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
-		type        = "push_ios"
-		certificate_content_type = "p12"
-        certificate = "${path.module}/cert.p12"
 		description = "%s"
-		config {
-			params {
-				cert_type = "p12"
-                is_sandbox = true
-                password = "certpassword"
-				pre_prod = false
-			}
-		}
+		enabled = %t
 	}
-	`, instanceName, name, description)
+	`, instanceName, name, description, enabled)
 }
 
-func testAccCheckIBMEnAPNSDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
+func testAccCheckIBMEnSourceExists(n string, obj en.Source) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -98,7 +88,7 @@ func testAccCheckIBMEnAPNSDestinationExists(n string, obj en.Destination) resour
 			return err
 		}
 
-		options := &en.GetDestinationOptions{}
+		options := &en.GetSourceOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -108,7 +98,7 @@ func testAccCheckIBMEnAPNSDestinationExists(n string, obj en.Destination) resour
 		options.SetInstanceID(parts[0])
 		options.SetID(parts[1])
 
-		result, _, err := enClient.GetDestination(options)
+		result, _, err := enClient.GetSource(options)
 		if err != nil {
 			return err
 		}
@@ -118,17 +108,17 @@ func testAccCheckIBMEnAPNSDestinationExists(n string, obj en.Destination) resour
 	}
 }
 
-func testAccCheckIBMEnAPNSDestinationDestroy(s *terraform.State) error {
+func testAccCheckIBMEnSourceDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_destination_resource_1" {
+		if rs.Type != "en_source_resource_1" {
 			continue
 		}
 
-		options := &en.GetDestinationOptions{}
+		options := &en.GetSourceOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -139,12 +129,12 @@ func testAccCheckIBMEnAPNSDestinationDestroy(s *terraform.State) error {
 		options.SetID(parts[1])
 
 		// Try to find the key
-		_, response, err := enClient.GetDestination(options)
+		_, response, err := enClient.GetSource(options)
 
 		if err == nil {
-			return fmt.Errorf("en_destination still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("en_source still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for en_destination (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error checking for en_source (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

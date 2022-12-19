@@ -16,12 +16,12 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func ResourceIBMEnFCMDestination() *schema.Resource {
+func ResourceIBMEnCFDestination() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnFCMDestinationCreate,
-		ReadContext:   resourceIBMEnFCMDestinationRead,
-		UpdateContext: resourceIBMEnFCMDestinationUpdate,
-		DeleteContext: resourceIBMEnFCMDestinationDelete,
+		CreateContext: resourceIBMEnCFDestinationCreate,
+		ReadContext:   resourceIBMEnCFDestinationRead,
+		UpdateContext: resourceIBMEnCFDestinationUpdate,
+		DeleteContext: resourceIBMEnCFDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -39,7 +39,7 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The type of Destination push_android.",
+				Description: "The type of Destination ibmcf.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -59,20 +59,15 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"sender_id": {
+									"url": {
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "The Sender_id value for FCM project.",
+										Description: "URL of IBM Cloud Functions Trigger EndPoint",
 									},
-									"server_key": {
+									"api_key": {
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "The Server_key value for FCM project.",
-									},
-									"pre_prod": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "The flag to enable destination as pre-prod or prod",
+										Description: "APIKey with access of IBM Cloud Functions IAM Namespace",
 									},
 								},
 							},
@@ -105,7 +100,7 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 	}
 }
 
-func resourceIBMEnFCMDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCFDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,7 +117,7 @@ func resourceIBMEnFCMDestinationCreate(context context.Context, d *schema.Resour
 		options.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("config"); ok {
-		config := FCMdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+		config := CFdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 		options.SetConfig(&config)
 	}
 
@@ -133,10 +128,10 @@ func resourceIBMEnFCMDestinationCreate(context context.Context, d *schema.Resour
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnFCMDestinationRead(context, d, meta)
+	return resourceIBMEnCFDestinationRead(context, d, meta)
 }
 
-func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCFDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -182,7 +177,7 @@ func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.Resource
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enFCMDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enCFDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -204,7 +199,7 @@ func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.Resource
 	return nil
 }
 
-func resourceIBMEnFCMDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCFDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -228,7 +223,7 @@ func resourceIBMEnFCMDestinationUpdate(context context.Context, d *schema.Resour
 		}
 		destinationtype := d.Get("type").(string)
 		if _, ok := d.GetOk("config"); ok {
-			config := FCMdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+			config := CFdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 			options.SetConfig(&config)
 		}
 		_, response, err := enClient.UpdateDestinationWithContext(context, options)
@@ -236,13 +231,13 @@ func resourceIBMEnFCMDestinationUpdate(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("UpdateDestinationWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnFCMDestinationRead(context, d, meta)
+		return resourceIBMEnCFDestinationRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnFCMDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCFDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -272,19 +267,14 @@ func resourceIBMEnFCMDestinationDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
+func CFdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
 	params := new(en.DestinationConfigParams)
-
-	if configParams["sender_id"] != nil {
-		params.SenderID = core.StringPtr(configParams["sender_id"].(string))
+	if configParams["url"] != nil {
+		params.URL = core.StringPtr(configParams["url"].(string))
 	}
 
-	if configParams["server_key"] != nil {
-		params.ServerKey = core.StringPtr(configParams["server_key"].(string))
-	}
-
-	if configParams["pre_prod"] != nil {
-		params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
+	if configParams["api_key"] != nil {
+		params.APIKey = core.StringPtr(configParams["api_key"].(string))
 	}
 
 	destinationConfig := new(en.DestinationConfig)

@@ -18,7 +18,7 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnSafariDestinationAllArgs(t *testing.T) {
+func TestAccIBMEnMSTeamsDestinationAllArgs(t *testing.T) {
 	var config en.Destination
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -29,27 +29,27 @@ func TestAccIBMEnSafariDestinationAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnSafariDestinationDestroy,
+		CheckDestroy: testAccCheckIBMEnMSTeamsDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnSafariDestinationConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnMSTeamsDestinationConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnSafariDestinationExists("ibm_en_destination_safari.en_destination_resource_safari", config),
-					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "type", "push_safari"),
-					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "description", description),
+					testAccCheckIBMEnMSTeamsDestinationExists("ibm_en_destination_msteams.en_destination_resource_1", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "type", "msteams"),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnSafariDestinationConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnMSTeamsDestinationConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "type", "push_safari"),
-					resource.TestCheckResourceAttr("ibm_en_destination_safari.en_destination_resource_safari", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "type", "slack"),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_destination_safari.en_destination_resource_safari",
+				ResourceName:      "ibm_en_destination_msteams.en_destination_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -57,7 +57,7 @@ func TestAccIBMEnSafariDestinationAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnSafariDestinationConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnMSTeamsDestinationConfig(instanceName, name, description string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "en_destination_resource" {
 		name     = "%s"
@@ -66,40 +66,21 @@ func testAccCheckIBMEnSafariDestinationConfig(instanceName, name, description st
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination_safari" "en_destination_resource_safari" {
+	resource "ibm_en_destination_msteams" "en_destination_resource_1" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
-		name                         = "%s"
-		type                         = "push_safari"
-        certificate                  = "${path.module}/cert.p12"
-		icon_16x16                   = "${path.module}/safariicon.png"
-		icon_16x16_2x                = "${path.module}/safariicon.png"
-		icon_32x32                   = "${path.module}/safariicon.png"
-		icon_32x32_2x                = "${path.module}/safariicon.png"
-		icon_128x128                 = "${path.module}/safariicon.png"
-		icon_128x128_2x              = "${path.module}/safariicon.png"
-		icon_16x16_content_type      = "png"
-		icon_16x16_2x_content_type   = "png"
-		icon_32x32_content_type      = "png"
-		icon_32x32_2x_content_type   = "png"
-		icon_128x128_content_type    = "png"
-		icon_128x128_2x_content_type = "png"
+		name        = "%s"
+		type        = "msteams"
 		description = "%s"
 		config {
 			params {
-				cert_type = "p12"
-                password = "certpassword"
-				website_name = "NodeJS Starter Application"
-                url_format_string = "https://ensafaripush.mybluemix.net"
-                website_push_id = "web.net.mybluemix.ensafaripush"
-                website_url = "https://ensafaripush.mybluemix.net"
-				pre_prod = false
+				url  = "https://xyz.webhook.office.com"
 			}
 		}
 	}
 	`, instanceName, name, description)
 }
 
-func testAccCheckIBMEnSafariDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
+func testAccCheckIBMEnMSTeamsDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -132,13 +113,13 @@ func testAccCheckIBMEnSafariDestinationExists(n string, obj en.Destination) reso
 	}
 }
 
-func testAccCheckIBMEnSafariDestinationDestroy(s *terraform.State) error {
+func testAccCheckIBMEnMSTeamsDestinationDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_destination_resource_safari" {
+		if rs.Type != "en_destination_resource_1" {
 			continue
 		}
 

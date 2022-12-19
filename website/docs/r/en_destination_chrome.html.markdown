@@ -3,7 +3,7 @@ subcategory: 'Event Notifications'
 layout: 'ibm'
 page_title: 'IBM : ibm_en_destination_chrome'
 description: |-
-  Manages Event Notification Webhook destinations.
+  Manages Event Notification Chrome destinations.
 ---
 
 # ibm_en_destination_chrome
@@ -22,6 +22,7 @@ resource "ibm_en_destination_chrome" "chrome_en_destination" {
     params {
       api_key     = "The FCM api key for project"
       website_url = "https://testevents.com"
+      pre_prod = false
     }
   }
 }
@@ -49,6 +50,7 @@ Review the argument reference that you can specify for your resource.
 
   - `website_url` - (Required, string) URL of website.
   - `api_key` - (Required, string) The apikey for website project.
+  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
 
 ## Attribute reference
 
