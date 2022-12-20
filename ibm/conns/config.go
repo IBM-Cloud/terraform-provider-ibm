@@ -1324,7 +1324,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.bmxUserDetails = userConfig
 
-	if sess.SoftLayerSession != nil && sess.SoftLayerSession.IAMToken != "" {
+	if sess.SoftLayerSession != nil && sess.SoftLayerSession.APIKey == "" {
+		log.Println("Configuring SoftLayer Session with token from IBM Cloud Session")
 		sess.SoftLayerSession.IAMToken = sess.BluemixSession.Config.IAMAccessToken
 		sess.SoftLayerSession.IAMRefreshToken = sess.BluemixSession.Config.IAMRefreshToken
 	}
