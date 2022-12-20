@@ -11,21 +11,18 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMContainerIngressInstance_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("tf-container-ingress-instance-%d", acctest.RandIntRange(10, 100))
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMContainerIngressInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerIngressInstanceBasic(clusterName),
+				Config: testAccCheckIBMContainerIngressInstanceBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_instance.instance", "secret_group_id", acc.SecretGroupID),
@@ -73,22 +70,12 @@ func testAccCheckIBMContainerIngressInstanceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMContainerIngressInstanceBasic(clusterName string) string {
+func testAccCheckIBMContainerIngressInstanceBasic() string {
 	return fmt.Sprintf(`
-resource "ibm_container_cluster" "testacc_cluster" {
-  name              = "%s"
-  datacenter        = "%s"
-  default_pool_size = 1
-  machine_type      = "%s"
-  hardware          = "shared"
-  public_vlan_id    = "%s"
-  private_vlan_id   = "%s"
-}
-
 resource "ibm_container_ingress_instance" "instance" {
   instance_crn    = "%s"
   secret_group_id = "%s"
   is_default = "%t"
-  cluster_id  = ibm_container_cluster.testacc_cluster.id
-}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.InstanceCRN, acc.SecretGroupID, true)
+  cluster  = "%s"
+}`, acc.InstanceCRN, acc.SecretGroupID, true, acc.ClusterName)
 }

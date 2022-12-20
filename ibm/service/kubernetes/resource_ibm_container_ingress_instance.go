@@ -32,20 +32,20 @@ func ResourceIBMContainerIngressInstance() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"instance_crn": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "Instance CRN id",
 			},
-			"cluster_id": {
+			"cluster": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cluster ID",
 				ValidateFunc: validate.InvokeDataSourceValidator(
 					"ibm_container_ingress_instance",
-					"cluster_id"),
+					"cluster"),
 			},
 			"instance_name": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "Instance registration name",
 			},
 			"secret_group_id": {
@@ -87,7 +87,7 @@ func ResourceIBMContainerIngressInstanceValidator() *validate.ResourceValidator 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "cluster_id",
+			Identifier:                 "cluster",
 			ValidateFunctionIdentifier: validate.ValidateCloudData,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -104,7 +104,7 @@ func resourceIBMContainerIngressInstanceCreate(d *schema.ResourceData, meta inte
 	}
 
 	instanceCRN := d.Get("instance_crn").(string)
-	cluster := d.Get("cluster_id").(string)
+	cluster := d.Get("cluster").(string)
 
 	params := v2.InstanceRegisterConfig{
 		CRN:     instanceCRN,
@@ -147,7 +147,7 @@ func resourceIBMContainerIngressInstanceRead(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	d.Set("cluster_id", ingressInstanceConfig.Cluster)
+	d.Set("cluster", ingressInstanceConfig.Cluster)
 	d.Set("instance_name", ingressInstanceConfig.Name)
 	d.Set("instance_crn", ingressInstanceConfig.CRN)
 	d.Set("is_default", ingressInstanceConfig.IsDefault)
