@@ -20,14 +20,15 @@ package vpcv1_test
 
 import (
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/vpc-go-sdk/vpcv1"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"os"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var (
@@ -3692,8 +3693,8 @@ var _ = Describe(`VpcV1 Examples Tests`, func() {
 			Expect(response.StatusCode).To(Equal(204))
 
 		})
-		It(`ListVPNGatewayConnectionLocalCidrs request example`, func() {
-			fmt.Println("\nListVPNGatewayConnectionLocalCidrs() result:")
+		It(`ListVPNGatewayConnectionLocalCIDRs request example`, func() {
+			fmt.Println("\nListVPNGatewayConnectionLocalCIDRs() result:")
 			// begin-list_vpn_gateway_connection_local_cidrs
 
 			options := &vpcv1.ListVPNGatewayConnectionLocalCIDRsOptions{}
@@ -3752,8 +3753,8 @@ var _ = Describe(`VpcV1 Examples Tests`, func() {
 
 		})
 
-		It(`ListVPNGatewayConnectionPeerCidrs request example`, func() {
-			fmt.Println("\nListVPNGatewayConnectionPeerCidrs() result:")
+		It(`ListVPNGatewayConnectionPeerCIDRs request example`, func() {
+			fmt.Println("\nListVPNGatewayConnectionPeerCIDRs() result:")
 			// begin-list_vpn_gateway_connection_peer_cidrs
 
 			options := &vpcv1.ListVPNGatewayConnectionPeerCIDRsOptions{}
