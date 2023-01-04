@@ -1,3 +1,41 @@
+# 1.49.0(Jan 04, 2023)
+Features
+* Support for Catalog Management
+    - **DataSources**
+        - ibm_cm_preset
+        - ibm_cm_object
+    - **Resources**
+        - ibm_cm_object
+* Support for Virtual Private Cloud
+    - **Resources**
+        - ibm_is_instance_network_interface_floating_ip
+
+Enhancements
+* Create and Delete Logical Replication Slots for databases-for-postgresql ([4116](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4116))
+* Remove bluemix-go dependency for cloud-database allowlist ([4222](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4222))
+* Removed usage of direct tags API for retrieving tags using resource CRN ([4209](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4209))
+* Support resource_group_id as optional argument for catalogs ([4224](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4224))
+* Fix the last operation as per new SDK for resource controller ([4228](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4228))
+* Support access_tags for VPC, DedicatedHost, Image, Instance, SSHKey, Network, Instance Group, VPN Server and Bare Metal Server
+* Support for transit gateway unbound gre tunnel connections ([4213](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4213))
+* Support user_mfa , system_access_token_expiration_in_seconds, system_refresh_token_expiration_in_seconds arguments for account settings ([4221](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4221))
+* Added removal notification in docs for ibm_is_security_group_network_interface_attachment ([4232](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4232))
+* wait for virtual endpoint gateway to be available after creation ([4206](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4206))
+* Support filters in vpc service data sources ([4119](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4119))
+* Removed direct call to tagging API to retrieve single resource tags ([4210](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4210))
+* Support auto delete for vpc vsi boot volume ([4191](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4191))
+* Support VPC Volume creation from Snapshot ([4245](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4245))
+* Support for catalog images for VPC instance template ([4249](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4249))
+
+Bugfixes
+* Dont set python for IBM Satellite host attachment ([4226](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4226))
+* [ibm_container_vpc_cluster ] wait_till = "Normal" does not work ([4214](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4214))
+* fix doc for ibmcloud cli command for Schematics ([4243](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4243))
+* change from fixed to to append new line to slice ([4239](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4239))
+* Added security group target list for supported resources ([4247](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4247))
+* Fix volume not found error while destroying ibm_pi_volume resource ([4252](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4252))
+* PowerVS VSI update in-place with 'ibm_pi_instance' times out when VSI status is SHUTDOWN ([4258](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4258))
+* Support Terraform 1.2 verison in schematics resources ([4238](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4238))
 # 1.49.0(Dec 19, 2022)
 Features
 * Support for Catalog Management
