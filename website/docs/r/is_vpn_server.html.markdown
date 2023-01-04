@@ -50,7 +50,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `certificate_crn` - (Required, String) The certificate CRN of secret from Secrets Manager for this VPN server. 
 
-  !> **Removal Notification** Certificate Manager support will be removed, please use Secrets Manager.
+  !> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
 
 - `client_authentication` - (Required, List) The methods used to authenticate VPN clients to this VPN server.
   

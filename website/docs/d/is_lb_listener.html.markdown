@@ -37,7 +37,7 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for `certificate_instance`:
 	- `crn` - (String) The CRN for this certificate instance.
 
-		!> **Removal Notification** Certificate Manager support will be removed, please use Secrets Manager.
+		!> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
 
 - `connection_limit` - (Integer) The connection limit of the listener.
 
