@@ -101,7 +101,6 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 			"infrastructure_topology": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Senesitive:  true,
 				Description: "String value for single node cluster option.",
 			},
 			"kube_version": {
