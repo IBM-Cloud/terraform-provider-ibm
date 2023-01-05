@@ -98,6 +98,12 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The lifecycle state of the cluster.",
 			},
+			"infrastructure_topology": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Senesitive:  true,
+				Description: "String value for single node cluster option.",
+			},
 			"kube_version": {
 				Type:     schema.TypeString,
 				Computed: true,
