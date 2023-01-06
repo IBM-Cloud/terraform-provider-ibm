@@ -159,9 +159,10 @@ data "ibm_resource_group" "resource_group" {
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "mycluster"
   vpc_id            = ibm_is_vpc.vpc1.id
-  flavor            = "bx2-4x16"
+  flavor            = "bx2.4x16"
   worker_count      = 3
-  resource_group_id = data.ibm_resource_group.resource_group.id  zones {
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  zones {
     subnet_id = ibm_is_subnet.subnet1.id
     name      = "us-south-1"
   }
@@ -170,7 +171,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 resource "ibm_container_vpc_worker_pool" "cluster_pool" {
   cluster           = ibm_container_vpc_cluster.cluster.id
   worker_pool_name  = "mywp"
-  flavor            = "bx2-2x8"
+  flavor            = "bx2.2x8"
   vpc_id            = ibm_is_vpc.vpc1.id
   worker_count      = 3
   resource_group_id = data.ibm_resource_group.resource_group.id
