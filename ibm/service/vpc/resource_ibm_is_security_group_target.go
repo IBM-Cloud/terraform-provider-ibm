@@ -337,7 +337,7 @@ func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeou
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "updating", "waiting"},
-		Target:     []string{isLBProvisioningDone, ""},
+		Target:     []string{"stable", ""},
 		Refresh:    isVNISgTargetRefreshFunc(sess, vniId),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -350,7 +350,7 @@ func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeou
 func isVNISgTargetRefreshFunc(sess *vpcv1.VpcV1, vniId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		getlboptions := &vpcv1.GetLoadBalancerOptions{
+		getlboptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 			ID: &vniId,
 		}
 		lb, response, err := sess.GetLoadBalancer(getlboptions)
