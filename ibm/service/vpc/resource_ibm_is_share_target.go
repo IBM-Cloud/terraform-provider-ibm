@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func ResourceIbmIsShareTarget() *schema.Resource {
@@ -177,20 +178,26 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	createShareTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
+	createShareTargetOptions := &vpcv1.CreateShareMountTargetOptions{}
 
 	createShareTargetOptions.SetShareID(d.Get("share").(string))
-	// vpcid := d.Get("vpc").(string)
-	// vpc := &vpcbetav1.VPCIdentity{
-	// 	ID: &vpcid,
-	// }
-	// createShareTargetOptions.SetVPC(vpc)
-	if _, ok := d.GetOk("name"); ok {
-		createShareTargetOptions.SetName(d.Get("name").(string))
+	shareMountTargetPrototype := &vpcv1.ShareMountTargetPrototype{}
+	if vpcIdIntf, ok := d.GetOk("vpc"); ok {
+		vpcId := vpcIdIntf.(string)
+		vpc := &vpcv1.VPCIdentity{
+			ID: &vpcId,
+		}
+		shareMountTargetPrototype.VPC = vpc
+	} else if vniIntf, ok := d.GetOk("virtual_network_interface"); ok {
+
+	}
+	if nameIntf, ok := d.GetOk("name"); ok {
+		name := nameIntf.(string)
+		shareMountTargetPrototype.Name = &name
 	}
 	// if subnetIntf, ok := d.GetOk("subnet"); ok {
 	// 	subnet := subnetIntf.(string)
-	// 	subnetIdentity := &vpcbetav1.SubnetIdentity{
+	// 	subnetIdentity := &vpcv1.SubnetIdentity{
 	// 		ID: &subnet,
 	// 	}
 	// 	createShareTargetOptions.Subnet = subnetIdentity
@@ -217,7 +224,7 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	getShareTargetOptions := &vpcbetav1.GetShareTargetOptions{}
+	getShareTargetOptions := &vpcv1.GetShareTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -276,7 +283,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	updateShareTargetOptions := &vpcbetav1.UpdateShareMountTargetOptions{}
+	updateShareTargetOptions := &vpcv1.UpdateShareMountTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -288,7 +295,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 
 	hasChange := false
 
-	shareTargetPatchModel := &vpcbetav1.ShareMountTargetPatch{}
+	shareTargetPatchModel := &vpcv1.ShareMountTargetPatch{}
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
@@ -319,7 +326,7 @@ func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	deleteShareTargetOptions := &vpcbetav1.DeleteShareTargetOptions{}
+	deleteShareTargetOptions := &vpcv1.DeleteShareTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -344,7 +351,7 @@ func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func WaitForTargetAvailable(context context.Context, vpcClient *vpcbetav1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for target (%s) to be available.", targetid)
 
 	stateConf := &resource.StateChangeConf{
@@ -359,9 +366,9 @@ func WaitForTargetAvailable(context context.Context, vpcClient *vpcbetav1.VpcV1,
 	return stateConf.WaitForState()
 }
 
-func mountTargetRefreshFunc(context context.Context, vpcClient *vpcbetav1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		shareTargetOptions := &vpcbetav1.GetShareTargetOptions{}
+		shareTargetOptions := &vpcv1.GetShareTargetOptions{}
 
 		shareTargetOptions.SetShareID(shareid)
 		shareTargetOptions.SetID(targetid)
@@ -380,13 +387,13 @@ func mountTargetRefreshFunc(context context.Context, vpcClient *vpcbetav1.VpcV1,
 	}
 }
 
-func isWaitForTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
+func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"deleting", "stable"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {
-			shareTargetOptions := &vpcbetav1.GetShareTargetOptions{}
+			shareTargetOptions := &vpcv1.GetShareTargetOptions{}
 
 			shareTargetOptions.SetShareID(shareid)
 			shareTargetOptions.SetID(targetid)

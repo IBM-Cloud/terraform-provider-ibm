@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package vpcbetav1_test
+package vpcv1_test
 
 import (
 	"testing"
