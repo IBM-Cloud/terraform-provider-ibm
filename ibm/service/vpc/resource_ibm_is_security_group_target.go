@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -126,7 +127,11 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 		}
 	} else if crn != nil && *crn != "" && strings.Contains(*crn, "virtual_network_interfaces") {
 		vniId := sgtarget.ID
-		_, errsgt := isWaitForVNISgTargetCreateAvailable(sess, *vniId, d.Timeout(schema.TimeoutCreate))
+		vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+		if err != nil {
+			return err
+		}
+		_, errsgt := WaitForVNIAvailable(vpcClient, *vniId, d, d.Timeout(schema.TimeoutCreate))
 		if errsgt != nil {
 			return errsgt
 		}
@@ -320,40 +325,6 @@ func isLBSgTargetRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefre
 			ID: &lbId,
 		}
 		lb, response, err := sess.GetLoadBalancer(getlboptions)
-		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
-		}
-
-		if *lb.ProvisioningStatus == "active" || *lb.ProvisioningStatus == "failed" {
-			return lb, isLBProvisioningDone, nil
-		}
-
-		return lb, isLBProvisioning, nil
-	}
-}
-
-func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeout time.Duration) (interface{}, error) {
-	log.Printf("Waiting for virtual network interface (%s) to be available.", vniId)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "updating", "waiting"},
-		Target:     []string{"stable", ""},
-		Refresh:    isVNISgTargetRefreshFunc(sess, vniId),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func isVNISgTargetRefreshFunc(sess *vpcv1.VpcV1, vniId string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-
-		getVNIOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
-			ID: &vniId,
-		}
-		lb, response, err := sess.GetVirtualNetworkInterface(getVNIOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 		}

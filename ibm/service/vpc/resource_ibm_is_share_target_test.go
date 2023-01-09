@@ -13,10 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func TestAccIbmIsShareTargetBasic(t *testing.T) {
-	var conf vpcv1.ShareTarget
+	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -65,7 +66,7 @@ func testAccCheckIbmIsShareTargetConfigBasic(vpcName, sname, targetName string) 
 	`, sname, acc.ShareProfileName, vpcName, targetName)
 }
 
-func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareTarget) resource.TestCheckFunc {
+func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareMountTarget) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -78,7 +79,7 @@ func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareTarget) resourc
 			return err
 		}
 
-		getShareTargetOptions := &vpcv1.GetShareTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
@@ -88,7 +89,7 @@ func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareTarget) resourc
 		getShareTargetOptions.SetShareID(parts[0])
 		getShareTargetOptions.SetID(parts[1])
 
-		shareTarget, _, err := vpcClient.GetShareTarget(getShareTargetOptions)
+		shareTarget, _, err := vpcClient.GetShareMountTarget(getShareTargetOptions)
 		if err != nil {
 			return err
 		}
@@ -108,7 +109,7 @@ func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getShareTargetOptions := &vpcv1.GetShareTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
@@ -119,7 +120,7 @@ func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
 		getShareTargetOptions.SetID(parts[1])
 
 		// Try to find the key
-		_, response, err := vpcClient.GetShareTarget(getShareTargetOptions)
+		_, response, err := vpcClient.GetShareMountTarget(getShareTargetOptions)
 
 		if err == nil {
 			return fmt.Errorf("ShareTarget still exists: %s", rs.Primary.ID)

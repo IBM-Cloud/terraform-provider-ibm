@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func ResourceIbmIsShareReplicaOperations() *schema.Resource {

@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 const (
@@ -611,7 +612,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 
 			replicaTargets, ok := replicaShare["targets"]
 			if ok {
-				var targets []vpcv1.ShareMountTargetPrototype
+				var targets []vpcv1.ShareMountTargetPrototypeIntf
 				targetsIntf := replicaTargets.([]interface{})
 				for _, targetIntf := range targetsIntf {
 					target := targetIntf.(map[string]interface{})
@@ -670,7 +671,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if shareTargetPrototypeIntf, ok := d.GetOk("share_target_prototype"); ok {
-		var targets []vpcv1.ShareMountTargetPrototype
+		var targets []vpcv1.ShareMountTargetPrototypeIntf
 		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
 			targetsItem := resourceIbmIsShareMapToShareTargetPrototype(value)
@@ -742,7 +743,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func resourceIbmIsShareMapToShareTargetPrototype(shareTargetPrototypeMap map[string]interface{}) vpcv1.ShareMountTargetPrototype {
+func resourceIbmIsShareMapToShareTargetPrototype(shareTargetPrototypeMap map[string]interface{}) vpcv1.ShareMountTargetPrototypeIntf {
 	shareTargetPrototype := vpcv1.ShareMountTargetPrototype{}
 
 	if nameIntf, ok := shareTargetPrototypeMap["name"]; ok && nameIntf != "" {
@@ -755,8 +756,8 @@ func resourceIbmIsShareMapToShareTargetPrototype(shareTargetPrototypeMap map[str
 			ID: &vpc,
 		}
 	}
-
-	return shareTargetPrototype
+	shareTargetPrototypeIntf := &shareTargetPrototype
+	return shareTargetPrototypeIntf
 }
 
 func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
