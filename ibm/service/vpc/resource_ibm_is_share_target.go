@@ -15,8 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func ResourceIbmIsShareTarget() *schema.Resource {
@@ -34,17 +32,87 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 				ForceNew:    true,
 				Description: "The file share identifier.",
 			},
-			"vpc": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
-			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_share_target", "name"),
 				Description:  "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+			},
+			"virtual_network_interface": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				ConflictsWith: []string{"vpc"},
+				ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
+				Description:   "VNI for mount target.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name of this VNI",
+						},
+						"primary_ip": {
+							Type:          schema.TypeList,
+							Optional:      true,
+							ConflictsWith: []string{"virtual_network_interface.0.subnet"},
+							Description:   "VNI for mount target.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"reserved_ip": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name"},
+										ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
+										Description:   "ID of reserved IP",
+									},
+									"address": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The IP address to reserve, which must not already be reserved on the subnet.",
+									},
+									"auto_delete": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
+									},
+									"name": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
+										Description:   "Name for reserved IP",
+									},
+								},
+							},
+						},
+						"resource_group": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Resource group id",
+						},
+						"security_groups": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "The security groups to use for this virtual network interface.",
+						},
+						"subnet": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"virtual_network_interface.0.primary_ip"},
+							Description:   "The associated subnet. Required if primary_ip is not specified.",
+						},
+					},
+				},
+			},
+			"vpc": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"virtual_network_interface"},
+				ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
+				Description:   "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
 			},
 			// "subnet": {
 			// 	Type:        schema.TypeString,
@@ -109,20 +177,20 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	createShareTargetOptions := &vpcv1.CreateShareTargetOptions{}
+	createShareTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
 
 	createShareTargetOptions.SetShareID(d.Get("share").(string))
-	vpcid := d.Get("vpc").(string)
-	vpc := &vpcv1.VPCIdentity{
-		ID: &vpcid,
-	}
-	createShareTargetOptions.SetVPC(vpc)
+	// vpcid := d.Get("vpc").(string)
+	// vpc := &vpcbetav1.VPCIdentity{
+	// 	ID: &vpcid,
+	// }
+	// createShareTargetOptions.SetVPC(vpc)
 	if _, ok := d.GetOk("name"); ok {
 		createShareTargetOptions.SetName(d.Get("name").(string))
 	}
 	// if subnetIntf, ok := d.GetOk("subnet"); ok {
 	// 	subnet := subnetIntf.(string)
-	// 	subnetIdentity := &vpcv1.SubnetIdentity{
+	// 	subnetIdentity := &vpcbetav1.SubnetIdentity{
 	// 		ID: &subnet,
 	// 	}
 	// 	createShareTargetOptions.Subnet = subnetIdentity
@@ -149,7 +217,7 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	getShareTargetOptions := &vpcv1.GetShareTargetOptions{}
+	getShareTargetOptions := &vpcbetav1.GetShareTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -208,7 +276,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	updateShareTargetOptions := &vpcv1.UpdateShareTargetOptions{}
+	updateShareTargetOptions := &vpcbetav1.UpdateShareMountTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -220,7 +288,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 
 	hasChange := false
 
-	shareTargetPatchModel := &vpcv1.ShareTargetPatch{}
+	shareTargetPatchModel := &vpcbetav1.ShareMountTargetPatch{}
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
@@ -251,7 +319,7 @@ func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	deleteShareTargetOptions := &vpcv1.DeleteShareTargetOptions{}
+	deleteShareTargetOptions := &vpcbetav1.DeleteShareTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -276,7 +344,7 @@ func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+func WaitForTargetAvailable(context context.Context, vpcClient *vpcbetav1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for target (%s) to be available.", targetid)
 
 	stateConf := &resource.StateChangeConf{
@@ -291,9 +359,9 @@ func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, sha
 	return stateConf.WaitForState()
 }
 
-func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func mountTargetRefreshFunc(context context.Context, vpcClient *vpcbetav1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		shareTargetOptions := &vpcv1.GetShareTargetOptions{}
+		shareTargetOptions := &vpcbetav1.GetShareTargetOptions{}
 
 		shareTargetOptions.SetShareID(shareid)
 		shareTargetOptions.SetID(targetid)
@@ -312,13 +380,13 @@ func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, sha
 	}
 }
 
-func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
+func isWaitForTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"deleting", "stable"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {
-			shareTargetOptions := &vpcv1.GetShareTargetOptions{}
+			shareTargetOptions := &vpcbetav1.GetShareTargetOptions{}
 
 			shareTargetOptions.SetShareID(shareid)
 			shareTargetOptions.SetID(targetid)

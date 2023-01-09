@@ -16,19 +16,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package vpcv1_test
+package vpcbetav1_test
 
 import (
 	"flag"
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 	"log"
 	"os"
 	"reflect"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 var (

@@ -19,7 +19,7 @@
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
-package vpcv1
+package vpcbetav1
 
 import (
 	"context"

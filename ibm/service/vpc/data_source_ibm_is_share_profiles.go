@@ -12,8 +12,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func DataSourceIbmIsShareProfiles() *schema.Resource {

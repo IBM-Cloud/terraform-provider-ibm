@@ -11,8 +11,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func DataSourceIbmIsShareTarget() *schema.Resource {
@@ -182,7 +180,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 	share_name := d.Get("share_name").(string)
 	share_target := d.Get("share_target").(string)
 	share_target_name := d.Get("share_target_name").(string)
-	var shareTarget *vpcv1.ShareTarget
+	var shareTarget *vpcv1.ShareMountTarget
 	if share_name != "" {
 		listSharesOptions := &vpcv1.ListSharesOptions{}
 		listSharesOptions.Name = &share_name
@@ -199,12 +197,12 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 		}
 	}
 	if share_target_name != "" {
-		listShareTargetsOptions := &vpcv1.ListShareTargetsOptions{}
+		listShareTargetsOptions := &vpcv1.ListShareMountTargetsOptions{}
 
 		listShareTargetsOptions.SetShareID(share_id)
 		listShareTargetsOptions.SetName(share_target_name)
 
-		shareTargetCollection, response, err := vpcClient.ListShareTargetsWithContext(context, listShareTargetsOptions)
+		shareTargetCollection, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareTargetsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
@@ -216,10 +214,10 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 			}
 		}
 	} else {
-		getShareTargetOptions := &vpcv1.GetShareTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 		getShareTargetOptions.SetShareID(share_id)
 		getShareTargetOptions.SetID(share_target)
-		shareTarget1, response, err := vpcClient.GetShareTargetWithContext(context, getShareTargetOptions)
+		shareTarget1, response, err := vpcClient.GetShareMountTargetWithContext(context, getShareTargetOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetShareTargetWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)

@@ -350,10 +350,10 @@ func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeou
 func isVNISgTargetRefreshFunc(sess *vpcv1.VpcV1, vniId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		getlboptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+		getVNIOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 			ID: &vniId,
 		}
-		lb, response, err := sess.GetLoadBalancer(getlboptions)
+		lb, response, err := sess.GetVirtualNetworkInterface(getVNIOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 		}

@@ -16,22 +16,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package vpcv1_test
+package vpcbetav1_test
 
 import (
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 	"os"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/IBM/go-sdk-core/v5/core"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	vpcbetav1 "github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcbetav1"
 )
 
 var (
-	vpcService                        *vpcv1.VpcV1
+	vpcService                        *vpcbetav1.VpcV1
 	serviceErr                        error
 	configLoaded                      bool = false
 	externalConfigFile                     = "../vpc.env"

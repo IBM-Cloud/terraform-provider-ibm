@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 const (
@@ -87,6 +86,14 @@ func ResourceIbmIsShare() *schema.Resource {
 				Computed:     true,
 				Description:  "The unique identifier of the resource group to use. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.",
 			},
+			"access_control_mode": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"size"},
+				Default:      "vpc",
+				Computed:     true,
+				Description:  "The access control mode for the share:",
+			},
 			"size": {
 				Type:          schema.TypeInt,
 				Optional:      true,
@@ -107,10 +114,81 @@ func ResourceIbmIsShare() *schema.Resource {
 							Optional:    true,
 							Description: "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
+						"virtual_network_interface": {
+							Type:          schema.TypeList,
+							Optional:      true,
+							ConflictsWith: []string{"vpc"},
+							ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
+							Description:   "VNI for mount target.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Name of this VNI",
+									},
+									"primary_ip": {
+										Type:          schema.TypeList,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.subnet"},
+										Description:   "VNI for mount target.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"reserved_ip": {
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name"},
+													ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
+													Description:   "ID of reserved IP",
+												},
+												"address": {
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The IP address to reserve, which must not already be reserved on the subnet.",
+												},
+												"auto_delete": {
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
+												},
+												"name": {
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
+													Description:   "Name for reserved IP",
+												},
+											},
+										},
+									},
+									"resource_group": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Resource group id",
+									},
+									"security_groups": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Optional:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Set:         schema.HashString,
+										Description: "The security groups to use for this virtual network interface.",
+									},
+									"subnet": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip"},
+										Description:   "The associated subnet. Required if primary_ip is not specified.",
+									},
+								},
+							},
+						},
 						"vpc": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
+							Type:          schema.TypeString,
+							Required:      true,
+							ConflictsWith: []string{"virtual_network_interface"},
+							ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
+							Description:   "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
 						},
 					},
 				},
@@ -473,6 +551,10 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 
 	sharePrototype := &vpcv1.SharePrototype{}
 	if sizeIntf, ok := d.GetOk("size"); ok {
+		if accessControlModeIntf, ok := d.GetOk("access_control_mode"); ok {
+			accessControlMode := accessControlModeIntf.(string)
+			sharePrototype.AccessControlMode = &accessControlMode
+		}
 		size := int64(sizeIntf.(int))
 		sharePrototype.Size = &size
 		if encryptionKeyIntf, ok := d.GetOk("encryption_key"); ok {
@@ -529,7 +611,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 
 			replicaTargets, ok := replicaShare["targets"]
 			if ok {
-				var targets []vpcv1.ShareTargetPrototype
+				var targets []vpcv1.ShareMountTargetPrototype
 				targetsIntf := replicaTargets.([]interface{})
 				for _, targetIntf := range targetsIntf {
 					target := targetIntf.(map[string]interface{})
@@ -588,7 +670,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if shareTargetPrototypeIntf, ok := d.GetOk("share_target_prototype"); ok {
-		var targets []vpcv1.ShareTargetPrototype
+		var targets []vpcv1.ShareMountTargetPrototype
 		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
 			targetsItem := resourceIbmIsShareMapToShareTargetPrototype(value)
@@ -660,8 +742,8 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func resourceIbmIsShareMapToShareTargetPrototype(shareTargetPrototypeMap map[string]interface{}) vpcv1.ShareTargetPrototype {
-	shareTargetPrototype := vpcv1.ShareTargetPrototype{}
+func resourceIbmIsShareMapToShareTargetPrototype(shareTargetPrototypeMap map[string]interface{}) vpcv1.ShareMountTargetPrototype {
+	shareTargetPrototype := vpcv1.ShareMountTargetPrototype{}
 
 	if nameIntf, ok := shareTargetPrototypeMap["name"]; ok && nameIntf != "" {
 		shareTargetPrototype.Name = core.StringPtr(nameIntf.(string))
@@ -951,12 +1033,12 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 	if share.Targets != nil {
 		for _, targetsItem := range share.Targets {
 
-			deleteShareTargetOptions := &vpcv1.DeleteShareTargetOptions{}
+			deleteShareTargetOptions := &vpcv1.DeleteShareMountTargetOptions{}
 
 			deleteShareTargetOptions.SetShareID(d.Id())
 			deleteShareTargetOptions.SetID(*targetsItem.ID)
 
-			_, response, err := vpcClient.DeleteShareTargetWithContext(context, deleteShareTargetOptions)
+			_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareTargetOptions)
 			if err != nil {
 				log.Printf("[DEBUG] DeleteShareTargetWithContext failed %s\n%s", err, response)
 				return diag.FromErr(err)
