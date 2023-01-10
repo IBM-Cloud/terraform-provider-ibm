@@ -116,11 +116,9 @@ func ResourceIbmIsShare() *schema.Resource {
 							Description: "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
 						"virtual_network_interface": {
-							Type:          schema.TypeList,
-							Optional:      true,
-							ConflictsWith: []string{"vpc"},
-							ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
-							Description:   "VNI for mount target.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "VNI for mount target.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": {
@@ -129,35 +127,43 @@ func ResourceIbmIsShare() *schema.Resource {
 										Description: "Name of this VNI",
 									},
 									"primary_ip": {
-										Type:          schema.TypeList,
-										Optional:      true,
-										ConflictsWith: []string{"virtual_network_interface.0.subnet"},
-										Description:   "VNI for mount target.",
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "VNI for mount target.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"reserved_ip": {
-													Type:          schema.TypeString,
-													Optional:      true,
-													ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name"},
-													ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
-													Description:   "ID of reserved IP",
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "ID of reserved IP",
 												},
 												"address": {
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "The IP address to reserve, which must not already be reserved on the subnet.",
 												},
 												"auto_delete": {
 													Type:        schema.TypeBool,
 													Optional:    true,
+													Computed:    true,
 													Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
 												},
 												"name": {
-													Type:          schema.TypeString,
-													Optional:      true,
-													ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
-													ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
-													Description:   "Name for reserved IP",
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Name for reserved IP",
+												},
+												"resource_type": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Resource type of primary ip",
+												},
+												"href": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "href of primary ip",
 												},
 											},
 										},
@@ -166,6 +172,11 @@ func ResourceIbmIsShare() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Resource group id",
+									},
+									"resource_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Resource type of primary ip",
 									},
 									"security_groups": {
 										Type:        schema.TypeSet,
@@ -185,11 +196,9 @@ func ResourceIbmIsShare() *schema.Resource {
 							},
 						},
 						"vpc": {
-							Type:          schema.TypeString,
-							Required:      true,
-							ConflictsWith: []string{"virtual_network_interface"},
-							ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
-							Description:   "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
 						},
 					},
 				},
@@ -755,7 +764,13 @@ func resourceIbmIsShareMapToShareTargetPrototype(shareTargetPrototypeMap map[str
 		shareTargetPrototype.VPC = &vpcv1.VPCIdentity{
 			ID: &vpc,
 		}
+	} else if vniIntf, ok := shareTargetPrototypeMap["virtual_network_interface"]; ok {
+		vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
+		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
+		vniPrototype = ShareMountTargetMapToShareMountTargetPrototype(vniMap)
+		shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
 	}
+
 	shareTargetPrototypeIntf := &shareTargetPrototype
 	return shareTargetPrototypeIntf
 }

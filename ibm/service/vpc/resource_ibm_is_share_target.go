@@ -63,10 +63,12 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 							Description: "Name of this VNI",
 						},
 						"primary_ip": {
-							Type:          schema.TypeList,
-							Optional:      true,
-							ConflictsWith: []string{"virtual_network_interface.0.subnet"},
-							Description:   "VNI for mount target.",
+							Type:        schema.TypeList,
+							MinItems:    0,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "VNI for mount target.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"reserved_ip": {
@@ -96,6 +98,16 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
 										ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
 										Description:   "Name for reserved IP",
+									},
+									"resource_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Resource type of primary ip",
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "href of primary ip",
 									},
 								},
 							},
@@ -203,59 +215,10 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		}
 		shareMountTargetPrototype.VPC = vpc
 	} else if vniIntf, ok := d.GetOk("virtual_network_interface"); ok {
-		vniPrototype := &vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
+		vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
-		name, _ := vniMap["name"].(string)
-		if name != "" {
-			vniPrototype.Name = &name
-		}
-		primaryIp, ok := vniMap["primary_ip"]
-		if ok && len(primaryIp.([]interface{})) > 0 {
-			primaryIpPrototype := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
-			primaryIpMap := primaryIp.([]interface{})[0].(map[string]interface{})
-
-			reservedIp := primaryIpMap["reserved_ip"].(string)
-			if reservedIp != "" {
-				primaryIpPrototype.ID = &reservedIp
-			} else {
-
-				reservedIpAddress := primaryIpMap["address"].(string)
-				if reservedIpAddress != "" {
-					primaryIpPrototype.Address = &reservedIpAddress
-				}
-
-				reservedIpName := primaryIpMap["name"].(string)
-				if reservedIpName != "" {
-					primaryIpPrototype.Name = &reservedIpName
-				}
-
-				reservedIpAutoDelete := primaryIpMap[isInstanceNicReservedIpAutoDelete].(bool)
-				primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
-			}
-		}
-		if subnet := vniMap["subnet"].(string); subnet != "" {
-			vniPrototype.Subnet = &vpcv1.SubnetIdentity{
-				ID: &subnet,
-			}
-		}
-		if resourceGroup := vniMap["resource_group"].(string); resourceGroup != "" {
-			vniPrototype.ResourceGroup = &vpcv1.VirtualNetworkInterfacePrototypeTargetContextResourceGroup{
-				ID: &resourceGroup,
-			}
-		}
-		if secGrpIntf, ok := vniMap["security_groups"]; ok {
-			secGrpSet := secGrpIntf.(*schema.Set)
-			if secGrpSet.Len() != 0 {
-				var secGroups = make([]vpcv1.SecurityGroupIdentityIntf, secGrpSet.Len())
-				for i, secGrpIntf := range secGrpSet.List() {
-					secGrp := secGrpIntf.(string)
-					secGroups[i] = &vpcv1.SecurityGroupIdentity{
-						ID: &secGrp,
-					}
-				}
-				vniPrototype.SecurityGroups = secGroups
-			}
-		}
+		vniPrototype = ShareMountTargetMapToShareMountTargetPrototype(vniMap)
+		shareMountTargetPrototype.VirtualNetworkInterface = &vniPrototype
 	}
 	if nameIntf, ok := d.GetOk("name"); ok {
 		name := nameIntf.(string)
@@ -370,6 +333,7 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 			vniMap["primary_ip"] = primaryIpList
 		}
 		vniMap["subnet"] = vni.Subnet.ID
+		vniMap["resource_type"] = vni.ResourceType
 		vniList = append(vniList, vniMap)
 		d.Set("virtual_network_interface", vniList)
 	}
@@ -600,4 +564,60 @@ func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *s
 	}
 
 	return stateConf.WaitForState()
+}
+
+func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{}) vpcv1.ShareTargetVirtualNetworkInterfacePrototype {
+	vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
+	name, _ := vniMap["name"].(string)
+	if name != "" {
+		vniPrototype.Name = &name
+	}
+	primaryIp, ok := vniMap["primary_ip"]
+	if ok && len(primaryIp.([]interface{})) > 0 {
+		primaryIpPrototype := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
+		primaryIpMap := primaryIp.([]interface{})[0].(map[string]interface{})
+
+		reservedIp := primaryIpMap["reserved_ip"].(string)
+		if reservedIp != "" {
+			primaryIpPrototype.ID = &reservedIp
+		} else {
+
+			reservedIpAddress := primaryIpMap["address"].(string)
+			if reservedIpAddress != "" {
+				primaryIpPrototype.Address = &reservedIpAddress
+			}
+
+			reservedIpName := primaryIpMap["name"].(string)
+			if reservedIpName != "" {
+				primaryIpPrototype.Name = &reservedIpName
+			}
+
+			reservedIpAutoDelete := primaryIpMap[isInstanceNicReservedIpAutoDelete].(bool)
+			primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
+		}
+	}
+	if subnet := vniMap["subnet"].(string); subnet != "" {
+		vniPrototype.Subnet = &vpcv1.SubnetIdentity{
+			ID: &subnet,
+		}
+	}
+	if resourceGroup := vniMap["resource_group"].(string); resourceGroup != "" {
+		vniPrototype.ResourceGroup = &vpcv1.VirtualNetworkInterfacePrototypeTargetContextResourceGroup{
+			ID: &resourceGroup,
+		}
+	}
+	if secGrpIntf, ok := vniMap["security_groups"]; ok {
+		secGrpSet := secGrpIntf.(*schema.Set)
+		if secGrpSet.Len() != 0 {
+			var secGroups = make([]vpcv1.SecurityGroupIdentityIntf, secGrpSet.Len())
+			for i, secGrpIntf := range secGrpSet.List() {
+				secGrp := secGrpIntf.(string)
+				secGroups[i] = &vpcv1.SecurityGroupIdentity{
+					ID: &secGrp,
+				}
+			}
+			vniPrototype.SecurityGroups = secGroups
+		}
+	}
+	return vniPrototype, nil
 }
