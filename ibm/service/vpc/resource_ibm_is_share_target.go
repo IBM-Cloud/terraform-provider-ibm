@@ -72,6 +72,7 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 									"reserved_ip": {
 										Type:          schema.TypeString,
 										Optional:      true,
+										ForceNew:      true,
 										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name"},
 										ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
 										Description:   "ID of reserved IP",
@@ -79,6 +80,8 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 									"address": {
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
+										ForceNew:    true,
 										Description: "The IP address to reserve, which must not already be reserved on the subnet.",
 									},
 									"auto_delete": {
@@ -307,6 +310,7 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	d.Set("access_control_mode", *shareTarget.AccessControlMode)
 	d.Set("share_target", *shareTarget.ID)
 	if shareTarget.VPC != nil && shareTarget.VPC.ID != nil {
 		if err = d.Set("vpc", *shareTarget.VPC.ID); err != nil {
@@ -314,16 +318,64 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 	if shareTarget.VirtualNetworkInterface != nil {
+		vniList := make([]map[string]interface{}, 0)
+		vniMap := map[string]interface{}{}
+		vniMap["id"] = *shareTarget.VirtualNetworkInterface.ID
+		vniMap["name"] = *shareTarget.VirtualNetworkInterface.Name
 
+		vniOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+			ID: shareTarget.VirtualNetworkInterface.ID,
+		}
+		vni, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, vniOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+
+		primaryIpList := make([]map[string]interface{}, 0)
+		currentPrimIp := map[string]interface{}{}
+		if vni.PrimaryIP != nil {
+			if vni.PrimaryIP.Address != nil {
+				vniMap["address"] = vni.PrimaryIP.Address
+			}
+			if vni.PrimaryIP.Name != nil {
+				currentPrimIp["name"] = *vni.PrimaryIP.Name
+			}
+			if vni.PrimaryIP.ID != nil {
+				currentPrimIp["reserved_ip"] = *vni.PrimaryIP.ID
+			}
+			if vni.PrimaryIP.Href != nil {
+				currentPrimIp["href"] = *vni.PrimaryIP.Href
+			}
+
+			if vni.PrimaryIP.ResourceType != nil {
+				currentPrimIp["resource_type"] = *vni.PrimaryIP.ResourceType
+			}
+
+			rIpOptions := &vpcv1.GetSubnetReservedIPOptions{
+				SubnetID: vni.Subnet.ID,
+				ID:       vni.PrimaryIP.ID,
+			}
+			rIp, response, err := vpcClient.GetSubnetReservedIP(rIpOptions)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the virtual instance network interface(%s): %s\n%s", *vni.PrimaryIP.ID, *vni.ID, err, response))
+			}
+			currentPrimIp["auto_delete"] = rIp.AutoDelete
+
+			primaryIpList = append(primaryIpList, currentPrimIp)
+			vniMap["primary_ip"] = primaryIpList
+		}
+		vniMap["subnet"] = vni.Subnet.ID
+		vniList = append(vniList, vniMap)
+		d.Set("virtual_network_interface", vniList)
 	}
 	if err = d.Set("name", *shareTarget.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	// if shareTarget.Subnet != nil {
-	// 	if err = d.Set("subnet", *shareTarget.Subnet.ID); err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting subnet: %s", err))
-	// 	}
-	// }
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
@@ -383,11 +435,11 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 
 		shareTargetOptions.SetShareID(parts[0])
 		shareTargetOptions.SetID(parts[1])
-		target, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
+		shareTarget, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
 		if err != nil {
 			diag.FromErr(err)
 		}
-		vniId := *target.VirtualNetworkInterface.ID
+		vniId := *shareTarget.VirtualNetworkInterface.ID
 		updateVNIOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
 			ID:                           &vniId,
 			VirtualNetworkInterfacePatch: vniPatch,
@@ -395,6 +447,10 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		_, response, err := vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVNIOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateShareTargetWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		_, err = WaitForVNIAvailable(vpcClient, *shareTarget.VirtualNetworkInterface.ID, d, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
