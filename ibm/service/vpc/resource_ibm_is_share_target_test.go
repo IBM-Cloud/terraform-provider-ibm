@@ -44,6 +44,38 @@ func TestAccIbmIsShareTargetBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsShareTargetVNI(t *testing.T) {
+	var conf vpcv1.ShareMountTarget
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
+	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
+	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-subnet-name-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tf-vni-name-%d", acctest.RandIntRange(10, 100))
+	pIpName := fmt.Sprintf("tf-pip-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareTargetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareTargetConfigVNI(vpcname, sname, targetName, subnetName, vniName, pIpName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareTargetExists("ibm_is_share_target.is_share_target", conf),
+					resource.TestCheckResourceAttr("ibm_is_share_target.is_share_target", "name", targetName),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareTargetConfigBasic(vpcname, sname, targetNameUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_is_share_target.is_share_target", "name", targetNameUpdate),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmIsShareTargetConfigBasic(vpcName, sname, targetName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
@@ -64,6 +96,41 @@ func testAccCheckIbmIsShareTargetConfigBasic(vpcName, sname, targetName string) 
 		name = "%s"
 	}
 	`, sname, acc.ShareProfileName, vpcName, targetName)
+}
+
+func testAccCheckIbmIsShareTargetConfigVNI(vpcName, sname, targetName, subnetName, vniName, pIpName string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_share" "is_share" {
+		zone = "us-south-2"
+		size = 200
+		name = "%s"
+		profile = "%s"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-2"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_share_target" "is_share_target" {
+		share = ibm_is_share.is_share.id
+		virtual_network_interface {
+			name = "%s"
+			primary_ip {
+				name = "%s"
+				address = "${replace(ibm_is_subnet.subnet1.ipv4_cidr_block, "0/24", "14")}"
+				auto_delete = %t
+			}
+		}
+		name = "%s"
+	}
+	`, sname, acc.ShareProfileName, vpcName, subnetName, pIpName, false, targetName)
 }
 
 func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareMountTarget) resource.TestCheckFunc {
