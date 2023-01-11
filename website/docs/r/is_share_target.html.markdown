@@ -13,40 +13,117 @@ Provides a resource for ShareTarget. This allows ShareTarget to be created, upda
 ## Example Usage
 
 ```hcl
-resource "ibm_is_vpc" "vpc" {
+//Example to create share with access_control_mode vpc and mount target with vpc
+resource "ibm_is_vpc" "example" {
   name = "my-vpc"
 }
-
-resource "ibm_is_share" "is_share" {
+resource "ibm_is_subnet" "example" {
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-1"
+  total_ipv4_address_count = 256
+}
+resource "ibm_is_share" "example" {
   name = "my-share"
+  access_control_mode = "vpc"
   size = 200
   profile = "tier-3iops"
   zone = "us-south-2"
 }
 
-resource "is_share_target" "is_share_target" {
+resource "is_share_target" "example" {
   share = is_share.is_share.id
   vpc = ibm_is_vpc.vpc.id
   name = "my-share-target"
-}`
+}
+
+//Example to create share with access_control_mode security_group and mount target with virtual network interface
+
+resource "ibm_is_share" "example1" {
+  name = "my-share"
+  access_control_mode = "security_group"
+  size = 200
+  profile = "tier-3iops"
+  zone = "us-south-2"
+}
+
+// Example with virtual network interface with reserved ip prototype 
+resource "is_share_target" "example1" {
+  share = is_share.example1.id
+  virtual_network_interface {
+    name = "my-virtual_network_interface"
+    primary_ip {
+      address = "10.240.64.5"
+      auto_delete = true
+      name = "my-reserved-ip"
+    }
+    name = "my-share-target"
+  }
+}
+
+// Example with virtual network interface with existing reserved ip 
+resource "ibm_is_subnet_reserved_ip" "example" {
+  subnet      = ibm_is_subnet.example.id
+  name        = "example-subnet-reserved-ip"
+  auto_delete = true
+}
+resource "is_share_target" "example2" {
+  share = is_share.example1.id
+  virtual_network_interface {
+    name = "my-virtual_network_interface"
+    primary_ip {
+      reserved_ip = ibm_is_subnet_reserved_ip.example.id
+    }
+    name = "my-share-target"
+  }
+}
+
+// Example with virtual network interface with subnet
+resource "is_share_target" "example3" {
+  share = is_share.example1.id
+  virtual_network_interface {
+    name = "my-virtual_network_interface"
+    subnet = ibm_is_subnet.example.id
+    name = "my-share-target"
+  }
+}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `share` - (Required, string) The file share identifier.
-* `vpc` - (Required, string) The VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.
-* `name` - (Required, string) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
-* `subnet` - (Optional, string) The unique identifier of the subnet associated with this file share target.Only virtual server instances in the same VPC as this subnetwill be allowed to mount the file share.In the future, this property may be required and used to assignan IP address for the file share target.
+- `share` - (Required, string) The file share identifier.
+- `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is security_group.
+  Nested scheme for `virtual_network_interface`:
+  - `primary_ip` - (Optional, List) The primary IP address to bind to the virtual network interface. May be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP.
+
+      Nested scheme for `primary_ip`:
+      - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Defaults to `true`
+      - `address` - (Optional, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
+      - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
+      - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+  - `resource_group` - (Optional, String) The ID of the resource group to use.
+  - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
+  - `subnet` - (Optional, string) The associated subnet.
+    
+    ~> **Note**
+    Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
+
+- `vpc` - (Optional, string) The VPC in which instances can mount the file share using this share target. Required if the share's `access_control_mode` is vpc.
+  ~> **Note**
+  `virtual_network_interface` and `vpc` are mutually exclusive.
+  
+- `name` - (Required, string) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
+
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_target_id\>
-* `share_target` - The unique identifier of the share target
-* `created_at` - The date and time that the share target was created.
-* `href` - The URL for this share target.
-* `lifecycle_state` - The lifecycle state of the mount target.
-* `mount_path` - The mount path for the share.The IP addresses used in the mount path are currently within the IBM services IP range, but are expected to change to be within one of the VPC's subnets in the future.
-* `resource_type` - The type of resource referenced.
+- `id` - The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_target_id\>
+- `share_target` - The unique identifier of the share target
+- `created_at` - The date and time that the share target was created.
+- `href` - The URL for this share target.
+- `lifecycle_state` - The lifecycle state of the mount target.
+- `mount_path` - The mount path for the share.The IP addresses used in the mount path are currently within the IBM services IP range, but are expected to change to be within one of the VPC's subnets in the future.
+- `resource_type` - The type of resource referenced.

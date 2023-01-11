@@ -323,12 +323,14 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 	updateShareTargetOptions := &vpcv1.UpdateShareMountTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
+	shareId := parts[0]
+	mountTargetId := parts[1]
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	updateShareTargetOptions.SetShareID(parts[0])
-	updateShareTargetOptions.SetID(parts[1])
+	updateShareTargetOptions.SetShareID(shareId)
+	updateShareTargetOptions.SetID(mountTargetId)
 
 	hasChange := false
 
@@ -352,8 +354,8 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		}
 		shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
-		shareTargetOptions.SetShareID(parts[0])
-		shareTargetOptions.SetID(parts[1])
+		shareTargetOptions.SetShareID(shareId)
+		shareTargetOptions.SetID(mountTargetId)
 		shareTarget, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
 		if err != nil {
 			diag.FromErr(err)
@@ -371,6 +373,86 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		_, err = WaitForVNIAvailable(vpcClient, *shareTarget.VirtualNetworkInterface.ID, d, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("virtual_network_interface.0.security_groups") && !d.IsNewResource() {
+		ovs, nvs := d.GetChange("virtual_network_interface.0.security_groups")
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+		remove := flex.ExpandStringList(ov.Difference(nv).List())
+		add := flex.ExpandStringList(nv.Difference(ov).List())
+		networkID := d.Get("virtual_network_interface.0.id").(string)
+		if len(add) > 0 {
+
+			for i := range add {
+				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &add[i],
+					ID:              &networkID,
+				}
+				_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response))
+				}
+				_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
+		}
+		if len(remove) > 0 {
+			for i := range remove {
+				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &remove[i],
+					ID:              &networkID,
+				}
+				response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response))
+				}
+				_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
+	if !d.IsNewResource() && (d.HasChange("virtual_network_interface.0.primary_ip.0.name") || d.HasChange("virtual_network_interface.0.primary_ip.0.auto_delete")) {
+		subnetId := d.Get("virtual_network_interface.0.subnet").(string)
+		ripId := d.Get("virtual_network_interface.0.primary_ip.0.reserved_ip").(string)
+		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+			SubnetID: &subnetId,
+			ID:       &ripId,
+		}
+		reservedIpPath := &vpcv1.ReservedIPPatch{}
+		if d.HasChange("virtual_network_interface.0.primary_ip.0.name") {
+			name := d.Get("virtual_network_interface.0.primary_ip.0.name").(string)
+			reservedIpPath.Name = &name
+		}
+		if d.HasChange("virtual_network_interface.0.primary_ip.0.auto_delete") {
+			auto := d.Get("virtual_network_interface.0.primary_ip.0.auto_delete").(bool)
+			reservedIpPath.AutoDelete = &auto
+		}
+		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err))
+		}
+		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
+		_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
 		}
 	}
 
@@ -537,7 +619,7 @@ func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{
 		reservedIpName := primaryIpMap["name"].(string)
 		reservedIpAutoDelete := primaryIpMap[isInstanceNicReservedIpAutoDelete].(bool)
 		if reservedIp != "" && (reservedIpAddress != "" || reservedIpName != "") {
-			return vniPrototype, fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			return vniPrototype, fmt.Errorf("[ERROR] Error creating instance, virtual_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
 			primaryIpPrototype.ID = &reservedIp
