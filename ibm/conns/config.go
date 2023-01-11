@@ -1531,7 +1531,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an "options" struct for creating Context Based Restrictions service client.
 	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu_de" {
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-de" {
 			cbrURL = ContructEndpoint(fmt.Sprintf("private.%s.cbr", c.Region), cloudEndpoint)
 		} else {
 			cbrURL = ContructEndpoint("private.cbr", cloudEndpoint)
