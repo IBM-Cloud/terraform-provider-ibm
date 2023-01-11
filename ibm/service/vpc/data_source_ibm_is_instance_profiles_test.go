@@ -32,6 +32,8 @@ func TestAccIBMISInstanceProfilesDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.port_speed.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_architecture.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_count.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.network_interface_count.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.network_interface_count.0.type"),
 				),
 			},
 		},

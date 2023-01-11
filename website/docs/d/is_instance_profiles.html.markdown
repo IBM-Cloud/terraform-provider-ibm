@@ -125,6 +125,15 @@ You can access the following attribute references after your data source is crea
     - `type` - (String) The type for this profile field.
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
+
+  - `network_interface_count` - (List)
+  
+      Nested scheme for `network_interface_count`:
+      - `max` - (Integer) The maximum value for this profile field.
+      - `min` - (Integer) The minimum value for this profile field.
+      - `type` - (String) The type for this profile field.
+        - Constraints: Allowable values are: `range`.
+
   - `port_speed` - (List) Nested `port_speed` blocks have the following structure:
 
     Nested scheme for `port_speed`:
