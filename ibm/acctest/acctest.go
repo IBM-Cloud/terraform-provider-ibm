@@ -77,6 +77,7 @@ var InstanceDiskProfileName string
 var DedicatedHostGroupFamily string
 var DedicatedHostGroupClass string
 var ShareProfileName string
+var VNIId string
 var VolumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
@@ -616,6 +617,12 @@ func init() {
 	if VolumeProfileName == "" {
 		VolumeProfileName = "general-purpose"
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
+	}
+
+	VNIId = os.Getenv("IS_VIRTUAL_NETWORK_INTERFACE")
+	if vniID == "" {
+		VNIId = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
+		fmt.Println("[INFO] Set the environment variable IS_VIRTUAL_NETWORK_INTERFACE for testing ibm_is_virtual_network_interface else it is set to default value 'c93dc4c6-e85a-4da2-9ea6-f24576256122'")
 	}
 
 	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")

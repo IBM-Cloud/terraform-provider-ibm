@@ -217,7 +217,10 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 	} else if vniIntf, ok := d.GetOk("virtual_network_interface"); ok {
 		vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
-		vniPrototype = ShareMountTargetMapToShareMountTargetPrototype(vniMap)
+		vniPrototype, err = ShareMountTargetMapToShareMountTargetPrototype(vniMap)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		shareMountTargetPrototype.VirtualNetworkInterface = &vniPrototype
 	}
 	if nameIntf, ok := d.GetOk("name"); ok {
@@ -282,58 +285,10 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 	}
 	if shareTarget.VirtualNetworkInterface != nil {
 		vniList := make([]map[string]interface{}, 0)
-		vniMap := map[string]interface{}{}
-		vniMap["id"] = *shareTarget.VirtualNetworkInterface.ID
-		vniMap["name"] = *shareTarget.VirtualNetworkInterface.Name
-
-		vniOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
-			ID: shareTarget.VirtualNetworkInterface.ID,
-		}
-		vni, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, vniOptions)
+		vniMap, err := ShareMountTargetVirtualNetworkInterfaceToMap(context, vpcClient, d, *shareTarget.VirtualNetworkInterface.ID)
 		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
-			}
-			log.Printf("[DEBUG] GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
-
-		primaryIpList := make([]map[string]interface{}, 0)
-		currentPrimIp := map[string]interface{}{}
-		if vni.PrimaryIP != nil {
-			if vni.PrimaryIP.Address != nil {
-				vniMap["address"] = vni.PrimaryIP.Address
-			}
-			if vni.PrimaryIP.Name != nil {
-				currentPrimIp["name"] = *vni.PrimaryIP.Name
-			}
-			if vni.PrimaryIP.ID != nil {
-				currentPrimIp["reserved_ip"] = *vni.PrimaryIP.ID
-			}
-			if vni.PrimaryIP.Href != nil {
-				currentPrimIp["href"] = *vni.PrimaryIP.Href
-			}
-
-			if vni.PrimaryIP.ResourceType != nil {
-				currentPrimIp["resource_type"] = *vni.PrimaryIP.ResourceType
-			}
-
-			rIpOptions := &vpcv1.GetSubnetReservedIPOptions{
-				SubnetID: vni.Subnet.ID,
-				ID:       vni.PrimaryIP.ID,
-			}
-			rIp, response, err := vpcClient.GetSubnetReservedIP(rIpOptions)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the virtual instance network interface(%s): %s\n%s", *vni.PrimaryIP.ID, *vni.ID, err, response))
-			}
-			currentPrimIp["auto_delete"] = rIp.AutoDelete
-
-			primaryIpList = append(primaryIpList, currentPrimIp)
-			vniMap["primary_ip"] = primaryIpList
-		}
-		vniMap["subnet"] = vni.Subnet.ID
-		vniMap["resource_type"] = vni.ResourceType
 		vniList = append(vniList, vniMap)
 		d.Set("virtual_network_interface", vniList)
 	}
@@ -566,7 +521,7 @@ func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *s
 	return stateConf.WaitForState()
 }
 
-func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{}) vpcv1.ShareTargetVirtualNetworkInterfacePrototype {
+func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{}) (vpcv1.ShareTargetVirtualNetworkInterfacePrototype, error) {
 	vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
 	name, _ := vniMap["name"].(string)
 	if name != "" {
@@ -578,23 +533,26 @@ func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{
 		primaryIpMap := primaryIp.([]interface{})[0].(map[string]interface{})
 
 		reservedIp := primaryIpMap["reserved_ip"].(string)
+		reservedIpAddress := primaryIpMap["address"].(string)
+		reservedIpName := primaryIpMap["name"].(string)
+		reservedIpAutoDelete := primaryIpMap[isInstanceNicReservedIpAutoDelete].(bool)
+		if reservedIp != "" && (reservedIpAddress != "" || reservedIpName != "") {
+			return vniPrototype, fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+		}
 		if reservedIp != "" {
 			primaryIpPrototype.ID = &reservedIp
-		} else {
-
-			reservedIpAddress := primaryIpMap["address"].(string)
-			if reservedIpAddress != "" {
-				primaryIpPrototype.Address = &reservedIpAddress
-			}
-
-			reservedIpName := primaryIpMap["name"].(string)
-			if reservedIpName != "" {
-				primaryIpPrototype.Name = &reservedIpName
-			}
-
-			reservedIpAutoDelete := primaryIpMap[isInstanceNicReservedIpAutoDelete].(bool)
-			primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
 		}
+
+		if reservedIpAddress != "" {
+			primaryIpPrototype.Address = &reservedIpAddress
+		}
+
+		if reservedIpName != "" {
+			primaryIpPrototype.Name = &reservedIpName
+		}
+
+		primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
+
 	}
 	if subnet := vniMap["subnet"].(string); subnet != "" {
 		vniPrototype.Subnet = &vpcv1.SubnetIdentity{
@@ -620,4 +578,61 @@ func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{
 		}
 	}
 	return vniPrototype, nil
+}
+
+func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, vniId string) (map[string]interface{}, error) {
+
+	vniMap := map[string]interface{}{}
+	vniOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+		ID: &vniId,
+	}
+	vni, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, vniOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil, err
+		}
+		log.Printf("[DEBUG] GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
+		return nil, err
+	}
+	vniMap["id"] = vni.ID
+	vniMap["name"] = vni.Name
+
+	primaryIpList := make([]map[string]interface{}, 0)
+	currentPrimIp := map[string]interface{}{}
+	if vni.PrimaryIP != nil {
+		if vni.PrimaryIP.Address != nil {
+			vniMap["address"] = vni.PrimaryIP.Address
+		}
+		if vni.PrimaryIP.Name != nil {
+			currentPrimIp["name"] = *vni.PrimaryIP.Name
+		}
+		if vni.PrimaryIP.ID != nil {
+			currentPrimIp["reserved_ip"] = *vni.PrimaryIP.ID
+		}
+		if vni.PrimaryIP.Href != nil {
+			currentPrimIp["href"] = *vni.PrimaryIP.Href
+		}
+
+		if vni.PrimaryIP.ResourceType != nil {
+			currentPrimIp["resource_type"] = *vni.PrimaryIP.ResourceType
+		}
+
+		rIpOptions := &vpcv1.GetSubnetReservedIPOptions{
+			SubnetID: vni.Subnet.ID,
+			ID:       vni.PrimaryIP.ID,
+		}
+		rIp, response, err := vpcClient.GetSubnetReservedIP(rIpOptions)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the virtual instance network interface(%s): %s\n%s", *vni.PrimaryIP.ID, *vni.ID, err, response)
+		}
+		currentPrimIp["auto_delete"] = rIp.AutoDelete
+
+		primaryIpList = append(primaryIpList, currentPrimIp)
+		vniMap["primary_ip"] = primaryIpList
+	}
+	vniMap["subnet"] = vni.Subnet.ID
+	vniMap["resource_type"] = vni.ResourceType
+
+	return vniMap, nil
 }
