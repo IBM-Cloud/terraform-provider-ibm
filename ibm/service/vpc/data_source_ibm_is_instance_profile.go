@@ -469,13 +469,11 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 						"max": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Optional:    true,
 							Description: "The maximum value for this profile field",
 						},
 						"min": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Optional:    true,
 							Description: "The minimum value for this profile field",
 						},
 						"type": {

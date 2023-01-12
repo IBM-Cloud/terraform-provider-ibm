@@ -132,7 +132,6 @@ You can access the following attribute references after your data source is crea
       - `max` - (Integer) The maximum value for this profile field.
       - `min` - (Integer) The minimum value for this profile field.
       - `type` - (String) The type for this profile field.
-        - Constraints: Allowable values are: `range`.
 
   - `port_speed` - (List) Nested `port_speed` blocks have the following structure:
 
