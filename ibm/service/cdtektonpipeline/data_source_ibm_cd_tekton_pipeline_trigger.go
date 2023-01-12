@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -303,7 +303,7 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
 		for _, modelItem := range trigger.Properties {
-			modelMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(&modelItem)
+			modelMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -379,7 +379,7 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	return nil
 }
 
-func dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerPropertiesItem) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model *cdtektonpipelinev2.TriggerProperty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -449,7 +449,7 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model *cdt
 		modelMap["hook_id"] = *model.HookID
 	}
 	if model.Tool != nil {
-		toolMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToolToMap(model.Tool)
+		toolMap, err := dataSourceIBMCdTektonPipelineTriggerToolToMap(model.Tool)
 		if err != nil {
 			return modelMap, err
 		}
@@ -458,7 +458,7 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model *cdt
 	return modelMap, nil
 }
 
-func dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToolToMap(model *cdtektonpipelinev2.TriggerSourcePropertiesTool) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerToolToMap(model *cdtektonpipelinev2.Tool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID

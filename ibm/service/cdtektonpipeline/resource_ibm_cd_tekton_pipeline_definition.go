@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -79,7 +79,7 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 									"tool": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.",
+										Description: "Reference to the repository tool in the parent toolchain.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
@@ -104,7 +104,7 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 			"definition_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "UUID.",
+				Description: "The aggregated definition ID.",
 			},
 		},
 	}
@@ -291,7 +291,7 @@ func resourceIBMCdTektonPipelineDefinitionMapToDefinitionSourceProperties(modelM
 	}
 	model.Path = core.StringPtr(modelMap["path"].(string))
 	if modelMap["tool"] != nil && len(modelMap["tool"].([]interface{})) > 0 {
-		ToolModel, err := resourceIBMCdTektonPipelineDefinitionMapToDefinitionSourcePropertiesTool(modelMap["tool"].([]interface{})[0].(map[string]interface{}))
+		ToolModel, err := resourceIBMCdTektonPipelineDefinitionMapToTool(modelMap["tool"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -300,11 +300,9 @@ func resourceIBMCdTektonPipelineDefinitionMapToDefinitionSourceProperties(modelM
 	return model, nil
 }
 
-func resourceIBMCdTektonPipelineDefinitionMapToDefinitionSourcePropertiesTool(modelMap map[string]interface{}) (*cdtektonpipelinev2.DefinitionSourcePropertiesTool, error) {
-	model := &cdtektonpipelinev2.DefinitionSourcePropertiesTool{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
+func resourceIBMCdTektonPipelineDefinitionMapToTool(modelMap map[string]interface{}) (*cdtektonpipelinev2.Tool, error) {
+	model := &cdtektonpipelinev2.Tool{}
+	model.ID = core.StringPtr(modelMap["id"].(string))
 	return model, nil
 }
 
@@ -330,7 +328,7 @@ func resourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToMap(model 
 	}
 	modelMap["path"] = model.Path
 	if model.Tool != nil {
-		toolMap, err := resourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToolToMap(model.Tool)
+		toolMap, err := resourceIBMCdTektonPipelineDefinitionToolToMap(model.Tool)
 		if err != nil {
 			return modelMap, err
 		}
@@ -339,10 +337,8 @@ func resourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToMap(model 
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToolToMap(model *cdtektonpipelinev2.DefinitionSourcePropertiesTool) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineDefinitionToolToMap(model *cdtektonpipelinev2.Tool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
+	modelMap["id"] = model.ID
 	return modelMap, nil
 }

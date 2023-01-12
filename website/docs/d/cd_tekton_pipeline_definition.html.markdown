@@ -46,7 +46,7 @@ Nested scheme for **source**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `tag` - (String) A tag from the repo, specify one of branch or tag only.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
-		* `tool` - (List) Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.
+		* `tool` - (List) Reference to the repository tool in the parent toolchain.
 		Nested scheme for **tool**:
 			* `id` - (String) ID of the repository tool instance in the parent toolchain.
 			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.

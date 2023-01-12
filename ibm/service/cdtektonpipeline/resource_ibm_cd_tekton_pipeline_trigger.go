@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -246,7 +246,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"trigger_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "ID.",
+				Description: "The Trigger ID.",
 			},
 		},
 	}
@@ -480,7 +480,7 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
 		for _, propertiesItem := range trigger.Properties {
-			propertiesItemMap, err := resourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(&propertiesItem)
+			propertiesItemMap, err := resourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(&propertiesItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -743,7 +743,7 @@ func resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesPrototypeToMap(mod
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerPropertiesItem) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model *cdtektonpipelinev2.TriggerProperty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	if model.Value != nil {
