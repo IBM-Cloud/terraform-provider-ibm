@@ -180,6 +180,25 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 					},
 				},
 			},
+			isInstanceTemplateCatalogOffering: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The catalog offering or offering version to use when provisioning this virtual server instance template. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same enterprise, subject to IAM policies.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceTemplateCatalogOfferingOfferingCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifies a catalog offering by a unique CRN property",
+						},
+						isInstanceTemplateCatalogOfferingVersionCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifies a version of a catalog offering by a unique CRN property",
+						},
+					},
+				},
+			},
 			isInstanceTemplatePrimaryNetworkInterface: {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -395,6 +414,24 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					}
 				}
 			}
+		}
+
+		// catalog offering if any
+		if instance.CatalogOffering != nil {
+			catOfferingList := make([]map[string]interface{}, 0)
+			insTempCatalogOffering := instance.CatalogOffering.(*vpcv1.InstanceCatalogOfferingPrototype)
+
+			currentOffering := map[string]interface{}{}
+			if insTempCatalogOffering.Offering != nil {
+				offering := insTempCatalogOffering.Offering.(*vpcv1.CatalogOfferingIdentity)
+				currentOffering[isInstanceTemplateCatalogOfferingOfferingCrn] = *offering.CRN
+			}
+			if insTempCatalogOffering.Version != nil {
+				version := insTempCatalogOffering.Version.(*vpcv1.CatalogOfferingVersionIdentity)
+				currentOffering[isInstanceTemplateCatalogOfferingVersionCrn] = *version.CRN
+			}
+			catOfferingList = append(catOfferingList, currentOffering)
+			d.Set(isInstanceTemplateCatalogOffering, catOfferingList)
 		}
 
 		if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
@@ -643,6 +680,24 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				d.Set(isInstanceTemplateCrn, instance.CRN)
 				d.Set(isInstanceTemplateName, instance.Name)
 				d.Set(isInstanceTemplateUserData, instance.UserData)
+
+				// catalog offering if any
+				if instance.CatalogOffering != nil {
+					catOfferingList := make([]map[string]interface{}, 0)
+					insTempCatalogOffering := instance.CatalogOffering.(*vpcv1.InstanceCatalogOfferingPrototype)
+
+					currentOffering := map[string]interface{}{}
+					if insTempCatalogOffering.Offering != nil {
+						offering := insTempCatalogOffering.Offering.(*vpcv1.CatalogOfferingIdentity)
+						currentOffering[isInstanceTemplateCatalogOfferingOfferingCrn] = *offering.CRN
+					}
+					if insTempCatalogOffering.Version != nil {
+						version := insTempCatalogOffering.Version.(*vpcv1.CatalogOfferingVersionIdentity)
+						currentOffering[isInstanceTemplateCatalogOfferingVersionCrn] = *version.CRN
+					}
+					catOfferingList = append(catOfferingList, currentOffering)
+					d.Set(isInstanceTemplateCatalogOffering, catOfferingList)
+				}
 
 				if instance.DefaultTrustedProfile != nil {
 					if instance.DefaultTrustedProfile.AutoLink != nil {
