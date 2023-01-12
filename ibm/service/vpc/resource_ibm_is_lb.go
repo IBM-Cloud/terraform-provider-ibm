@@ -414,10 +414,10 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		options.Profile = loadBalancerProfileIdentityModel
 	} else {
 
-		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+		dataPath := &vpcv1.LoadBalancerLoggingDatapathPrototype{
 			Active: &isLogging,
 		}
-		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+		loadBalancerLogging := &vpcv1.LoadBalancerLoggingPrototype{
 			Datapath: dataPath,
 		}
 		options.Logging = loadBalancerLogging
@@ -721,10 +721,10 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,
 		}
-		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+		dataPath := &vpcv1.LoadBalancerLoggingDatapathPatch{
 			Active: &isLogging,
 		}
-		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+		loadBalancerLogging := &vpcv1.LoadBalancerLoggingPatch{
 			Datapath: dataPath,
 		}
 		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
