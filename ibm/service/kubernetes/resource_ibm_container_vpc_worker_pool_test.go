@@ -392,14 +392,14 @@ func testAccCheckIBMOpcContainerWorkerPoolBasic(name, openshiftFlavour, openShif
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
 	  cluster           = ibm_container_vpc_cluster.cluster.id
 	  worker_pool_name  = "%[1]s"
-	  flavor            = "%s"
-	  worker_count      = "%s"
-	  vpc_id            = data.ibm_is_vpc.vpc.id
-	  resource_group_id = data.ibm_resource_group.resource_group.id
- 	  operating_system  = "%s"
+	  flavor            = "%[5]s"
+	  worker_count      = "%[6]s"
+	  vpc_id            = "%[2]s"
+	  resource_group_id = "%[3]s"
+ 	  operating_system  = "%[7]s"
 	  entitlement       = "cloud_pak"
 	  zones {
-		subnet_id = data.ibm_is_subnet.subnet.id
+		subnet_id = "%[4]s"
 		name      = "us-south-1"
 	  }
 	  labels = {
@@ -407,5 +407,5 @@ func testAccCheckIBMOpcContainerWorkerPoolBasic(name, openshiftFlavour, openShif
 		"test1" = "test-pool1"
 	  }
 	}
-		`, name, openshiftFlavour, openShiftworkerCount, operatingSystem)
+		`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, openshiftFlavour, openShiftworkerCount, operatingSystem)
 }
