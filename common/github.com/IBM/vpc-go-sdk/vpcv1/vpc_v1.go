@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2020, 2021, 2022.
+ * (C) Copyright IBM Corp. 2021, 2022, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2022-12-13
+// API Version: 2023-01-10
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -9085,6 +9085,158 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalBackupPolicy)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListBackupPolicyJobs : List all jobs for a backup policy
+// This request retrieves all jobs for a backup policy. A backup job represents the execution of a backup policy plan
+// for a resource matching the policy's criteria.
+func (vpc *VpcV1) ListBackupPolicyJobs(listBackupPolicyJobsOptions *ListBackupPolicyJobsOptions) (result *BackupPolicyJobCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListBackupPolicyJobsWithContext(context.Background(), listBackupPolicyJobsOptions)
+}
+
+// ListBackupPolicyJobsWithContext is an alternate form of the ListBackupPolicyJobs method which supports a Context parameter
+func (vpc *VpcV1) ListBackupPolicyJobsWithContext(ctx context.Context, listBackupPolicyJobsOptions *ListBackupPolicyJobsOptions) (result *BackupPolicyJobCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listBackupPolicyJobsOptions, "listBackupPolicyJobsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listBackupPolicyJobsOptions, "listBackupPolicyJobsOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"backup_policy_id": *listBackupPolicyJobsOptions.BackupPolicyID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/backup_policies/{backup_policy_id}/jobs`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listBackupPolicyJobsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListBackupPolicyJobs")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listBackupPolicyJobsOptions.Status != nil {
+		builder.AddQuery("status", fmt.Sprint(*listBackupPolicyJobsOptions.Status))
+	}
+	if listBackupPolicyJobsOptions.BackupPolicyPlanID != nil {
+		builder.AddQuery("backup_policy_plan.id", fmt.Sprint(*listBackupPolicyJobsOptions.BackupPolicyPlanID))
+	}
+	if listBackupPolicyJobsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listBackupPolicyJobsOptions.Start))
+	}
+	if listBackupPolicyJobsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listBackupPolicyJobsOptions.Limit))
+	}
+	if listBackupPolicyJobsOptions.Sort != nil {
+		builder.AddQuery("sort", fmt.Sprint(*listBackupPolicyJobsOptions.Sort))
+	}
+	if listBackupPolicyJobsOptions.SourceID != nil {
+		builder.AddQuery("source.id", fmt.Sprint(*listBackupPolicyJobsOptions.SourceID))
+	}
+	if listBackupPolicyJobsOptions.TargetSnapshotsID != nil {
+		builder.AddQuery("target_snapshots[].id", fmt.Sprint(*listBackupPolicyJobsOptions.TargetSnapshotsID))
+	}
+	if listBackupPolicyJobsOptions.TargetSnapshotsCRN != nil {
+		builder.AddQuery("target_snapshots[].crn", fmt.Sprint(*listBackupPolicyJobsOptions.TargetSnapshotsCRN))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalBackupPolicyJobCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetBackupPolicyJob : Retrieve a backup policy job
+// This request retrieves a single backup policy job specified by the identifier in the URL.
+func (vpc *VpcV1) GetBackupPolicyJob(getBackupPolicyJobOptions *GetBackupPolicyJobOptions) (result *BackupPolicyJob, response *core.DetailedResponse, err error) {
+	return vpc.GetBackupPolicyJobWithContext(context.Background(), getBackupPolicyJobOptions)
+}
+
+// GetBackupPolicyJobWithContext is an alternate form of the GetBackupPolicyJob method which supports a Context parameter
+func (vpc *VpcV1) GetBackupPolicyJobWithContext(ctx context.Context, getBackupPolicyJobOptions *GetBackupPolicyJobOptions) (result *BackupPolicyJob, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getBackupPolicyJobOptions, "getBackupPolicyJobOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getBackupPolicyJobOptions, "getBackupPolicyJobOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"backup_policy_id": *getBackupPolicyJobOptions.BackupPolicyID,
+		"id":               *getBackupPolicyJobOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/backup_policies/{backup_policy_id}/jobs/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getBackupPolicyJobOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetBackupPolicyJob")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalBackupPolicyJob)
 		if err != nil {
 			return
 		}
@@ -18167,6 +18319,9 @@ func (vpc *VpcV1) CreateLoadBalancerWithContext(ctx context.Context, createLoadB
 	if createLoadBalancerOptions.Subnets != nil {
 		body["subnets"] = createLoadBalancerOptions.Subnets
 	}
+	if createLoadBalancerOptions.Datapath != nil {
+		body["datapath"] = createLoadBalancerOptions.Datapath
+	}
 	if createLoadBalancerOptions.Listeners != nil {
 		body["listeners"] = createLoadBalancerOptions.Listeners
 	}
@@ -21857,6 +22012,352 @@ type BackupPolicyCollectionNext struct {
 func UnmarshalBackupPolicyCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyJob : BackupPolicyJob struct
+type BackupPolicyJob struct {
+	// Indicates whether this backup policy job will be automatically deleted after it completes. At present, this is
+	// always `true`, but may be modifiable in the future.
+	AutoDelete *bool `json:"auto_delete" validate:"required"`
+
+	// If `auto_delete` is `true`, the days after completion that this backup policy job will be deleted. This value may be
+	// modifiable in the future.
+	AutoDeleteAfter *int64 `json:"auto_delete_after" validate:"required"`
+
+	// The backup policy plan operated this backup policy job (may be
+	// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+	BackupPolicyPlan *BackupPolicyPlanReference `json:"backup_policy_plan" validate:"required"`
+
+	// The date and time that the backup policy job was completed.
+	//
+	// If absent, the backup policy job has not yet completed.
+	CompletedAt *strfmt.DateTime `json:"completed_at,omitempty"`
+
+	// The date and time that the backup policy job was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The URL for this backup policy job.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy job.
+	ID *string `json:"id" validate:"required"`
+
+	// The type of backup policy job.
+	//
+	// The enumerated values for this property will expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the
+	// unexpected property value was encountered.
+	JobType *string `json:"job_type" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The source this backup was created from (may be
+	// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+	Source BackupPolicyJobSourceIntf `json:"source" validate:"required"`
+
+	// The status of the backup policy job.
+	//
+	// The enumerated values for this property will expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the
+	// unexpected property value was encountered.
+	Status *string `json:"status" validate:"required"`
+
+	// The reasons for the current status (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []BackupPolicyJobStatusReason `json:"status_reasons" validate:"required"`
+
+	// The snapshots operated on by this backup policy job (may be
+	// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+	TargetSnapshots []SnapshotReference `json:"target_snapshots" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyJob.JobType property.
+// The type of backup policy job.
+//
+// The enumerated values for this property will expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the
+// unexpected property value was encountered.
+const (
+	BackupPolicyJobJobTypeCreationConst = "creation"
+	BackupPolicyJobJobTypeDeletionConst = "deletion"
+)
+
+// Constants associated with the BackupPolicyJob.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyJobResourceTypeBackupPolicyJobConst = "backup_policy_job"
+)
+
+// Constants associated with the BackupPolicyJob.Status property.
+// The status of the backup policy job.
+//
+// The enumerated values for this property will expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the
+// unexpected property value was encountered.
+const (
+	BackupPolicyJobStatusFailedConst    = "failed"
+	BackupPolicyJobStatusRunningConst   = "running"
+	BackupPolicyJobStatusSucceededConst = "succeeded"
+)
+
+// UnmarshalBackupPolicyJob unmarshals an instance of BackupPolicyJob from the specified map of raw messages.
+func UnmarshalBackupPolicyJob(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJob)
+	err = core.UnmarshalPrimitive(m, "auto_delete", &obj.AutoDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "auto_delete_after", &obj.AutoDeleteAfter)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "backup_policy_plan", &obj.BackupPolicyPlan, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "completed_at", &obj.CompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "job_type", &obj.JobType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source", &obj.Source, UnmarshalBackupPolicyJobSource)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalBackupPolicyJobStatusReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "target_snapshots", &obj.TargetSnapshots, UnmarshalSnapshotReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyJobCollection : BackupPolicyJobCollection struct
+type BackupPolicyJobCollection struct {
+	// A link to the first page of resources.
+	First *BackupPolicyJobCollectionFirst `json:"first" validate:"required"`
+
+	// Collection of backup policy jobs.
+	Jobs []BackupPolicyJob `json:"jobs" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *BackupPolicyJobCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalBackupPolicyJobCollection unmarshals an instance of BackupPolicyJobCollection from the specified map of raw messages.
+func UnmarshalBackupPolicyJobCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalBackupPolicyJobCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "jobs", &obj.Jobs, UnmarshalBackupPolicyJob)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalBackupPolicyJobCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *BackupPolicyJobCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// BackupPolicyJobCollectionFirst : A link to the first page of resources.
+type BackupPolicyJobCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalBackupPolicyJobCollectionFirst unmarshals an instance of BackupPolicyJobCollectionFirst from the specified map of raw messages.
+func UnmarshalBackupPolicyJobCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyJobCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type BackupPolicyJobCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalBackupPolicyJobCollectionNext unmarshals an instance of BackupPolicyJobCollectionNext from the specified map of raw messages.
+func UnmarshalBackupPolicyJobCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyJobSource : The source this backup was created from (may be
+// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+// Models which "extend" this model:
+// - BackupPolicyJobSourceVolumeReference
+type BackupPolicyJobSource struct {
+	// The CRN for this volume.
+	CRN *string `json:"crn,omitempty"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *VolumeReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this volume.
+	Href *string `json:"href,omitempty"`
+
+	// The unique identifier for this volume.
+	ID *string `json:"id,omitempty"`
+
+	// The name for this volume. The name is unique across all volumes in the region.
+	Name *string `json:"name,omitempty"`
+}
+
+func (*BackupPolicyJobSource) isaBackupPolicyJobSource() bool {
+	return true
+}
+
+type BackupPolicyJobSourceIntf interface {
+	isaBackupPolicyJobSource() bool
+}
+
+// UnmarshalBackupPolicyJobSource unmarshals an instance of BackupPolicyJobSource from the specified map of raw messages.
+func UnmarshalBackupPolicyJobSource(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobSource)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVolumeReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyJobStatusReason : BackupPolicyJobStatusReason struct
+type BackupPolicyJobStatusReason struct {
+	// A snake case string succinctly identifying the status reason:
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `snapshot_pending`: Cannot delete backup (snapshot) in the `pending` lifecycle state
+	// - `snapshot_volume_limit`: The snapshot limit for the source volume has been reached
+	// - `source_volume_busy`: The source volume has `busy` set (after multiple retries).
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the status reason.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the BackupPolicyJobStatusReason.Code property.
+// A snake case string succinctly identifying the status reason:
+// - `internal_error`: Internal error (contact IBM support)
+// - `snapshot_pending`: Cannot delete backup (snapshot) in the `pending` lifecycle state
+// - `snapshot_volume_limit`: The snapshot limit for the source volume has been reached
+// - `source_volume_busy`: The source volume has `busy` set (after multiple retries).
+const (
+	BackupPolicyJobStatusReasonCodeInternalErrorConst       = "internal_error"
+	BackupPolicyJobStatusReasonCodeSnapshotPendingConst     = "snapshot_pending"
+	BackupPolicyJobStatusReasonCodeSnapshotVolumeLimitConst = "snapshot_volume_limit"
+	BackupPolicyJobStatusReasonCodeSourceVolumeBusyConst    = "source_volume_busy"
+)
+
+// UnmarshalBackupPolicyJobStatusReason unmarshals an instance of BackupPolicyJobStatusReason from the specified map of raw messages.
+func UnmarshalBackupPolicyJobStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -26832,6 +27333,9 @@ type CreateLoadBalancerOptions struct {
 	// Load balancers in the `network` family allow only one subnet to be specified.
 	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
 
+	// The datapath logging configuration for this load balancer.
+	Datapath *LoadBalancerLoggingDatapathPrototype `json:"datapath,omitempty"`
+
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
 
@@ -26840,7 +27344,7 @@ type CreateLoadBalancerOptions struct {
 	// format, fields and permitted values.
 	//
 	// To activate logging, the load balancer profile must support the specified logging type.
-	Logging *LoadBalancerLogging `json:"logging,omitempty"`
+	Logging *LoadBalancerLoggingPrototype `json:"logging,omitempty"`
 
 	// The name for this load balancer. The name must not be used by another load balancer in the VPC.  If unspecified, the
 	// name will be a hyphenated list of randomly-selected words.
@@ -26892,6 +27396,12 @@ func (_options *CreateLoadBalancerOptions) SetSubnets(subnets []SubnetIdentityIn
 	return _options
 }
 
+// SetDatapath : Allow user to set Datapath
+func (_options *CreateLoadBalancerOptions) SetDatapath(datapath *LoadBalancerLoggingDatapathPrototype) *CreateLoadBalancerOptions {
+	_options.Datapath = datapath
+	return _options
+}
+
 // SetListeners : Allow user to set Listeners
 func (_options *CreateLoadBalancerOptions) SetListeners(listeners []LoadBalancerListenerPrototypeLoadBalancerContext) *CreateLoadBalancerOptions {
 	_options.Listeners = listeners
@@ -26899,7 +27409,7 @@ func (_options *CreateLoadBalancerOptions) SetListeners(listeners []LoadBalancer
 }
 
 // SetLogging : Allow user to set Logging
-func (_options *CreateLoadBalancerOptions) SetLogging(logging *LoadBalancerLogging) *CreateLoadBalancerOptions {
+func (_options *CreateLoadBalancerOptions) SetLogging(logging *LoadBalancerLoggingPrototype) *CreateLoadBalancerOptions {
 	_options.Logging = logging
 	return _options
 }
@@ -33722,6 +34232,44 @@ func UnmarshalGenericResourceReferenceDeleted(m map[string]json.RawMessage, resu
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+// GetBackupPolicyJobOptions : The GetBackupPolicyJob options.
+type GetBackupPolicyJobOptions struct {
+	// The backup policy identifier.
+	BackupPolicyID *string `json:"backup_policy_id" validate:"required,ne="`
+
+	// The backup policy job identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetBackupPolicyJobOptions : Instantiate GetBackupPolicyJobOptions
+func (*VpcV1) NewGetBackupPolicyJobOptions(backupPolicyID string, id string) *GetBackupPolicyJobOptions {
+	return &GetBackupPolicyJobOptions{
+		BackupPolicyID: core.StringPtr(backupPolicyID),
+		ID:             core.StringPtr(id),
+	}
+}
+
+// SetBackupPolicyID : Allow user to set BackupPolicyID
+func (_options *GetBackupPolicyJobOptions) SetBackupPolicyID(backupPolicyID string) *GetBackupPolicyJobOptions {
+	_options.BackupPolicyID = core.StringPtr(backupPolicyID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetBackupPolicyJobOptions) SetID(id string) *GetBackupPolicyJobOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetBackupPolicyJobOptions) SetHeaders(param map[string]string) *GetBackupPolicyJobOptions {
+	options.Headers = param
+	return options
 }
 
 // GetBackupPolicyOptions : The GetBackupPolicy options.
@@ -40921,6 +41469,7 @@ type InstancePatch struct {
 	//   instance is placed on a dedicated host, the requested profile `family` must be
 	//   the same as the dedicated host `family`.
 	// - Have the same `vcpu.architecture`.
+	// - Support the number of network interfaces currently attached to the instance.
 	Profile InstancePatchProfileIntf `json:"profile,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -40979,6 +41528,7 @@ func (instancePatch *InstancePatch) AsPatch() (_patch map[string]interface{}, er
 //     instance is placed on a dedicated host, the requested profile `family` must be
 //     the same as the dedicated host `family`.
 //   - Have the same `vcpu.architecture`.
+//   - Support the number of network interfaces currently attached to the instance.
 //
 // Models which "extend" this model:
 // - InstancePatchProfileInstanceProfileIdentityByName
@@ -43652,6 +44202,117 @@ func (_options *ListBackupPoliciesOptions) SetTag(tag string) *ListBackupPolicie
 
 // SetHeaders : Allow user to set Headers
 func (options *ListBackupPoliciesOptions) SetHeaders(param map[string]string) *ListBackupPoliciesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListBackupPolicyJobsOptions : The ListBackupPolicyJobs options.
+type ListBackupPolicyJobsOptions struct {
+	// The backup policy identifier.
+	BackupPolicyID *string `json:"backup_policy_id" validate:"required,ne="`
+
+	// Filters the collection to backup policy jobs with the specified status.
+	Status *string `json:"status,omitempty"`
+
+	// Filters the collection to backup policy jobs with the backup plan with the specified identifier.
+	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
+
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+	// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+	Sort *string `json:"sort,omitempty"`
+
+	// Filters the collection to backup policy jobs with a source with the specified identifier.
+	SourceID *string `json:"source.id,omitempty"`
+
+	// Filters the collection to resources with the target snapshot with the specified identifier.
+	TargetSnapshotsID *string `json:"target_snapshots[].id,omitempty"`
+
+	// Filters the collection to backup policy jobs with the target snapshot with the specified CRN.
+	TargetSnapshotsCRN *string `json:"target_snapshots[].crn,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the ListBackupPolicyJobsOptions.Sort property.
+// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+const (
+	ListBackupPolicyJobsOptionsSortCreatedAtConst = "created_at"
+	ListBackupPolicyJobsOptionsSortNameConst      = "name"
+)
+
+// NewListBackupPolicyJobsOptions : Instantiate ListBackupPolicyJobsOptions
+func (*VpcV1) NewListBackupPolicyJobsOptions(backupPolicyID string) *ListBackupPolicyJobsOptions {
+	return &ListBackupPolicyJobsOptions{
+		BackupPolicyID: core.StringPtr(backupPolicyID),
+	}
+}
+
+// SetBackupPolicyID : Allow user to set BackupPolicyID
+func (_options *ListBackupPolicyJobsOptions) SetBackupPolicyID(backupPolicyID string) *ListBackupPolicyJobsOptions {
+	_options.BackupPolicyID = core.StringPtr(backupPolicyID)
+	return _options
+}
+
+// SetStatus : Allow user to set Status
+func (_options *ListBackupPolicyJobsOptions) SetStatus(status string) *ListBackupPolicyJobsOptions {
+	_options.Status = core.StringPtr(status)
+	return _options
+}
+
+// SetBackupPolicyPlanID : Allow user to set BackupPolicyPlanID
+func (_options *ListBackupPolicyJobsOptions) SetBackupPolicyPlanID(backupPolicyPlanID string) *ListBackupPolicyJobsOptions {
+	_options.BackupPolicyPlanID = core.StringPtr(backupPolicyPlanID)
+	return _options
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListBackupPolicyJobsOptions) SetStart(start string) *ListBackupPolicyJobsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListBackupPolicyJobsOptions) SetLimit(limit int64) *ListBackupPolicyJobsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetSort : Allow user to set Sort
+func (_options *ListBackupPolicyJobsOptions) SetSort(sort string) *ListBackupPolicyJobsOptions {
+	_options.Sort = core.StringPtr(sort)
+	return _options
+}
+
+// SetSourceID : Allow user to set SourceID
+func (_options *ListBackupPolicyJobsOptions) SetSourceID(sourceID string) *ListBackupPolicyJobsOptions {
+	_options.SourceID = core.StringPtr(sourceID)
+	return _options
+}
+
+// SetTargetSnapshotsID : Allow user to set TargetSnapshotsID
+func (_options *ListBackupPolicyJobsOptions) SetTargetSnapshotsID(targetSnapshotsID string) *ListBackupPolicyJobsOptions {
+	_options.TargetSnapshotsID = core.StringPtr(targetSnapshotsID)
+	return _options
+}
+
+// SetTargetSnapshotsCRN : Allow user to set TargetSnapshotsCRN
+func (_options *ListBackupPolicyJobsOptions) SetTargetSnapshotsCRN(targetSnapshotsCRN string) *ListBackupPolicyJobsOptions {
+	_options.TargetSnapshotsCRN = core.StringPtr(targetSnapshotsCRN)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListBackupPolicyJobsOptions) SetHeaders(param map[string]string) *ListBackupPolicyJobsOptions {
 	options.Headers = param
 	return options
 }
@@ -48839,7 +49500,7 @@ func UnmarshalLoadBalancerListenerReferenceDeleted(m map[string]json.RawMessage,
 // LoadBalancerLogging : LoadBalancerLogging struct
 type LoadBalancerLogging struct {
 	// The datapath logging configuration for this load balancer.
-	Datapath *LoadBalancerLoggingDatapath `json:"datapath,omitempty"`
+	Datapath *LoadBalancerLoggingDatapath `json:"datapath" validate:"required"`
 }
 
 // UnmarshalLoadBalancerLogging unmarshals an instance of LoadBalancerLogging from the specified map of raw messages.
@@ -48859,19 +49520,78 @@ type LoadBalancerLoggingDatapath struct {
 	Active *bool `json:"active" validate:"required"`
 }
 
-// NewLoadBalancerLoggingDatapath : Instantiate LoadBalancerLoggingDatapath (Generic Model Constructor)
-func (*VpcV1) NewLoadBalancerLoggingDatapath(active bool) (_model *LoadBalancerLoggingDatapath, err error) {
-	_model = &LoadBalancerLoggingDatapath{
-		Active: core.BoolPtr(active),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
 // UnmarshalLoadBalancerLoggingDatapath unmarshals an instance of LoadBalancerLoggingDatapath from the specified map of raw messages.
 func UnmarshalLoadBalancerLoggingDatapath(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerLoggingDatapath)
 	err = core.UnmarshalPrimitive(m, "active", &obj.Active)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerLoggingDatapathPatch : The datapath logging configuration for this load balancer.
+type LoadBalancerLoggingDatapathPatch struct {
+	// Indicates whether datapath logging will be active for this load balancer.
+	Active *bool `json:"active,omitempty"`
+}
+
+// UnmarshalLoadBalancerLoggingDatapathPatch unmarshals an instance of LoadBalancerLoggingDatapathPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerLoggingDatapathPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLoggingDatapathPatch)
+	err = core.UnmarshalPrimitive(m, "active", &obj.Active)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerLoggingDatapathPrototype : The datapath logging configuration for this load balancer.
+type LoadBalancerLoggingDatapathPrototype struct {
+	// Indicates whether datapath logging will be active for this load balancer.
+	Active *bool `json:"active,omitempty"`
+}
+
+// UnmarshalLoadBalancerLoggingDatapathPrototype unmarshals an instance of LoadBalancerLoggingDatapathPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerLoggingDatapathPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLoggingDatapathPrototype)
+	err = core.UnmarshalPrimitive(m, "active", &obj.Active)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerLoggingPatch : LoadBalancerLoggingPatch struct
+type LoadBalancerLoggingPatch struct {
+	// The datapath logging configuration for this load balancer.
+	Datapath *LoadBalancerLoggingDatapathPatch `json:"datapath,omitempty"`
+}
+
+// UnmarshalLoadBalancerLoggingPatch unmarshals an instance of LoadBalancerLoggingPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerLoggingPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLoggingPatch)
+	err = core.UnmarshalModel(m, "datapath", &obj.Datapath, UnmarshalLoadBalancerLoggingDatapathPatch)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerLoggingPrototype : LoadBalancerLoggingPrototype struct
+type LoadBalancerLoggingPrototype struct {
+	// The datapath logging configuration for this load balancer.
+	Datapath *LoadBalancerLoggingDatapathPrototype `json:"datapath,omitempty"`
+}
+
+// UnmarshalLoadBalancerLoggingPrototype unmarshals an instance of LoadBalancerLoggingPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerLoggingPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerLoggingPrototype)
+	err = core.UnmarshalModel(m, "datapath", &obj.Datapath, UnmarshalLoadBalancerLoggingDatapathPrototype)
 	if err != nil {
 		return
 	}
@@ -48884,7 +49604,7 @@ type LoadBalancerPatch struct {
 	// The logging configuration to use for this load balancer.
 	//
 	// To activate logging, the load balancer profile must support the specified logging type.
-	Logging *LoadBalancerLogging `json:"logging,omitempty"`
+	Logging *LoadBalancerLoggingPatch `json:"logging,omitempty"`
 
 	// The name for this load balancer. The name must not be used by another load balancer in the VPC.
 	Name *string `json:"name,omitempty"`
@@ -48902,7 +49622,7 @@ type LoadBalancerPatch struct {
 // UnmarshalLoadBalancerPatch unmarshals an instance of LoadBalancerPatch from the specified map of raw messages.
 func UnmarshalLoadBalancerPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPatch)
-	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLogging)
+	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLoggingPatch)
 	if err != nil {
 		return
 	}
@@ -64366,6 +65086,57 @@ type ZoneReference struct {
 func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ZoneReference)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyJobSourceVolumeReference : BackupPolicyJobSourceVolumeReference struct
+// This model "extends" BackupPolicyJobSource
+type BackupPolicyJobSourceVolumeReference struct {
+	// The CRN for this volume.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *VolumeReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this volume.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this volume. The name is unique across all volumes in the region.
+	Name *string `json:"name" validate:"required"`
+}
+
+func (*BackupPolicyJobSourceVolumeReference) isaBackupPolicyJobSource() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyJobSourceVolumeReference unmarshals an instance of BackupPolicyJobSourceVolumeReference from the specified map of raw messages.
+func UnmarshalBackupPolicyJobSourceVolumeReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobSourceVolumeReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVolumeReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -85909,6 +86680,91 @@ func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicy, err error) {
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicy, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// BackupPolicyJobsPager can be used to simplify the use of the "ListBackupPolicyJobs" method.
+type BackupPolicyJobsPager struct {
+	hasNext     bool
+	options     *ListBackupPolicyJobsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewBackupPolicyJobsPager returns a new BackupPolicyJobsPager instance.
+func (vpc *VpcV1) NewBackupPolicyJobsPager(options *ListBackupPolicyJobsOptions) (pager *BackupPolicyJobsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListBackupPolicyJobsOptions = *options
+	pager = &BackupPolicyJobsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *BackupPolicyJobsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *BackupPolicyJobsPager) GetNextWithContext(ctx context.Context) (page []BackupPolicyJob, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListBackupPolicyJobsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Jobs
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *BackupPolicyJobsPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicyJob, err error) {
+	for pager.HasNext() {
+		var nextPage []BackupPolicyJob
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *BackupPolicyJobsPager) GetNext() (page []BackupPolicyJob, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *BackupPolicyJobsPager) GetAll() (allItems []BackupPolicyJob, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
