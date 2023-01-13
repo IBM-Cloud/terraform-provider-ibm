@@ -115,6 +115,62 @@ func TestAccIBMISLB_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLB_DNS(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
+	dnsRecordName := fmt.Sprintf("tf-dns-record.com")
+	dnsRecordName1 := fmt.Sprintf("tf-dns-record-updated.com")
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, acc.DNSInstanceCRN, dnsRecordName, acc.DNSZoneID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns.0.instance_crn", acc.DNSInstanceCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns.0.name", dnsRecordName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns.0.zone_id", acc.DNSZoneID),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1, acc.DNSInstanceCRN1, dnsRecordName1, acc.DNSZoneID1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns.0.instance_crn", acc.DNSInstanceCRN1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns.0.name", dnsRecordName1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns.0.zone_id", acc.DNSZoneID1),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1, acc.DNSInstanceCRN1, dnsRecordName1, acc.DNSZoneID1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns", ""),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISLB_basic_subnet(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
@@ -426,6 +482,47 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 }`, vpcname, subnetname, zone, cidr, name)
 
+}
+
+func testAccCheckIBMISLBDNS(vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		dns {
+			instance_crn = "%s"
+			name = "%s"
+			zone_id = "%s"
+		}
+	}`, vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId)
+}
+
+func testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}`, vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId)
 }
 
 func testAccCheckIBMISLBSubnetConfig(vpcname, subnetname, subnetname1, zone, cidr, name string) string {

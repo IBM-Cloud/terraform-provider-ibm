@@ -66,6 +66,10 @@ var InstanceProfileName string
 var InstanceProfileNameUpdate string
 var IsBareMetalServerProfileName string
 var IsBareMetalServerImage string
+var DNSInstanceCRN string
+var DNSZoneID string
+var DNSInstanceCRN1 string
+var DNSZoneID1 string
 var DedicatedHostProfileName string
 var DedicatedHostGroupID string
 var InstanceDiskProfileName string
@@ -512,6 +516,30 @@ func init() {
 	if IsBareMetalServerImage == "" {
 		IsBareMetalServerImage = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
+	}
+
+	DNSInstanceCRN = os.Getenv("IS_DNS_INSTANCE_CRN")
+	if DNSInstanceCRN == "" {
+		DNSInstanceCRN = "crn:v1:staging:public:dns-svcs:global:a/efe5afc483594adaa8325e2b4d1290df:82df2e3c-53a5-43c6-89ce-dcf78be18668::" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_INSTANCE_CRN for testing ibm_is_lb resource else it is set to default value 'crn:v1:staging:public:dns-svcs:global:a/efe5afc483594adaa8325e2b4d1290df:82df2e3c-53a5-43c6-89ce-dcf78be18668::'")
+	}
+
+	DNSInstanceCRN1 = os.Getenv("IS_DNS_INSTANCE_CRN1")
+	if DNSInstanceCRN1 == "" {
+		DNSInstanceCRN1 = "crn:v1:staging:public:dns-svcs:global:a/efe5afc483594adaa8325e2b4d1290df:599ae4aa-c554-4a88-8bb2-b199b9a3c046::" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_INSTANCE_CRN1 for testing ibm_is_lb resource else it is set to default value 'crn:v1:staging:public:dns-svcs:global:a/efe5afc483594adaa8325e2b4d1290df:599ae4aa-c554-4a88-8bb2-b199b9a3c046::'")
+	}
+
+	DNSZoneID = os.Getenv("IS_DNS_ZONE_ID")
+	if DNSZoneID == "" {
+		DNSZoneID = "dd501d1d-490b-4bb4-a05d-a31954a1c59e" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_ZONE_ID for testing ibm_is_lb resource else it is set to default value 'dd501d1d-490b-4bb4-a05d-a31954a1c59e'")
+	}
+
+	DNSZoneID1 = os.Getenv("IS_DNS_ZONE_ID")
+	if DNSZoneID1 == "" {
+		DNSZoneID1 = "b1def78d-51b3-4ea5-a746-1b64c992fcab" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_ZONE_ID for testing ibm_is_lb resource else it is set to default value 'b1def78d-51b3-4ea5-a746-1b64c992fcab'")
 	}
 
 	DedicatedHostName = os.Getenv("IS_DEDICATED_HOST_NAME")

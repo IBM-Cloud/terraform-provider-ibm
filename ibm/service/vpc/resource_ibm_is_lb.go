@@ -99,17 +99,17 @@ func ResourceIBMISLB() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"instance_crn": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The CRN for this DNS instance",
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The name to use for the DNS 'A' records for this load balancer's private IP addresses.",
 						},
 						"zone_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The unique identifier of the DNS zone.",
 						},
 					},
@@ -497,6 +497,8 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		dns["name"] = lb.Dns.Name
 		dnsList = append(dnsList, dns)
 		d.Set("dns", dnsList)
+	} else {
+		d.Set("dns", nil)
 	}
 	d.Set(isLBName, *lb.Name)
 	if *lb.IsPublic {
@@ -671,26 +673,40 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,
 		}
-		dnsIntf := d.Get("dns")
-		dnsMap := dnsIntf.([]interface{})[0].(map[string]interface{})
-		dnsInstance, _ := dnsMap["instance_crn"].(string)
-		name, _ := dnsMap["name"].(string)
-		zone, _ := dnsMap["zone_id"].(string)
-		dnsPatchModel := &vpcv1.LoadBalancerDnsPatch{
-			Instance: &vpcv1.DnsInstanceReference{
-				CRN: &dnsInstance,
-			},
-			Name: &name,
-			Zone: &vpcv1.DnsZoneReference{
-				ID: &zone,
-			},
+		dnsRemoved := false
+		if _, ok := d.GetOk("dns"); !ok {
+			dnsRemoved = true
 		}
+		dnsPatchModel := &vpcv1.LoadBalancerDnsPatch{}
+		if d.HasChange("dns.0.instance_crn") {
+
+		}
+		if d.HasChange("dns.0.instance_crn") {
+			dnsInstanceCrn := d.Get("dns.0.instance_crn").(string)
+			dnsPatchModel.Instance = &vpcv1.DnsInstanceReference{
+				CRN: &dnsInstanceCrn,
+			}
+		}
+		if d.HasChange("dns.0.name") {
+			dnsName := d.Get("dns.0.name").(string)
+			dnsPatchModel.Name = &dnsName
+		}
+		if d.HasChange("dns.0.zone_id") {
+			dnsZoneId := d.Get("dns.0.zone_id").(string)
+			dnsPatchModel.Zone = &vpcv1.DnsZoneReference{
+				ID: &dnsZoneId,
+			}
+		}
+
 		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
 			Dns: dnsPatchModel,
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		if dnsRemoved {
+			loadBalancerPatch["dns"] = nil
 		}
 		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
 
