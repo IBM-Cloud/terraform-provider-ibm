@@ -173,6 +173,11 @@ func DataSourceIBMSatelliteCluster() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"infrastructure_topology": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "String value for single node cluster option.",
+			},
 		},
 	}
 }
