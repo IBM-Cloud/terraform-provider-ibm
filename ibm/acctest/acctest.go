@@ -15,6 +15,8 @@ import (
 
 var AppIDTenantID string
 var AppIDTestUserEmail string
+var BackupPolicyJobID string
+var BackupPolicyID string
 var CfOrganization string
 var CfSpace string
 var CisDomainStatic string
@@ -509,6 +511,16 @@ func init() {
 	if InstanceName == "" {
 		InstanceName = "placement-check-ins" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
+	}
+
+	BackupPolicyJobID = os.Getenv("IS_BACKUP_POLICY_JOB_ID")
+	if BackupPolicyJobID == "" {
+		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_JOB_ID for testing ibm_is_backup_policy_job datasource")
+	}
+
+	BackupPolicyID = os.Getenv("IS_BACKUP_POLICY_ID")
+	if BackupPolicyID == "" {
+		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_ID for testing ibm_is_backup_policy_jobs datasource")
 	}
 
 	InstanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
