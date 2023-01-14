@@ -158,7 +158,7 @@ func TestAccIBMISLB_DNS(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1, acc.DNSInstanceCRN1, dnsRecordName1, acc.DNSZoneID1),
+				Config: testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
@@ -507,7 +507,7 @@ func testAccCheckIBMISLBDNS(vpcname, subnetname, zone, cidr, name, dnsInstanceCr
 	}`, vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId)
 }
 
-func testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId string) string {
+func testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, zone, cidr, name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -522,7 +522,7 @@ func testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, zone, cidr, name, dnsIns
 	resource "ibm_is_lb" "testacc_LB" {
 		name = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
-	}`, vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId)
+	}`, vpcname, subnetname, zone, cidr, name)
 }
 
 func testAccCheckIBMISLBSubnetConfig(vpcname, subnetname, subnetname1, zone, cidr, name string) string {

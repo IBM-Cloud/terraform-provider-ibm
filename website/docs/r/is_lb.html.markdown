@@ -44,6 +44,22 @@ resource "ibm_is_lb" "example" {
 
 ```
 
+An example to create a load balancer with private DNS.
+
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.example.id]
+  profile = "network-fixed"
+  dns   {
+    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
+    zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+    name = "my-pdns-updated-zone"
+  }
+}
+
+```
+
 ## Timeouts
 The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -57,10 +73,11 @@ Review the argument references that you can specify for your resource.
 - `dns` - (Optional, List) The DNS configuration for this load balancer.
 
   Nested scheme for `dns`:
-  - `instance_crn` - (Optional, String) The CRN of the DNS instance associated with the DNS zone
-  - `name` - (Optional, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
-  - `zone_id` - (Optional, String) The unique identifier of the DNS zone.
-
+  - `instance_crn` - (Required, String) The CRN of the DNS instance associated with the DNS zone
+  - `name` - (Required, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
+  - `zone_id` - (Required, String) The unique identifier of the DNS zone.
+  ~> **Note**
+  
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
 - `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required and should be set to `network-fixed`. For Application Load Balancer, profile is not a required attribute.
