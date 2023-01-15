@@ -121,8 +121,8 @@ func TestAccIBMISLB_DNS(t *testing.T) {
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
-	dnsRecordName := fmt.Sprintf("tf-dns-record.com")
-	dnsRecordName1 := fmt.Sprintf("tf-dns-record-updated.com")
+	dnsRecordName := fmt.Sprintf("tf-dns-record-%d.com", acctest.RandIntRange(10, 100))
+	dnsRecordName1 := fmt.Sprintf("tf-dns-record-updated-%d.com", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,

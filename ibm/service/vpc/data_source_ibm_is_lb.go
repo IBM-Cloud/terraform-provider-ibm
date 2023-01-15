@@ -58,17 +58,17 @@ func DataSourceIBMISLB() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"instance_crn": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The CRN for this DNS instance",
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The name to use for the DNS 'A' records for this load balancer's private IP addresses.",
 						},
 						"zone_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The unique identifier of the DNS zone.",
 						},
 					},
