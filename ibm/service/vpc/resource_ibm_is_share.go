@@ -983,7 +983,7 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 	if share.ReplicaShare != nil && share.ReplicaShare.ID != nil {
 		getShareOptions := &vpcv1.GetShareOptions{}
 
-		getShareOptions.SetID(d.Id())
+		getShareOptions.SetID(*share.ReplicaShare.ID)
 
 		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
 		if err != nil {
@@ -1093,40 +1093,95 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	err = shareUpdate(vpcClient, context, d, meta, "share", d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if d.HasChange("replica_share") {
+		getShareOptions := &vpcv1.GetShareOptions{}
+
+		getShareOptions.SetID(d.Id())
+
+		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		err = shareUpdate(vpcClient, context, d, meta, "replica_share", *share.ReplicaShare.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if d.HasChange(isFileShareAccessTags) {
+		oldList, newList := d.GetChange(isFileShareAccessTags)
+		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error updating shares (%s) access tags: %s", d.Id(), err)
+		}
+	}
+	return resourceIbmIsShareRead(context, d, meta)
+}
+
+func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.ResourceData, meta interface{}, shareType, shareId string) error {
 	updateShareOptions := &vpcv1.UpdateShareOptions{}
 
-	updateShareOptions.SetID(d.Id())
+	updateShareOptions.SetID(shareId)
 
 	hasChange := false
-
+	hasSizeChanged := false
 	sharePatchModel := &vpcv1.SharePatch{}
-	if d.HasChange("name") {
-		name := d.Get("name").(string)
+	shareNameSchema := ""
+	shareIopsSchema := ""
+	shareProfileSchema := ""
+	shareTagsSchema := ""
+	shareMountTargetSchema := ""
+	if shareType == "share" {
+		shareNameSchema = "name"
+		shareIopsSchema = "iops"
+		shareProfileSchema = "profile"
+		shareTagsSchema = "tags"
+		shareMountTargetSchema = "share_target_prototype"
+	} else {
+		shareNameSchema = "replica_share.0.name"
+		shareIopsSchema = "replica_share.0.iops"
+		shareProfileSchema = "replica_share.0.profile"
+		shareTagsSchema = "replica_share.0.tags"
+		shareMountTargetSchema = "replica_share.0.targets"
+	}
+	if d.HasChange(shareNameSchema) {
+		name := d.Get(shareNameSchema).(string)
 		sharePatchModel.Name = &name
 		hasChange = true
 	}
-
-	if d.HasChange("size") {
-		size := int64(d.Get("size").(int))
-		sharePatchModel.Size = &size
-		hasChange = true
+	if shareType == "share" {
+		if d.HasChange("size") {
+			size := int64(d.Get("size").(int))
+			hasSizeChanged = true
+			sharePatchModel.Size = &size
+			hasChange = true
+		}
 	}
 
-	if d.HasChange("iops") {
-		iops := int64(d.Get("iops").(int))
+	if d.HasChange(shareIopsSchema) {
+		iops := int64(d.Get(shareIopsSchema).(int))
 		sharePatchModel.Iops = &iops
 		hasChange = true
 	}
 
-	if d.HasChange("profile") {
-		old, new := d.GetChange("profile")
-		if old.(string) == "custom" {
-			if d.Get("iops").(int) != 0 {
-				log.Println("iops there")
-			} else {
-				log.Println("iops not there")
-			}
-		}
+	if d.HasChange(shareProfileSchema) {
+		_, new := d.GetChange(shareProfileSchema)
+		// if old.(string) == "custom" {
+		// 	if d.Get("iops").(int) != 0 {
+		// 		log.Println("iops there")
+		// 	} else {
+		// 		log.Println("iops not there")
+		// 	}
+		// }
 		profile := new.(string)
 		sharePatchModel.Profile = &vpcv1.ShareProfileIdentity{
 			Name: &profile,
@@ -1134,9 +1189,9 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 		hasChange = true
 	}
 
-	if d.HasChange(isFileShareTags) {
+	if d.HasChange(shareTagsSchema) {
 		var userTags *schema.Set
-		if v, ok := d.GetOk(isFileShareTags); ok {
+		if v, ok := d.GetOk(shareTagsSchema); ok {
 
 			userTags = v.(*schema.Set)
 			if userTags != nil && userTags.Len() != 0 {
@@ -1156,20 +1211,43 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 			}
 		}
 	}
+	if hasChange {
 
-	if d.HasChange("share_target_prototype") && !d.IsNewResource() {
-		target_prototype := d.Get("share_target_prototype").([]interface{})
-		shareId := d.Id()
+		sharePatch, err := sharePatchModel.AsPatch()
+
+		if err != nil {
+			log.Printf("[DEBUG] SharePatch AsPatch failed %s", err)
+			return err
+		}
+		updateShareOptions.SetSharePatch(sharePatch)
+		if hasSizeChanged {
+			_, err = isWaitForShareAvailable(context, vpcClient, d.Id(), d, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+		}
+		_, response, err := vpcClient.UpdateShareWithContext(context, updateShareOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateShareWithContext failed %s\n%s", err, response)
+			return err
+		}
+		_, err = isWaitForShareAvailable(context, vpcClient, d.Id(), d, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return err
+		}
+	}
+	if d.HasChange(shareMountTargetSchema) && !d.IsNewResource() {
+		target_prototype := d.Get(shareMountTargetSchema).([]interface{})
 		for targetIdx := range target_prototype {
-			targetName := fmt.Sprintf("share_target_prototype.%d.name", targetIdx)
-			vniName := fmt.Sprintf("share_target_prototype.%d.virtual_network_interface.0.name", targetIdx)
-			vniId := fmt.Sprintf("share_target_prototype.%d.virtual_network_interface.0.id", targetIdx)
-			targetId := fmt.Sprintf("share_target_prototype.%d.id", targetIdx)
-			securityGroups := fmt.Sprintf("share_target_prototype.%d.virtual_network_interface.0.security_groups", targetIdx)
-			vniPrimaryIpName := fmt.Sprintf("share_target_prototype.%d.virtual_network_interface.0.primary_ip.0.name", targetIdx)
-			vniPrimaryIpAutoDelete := fmt.Sprintf("share_target_prototype.%d.virtual_network_interface.0.primary_ip.0.auto_delete", targetIdx)
-			vniSubnet := fmt.Sprintf("share_target_prototype.%d.virtual_network_interface.0.subnet", targetIdx)
-			vniResvedIp := fmt.Sprintf("share_target_prototype.%d.virtual_network_interface.0.primary_ip.0.reserved_ip", targetIdx)
+			targetName := fmt.Sprintf("%s.%d.name", shareMountTargetSchema, targetIdx)
+			vniName := fmt.Sprintf("%s.%d.virtual_network_interface.0.name", shareMountTargetSchema, targetIdx)
+			vniId := fmt.Sprintf("%s.%d.virtual_network_interface.0.id", shareMountTargetSchema, targetIdx)
+			targetId := fmt.Sprintf("%s.%d.id", shareMountTargetSchema, targetIdx)
+			securityGroups := fmt.Sprintf("%s.%d.virtual_network_interface.0.security_groups", shareMountTargetSchema, targetIdx)
+			vniPrimaryIpName := fmt.Sprintf("%s.%d.virtual_network_interface.0.primary_ip.0.name", shareMountTargetSchema, targetIdx)
+			vniPrimaryIpAutoDelete := fmt.Sprintf("%s.%d.virtual_network_interface.0.primary_ip.0.auto_delete", shareMountTargetSchema, targetIdx)
+			vniSubnet := fmt.Sprintf("%s.%d.virtual_network_interface.0.subnet", shareMountTargetSchema, targetIdx)
+			vniResvedIp := fmt.Sprintf("%s.%d.virtual_network_interface.0.primary_ip.0.reserved_ip", shareMountTargetSchema, targetIdx)
 			mountTargetId := d.Get(targetId).(string)
 			if d.HasChange(targetName) {
 				updateShareTargetOptions := &vpcv1.UpdateShareMountTargetOptions{}
@@ -1185,17 +1263,17 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 				shareTargetPatch, err := shareTargetPatchModel.AsPatch()
 				if err != nil {
 					log.Printf("[DEBUG] ShareTargetPatch AsPatch failed %s", err)
-					return diag.FromErr(err)
+					return err
 				}
 				updateShareTargetOptions.SetShareMountTargetPatch(shareTargetPatch)
 				_, response, err := vpcClient.UpdateShareMountTargetWithContext(context, updateShareTargetOptions)
 				if err != nil {
 					log.Printf("[DEBUG] UpdateShareTargetWithContext failed %s\n%s", err, response)
-					return diag.FromErr(err)
+					return err
 				}
 				_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
-					return diag.FromErr(err)
+					return err
 				}
 			}
 
@@ -1207,7 +1285,7 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 				vniPatch, err := vniPatchModel.AsPatch()
 				if err != nil {
 					log.Printf("[DEBUG] Virtual network interface AsPatch failed %s", err)
-					return diag.FromErr(err)
+					return err
 				}
 				shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
@@ -1215,7 +1293,7 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 				shareTargetOptions.SetID(mountTargetId)
 				shareTarget, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
 				if err != nil {
-					diag.FromErr(err)
+					return err
 				}
 				vniId := *shareTarget.VirtualNetworkInterface.ID
 				updateVNIOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
@@ -1225,11 +1303,11 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 				_, response, err := vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVNIOptions)
 				if err != nil {
 					log.Printf("[DEBUG] UpdateShareTargetWithContext failed %s\n%s", err, response)
-					return diag.FromErr(err)
+					return err
 				}
 				_, err = WaitForVNIAvailable(vpcClient, *shareTarget.VirtualNetworkInterface.ID, d, d.Timeout(schema.TimeoutCreate))
 				if err != nil {
-					return diag.FromErr(err)
+					return err
 				}
 			}
 
@@ -1249,16 +1327,16 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 						}
 						_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response))
+							return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response)
 						}
 						_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return diag.FromErr(err)
+							return err
 						}
 
 						_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return diag.FromErr(err)
+							return err
 						}
 					}
 
@@ -1271,16 +1349,16 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 						}
 						response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response))
+							return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
 						_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return diag.FromErr(err)
+							return err
 						}
 
 						_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return diag.FromErr(err)
+							return err
 						}
 					}
 				}
@@ -1289,7 +1367,7 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 			if !d.IsNewResource() && (d.HasChange(vniPrimaryIpName) || d.HasChange(vniPrimaryIpAutoDelete)) {
 				sess, err := meta.(conns.ClientSession).VpcV1API()
 				if err != nil {
-					return diag.FromErr(err)
+					return err
 				}
 				subnetId := d.Get(vniSubnet).(string)
 				ripId := d.Get(vniResvedIp).(string)
@@ -1308,61 +1386,21 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 				}
 				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err))
+					return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
 				}
 				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 				_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
+					return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
 				}
 				_, err = isWaitForReservedIpAvailable(sess, subnetId, ripId, d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err))
+					return fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
 				}
 			}
 		}
 	}
-
-	/*
-		if d.HasChange("replication_cron_spec") {
-			replication_cron_spec := d.Get("replication_cron_spec").(string)
-			sharePatchModel.ReplicationCronSpec = &replication_cron_spec
-			hasChange = true
-		}
-	*/
-	if hasChange {
-
-		sharePatch, err := sharePatchModel.AsPatch()
-
-		if err != nil {
-			log.Printf("[DEBUG] SharePatch AsPatch failed %s", err)
-			return diag.FromErr(err)
-		}
-		updateShareOptions.SetSharePatch(sharePatch)
-		_, response, err := vpcClient.UpdateShareWithContext(context, updateShareOptions)
-		if err != nil {
-			log.Printf("[DEBUG] UpdateShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
-		}
-	}
-	if d.HasChange(isFileShareTags) {
-		oldList, newList := d.GetChange(isFileShareTags)
-		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isUserTagType)
-		if err != nil {
-			log.Printf(
-				"Error updating shares (%s) tags: %s", d.Id(), err)
-		}
-	}
-
-	if d.HasChange(isFileShareAccessTags) {
-		oldList, newList := d.GetChange(isFileShareAccessTags)
-		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isAccessTagType)
-		if err != nil {
-			log.Printf(
-				"Error updating shares (%s) access tags: %s", d.Id(), err)
-		}
-	}
-	return resourceIbmIsShareRead(context, d, meta)
+	return nil
 }
 
 func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
