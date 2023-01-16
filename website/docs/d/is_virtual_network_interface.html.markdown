@@ -13,8 +13,37 @@ Provides a read-only data source for VirtualNetworkInterface. You can then refer
 ## Example Usage
 
 ```hcl
+resource "ibm_is_vpc" "example" {
+  name = "my-vpc"
+}
+resource "ibm_is_subnet" "example" {
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-1"
+  total_ipv4_address_count = 256
+}
+resource "ibm_is_share" "example" {
+  name = "my-share"
+  access_control_mode = "security_group"
+  size = 200
+  profile = "tier-3iops"
+  zone = "us-south-2"
+}
+resource "ibm_is_share_target" "example" {
+  share = ibm_is_share.example.id
+  virtual_network_interface {
+    name = "my-virtual_network_interface"
+    primary_ip {
+      address = "10.240.64.5"
+      auto_delete = true
+      name = "my-reserved-ip"
+    }
+    name = "my-share-target"
+  }
+}
+
 data "ibm_is_virtual_network_interface" "example" {
-	virtual_network_interface = "id"
+	virtual_network_interface = ibm_is_share_target.example.virtual_network_interface.0.id
 }
 ```
 

@@ -31,7 +31,7 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The file share identifier.",
+				Description: "The fslacslaile share identifier.",
 			},
 			"name": {
 				Type:         schema.TypeString,
@@ -47,11 +47,18 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 			"virtual_network_interface": {
 				Type:          schema.TypeList,
 				Optional:      true,
+				MinItems:      1,
+				MaxItems:      1,
 				ConflictsWith: []string{"vpc"},
 				ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
 				Description:   "VNI for mount target.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "href of virtual network interface",
+						},
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -90,6 +97,7 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 										Type:        schema.TypeBool,
 										Default:     true,
 										Optional:    true,
+										Computed:    true,
 										Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
 									},
 									"name": {
@@ -690,6 +698,7 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 		return nil, err
 	}
 	vniMap["id"] = vni.ID
+	vniMap["crn"] = vni.CRN
 	vniMap["name"] = vni.Name
 
 	primaryIpList := make([]map[string]interface{}, 0)

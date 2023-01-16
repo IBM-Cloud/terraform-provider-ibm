@@ -51,9 +51,10 @@ resource "ibm_is_share" "example-2" {
 
 The following arguments are supported:
 
+- `access_control_mode` - The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **vpa**
 - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
-- `initial_owner_gid` - (Optional, int) The initial group identifier for the file share.
-- `initial_owner_uid` - (Optional, int) The initial user identifier for the file share.
+- `initial_owner_gid` - (Optional, Integer) The initial group identifier for the file share.
+- `initial_owner_uid` - (Optional, Integer) The initial user identifier for the file share.
 - `iops` - (Optional, int) The maximum input/output operation performance bandwidth per second for the file share.
 - `name` - (Required, string) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `profile` - (Required, string) The globally unique name for this share profile.
@@ -66,16 +67,51 @@ The following arguments are supported:
   - `name` - (Optional, String)
   - `profile` - (Optional, String)
   - `replication_cron_spec` - (Optional, String)
-  - `targets`
+  - `targets` - (List) List of mount targets
     - `name` - (Optional, String)
-    - `subnet` - (Optional, String)
-    - `vpc` - (Required, String) 
+    - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
+  - `name` - (Required, String) Name for this virtual network interface.
+  Nested scheme for `virtual_network_interface`:
+  - `primary_ip` - (Optional, List) The primary IP address to bind to the virtual network interface. May be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP.
+
+      Nested scheme for `primary_ip`:
+      - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Defaults to `true`
+      - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
+      - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
+      - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+  - `resource_group` - (Optional, String) The ID of the resource group to use.
+  - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
+  - `subnet` - (Optional, string) The associated subnet.
+    
+    ~> **Note**
+    Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
+
+  - `vpc` - (Optional, string) The VPC in which instances can mount the file share using this share target. Required if the share's `access_control_mode` is vpc.
   - `zone` - (Required, String)
-- `resource_group` - (Optional, string) The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-- `size` - (Required, int) The size of the file share rounded up to the next gigabyte.
+  - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+  - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
+- `resource_group` - (Optional, String) The unique identifier for this resource group.
+- `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte.
 - `share_target_prototype` - (Optional, List) Share targets for the file share.
-  - `name` - (Optional, string) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
-  - `vpc` - (Required, string) The VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.
+  - `name` - (Required, string) The user-defined name for this share target. Names must be unique within the share the share target resides in.
+  - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
+    - `name` - (Required, String) Name for this virtual network interface.
+    Nested scheme for `virtual_network_interface`:
+    - `primary_ip` - (Optional, List) The primary IP address to bind to the virtual network interface. May be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP.
+
+        Nested scheme for `primary_ip`:
+        - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Defaults to `true`
+        - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
+        - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
+        - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+  - `resource_group` - (Optional, String) The ID of the resource group to use.
+  - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
+  - `subnet` - (Optional, string) The associated subnet.
+    
+    ~> **Note**
+    Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
+
+  - `vpc` - (Optional, string) The VPC in which instances can mount the file share using this share target. Required if the share's `access_control_mode` is vpc.
 - `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `replication_cron_spec` - (Optional, String) The cron specification for the file share replication schedule.
 - `zone` - (Required, string) The globally unique name for this zone.
@@ -103,6 +139,35 @@ The following attributes are exported:
 - `resource_type` - The type of resource referenced.
 - `encryption_key` - The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 - `iops` - The maximum input/output operation performance bandwidth per second for the file share.
+- `replica_share` - (Optional, List) Configuration for a replica file share to create and associate with this file share.
+  - `crn` - (String) CRN of replica share
+  - `href` - (String) Href of replica share
+  - `id` - (String) ID of replica share
+  - `iops` - (Optional, Int)
+  - `name` - (Optional, String)
+  - `profile` - (Optional, String)
+  - `replication_cron_spec` - (Optional, String)
+  - `targets` - (List) List of mount targets
+    - `name` - (Optional, String)
+    - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
+      - `name` - (Required, String) Name for this virtual network interface.
+      Nested scheme for `virtual_network_interface`:
+      - `primary_ip` - (Optional, List) The primary IP address to bind to the virtual network interface. May be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP.
+
+          Nested scheme for `primary_ip`:
+          - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Defaults to `true`
+          - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
+          - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
+          - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+      - `resource_group` - (Optional, String) The ID of the resource group to use.
+      - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
+      - `subnet` - (Optional, string) The associated subnet.
+        
+        ~> **Note**
+        Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
+
+    - `vpc` - (Optional, string) The VPC in which instances can mount the file share using this share target. Required if the share's `access_control_mode` is vpc.
+  - `zone` - (Required, String)
 - `resource_group` - The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 - `replication_role`  - The replication role of the file share.* `none`: This share is not participating in replication.* `replica`: This share is a replication target.* `source`: This share is a replication source.
 - `replication_status` - "The replication status of the file share.* `initializing`: This share is initializing replication.* `active`: This share is actively participating in replication.* `failover_pending`: This share is performing a replication failover.* `split_pending`: This share is performing a replication split.* `none`: This share is not participating in replication.* `degraded`: This share's replication sync is degraded.* `sync_pending`: This share is performing a replication sync.
@@ -110,12 +175,23 @@ The following attributes are exported:
   - `code` - A snake case string succinctly identifying the status reason.
   - `message` - An explanation of the status reason.
   - `more_info` - Link to documentation about this status reason.
-- `share_targets` - Mount targets for the file share. Nested `share_targets` blocks have the following structure:
-	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-		- `more_info` - Link to documentation about deleted resources.
-	- `href` - The URL for this share target.
-	- `id` - The unique identifier for this share target.
-	- `name` - The user-defined name for this share target.
-	- `resource_type` - The type of resource referenced.
+- `share_target_prototype` - (List) Mount targets for the file share. Nested `share_target_prototype` blocks have the following structure:
+	- `virtual_network_interface` (List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is security_group.
+  - `href` - (String) Href of this virtual network interface.
+  - `id` - (String) Unique ID of this virtual network interface.
+  Nested scheme for `virtual_network_interface`:
+  - `primary_ip` - (List) The primary IP address to bind to the virtual network interface. May be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP.
+
+      Nested scheme for `primary_ip`:
+      - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Defaults to `true`
+      - `address` - (String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
+      - `href` - (String) Href of this primary ip.
+      - `name`- (String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
+      - `reserved_ip`- (String) The unique identifier for this reserved IP
+      - `resource_type` - (String) Resource type of primary ip
+  - `resource_group` - (String) The ID of the resource group to use.
+  - `resource_type` - (String) Resource type of this virtual network interface.
+  - `security_groups`- (List of string) The security groups to use for this virtual network interface.
+  - `subnet` - (string) The associated subnet.
 - `access_tags`  - (String) Access management tags associated to the share.
 - `tags`  - (String) User tags associated for to the share.

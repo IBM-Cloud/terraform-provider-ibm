@@ -12,22 +12,47 @@ Provides a resource for ShareTarget. This allows ShareTarget to be created, upda
 
 ## Example Usage
 
+```terraform
+resource "ibm_is_share" "example" {
+  name = "my-share"
+  size = 200
+  profile = "tier-3iops"
+  zone = "us-south-2"
+}
+```
+## Example Usage (Create a replica share)
+
+```terraform
+resource "ibm_is_share" "example1" {
+    zone = "us-south-3"
+    source_share = ibm_is_share.example.id
+    name = "my-replica1"
+    profile = "tier-3iops"
+    replication_cron_spec = "0 */5 * * *"
+}
+```
+
+## Example Usage
+
 ```hcl
 resource "ibm_is_share_replica_operations" "test" {
-  share_replica = ibm_is_share.replica.id
+  share_replica = ibm_is_share.example1.id
   split_share = true
 }
 ```
 
 ```hcl
 resource "ibm_is_share_replica_operations" "test" {
-  share_replica = ibm_is_share.replica.id
+  share_replica = ibm_is_share.example1.id
   fallback_policy = "split"
   timeout = 500
 }
 ```
 
 ## Argument Reference
+
+~> **Note** 
+  `ibm_is_share_replica_operations` is a one time action and can be removed once done. Configuration for share and replica share should be adjusted accordingly.
 
 The following arguments are supported:
 

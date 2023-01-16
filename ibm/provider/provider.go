@@ -469,6 +469,8 @@ func Provider() *schema.Provider {
 			"ibm_is_share_profiles":                  vpc.DataSourceIbmIsShareProfiles(),
 			"ibm_is_share_target":                    vpc.DataSourceIbmIsShareTarget(),
 			"ibm_is_share_targets":                   vpc.DataSourceIbmIsShareTargets(),
+			"ibm_is_virtual_network_interface":       vpc.DataSourceIBMIsVirtualNetworkInterface(),
+			"ibm_is_virtual_network_interfaces":      vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
 			"ibm_is_volume":                          vpc.DataSourceIBMISVolume(),
 			"ibm_is_volumes":                         vpc.DataSourceIBMIsVolumes(),
 			"ibm_is_volume_profile":                  vpc.DataSourceIBMISVolumeProfile(),

@@ -117,7 +117,7 @@ func ResourceIbmIsShare() *schema.Resource {
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
 						"virtual_network_interface": {
@@ -238,6 +238,16 @@ func ResourceIbmIsShare() *schema.Resource {
 				Description:   "Configuration for a replica file share to create and associate with this file share. Ifunspecified, a replica may be subsequently added by creating a new file share with a`source_share` referencing this file share.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this replica share.",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this replica share.",
+						},
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -413,6 +423,14 @@ func ResourceIbmIsShare() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", isFileShareTags)},
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "User Tags for the replica share",
+						},
+						isFileShareAccessTags: {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", "accesstag")},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access management tags for this replica share",
 						},
 						"zone": {
 							Type:        schema.TypeString,
@@ -877,6 +895,14 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 				"Error creating file share (%s) access tags: %s", d.Id(), err)
 		}
 	}
+	if _, ok := d.GetOk("replica_share.0." + isFileShareAccessTags); ok {
+		oldList, newList := d.GetChange("replica_share.0." + isFileShareAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *share.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error creating file share (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
@@ -994,7 +1020,7 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
-		replicaShareItem, err := ShareReplicaToMap(context, vpcClient, d, *share)
+		replicaShareItem, err := ShareReplicaToMap(context, vpcClient, d, meta, *share)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1564,9 +1590,11 @@ func ShareMountTargetToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *s
 	return mountTarget, nil
 }
 
-func ShareReplicaToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareReplica vpcv1.Share) (map[string]interface{}, error) {
+func ShareReplicaToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, meta interface{}, shareReplica vpcv1.Share) (map[string]interface{}, error) {
 	shareReplicaMap := map[string]interface{}{}
 
+	shareReplicaMap["crn"] = shareReplica.CRN
+	shareReplicaMap["href"] = shareReplica.Href
 	shareReplicaMap["name"] = shareReplica.Name
 	shareReplicaMap["id"] = shareReplica.ID
 	shareReplicaMap["iops"] = shareReplica.Iops
@@ -1608,6 +1636,18 @@ func ShareReplicaToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *schem
 		}
 		targets = append(targets, targetsItemMap)
 	}
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *shareReplica.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error getting shares (%s) access tags: %s", d.Id(), err)
+	}
+	shareReplicaMap[isFileShareAccessTags] = accesstags
+	// d.Set(isFileShareTags, tags)
+	if shareReplica.UserTags != nil {
+		shareReplicaMap[isFileShareTags] = shareReplica.UserTags
+	}
+
 	shareReplicaMap["targets"] = targets
 
 	return shareReplicaMap, nil
