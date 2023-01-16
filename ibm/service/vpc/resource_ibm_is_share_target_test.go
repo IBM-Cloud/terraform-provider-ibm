@@ -208,7 +208,7 @@ func testAccCheckIbmIsShareTargetConfigVNI(vpcName, sname, targetName, subnetNam
 
 		name = "%s"
 	}
-	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, pIpName, false, targetName)
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, false, targetName)
 }
 
 func testAccCheckIbmIsShareTargetConfigVNISubnet(vpcName, sname, targetName, subnetName, vniName string) string {
@@ -271,15 +271,10 @@ func testAccCheckIbmIsShareTargetConfigVNIPrimaryIPID(vpcName, sname, targetName
 		share = ibm_is_share.is_share.id
 		virtual_network_interface {
 			name = "%s"
-			virtual_network_interface {
-				name = "%s"
-				primary_ip {
-					reserved_ip = ibm_is_subnet_reserved_ip.resIP1.id
-				}
+			primary_ip {
+				reserved_ip = ibm_is_subnet_reserved_ip.resIP1.id
 			}
-			
 		}
-
 		name = "%s"
 	}
 	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, resIPName, vniName, targetName)

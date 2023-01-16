@@ -620,7 +620,7 @@ func init() {
 	}
 
 	VNIId = os.Getenv("IS_VIRTUAL_NETWORK_INTERFACE")
-	if vniID == "" {
+	if VNIId == "" {
 		VNIId = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable IS_VIRTUAL_NETWORK_INTERFACE for testing ibm_is_virtual_network_interface else it is set to default value 'c93dc4c6-e85a-4da2-9ea6-f24576256122'")
 	}

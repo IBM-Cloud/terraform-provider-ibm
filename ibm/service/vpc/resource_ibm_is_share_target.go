@@ -430,6 +430,10 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 	}
 
 	if !d.IsNewResource() && (d.HasChange("virtual_network_interface.0.primary_ip.0.name") || d.HasChange("virtual_network_interface.0.primary_ip.0.auto_delete")) {
+		sess, err := meta.(conns.ClientSession).VpcV1API()
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		subnetId := d.Get("virtual_network_interface.0.subnet").(string)
 		ripId := d.Get("virtual_network_interface.0.primary_ip.0.reserved_ip").(string)
 		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
@@ -454,6 +458,10 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
 		}
+		_, err = isWaitForReservedIpAvailable(sess, subnetId, ripId, d.Timeout(schema.TimeoutUpdate), d)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err))
+		}
 	}
 
 	if hasChange {
@@ -466,6 +474,10 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		_, response, err := vpcClient.UpdateShareMountTargetWithContext(context, updateShareTargetOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateShareTargetWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
