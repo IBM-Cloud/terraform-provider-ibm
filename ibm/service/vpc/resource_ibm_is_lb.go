@@ -274,8 +274,8 @@ func ResourceIBMISLB() *schema.Resource {
 func ResourceIBMISLBValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	lbtype := "public, private"
-	isLBProfileAllowedValues := "network-fixed"
+	lbtype := "public, private, private_path"
+	isLBProfileAllowedValues := "network-fixed, network-private-path"
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -341,6 +341,7 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 
 	// subnets := flex.ExpandStringList((d.Get(isLBSubnets).(*schema.Set)).List())
 	var lbType, rg string
+	isPrivatePath := false
 	isPublic := true
 	if types, ok := d.GetOk(isLBType); ok {
 		lbType = types.(string)
@@ -350,11 +351,16 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 		isPublic = false
 	}
 
+	if lbType == "private_path" {
+		isPrivatePath = true
+		isPublic = false
+	}
+
 	if grp, ok := d.GetOk(isLBResourceGroup); ok {
 		rg = grp.(string)
 	}
 
-	err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic, isLogging, securityGroups)
+	err := lbCreate(d, meta, name, lbType, rg, subnets, isPublic, isPrivatePath, isLogging, securityGroups)
 	if err != nil {
 		return err
 	}
@@ -362,15 +368,16 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 	return resourceIBMISLBRead(d, meta)
 }
 
-func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic, isLogging bool, securityGroups *schema.Set) error {
+func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic, isPrivatePath, isLogging bool, securityGroups *schema.Set) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
 
 	options := &vpcv1.CreateLoadBalancerOptions{
-		IsPublic: &isPublic,
-		Name:     &name,
+		IsPublic:      &isPublic,
+		IsPrivatePath: &isPrivatePath,
+		Name:          &name,
 	}
 
 	if routeModeBool, ok := d.GetOk(isLBRouteMode); ok {
@@ -414,10 +421,10 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		options.Profile = loadBalancerProfileIdentityModel
 	} else {
 
-		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+		dataPath := &vpcv1.LoadBalancerLoggingDatapathPrototype{
 			Active: &isLogging,
 		}
-		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+		loadBalancerLogging := &vpcv1.LoadBalancerLoggingPrototype{
 			Datapath: dataPath,
 		}
 		options.Logging = loadBalancerLogging
@@ -485,7 +492,11 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if *lb.IsPublic {
 		d.Set(isLBType, "public")
 	} else {
-		d.Set(isLBType, "private")
+		if *lb.IsPrivatePath {
+			d.Set(isLBType, "private_path")
+		} else {
+			d.Set(isLBType, "private")
+		}
 	}
 	if lb.RouteMode != nil {
 		d.Set(isLBRouteMode, *lb.RouteMode)
@@ -721,10 +732,10 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,
 		}
-		dataPath := &vpcv1.LoadBalancerLoggingDatapath{
+		dataPath := &vpcv1.LoadBalancerLoggingDatapathPatch{
 			Active: &isLogging,
 		}
-		loadBalancerLogging := &vpcv1.LoadBalancerLogging{
+		loadBalancerLogging := &vpcv1.LoadBalancerLoggingPatch{
 			Datapath: dataPath,
 		}
 		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{

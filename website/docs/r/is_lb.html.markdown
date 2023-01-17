@@ -44,6 +44,18 @@ resource "ibm_is_lb" "example" {
 
 ```
 
+An example to create a private path load balancer.
+
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.example.id]
+  profile = "network-private-path"
+  type = "private_path"
+}
+
+```
+
 ## Timeouts
 The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -63,7 +75,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
-- `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required and should be set to `network-fixed`. For Application Load Balancer, profile is not a required attribute.
+- `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required for network and private path load balancers. Should be set to  `network-private-path` for private path load balancers and `network-fixed` for a network load balancer. For Application Load Balancer, profile is not a required attribute.
 - `resource_group` - (Optional, Forces new resource, String) The resource group where the load balancer to be created.
 - `route_mode` - (Optional, Forces new resource, Bool) Indicates whether route mode is enabled for this load balancer.
 
@@ -75,7 +87,8 @@ Review the argument references that you can specify for your resource.
   The subnets must be in the same `VPC`. The load balancer's `availability` will depend on the availability of the `zones` the specified subnets reside in. The load balancer must be in the `application` family for `updating subnets`. Load balancers in the `network` family allow only `one subnet` to be specified.
 
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your load balancer. Tags can help you find the load balancer more easily later.
-- `type` - (Optional, Forces new resource, String) The type of the load balancer. Default value is `public`. Supported values are `public` and `private`.
+- `type` - (Optional, Forces new resource, String) The type of the load balancer. Default value is `public`. Supported values are `public`, `private` and `private_path`.
+
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
