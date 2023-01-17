@@ -65,16 +65,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Description: "Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the worker. Computed based on the worker ID.",
-						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of the worker. Computed based on the worker ID.",
-						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
@@ -216,7 +206,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "API URL for interacting with the trigger property.",
 						},
 						"enum": &schema.Schema{
@@ -333,7 +323,7 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 		createTektonPipelineTriggerOptions.SetTags(tags)
 	}
 	if _, ok := d.GetOk("worker"); ok {
-		workerModel, err := resourceIBMCdTektonPipelineTriggerMapToWorker(d.Get("worker.0").(map[string]interface{}))
+		workerModel, err := resourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(d.Get("worker.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -431,7 +421,7 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 		}
 	}
 	if trigger.Worker != nil {
-		workerMap, err := resourceIBMCdTektonPipelineTriggerWorkerToMap(trigger.Worker)
+		workerMap, err := resourceIBMCdTektonPipelineTriggerWorkerIdentityToMap(trigger.Worker)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -541,7 +531,7 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		hasChange = true
 	}
 	if d.HasChange("worker") {
-		worker, err := resourceIBMCdTektonPipelineTriggerMapToWorker(d.Get("worker.0").(map[string]interface{}))
+		worker, err := resourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(d.Get("worker.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -633,14 +623,8 @@ func resourceIBMCdTektonPipelineTriggerDelete(context context.Context, d *schema
 	return nil
 }
 
-func resourceIBMCdTektonPipelineTriggerMapToWorker(modelMap map[string]interface{}) (*cdtektonpipelinev2.Worker, error) {
-	model := &cdtektonpipelinev2.Worker{}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
-		model.Type = core.StringPtr(modelMap["type"].(string))
-	}
+func resourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerIdentity, error) {
+	model := &cdtektonpipelinev2.WorkerIdentity{}
 	model.ID = core.StringPtr(modelMap["id"].(string))
 	return model, nil
 }
@@ -688,14 +672,8 @@ func resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePropertiesPrototype(mod
 	return model, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerWorkerToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerWorkerIdentityToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
-	if model.Type != nil {
-		modelMap["type"] = model.Type
-	}
 	modelMap["id"] = model.ID
 	return modelMap, nil
 }
@@ -749,7 +727,9 @@ func resourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model *cdtektonpipel
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	modelMap["href"] = model.Href
+	if model.Href != nil {
+		modelMap["href"] = model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}

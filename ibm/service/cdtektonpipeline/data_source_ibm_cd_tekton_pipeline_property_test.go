@@ -28,7 +28,6 @@ func TestAccIBMCdTektonPipelinePropertyDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "property_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type"),
 				),
 			},

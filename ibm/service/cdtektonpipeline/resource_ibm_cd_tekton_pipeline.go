@@ -48,6 +48,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "ID of the worker.",
 						},
 					},
@@ -172,7 +173,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "API URL for interacting with the definition.",
 						},
 						"id": &schema.Schema{
@@ -203,7 +204,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "API URL for interacting with the property.",
 						},
 						"enum": &schema.Schema{
@@ -253,7 +254,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.",
 						},
 						"event_listener": &schema.Schema{
@@ -286,7 +287,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "API URL for interacting with the trigger property.",
 									},
 									"enum": &schema.Schema{
@@ -334,7 +335,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
-										ForceNew:    true,
 										Description: "ID of the worker.",
 									},
 								},
@@ -471,7 +471,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"webhook_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Webhook URL that can be used to trigger pipeline runs.",
 						},
 					},
@@ -722,7 +722,6 @@ func resourceIBMCdTektonPipelineMapToWorkerIdentity(modelMap map[string]interfac
 }
 
 func resourceIBMCdTektonPipelineWorkerIdentityToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
-	// TODO we alter cdtektonpipelinev2.WorkerIdentity to cdtektonpipelinev2.Worker in func params. Determine why and if we can fix it
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	return modelMap, nil
@@ -750,7 +749,9 @@ func resourceIBMCdTektonPipelineDefinitionToMap(model *cdtektonpipelinev2.Defini
 		return modelMap, err
 	}
 	modelMap["source"] = []map[string]interface{}{sourceMap}
-	modelMap["href"] = model.Href
+	if model.Href != nil {
+		modelMap["href"] = model.Href
+	}
 	modelMap["id"] = model.ID
 	return modelMap, nil
 }
@@ -798,7 +799,9 @@ func resourceIBMCdTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Property
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	modelMap["href"] = model.Href
+	if model.Href != nil {
+		modelMap["href"] = model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
@@ -901,7 +904,9 @@ func resourceIBMCdTektonPipelineTriggerPropertyToMap(model *cdtektonpipelinev2.T
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	modelMap["href"] = model.Href
+	if model.Href != nil {
+		modelMap["href"] = model.Href
+	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}

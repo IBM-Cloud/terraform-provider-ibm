@@ -26,7 +26,6 @@ func TestAccIBMCdTektonPipelineDefinitionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "definition_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "source.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "href"),
 				),
 			},
 		},

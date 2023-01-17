@@ -33,7 +33,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The default value is `false`.
 * `worker` - (Optional, List) Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default.
 Nested scheme for **worker**:
-	* `id` - (Required, String) ID of the worker.
+	* `id` - (Required, Forces new resource, String) ID of the worker.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,253}$/`.
 
 ## Attribute Reference
@@ -178,7 +178,7 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `worker` - (List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
 	Nested scheme for **worker**:
-		* `id` - (Forces new resource, String) ID of the worker.
+		* `id` - (String) ID of the worker.
 		  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
 		* `name` - (String) Name of the worker. Computed based on the worker ID.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.
