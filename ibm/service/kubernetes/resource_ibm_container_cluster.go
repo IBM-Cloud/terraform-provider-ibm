@@ -32,6 +32,7 @@ const (
 	clusterPending       = "pending"
 	clusterRequested     = "requested"
 	clusterCritical      = "critical"
+	clusterWarning       = "warning"
 
 	workerNormal        = "normal"
 	subnetNormal        = "normal"
@@ -765,7 +766,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		}
 
 	case strings.ToLower(clusterNormal):
-		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical}
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
 		_, err = waitForClusterState(d, meta, waitForState, pendingStates)
 		if err != nil {
 			return err
@@ -1531,6 +1532,13 @@ func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState 
 			cls, err := csClient.Clusters().FindWithOutShowResourcesCompatible(clusterID, targetEnv)
 			if err != nil {
 				return nil, "", fmt.Errorf("[ERROR] waitForClusterState Error retrieving cluster: %s", err)
+			}
+
+			if cls.State == clusterWarning {
+				log.Println("[WARN] Cluster is in Warning State, this may be temporary")
+			}
+			if cls.State == clusterCritical {
+				log.Println("[WARN] Cluster is in Critical State, this may be temporary")
 			}
 
 			return cls, cls.State, nil
