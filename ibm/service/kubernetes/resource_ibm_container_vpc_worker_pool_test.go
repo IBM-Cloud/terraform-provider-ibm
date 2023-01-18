@@ -235,6 +235,25 @@ func testAccCheckIBMVpcContainerWorkerPoolUpdate(name string) string {
 func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 
 	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+	testChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+	}
+	if acc.CrkID != "" {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(
+				"ibm_container_vpc_worker_pool.test_pool", "kms_instance_id", acc.KmsInstanceID),
+			resource.TestCheckResourceAttr(
+				"ibm_container_vpc_worker_pool.test_pool", "crk", acc.CrkID),
+		)
+	}
+	if acc.WorkerPoolSecondaryStorage != "" {
+		testChecks = append(testChecks, resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "secondary_storage", acc.WorkerPoolSecondaryStorage),
+		)
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -242,18 +261,7 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMVpcContainerWorkerPoolEnvvar(name),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "kms_instance_id", acc.KmsInstanceID),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "crk", acc.CrkID),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "secondary_storage", acc.WorkerPoolSecondaryStorage),
-				),
+				Check:  resource.ComposeTestCheckFunc(testChecks...),
 			},
 			{
 				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
