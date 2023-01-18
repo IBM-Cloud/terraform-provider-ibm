@@ -44,6 +44,39 @@ func TestAccIBMISInstanceTemplate_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISInstanceTemplate_catalog_basic(t *testing.T) {
+	randInt := acctest.RandIntRange(10, 100)
+
+	publicKey := strings.TrimSpace(`
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVtuCfWKVGKaRmaRG6JQZY8YdxnDgGzVOK93IrV9R5Hl0JP1oiLLWlZQS2reAKb8lBqyDVEREpaoRUDjqDqXG8J/kR42FKN51su914pjSBc86wJ02VtT1Wm1zRbSg67kT+g8/T1jCgB5XBODqbcICHVP8Z1lXkgbiHLwlUrbz6OZkGJHo/M/kD1Eme8lctceIYNz/Ilm7ewMXZA4fsidpto9AjyarrJLufrOBl4MRVcZTDSJ7rLP982aHpu9pi5eJAjOZc7Og7n4ns3NFppiCwgVMCVUQbN5GBlWhZ1OsT84ZiTf+Zy8ew+Yg5T7Il8HuC7loWnz+esQPf0s3xhC/kTsGgZreIDoh/rxJfD67wKXetNSh5RH/n5BqjaOuXPFeNXmMhKlhj9nJ8scayx/wsvOGuocEIkbyJSLj3sLUU403OafgatEdnJOwbqg6rUNNF5RIjpJpL7eEWlKIi1j9LyhmPJ+fEO7TmOES82VpCMHpLbe4gf/MhhJ/Xy8DKh9s= root@ffd8363b1226
+	`)
+	vpcName := fmt.Sprintf("tf-testvpc%d", randInt)
+	subnetName := fmt.Sprintf("tf-testsubnet%d", randInt)
+	templateName := fmt.Sprintf("tf-testtemplate%d", randInt)
+	sshKeyName := fmt.Sprintf("tf-testsshkey%d", randInt)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceTemplateCatalogConfig(vpcName, subnetName, sshKeyName, publicKey, templateName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.instancetemplate1", "name", templateName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "profile"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "catalog_offering.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "catalog_offering.0.version_crn"),
+					resource.TestCheckNoResourceAttr(
+						"ibm_is_instance_template.instancetemplate1", "image"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISInstanceTemplate_Reserved_IP_basic(t *testing.T) {
 	randInt := acctest.RandIntRange(10, 100)
 
@@ -219,11 +252,7 @@ func testAccCheckIBMISInstanceTemplateDestroy(s *terraform.State) error {
 }
 
 func testAccCheckIBMISInstanceTemplateConfig(vpcName, subnetName, sshKeyName, publicKey, templateName string) string {
-	return fmt.Sprintf(`
-	provider "ibm" {
-		generation = 2
-	}
-	
+	return fmt.Sprintf(`	
 	resource "ibm_is_vpc" "vpc2" {
 	  name = "%s"
 	}
@@ -247,6 +276,48 @@ func testAccCheckIBMISInstanceTemplateConfig(vpcName, subnetName, sshKeyName, pu
 	   name    = "%s"
 	   image   = data.ibm_is_images.is_images.images.0.id
 	   profile = "bx2-8x32"
+	
+	   primary_network_interface {
+		 subnet = ibm_is_subnet.subnet2.id
+	   }
+	
+	   vpc       = ibm_is_vpc.vpc2.id
+	   zone      = "us-south-2"
+	   keys      = [ibm_is_ssh_key.sshkey.id]
+	 }
+		
+	
+	`, vpcName, subnetName, sshKeyName, publicKey, templateName)
+
+}
+func testAccCheckIBMISInstanceTemplateCatalogConfig(vpcName, subnetName, sshKeyName, publicKey, templateName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "vpc2" {
+	  name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "subnet2" {
+	  name            = "%s"
+	  vpc             = ibm_is_vpc.vpc2.id
+	  zone            = "us-south-2"
+	  ipv4_cidr_block = "10.240.64.0/28"
+	}
+	
+	resource "ibm_is_ssh_key" "sshkey" {
+	  name       = "%s"
+	  public_key = "%s"
+	}
+
+	data "ibm_is_images" "is_images" {
+		catalog_managed = true
+	}
+
+	resource "ibm_is_instance_template" "instancetemplate1" {
+	   name    = "%s"
+	   catalog_offering {
+		version_crn = data.ibm_is_images.is_images.images.0.catalog_offering.0.version.0.crn
+	   }
+	   profile = "bx2-2x8"
 	
 	   primary_network_interface {
 		 subnet = ibm_is_subnet.subnet2.id
@@ -352,10 +423,6 @@ func testAccCheckIBMISInstanceMetadataServiceTemplateConfig(vpcName, subnetName,
 
 func testAccCheckIBMISInstanceTemplateWithVolume(vpcName, subnetName, sshKeyName, publicKey, templateName, volAttachName string) string {
 	return fmt.Sprintf(`
-	provider "ibm" {
-		generation = 2
-	}
-	
 	resource "ibm_is_vpc" "vpc2" {
 	  name = "%s"
 	}
@@ -400,11 +467,7 @@ func testAccCheckIBMISInstanceTemplateWithVolume(vpcName, subnetName, sshKeyName
 }
 
 func testAccCheckIBMISInstanceTemplateWithVolumeUserTag(vpcName, subnetName, sshKeyName, publicKey, templateName, volAttachName, userTag string) string {
-	return fmt.Sprintf(`
-	provider "ibm" {
-		generation = 2
-	}
-	
+	return fmt.Sprintf(`	
 	resource "ibm_is_vpc" "vpc2" {
 	  name = "%s"
 	}
@@ -444,10 +507,6 @@ func testAccCheckIBMISInstanceTemplateWithVolumeUserTag(vpcName, subnetName, ssh
 
 func testAccCheckIBMISInstanceTemplateConfigAvailablePolicyHostFailure_Default(vpcName, subnetName, sshKeyName, publicKey, templateName string) string {
 	return fmt.Sprintf(`
-	provider "ibm" {
-		generation = 2
-	}
-	
 	resource "ibm_is_vpc" "vpc2" {
 	  name = "%s"
 	}
@@ -484,10 +543,6 @@ func testAccCheckIBMISInstanceTemplateConfigAvailablePolicyHostFailure_Default(v
 }
 func testAccCheckIBMISInstanceTemplateConfigAvailablePolicyHostFailure_Updated(vpcName, subnetName, sshKeyName, publicKey, templateName string) string {
 	return fmt.Sprintf(`
-	provider "ibm" {
-		generation = 2
-	}
-	
 	resource "ibm_is_vpc" "vpc2" {
 	  name = "%s"
 	}
