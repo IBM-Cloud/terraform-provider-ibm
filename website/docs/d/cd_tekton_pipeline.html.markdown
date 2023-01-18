@@ -38,7 +38,9 @@ In addition to all argument references listed, you can access the following attr
 * `definitions` - (List) Definition list.
   * Constraints: The maximum length is `128` items. The minimum length is `0` items.
 Nested scheme for **definitions**:
-	* `id` - (String) UUID.
+	* `href` - (String) API URL for interacting with the definition.
+	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+	* `id` - (String) The aggregated definition ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `source` - (List) Source repository containing the Tekton pipeline definition.
 	Nested scheme for **source**:
@@ -50,7 +52,7 @@ Nested scheme for **definitions**:
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 			* `tag` - (String) A tag from the repo, specify one of branch or tag only.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
-			* `tool` - (List) Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.
+			* `tool` - (List) Reference to the repository tool in the parent toolchain.
 			Nested scheme for **tool**:
 				* `id` - (String) ID of the repository tool instance in the parent toolchain.
 				  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
@@ -66,6 +68,9 @@ Nested scheme for **definitions**:
 * `enabled` - (Boolean) Flag whether this pipeline is enabled.
   * Constraints: The default value is `true`.
 
+* `href` - (String) API URL for interacting with the pipeline.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+
 * `name` - (String) String.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
 
@@ -74,6 +79,8 @@ Nested scheme for **definitions**:
 Nested scheme for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed when using `single_select` property type.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
+	* `href` - (String) API URL for interacting with the property.
+	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
@@ -83,7 +90,7 @@ Nested scheme for **properties**:
 	* `value` - (String) Property value. Any string value is valid.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 
-* `resource_group` - (List) The ID of the resource group in which the pipeline was created.
+* `resource_group` - (List) The resource group in which the pipeline was created.
 Nested scheme for **resource_group**:
 	* `id` - (String) ID.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]+$/`.
@@ -111,10 +118,10 @@ Nested scheme for **triggers**:
 	* `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `events` - (List) Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.
-	  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The list items must match regular expression `/^[-0-9a-zA-Z_,]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+	  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The maximum length is `3` items. The minimum length is `0` items.
 	* `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-	* `id` - (String) ID.
+	* `id` - (String) The Trigger ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 	* `name` - (String) Trigger name.
@@ -175,7 +182,7 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `worker` - (List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
 	Nested scheme for **worker**:
-		* `id` - (Forces new resource, String) ID of the worker.
+		* `id` - (String) ID of the worker.
 		  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
 		* `name` - (String) Name of the worker. Computed based on the worker ID.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.
@@ -186,7 +193,7 @@ Nested scheme for **triggers**:
 
 * `worker` - (List) Default pipeline worker used to run the pipeline.
 Nested scheme for **worker**:
-	* `id` - (Forces new resource, String) ID of the worker.
+	* `id` - (String) ID of the worker.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
 	* `name` - (String) Name of the worker. Computed based on the worker ID.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.

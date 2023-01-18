@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -14,13 +14,15 @@ import (
 )
 
 func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceBasic(t *testing.T) {
+	triggerPropertyName := "trig-prop-1"
+	triggerPropertyType := "text"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic("", ""),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic("", "", triggerPropertyName, triggerPropertyType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "property_name"),
@@ -34,8 +36,8 @@ func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceAllArgs(t *testing.T) {
 	triggerPropertyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	triggerPropertyValue := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	triggerPropertyType := "text"
+	triggerPropertyValue := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	triggerPropertyPath := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -43,12 +45,13 @@ func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig("", "", triggerPropertyName, triggerPropertyValue, triggerPropertyType, triggerPropertyPath),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig("", "", triggerPropertyName, triggerPropertyType, triggerPropertyValue, triggerPropertyPath),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "property_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "value"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type"),
 				),
 			},
@@ -56,7 +59,7 @@ func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(triggerPropertyPipelineID string, triggerPropertyTriggerID string) string {
+func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(triggerPropertyPipelineID string, triggerPropertyTriggerID string, triggerPropertyName string, triggerPropertyType string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -107,12 +110,12 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(trigger
 		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			type = "manual"
-			event_listener = "listener"
 			depends_on = [
 				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
 			]
 			name = "trigger"
+			type = "manual"
+			event_listener = "listener"
 		}
 		resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
@@ -129,7 +132,7 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(trigger
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPropertyPipelineID string, triggerPropertyTriggerID string, triggerPropertyName string, triggerPropertyValue string, triggerPropertyType string, triggerPropertyPath string) string {
+func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPropertyPipelineID string, triggerPropertyTriggerID string, triggerPropertyName string, triggerPropertyType string, triggerPropertyValue string, triggerPropertyPath string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -180,24 +183,24 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPrope
 		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			type = "manual"
-			event_listener = "listener"
 			depends_on = [
 				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
 			]
 			name = "trigger"
+			type = "manual"
+			event_listener = "listener"
 		}
 		resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.trigger_id
 			name = "%s"
-			value = "%s"
 			type = "%s"
+			value = "%s"
 		}
 		data "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property" {
 			pipeline_id = ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property.trigger_id
 			property_name = "%s"
 		}
-	`, rgName, tcName, triggerPropertyName, triggerPropertyValue, triggerPropertyType, triggerPropertyName)
+	`, rgName, tcName, triggerPropertyName, triggerPropertyType, triggerPropertyValue, triggerPropertyName)
 }
