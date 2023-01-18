@@ -157,6 +157,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The operating system of the workers in the worker pool.",
 			},
 
