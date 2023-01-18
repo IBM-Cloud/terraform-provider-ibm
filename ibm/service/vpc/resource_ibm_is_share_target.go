@@ -700,6 +700,7 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 	vniMap["id"] = vni.ID
 	vniMap["crn"] = vni.CRN
 	vniMap["name"] = vni.Name
+	vniMap["href"] = vni.Href
 
 	primaryIpList := make([]map[string]interface{}, 0)
 	currentPrimIp := map[string]interface{}{}

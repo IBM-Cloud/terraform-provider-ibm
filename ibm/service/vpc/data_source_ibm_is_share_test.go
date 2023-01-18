@@ -104,7 +104,7 @@ func testAccCheckIbmIsShareDataSourceConfig(vpcName, shareName string, shareSize
 			name = "%s"
 			size = %d
 			profile = "%s"
-			share_target_prototype {
+			mount_targets {
 				name = "%s"
 				vpc = ibm_is_vpc.tfvpc.id
 			}

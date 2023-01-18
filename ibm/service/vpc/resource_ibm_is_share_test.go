@@ -161,7 +161,7 @@ func testAccCheckIbmIsShareConfig(vpcName, name string, size int, shareTergetNam
 		profile = "%s"
 		resource_group = data.ibm_resource_group.group.id
 		size = %d
-		share_target_prototype {
+		mount_targets {
 			name = "%s"
 			vpc = ibm_is_vpc.testacc_vpc.id
 		}
@@ -185,7 +185,7 @@ func testAccCheckIbmIsShareConfigReplica(vpcName, name string, size int, shareTe
 		profile = "%s"
 		resource_group = data.ibm_resource_group.group.id
 		size = %d
-		share_target_prototype {
+		mount_targets {
 			name = "%s"
 			vpc = ibm_is_vpc.testacc_vpc.id
 		}
@@ -217,7 +217,7 @@ func testAccCheckIbmIsShareConfigReplicaInline(vpcName, name string, size int, s
 		profile = "%s"
 		resource_group = data.ibm_resource_group.group.id
 		size = %d
-		share_target_prototype {
+		mount_targets {
 			name = "%s"
 			vpc = ibm_is_vpc.testacc_vpc.id
 		}

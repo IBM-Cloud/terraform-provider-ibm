@@ -1176,7 +1176,7 @@ resource "ibm_is_share" "is_share" {
 	profile = "tier-3iops"
 	resource_group = data.ibm_resource_group.default.id
 	size = 32000
-	share_target_prototype {
+	mount_targets {
 		vpc = ibm_is_vpc.vpc.id
 	}
 	zone = "us-south-2"
