@@ -81,7 +81,7 @@ func TestAccIBMContainerOpenshiftClusterBasic(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	openshiftFlavour := "bx2.16x64"
 	openShiftworkerCount := "2"
-	operatingSystem := "REDHAT_7_64"
+	operatingSystem := "REDHAT_8_64"
 	var conf *v2.ClusterInfo
 
 	resource.Test(t, resource.TestCase{
@@ -335,46 +335,31 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }`, name)
 }
 func testAccCheckIBMContainerOcpClusterBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem string) string {
-	vpcName := "<test-vpc-name>"
-	subnetName := "<test-subnet-name>"
-	cosInstanceName := "<test-cos-name>"
 	return fmt.Sprintf(`
-provider "ibm" {
-	region="us-south"
-}
-data "ibm_resource_group" "resource_group" {
-	is_default=true
-}
-data "ibm_is_vpc" "vpc" {
-	name = "%s"
+data "ibm_resource_instance" "cos_instance" {
+	name     = "%[5]s"
 }
 
-data "ibm_is_subnet" "subnet" {
-	name                     = "%s"
-}
-data "ibm_resource_instance" "cos_instance" {
-	name     = "%s"
-}
 resource "ibm_container_vpc_cluster" "cluster" {
-	name              = "%s"
-	vpc_id            = data.ibm_is_vpc.vpc.id
-	flavor            = "%s"
-	worker_count      = "%s"
+	name              = "%[1]s"
+	vpc_id            = "%[2]s"
+	flavor            = "%[6]s"
+	worker_count      = "%[7]s"
 	kube_version      = "4.11_openshift"
- 	operating_system  = "%s"
+ 	operating_system  = "%[8]s"
 	wait_till         = "OneWorkerNodeReady"
 	entitlement       = "cloud_pak"
 	cos_instance_crn  = data.ibm_resource_instance.cos_instance.id
-	resource_group_id = data.ibm_resource_group.resource_group.id
+	resource_group_id = "%[3]s"
 	zones {
-		 subnet_id = data.ibm_is_subnet.subnet.id
+		 subnet_id = "%[4]s"
 		 name      = "us-south-1"
 	  }
   }
   data "ibm_container_cluster_config" "testacc_ds_cluster" {
 	cluster_name_id = ibm_container_vpc_cluster.cluster.id
   }
-  `, vpcName, subnetName, cosInstanceName, name, openshiftFlavour, openShiftworkerCount, operatingSystem)
+  `, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.CosName, openshiftFlavour, openShiftworkerCount, operatingSystem)
 
 }
 

@@ -201,6 +201,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"operating_system": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Computed:    true,
 				Description: "The operating system of the workers in the default worker pool.",
 			},
