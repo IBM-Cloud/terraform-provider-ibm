@@ -592,7 +592,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	switch timeoutStage {
 
 	case strings.ToLower(clusterNormal):
-		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical}
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
 		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
 		if err != nil {
 			return err
@@ -1258,6 +1258,13 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 			clusterInfo, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 			if err != nil {
 				return nil, "", err
+			}
+
+			if clusterInfo.State == clusterWarning {
+				log.Println("[WARN] Cluster is in Warning State, this may be temporary")
+			}
+			if clusterInfo.State == clusterCritical {
+				log.Println("[WARN] Cluster is in Critical State, this may be temporary")
 			}
 
 			return clusterInfo, clusterInfo.State, nil

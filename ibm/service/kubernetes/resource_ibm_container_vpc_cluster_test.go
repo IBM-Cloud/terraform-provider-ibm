@@ -425,6 +425,37 @@ func TestAccIBMContainerVpcClusterEnvvar(t *testing.T) {
 	})
 }
 
+// This test is here to help to focus on given resources, but requires everything else existing already
+func TestAccIBMContainerVpcClusterBaseEnvvar(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterBaseEnvvar(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_count", "1"),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_cluster.cluster",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
+			},
+		},
+	})
+}
+
 // You need to set up env vars:
 // export IBM_CLUSTER_VPC_ID
 // export IBM_CLUSTER_VPC_SUBNET_ID
@@ -453,6 +484,29 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 		kms_account_id = "%[7]s"
 	}
 	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
+	fmt.Println(config)
+	return config
+}
+
+// You need to set up env vars:
+// export IBM_CLUSTER_VPC_ID
+// export IBM_CLUSTER_VPC_SUBNET_ID
+// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
+	config := fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		wait_till = "normal"
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
 	fmt.Println(config)
 	return config
 }
