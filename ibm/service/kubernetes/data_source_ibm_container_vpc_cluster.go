@@ -82,6 +82,44 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
+						"operating_system": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The operating system of the workers in the worker pool",
+						},
+						"secondary_storage": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The User-defined Secondary Storage Configuration of the workers in the worker pool.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"count": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"size": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"device_type": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"raid_configuration": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"profile": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
 						"state": {
 							Type:     schema.TypeString,
 							Computed: true,

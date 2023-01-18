@@ -308,6 +308,19 @@ func FlattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]inte
 	return result
 }
 
+func FlattenVpcUserDefinedSecondaryDisk(userDefinedSecondaryDisk containerv2.DiskConfigResp) []map[string]interface{} {
+	storageList := make([]map[string]interface{}, 1)
+	secondary_storage := map[string]interface{}{
+		"name":               userDefinedSecondaryDisk.Name,
+		"count":              strconv.Itoa(userDefinedSecondaryDisk.Count),
+		"size":               strconv.Itoa(userDefinedSecondaryDisk.Size),
+		"device_type":        userDefinedSecondaryDisk.DeviceType,
+		"raid_configuration": userDefinedSecondaryDisk.RAIDConfiguration,
+		"profile":            userDefinedSecondaryDisk.Profile,
+	}
+	storageList[0] = secondary_storage
+	return storageList
+}
 func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
@@ -342,6 +355,9 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 			zonesConfig[j] = z
 		}
 		l["zones"] = zonesConfig
+		if workerPool.UserDefinedSecondaryDisk != nil {
+			l["secondary_storage"] = FlattenVpcUserDefinedSecondaryDisk(*workerPool.UserDefinedSecondaryDisk)
+		}
 		workerPools[i] = l
 	}
 
