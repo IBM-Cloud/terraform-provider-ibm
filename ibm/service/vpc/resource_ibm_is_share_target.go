@@ -95,7 +95,6 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 									},
 									"auto_delete": {
 										Type:        schema.TypeBool,
-										Default:     true,
 										Optional:    true,
 										Computed:    true,
 										Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",

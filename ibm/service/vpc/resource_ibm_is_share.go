@@ -91,7 +91,7 @@ func ResourceIbmIsShare() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"size"},
-				Default:      "vpc",
+				ForceNew:     true,
 				Computed:     true,
 				Description:  "The access control mode for the share:",
 			},
@@ -261,7 +261,7 @@ func ResourceIbmIsShare() *schema.Resource {
 						"access_control_mode": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     "vpc",
+							ForceNew:    true,
 							Computed:    true,
 							Description: "The access control mode for the replica share:",
 						},
