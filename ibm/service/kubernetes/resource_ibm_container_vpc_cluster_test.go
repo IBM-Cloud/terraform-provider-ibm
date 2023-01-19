@@ -81,7 +81,7 @@ func TestAccIBMContainerOpenshiftClusterBasic(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	openshiftFlavour := "bx2.16x64"
 	openShiftworkerCount := "2"
-	operatingSystem := "REDHAT_7_64"
+	operatingSystem := "REDHAT_8_64"
 	var conf *v2.ClusterInfo
 
 	resource.Test(t, resource.TestCase{
@@ -335,46 +335,31 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }`, name)
 }
 func testAccCheckIBMContainerOcpClusterBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem string) string {
-	vpcName := "<test-vpc-name>"
-	subnetName := "<test-subnet-name>"
-	cosInstanceName := "<test-cos-name>"
 	return fmt.Sprintf(`
-provider "ibm" {
-	region="us-south"
-}
-data "ibm_resource_group" "resource_group" {
-	is_default=true
-}
-data "ibm_is_vpc" "vpc" {
-	name = "%s"
+data "ibm_resource_instance" "cos_instance" {
+	name     = "%[5]s"
 }
 
-data "ibm_is_subnet" "subnet" {
-	name                     = "%s"
-}
-data "ibm_resource_instance" "cos_instance" {
-	name     = "%s"
-}
 resource "ibm_container_vpc_cluster" "cluster" {
-	name              = "%s"
-	vpc_id            = data.ibm_is_vpc.vpc.id
-	flavor            = "%s"
-	worker_count      = "%s"
+	name              = "%[1]s"
+	vpc_id            = "%[2]s"
+	flavor            = "%[6]s"
+	worker_count      = "%[7]s"
 	kube_version      = "4.11_openshift"
- 	operating_system  = "%s"
+ 	operating_system  = "%[8]s"
 	wait_till         = "OneWorkerNodeReady"
 	entitlement       = "cloud_pak"
 	cos_instance_crn  = data.ibm_resource_instance.cos_instance.id
-	resource_group_id = data.ibm_resource_group.resource_group.id
+	resource_group_id = "%[3]s"
 	zones {
-		 subnet_id = data.ibm_is_subnet.subnet.id
+		 subnet_id = "%[4]s"
 		 name      = "us-south-1"
 	  }
   }
   data "ibm_container_cluster_config" "testacc_ds_cluster" {
 	cluster_name_id = ibm_container_vpc_cluster.cluster.id
   }
-  `, vpcName, subnetName, cosInstanceName, name, openshiftFlavour, openShiftworkerCount, operatingSystem)
+  `, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.CosName, openshiftFlavour, openShiftworkerCount, operatingSystem)
 
 }
 
@@ -440,6 +425,37 @@ func TestAccIBMContainerVpcClusterEnvvar(t *testing.T) {
 	})
 }
 
+// This test is here to help to focus on given resources, but requires everything else existing already
+func TestAccIBMContainerVpcClusterBaseEnvvar(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterBaseEnvvar(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_count", "1"),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_cluster.cluster",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
+			},
+		},
+	})
+}
+
 // You need to set up env vars:
 // export IBM_CLUSTER_VPC_ID
 // export IBM_CLUSTER_VPC_SUBNET_ID
@@ -468,6 +484,29 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 		kms_account_id = "%[7]s"
 	}
 	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
+	fmt.Println(config)
+	return config
+}
+
+// You need to set up env vars:
+// export IBM_CLUSTER_VPC_ID
+// export IBM_CLUSTER_VPC_SUBNET_ID
+// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
+	config := fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		wait_till = "normal"
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
 	fmt.Println(config)
 	return config
 }

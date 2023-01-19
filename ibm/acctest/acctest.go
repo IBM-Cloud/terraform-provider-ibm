@@ -15,6 +15,8 @@ import (
 
 var AppIDTenantID string
 var AppIDTestUserEmail string
+var BackupPolicyJobID string
+var BackupPolicyID string
 var CfOrganization string
 var CfSpace string
 var CisDomainStatic string
@@ -23,6 +25,7 @@ var CisInstance string
 var CisResourceGroup string
 var CloudShellAccountID string
 var CosCRN string
+var CosName string
 var Ibmid1 string
 var Ibmid2 string
 var IAMUser string
@@ -330,6 +333,12 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_COS_CRN with a VALID COS instance CRN for testing ibm_cos_* resources")
 	}
 
+	CosName = os.Getenv("IBM_COS_NAME")
+	if CosName == "" {
+		CosName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_NAME with a VALID COS instance name for testing resources with cos deps")
+	}
+
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")
 	if trustedMachineType == "" {
 		trustedMachineType = "mb1c.16x64"
@@ -521,6 +530,16 @@ func init() {
 	if InstanceName == "" {
 		InstanceName = "placement-check-ins" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
+	}
+
+	BackupPolicyJobID = os.Getenv("IS_BACKUP_POLICY_JOB_ID")
+	if BackupPolicyJobID == "" {
+		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_JOB_ID for testing ibm_is_backup_policy_job datasource")
+	}
+
+	BackupPolicyID = os.Getenv("IS_BACKUP_POLICY_ID")
+	if BackupPolicyID == "" {
+		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_ID for testing ibm_is_backup_policy_jobs datasource")
 	}
 
 	InstanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")

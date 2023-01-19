@@ -1137,6 +1137,16 @@ resource "ibm_is_vpn_server_route" "is_vpn_server_route" {
   name          = "example-vpn-server-route"
 }
 
+data "ibm_is_backup_policy_job" "is_backup_policy_job" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  identifier       = ""
+}
+
+data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
+  backup_policy_plan_id = ibm_is_backup_policy.is_backup_policy.backup_policy_plan_id
+  backup_policy_id      = ibm_is_backup_policy.is_backup_policy.id
+}
+
 data "ibm_is_vpn_server" "is_vpn_server" {
 	identifier = ibm_is_vpn_server.is_vpn_server.vpn_server
 }
