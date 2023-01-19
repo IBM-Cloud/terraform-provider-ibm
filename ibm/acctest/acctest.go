@@ -61,6 +61,7 @@ var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
 var ISAddressPrefixCIDR string
@@ -498,6 +499,12 @@ func init() {
 	if ISAddressPrefixCIDR == "" {
 		ISAddressPrefixCIDR = "10.120.0.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	}
+
+	IsResourceGroupID = os.Getenv("SL_RESOURCE_GROUP_ID")
+	if IsResourceGroupID == "" {
+		IsResourceGroupID = "c01d34dff4364763476834c990398zz8"
+		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
 	}
 
 	IsImage = os.Getenv("IS_IMAGE")
