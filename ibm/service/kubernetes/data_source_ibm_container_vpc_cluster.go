@@ -90,7 +90,7 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 						"secondary_storage": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The User-defined Secondary Storage Configuration of the workers in the worker pool.",
+							Description: "The optional secondary storage configuration of the workers in the worker pool.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": {

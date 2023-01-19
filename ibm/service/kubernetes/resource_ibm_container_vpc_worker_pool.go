@@ -166,7 +166,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "The name of the User-defined Secondary Storage Configuration for the workers in the worker pool.",
+				Description: "The ID of the secondary storage option for the workers in the worker pool.",
 			},
 
 			"host_pool_id": {
