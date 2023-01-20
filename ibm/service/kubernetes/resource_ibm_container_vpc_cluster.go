@@ -211,7 +211,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "The ID of the secondary storage option for the default worker pool.",
+				Description: "The secondary storage option for the default worker pool.",
 			},
 
 			"taints": {
