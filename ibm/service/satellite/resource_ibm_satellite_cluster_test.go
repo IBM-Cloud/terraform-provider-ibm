@@ -242,6 +242,14 @@ func testAccCheckSatelliteClusterCreate(clusterName, locationName, managed_from,
 			"test"  = "test-pool1"
 			"test1" = "test-pool2"
 		}
+
+		resource "ibm_satellite_cluster" "create_single_node_cluster"{
+			name = "cluster-single-node"
+			location = ibm_satellite_host.assign_host.0.location
+			kube_version = "4.11_openshift"
+			infrastructure_topology = "single-replica"
+		}
+
 	  }
 
 `, locationName, managed_from, resource_group, resource_prefix, resource_prefix, region, resource_prefix, publicKey, resource_prefix, region, resource_prefix, host_provider, clusterName, operatingSystem)
