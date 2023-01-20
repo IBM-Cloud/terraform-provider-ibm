@@ -537,8 +537,8 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("cluster", cluster)
 	d.Set("vpc_id", workerPool.VpcID)
 	d.Set("operating_system", workerPool.OperatingSystem)
-	if workerPool.UserDefinedSecondaryDisk != nil {
-		d.Set("secondary_storage", workerPool.UserDefinedSecondaryDisk.Name)
+	if workerPool.SecondaryStorageOption != nil {
+		d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
 	}
 	d.Set("host_pool_id", workerPool.HostPoolID)
 	if workerPool.Taints != nil {

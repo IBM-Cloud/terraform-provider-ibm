@@ -39,8 +39,8 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `secondary_storage`:
   - `name` - (String) The name of the secondary storage.
-  - `count` - (String) The device count of the secondary storage.
-  - `size` - (String) The size of the secondary storage.
+  - `count` - (Integer) The device count of the secondary storage.
+  - `size` - (Integer) The size of the secondary storage.
   - `device_type` - (String) The device type of the secondary storage.
   - `raid_configuration` - (String) The raid configuration of the secondary storage.
   - `profile` - (String) The profile of the secondary storage.

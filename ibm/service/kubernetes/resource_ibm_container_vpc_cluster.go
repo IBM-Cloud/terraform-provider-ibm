@@ -1055,8 +1055,8 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set("host_pool_id", workerPool.HostPoolID)
 	d.Set("operating_system", workerPool.OperatingSystem)
-	if workerPool.UserDefinedSecondaryDisk != nil {
-		d.Set("secondary_storage", workerPool.UserDefinedSecondaryDisk.Name)
+	if workerPool.SecondaryStorageOption != nil {
+		d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
 	}
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)

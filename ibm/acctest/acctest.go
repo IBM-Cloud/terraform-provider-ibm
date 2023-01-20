@@ -461,7 +461,7 @@ func init() {
 
 	WorkerPoolSecondaryStorage = os.Getenv("IBM_WORKER_POOL_SECONDARY_STORAGE")
 	if WorkerPoolSecondaryStorage == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_SECONDARY_STORAGE for testing user-defined secondary_storage attachment to IKS workerpools")
+		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_SECONDARY_STORAGE for testing secondary_storage attachment to IKS workerpools")
 	}
 
 	placementGroupName = os.Getenv("IBM_PLACEMENT_GROUP_NAME")

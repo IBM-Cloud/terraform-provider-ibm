@@ -98,11 +98,11 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 										Computed: true,
 									},
 									"count": {
-										Type:     schema.TypeString,
+										Type:     schema.TypeInt,
 										Computed: true,
 									},
 									"size": {
-										Type:     schema.TypeString,
+										Type:     schema.TypeInt,
 										Computed: true,
 									},
 									"device_type": {

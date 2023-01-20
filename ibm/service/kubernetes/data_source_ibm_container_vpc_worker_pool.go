@@ -69,11 +69,11 @@ func DataSourceIBMContainerVpcClusterWorkerPool() *schema.Resource {
 							Computed: true,
 						},
 						"count": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"size": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"device_type": {
@@ -187,8 +187,8 @@ func dataSourceIBMContainerVpcClusterWorkerPoolRead(d *schema.ResourceData, meta
 		}
 	}
 
-	if workerPool.UserDefinedSecondaryDisk != nil {
-		d.Set("secondary_storage", flex.FlattenVpcUserDefinedSecondaryDisk(*workerPool.UserDefinedSecondaryDisk))
+	if workerPool.SecondaryStorageOption != nil {
+		d.Set("secondary_storage", flex.FlattenVpcWorkerPoolSecondaryDisk(*workerPool.SecondaryStorageOption))
 	}
 
 	d.SetId(workerPool.ID)
