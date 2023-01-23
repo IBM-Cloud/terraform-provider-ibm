@@ -83,6 +83,16 @@ const (
 	dlRouteReportComplete          = "complete"
 	dlRouteReportId                = "route_report_id"
 	dlResourceId                   = "id"
+	dlExportRouteFilters           = "export_route_filters"
+	dlImportRouteFilters           = "import_route_filters"
+	dlAction                       = "action"
+	dlBefore                       = "before"
+	dlGe                           = "ge"
+	dlLe                           = "le"
+	dlExportRouteFilter            = "export_route_filter_id"
+	dlImportRouteFilter            = "import_route_filter_id"
+	dlExportRouteFilterId          = "id"
+	dlImportRouteFilterId          = "id"
 )
 
 func NewInt64Pointer(v int64) *int64 {

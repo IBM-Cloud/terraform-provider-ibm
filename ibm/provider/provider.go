@@ -362,8 +362,6 @@ func Provider() *schema.Provider {
 			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
 			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
 			"ibm_is_backup_policy_plans": vpc.DataSourceIBMIsBackupPolicyPlans(),
-			"ibm_is_backup_policy_job":   vpc.DataSourceIBMIsBackupPolicyJob(),
-			"ibm_is_backup_policy_jobs":  vpc.DataSourceIBMIsBackupPolicyJobs(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
@@ -601,17 +599,21 @@ func Provider() *schema.Provider {
 
 			// // Added for Direct Link
 
-			"ibm_dl_gateways":          directlink.DataSourceIBMDLGateways(),
-			"ibm_dl_offering_speeds":   directlink.DataSourceIBMDLOfferingSpeeds(),
-			"ibm_dl_port":              directlink.DataSourceIBMDirectLinkPort(),
-			"ibm_dl_ports":             directlink.DataSourceIBMDirectLinkPorts(),
-			"ibm_dl_gateway":           directlink.DataSourceIBMDLGateway(),
-			"ibm_dl_locations":         directlink.DataSourceIBMDLLocations(),
-			"ibm_dl_routers":           directlink.DataSourceIBMDLRouters(),
-			"ibm_dl_provider_ports":    directlink.DataSourceIBMDirectLinkProviderPorts(),
-			"ibm_dl_provider_gateways": directlink.DataSourceIBMDirectLinkProviderGateways(),
-			"ibm_dl_route_reports":     directlink.DataSourceIBMDLRouteReports(),
-			"ibm_dl_route_report":      directlink.DataSourceIBMDLRouteReport(),
+			"ibm_dl_gateways":             directlink.DataSourceIBMDLGateways(),
+			"ibm_dl_offering_speeds":      directlink.DataSourceIBMDLOfferingSpeeds(),
+			"ibm_dl_port":                 directlink.DataSourceIBMDirectLinkPort(),
+			"ibm_dl_ports":                directlink.DataSourceIBMDirectLinkPorts(),
+			"ibm_dl_gateway":              directlink.DataSourceIBMDLGateway(),
+			"ibm_dl_locations":            directlink.DataSourceIBMDLLocations(),
+			"ibm_dl_routers":              directlink.DataSourceIBMDLRouters(),
+			"ibm_dl_provider_ports":       directlink.DataSourceIBMDirectLinkProviderPorts(),
+			"ibm_dl_provider_gateways":    directlink.DataSourceIBMDirectLinkProviderGateways(),
+			"ibm_dl_route_reports":        directlink.DataSourceIBMDLRouteReports(),
+			"ibm_dl_route_report":         directlink.DataSourceIBMDLRouteReport(),
+			"ibm_dl_export_route_filters": directlink.DataSourceIBMDLExportRouteFilters(),
+			"ibm_dl_export_route_filter":  directlink.DataSourceIBMDLExportRouteFilter(),
+			"ibm_dl_import_route_filters": directlink.DataSourceIBMDLImportRouteFilters(),
+			"ibm_dl_import_route_filter":  directlink.DataSourceIBMDLImportRouteFilter(),
 
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                   transitgateway.DataSourceIBMTransitGateway(),
@@ -1049,6 +1051,7 @@ func Provider() *schema.Provider {
 			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
 			"ibm_dl_route_report":       directlink.ResourceIBMDLGatewayRouteReport(),
+
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnection(),

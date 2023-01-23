@@ -1,4 +1,4 @@
----
+
 subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateway"
@@ -14,6 +14,7 @@ Create, update, or delete a Direct Link Gateway by using the Direct Link Gateway
 ## Example usage to create Direct Link of dedicated type
 In the following example, you can create Direct Link of dedicated type:
 
+---
 ```terraform
 data "ibm_dl_routers" "test_dl_routers" {
 		offering_type = "dedicated"
@@ -21,6 +22,18 @@ data "ibm_dl_routers" "test_dl_routers" {
 	}
 
 resource ibm_dl_gateway test_dl_gateway {
+  export_route_filters {
+     	  action = "deny"
+     	  prefix = "150.167.10.0/12"
+        ge =19
+        le = 29
+  }
+  import_route_filters {
+	     	action = "permit"
+	     	prefix = "140.167.10.0/12"
+	      ge =17
+	      le = 30
+  }	
   bgp_asn =  64999
   global = true 
   metered = false
@@ -35,11 +48,13 @@ resource ibm_dl_gateway test_dl_gateway {
 
 } 
 ```
+---
 
 ## Sample usage to create Direct Link of connect type
 In the following example, you can create Direct Link of connect type:
 
 
+---
 ```terraform
 data "ibm_dl_ports" "test_ds_dl_ports" {
  
@@ -56,7 +71,18 @@ resource "ibm_dl_gateway" "test_dl_connect" {
     policy            = "export"
     specific_prefixes = ["10.10.9.0/24","10.10.10.0/24"]
   }
-
+  export_route_filters {
+     	  action = "deny"
+     	  prefix = "150.167.10.0/12"
+        ge =19
+        le = 29
+  }
+  import_route_filters {
+	     	action = "permit"
+	     	prefix = "140.167.10.0/12"
+	      ge =17
+	      le = 30
+  }			
   bgp_asn =  64999
   global = true
   metered = false
@@ -66,9 +92,26 @@ resource "ibm_dl_gateway" "test_dl_connect" {
   port =  data.ibm_dl_ports.test_ds_dl_ports.ports[0].port_id
 }
 ```
+---
 
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
+
+- `export_route_filters` - (Optional, List) List of Export Route Filter configuration information
+
+  Nested scheme for `export_route_filter`:
+  - `action` - (Required, String) Determines whether the  routes that match the prefix-set will be permit or deny
+  - `prefix` - (Required, String) IP prefix representing an address and mask length of the prefix-set
+  - `ge` - (Optional, Integer) The minimum matching length of the prefix-set
+  - `le` - (Optional, Integer) The maximum matching length of the prefix-set
+
+- `import_route_filters` - (Optional, List) List of Import Route Filter configuration information
+
+   Nested scheme for `import_route_filter`:
+   - `action` - (Required, String) Determines whether the  routes that match the prefix-set will be permit or deny
+   - `prefix` - (Required, String) IP prefix representing an address and mask length of the prefix-set
+   - `ge` - (Optional, Integer) The minimum matching length of the prefix-set
+   - `le` - (Optional, Integer) The maximum matching length of the prefix-set
 
 - `as_prepends` - (Optional, List) List of AS Prepend configuration information
 
@@ -77,7 +120,6 @@ Review the argument reference that you can specify for your resource.
   - `policy` - (Required, String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
   - `prefix` - (Optional, Deprecated, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes. prefix will be deprecated and support will be removed. Use specific_prefixes instead
   - `specific_prefixes` - (Optional, Array of Strings) Array of prefixes this AS Prepend applies to. If this property is absent, the AS Prepend applies to all prefixes.
-  
 - `authentication_key` - (Optional, String) BGP MD5 authentication key.
 - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.
 - `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.
@@ -133,13 +175,17 @@ The `ibm_dl_gateway` resource can be imported by using gateway ID.
 
 **Syntax**
 
+---
 ```
 $ terraform import ibm_dl_gateway.example <gateway_ID>
 ```
+---
 
 **Example**
 
+---
 ```
 $ terraform import ibm_dl_gateway.example 5ffda12064634723b079acdb018ef308
 ```
+---
 
