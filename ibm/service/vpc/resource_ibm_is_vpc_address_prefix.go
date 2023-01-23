@@ -21,7 +21,6 @@ const (
 	isVPCAddressPrefixHasSubnets = "has_subnets"
 	isVPCAddressPrefixDefault    = "is_default"
 	isAddressPrefix              = "address_prefix"
-	isVPCRouteDestinationCIDR    = "destination"
 )
 
 func ResourceIBMISVpcAddressPrefix() *schema.Resource {
@@ -102,13 +101,6 @@ func ResourceIBMISAddressPrefixValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isVPCRouteDestinationCIDR,
-			ValidateFunctionIdentifier: validate.ValidateCIDRAddress,
-			Type:                       validate.TypeString,
-			ForceNew:                   true,
-			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isVPCAddressPrefixCIDR,
