@@ -21,6 +21,7 @@ const (
 	isVPCAddressPrefixHasSubnets = "has_subnets"
 	isVPCAddressPrefixDefault    = "is_default"
 	isAddressPrefix              = "address_prefix"
+	isVPCRouteDestinationCIDR    = "destination"
 )
 
 func ResourceIBMISVpcAddressPrefix() *schema.Resource {
