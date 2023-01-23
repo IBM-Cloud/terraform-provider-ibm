@@ -229,8 +229,9 @@ func testAccCheckSatelliteClusterCreate(clusterName, locationName, managed_from,
 		name                   = "%s"  
 		location               = ibm_satellite_host.assign_host.0.location
 		enable_config_admin    = true
-		kube_version           = "4.9_openshift"
+		kube_version 		   = "4.11_openshift"
 		operating_system       = "%s"
+		infrastructure_topology = "single-replica"
 		wait_for_worker_update = true
 		dynamic "zones" {
 			for_each = var.location_zones
@@ -243,14 +244,8 @@ func testAccCheckSatelliteClusterCreate(clusterName, locationName, managed_from,
 			"test1" = "test-pool2"
 		}
 
-		resource "ibm_satellite_cluster" "create_single_node_cluster"{
-			name = "cluster-single-node"
-			location = ibm_satellite_host.assign_host.0.location
-			kube_version = "4.11_openshift"
-			infrastructure_topology = "single-replica"
-		}
-
 	  }
+	}
 
 `, locationName, managed_from, resource_group, resource_prefix, resource_prefix, region, resource_prefix, publicKey, resource_prefix, region, resource_prefix, host_provider, clusterName, operatingSystem)
 }
