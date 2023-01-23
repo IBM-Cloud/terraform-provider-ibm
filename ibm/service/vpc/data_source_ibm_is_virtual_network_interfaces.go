@@ -356,22 +356,28 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 
 	listVirtualNetworkInterfacesOptions := &vpcv1.ListVirtualNetworkInterfacesOptions{}
 
-	var pager *vpcv1.VirtualNetworkInterfacesPager
-	pager, err = vpcbetaClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
+	vniCollection, response, err := vpcbetaClient.ListVirtualNetworkInterfacesWithContext(context, listVirtualNetworkInterfacesOptions)
+	//log.Printf(len(vniCollection.VirtualNetworkInterfaces))
 	if err != nil {
-		return diag.FromErr(err)
+		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response))
 	}
+	// var pager *vpcv1.VirtualNetworkInterfacesPager
+	// pager, err = vpcbetaClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
-	allItems, err := pager.GetAll()
-	if err != nil {
-		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
-	}
+	// allItems, err := pager.GetAll()
+	// if err != nil {
+	// 	log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s", err)
+	// 	return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
+	// }
 
 	d.SetId(dataSourceIBMIsVirtualNetworkInterfacesID(d))
 
 	mapSlice := []map[string]interface{}{}
-	for _, modelItem := range allItems {
+	for _, modelItem := range vniCollection.VirtualNetworkInterfaces {
 		modelMap, err := dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(&modelItem)
 		if err != nil {
 			return diag.FromErr(err)

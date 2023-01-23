@@ -31,7 +31,7 @@ func DataSourceIbmIsShareTargets() *schema.Resource {
 				Computed:    true,
 				Description: "The user-defined name for this share target.",
 			},
-			"share_targets": {
+			"mount_targets": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Collection of share targets.",
@@ -195,8 +195,8 @@ func dataSourceIbmIsShareTargetsRead(context context.Context, d *schema.Resource
 
 	d.SetId(dataSourceIbmIsShareTargetsID(d))
 
-	if shareTargetCollection.Targets != nil {
-		err = d.Set("share_targets", dataSourceShareTargetCollectionFlattenTargets(shareTargetCollection.Targets))
+	if shareTargetCollection.MountTargets != nil {
+		err = d.Set("mount_targets", dataSourceShareTargetCollectionFlattenTargets(shareTargetCollection.MountTargets))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
 		}

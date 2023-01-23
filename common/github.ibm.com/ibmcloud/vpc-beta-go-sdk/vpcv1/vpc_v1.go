@@ -37,11 +37,11 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: beta-2023-01-10
+// API Version: beta-2023-01-24
 type VpcV1 struct {
 	Service *core.BaseService
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-01-09`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-01-23`
 	// and today's date (UTC).
 	Version *string
 
@@ -62,7 +62,7 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-01-09`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-01-23`
 	// and today's date (UTC).
 	Version *string
 }
@@ -121,7 +121,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2022-09-13")
+		options.Version = core.StringPtr("2022-12-05")
 	}
 
 	service = &VpcV1{
@@ -13252,6 +13252,353 @@ func (vpc *VpcV1) FailoverShareWithContext(ctx context.Context, failoverShareOpt
 	return
 }
 
+// ListShareMountTargets : List all mount targets for a file share
+// This request retrieves all share mount targets for a file share.
+//
+// A share mount target is a network endpoint at which a file share may be mounted.
+//
+// It exists within the same zone where the file share resides in.
+//
+// The file share can be mounted by instances in the same VPC and zone after creating share mount targets.
+func (vpc *VpcV1) ListShareMountTargets(listShareMountTargetsOptions *ListShareMountTargetsOptions) (result *ShareMountTargetCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListShareMountTargetsWithContext(context.Background(), listShareMountTargetsOptions)
+}
+
+// ListShareMountTargetsWithContext is an alternate form of the ListShareMountTargets method which supports a Context parameter
+func (vpc *VpcV1) ListShareMountTargetsWithContext(ctx context.Context, listShareMountTargetsOptions *ListShareMountTargetsOptions) (result *ShareMountTargetCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listShareMountTargetsOptions, "listShareMountTargetsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listShareMountTargetsOptions, "listShareMountTargetsOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"share_id": *listShareMountTargetsOptions.ShareID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listShareMountTargetsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListShareMountTargets")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listShareMountTargetsOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listShareMountTargetsOptions.Name))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTargetCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateShareMountTarget : Create a mount target for a file share
+// This request creates a new share mount target from a share mount target prototype object.
+//
+// The prototype object is structured in the same way as a retrieved share mount target, and contains the information
+// necessary to provision the new file share mount target.
+func (vpc *VpcV1) CreateShareMountTarget(createShareMountTargetOptions *CreateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	return vpc.CreateShareMountTargetWithContext(context.Background(), createShareMountTargetOptions)
+}
+
+// CreateShareMountTargetWithContext is an alternate form of the CreateShareMountTarget method which supports a Context parameter
+func (vpc *VpcV1) CreateShareMountTargetWithContext(ctx context.Context, createShareMountTargetOptions *CreateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createShareMountTargetOptions, "createShareMountTargetOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createShareMountTargetOptions, "createShareMountTargetOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"share_id": *createShareMountTargetOptions.ShareID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createShareMountTargetOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateShareMountTarget")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(createShareMountTargetOptions.ShareMountTargetPrototype)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteShareMountTarget : Delete a share mount target
+// This request deletes a share mount target. This operation cannot be reversed.
+//
+// If the request is accepted, the share mount target `status` will be set to `deleting`. Otherwise, once deletion
+// processing completes, the share mount target will no longer be retrievable.
+func (vpc *VpcV1) DeleteShareMountTarget(deleteShareMountTargetOptions *DeleteShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	return vpc.DeleteShareMountTargetWithContext(context.Background(), deleteShareMountTargetOptions)
+}
+
+// DeleteShareMountTargetWithContext is an alternate form of the DeleteShareMountTarget method which supports a Context parameter
+func (vpc *VpcV1) DeleteShareMountTargetWithContext(ctx context.Context, deleteShareMountTargetOptions *DeleteShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteShareMountTargetOptions, "deleteShareMountTargetOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteShareMountTargetOptions, "deleteShareMountTargetOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"share_id": *deleteShareMountTargetOptions.ShareID,
+		"id":       *deleteShareMountTargetOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteShareMountTargetOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteShareMountTarget")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetShareMountTarget : Retrieve a share mount target
+// This request retrieves a single share mount target specified by the identifier in the URL.
+func (vpc *VpcV1) GetShareMountTarget(getShareMountTargetOptions *GetShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	return vpc.GetShareMountTargetWithContext(context.Background(), getShareMountTargetOptions)
+}
+
+// GetShareMountTargetWithContext is an alternate form of the GetShareMountTarget method which supports a Context parameter
+func (vpc *VpcV1) GetShareMountTargetWithContext(ctx context.Context, getShareMountTargetOptions *GetShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getShareMountTargetOptions, "getShareMountTargetOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getShareMountTargetOptions, "getShareMountTargetOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"share_id": *getShareMountTargetOptions.ShareID,
+		"id":       *getShareMountTargetOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getShareMountTargetOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetShareMountTarget")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateShareMountTarget : Update a share mount target
+// This request updates a share mount target with the information provided in a share mount target patch object. The
+// share mount target patch object is structured in the same way as a retrieved share mount target and needs to contain
+// only the information to be updated.
+func (vpc *VpcV1) UpdateShareMountTarget(updateShareMountTargetOptions *UpdateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	return vpc.UpdateShareMountTargetWithContext(context.Background(), updateShareMountTargetOptions)
+}
+
+// UpdateShareMountTargetWithContext is an alternate form of the UpdateShareMountTarget method which supports a Context parameter
+func (vpc *VpcV1) UpdateShareMountTargetWithContext(ctx context.Context, updateShareMountTargetOptions *UpdateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateShareMountTargetOptions, "updateShareMountTargetOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateShareMountTargetOptions, "updateShareMountTargetOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"share_id": *updateShareMountTargetOptions.ShareID,
+		"id":       *updateShareMountTargetOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateShareMountTargetOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateShareMountTarget")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateShareMountTargetOptions.ShareMountTargetPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
 // DeleteShareSource : Split the source file share from a replica share
 // This request removes the replication relationship between a source share and the replica share specified by the
 // identifier in the URL. The replication relationship cannot be removed if a source share or the replica share has a
@@ -13362,353 +13709,6 @@ func (vpc *VpcV1) GetShareSourceWithContext(ctx context.Context, getShareSourceO
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShare)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// ListShareMountTargets : List all mount targets for a file share
-// This request retrieves all share mount targets for a file share.
-//
-// A share mount target is a network endpoint at which a file share may be mounted.
-//
-// It exists within the same zone where the file share resides in.
-//
-// The file share can be mounted by instances in the same VPC and zone after creating share mount targets.
-func (vpc *VpcV1) ListShareMountTargets(listShareMountTargetsOptions *ListShareMountTargetsOptions) (result *ShareMountTargetCollection, response *core.DetailedResponse, err error) {
-	return vpc.ListShareMountTargetsWithContext(context.Background(), listShareMountTargetsOptions)
-}
-
-// ListShareMountTargetsWithContext is an alternate form of the ListShareMountTargets method which supports a Context parameter
-func (vpc *VpcV1) ListShareMountTargetsWithContext(ctx context.Context, listShareMountTargetsOptions *ListShareMountTargetsOptions) (result *ShareMountTargetCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listShareMountTargetsOptions, "listShareMountTargetsOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(listShareMountTargetsOptions, "listShareMountTargetsOptions")
-	if err != nil {
-		return
-	}
-
-	pathParamsMap := map[string]string{
-		"share_id": *listShareMountTargetsOptions.ShareID,
-	}
-
-	builder := core.NewRequestBuilder(core.GET)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets`, pathParamsMap)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listShareMountTargetsOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListShareMountTargets")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listShareMountTargetsOptions.Name != nil {
-		builder.AddQuery("name", fmt.Sprint(*listShareMountTargetsOptions.Name))
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTargetCollection)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// CreateShareMountTarget : Create a mount target for a file share
-// This request creates a new share mount target from a share mount target prototype object.
-//
-// The prototype object is structured in the same way as a retrieved share mount target, and contains the information
-// necessary to provision the new file share mount target.
-func (vpc *VpcV1) CreateShareMountTarget(createShareMountTargetOptions *CreateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	return vpc.CreateShareMountTargetWithContext(context.Background(), createShareMountTargetOptions)
-}
-
-// CreateShareMountTargetWithContext is an alternate form of the CreateShareMountTarget method which supports a Context parameter
-func (vpc *VpcV1) CreateShareMountTargetWithContext(ctx context.Context, createShareMountTargetOptions *CreateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(createShareMountTargetOptions, "createShareMountTargetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(createShareMountTargetOptions, "createShareMountTargetOptions")
-	if err != nil {
-		return
-	}
-
-	pathParamsMap := map[string]string{
-		"share_id": *createShareMountTargetOptions.ShareID,
-	}
-
-	builder := core.NewRequestBuilder(core.POST)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets`, pathParamsMap)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range createShareMountTargetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateShareMountTarget")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	_, err = builder.SetBodyContentJSON(createShareMountTargetOptions.ShareMountTargetPrototype)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// DeleteShareMountTarget : Delete a share mount target
-// This request deletes a share mount target. This operation cannot be reversed.
-//
-// If the request is accepted, the share mount target `status` will be set to `deleting`. Otherwise, once deletion
-// processing completes, the share mount target will no longer be retrievable.
-func (vpc *VpcV1) DeleteShareMountTarget(deleteShareMountTargetOptions *DeleteShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	return vpc.DeleteShareMountTargetWithContext(context.Background(), deleteShareMountTargetOptions)
-}
-
-// DeleteShareMountTargetWithContext is an alternate form of the DeleteShareMountTarget method which supports a Context parameter
-func (vpc *VpcV1) DeleteShareMountTargetWithContext(ctx context.Context, deleteShareMountTargetOptions *DeleteShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(deleteShareMountTargetOptions, "deleteShareMountTargetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(deleteShareMountTargetOptions, "deleteShareMountTargetOptions")
-	if err != nil {
-		return
-	}
-
-	pathParamsMap := map[string]string{
-		"share_id": *deleteShareMountTargetOptions.ShareID,
-		"id":       *deleteShareMountTargetOptions.ID,
-	}
-
-	builder := core.NewRequestBuilder(core.DELETE)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets/{id}`, pathParamsMap)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range deleteShareMountTargetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteShareMountTarget")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// GetShareMountTarget : Retrieve a share mount target
-// This request retrieves a single share mount target specified by the identifier in the URL.
-func (vpc *VpcV1) GetShareMountTarget(getShareMountTargetOptions *GetShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	return vpc.GetShareMountTargetWithContext(context.Background(), getShareMountTargetOptions)
-}
-
-// GetShareMountTargetWithContext is an alternate form of the GetShareMountTarget method which supports a Context parameter
-func (vpc *VpcV1) GetShareMountTargetWithContext(ctx context.Context, getShareMountTargetOptions *GetShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getShareMountTargetOptions, "getShareMountTargetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getShareMountTargetOptions, "getShareMountTargetOptions")
-	if err != nil {
-		return
-	}
-
-	pathParamsMap := map[string]string{
-		"share_id": *getShareMountTargetOptions.ShareID,
-		"id":       *getShareMountTargetOptions.ID,
-	}
-
-	builder := core.NewRequestBuilder(core.GET)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets/{id}`, pathParamsMap)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getShareMountTargetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetShareMountTarget")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// UpdateShareMountTarget : Update a share mount target
-// This request updates a share mount target with the information provided in a share mount target patch object. The
-// share mount target patch object is structured in the same way as a retrieved share mount target and needs to contain
-// only the information to be updated.
-func (vpc *VpcV1) UpdateShareMountTarget(updateShareMountTargetOptions *UpdateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	return vpc.UpdateShareMountTargetWithContext(context.Background(), updateShareMountTargetOptions)
-}
-
-// UpdateShareMountTargetWithContext is an alternate form of the UpdateShareMountTarget method which supports a Context parameter
-func (vpc *VpcV1) UpdateShareMountTargetWithContext(ctx context.Context, updateShareMountTargetOptions *UpdateShareMountTargetOptions) (result *ShareMountTarget, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateShareMountTargetOptions, "updateShareMountTargetOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updateShareMountTargetOptions, "updateShareMountTargetOptions")
-	if err != nil {
-		return
-	}
-
-	pathParamsMap := map[string]string{
-		"share_id": *updateShareMountTargetOptions.ShareID,
-		"id":       *updateShareMountTargetOptions.ID,
-	}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets/{id}`, pathParamsMap)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updateShareMountTargetOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateShareMountTarget")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/merge-patch+json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	_, err = builder.SetBodyContentJSON(updateShareMountTargetOptions.ShareMountTargetPatch)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareMountTarget)
 		if err != nil {
 			return
 		}
@@ -13959,6 +13959,209 @@ func (vpc *VpcV1) GetRegionZoneWithContext(ctx context.Context, getRegionZoneOpt
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalZone)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListVirtualNetworkInterfaces : List all virtual network interfaces
+// This request lists all virtual network interfaces in the region. A virtual network interface is a logical abstraction
+// of a network interface in a subnet, and may be attached to a target resource.
+//
+// The virtual network interfaces will be sorted by their `created_at` property values, with newest virtual network
+// interfaces first. Virtual network interfaces with identical
+// `created_at` property values will in turn be sorted by ascending `name` property values.
+func (vpc *VpcV1) ListVirtualNetworkInterfaces(listVirtualNetworkInterfacesOptions *ListVirtualNetworkInterfacesOptions) (result *VirtualNetworkInterfaceCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListVirtualNetworkInterfacesWithContext(context.Background(), listVirtualNetworkInterfacesOptions)
+}
+
+// ListVirtualNetworkInterfacesWithContext is an alternate form of the ListVirtualNetworkInterfaces method which supports a Context parameter
+func (vpc *VpcV1) ListVirtualNetworkInterfacesWithContext(ctx context.Context, listVirtualNetworkInterfacesOptions *ListVirtualNetworkInterfacesOptions) (result *VirtualNetworkInterfaceCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listVirtualNetworkInterfacesOptions, "listVirtualNetworkInterfacesOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/virtual_network_interfaces`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listVirtualNetworkInterfacesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVirtualNetworkInterfaces")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listVirtualNetworkInterfacesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listVirtualNetworkInterfacesOptions.Start))
+	}
+	if listVirtualNetworkInterfacesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listVirtualNetworkInterfacesOptions.Limit))
+	}
+	if listVirtualNetworkInterfacesOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listVirtualNetworkInterfacesOptions.ResourceGroupID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVirtualNetworkInterfaceCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetVirtualNetworkInterface : Retrieve a virtual network interface
+// This request retrieves a single virtual network interface specified by the identifier in the URL.
+func (vpc *VpcV1) GetVirtualNetworkInterface(getVirtualNetworkInterfaceOptions *GetVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
+	return vpc.GetVirtualNetworkInterfaceWithContext(context.Background(), getVirtualNetworkInterfaceOptions)
+}
+
+// GetVirtualNetworkInterfaceWithContext is an alternate form of the GetVirtualNetworkInterface method which supports a Context parameter
+func (vpc *VpcV1) GetVirtualNetworkInterfaceWithContext(ctx context.Context, getVirtualNetworkInterfaceOptions *GetVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVirtualNetworkInterfaceOptions, "getVirtualNetworkInterfaceOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getVirtualNetworkInterfaceOptions, "getVirtualNetworkInterfaceOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getVirtualNetworkInterfaceOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/virtual_network_interfaces/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getVirtualNetworkInterfaceOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVirtualNetworkInterface")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVirtualNetworkInterface)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateVirtualNetworkInterface : Update a virtual network interface
+// This request updates a virtual network interface with the information in a provided virtual network interface patch.
+// The virtual network interface patch object is structured in the same way as a retrieved virtual network interface and
+// contains only the information to be updated.
+func (vpc *VpcV1) UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions *UpdateVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
+	return vpc.UpdateVirtualNetworkInterfaceWithContext(context.Background(), updateVirtualNetworkInterfaceOptions)
+}
+
+// UpdateVirtualNetworkInterfaceWithContext is an alternate form of the UpdateVirtualNetworkInterface method which supports a Context parameter
+func (vpc *VpcV1) UpdateVirtualNetworkInterfaceWithContext(ctx context.Context, updateVirtualNetworkInterfaceOptions *UpdateVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVirtualNetworkInterfaceOptions, "updateVirtualNetworkInterfaceOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateVirtualNetworkInterfaceOptions, "updateVirtualNetworkInterfaceOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updateVirtualNetworkInterfaceOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/virtual_network_interfaces/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateVirtualNetworkInterfaceOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVirtualNetworkInterface")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVirtualNetworkInterface)
 		if err != nil {
 			return
 		}
@@ -17640,28 +17843,28 @@ func (vpc *VpcV1) UpdateVPNGatewayConnectionWithContext(ctx context.Context, upd
 	return
 }
 
-// ListVPNGatewayConnectionLocal : List all local CIDRs for a VPN gateway connection
+// ListVPNGatewayConnectionLocalCIDRs : List all local CIDRs for a VPN gateway connection
 // This request lists all local CIDRs for a VPN gateway connection.
 //
 // This request is only supported for policy mode VPN gateways.
-func (vpc *VpcV1) ListVPNGatewayConnectionLocal(listVPNGatewayConnectionLocalOptions *ListVPNGatewayConnectionLocalOptions) (result *VPNGatewayConnectionLocal, response *core.DetailedResponse, err error) {
-	return vpc.ListVPNGatewayConnectionLocalWithContext(context.Background(), listVPNGatewayConnectionLocalOptions)
+func (vpc *VpcV1) ListVPNGatewayConnectionLocalCIDRs(listVPNGatewayConnectionLocalCIDRsOptions *ListVPNGatewayConnectionLocalCIDRsOptions) (result *VPNGatewayConnectionLocalCIDRs, response *core.DetailedResponse, err error) {
+	return vpc.ListVPNGatewayConnectionLocalCIDRsWithContext(context.Background(), listVPNGatewayConnectionLocalCIDRsOptions)
 }
 
-// ListVPNGatewayConnectionLocalWithContext is an alternate form of the ListVPNGatewayConnectionLocal method which supports a Context parameter
-func (vpc *VpcV1) ListVPNGatewayConnectionLocalWithContext(ctx context.Context, listVPNGatewayConnectionLocalOptions *ListVPNGatewayConnectionLocalOptions) (result *VPNGatewayConnectionLocal, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listVPNGatewayConnectionLocalOptions, "listVPNGatewayConnectionLocalOptions cannot be nil")
+// ListVPNGatewayConnectionLocalCIDRsWithContext is an alternate form of the ListVPNGatewayConnectionLocalCIDRs method which supports a Context parameter
+func (vpc *VpcV1) ListVPNGatewayConnectionLocalCIDRsWithContext(ctx context.Context, listVPNGatewayConnectionLocalCIDRsOptions *ListVPNGatewayConnectionLocalCIDRsOptions) (result *VPNGatewayConnectionLocalCIDRs, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVPNGatewayConnectionLocalCIDRsOptions, "listVPNGatewayConnectionLocalCIDRsOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listVPNGatewayConnectionLocalOptions, "listVPNGatewayConnectionLocalOptions")
+	err = core.ValidateStruct(listVPNGatewayConnectionLocalCIDRsOptions, "listVPNGatewayConnectionLocalCIDRsOptions")
 	if err != nil {
 		return
 	}
 
 	pathParamsMap := map[string]string{
-		"vpn_gateway_id": *listVPNGatewayConnectionLocalOptions.VPNGatewayID,
-		"id":             *listVPNGatewayConnectionLocalOptions.ID,
+		"vpn_gateway_id": *listVPNGatewayConnectionLocalCIDRsOptions.VPNGatewayID,
+		"id":             *listVPNGatewayConnectionLocalCIDRsOptions.ID,
 	}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -17672,11 +17875,11 @@ func (vpc *VpcV1) ListVPNGatewayConnectionLocalWithContext(ctx context.Context, 
 		return
 	}
 
-	for headerName, headerValue := range listVPNGatewayConnectionLocalOptions.Headers {
+	for headerName, headerValue := range listVPNGatewayConnectionLocalCIDRsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPNGatewayConnectionLocal")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPNGatewayConnectionLocalCIDRs")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -17696,7 +17899,7 @@ func (vpc *VpcV1) ListVPNGatewayConnectionLocalWithContext(ctx context.Context, 
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionLocal)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionLocalCIDRs)
 		if err != nil {
 			return
 		}
@@ -17875,28 +18078,28 @@ func (vpc *VpcV1) AddVPNGatewayConnectionLocalCIDRWithContext(ctx context.Contex
 	return
 }
 
-// ListVPNGatewayConnectionPeer : List all peer CIDRs for a VPN gateway connection
+// ListVPNGatewayConnectionPeerCIDRs : List all peer CIDRs for a VPN gateway connection
 // This request lists all peer CIDRs for a VPN gateway connection.
 //
 // This request is only supported for policy mode VPN gateways.
-func (vpc *VpcV1) ListVPNGatewayConnectionPeer(listVPNGatewayConnectionPeerOptions *ListVPNGatewayConnectionPeerOptions) (result *VPNGatewayConnectionPeer, response *core.DetailedResponse, err error) {
-	return vpc.ListVPNGatewayConnectionPeerWithContext(context.Background(), listVPNGatewayConnectionPeerOptions)
+func (vpc *VpcV1) ListVPNGatewayConnectionPeerCIDRs(listVPNGatewayConnectionPeerCIDRsOptions *ListVPNGatewayConnectionPeerCIDRsOptions) (result *VPNGatewayConnectionPeerCIDRs, response *core.DetailedResponse, err error) {
+	return vpc.ListVPNGatewayConnectionPeerCIDRsWithContext(context.Background(), listVPNGatewayConnectionPeerCIDRsOptions)
 }
 
-// ListVPNGatewayConnectionPeerWithContext is an alternate form of the ListVPNGatewayConnectionPeer method which supports a Context parameter
-func (vpc *VpcV1) ListVPNGatewayConnectionPeerWithContext(ctx context.Context, listVPNGatewayConnectionPeerOptions *ListVPNGatewayConnectionPeerOptions) (result *VPNGatewayConnectionPeer, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(listVPNGatewayConnectionPeerOptions, "listVPNGatewayConnectionPeerOptions cannot be nil")
+// ListVPNGatewayConnectionPeerCIDRsWithContext is an alternate form of the ListVPNGatewayConnectionPeerCIDRs method which supports a Context parameter
+func (vpc *VpcV1) ListVPNGatewayConnectionPeerCIDRsWithContext(ctx context.Context, listVPNGatewayConnectionPeerCIDRsOptions *ListVPNGatewayConnectionPeerCIDRsOptions) (result *VPNGatewayConnectionPeerCIDRs, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVPNGatewayConnectionPeerCIDRsOptions, "listVPNGatewayConnectionPeerCIDRsOptions cannot be nil")
 	if err != nil {
 		return
 	}
-	err = core.ValidateStruct(listVPNGatewayConnectionPeerOptions, "listVPNGatewayConnectionPeerOptions")
+	err = core.ValidateStruct(listVPNGatewayConnectionPeerCIDRsOptions, "listVPNGatewayConnectionPeerCIDRsOptions")
 	if err != nil {
 		return
 	}
 
 	pathParamsMap := map[string]string{
-		"vpn_gateway_id": *listVPNGatewayConnectionPeerOptions.VPNGatewayID,
-		"id":             *listVPNGatewayConnectionPeerOptions.ID,
+		"vpn_gateway_id": *listVPNGatewayConnectionPeerCIDRsOptions.VPNGatewayID,
+		"id":             *listVPNGatewayConnectionPeerCIDRsOptions.ID,
 	}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -17907,11 +18110,11 @@ func (vpc *VpcV1) ListVPNGatewayConnectionPeerWithContext(ctx context.Context, l
 		return
 	}
 
-	for headerName, headerValue := range listVPNGatewayConnectionPeerOptions.Headers {
+	for headerName, headerValue := range listVPNGatewayConnectionPeerCIDRsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPNGatewayConnectionPeer")
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPNGatewayConnectionPeerCIDRs")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -17931,7 +18134,7 @@ func (vpc *VpcV1) ListVPNGatewayConnectionPeerWithContext(ctx context.Context, l
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionPeer)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVPNGatewayConnectionPeerCIDRs)
 		if err != nil {
 			return
 		}
@@ -22372,209 +22575,6 @@ func (vpc *VpcV1) UpdateFlowLogCollectorWithContext(ctx context.Context, updateF
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalFlowLogCollector)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// ListVirtualNetworkInterfaces : List all virtual network interfaces
-// This request lists all virtual network interfaces in the region. A virtual network interface is a logical abstraction
-// of a network interface in a subnet, and may be attached to a target resource.
-//
-// The virtual network interfaces will be sorted by their `created_at` property values, with newest virtual network
-// interfaces first. Virtual network interfaces with identical
-// `created_at` property values will in turn be sorted by ascending `name` property values.
-func (vpc *VpcV1) ListVirtualNetworkInterfaces(listVirtualNetworkInterfacesOptions *ListVirtualNetworkInterfacesOptions) (result *VirtualNetworkInterfaceCollection, response *core.DetailedResponse, err error) {
-	return vpc.ListVirtualNetworkInterfacesWithContext(context.Background(), listVirtualNetworkInterfacesOptions)
-}
-
-// ListVirtualNetworkInterfacesWithContext is an alternate form of the ListVirtualNetworkInterfaces method which supports a Context parameter
-func (vpc *VpcV1) ListVirtualNetworkInterfacesWithContext(ctx context.Context, listVirtualNetworkInterfacesOptions *ListVirtualNetworkInterfacesOptions) (result *VirtualNetworkInterfaceCollection, response *core.DetailedResponse, err error) {
-	err = core.ValidateStruct(listVirtualNetworkInterfacesOptions, "listVirtualNetworkInterfacesOptions")
-	if err != nil {
-		return
-	}
-
-	builder := core.NewRequestBuilder(core.GET)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/virtual_network_interfaces`, nil)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range listVirtualNetworkInterfacesOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVirtualNetworkInterfaces")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	if listVirtualNetworkInterfacesOptions.Start != nil {
-		builder.AddQuery("start", fmt.Sprint(*listVirtualNetworkInterfacesOptions.Start))
-	}
-	if listVirtualNetworkInterfacesOptions.Limit != nil {
-		builder.AddQuery("limit", fmt.Sprint(*listVirtualNetworkInterfacesOptions.Limit))
-	}
-	if listVirtualNetworkInterfacesOptions.ResourceGroupID != nil {
-		builder.AddQuery("resource_group.id", fmt.Sprint(*listVirtualNetworkInterfacesOptions.ResourceGroupID))
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVirtualNetworkInterfaceCollection)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// GetVirtualNetworkInterface : Retrieve a virtual network interface
-// This request retrieves a single virtual network interface specified by the identifier in the URL.
-func (vpc *VpcV1) GetVirtualNetworkInterface(getVirtualNetworkInterfaceOptions *GetVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
-	return vpc.GetVirtualNetworkInterfaceWithContext(context.Background(), getVirtualNetworkInterfaceOptions)
-}
-
-// GetVirtualNetworkInterfaceWithContext is an alternate form of the GetVirtualNetworkInterface method which supports a Context parameter
-func (vpc *VpcV1) GetVirtualNetworkInterfaceWithContext(ctx context.Context, getVirtualNetworkInterfaceOptions *GetVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(getVirtualNetworkInterfaceOptions, "getVirtualNetworkInterfaceOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(getVirtualNetworkInterfaceOptions, "getVirtualNetworkInterfaceOptions")
-	if err != nil {
-		return
-	}
-
-	pathParamsMap := map[string]string{
-		"id": *getVirtualNetworkInterfaceOptions.ID,
-	}
-
-	builder := core.NewRequestBuilder(core.GET)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/virtual_network_interfaces/{id}`, pathParamsMap)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range getVirtualNetworkInterfaceOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVirtualNetworkInterface")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVirtualNetworkInterface)
-		if err != nil {
-			return
-		}
-		response.Result = result
-	}
-
-	return
-}
-
-// UpdateVirtualNetworkInterface : Update a virtual network interface
-// This request updates a virtual network interface with the information in a provided virtual network interface patch.
-// The virtual network interface patch object is structured in the same way as a retrieved virtual network interface and
-// contains only the information to be updated.
-func (vpc *VpcV1) UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions *UpdateVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
-	return vpc.UpdateVirtualNetworkInterfaceWithContext(context.Background(), updateVirtualNetworkInterfaceOptions)
-}
-
-// UpdateVirtualNetworkInterfaceWithContext is an alternate form of the UpdateVirtualNetworkInterface method which supports a Context parameter
-func (vpc *VpcV1) UpdateVirtualNetworkInterfaceWithContext(ctx context.Context, updateVirtualNetworkInterfaceOptions *UpdateVirtualNetworkInterfaceOptions) (result *VirtualNetworkInterface, response *core.DetailedResponse, err error) {
-	err = core.ValidateNotNil(updateVirtualNetworkInterfaceOptions, "updateVirtualNetworkInterfaceOptions cannot be nil")
-	if err != nil {
-		return
-	}
-	err = core.ValidateStruct(updateVirtualNetworkInterfaceOptions, "updateVirtualNetworkInterfaceOptions")
-	if err != nil {
-		return
-	}
-
-	pathParamsMap := map[string]string{
-		"id": *updateVirtualNetworkInterfaceOptions.ID,
-	}
-
-	builder := core.NewRequestBuilder(core.PATCH)
-	builder = builder.WithContext(ctx)
-	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/virtual_network_interfaces/{id}`, pathParamsMap)
-	if err != nil {
-		return
-	}
-
-	for headerName, headerValue := range updateVirtualNetworkInterfaceOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
-	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVirtualNetworkInterface")
-	for headerName, headerValue := range sdkHeaders {
-		builder.AddHeader(headerName, headerValue)
-	}
-	builder.AddHeader("Accept", "application/json")
-	builder.AddHeader("Content-Type", "application/merge-patch+json")
-
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
-	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
-	_, err = builder.SetBodyContentJSON(updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch)
-	if err != nil {
-		return
-	}
-
-	request, err := builder.Build()
-	if err != nil {
-		return
-	}
-
-	var rawResponse map[string]json.RawMessage
-	response, err = vpc.Service.Request(request, &rawResponse)
-	if err != nil {
-		return
-	}
-	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVirtualNetworkInterface)
 		if err != nil {
 			return
 		}
@@ -49203,8 +49203,8 @@ func (options *ListVpcsOptions) SetHeaders(param map[string]string) *ListVpcsOpt
 	return options
 }
 
-// ListVPNGatewayConnectionLocalOptions : The ListVPNGatewayConnectionLocal options.
-type ListVPNGatewayConnectionLocalOptions struct {
+// ListVPNGatewayConnectionLocalCIDRsOptions : The ListVPNGatewayConnectionLocalCIDRs options.
+type ListVPNGatewayConnectionLocalCIDRsOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required,ne="`
 
@@ -49215,34 +49215,34 @@ type ListVPNGatewayConnectionLocalOptions struct {
 	Headers map[string]string
 }
 
-// NewListVPNGatewayConnectionLocalOptions : Instantiate ListVPNGatewayConnectionLocalOptions
-func (*VpcV1) NewListVPNGatewayConnectionLocalOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionLocalOptions {
-	return &ListVPNGatewayConnectionLocalOptions{
+// NewListVPNGatewayConnectionLocalCIDRsOptions : Instantiate ListVPNGatewayConnectionLocalCIDRsOptions
+func (*VpcV1) NewListVPNGatewayConnectionLocalCIDRsOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionLocalCIDRsOptions {
+	return &ListVPNGatewayConnectionLocalCIDRsOptions{
 		VPNGatewayID: core.StringPtr(vpnGatewayID),
 		ID:           core.StringPtr(id),
 	}
 }
 
 // SetVPNGatewayID : Allow user to set VPNGatewayID
-func (_options *ListVPNGatewayConnectionLocalOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionLocalOptions {
+func (_options *ListVPNGatewayConnectionLocalCIDRsOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionLocalCIDRsOptions {
 	_options.VPNGatewayID = core.StringPtr(vpnGatewayID)
 	return _options
 }
 
 // SetID : Allow user to set ID
-func (_options *ListVPNGatewayConnectionLocalOptions) SetID(id string) *ListVPNGatewayConnectionLocalOptions {
+func (_options *ListVPNGatewayConnectionLocalCIDRsOptions) SetID(id string) *ListVPNGatewayConnectionLocalCIDRsOptions {
 	_options.ID = core.StringPtr(id)
 	return _options
 }
 
 // SetHeaders : Allow user to set Headers
-func (options *ListVPNGatewayConnectionLocalOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionLocalOptions {
+func (options *ListVPNGatewayConnectionLocalCIDRsOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionLocalCIDRsOptions {
 	options.Headers = param
 	return options
 }
 
-// ListVPNGatewayConnectionPeerOptions : The ListVPNGatewayConnectionPeer options.
-type ListVPNGatewayConnectionPeerOptions struct {
+// ListVPNGatewayConnectionPeerCIDRsOptions : The ListVPNGatewayConnectionPeerCIDRs options.
+type ListVPNGatewayConnectionPeerCIDRsOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required,ne="`
 
@@ -49253,28 +49253,28 @@ type ListVPNGatewayConnectionPeerOptions struct {
 	Headers map[string]string
 }
 
-// NewListVPNGatewayConnectionPeerOptions : Instantiate ListVPNGatewayConnectionPeerOptions
-func (*VpcV1) NewListVPNGatewayConnectionPeerOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionPeerOptions {
-	return &ListVPNGatewayConnectionPeerOptions{
+// NewListVPNGatewayConnectionPeerCIDRsOptions : Instantiate ListVPNGatewayConnectionPeerCIDRsOptions
+func (*VpcV1) NewListVPNGatewayConnectionPeerCIDRsOptions(vpnGatewayID string, id string) *ListVPNGatewayConnectionPeerCIDRsOptions {
+	return &ListVPNGatewayConnectionPeerCIDRsOptions{
 		VPNGatewayID: core.StringPtr(vpnGatewayID),
 		ID:           core.StringPtr(id),
 	}
 }
 
 // SetVPNGatewayID : Allow user to set VPNGatewayID
-func (_options *ListVPNGatewayConnectionPeerOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionPeerOptions {
+func (_options *ListVPNGatewayConnectionPeerCIDRsOptions) SetVPNGatewayID(vpnGatewayID string) *ListVPNGatewayConnectionPeerCIDRsOptions {
 	_options.VPNGatewayID = core.StringPtr(vpnGatewayID)
 	return _options
 }
 
 // SetID : Allow user to set ID
-func (_options *ListVPNGatewayConnectionPeerOptions) SetID(id string) *ListVPNGatewayConnectionPeerOptions {
+func (_options *ListVPNGatewayConnectionPeerCIDRsOptions) SetID(id string) *ListVPNGatewayConnectionPeerCIDRsOptions {
 	_options.ID = core.StringPtr(id)
 	return _options
 }
 
 // SetHeaders : Allow user to set Headers
-func (options *ListVPNGatewayConnectionPeerOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionPeerOptions {
+func (options *ListVPNGatewayConnectionPeerCIDRsOptions) SetHeaders(param map[string]string) *ListVPNGatewayConnectionPeerCIDRsOptions {
 	options.Headers = param
 	return options
 }
@@ -59289,6 +59289,9 @@ type Share struct {
 	// The lifecycle state of the file share.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
+	// Mount targets for the file share.
+	MountTargets []ShareMountTargetReference `json:"mount_targets" validate:"required"`
+
 	// The name for this share. The name is unique across all shares in the region.
 	Name *string `json:"name" validate:"required"`
 
@@ -59345,9 +59348,6 @@ type Share struct {
 	//
 	// This property will be present when the `replication_role` is `replica`.
 	SourceShare *ShareReference `json:"source_share,omitempty"`
-
-	// Mount targets for the file share.
-	Targets []ShareMountTargetReference `json:"targets" validate:"required"`
 
 	// Tags for this resource.
 	UserTags []string `json:"user_tags" validate:"required"`
@@ -59468,6 +59468,10 @@ func UnmarshalShare(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetReference)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -59509,10 +59513,6 @@ func UnmarshalShare(m map[string]json.RawMessage, result interface{}) (err error
 		return
 	}
 	err = core.UnmarshalModel(m, "source_share", &obj.SourceShare, UnmarshalShareReference)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "targets", &obj.Targets, UnmarshalShareMountTargetReference)
 	if err != nil {
 		return
 	}
@@ -59896,7 +59896,7 @@ const (
 // Constants associated with the ShareMountTarget.ResourceType property.
 // The resource type.
 const (
-	ShareMountTargetResourceTypeShareTargetConst = "share_target"
+	ShareMountTargetResourceTypeShareMountTargetConst = "share_mount_target"
 )
 
 // UnmarshalShareMountTarget unmarshals an instance of ShareMountTarget from the specified map of raw messages.
@@ -59949,13 +59949,13 @@ func UnmarshalShareMountTarget(m map[string]json.RawMessage, result interface{})
 // ShareMountTargetCollection : ShareMountTargetCollection struct
 type ShareMountTargetCollection struct {
 	// Collection of share mount targets.
-	Targets []ShareMountTarget `json:"targets" validate:"required"`
+	MountTargets []ShareMountTarget `json:"mount_targets" validate:"required"`
 }
 
 // UnmarshalShareMountTargetCollection unmarshals an instance of ShareMountTargetCollection from the specified map of raw messages.
 func UnmarshalShareMountTargetCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ShareMountTargetCollection)
-	err = core.UnmarshalModel(m, "targets", &obj.Targets, UnmarshalShareMountTarget)
+	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTarget)
 	if err != nil {
 		return
 	}
@@ -60053,7 +60053,7 @@ type ShareMountTargetReference struct {
 // Constants associated with the ShareMountTargetReference.ResourceType property.
 // The resource type.
 const (
-	ShareMountTargetReferenceResourceTypeShareTargetConst = "share_target"
+	ShareMountTargetReferenceResourceTypeShareMountTargetConst = "share_mount_target"
 )
 
 // UnmarshalShareMountTargetReference unmarshals an instance of ShareMountTargetReference from the specified map of raw messages.
@@ -60396,6 +60396,9 @@ type SharePrototype struct {
 	// In addition, each host accessing the share will be restricted to 48000 IOPS.
 	Iops *int64 `json:"iops,omitempty"`
 
+	// The mount targets for the file share.
+	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -60408,9 +60411,6 @@ type SharePrototype struct {
 	// unspecified, a replica may be subsequently added by creating a new file share with a
 	// `source_share` referencing this file share.
 	ReplicaShare *SharePrototypeShareContext `json:"replica_share,omitempty"`
-
-	// The mount targets for the file share.
-	Targets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// Tags for this resource.
 	UserTags []string `json:"user_tags,omitempty"`
@@ -60486,6 +60486,10 @@ func UnmarshalSharePrototype(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -60495,10 +60499,6 @@ func UnmarshalSharePrototype(m map[string]json.RawMessage, result interface{}) (
 		return
 	}
 	err = core.UnmarshalModel(m, "replica_share", &obj.ReplicaShare, UnmarshalSharePrototypeShareContext)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "targets", &obj.Targets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -60552,6 +60552,11 @@ type SharePrototypeShareContext struct {
 	// In addition, each host accessing the share will be restricted to 48000 IOPS.
 	Iops *int64 `json:"iops,omitempty"`
 
+	// The mount targets for this replica file share.
+	//
+	// A replica's mount targets must be mounted read-only.
+	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -60564,11 +60569,6 @@ type SharePrototypeShareContext struct {
 	//
 	// Replication of a share can be scheduled to occur at most once per hour.
 	ReplicationCronSpec *string `json:"replication_cron_spec" validate:"required"`
-
-	// The mount targets for this replica file share.
-	//
-	// Share mount targets mounted from a replica must be mounted read-only.
-	Targets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// Tags for this resource.
 	UserTags []string `json:"user_tags,omitempty"`
@@ -60597,6 +60597,10 @@ func UnmarshalSharePrototypeShareContext(m map[string]json.RawMessage, result in
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -60606,10 +60610,6 @@ func UnmarshalSharePrototypeShareContext(m map[string]json.RawMessage, result in
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "replication_cron_spec", &obj.ReplicationCronSpec)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "targets", &obj.Targets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -65159,10 +65159,10 @@ type VPNGatewayConnection struct {
 	Tunnels []VPNGatewayConnectionStaticRouteModeTunnel `json:"tunnels,omitempty"`
 
 	// The local CIDRs for this resource.
-	Local []string `json:"local_cidrs,omitempty"`
+	LocalCIDRs []string `json:"local_cidrs,omitempty"`
 
 	// The peer CIDRs for this resource.
-	Peer []string `json:"peer_cidrs,omitempty"`
+	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
 }
 
 // Constants associated with the VPNGatewayConnection.AuthenticationMode property.
@@ -65272,11 +65272,11 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.Local)
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.Peer)
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -65565,16 +65565,16 @@ func UnmarshalVPNGatewayConnectionIPsecPolicyPrototype(m map[string]json.RawMess
 	return
 }
 
-// VPNGatewayConnectionLocal : VPNGatewayConnectionLocal struct
-type VPNGatewayConnectionLocal struct {
+// VPNGatewayConnectionLocalCIDRs : VPNGatewayConnectionLocalCIDRs struct
+type VPNGatewayConnectionLocalCIDRs struct {
 	// The local CIDRs for this resource.
-	Local []string `json:"local_cidrs,omitempty"`
+	LocalCIDRs []string `json:"local_cidrs,omitempty"`
 }
 
-// UnmarshalVPNGatewayConnectionLocal unmarshals an instance of VPNGatewayConnectionLocal from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionLocal(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayConnectionLocal)
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.Local)
+// UnmarshalVPNGatewayConnectionLocalCIDRs unmarshals an instance of VPNGatewayConnectionLocalCIDRs from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionLocalCIDRs(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionLocalCIDRs)
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
 	}
@@ -65676,16 +65676,16 @@ func (vpnGatewayConnectionPatch *VPNGatewayConnectionPatch) AsPatch() (_patch ma
 	return
 }
 
-// VPNGatewayConnectionPeer : VPNGatewayConnectionPeer struct
-type VPNGatewayConnectionPeer struct {
+// VPNGatewayConnectionPeerCIDRs : VPNGatewayConnectionPeerCIDRs struct
+type VPNGatewayConnectionPeerCIDRs struct {
 	// The peer CIDRs for this resource.
-	Peer []string `json:"peer_cidrs,omitempty"`
+	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
 }
 
-// UnmarshalVPNGatewayConnectionPeer unmarshals an instance of VPNGatewayConnectionPeer from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionPeer(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayConnectionPeer)
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.Peer)
+// UnmarshalVPNGatewayConnectionPeerCIDRs unmarshals an instance of VPNGatewayConnectionPeerCIDRs from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionPeerCIDRs(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionPeerCIDRs)
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -65726,10 +65726,10 @@ type VPNGatewayConnectionPrototype struct {
 	RoutingProtocol *string `json:"routing_protocol,omitempty"`
 
 	// The local CIDRs for this resource.
-	Local []string `json:"local_cidrs,omitempty"`
+	LocalCIDRs []string `json:"local_cidrs,omitempty"`
 
 	// The peer CIDRs for this resource.
-	Peer []string `json:"peer_cidrs,omitempty"`
+	PeerCIDRs []string `json:"peer_cidrs,omitempty"`
 }
 
 // Constants associated with the VPNGatewayConnectionPrototype.RoutingProtocol property.
@@ -65781,11 +65781,11 @@ func UnmarshalVPNGatewayConnectionPrototype(m map[string]json.RawMessage, result
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.Local)
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.Peer)
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -67557,7 +67557,7 @@ type VirtualNetworkInterfaceTarget struct {
 // Constants associated with the VirtualNetworkInterfaceTarget.ResourceType property.
 // The resource type.
 const (
-	VirtualNetworkInterfaceTargetResourceTypeShareTargetConst = "share_target"
+	VirtualNetworkInterfaceTargetResourceTypeShareMountTargetConst = "share_mount_target"
 )
 
 func (*VirtualNetworkInterfaceTarget) isaVirtualNetworkInterfaceTarget() bool {
@@ -84129,6 +84129,9 @@ type SharePrototypeShareBySize struct {
 	// In addition, each host accessing the share will be restricted to 48000 IOPS.
 	Iops *int64 `json:"iops,omitempty"`
 
+	// The mount targets for the file share.
+	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -84138,9 +84141,6 @@ type SharePrototypeShareBySize struct {
 	Profile ShareProfileIdentityIntf `json:"profile" validate:"required"`
 
 	ReplicaShare *SharePrototypeShareContext `json:"replica_share,omitempty"`
-
-	// The mount targets for the file share.
-	Targets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// Tags for this resource.
 	UserTags []string `json:"user_tags,omitempty"`
@@ -84214,6 +84214,10 @@ func UnmarshalSharePrototypeShareBySize(m map[string]json.RawMessage, result int
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -84223,10 +84227,6 @@ func UnmarshalSharePrototypeShareBySize(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalModel(m, "replica_share", &obj.ReplicaShare, UnmarshalSharePrototypeShareContext)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "targets", &obj.Targets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -84273,6 +84273,9 @@ type SharePrototypeShareBySourceShare struct {
 	// In addition, each host accessing the share will be restricted to 48000 IOPS.
 	Iops *int64 `json:"iops,omitempty"`
 
+	// The mount targets for the file share.
+	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -84282,9 +84285,6 @@ type SharePrototypeShareBySourceShare struct {
 	Profile ShareProfileIdentityIntf `json:"profile" validate:"required"`
 
 	ReplicaShare *SharePrototypeShareContext `json:"replica_share,omitempty"`
-
-	// The mount targets for the file share.
-	Targets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// Tags for this resource.
 	UserTags []string `json:"user_tags,omitempty"`
@@ -84326,6 +84326,10 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -84335,10 +84339,6 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "replica_share", &obj.ReplicaShare, UnmarshalSharePrototypeShareContext)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "targets", &obj.Targets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -85492,10 +85492,10 @@ type VPNGatewayConnectionPolicyMode struct {
 	Status *string `json:"status" validate:"required"`
 
 	// The local CIDRs for this resource.
-	Local []string `json:"local_cidrs" validate:"required"`
+	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
 
 	// The peer CIDRs for this resource.
-	Peer []string `json:"peer_cidrs" validate:"required"`
+	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
 }
 
 // Constants associated with the VPNGatewayConnectionPolicyMode.AuthenticationMode property.
@@ -85587,11 +85587,11 @@ func UnmarshalVPNGatewayConnectionPolicyMode(m map[string]json.RawMessage, resul
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.Local)
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.Peer)
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -85622,19 +85622,19 @@ type VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype struct
 	Psk *string `json:"psk" validate:"required"`
 
 	// The local CIDRs for this resource.
-	Local []string `json:"local_cidrs" validate:"required"`
+	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
 
 	// The peer CIDRs for this resource.
-	Peer []string `json:"peer_cidrs" validate:"required"`
+	PeerCIDRs []string `json:"peer_cidrs" validate:"required"`
 }
 
 // NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype : Instantiate VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype (Generic Model Constructor)
-func (*VpcV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(peerAddress string, psk string, local []string, peer []string) (_model *VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype, err error) {
+func (*VpcV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(peerAddress string, psk string, localCIDRs []string, peerCIDRs []string) (_model *VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype, err error) {
 	_model = &VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype{
 		PeerAddress: core.StringPtr(peerAddress),
 		Psk:         core.StringPtr(psk),
-		Local:       local,
-		Peer:        peer,
+		LocalCIDRs:  localCIDRs,
+		PeerCIDRs:   peerCIDRs,
 	}
 	err = core.ValidateStruct(_model, "required parameters")
 	return
@@ -85675,11 +85675,11 @@ func UnmarshalVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototy
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.Local)
+	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.Peer)
+	err = core.UnmarshalPrimitive(m, "peer_cidrs", &obj.PeerCIDRs)
 	if err != nil {
 		return
 	}
@@ -86659,7 +86659,7 @@ type VirtualNetworkInterfaceTargetShareMountTargetReference struct {
 // Constants associated with the VirtualNetworkInterfaceTargetShareMountTargetReference.ResourceType property.
 // The resource type.
 const (
-	VirtualNetworkInterfaceTargetShareMountTargetReferenceResourceTypeShareTargetConst = "share_target"
+	VirtualNetworkInterfaceTargetShareMountTargetReferenceResourceTypeShareMountTargetConst = "share_mount_target"
 )
 
 func (*VirtualNetworkInterfaceTargetShareMountTargetReference) isaVirtualNetworkInterfaceTarget() bool {
@@ -92916,6 +92916,93 @@ func (pager *SharesPager) GetAll() (allItems []Share, err error) {
 }
 
 //
+// VirtualNetworkInterfacesPager can be used to simplify the use of the "ListVirtualNetworkInterfaces" method.
+//
+type VirtualNetworkInterfacesPager struct {
+	hasNext     bool
+	options     *ListVirtualNetworkInterfacesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVirtualNetworkInterfacesPager returns a new VirtualNetworkInterfacesPager instance.
+func (vpc *VpcV1) NewVirtualNetworkInterfacesPager(options *ListVirtualNetworkInterfacesOptions) (pager *VirtualNetworkInterfacesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVirtualNetworkInterfacesOptions = *options
+	pager = &VirtualNetworkInterfacesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VirtualNetworkInterfacesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VirtualNetworkInterfacesPager) GetNextWithContext(ctx context.Context) (page []VirtualNetworkInterface, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVirtualNetworkInterfacesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.VirtualNetworkInterfaces
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VirtualNetworkInterfacesPager) GetAllWithContext(ctx context.Context) (allItems []VirtualNetworkInterface, err error) {
+	for pager.HasNext() {
+		var nextPage []VirtualNetworkInterface
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VirtualNetworkInterfacesPager) GetNext() (page []VirtualNetworkInterface, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VirtualNetworkInterfacesPager) GetAll() (allItems []VirtualNetworkInterface, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
 // PublicGatewaysPager can be used to simplify the use of the "ListPublicGateways" method.
 //
 type PublicGatewaysPager struct {
@@ -94391,92 +94478,5 @@ func (pager *FlowLogCollectorsPager) GetNext() (page []FlowLogCollector, err err
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *FlowLogCollectorsPager) GetAll() (allItems []FlowLogCollector, err error) {
-	return pager.GetAllWithContext(context.Background())
-}
-
-//
-// VirtualNetworkInterfacesPager can be used to simplify the use of the "ListVirtualNetworkInterfaces" method.
-//
-type VirtualNetworkInterfacesPager struct {
-	hasNext     bool
-	options     *ListVirtualNetworkInterfacesOptions
-	client      *VpcV1
-	pageContext struct {
-		next *string
-	}
-}
-
-// NewVirtualNetworkInterfacesPager returns a new VirtualNetworkInterfacesPager instance.
-func (vpc *VpcV1) NewVirtualNetworkInterfacesPager(options *ListVirtualNetworkInterfacesOptions) (pager *VirtualNetworkInterfacesPager, err error) {
-	if options.Start != nil && *options.Start != "" {
-		err = fmt.Errorf("the 'options.Start' field should not be set")
-		return
-	}
-
-	var optionsCopy ListVirtualNetworkInterfacesOptions = *options
-	pager = &VirtualNetworkInterfacesPager{
-		hasNext: true,
-		options: &optionsCopy,
-		client:  vpc,
-	}
-	return
-}
-
-// HasNext returns true if there are potentially more results to be retrieved.
-func (pager *VirtualNetworkInterfacesPager) HasNext() bool {
-	return pager.hasNext
-}
-
-// GetNextWithContext returns the next page of results using the specified Context.
-func (pager *VirtualNetworkInterfacesPager) GetNextWithContext(ctx context.Context) (page []VirtualNetworkInterface, err error) {
-	if !pager.HasNext() {
-		return nil, fmt.Errorf("no more results available")
-	}
-
-	pager.options.Start = pager.pageContext.next
-
-	result, _, err := pager.client.ListVirtualNetworkInterfacesWithContext(ctx, pager.options)
-	if err != nil {
-		return
-	}
-
-	var next *string
-	if result.Next != nil {
-		var start *string
-		start, err = core.GetQueryParam(result.Next.Href, "start")
-		if err != nil {
-			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
-			return
-		}
-		next = start
-	}
-	pager.pageContext.next = next
-	pager.hasNext = (pager.pageContext.next != nil)
-	page = result.VirtualNetworkInterfaces
-
-	return
-}
-
-// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
-// until all pages of results have been retrieved.
-func (pager *VirtualNetworkInterfacesPager) GetAllWithContext(ctx context.Context) (allItems []VirtualNetworkInterface, err error) {
-	for pager.HasNext() {
-		var nextPage []VirtualNetworkInterface
-		nextPage, err = pager.GetNextWithContext(ctx)
-		if err != nil {
-			return
-		}
-		allItems = append(allItems, nextPage...)
-	}
-	return
-}
-
-// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
-func (pager *VirtualNetworkInterfacesPager) GetNext() (page []VirtualNetworkInterface, err error) {
-	return pager.GetNextWithContext(context.Background())
-}
-
-// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
-func (pager *VirtualNetworkInterfacesPager) GetAll() (allItems []VirtualNetworkInterface, err error) {
 	return pager.GetAllWithContext(context.Background())
 }

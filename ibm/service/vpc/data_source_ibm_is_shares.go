@@ -280,7 +280,7 @@ func DataSourceIbmIsShares() *schema.Resource {
 								},
 							},
 						},
-						"share_targets": {
+						"mount_targets": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Mount targets for the file share.",
@@ -485,12 +485,12 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if sharesItem.SourceShare != nil {
 		sharesMap["source_share"] = dataSourceShareFlattenSourceShare(*sharesItem.SourceShare)
 	}
-	if sharesItem.Targets != nil {
+	if sharesItem.MountTargets != nil {
 		targetsList := []map[string]interface{}{}
-		for _, targetsItem := range sharesItem.Targets {
+		for _, targetsItem := range sharesItem.MountTargets {
 			targetsList = append(targetsList, dataSourceShareCollectionSharesTargetsToMap(targetsItem))
 		}
-		sharesMap["share_targets"] = targetsList
+		sharesMap["mount_targets"] = targetsList
 	}
 	if sharesItem.Zone != nil {
 		sharesMap["zone"] = *sharesItem.Zone.Name

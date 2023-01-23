@@ -785,7 +785,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 					}
 					targets = append(targets, targetsItem)
 				}
-				model.Targets = targets
+				model.MountTargets = targets
 			}
 
 			var userTags *schema.Set
@@ -846,7 +846,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			}
 			targets = append(targets, targetsItem)
 		}
-		sharePrototype.Targets = targets
+		sharePrototype.MountTargets = targets
 	}
 	if zone, ok := d.GetOk("zone"); ok {
 		zonestr := zone.(string)
@@ -992,8 +992,8 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("Error setting size: %s", err))
 	}
 	targets := []map[string]interface{}{}
-	if share.Targets != nil {
-		for _, targetsItem := range share.Targets {
+	if share.MountTargets != nil {
+		for _, targetsItem := range share.MountTargets {
 			GetShareMountTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 			GetShareMountTargetOptions.SetShareID(d.Id())
 			GetShareMountTargetOptions.SetID(*targetsItem.ID)
@@ -1462,8 +1462,8 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-	if share.Targets != nil {
-		for _, targetsItem := range share.Targets {
+	if share.MountTargets != nil {
+		for _, targetsItem := range share.MountTargets {
 
 			deleteShareTargetOptions := &vpcv1.DeleteShareMountTargetOptions{}
 
@@ -1631,7 +1631,7 @@ func ShareReplicaToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *schem
 	shareReplicaMap["replication_status_reasons"] = status_reasons
 
 	targets := []map[string]interface{}{}
-	for _, mountTarget := range shareReplica.Targets {
+	for _, mountTarget := range shareReplica.MountTargets {
 		GetShareMountTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
 		GetShareMountTargetOptions.SetShareID(*shareReplica.ID)

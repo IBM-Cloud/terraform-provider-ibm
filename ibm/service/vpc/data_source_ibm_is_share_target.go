@@ -24,7 +24,7 @@ func DataSourceIbmIsShareTarget() *schema.Resource {
 				Optional:    true,
 				Description: "The file share identifier.",
 			},
-			"share_target": {
+			"mount_target": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The share target identifier.",
@@ -35,10 +35,10 @@ func DataSourceIbmIsShareTarget() *schema.Resource {
 				ExactlyOneOf: []string{"share", "share_name"},
 				Description:  "The file share name.",
 			},
-			"share_target_name": {
+			"mount_target_name": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ExactlyOneOf: []string{"share_target", "share_target_name"},
+				ExactlyOneOf: []string{"mount_target", "mount_target_name"},
 				Description:  "The share target name.",
 			},
 			"created_at": {
@@ -179,8 +179,8 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 
 	share_id := d.Get("share").(string)
 	share_name := d.Get("share_name").(string)
-	share_target := d.Get("share_target").(string)
-	share_target_name := d.Get("share_target_name").(string)
+	share_target := d.Get("mount_target").(string)
+	share_target_name := d.Get("mount_target_name").(string)
 	var shareTarget *vpcv1.ShareMountTarget
 	if share_name != "" {
 		listSharesOptions := &vpcv1.ListSharesOptions{}
@@ -208,7 +208,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 			log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
-		for _, targetsItem := range shareTargetCollection.Targets {
+		for _, targetsItem := range shareTargetCollection.MountTargets {
 			if *targetsItem.Name == share_target_name {
 				shareTarget = &targetsItem
 				break

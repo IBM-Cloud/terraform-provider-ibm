@@ -138,10 +138,10 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 							Description: "The security groups to use for this virtual network interface.",
 						},
 						"subnet": {
-							Type:          schema.TypeString,
-							Optional:      true,
-							ConflictsWith: []string{"virtual_network_interface.0.primary_ip"},
-							Description:   "The associated subnet. Required if primary_ip is not specified.",
+							Type:     schema.TypeString,
+							Optional: true,
+							//ConflictsWith: []string{"virtual_network_interface.0.primary_ip"},
+							Description: "The associated subnet. Required if primary_ip is not specified.",
 						},
 					},
 				},
@@ -235,6 +235,7 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		shareMountTargetPrototype.Name = &name
 	}
 
+	createShareTargetOptions.ShareMountTargetPrototype = shareMountTargetPrototype
 	shareTarget, response, err := vpcClient.CreateShareMountTargetWithContext(context, createShareTargetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateShareTargetWithContext failed %s\n%s", err, response)
@@ -581,11 +582,11 @@ func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData
 		}
 		vni, response, err := vpcClient.GetVirtualNetworkInterface(getVNIOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+			return nil, "", fmt.Errorf("[ERROR] Error Getting virtual network interface : %s\n%s", err, response)
 		}
 
 		if *vni.LifecycleState == "failed" {
-			return vni, *vni.LifecycleState, fmt.Errorf("Network Interface creationg failed with status %s ", *vni.LifecycleState)
+			return vni, *vni.LifecycleState, fmt.Errorf(" Virtualk Network Interface creating failed with status %s ", *vni.LifecycleState)
 		}
 		return vni, *vni.LifecycleState, nil
 	}
