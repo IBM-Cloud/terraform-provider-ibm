@@ -41,7 +41,7 @@ func ResourceIBMISSecurityGroupNetworkInterfaceAttachment() *schema.Resource {
 		Exists:   resourceIBMISSecurityGroupNetworkInterfaceAttachmentExists,
 		Importer: &schema.ResourceImporter{},
 
-		DeprecationMessage: "Resource ibm_is_security_group_network_interface_attachment is deprecated. Use ibm_is_security_group_target to attach a network interface to a security group",
+		DeprecationMessage: "Resource Removal: Resource ibm_is_security_group_network_interface_attachment is deprecated and being removed. Use ibm_is_security_group_target to attach a network interface to a security group.\n This resource will not be available from next release (v1.50.0).",
 
 		Schema: map[string]*schema.Schema{
 			isSGNICAGroupId: {

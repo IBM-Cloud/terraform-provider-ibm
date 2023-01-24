@@ -308,6 +308,19 @@ func FlattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]inte
 	return result
 }
 
+func FlattenVpcWorkerPoolSecondaryDisk(secondaryDisk containerv2.DiskConfigResp) []map[string]interface{} {
+	storageList := make([]map[string]interface{}, 1)
+	secondary_storage := map[string]interface{}{
+		"name":               secondaryDisk.Name,
+		"count":              secondaryDisk.Count,
+		"size":               secondaryDisk.Size,
+		"device_type":        secondaryDisk.DeviceType,
+		"raid_configuration": secondaryDisk.RAIDConfiguration,
+		"profile":            secondaryDisk.Profile,
+	}
+	storageList[0] = secondary_storage
+	return storageList
+}
 func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
@@ -342,6 +355,9 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 			zonesConfig[j] = z
 		}
 		l["zones"] = zonesConfig
+		if workerPool.SecondaryStorageOption != nil {
+			l["secondary_storage"] = FlattenVpcWorkerPoolSecondaryDisk(*workerPool.SecondaryStorageOption)
+		}
 		workerPools[i] = l
 	}
 
@@ -2017,12 +2033,6 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 // }
 
 func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
-
-	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
-	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
-	}
-
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return nil, err
@@ -2042,23 +2052,11 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 			ListTagsOptions.AccountID = PtrToString(accountID)
 		}
 	}
-	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
 	if err != nil {
-		if strings.Contains(err.Error(), "Too Many Requests") {
-			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
-			if err != nil {
-				return nil, err
-			}
-			return temp, nil
-		}
 		return nil, err
 	}
-	var taglist []string
-	for _, item := range taggingResult.Items {
-		taglist = append(taglist, *item.Name)
-	}
-	log.Println("tagList: ", taglist)
-	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+	return taggingResult, nil
 }
 
 func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
@@ -3387,14 +3385,12 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
-	mapped := make([]string, len(hostLabels)-1)
-	idx := 0
+	mapped := make([]string, 0)
 	for k, v := range hostLabels {
 		if strings.HasPrefix(k, "os") {
 			continue
 		}
-		mapped[idx] = fmt.Sprintf("%s:%v", k, v)
-		idx++
+		mapped = append(mapped, fmt.Sprintf("%s:%v", k, v))
 	}
 
 	return NewStringSet(schema.HashString, mapped)

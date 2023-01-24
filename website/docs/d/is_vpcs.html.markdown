@@ -31,6 +31,12 @@ data "ibm_is_vpcs" "example" {
 }
 
 ```
+## Argument reference
+
+Review the argument references that you can specify for your data source. 
+
+- `resource_group` - (Optional, String) The ID of the Resource group this flow log collector belongs to
+- `classic_access` - (Optional, Boolean) Indicates whether this VPC is connected to Classic Infrastructure.
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 

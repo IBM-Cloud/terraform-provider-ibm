@@ -22,6 +22,11 @@ func DataSourceIBMIsFloatingIps() *schema.Resource {
 		ReadContext: dataSourceIBMIsFloatingIpsRead,
 
 		Schema: map[string]*schema.Schema{
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this floating ips belongs to",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -219,8 +224,13 @@ func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceD
 	}
 	start := ""
 	allFloatingIPs := []vpcv1.FloatingIP{}
+	floatingIPOptions := &vpcv1.ListFloatingIpsOptions{}
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		floatingIPOptions.ResourceGroupID = &resGroup
+	}
 	for {
-		floatingIPOptions := &vpcv1.ListFloatingIpsOptions{}
+
 		if start != "" {
 			floatingIPOptions.Start = &start
 		}

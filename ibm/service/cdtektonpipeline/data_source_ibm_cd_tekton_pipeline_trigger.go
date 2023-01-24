@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -67,6 +67,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Computed:    true,
 							Description: "Property value. Any string value is valid.",
 						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "API URL for interacting with the trigger property.",
+						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -84,11 +89,6 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "API URL for interacting with the trigger property.",
 						},
 					},
 				},
@@ -303,7 +303,7 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
 		for _, modelItem := range trigger.Properties {
-			modelMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(&modelItem)
+			modelMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -379,13 +379,16 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	return nil
 }
 
-func dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerPropertiesItem) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model *cdtektonpipelinev2.TriggerProperty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
+	}
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
 	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
@@ -395,9 +398,6 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtek
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
 	}
 	return modelMap, nil
 }
@@ -449,7 +449,7 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model *cdt
 		modelMap["hook_id"] = *model.HookID
 	}
 	if model.Tool != nil {
-		toolMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToolToMap(model.Tool)
+		toolMap, err := dataSourceIBMCdTektonPipelineTriggerToolToMap(model.Tool)
 		if err != nil {
 			return modelMap, err
 		}
@@ -458,7 +458,7 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model *cdt
 	return modelMap, nil
 }
 
-func dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToolToMap(model *cdtektonpipelinev2.TriggerSourcePropertiesTool) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerToolToMap(model *cdtektonpipelinev2.Tool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID

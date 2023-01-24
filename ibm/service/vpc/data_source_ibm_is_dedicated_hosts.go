@@ -27,6 +27,21 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 				Optional:    true,
 				Description: "The unique identifier of the dedicated host group this dedicated host belongs to",
 			},
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this dedicated host belongs to",
+			},
+			"zone": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The zone name this dedicated host is in",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the dedicated host",
+			},
 			"dedicated_hosts": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -371,6 +386,18 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 	if hostgroupintf, ok := d.GetOk("host_group"); ok {
 		hostgroupid := hostgroupintf.(string)
 		listDedicatedHostsOptions.DedicatedHostGroupID = &hostgroupid
+	}
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listDedicatedHostsOptions.ResourceGroupID = &resGroup
+	}
+	if zoneintf, ok := d.GetOk("zone"); ok {
+		zoneName := zoneintf.(string)
+		listDedicatedHostsOptions.ZoneName = &zoneName
+	}
+	if nameintf, ok := d.GetOk("name"); ok {
+		name := nameintf.(string)
+		listDedicatedHostsOptions.Name = &name
 	}
 	start := ""
 	allrecs := []vpcv1.DedicatedHost{}

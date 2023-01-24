@@ -23,6 +23,16 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 		Read:     dataSourceIBMISEndpointGatewaysRead,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this endpoint gateway belongs to",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the endpoint gateway group",
+			},
 			isVirtualEndpointGateways: {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -157,8 +167,17 @@ func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{
 
 	start := ""
 	allrecs := []vpcv1.EndpointGateway{}
+	options := sess.NewListEndpointGatewaysOptions()
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		options.ResourceGroupID = &resGroup
+	}
+	if nameintf, ok := d.GetOk("name"); ok {
+		name := nameintf.(string)
+		options.Name = &name
+	}
 	for {
-		options := sess.NewListEndpointGatewaysOptions()
+
 		if start != "" {
 			options.Start = &start
 		}
