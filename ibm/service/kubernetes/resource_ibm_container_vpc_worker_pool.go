@@ -161,6 +161,14 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description: "The operating system of the workers in the worker pool.",
 			},
 
+			"secondary_storage": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The secondary storage option for the workers in the worker pool.",
+			},
+
 			"host_pool_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -285,6 +293,10 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 
 	if os, ok := d.GetOk("operating_system"); ok {
 		params.OperatingSystem = os.(string)
+	}
+
+	if secondarystorage, ok := d.GetOk("secondary_storage"); ok {
+		params.SecondaryStorageOption = secondarystorage.(string)
 	}
 
 	if hpid, ok := d.GetOk("host_pool_id"); ok {
@@ -525,6 +537,9 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("cluster", cluster)
 	d.Set("vpc_id", workerPool.VpcID)
 	d.Set("operating_system", workerPool.OperatingSystem)
+	if workerPool.SecondaryStorageOption != nil {
+		d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
+	}
 	d.Set("host_pool_id", workerPool.HostPoolID)
 	if workerPool.Taints != nil {
 		d.Set("taints", flattenWorkerPoolTaints(workerPool))
