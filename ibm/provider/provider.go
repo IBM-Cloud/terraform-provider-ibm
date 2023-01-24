@@ -362,6 +362,8 @@ func Provider() *schema.Provider {
 			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
 			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
 			"ibm_is_backup_policy_plans": vpc.DataSourceIBMIsBackupPolicyPlans(),
+			"ibm_is_backup_policy_job":   vpc.DataSourceIBMIsBackupPolicyJob(),
+			"ibm_is_backup_policy_jobs":  vpc.DataSourceIBMIsBackupPolicyJobs(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),

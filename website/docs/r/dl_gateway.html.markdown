@@ -49,7 +49,6 @@ resource ibm_dl_gateway test_dl_gateway {
 } 
 ```
 ---
-
 ## Sample usage to create Direct Link of connect type
 In the following example, you can create Direct Link of connect type:
 
@@ -93,7 +92,6 @@ resource "ibm_dl_gateway" "test_dl_connect" {
 }
 ```
 ---
-
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
@@ -140,6 +138,10 @@ Review the argument reference that you can specify for your resource.
 - `speed_mbps`- (Required, Integer) The gateway speed in MBPS. For example, `10.254.30.78/30`.
 - `type` - (Required, Forces new resource, String) The gateway type, allowed values are `dedicated` and `connect`.
 
+- `as_prepends` - (Optional, List) List of AS Prepend configuration information
+
+- `as_prepends` - (Optional, List) List of AS Prepend configuration information
+
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 - `as_prepends` - (List) List of AS Prepend configuration information
@@ -180,7 +182,6 @@ The `ibm_dl_gateway` resource can be imported by using gateway ID.
 $ terraform import ibm_dl_gateway.example <gateway_ID>
 ```
 ---
-
 **Example**
 
 ---
@@ -188,4 +189,3 @@ $ terraform import ibm_dl_gateway.example <gateway_ID>
 $ terraform import ibm_dl_gateway.example 5ffda12064634723b079acdb018ef308
 ```
 ---
-
