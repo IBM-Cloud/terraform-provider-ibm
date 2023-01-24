@@ -13282,7 +13282,7 @@ func (vpc *VpcV1) ListShareMountTargetsWithContext(ctx context.Context, listShar
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -13351,7 +13351,7 @@ func (vpc *VpcV1) CreateShareMountTargetWithContext(ctx context.Context, createS
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -13424,7 +13424,7 @@ func (vpc *VpcV1) DeleteShareMountTargetWithContext(ctx context.Context, deleteS
 	builder := core.NewRequestBuilder(core.DELETE)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets/{id}`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets/{id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -13488,7 +13488,7 @@ func (vpc *VpcV1) GetShareMountTargetWithContext(ctx context.Context, getShareMo
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets/{id}`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets/{id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -13554,7 +13554,7 @@ func (vpc *VpcV1) UpdateShareMountTargetWithContext(ctx context.Context, updateS
 	builder := core.NewRequestBuilder(core.PATCH)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/mount_targets/{id}`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/shares/{share_id}/targets/{id}`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -59290,7 +59290,7 @@ type Share struct {
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Mount targets for the file share.
-	MountTargets []ShareMountTargetReference `json:"mount_targets" validate:"required"`
+	MountTargets []ShareMountTargetReference `json:"targets" validate:"required"`
 
 	// The name for this share. The name is unique across all shares in the region.
 	Name *string `json:"name" validate:"required"`
@@ -59468,7 +59468,7 @@ func UnmarshalShare(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetReference)
+	err = core.UnmarshalModel(m, "targets", &obj.MountTargets, UnmarshalShareMountTargetReference)
 	if err != nil {
 		return
 	}
@@ -59949,13 +59949,13 @@ func UnmarshalShareMountTarget(m map[string]json.RawMessage, result interface{})
 // ShareMountTargetCollection : ShareMountTargetCollection struct
 type ShareMountTargetCollection struct {
 	// Collection of share mount targets.
-	MountTargets []ShareMountTarget `json:"mount_targets" validate:"required"`
+	MountTargets []ShareMountTarget `json:"targets" validate:"required"`
 }
 
 // UnmarshalShareMountTargetCollection unmarshals an instance of ShareMountTargetCollection from the specified map of raw messages.
 func UnmarshalShareMountTargetCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ShareMountTargetCollection)
-	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTarget)
+	err = core.UnmarshalModel(m, "targets", &obj.MountTargets, UnmarshalShareMountTarget)
 	if err != nil {
 		return
 	}
@@ -60397,7 +60397,7 @@ type SharePrototype struct {
 	Iops *int64 `json:"iops,omitempty"`
 
 	// The mount targets for the file share.
-	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+	MountTargets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
@@ -60486,7 +60486,7 @@ func UnmarshalSharePrototype(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	err = core.UnmarshalModel(m, "targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -60555,7 +60555,7 @@ type SharePrototypeShareContext struct {
 	// The mount targets for this replica file share.
 	//
 	// A replica's mount targets must be mounted read-only.
-	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+	MountTargets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
@@ -60597,7 +60597,7 @@ func UnmarshalSharePrototypeShareContext(m map[string]json.RawMessage, result in
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	err = core.UnmarshalModel(m, "targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -84130,7 +84130,7 @@ type SharePrototypeShareBySize struct {
 	Iops *int64 `json:"iops,omitempty"`
 
 	// The mount targets for the file share.
-	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+	MountTargets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
@@ -84214,7 +84214,7 @@ func UnmarshalSharePrototypeShareBySize(m map[string]json.RawMessage, result int
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	err = core.UnmarshalModel(m, "targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
@@ -84274,7 +84274,7 @@ type SharePrototypeShareBySourceShare struct {
 	Iops *int64 `json:"iops,omitempty"`
 
 	// The mount targets for the file share.
-	MountTargets []ShareMountTargetPrototypeIntf `json:"mount_targets,omitempty"`
+	MountTargets []ShareMountTargetPrototypeIntf `json:"targets,omitempty"`
 
 	// The name for this share. The name must not be used by another share in the region. If unspecified, the name will be
 	// a hyphenated list of randomly-selected words.
@@ -84326,7 +84326,7 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "mount_targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
+	err = core.UnmarshalModel(m, "targets", &obj.MountTargets, UnmarshalShareMountTargetPrototype)
 	if err != nil {
 		return
 	}
