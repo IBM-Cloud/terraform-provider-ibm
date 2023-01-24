@@ -1331,8 +1331,9 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 
 				shareTargetOptions.SetShareID(shareId)
 				shareTargetOptions.SetID(mountTargetId)
-				shareTarget, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
+				shareTarget, response, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
 				if err != nil {
+					log.Printf("[DEBUG] GetShareMountTargetWithContext failed %s\n%s", err, response)
 					return err
 				}
 				vniId := *shareTarget.VirtualNetworkInterface.ID
@@ -1340,7 +1341,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 					ID:                           &vniId,
 					VirtualNetworkInterfacePatch: vniPatch,
 				}
-				_, response, err := vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVNIOptions)
+				_, response, err = vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVNIOptions)
 				if err != nil {
 					log.Printf("[DEBUG] UpdateShareTargetWithContext failed %s\n%s", err, response)
 					return err
