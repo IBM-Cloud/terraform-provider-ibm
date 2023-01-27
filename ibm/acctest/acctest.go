@@ -658,16 +658,10 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
 	}
 
-	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")
-	if ISRouteDestination == "" {
-		ISRouteDestination = "192.168.4.0/24"
-		fmt.Println("[INFO] Set the environment variable SL_ROUTE_DESTINATION for testing ibm_is_vpc_route else it is set to default value '192.168.4.0/24'")
-	}
-
 	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
 	if ISRouteNextHop == "" {
 		ISRouteNextHop = "10.240.0.0"
-		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
+		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP else it is set to default value '10.0.0.4'")
 	}
 
 	IcdDbRegion = os.Getenv("ICD_DB_REGION")
