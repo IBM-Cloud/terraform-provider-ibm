@@ -1542,11 +1542,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	instanceID := *instance.ID
 	icdId := flex.EscapeUrlParm(instanceID)
 
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-	}
-
 	if pw, ok := d.GetOk("adminpassword"); ok {
 		adminPassword := pw.(string)
 
