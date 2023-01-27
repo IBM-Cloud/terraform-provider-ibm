@@ -1242,11 +1242,11 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
 	}
 
-	config, configOk := diff.GetOk("configuration")
+	configJSON, configOk := diff.GetOk("configuration")
 
 	if configOk {
 		var rawConfig map[string]json.RawMessage
-		err = json.Unmarshal([]byte(config.(string)), &rawConfig)
+		err = json.Unmarshal([]byte(configJSON.(string)), &rawConfig)
 		if err != nil {
 			return fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err)
 		}
