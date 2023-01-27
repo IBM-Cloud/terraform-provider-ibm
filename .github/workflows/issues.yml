@@ -8,7 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3.2.0
     - name: Apply Issue Labels
-      uses: github/issue-labeler@v2.5
+      uses: github/issue-labeler@v2.6
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         configuration-path: .github/labeler-issue.yml
