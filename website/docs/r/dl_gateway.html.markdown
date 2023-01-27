@@ -34,6 +34,8 @@ resource ibm_dl_gateway test_dl_gateway {
 	      ge =17
 	      le = 30
   }	
+  default_export_route_filter = "permit"
+  default_import_route_filter = "deny"
   bgp_asn =  64999
   global = true 
   metered = false
@@ -81,7 +83,9 @@ resource "ibm_dl_gateway" "test_dl_connect" {
 	     	prefix = "140.167.10.0/12"
 	      ge =17
 	      le = 30
-  }			
+  }
+  default_export_route_filter = "permit"
+  default_import_route_filter = "deny"		
   bgp_asn =  64999
   global = true
   metered = false
@@ -95,29 +99,27 @@ resource "ibm_dl_gateway" "test_dl_connect" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `export_route_filters` - (Optional, List) List of Export Route Filter configuration information
-
+- `as_prepends` - (Optional, List) List of AS Prepend configuration information
+    
+    Nested scheme for `as_prepend`:
+  - `length` - (Required, Integer ) Number of times the ASN to appended to the AS Path.
+  - `policy` - (Required, String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
+  - `prefix` - (Optional, Deprecated, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes. prefix will be deprecated and support will be removed. Use specific_prefixes instead
+  - `specific_prefixes` - (Optional, Array of Strings) Array of prefixes this AS Prepend applies to. If this property is absent, the AS Prepend applies to all prefixes.
+- `export_route_filters` - (Optional, List) List of Export Route Filter configuration information.
+  
   Nested scheme for `export_route_filter`:
   - `action` - (Required, String) Determines whether the  routes that match the prefix-set will be permit or deny
   - `prefix` - (Required, String) IP prefix representing an address and mask length of the prefix-set
   - `ge` - (Optional, Integer) The minimum matching length of the prefix-set
   - `le` - (Optional, Integer) The maximum matching length of the prefix-set
-
-- `import_route_filters` - (Optional, List) List of Import Route Filter configuration information
+- `import_route_filters` - (Optional, List) List of Import Route Filter configuration information.
 
    Nested scheme for `import_route_filter`:
    - `action` - (Required, String) Determines whether the  routes that match the prefix-set will be permit or deny
    - `prefix` - (Required, String) IP prefix representing an address and mask length of the prefix-set
    - `ge` - (Optional, Integer) The minimum matching length of the prefix-set
    - `le` - (Optional, Integer) The maximum matching length of the prefix-set
-
-- `as_prepends` - (Optional, List) List of AS Prepend configuration information
-
-  Nested scheme for `as_prepend`:
-  - `length` - (Required, Integer ) Number of times the ASN to appended to the AS Path.
-  - `policy` - (Required, String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
-  - `prefix` - (Optional, Deprecated, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes. prefix will be deprecated and support will be removed. Use specific_prefixes instead
-  - `specific_prefixes` - (Optional, Array of Strings) Array of prefixes this AS Prepend applies to. If this property is absent, the AS Prepend applies to all prefixes.
 - `authentication_key` - (Optional, String) BGP MD5 authentication key.
 - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.
 - `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.
@@ -137,35 +139,32 @@ Review the argument reference that you can specify for your resource.
 - `resource_group` - (Optional, Forces new resource, String) The resource group. If unspecified, the account's default resource group is used.
 - `speed_mbps`- (Required, Integer) The gateway speed in MBPS. For example, `10.254.30.78/30`.
 - `type` - (Required, Forces new resource, String) The gateway type, allowed values are `dedicated` and `connect`.
-
-- `as_prepends` - (Optional, List) List of AS Prepend configuration information
-
-- `as_prepends` - (Optional, List) List of AS Prepend configuration information
+- `default_export_route_filter` - (String) The default directional route filter action    that applies to routes that do not match any directional route filters. 
+- `default_import_route_filter` - (String) The default directional route filter action    that applies to routes that do not match any directional route filters. 
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
+
+
 - `as_prepends` - (List) List of AS Prepend configuration information
 
   Nested scheme for `as_prepend`:
   - `created_at`- (String) The date and time AS Prepend was created.
   - `id` - (String) The unique identifier for this AS Prepend.
   - `updated_at`- (String) The date and time AS Prepend was updated.
-
 - `bfd_status` - (String) Gateway BFD status
 - `bfd_status_updated_at` - (String) Date and time BFD status was updated at
-- `bgp_asn` - (String) The IBM BGP ASN.
 - `bgp_status` - (String) The gateway BGP status.
+- `bgp_status_updated_at` - (String) Date and time bgp status was updated.
 - `completion_notice_reject_reason` - (String) The reason for completion notice rejection.
 - `crn` - (String) The CRN of the gateway.
 - `created_at` - (String) The date and time resource created.
 - `id` - (String) The unique ID of the gateway.
 - `location_display_name` - (String) The gateway location long name.
 - `link_status` - (String) The gateway link status. You can include only on `type=dedicated` gateways. For example, `down`, `up`.
-- `name` - (String) The unique user-defined name for the gateway.
+- `link_status_updated_at` - (String) Date and time link status was updated.
 - `operational_status` - (String) The gateway operational status. For gateways pending LOA approval, patch operational_status to the appropriate value to approve or reject its LOA. For example, `loa_accepted`.
-- `port` - (String) The gateway port for `type=connect` gateways.
 - `provider_api_managed` - (String) Indicates whether gateway changes need to be made via a provider portal.
-- `resource_group` - (String) The resource group reference.
 - `vlan` - (String) The VLAN allocated for the gateway. You can set only for `type=connect` gateways created directly through the IBM portal.
 
 **Note**

@@ -32,12 +32,12 @@ In addition to the argument reference list, you can access the following attribu
 - `export_route_filters` - List of all export route filters for a given direct link gateway.
 
   Nested scheme for `export_route_filters`:
-- `created_at` - (String) The date and time resource is created.
-- `export_route_filter_id` - (String) The unique identifier of Export Route Filter.
-- `action` - (String) Whether to permit or deny the prefix filter.
-- `before` - (String) Identifier of prefix filter that handles the ordering and follow semantics. When a filter reference another filter in it's before field, then the filter making the reference is applied before the referenced filter. For example: if filter A references filter B in its before field, A is applied before B.
-- `ge` - (Int) The minimum matching length of the prefix-set.
-- `le` - (Int) The maximum matching length of the prefix-set.
-- `prefix` - (String) IP prefix representing an address and mask length of the prefix-set.
-- `updated_at` - (String) The date and time resource is last updated.
+  - `created_at` - (String) The date and time resource is created.
+  - `export_route_filter_id` - (String) The unique identifier of Export Route Filter.
+  - `action` - (String) Whether to permit or deny the prefix filter.
+  - `before` - (String) Identifier of prefix filter that handles the ordering and follow semantics. When a filter reference another filter in it's before field, then the filter making the reference is applied before the referenced filter. For example: if filter A references filter B in its before field, A is applied before B.
+  - `ge` - (Int) The minimum matching length of the prefix-set.
+  - `le` - (Int) The maximum matching length of the prefix-set.
+  - `prefix` - (String) IP prefix representing an address and mask length of the prefix-set.
+  - `updated_at` - (String) The date and time resource is last updated.
 

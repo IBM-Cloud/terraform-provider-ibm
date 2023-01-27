@@ -29,6 +29,7 @@ const (
 	dlBgpIbmAsn                    = "bgp_ibm_asn"
 	dlBgpIbmCidr                   = "bgp_ibm_cidr"
 	dlBgpStatus                    = "bgp_status"
+	dlBgpStatusUpdatedAt           = "bgp_status_updated_at"
 	dlCarrierName                  = "carrier_name"
 	dlChangeRequest                = "change_request"
 	dlCipherSuite                  = "cipher_suite"
@@ -50,6 +51,7 @@ const (
 	dlLocationDisplayName          = "location_display_name"
 	dlLocationName                 = "location_name"
 	dlLinkStatus                   = "link_status"
+	dlLinkStatusUpdatedAt          = "link_status_updated_at"
 	dlMacSecConfig                 = "macsec_config"
 	dlMetered                      = "metered"
 	dlName                         = "name"
@@ -93,6 +95,8 @@ const (
 	dlImportRouteFilter            = "import_route_filter_id"
 	dlExportRouteFilterId          = "id"
 	dlImportRouteFilterId          = "id"
+	dlDefault_export_route_filter  = "default_export_route_filter"
+	dlDefault_import_route_filter  = "default_import_route_filter"
 )
 
 func NewInt64Pointer(v int64) *int64 {

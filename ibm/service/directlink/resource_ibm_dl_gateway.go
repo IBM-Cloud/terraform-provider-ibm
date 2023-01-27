@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2021, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package directlink
@@ -152,6 +152,18 @@ func ResourceIBMDLGateway() *schema.Resource {
 					},
 				},
 			},
+			dlDefault_export_route_filter: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlDefault_export_route_filter),
+				Description:  "The default directional route filter action that applies to routes that do not match any directional route filters",
+			},
+			dlDefault_import_route_filter: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlDefault_import_route_filter),
+				Description:  "The default directional route filter action that applies to routes that do not match any directional route filters",
+			},
 			dlAsPrepends: {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -294,21 +306,18 @@ func ResourceIBMDLGateway() *schema.Resource {
 				ForceNew:     false,
 				Description:  "The unique user-defined name for this gateway",
 				ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlName),
-				// ValidateFunc: validateRegexpLen(1, 63, "^([a-zA-Z]|[a-zA-Z][-_a-zA-Z0-9]*[a-zA-Z0-9])$"),
 			},
 			dlCarrierName: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Carrier name",
-				// ValidateFunc: validateRegexpLen(1, 128, "^[a-z][A-Z][0-9][ -_]$"),
 			},
 			dlCustomerName: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Customer name",
-				// ValidateFunc: validateRegexpLen(1, 128, "^[a-z][A-Z][0-9][ -_]$"),
 			},
 			dlSpeedMbps: {
 				Type:        schema.TypeInt,
@@ -322,7 +331,6 @@ func ResourceIBMDLGateway() *schema.Resource {
 				ForceNew:     true,
 				Description:  "Gateway type",
 				ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlType),
-				// ValidateFunc: validate.ValidateAllowedStringValues([]string{"dedicated", "connect"}),
 			},
 			dlMacSecConfig: {
 				Type:        schema.TypeList,
@@ -454,6 +462,12 @@ func ResourceIBMDLGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Gateway BGP status",
 			},
+			dlBgpStatusUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Date and time BGP status was updated",
+			},
 			dlChangeRequest: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -478,6 +492,12 @@ func ResourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Gateway link status",
+			},
+			dlLinkStatusUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Date and time Link status was updated",
 			},
 			dlLocationDisplayName: {
 				Type:        schema.TypeString,
@@ -536,6 +556,20 @@ func ResourceIBMDLGatewayValidator() *validate.ResourceValidator {
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 dlAction,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              dlActionValues})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 dlDefault_export_route_filter,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              dlActionValues})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 dlDefault_import_route_filter,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -722,7 +756,6 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		var crossConnectRouter, carrierName, locationName, customerName string
 		if _, ok := d.GetOk(dlCarrierName); ok {
 			carrierName = d.Get(dlCarrierName).(string)
-			//		gatewayTemplateModel.CarrierName = &carrierName
 		} else {
 			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlCarrierName)
 			log.Printf("%s is a required field", dlCarrierName)
@@ -730,7 +763,6 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 		if _, ok := d.GetOk(dlCrossConnectRouter); ok {
 			crossConnectRouter = d.Get(dlCrossConnectRouter).(string)
-			//	gatewayTemplateModel.CrossConnectRouter = &crossConnectRouter
 		} else {
 			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlCrossConnectRouter)
 			log.Printf("%s is a required field", dlCrossConnectRouter)
@@ -738,7 +770,6 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 		if _, ok := d.GetOk(dlLocationName); ok {
 			locationName = d.Get(dlLocationName).(string)
-			//gatewayTemplateModel.LocationName = &locationName
 		} else {
 			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlLocationName)
 			log.Printf("%s is a required field", dlLocationName)
@@ -746,7 +777,6 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 		if _, ok := d.GetOk(dlCustomerName); ok {
 			customerName = d.Get(dlCustomerName).(string)
-			//gatewayTemplateModel.CustomerName = &customerName
 		} else {
 			err = fmt.Errorf("[ERROR] Error creating gateway, %s is a required field", dlCustomerName)
 			log.Printf("%s is a required field", dlCustomerName)
@@ -822,6 +852,12 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		if len(importRouteFiltersCreateList) > 0 {
 			gatewayDedicatedTemplateModel.ImportRouteFilters = importRouteFiltersCreateList
 		}
+		if default_export_route_filter, ok := d.GetOk(dlDefault_export_route_filter); ok {
+			gatewayDedicatedTemplateModel.DefaultExportRouteFilter = NewStrPointer(default_export_route_filter.(string))
+		}
+		if default_import_route_filter, ok := d.GetOk(dlDefault_import_route_filter); ok {
+			gatewayDedicatedTemplateModel.DefaultImportRouteFilter = NewStrPointer(default_import_route_filter.(string))
+		}
 		createGatewayOptionsModel.GatewayTemplate = gatewayDedicatedTemplateModel
 
 	} else if dtype == "connect" {
@@ -876,7 +912,12 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			if len(importRouteFiltersCreateList) > 0 {
 				gatewayConnectTemplateModel.ImportRouteFilters = importRouteFiltersCreateList
 			}
-
+			if default_export_route_filter, ok := d.GetOk(dlDefault_export_route_filter); ok {
+				gatewayConnectTemplateModel.DefaultExportRouteFilter = NewStrPointer(default_export_route_filter.(string))
+			}
+			if default_import_route_filter, ok := d.GetOk(dlDefault_import_route_filter); ok {
+				gatewayConnectTemplateModel.DefaultImportRouteFilter = NewStrPointer(default_import_route_filter.(string))
+			}
 			createGatewayOptionsModel.GatewayTemplate = gatewayConnectTemplateModel
 
 		} else {
@@ -1078,6 +1119,9 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.BgpStatus != nil {
 		d.Set(dlBgpStatus, *instance.BgpStatus)
 	}
+	if instance.BgpStatusUpdatedAt != nil {
+		d.Set(dlBgpStatusUpdatedAt, instance.BgpStatusUpdatedAt.String())
+	}
 	if instance.CompletionNoticeRejectReason != nil {
 		d.Set(dlCompletionNoticeRejectReason, *instance.CompletionNoticeRejectReason)
 	}
@@ -1099,6 +1143,9 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.LinkStatus != nil {
 		d.Set(dlLinkStatus, *instance.LinkStatus)
 	}
+	if instance.LinkStatusUpdatedAt != nil {
+		d.Set(dlLinkStatus, instance.LinkStatusUpdatedAt.String())
+	}
 	if instance.CreatedAt != nil {
 		d.Set(dlCreatedAt, instance.CreatedAt.String())
 	}
@@ -1108,7 +1155,12 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.ConnectionMode != nil {
 		d.Set(dlConnectionMode, *instance.ConnectionMode)
 	}
-
+	if instance.DefaultExportRouteFilter != nil {
+		d.Set(dlDefault_export_route_filter, *instance.DefaultExportRouteFilter)
+	}
+	if instance.DefaultImportRouteFilter != nil {
+		d.Set(dlDefault_import_route_filter, *instance.DefaultImportRouteFilter)
+	}
 	asPrependList := make([]map[string]interface{}, 0)
 	if len(instance.AsPrepends) > 0 {
 		for _, asPrepend := range instance.AsPrepends {
@@ -1468,6 +1520,12 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 			}
 		}
 	*/
+	if d.HasChange(dlDefault_export_route_filter) {
+		updateGatewayOptionsModel.DefaultExportRouteFilter = NewStrPointer(d.Get(dlDefault_export_route_filter).(string))
+	}
+	if d.HasChange(dlDefault_import_route_filter) {
+		updateGatewayOptionsModel.DefaultImportRouteFilter = NewStrPointer(d.Get(dlDefault_import_route_filter).(string))
+	}
 	if d.HasChange(dlGlobal) {
 		global := d.Get(dlGlobal).(bool)
 		updateGatewayOptionsModel.Global = &global
