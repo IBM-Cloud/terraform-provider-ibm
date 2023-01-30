@@ -260,7 +260,7 @@ func resourceIBMCmObjectCreate(context context.Context, d *schema.ResourceData, 
 		dataMap := make(map[string]interface{})
 		dataString, err := strconv.Unquote(d.Get("data").(string))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error unquoting json string %s", err))
+			dataString = d.Get("data").(string)
 		}
 		err = json.Unmarshal([]byte(dataString), &dataMap)
 		if err != nil {
@@ -484,7 +484,7 @@ func resourceIBMCmObjectUpdate(context context.Context, d *schema.ResourceData, 
 		dataMap := make(map[string]interface{})
 		dataString, err := strconv.Unquote(d.Get("data").(string))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error unquoting json string %s", err))
+			dataString = d.Get("data").(string)
 		}
 		err = json.Unmarshal([]byte(dataString), &dataMap)
 		if err != nil {
