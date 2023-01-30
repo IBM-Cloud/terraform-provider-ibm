@@ -102,6 +102,7 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"single-replica", "highly-available"}),
 				Description:  "String value for single node cluster option. Available options: single-replica, highly-available (default: highly-available)",
 			},
