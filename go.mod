@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20221026143540-4d6050d2dbc5
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220922071204-21813161c36f
 	github.com/IBM-Cloud/power-go-client v1.2.2
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -12,8 +12,8 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.3.0
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
-	github.com/IBM/continuous-delivery-go-sdk v1.0.3
-	github.com/IBM/event-notifications-go-admin-sdk v0.1.7
+	github.com/IBM/continuous-delivery-go-sdk v1.0.4
+	github.com/IBM/event-notifications-go-admin-sdk v0.1.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.10.2
 	github.com/IBM/ibm-cos-sdk-go v1.9.0

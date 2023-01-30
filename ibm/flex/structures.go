@@ -308,6 +308,19 @@ func FlattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]inte
 	return result
 }
 
+func FlattenVpcWorkerPoolSecondaryDisk(secondaryDisk containerv2.DiskConfigResp) []map[string]interface{} {
+	storageList := make([]map[string]interface{}, 1)
+	secondary_storage := map[string]interface{}{
+		"name":               secondaryDisk.Name,
+		"count":              secondaryDisk.Count,
+		"size":               secondaryDisk.Size,
+		"device_type":        secondaryDisk.DeviceType,
+		"raid_configuration": secondaryDisk.RAIDConfiguration,
+		"profile":            secondaryDisk.Profile,
+	}
+	storageList[0] = secondary_storage
+	return storageList
+}
 func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
@@ -342,6 +355,9 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 			zonesConfig[j] = z
 		}
 		l["zones"] = zonesConfig
+		if workerPool.SecondaryStorageOption != nil {
+			l["secondary_storage"] = FlattenVpcWorkerPoolSecondaryDisk(*workerPool.SecondaryStorageOption)
+		}
 		workerPools[i] = l
 	}
 
@@ -2198,28 +2214,12 @@ func ApplyOnce(k, o, n string, d *schema.ResourceData) bool {
 	return true
 }
 func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
-
-	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
+	// Move the API to use globalsearch API instead of globalTags API due to rate limit
+	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceCRN, "", "user")
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
-	}
-	var taglist []string
-	taggingResult, err := gtClient.Tags().GetTags(resourceCRN)
-	if err != nil {
-		if strings.Contains(err.Error(), "Too Many Requests") {
-			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceCRN, "", "user")
-			if err != nil {
-				return nil, err
-			}
-			return temp, nil
-		}
 		return nil, err
 	}
-
-	for _, item := range taggingResult.Items {
-		taglist = append(taglist, item.Name)
-	}
-	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+	return taggingResult, nil
 }
 
 func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
