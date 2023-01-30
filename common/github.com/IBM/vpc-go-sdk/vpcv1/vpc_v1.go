@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -20455,6 +20456,9 @@ func (vpc *VpcV1) ListEndpointGatewaysWithContext(ctx context.Context, listEndpo
 	if listEndpointGatewaysOptions.ResourceGroupID != nil {
 		builder.AddQuery("resource_group.id", fmt.Sprint(*listEndpointGatewaysOptions.ResourceGroupID))
 	}
+	if listEndpointGatewaysOptions.LifecycleState != nil {
+		builder.AddQuery("lifecycle_state", strings.Join(listEndpointGatewaysOptions.LifecycleState, ","))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -21355,6 +21359,1083 @@ func (vpc *VpcV1) UpdateFlowLogCollectorWithContext(ctx context.Context, updateF
 		response.Result = result
 	}
 
+	return
+}
+
+// ListPrivatePathServiceGateways : List all private path service gateways
+// This request lists all private path service gateways. Private path service gateways allow service providers to make
+// their services available to other accounts, using private path connectivity.
+//
+// The private path service gateways will be sorted by their `created_at` property values, with newest private path
+// service gateways first. Private path service gateways with identical `created_at` property values will in turn be
+// sorted by ascending `name` property values.
+func (vpc *VpcV1) ListPrivatePathServiceGateways(listPrivatePathServiceGatewaysOptions *ListPrivatePathServiceGatewaysOptions) (result *PrivatePathServiceGatewayCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListPrivatePathServiceGatewaysWithContext(context.Background(), listPrivatePathServiceGatewaysOptions)
+}
+
+// ListPrivatePathServiceGatewaysWithContext is an alternate form of the ListPrivatePathServiceGateways method which supports a Context parameter
+func (vpc *VpcV1) ListPrivatePathServiceGatewaysWithContext(ctx context.Context, listPrivatePathServiceGatewaysOptions *ListPrivatePathServiceGatewaysOptions) (result *PrivatePathServiceGatewayCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listPrivatePathServiceGatewaysOptions, "listPrivatePathServiceGatewaysOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listPrivatePathServiceGatewaysOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListPrivatePathServiceGateways")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGatewayCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreatePrivatePathServiceGateway : Create a private path service gateway
+// This request creates a private path service gateway from a private path service gateway prototype object. The
+// prototype object is structured in the same way as a retrieved private path service gateway, and contains the
+// information necessary to create the new private path service gateway.
+func (vpc *VpcV1) CreatePrivatePathServiceGateway(createPrivatePathServiceGatewayOptions *CreatePrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	return vpc.CreatePrivatePathServiceGatewayWithContext(context.Background(), createPrivatePathServiceGatewayOptions)
+}
+
+// CreatePrivatePathServiceGatewayWithContext is an alternate form of the CreatePrivatePathServiceGateway method which supports a Context parameter
+func (vpc *VpcV1) CreatePrivatePathServiceGatewayWithContext(ctx context.Context, createPrivatePathServiceGatewayOptions *CreatePrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createPrivatePathServiceGatewayOptions, "createPrivatePathServiceGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createPrivatePathServiceGatewayOptions, "createPrivatePathServiceGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createPrivatePathServiceGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreatePrivatePathServiceGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createPrivatePathServiceGatewayOptions.Region != nil {
+		body["region"] = createPrivatePathServiceGatewayOptions.Region
+	}
+	if createPrivatePathServiceGatewayOptions.ServiceEndpoints != nil {
+		body["service_endpoints"] = createPrivatePathServiceGatewayOptions.ServiceEndpoints
+	}
+	if createPrivatePathServiceGatewayOptions.DefaultAccessPolicy != nil {
+		body["default_access_policy"] = createPrivatePathServiceGatewayOptions.DefaultAccessPolicy
+	}
+	if createPrivatePathServiceGatewayOptions.Name != nil {
+		body["name"] = createPrivatePathServiceGatewayOptions.Name
+	}
+	if createPrivatePathServiceGatewayOptions.ResourceGroup != nil {
+		body["resource_group"] = createPrivatePathServiceGatewayOptions.ResourceGroup
+	}
+	if createPrivatePathServiceGatewayOptions.ZonalAffinity != nil {
+		body["zonal_affinity"] = createPrivatePathServiceGatewayOptions.ZonalAffinity
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGateway)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeletePrivatePathServiceGateway : Delete a private path service gateway
+// This request deletes a private path service gateway.  For this request to succeed, the value of
+// `endpoint_gateways_count` must be `0`. This operation cannot be reversed.
+func (vpc *VpcV1) DeletePrivatePathServiceGateway(deletePrivatePathServiceGatewayOptions *DeletePrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	return vpc.DeletePrivatePathServiceGatewayWithContext(context.Background(), deletePrivatePathServiceGatewayOptions)
+}
+
+// DeletePrivatePathServiceGatewayWithContext is an alternate form of the DeletePrivatePathServiceGateway method which supports a Context parameter
+func (vpc *VpcV1) DeletePrivatePathServiceGatewayWithContext(ctx context.Context, deletePrivatePathServiceGatewayOptions *DeletePrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deletePrivatePathServiceGatewayOptions, "deletePrivatePathServiceGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deletePrivatePathServiceGatewayOptions, "deletePrivatePathServiceGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deletePrivatePathServiceGatewayOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deletePrivatePathServiceGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeletePrivatePathServiceGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGateway)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetPrivatePathServiceGateway : Retrieve a private path service gateway
+// This request retrieves the private path service gateway specified by the identifier in the URL.
+func (vpc *VpcV1) GetPrivatePathServiceGateway(getPrivatePathServiceGatewayOptions *GetPrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	return vpc.GetPrivatePathServiceGatewayWithContext(context.Background(), getPrivatePathServiceGatewayOptions)
+}
+
+// GetPrivatePathServiceGatewayWithContext is an alternate form of the GetPrivatePathServiceGateway method which supports a Context parameter
+func (vpc *VpcV1) GetPrivatePathServiceGatewayWithContext(ctx context.Context, getPrivatePathServiceGatewayOptions *GetPrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getPrivatePathServiceGatewayOptions, "getPrivatePathServiceGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getPrivatePathServiceGatewayOptions, "getPrivatePathServiceGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getPrivatePathServiceGatewayOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getPrivatePathServiceGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetPrivatePathServiceGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGateway)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdatePrivatePathServiceGateway : Update a private path service gateway
+// This request updates a private path service gateway with the information provided in a private path service gateway
+// patch object. The private path service gateway patch object is structured in the same way as a retrieved private path
+// service gateway and contains only the information to be updated.
+func (vpc *VpcV1) UpdatePrivatePathServiceGateway(updatePrivatePathServiceGatewayOptions *UpdatePrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	return vpc.UpdatePrivatePathServiceGatewayWithContext(context.Background(), updatePrivatePathServiceGatewayOptions)
+}
+
+// UpdatePrivatePathServiceGatewayWithContext is an alternate form of the UpdatePrivatePathServiceGateway method which supports a Context parameter
+func (vpc *VpcV1) UpdatePrivatePathServiceGatewayWithContext(ctx context.Context, updatePrivatePathServiceGatewayOptions *UpdatePrivatePathServiceGatewayOptions) (result *PrivatePathServiceGateway, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updatePrivatePathServiceGatewayOptions, "updatePrivatePathServiceGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updatePrivatePathServiceGatewayOptions, "updatePrivatePathServiceGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updatePrivatePathServiceGatewayOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updatePrivatePathServiceGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdatePrivatePathServiceGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updatePrivatePathServiceGatewayOptions.PrivatePathServiceGatewayPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGateway)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListPrivatePathServiceGatewayAccountPolicies : List all account policies for a private path service gateway
+// This request lists all account policies for a private path service gateway. Each policy defines how requests to use
+// the private path service gateway from that account will be handled.
+//
+// The account policies will be sorted by their `created_at` property values, with newest account policies first.
+// Account policies with identical `created_at` property values will in turn be sorted by ascending `id` property
+// values.
+func (vpc *VpcV1) ListPrivatePathServiceGatewayAccountPolicies(listPrivatePathServiceGatewayAccountPoliciesOptions *ListPrivatePathServiceGatewayAccountPoliciesOptions) (result *PrivatePathServiceGatewayAccountPolicyCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListPrivatePathServiceGatewayAccountPoliciesWithContext(context.Background(), listPrivatePathServiceGatewayAccountPoliciesOptions)
+}
+
+// ListPrivatePathServiceGatewayAccountPoliciesWithContext is an alternate form of the ListPrivatePathServiceGatewayAccountPolicies method which supports a Context parameter
+func (vpc *VpcV1) ListPrivatePathServiceGatewayAccountPoliciesWithContext(ctx context.Context, listPrivatePathServiceGatewayAccountPoliciesOptions *ListPrivatePathServiceGatewayAccountPoliciesOptions) (result *PrivatePathServiceGatewayAccountPolicyCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listPrivatePathServiceGatewayAccountPoliciesOptions, "listPrivatePathServiceGatewayAccountPoliciesOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listPrivatePathServiceGatewayAccountPoliciesOptions, "listPrivatePathServiceGatewayAccountPoliciesOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *listPrivatePathServiceGatewayAccountPoliciesOptions.PrivatePathServiceGatewayID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/account_policies`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listPrivatePathServiceGatewayAccountPoliciesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListPrivatePathServiceGatewayAccountPolicies")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listPrivatePathServiceGatewayAccountPoliciesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listPrivatePathServiceGatewayAccountPoliciesOptions.Start))
+	}
+	if listPrivatePathServiceGatewayAccountPoliciesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listPrivatePathServiceGatewayAccountPoliciesOptions.Limit))
+	}
+	if listPrivatePathServiceGatewayAccountPoliciesOptions.AccountID != nil {
+		builder.AddQuery("account.id", fmt.Sprint(*listPrivatePathServiceGatewayAccountPoliciesOptions.AccountID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGatewayAccountPolicyCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreatePrivatePathServiceGatewayAccountPolicy : Create an account policy for a private path service gateway
+// This request creates an account policy from an account policy prototype object. The prototype object is structured in
+// the same way as a retrieved account policy, and contains the information necessary to create the new account policy.
+func (vpc *VpcV1) CreatePrivatePathServiceGatewayAccountPolicy(createPrivatePathServiceGatewayAccountPolicyOptions *CreatePrivatePathServiceGatewayAccountPolicyOptions) (result *PrivatePathServiceGatewayAccountPolicy, response *core.DetailedResponse, err error) {
+	return vpc.CreatePrivatePathServiceGatewayAccountPolicyWithContext(context.Background(), createPrivatePathServiceGatewayAccountPolicyOptions)
+}
+
+// CreatePrivatePathServiceGatewayAccountPolicyWithContext is an alternate form of the CreatePrivatePathServiceGatewayAccountPolicy method which supports a Context parameter
+func (vpc *VpcV1) CreatePrivatePathServiceGatewayAccountPolicyWithContext(ctx context.Context, createPrivatePathServiceGatewayAccountPolicyOptions *CreatePrivatePathServiceGatewayAccountPolicyOptions) (result *PrivatePathServiceGatewayAccountPolicy, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createPrivatePathServiceGatewayAccountPolicyOptions, "createPrivatePathServiceGatewayAccountPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createPrivatePathServiceGatewayAccountPolicyOptions, "createPrivatePathServiceGatewayAccountPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *createPrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/account_policies`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createPrivatePathServiceGatewayAccountPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreatePrivatePathServiceGatewayAccountPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createPrivatePathServiceGatewayAccountPolicyOptions.AccessPolicy != nil {
+		body["access_policy"] = createPrivatePathServiceGatewayAccountPolicyOptions.AccessPolicy
+	}
+	if createPrivatePathServiceGatewayAccountPolicyOptions.Account != nil {
+		body["account"] = createPrivatePathServiceGatewayAccountPolicyOptions.Account
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGatewayAccountPolicy)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeletePrivatePathServiceGatewayAccountPolicy : Delete an account policy for a private path service gateway
+// This request deletes an account policy. This operation cannot be reversed.
+func (vpc *VpcV1) DeletePrivatePathServiceGatewayAccountPolicy(deletePrivatePathServiceGatewayAccountPolicyOptions *DeletePrivatePathServiceGatewayAccountPolicyOptions) (response *core.DetailedResponse, err error) {
+	return vpc.DeletePrivatePathServiceGatewayAccountPolicyWithContext(context.Background(), deletePrivatePathServiceGatewayAccountPolicyOptions)
+}
+
+// DeletePrivatePathServiceGatewayAccountPolicyWithContext is an alternate form of the DeletePrivatePathServiceGatewayAccountPolicy method which supports a Context parameter
+func (vpc *VpcV1) DeletePrivatePathServiceGatewayAccountPolicyWithContext(ctx context.Context, deletePrivatePathServiceGatewayAccountPolicyOptions *DeletePrivatePathServiceGatewayAccountPolicyOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deletePrivatePathServiceGatewayAccountPolicyOptions, "deletePrivatePathServiceGatewayAccountPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deletePrivatePathServiceGatewayAccountPolicyOptions, "deletePrivatePathServiceGatewayAccountPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *deletePrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayID,
+		"id":                              *deletePrivatePathServiceGatewayAccountPolicyOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/account_policies/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deletePrivatePathServiceGatewayAccountPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeletePrivatePathServiceGatewayAccountPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetPrivatePathServiceGatewayAccountPolicy : Retrieve an account policy for a private path service gateway
+// This request retrieves a single account policy specified by the identifier in the URL.
+func (vpc *VpcV1) GetPrivatePathServiceGatewayAccountPolicy(getPrivatePathServiceGatewayAccountPolicyOptions *GetPrivatePathServiceGatewayAccountPolicyOptions) (result *PrivatePathServiceGatewayAccountPolicy, response *core.DetailedResponse, err error) {
+	return vpc.GetPrivatePathServiceGatewayAccountPolicyWithContext(context.Background(), getPrivatePathServiceGatewayAccountPolicyOptions)
+}
+
+// GetPrivatePathServiceGatewayAccountPolicyWithContext is an alternate form of the GetPrivatePathServiceGatewayAccountPolicy method which supports a Context parameter
+func (vpc *VpcV1) GetPrivatePathServiceGatewayAccountPolicyWithContext(ctx context.Context, getPrivatePathServiceGatewayAccountPolicyOptions *GetPrivatePathServiceGatewayAccountPolicyOptions) (result *PrivatePathServiceGatewayAccountPolicy, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getPrivatePathServiceGatewayAccountPolicyOptions, "getPrivatePathServiceGatewayAccountPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getPrivatePathServiceGatewayAccountPolicyOptions, "getPrivatePathServiceGatewayAccountPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *getPrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayID,
+		"id":                              *getPrivatePathServiceGatewayAccountPolicyOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/account_policies/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getPrivatePathServiceGatewayAccountPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetPrivatePathServiceGatewayAccountPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGatewayAccountPolicy)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdatePrivatePathServiceGatewayAccountPolicy : Update an account policy for a private path service gateway
+// This request updates an account policy with the information in a provided account policy patch. The account policy
+// patch object is structured in the same way as a retrieved account policy and contains only the information to be
+// updated.
+func (vpc *VpcV1) UpdatePrivatePathServiceGatewayAccountPolicy(updatePrivatePathServiceGatewayAccountPolicyOptions *UpdatePrivatePathServiceGatewayAccountPolicyOptions) (result *PrivatePathServiceGatewayAccountPolicy, response *core.DetailedResponse, err error) {
+	return vpc.UpdatePrivatePathServiceGatewayAccountPolicyWithContext(context.Background(), updatePrivatePathServiceGatewayAccountPolicyOptions)
+}
+
+// UpdatePrivatePathServiceGatewayAccountPolicyWithContext is an alternate form of the UpdatePrivatePathServiceGatewayAccountPolicy method which supports a Context parameter
+func (vpc *VpcV1) UpdatePrivatePathServiceGatewayAccountPolicyWithContext(ctx context.Context, updatePrivatePathServiceGatewayAccountPolicyOptions *UpdatePrivatePathServiceGatewayAccountPolicyOptions) (result *PrivatePathServiceGatewayAccountPolicy, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updatePrivatePathServiceGatewayAccountPolicyOptions, "updatePrivatePathServiceGatewayAccountPolicyOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updatePrivatePathServiceGatewayAccountPolicyOptions, "updatePrivatePathServiceGatewayAccountPolicyOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *updatePrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayID,
+		"id":                              *updatePrivatePathServiceGatewayAccountPolicyOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/account_policies/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updatePrivatePathServiceGatewayAccountPolicyOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdatePrivatePathServiceGatewayAccountPolicy")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updatePrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayAccountPolicyPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGatewayAccountPolicy)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListPrivatePathServiceGatewayEndpointGatewayBindings : List all endpoint gateway bindings for a private path service gateway
+// This request lists all endpoint gateway bindings for a private path service gateway. Each endpoint gateway binding is
+// implicitly created when an endpoint gateway is created targeting the private path service gateway. The associated
+// account policy is applied to all `pending` endpoint gateway bindings. If the associated account policy doesn't exist,
+// the private path service gateway's `default_access_policy` is used.
+//
+// The endpoint gateway bindings will be sorted by their `created_at` property values, with newest endpoint gateway
+// bindings first. Endpoint gateway bindings with identical
+// `created_at` property values will in turn be sorted by ascending `name` property values.
+func (vpc *VpcV1) ListPrivatePathServiceGatewayEndpointGatewayBindings(listPrivatePathServiceGatewayEndpointGatewayBindingsOptions *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) (result *PrivatePathServiceGatewayEndpointGatewayBindingCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListPrivatePathServiceGatewayEndpointGatewayBindingsWithContext(context.Background(), listPrivatePathServiceGatewayEndpointGatewayBindingsOptions)
+}
+
+// ListPrivatePathServiceGatewayEndpointGatewayBindingsWithContext is an alternate form of the ListPrivatePathServiceGatewayEndpointGatewayBindings method which supports a Context parameter
+func (vpc *VpcV1) ListPrivatePathServiceGatewayEndpointGatewayBindingsWithContext(ctx context.Context, listPrivatePathServiceGatewayEndpointGatewayBindingsOptions *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) (result *PrivatePathServiceGatewayEndpointGatewayBindingCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listPrivatePathServiceGatewayEndpointGatewayBindingsOptions, "listPrivatePathServiceGatewayEndpointGatewayBindingsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listPrivatePathServiceGatewayEndpointGatewayBindingsOptions, "listPrivatePathServiceGatewayEndpointGatewayBindingsOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.PrivatePathServiceGatewayID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/endpoint_gateway_bindings`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListPrivatePathServiceGatewayEndpointGatewayBindings")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Start))
+	}
+	if listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Limit))
+	}
+	if listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Status != nil {
+		builder.AddQuery("status", fmt.Sprint(*listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Status))
+	}
+	if listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.AccountID != nil {
+		builder.AddQuery("account.id", fmt.Sprint(*listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.AccountID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetPrivatePathServiceGatewayEndpointGatewayBinding : Retrieve an endpoint gateway binding for a private path service gateway
+// This request retrieves a single endpoint gateway binding specified by the identifier in the URL.
+func (vpc *VpcV1) GetPrivatePathServiceGatewayEndpointGatewayBinding(getPrivatePathServiceGatewayEndpointGatewayBindingOptions *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions) (result *PrivatePathServiceGatewayEndpointGatewayBinding, response *core.DetailedResponse, err error) {
+	return vpc.GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context.Background(), getPrivatePathServiceGatewayEndpointGatewayBindingOptions)
+}
+
+// GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext is an alternate form of the GetPrivatePathServiceGatewayEndpointGatewayBinding method which supports a Context parameter
+func (vpc *VpcV1) GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext(ctx context.Context, getPrivatePathServiceGatewayEndpointGatewayBindingOptions *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions) (result *PrivatePathServiceGatewayEndpointGatewayBinding, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getPrivatePathServiceGatewayEndpointGatewayBindingOptions, "getPrivatePathServiceGatewayEndpointGatewayBindingOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getPrivatePathServiceGatewayEndpointGatewayBindingOptions, "getPrivatePathServiceGatewayEndpointGatewayBindingOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *getPrivatePathServiceGatewayEndpointGatewayBindingOptions.PrivatePathServiceGatewayID,
+		"id":                              *getPrivatePathServiceGatewayEndpointGatewayBindingOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/endpoint_gateway_bindings/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getPrivatePathServiceGatewayEndpointGatewayBindingOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetPrivatePathServiceGatewayEndpointGatewayBinding")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalPrivatePathServiceGatewayEndpointGatewayBinding)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DenyPrivatePathServiceGatewayEndpointGatewayBinding : Deny an endpoint gateway binding for a private path service gateway
+// This request denies a pending endpoint gateway request, and optionally sets the policy to deny future requests from
+// the same account.
+func (vpc *VpcV1) DenyPrivatePathServiceGatewayEndpointGatewayBinding(denyPrivatePathServiceGatewayEndpointGatewayBindingOptions *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions) (response *core.DetailedResponse, err error) {
+	return vpc.DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context.Background(), denyPrivatePathServiceGatewayEndpointGatewayBindingOptions)
+}
+
+// DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext is an alternate form of the DenyPrivatePathServiceGatewayEndpointGatewayBinding method which supports a Context parameter
+func (vpc *VpcV1) DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext(ctx context.Context, denyPrivatePathServiceGatewayEndpointGatewayBindingOptions *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(denyPrivatePathServiceGatewayEndpointGatewayBindingOptions, "denyPrivatePathServiceGatewayEndpointGatewayBindingOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(denyPrivatePathServiceGatewayEndpointGatewayBindingOptions, "denyPrivatePathServiceGatewayEndpointGatewayBindingOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *denyPrivatePathServiceGatewayEndpointGatewayBindingOptions.PrivatePathServiceGatewayID,
+		"id":                              *denyPrivatePathServiceGatewayEndpointGatewayBindingOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/endpoint_gateway_bindings/{id}/deny`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range denyPrivatePathServiceGatewayEndpointGatewayBindingOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DenyPrivatePathServiceGatewayEndpointGatewayBinding")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if denyPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetAccountPolicy != nil {
+		body["set_account_policy"] = denyPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetAccountPolicy
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// PermitPrivatePathServiceGatewayEndpointGatewayBinding : Permit an endpoint gateway binding for a private path service gateway
+// This request permits a pending endpoint gateway request, and optionally sets the policy to permit future requests
+// from the same account.
+func (vpc *VpcV1) PermitPrivatePathServiceGatewayEndpointGatewayBinding(permitPrivatePathServiceGatewayEndpointGatewayBindingOptions *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions) (response *core.DetailedResponse, err error) {
+	return vpc.PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context.Background(), permitPrivatePathServiceGatewayEndpointGatewayBindingOptions)
+}
+
+// PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext is an alternate form of the PermitPrivatePathServiceGatewayEndpointGatewayBinding method which supports a Context parameter
+func (vpc *VpcV1) PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext(ctx context.Context, permitPrivatePathServiceGatewayEndpointGatewayBindingOptions *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(permitPrivatePathServiceGatewayEndpointGatewayBindingOptions, "permitPrivatePathServiceGatewayEndpointGatewayBindingOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(permitPrivatePathServiceGatewayEndpointGatewayBindingOptions, "permitPrivatePathServiceGatewayEndpointGatewayBindingOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.PrivatePathServiceGatewayID,
+		"id":                              *permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/endpoint_gateway_bindings/{id}/permit`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "PermitPrivatePathServiceGatewayEndpointGatewayBinding")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetAccountPolicy != nil {
+		body["set_account_policy"] = permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetAccountPolicy
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// RevokePrivatePathServiceGateway : Revoke access to a private path service gateway for an account
+// This request revokes a consumer account. This operation cannot be reversed. All endpoint gateway bindings associated
+// with the specified private path service gateway are deleted. If the account has an existing access policy, that
+// policy will be updated to `deny`. Otherwise, a new `deny` access policy will be created for the account.
+func (vpc *VpcV1) RevokePrivatePathServiceGateway(revokePrivatePathServiceGatewayOptions *RevokePrivatePathServiceGatewayOptions) (response *core.DetailedResponse, err error) {
+	return vpc.RevokePrivatePathServiceGatewayWithContext(context.Background(), revokePrivatePathServiceGatewayOptions)
+}
+
+// RevokePrivatePathServiceGatewayWithContext is an alternate form of the RevokePrivatePathServiceGateway method which supports a Context parameter
+func (vpc *VpcV1) RevokePrivatePathServiceGatewayWithContext(ctx context.Context, revokePrivatePathServiceGatewayOptions *RevokePrivatePathServiceGatewayOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(revokePrivatePathServiceGatewayOptions, "revokePrivatePathServiceGatewayOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(revokePrivatePathServiceGatewayOptions, "revokePrivatePathServiceGatewayOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"private_path_service_gateway_id": *revokePrivatePathServiceGatewayOptions.PrivatePathServiceGatewayID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/private_path_service_gateways/{private_path_service_gateway_id}/revoke_account`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range revokePrivatePathServiceGatewayOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "RevokePrivatePathServiceGateway")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if revokePrivatePathServiceGatewayOptions.Account != nil {
+		body["account"] = revokePrivatePathServiceGatewayOptions.Account
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// AccountIdentity : Identifies an account by a unique property.
+// Models which "extend" this model:
+// - AccountIdentityByID
+type AccountIdentity struct {
+	// The unique identifier for this account.
+	ID *string `json:"id,omitempty"`
+}
+
+func (*AccountIdentity) isaAccountIdentity() bool {
+	return true
+}
+
+type AccountIdentityIntf interface {
+	isaAccountIdentity() bool
+}
+
+// UnmarshalAccountIdentity unmarshals an instance of AccountIdentity from the specified map of raw messages.
+func UnmarshalAccountIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(AccountIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AccountReference : AccountReference struct
+type AccountReference struct {
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the AccountReference.ResourceType property.
+// The resource type.
+const (
+	AccountReferenceResourceTypeAccountConst = "account"
+)
+
+// UnmarshalAccountReference unmarshals an instance of AccountReference from the specified map of raw messages.
+func UnmarshalAccountReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(AccountReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
@@ -27819,6 +28900,169 @@ func (options *CreatePlacementGroupOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
+// CreatePrivatePathServiceGatewayAccountPolicyOptions : The CreatePrivatePathServiceGatewayAccountPolicy options.
+type CreatePrivatePathServiceGatewayAccountPolicyOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The access policy for the account:
+	// - permit: access will be permitted
+	// - deny:  access will be denied
+	// - review: access will be manually reviewed.
+	AccessPolicy *string `json:"access_policy" validate:"required"`
+
+	// The account for this access policy.
+	Account AccountIdentityIntf `json:"account" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the CreatePrivatePathServiceGatewayAccountPolicyOptions.AccessPolicy property.
+// The access policy for the account:
+// - permit: access will be permitted
+// - deny:  access will be denied
+// - review: access will be manually reviewed.
+const (
+	CreatePrivatePathServiceGatewayAccountPolicyOptionsAccessPolicyDenyConst   = "deny"
+	CreatePrivatePathServiceGatewayAccountPolicyOptionsAccessPolicyPermitConst = "permit"
+	CreatePrivatePathServiceGatewayAccountPolicyOptionsAccessPolicyReviewConst = "review"
+)
+
+// NewCreatePrivatePathServiceGatewayAccountPolicyOptions : Instantiate CreatePrivatePathServiceGatewayAccountPolicyOptions
+func (*VpcV1) NewCreatePrivatePathServiceGatewayAccountPolicyOptions(privatePathServiceGatewayID string, accessPolicy string, account AccountIdentityIntf) *CreatePrivatePathServiceGatewayAccountPolicyOptions {
+	return &CreatePrivatePathServiceGatewayAccountPolicyOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		AccessPolicy:                core.StringPtr(accessPolicy),
+		Account:                     account,
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *CreatePrivatePathServiceGatewayAccountPolicyOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *CreatePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetAccessPolicy : Allow user to set AccessPolicy
+func (_options *CreatePrivatePathServiceGatewayAccountPolicyOptions) SetAccessPolicy(accessPolicy string) *CreatePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.AccessPolicy = core.StringPtr(accessPolicy)
+	return _options
+}
+
+// SetAccount : Allow user to set Account
+func (_options *CreatePrivatePathServiceGatewayAccountPolicyOptions) SetAccount(account AccountIdentityIntf) *CreatePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.Account = account
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreatePrivatePathServiceGatewayAccountPolicyOptions) SetHeaders(param map[string]string) *CreatePrivatePathServiceGatewayAccountPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// CreatePrivatePathServiceGatewayOptions : The CreatePrivatePathServiceGateway options.
+type CreatePrivatePathServiceGatewayOptions struct {
+	// The load balancer for this private path service gateway. This load balancer must be in the
+	// same VPC as the private path service gateway and must have `is_private_path` set to
+	// `true`.
+	LoadBalancer LoadBalancerIdentityIntf `json:"load_balancer" validate:"required"`
+
+	// The region served by this private path service gateway.
+	Region RegionIdentityIntf `json:"region" validate:"required"`
+
+	// The fully qualified domain names for this private path service gateway. Any uppercase letters will be converted to
+	// lowercase.
+	ServiceEndpoints []string `json:"service_endpoints" validate:"required"`
+
+	// The policy to use for bindings from accounts without an explicit account policy.
+	DefaultAccessPolicy *string `json:"default_access_policy,omitempty"`
+
+	// The name for this private path service gateway. The name must not be used by another private path service gateway in
+	// the VPC. If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Indicates whether this private path service gateway has zonal affinity.
+	// - `true`:  Traffic to the service from a zone will favor service endpoints in
+	//            the same zone.
+	// - `false`: Traffic to the service from a zone will be load balanced across all zones
+	//            in the region the service resides in.
+	ZonalAffinity *bool `json:"zonal_affinity,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the CreatePrivatePathServiceGatewayOptions.DefaultAccessPolicy property.
+// The policy to use for bindings from accounts without an explicit account policy.
+const (
+	CreatePrivatePathServiceGatewayOptionsDefaultAccessPolicyDenyConst   = "deny"
+	CreatePrivatePathServiceGatewayOptionsDefaultAccessPolicyPermitConst = "permit"
+	CreatePrivatePathServiceGatewayOptionsDefaultAccessPolicyReviewConst = "review"
+)
+
+// NewCreatePrivatePathServiceGatewayOptions : Instantiate CreatePrivatePathServiceGatewayOptions
+func (*VpcV1) NewCreatePrivatePathServiceGatewayOptions(loadBalancer LoadBalancerIdentityIntf, region RegionIdentityIntf, serviceEndpoints []string) *CreatePrivatePathServiceGatewayOptions {
+	return &CreatePrivatePathServiceGatewayOptions{
+		LoadBalancer:     loadBalancer,
+		Region:           region,
+		ServiceEndpoints: serviceEndpoints,
+	}
+}
+
+// SetLoadBalancer : Allow user to set LoadBalancer
+func (_options *CreatePrivatePathServiceGatewayOptions) SetLoadBalancer(loadBalancer LoadBalancerIdentityIntf) *CreatePrivatePathServiceGatewayOptions {
+	_options.LoadBalancer = loadBalancer
+	return _options
+}
+
+// SetRegion : Allow user to set Region
+func (_options *CreatePrivatePathServiceGatewayOptions) SetRegion(region RegionIdentityIntf) *CreatePrivatePathServiceGatewayOptions {
+	_options.Region = region
+	return _options
+}
+
+// SetServiceEndpoints : Allow user to set ServiceEndpoints
+func (_options *CreatePrivatePathServiceGatewayOptions) SetServiceEndpoints(serviceEndpoints []string) *CreatePrivatePathServiceGatewayOptions {
+	_options.ServiceEndpoints = serviceEndpoints
+	return _options
+}
+
+// SetDefaultAccessPolicy : Allow user to set DefaultAccessPolicy
+func (_options *CreatePrivatePathServiceGatewayOptions) SetDefaultAccessPolicy(defaultAccessPolicy string) *CreatePrivatePathServiceGatewayOptions {
+	_options.DefaultAccessPolicy = core.StringPtr(defaultAccessPolicy)
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *CreatePrivatePathServiceGatewayOptions) SetName(name string) *CreatePrivatePathServiceGatewayOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetResourceGroup : Allow user to set ResourceGroup
+func (_options *CreatePrivatePathServiceGatewayOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreatePrivatePathServiceGatewayOptions {
+	_options.ResourceGroup = resourceGroup
+	return _options
+}
+
+// SetZonalAffinity : Allow user to set ZonalAffinity
+func (_options *CreatePrivatePathServiceGatewayOptions) SetZonalAffinity(zonalAffinity bool) *CreatePrivatePathServiceGatewayOptions {
+	_options.ZonalAffinity = core.BoolPtr(zonalAffinity)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreatePrivatePathServiceGatewayOptions) SetHeaders(param map[string]string) *CreatePrivatePathServiceGatewayOptions {
+	options.Headers = param
+	return options
+}
+
 // CreatePublicGatewayOptions : The CreatePublicGateway options.
 type CreatePublicGatewayOptions struct {
 	// The VPC this public gateway will reside in.
@@ -32130,6 +33374,72 @@ func (options *DeletePlacementGroupOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
+// DeletePrivatePathServiceGatewayAccountPolicyOptions : The DeletePrivatePathServiceGatewayAccountPolicy options.
+type DeletePrivatePathServiceGatewayAccountPolicyOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The account policy identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeletePrivatePathServiceGatewayAccountPolicyOptions : Instantiate DeletePrivatePathServiceGatewayAccountPolicyOptions
+func (*VpcV1) NewDeletePrivatePathServiceGatewayAccountPolicyOptions(privatePathServiceGatewayID string, id string) *DeletePrivatePathServiceGatewayAccountPolicyOptions {
+	return &DeletePrivatePathServiceGatewayAccountPolicyOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		ID:                          core.StringPtr(id),
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *DeletePrivatePathServiceGatewayAccountPolicyOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *DeletePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *DeletePrivatePathServiceGatewayAccountPolicyOptions) SetID(id string) *DeletePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeletePrivatePathServiceGatewayAccountPolicyOptions) SetHeaders(param map[string]string) *DeletePrivatePathServiceGatewayAccountPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// DeletePrivatePathServiceGatewayOptions : The DeletePrivatePathServiceGateway options.
+type DeletePrivatePathServiceGatewayOptions struct {
+	// The private path service gateway identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeletePrivatePathServiceGatewayOptions : Instantiate DeletePrivatePathServiceGatewayOptions
+func (*VpcV1) NewDeletePrivatePathServiceGatewayOptions(id string) *DeletePrivatePathServiceGatewayOptions {
+	return &DeletePrivatePathServiceGatewayOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *DeletePrivatePathServiceGatewayOptions) SetID(id string) *DeletePrivatePathServiceGatewayOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeletePrivatePathServiceGatewayOptions) SetHeaders(param map[string]string) *DeletePrivatePathServiceGatewayOptions {
+	options.Headers = param
+	return options
+}
+
 // DeletePublicGatewayOptions : The DeletePublicGateway options.
 type DeletePublicGatewayOptions struct {
 	// The public gateway identifier.
@@ -32808,6 +34118,56 @@ func (options *DeleteVPNServerRouteOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
+// DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions : The DenyPrivatePathServiceGatewayEndpointGatewayBinding options.
+type DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The endpoint gateway binding identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Indicates whether this will become the access policy for any `pending` and future endpoint gateway bindings from the
+	// same account. If set to `true`:
+	// - If the account has an existing access policy, that policy will be updated to `deny`.
+	// - Otherwise, a new `deny` access policy will be created for the account.
+	SetAccountPolicy *bool `json:"set_account_policy,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDenyPrivatePathServiceGatewayEndpointGatewayBindingOptions : Instantiate DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions
+func (*VpcV1) NewDenyPrivatePathServiceGatewayEndpointGatewayBindingOptions(privatePathServiceGatewayID string, id string) *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	return &DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		ID:                          core.StringPtr(id),
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetID(id string) *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetSetAccountPolicy : Allow user to set SetAccountPolicy
+func (_options *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetSetAccountPolicy(setAccountPolicy bool) *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.SetAccountPolicy = core.BoolPtr(setAccountPolicy)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetHeaders(param map[string]string) *DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	options.Headers = param
+	return options
+}
+
 // DisconnectVPNClientOptions : The DisconnectVPNClient options.
 type DisconnectVPNClientOptions struct {
 	// The VPN server identifier.
@@ -32920,6 +34280,12 @@ type EndpointGateway struct {
 	// The reserved IPs bound to this endpoint gateway.
 	Ips []ReservedIPReference `json:"ips" validate:"required"`
 
+	// The reasons for the current lifecycle status (if any):
+	// - `pending_access`: endpoint gateway access is pending
+	// - `access_denied`: endpoint gateway access was denied
+	// - `access_expired`: endpoint gateway access has expired.
+	LifecycleReasons []EndpointGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
 	// The lifecycle state of the endpoint gateway.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
@@ -33006,6 +34372,10 @@ func UnmarshalEndpointGateway(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "ips", &obj.Ips, UnmarshalReservedIPReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalEndpointGatewayLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -33141,6 +34511,46 @@ func UnmarshalEndpointGatewayCollectionNext(m map[string]json.RawMessage, result
 	return
 }
 
+// EndpointGatewayLifecycleReason : EndpointGatewayLifecycleReason struct
+type EndpointGatewayLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the EndpointGatewayLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	EndpointGatewayLifecycleReasonCodeAccessDeniedConst                = "access_denied"
+	EndpointGatewayLifecycleReasonCodeAccessExpiredConst               = "access_expired"
+	EndpointGatewayLifecycleReasonCodePendingAccessConst               = "pending_access"
+	EndpointGatewayLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalEndpointGatewayLifecycleReason unmarshals an instance of EndpointGatewayLifecycleReason from the specified map of raw messages.
+func UnmarshalEndpointGatewayLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(EndpointGatewayLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // EndpointGatewayPatch : EndpointGatewayPatch struct
 type EndpointGatewayPatch struct {
 	// The name for this endpoint gateway. The name must not be used by another endpoint gateway in the VPC.
@@ -33258,24 +34668,35 @@ func UnmarshalEndpointGatewayReservedIP(m map[string]json.RawMessage, result int
 
 // EndpointGatewayTarget : The target for this endpoint gateway.
 // Models which "extend" this model:
+// - EndpointGatewayTargetPrivatePathServiceGatewayReference
 // - EndpointGatewayTargetProviderCloudServiceReference
 // - EndpointGatewayTargetProviderInfrastructureServiceReference
 type EndpointGatewayTarget struct {
-	// The CRN for this provider cloud service, or the CRN for the user's instance of a provider cloud service.
+	// The CRN for this private path service gateway.
 	CRN *string `json:"crn,omitempty"`
 
-	// The type of target.
-	ResourceType *string `json:"resource_type,omitempty"`
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *PrivatePathServiceGatewayReferenceDeleted `json:"deleted,omitempty"`
 
-	// The name of a provider infrastructure service. Must be:
-	// - `ibm-ntp-server`: An NTP (Network Time Protocol) server provided by IBM.
+	// The URL for this private path service gateway.
+	Href *string `json:"href,omitempty"`
+
+	// The unique identifier for this private path service gateway.
+	ID *string `json:"id,omitempty"`
+
+	// The name for this private path service gateway. The name is unique across all private path service gateways in the
+	// VPC.
 	Name *string `json:"name,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type,omitempty"`
 }
 
 // Constants associated with the EndpointGatewayTarget.ResourceType property.
-// The type of target.
+// The resource type.
 const (
-	EndpointGatewayTargetResourceTypeProviderCloudServiceConst = "provider_cloud_service"
+	EndpointGatewayTargetResourceTypePrivatePathServiceGatewayConst = "private_path_service_gateway"
 )
 
 func (*EndpointGatewayTarget) isaEndpointGatewayTarget() bool {
@@ -33293,11 +34714,23 @@ func UnmarshalEndpointGatewayTarget(m map[string]json.RawMessage, result interfa
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalPrivatePathServiceGatewayReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -33307,13 +34740,14 @@ func UnmarshalEndpointGatewayTarget(m map[string]json.RawMessage, result interfa
 
 // EndpointGatewayTargetPrototype : The target to use for this endpoint gateway. Must not already be the target of another endpoint gateway in the VPC.
 // Models which "extend" this model:
+// - EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN
 // - EndpointGatewayTargetPrototypeProviderCloudServiceIdentity
 // - EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentity
 type EndpointGatewayTargetPrototype struct {
 	// The type of target for this endpoint gateway.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The CRN for this provider cloud service, or the CRN for the user's instance of a provider cloud service.
+	// The CRN for this private path service gateway.
 	CRN *string `json:"crn,omitempty"`
 
 	// The name of a provider infrastructure service. Must be:
@@ -33324,6 +34758,7 @@ type EndpointGatewayTargetPrototype struct {
 // Constants associated with the EndpointGatewayTargetPrototype.ResourceType property.
 // The type of target for this endpoint gateway.
 const (
+	EndpointGatewayTargetPrototypeResourceTypePrivatePathServiceGatewayConst     = "private_path_service_gateway"
 	EndpointGatewayTargetPrototypeResourceTypeProviderCloudServiceConst          = "provider_cloud_service"
 	EndpointGatewayTargetPrototypeResourceTypeProviderInfrastructureServiceConst = "provider_infrastructure_service"
 )
@@ -33353,6 +34788,8 @@ func UnmarshalEndpointGatewayTargetPrototype(m map[string]json.RawMessage, resul
 		err = core.UnmarshalModel(m, "", result, UnmarshalEndpointGatewayTargetPrototypeProviderCloudServiceIdentity)
 	} else if discValue == "provider_infrastructure_service" {
 		err = core.UnmarshalModel(m, "", result, UnmarshalEndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentity)
+	} else if discValue == "PrivatePathServiceGatewayIdentityByCRN" {
+		err = core.UnmarshalModel(m, "", result, UnmarshalEndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN)
 	} else {
 		err = fmt.Errorf("unrecognized value for discriminator property 'resource_type': %s", discValue)
 	}
@@ -35926,6 +37363,110 @@ func (options *GetPlacementGroupOptions) SetHeaders(param map[string]string) *Ge
 	return options
 }
 
+// GetPrivatePathServiceGatewayAccountPolicyOptions : The GetPrivatePathServiceGatewayAccountPolicy options.
+type GetPrivatePathServiceGatewayAccountPolicyOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The account policy identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetPrivatePathServiceGatewayAccountPolicyOptions : Instantiate GetPrivatePathServiceGatewayAccountPolicyOptions
+func (*VpcV1) NewGetPrivatePathServiceGatewayAccountPolicyOptions(privatePathServiceGatewayID string, id string) *GetPrivatePathServiceGatewayAccountPolicyOptions {
+	return &GetPrivatePathServiceGatewayAccountPolicyOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		ID:                          core.StringPtr(id),
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *GetPrivatePathServiceGatewayAccountPolicyOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *GetPrivatePathServiceGatewayAccountPolicyOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetPrivatePathServiceGatewayAccountPolicyOptions) SetID(id string) *GetPrivatePathServiceGatewayAccountPolicyOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetPrivatePathServiceGatewayAccountPolicyOptions) SetHeaders(param map[string]string) *GetPrivatePathServiceGatewayAccountPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// GetPrivatePathServiceGatewayEndpointGatewayBindingOptions : The GetPrivatePathServiceGatewayEndpointGatewayBinding options.
+type GetPrivatePathServiceGatewayEndpointGatewayBindingOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The endpoint gateway binding identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetPrivatePathServiceGatewayEndpointGatewayBindingOptions : Instantiate GetPrivatePathServiceGatewayEndpointGatewayBindingOptions
+func (*VpcV1) NewGetPrivatePathServiceGatewayEndpointGatewayBindingOptions(privatePathServiceGatewayID string, id string) *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	return &GetPrivatePathServiceGatewayEndpointGatewayBindingOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		ID:                          core.StringPtr(id),
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetID(id string) *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetHeaders(param map[string]string) *GetPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	options.Headers = param
+	return options
+}
+
+// GetPrivatePathServiceGatewayOptions : The GetPrivatePathServiceGateway options.
+type GetPrivatePathServiceGatewayOptions struct {
+	// The private path service gateway identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetPrivatePathServiceGatewayOptions : Instantiate GetPrivatePathServiceGatewayOptions
+func (*VpcV1) NewGetPrivatePathServiceGatewayOptions(id string) *GetPrivatePathServiceGatewayOptions {
+	return &GetPrivatePathServiceGatewayOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *GetPrivatePathServiceGatewayOptions) SetID(id string) *GetPrivatePathServiceGatewayOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetPrivatePathServiceGatewayOptions) SetHeaders(param map[string]string) *GetPrivatePathServiceGatewayOptions {
+	options.Headers = param
+	return options
+}
+
 // GetPublicGatewayOptions : The GetPublicGateway options.
 type GetPublicGatewayOptions struct {
 	// The public gateway identifier.
@@ -38425,7 +39966,7 @@ type Instance struct {
 	// The enumerated reason code values for this property will expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
 	// unexpected reason code was encountered.
-	LifecycleReasons []LifecycleReason `json:"lifecycle_reasons" validate:"required"`
+	LifecycleReasons []InstanceLifecycleReason `json:"lifecycle_reasons" validate:"required"`
 
 	// The lifecycle state of the virtual server instance.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
@@ -38582,7 +40123,7 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalLifecycleReason)
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalInstanceLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -41409,6 +42950,43 @@ func UnmarshalInstanceInitializationPassword(m map[string]json.RawMessage, resul
 	return
 }
 
+// InstanceLifecycleReason : InstanceLifecycleReason struct
+type InstanceLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the InstanceLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	InstanceLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalInstanceLifecycleReason unmarshals an instance of InstanceLifecycleReason from the specified map of raw messages.
+func UnmarshalInstanceLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceMetadataService : The metadata service configuration.
 type InstanceMetadataService struct {
 	// Indicates whether the metadata service endpoint is available to the virtual server instance.
@@ -44123,43 +45701,6 @@ func UnmarshalLegacyCloudObjectStorageBucketReference(m map[string]json.RawMessa
 	return
 }
 
-// LifecycleReason : LifecycleReason struct
-type LifecycleReason struct {
-	// A snake case string succinctly identifying the reason for this lifecycle state.
-	Code *string `json:"code" validate:"required"`
-
-	// An explanation of the reason for this lifecycle state.
-	Message *string `json:"message" validate:"required"`
-
-	// Link to documentation about the reason for this lifecycle state.
-	MoreInfo *string `json:"more_info,omitempty"`
-}
-
-// Constants associated with the LifecycleReason.Code property.
-// A snake case string succinctly identifying the reason for this lifecycle state.
-const (
-	LifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
-)
-
-// UnmarshalLifecycleReason unmarshals an instance of LifecycleReason from the specified map of raw messages.
-func UnmarshalLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LifecycleReason)
-	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // ListBackupPoliciesOptions : The ListBackupPolicies options.
 type ListBackupPoliciesOptions struct {
 	// A server-provided token determining what resource to start the page on.
@@ -44939,9 +46480,23 @@ type ListEndpointGatewaysOptions struct {
 	// Filters the collection to resources in the resource group with the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
+	// Filters the collection to resources with the specified comma-separated `lifecycle_state` values.
+	LifecycleState []string `json:"lifecycle_state,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
+
+// Constants associated with the ListEndpointGatewaysOptions.LifecycleState property.
+const (
+	ListEndpointGatewaysOptionsLifecycleStateDeletingConst  = "deleting"
+	ListEndpointGatewaysOptionsLifecycleStateFailedConst    = "failed"
+	ListEndpointGatewaysOptionsLifecycleStatePendingConst   = "pending"
+	ListEndpointGatewaysOptionsLifecycleStateStableConst    = "stable"
+	ListEndpointGatewaysOptionsLifecycleStateSuspendedConst = "suspended"
+	ListEndpointGatewaysOptionsLifecycleStateUpdatingConst  = "updating"
+	ListEndpointGatewaysOptionsLifecycleStateWaitingConst   = "waiting"
+)
 
 // NewListEndpointGatewaysOptions : Instantiate ListEndpointGatewaysOptions
 func (*VpcV1) NewListEndpointGatewaysOptions() *ListEndpointGatewaysOptions {
@@ -44969,6 +46524,12 @@ func (_options *ListEndpointGatewaysOptions) SetLimit(limit int64) *ListEndpoint
 // SetResourceGroupID : Allow user to set ResourceGroupID
 func (_options *ListEndpointGatewaysOptions) SetResourceGroupID(resourceGroupID string) *ListEndpointGatewaysOptions {
 	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
+}
+
+// SetLifecycleState : Allow user to set LifecycleState
+func (_options *ListEndpointGatewaysOptions) SetLifecycleState(lifecycleState []string) *ListEndpointGatewaysOptions {
+	_options.LifecycleState = lifecycleState
 	return _options
 }
 
@@ -46388,6 +47949,152 @@ func (_options *ListPlacementGroupsOptions) SetLimit(limit int64) *ListPlacement
 
 // SetHeaders : Allow user to set Headers
 func (options *ListPlacementGroupsOptions) SetHeaders(param map[string]string) *ListPlacementGroupsOptions {
+	options.Headers = param
+	return options
+}
+
+// ListPrivatePathServiceGatewayAccountPoliciesOptions : The ListPrivatePathServiceGatewayAccountPolicies options.
+type ListPrivatePathServiceGatewayAccountPoliciesOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources with the specified account identifier.
+	AccountID *string `json:"account.id,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListPrivatePathServiceGatewayAccountPoliciesOptions : Instantiate ListPrivatePathServiceGatewayAccountPoliciesOptions
+func (*VpcV1) NewListPrivatePathServiceGatewayAccountPoliciesOptions(privatePathServiceGatewayID string) *ListPrivatePathServiceGatewayAccountPoliciesOptions {
+	return &ListPrivatePathServiceGatewayAccountPoliciesOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *ListPrivatePathServiceGatewayAccountPoliciesOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *ListPrivatePathServiceGatewayAccountPoliciesOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListPrivatePathServiceGatewayAccountPoliciesOptions) SetStart(start string) *ListPrivatePathServiceGatewayAccountPoliciesOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListPrivatePathServiceGatewayAccountPoliciesOptions) SetLimit(limit int64) *ListPrivatePathServiceGatewayAccountPoliciesOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetAccountID : Allow user to set AccountID
+func (_options *ListPrivatePathServiceGatewayAccountPoliciesOptions) SetAccountID(accountID string) *ListPrivatePathServiceGatewayAccountPoliciesOptions {
+	_options.AccountID = core.StringPtr(accountID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListPrivatePathServiceGatewayAccountPoliciesOptions) SetHeaders(param map[string]string) *ListPrivatePathServiceGatewayAccountPoliciesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions : The ListPrivatePathServiceGatewayEndpointGatewayBindings options.
+type ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to endpoint gateway bindings with the exact specified status.
+	Status *string `json:"status,omitempty"`
+
+	// Filters the collection to resources with the specified account identifier.
+	AccountID *string `json:"account.id,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Status property.
+// Filters the collection to endpoint gateway bindings with the exact specified status.
+const (
+	ListPrivatePathServiceGatewayEndpointGatewayBindingsOptionsStatusDeniedConst    = "denied"
+	ListPrivatePathServiceGatewayEndpointGatewayBindingsOptionsStatusExpiredConst   = "expired"
+	ListPrivatePathServiceGatewayEndpointGatewayBindingsOptionsStatusPendingConst   = "pending"
+	ListPrivatePathServiceGatewayEndpointGatewayBindingsOptionsStatusPermittedConst = "permitted"
+)
+
+// NewListPrivatePathServiceGatewayEndpointGatewayBindingsOptions : Instantiate ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions
+func (*VpcV1) NewListPrivatePathServiceGatewayEndpointGatewayBindingsOptions(privatePathServiceGatewayID string) *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions {
+	return &ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) SetStart(start string) *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) SetLimit(limit int64) *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetStatus : Allow user to set Status
+func (_options *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) SetStatus(status string) *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions {
+	_options.Status = core.StringPtr(status)
+	return _options
+}
+
+// SetAccountID : Allow user to set AccountID
+func (_options *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) SetAccountID(accountID string) *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions {
+	_options.AccountID = core.StringPtr(accountID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) SetHeaders(param map[string]string) *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions {
+	options.Headers = param
+	return options
+}
+
+// ListPrivatePathServiceGatewaysOptions : The ListPrivatePathServiceGateways options.
+type ListPrivatePathServiceGatewaysOptions struct {
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListPrivatePathServiceGatewaysOptions : Instantiate ListPrivatePathServiceGatewaysOptions
+func (*VpcV1) NewListPrivatePathServiceGatewaysOptions() *ListPrivatePathServiceGatewaysOptions {
+	return &ListPrivatePathServiceGatewaysOptions{}
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListPrivatePathServiceGatewaysOptions) SetHeaders(param map[string]string) *ListPrivatePathServiceGatewaysOptions {
 	options.Headers = param
 	return options
 }
@@ -51554,6 +53261,65 @@ func UnmarshalLoadBalancerProfileUDPSupported(m map[string]json.RawMessage, resu
 	return
 }
 
+// LoadBalancerReference : LoadBalancerReference struct
+type LoadBalancerReference struct {
+	// The load balancer's CRN.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *LoadBalancerReferenceDeleted `json:"deleted,omitempty"`
+
+	// The load balancer's canonical URL.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this load balancer.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this load balancer. The name is unique across all load balancers in the VPC.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerReference.ResourceType property.
+// The resource type.
+const (
+	LoadBalancerReferenceResourceTypeLoadBalancerConst = "load_balancer"
+)
+
+// UnmarshalLoadBalancerReference unmarshals an instance of LoadBalancerReference from the specified map of raw messages.
+func UnmarshalLoadBalancerReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalLoadBalancerReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type LoadBalancerReferenceDeleted struct {
@@ -53507,6 +55273,57 @@ func UnmarshalOperatingSystemReference(m map[string]json.RawMessage, result inte
 	return
 }
 
+// PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions : The PermitPrivatePathServiceGatewayEndpointGatewayBinding options.
+type PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The endpoint gateway binding identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Indicates whether this will become the access policy for any `pending` and future endpoint gateway bindings from the
+	// same account. If set to `true`:
+	// - If the account has an existing access policy, that policy will be updated to
+	// `permit`.
+	// - Otherwise, a new `permit` access policy will be created for the account.
+	SetAccountPolicy *bool `json:"set_account_policy,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewPermitPrivatePathServiceGatewayEndpointGatewayBindingOptions : Instantiate PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions
+func (*VpcV1) NewPermitPrivatePathServiceGatewayEndpointGatewayBindingOptions(privatePathServiceGatewayID string, id string) *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	return &PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		ID:                          core.StringPtr(id),
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetID(id string) *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetSetAccountPolicy : Allow user to set SetAccountPolicy
+func (_options *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetSetAccountPolicy(setAccountPolicy bool) *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	_options.SetAccountPolicy = core.BoolPtr(setAccountPolicy)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions) SetHeaders(param map[string]string) *PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions {
+	options.Headers = param
+	return options
+}
+
 // PlacementGroup : PlacementGroup struct
 type PlacementGroup struct {
 	// The date and time that the placement group was created.
@@ -53746,6 +55563,759 @@ type PlacementGroupReferenceDeleted struct {
 // UnmarshalPlacementGroupReferenceDeleted unmarshals an instance of PlacementGroupReferenceDeleted from the specified map of raw messages.
 func UnmarshalPlacementGroupReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(PlacementGroupReferenceDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGateway : PrivatePathServiceGateway struct
+type PrivatePathServiceGateway struct {
+	// The date and time that the private path service gateway was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this private path service gateway.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The policy to use for bindings from accounts without an explicit account policy.
+	DefaultAccessPolicy *string `json:"default_access_policy" validate:"required"`
+
+	// The number of endpoint gateways using this private path service gateway.
+	EndpointGatewaysCount *int64 `json:"endpoint_gateways_count" validate:"required"`
+
+	// The URL for this private path service gateway.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this private path service gateway.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the private path service gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The load balancer for this private path service gateway.
+	LoadBalancer *LoadBalancerReference `json:"load_balancer" validate:"required"`
+
+	// The name for this private path service gateway. The name is unique across all private path service gateways in the
+	// VPC.
+	Name *string `json:"name" validate:"required"`
+
+	// Indicates the availability of this private path service gateway
+	// - `true`: Any account can request access to this private path service gateway.
+	// - `false`: Access is restricted to the account that created this private path service gateway.
+	Published *bool `json:"published" validate:"required"`
+
+	// The region served by this private path service gateway.
+	Region *RegionReference `json:"region" validate:"required"`
+
+	// The resource group for this private path service gateway.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The fully qualified domain names for this private path service gateway.
+	ServiceEndpoints []string `json:"service_endpoints" validate:"required"`
+
+	// The VPC this private path service gateway resides in.
+	VPC *VPCReference `json:"vpc" validate:"required"`
+
+	// Indicates whether this private path service gateway has zonal affinity.
+	// - `true`:  Traffic to the service from a zone will favor service endpoints in
+	//            the same zone.
+	// - `false`: Traffic to the service from a zone will be load balanced across all zones
+	//            in the region the service resides in.
+	ZonalAffinity *bool `json:"zonal_affinity" validate:"required"`
+}
+
+// Constants associated with the PrivatePathServiceGateway.DefaultAccessPolicy property.
+// The policy to use for bindings from accounts without an explicit account policy.
+const (
+	PrivatePathServiceGatewayDefaultAccessPolicyDenyConst   = "deny"
+	PrivatePathServiceGatewayDefaultAccessPolicyPermitConst = "permit"
+	PrivatePathServiceGatewayDefaultAccessPolicyReviewConst = "review"
+)
+
+// Constants associated with the PrivatePathServiceGateway.LifecycleState property.
+// The lifecycle state of the private path service gateway.
+const (
+	PrivatePathServiceGatewayLifecycleStateDeletingConst  = "deleting"
+	PrivatePathServiceGatewayLifecycleStateFailedConst    = "failed"
+	PrivatePathServiceGatewayLifecycleStatePendingConst   = "pending"
+	PrivatePathServiceGatewayLifecycleStateStableConst    = "stable"
+	PrivatePathServiceGatewayLifecycleStateSuspendedConst = "suspended"
+	PrivatePathServiceGatewayLifecycleStateUpdatingConst  = "updating"
+	PrivatePathServiceGatewayLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the PrivatePathServiceGateway.ResourceType property.
+// The resource type.
+const (
+	PrivatePathServiceGatewayResourceTypePrivatePathServiceGatewayConst = "private_path_service_gateway"
+)
+
+// UnmarshalPrivatePathServiceGateway unmarshals an instance of PrivatePathServiceGateway from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGateway(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGateway)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "default_access_policy", &obj.DefaultAccessPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "endpoint_gateways_count", &obj.EndpointGatewaysCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "load_balancer", &obj.LoadBalancer, UnmarshalLoadBalancerReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "published", &obj.Published)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "service_endpoints", &obj.ServiceEndpoints)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "zonal_affinity", &obj.ZonalAffinity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayAccountPolicy : PrivatePathServiceGatewayAccountPolicy struct
+type PrivatePathServiceGatewayAccountPolicy struct {
+	// The access policy for the account:
+	// - permit: access will be permitted
+	// - deny:  access will be denied
+	// - review: access will be manually reviewed
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected property value was encountered.
+	AccessPolicy *string `json:"access_policy" validate:"required"`
+
+	// The account for this access policy.
+	Account *AccountReference `json:"account" validate:"required"`
+
+	// The date and time that the account policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The URL for this account policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this account policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The date and time that the account policy was updated.
+	UpdatedAt *strfmt.DateTime `json:"updated_at,omitempty"`
+}
+
+// Constants associated with the PrivatePathServiceGatewayAccountPolicy.AccessPolicy property.
+// The access policy for the account:
+// - permit: access will be permitted
+// - deny:  access will be denied
+// - review: access will be manually reviewed
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+// unexpected property value was encountered.
+const (
+	PrivatePathServiceGatewayAccountPolicyAccessPolicyDenyConst   = "deny"
+	PrivatePathServiceGatewayAccountPolicyAccessPolicyPermitConst = "permit"
+	PrivatePathServiceGatewayAccountPolicyAccessPolicyReviewConst = "review"
+)
+
+// Constants associated with the PrivatePathServiceGatewayAccountPolicy.ResourceType property.
+// The resource type.
+const (
+	PrivatePathServiceGatewayAccountPolicyResourceTypePrivatePathServiceGatewayAccountPolicyConst = "private_path_service_gateway_account_policy"
+)
+
+// UnmarshalPrivatePathServiceGatewayAccountPolicy unmarshals an instance of PrivatePathServiceGatewayAccountPolicy from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayAccountPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayAccountPolicy)
+	err = core.UnmarshalPrimitive(m, "access_policy", &obj.AccessPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "account", &obj.Account, UnmarshalAccountReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "updated_at", &obj.UpdatedAt)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayAccountPolicyCollection : PrivatePathServiceGatewayAccountPolicyCollection struct
+type PrivatePathServiceGatewayAccountPolicyCollection struct {
+	// Collection of account policies.
+	AccountPolicies []PrivatePathServiceGatewayAccountPolicy `json:"account_policies" validate:"required"`
+
+	// A link to the first page of resources.
+	First *PrivatePathServiceGatewayAccountPolicyCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *PrivatePathServiceGatewayAccountPolicyCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayAccountPolicyCollection unmarshals an instance of PrivatePathServiceGatewayAccountPolicyCollection from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayAccountPolicyCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayAccountPolicyCollection)
+	err = core.UnmarshalModel(m, "account_policies", &obj.AccountPolicies, UnmarshalPrivatePathServiceGatewayAccountPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalPrivatePathServiceGatewayAccountPolicyCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalPrivatePathServiceGatewayAccountPolicyCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *PrivatePathServiceGatewayAccountPolicyCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// PrivatePathServiceGatewayAccountPolicyCollectionFirst : A link to the first page of resources.
+type PrivatePathServiceGatewayAccountPolicyCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayAccountPolicyCollectionFirst unmarshals an instance of PrivatePathServiceGatewayAccountPolicyCollectionFirst from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayAccountPolicyCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayAccountPolicyCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayAccountPolicyCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type PrivatePathServiceGatewayAccountPolicyCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayAccountPolicyCollectionNext unmarshals an instance of PrivatePathServiceGatewayAccountPolicyCollectionNext from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayAccountPolicyCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayAccountPolicyCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayAccountPolicyPatch : PrivatePathServiceGatewayAccountPolicyPatch struct
+type PrivatePathServiceGatewayAccountPolicyPatch struct {
+	// The access policy for the account:
+	// - permit: access will be permitted
+	// - deny:  access will be denied
+	// - review: access will be manually reviewed.
+	AccessPolicy *string `json:"access_policy,omitempty"`
+}
+
+// Constants associated with the PrivatePathServiceGatewayAccountPolicyPatch.AccessPolicy property.
+// The access policy for the account:
+// - permit: access will be permitted
+// - deny:  access will be denied
+// - review: access will be manually reviewed.
+const (
+	PrivatePathServiceGatewayAccountPolicyPatchAccessPolicyDenyConst   = "deny"
+	PrivatePathServiceGatewayAccountPolicyPatchAccessPolicyPermitConst = "permit"
+	PrivatePathServiceGatewayAccountPolicyPatchAccessPolicyReviewConst = "review"
+)
+
+// UnmarshalPrivatePathServiceGatewayAccountPolicyPatch unmarshals an instance of PrivatePathServiceGatewayAccountPolicyPatch from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayAccountPolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayAccountPolicyPatch)
+	err = core.UnmarshalPrimitive(m, "access_policy", &obj.AccessPolicy)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the PrivatePathServiceGatewayAccountPolicyPatch
+func (privatePathServiceGatewayAccountPolicyPatch *PrivatePathServiceGatewayAccountPolicyPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(privatePathServiceGatewayAccountPolicyPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
+}
+
+// PrivatePathServiceGatewayCollection : PrivatePathServiceGatewayCollection struct
+type PrivatePathServiceGatewayCollection struct {
+	// A link to the first page of resources.
+	First *PrivatePathServiceGatewayCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *PrivatePathServiceGatewayCollectionNext `json:"next,omitempty"`
+
+	// Collection of private path service gateways.
+	PrivatePathServiceGateways []PrivatePathServiceGateway `json:"private_path_service_gateways" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayCollection unmarshals an instance of PrivatePathServiceGatewayCollection from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalPrivatePathServiceGatewayCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalPrivatePathServiceGatewayCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "private_path_service_gateways", &obj.PrivatePathServiceGateways, UnmarshalPrivatePathServiceGateway)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayCollectionFirst : A link to the first page of resources.
+type PrivatePathServiceGatewayCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayCollectionFirst unmarshals an instance of PrivatePathServiceGatewayCollectionFirst from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type PrivatePathServiceGatewayCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayCollectionNext unmarshals an instance of PrivatePathServiceGatewayCollectionNext from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayEndpointGatewayBinding : PrivatePathServiceGatewayEndpointGatewayBinding struct
+type PrivatePathServiceGatewayEndpointGatewayBinding struct {
+	// The account that created the endpoint gateway.
+	Account *AccountReference `json:"account" validate:"required"`
+
+	// The date and time that the endpoint gateway binding was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The expiration date and time for the endpoint gateway binding.
+	ExpirationAt *strfmt.DateTime `json:"expiration_at" validate:"required"`
+
+	// The URL for this endpoint gateway binding.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this endpoint gateway binding.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the endpoint gateway binding.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The status of the endpoint gateway binding
+	// - `denied`: endpoint gateway binding was denied
+	// - `expired`: endpoint gateway binding has expired
+	// - `pending`: endpoint gateway binding is awaiting review
+	// - `permitted`: endpoint gateway binding was permitted
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected property value was encountered.
+	Status *string `json:"status" validate:"required"`
+
+	// The date and time that the endpoint gateway binding was updated.
+	UpdatedAt *strfmt.DateTime `json:"updated_at,omitempty"`
+}
+
+// Constants associated with the PrivatePathServiceGatewayEndpointGatewayBinding.LifecycleState property.
+// The lifecycle state of the endpoint gateway binding.
+const (
+	PrivatePathServiceGatewayEndpointGatewayBindingLifecycleStateDeletingConst  = "deleting"
+	PrivatePathServiceGatewayEndpointGatewayBindingLifecycleStateFailedConst    = "failed"
+	PrivatePathServiceGatewayEndpointGatewayBindingLifecycleStatePendingConst   = "pending"
+	PrivatePathServiceGatewayEndpointGatewayBindingLifecycleStateStableConst    = "stable"
+	PrivatePathServiceGatewayEndpointGatewayBindingLifecycleStateSuspendedConst = "suspended"
+	PrivatePathServiceGatewayEndpointGatewayBindingLifecycleStateUpdatingConst  = "updating"
+	PrivatePathServiceGatewayEndpointGatewayBindingLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the PrivatePathServiceGatewayEndpointGatewayBinding.ResourceType property.
+// The resource type.
+const (
+	PrivatePathServiceGatewayEndpointGatewayBindingResourceTypePrivatePathServiceGatewayEndpointGatewayBindingConst = "private_path_service_gateway_endpoint_gateway_binding"
+)
+
+// Constants associated with the PrivatePathServiceGatewayEndpointGatewayBinding.Status property.
+// The status of the endpoint gateway binding
+// - `denied`: endpoint gateway binding was denied
+// - `expired`: endpoint gateway binding has expired
+// - `pending`: endpoint gateway binding is awaiting review
+// - `permitted`: endpoint gateway binding was permitted
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+// unexpected property value was encountered.
+const (
+	PrivatePathServiceGatewayEndpointGatewayBindingStatusDeniedConst    = "denied"
+	PrivatePathServiceGatewayEndpointGatewayBindingStatusExpiredConst   = "expired"
+	PrivatePathServiceGatewayEndpointGatewayBindingStatusPendingConst   = "pending"
+	PrivatePathServiceGatewayEndpointGatewayBindingStatusPermittedConst = "permitted"
+)
+
+// UnmarshalPrivatePathServiceGatewayEndpointGatewayBinding unmarshals an instance of PrivatePathServiceGatewayEndpointGatewayBinding from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayEndpointGatewayBinding(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayEndpointGatewayBinding)
+	err = core.UnmarshalModel(m, "account", &obj.Account, UnmarshalAccountReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "expiration_at", &obj.ExpirationAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "updated_at", &obj.UpdatedAt)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayEndpointGatewayBindingCollection : PrivatePathServiceGatewayEndpointGatewayBindingCollection struct
+type PrivatePathServiceGatewayEndpointGatewayBindingCollection struct {
+	// Collection of endpoint gateway bindings.
+	EndpointGatewayBindings []PrivatePathServiceGatewayEndpointGatewayBinding `json:"endpoint_gateway_bindings" validate:"required"`
+
+	// A link to the first page of resources.
+	First *PrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *PrivatePathServiceGatewayEndpointGatewayBindingCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollection unmarshals an instance of PrivatePathServiceGatewayEndpointGatewayBindingCollection from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayEndpointGatewayBindingCollection)
+	err = core.UnmarshalModel(m, "endpoint_gateway_bindings", &obj.EndpointGatewayBindings, UnmarshalPrivatePathServiceGatewayEndpointGatewayBinding)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *PrivatePathServiceGatewayEndpointGatewayBindingCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// PrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst : A link to the first page of resources.
+type PrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst unmarshals an instance of PrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayEndpointGatewayBindingCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayEndpointGatewayBindingCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type PrivatePathServiceGatewayEndpointGatewayBindingCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollectionNext unmarshals an instance of PrivatePathServiceGatewayEndpointGatewayBindingCollectionNext from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayEndpointGatewayBindingCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayEndpointGatewayBindingCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// PrivatePathServiceGatewayPatch : PrivatePathServiceGatewayPatch struct
+type PrivatePathServiceGatewayPatch struct {
+	// The policy to use for bindings from accounts without an explicit account policy.
+	DefaultAccessPolicy *string `json:"default_access_policy,omitempty"`
+
+	// The load balancer for this private path service gateway. This load balancer must be in the
+	// same VPC as the private path service gateway and must have `is_private_path` set to
+	// `true`.
+	LoadBalancer LoadBalancerIdentityIntf `json:"load_balancer,omitempty"`
+
+	// The name for this private path service gateway. The name must not be used by another private path service gateway in
+	// the VPC.
+	Name *string `json:"name,omitempty"`
+
+	// Indicates the availability of this private path service gateway
+	// - `true`: Any account can request access to this private path service gateway.
+	// - `false`: Access is restricted to the account that created this private path service gateway.
+	Published *bool `json:"published,omitempty"`
+
+	// Indicates whether this private path service gateway has zonal affinity.
+	// - `true`:  Traffic to the service from a zone will favor service endpoints in
+	//            the same zone.
+	// - `false`: Traffic to the service from a zone will be load balanced across all zones
+	//            in the region the service resides in.
+	ZonalAffinity *bool `json:"zonal_affinity,omitempty"`
+}
+
+// Constants associated with the PrivatePathServiceGatewayPatch.DefaultAccessPolicy property.
+// The policy to use for bindings from accounts without an explicit account policy.
+const (
+	PrivatePathServiceGatewayPatchDefaultAccessPolicyDenyConst   = "deny"
+	PrivatePathServiceGatewayPatchDefaultAccessPolicyPermitConst = "permit"
+	PrivatePathServiceGatewayPatchDefaultAccessPolicyReviewConst = "review"
+)
+
+// UnmarshalPrivatePathServiceGatewayPatch unmarshals an instance of PrivatePathServiceGatewayPatch from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayPatch)
+	err = core.UnmarshalPrimitive(m, "default_access_policy", &obj.DefaultAccessPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "load_balancer", &obj.LoadBalancer, UnmarshalLoadBalancerIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "published", &obj.Published)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "zonal_affinity", &obj.ZonalAffinity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the PrivatePathServiceGatewayPatch
+func (privatePathServiceGatewayPatch *PrivatePathServiceGatewayPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(privatePathServiceGatewayPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
+}
+
+// PrivatePathServiceGatewayReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
+// information.
+type PrivatePathServiceGatewayReferenceDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalPrivatePathServiceGatewayReferenceDeleted unmarshals an instance of PrivatePathServiceGatewayReferenceDeleted from the specified map of raw messages.
+func UnmarshalPrivatePathServiceGatewayReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(PrivatePathServiceGatewayReferenceDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
@@ -54268,6 +56838,41 @@ type RegionCollection struct {
 func UnmarshalRegionCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RegionCollection)
 	err = core.UnmarshalModel(m, "regions", &obj.Regions, UnmarshalRegion)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// RegionIdentity : Identifies a region by a unique property.
+// Models which "extend" this model:
+// - RegionIdentityByName
+// - RegionIdentityByHref
+type RegionIdentity struct {
+	// The globally unique name for this region.
+	Name *string `json:"name,omitempty"`
+
+	// The URL for this region.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*RegionIdentity) isaRegionIdentity() bool {
+	return true
+}
+
+type RegionIdentityIntf interface {
+	isaRegionIdentity() bool
+}
+
+// UnmarshalRegionIdentity unmarshals an instance of RegionIdentity from the specified map of raw messages.
+func UnmarshalRegionIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(RegionIdentity)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
@@ -55404,6 +58009,44 @@ func (_options *RestartBareMetalServerOptions) SetID(id string) *RestartBareMeta
 
 // SetHeaders : Allow user to set Headers
 func (options *RestartBareMetalServerOptions) SetHeaders(param map[string]string) *RestartBareMetalServerOptions {
+	options.Headers = param
+	return options
+}
+
+// RevokePrivatePathServiceGatewayOptions : The RevokePrivatePathServiceGateway options.
+type RevokePrivatePathServiceGatewayOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The account that will be revoked access to the private path service gateway.
+	Account AccountIdentityIntf `json:"account" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewRevokePrivatePathServiceGatewayOptions : Instantiate RevokePrivatePathServiceGatewayOptions
+func (*VpcV1) NewRevokePrivatePathServiceGatewayOptions(privatePathServiceGatewayID string, account AccountIdentityIntf) *RevokePrivatePathServiceGatewayOptions {
+	return &RevokePrivatePathServiceGatewayOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		Account:                     account,
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *RevokePrivatePathServiceGatewayOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *RevokePrivatePathServiceGatewayOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetAccount : Allow user to set Account
+func (_options *RevokePrivatePathServiceGatewayOptions) SetAccount(account AccountIdentityIntf) *RevokePrivatePathServiceGatewayOptions {
+	_options.Account = account
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *RevokePrivatePathServiceGatewayOptions) SetHeaders(param map[string]string) *RevokePrivatePathServiceGatewayOptions {
 	options.Headers = param
 	return options
 }
@@ -60274,6 +62917,92 @@ func (options *UpdatePlacementGroupOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
+// UpdatePrivatePathServiceGatewayAccountPolicyOptions : The UpdatePrivatePathServiceGatewayAccountPolicy options.
+type UpdatePrivatePathServiceGatewayAccountPolicyOptions struct {
+	// The private path service gateway identifier.
+	PrivatePathServiceGatewayID *string `json:"private_path_service_gateway_id" validate:"required,ne="`
+
+	// The account policy identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The account policy patch.
+	PrivatePathServiceGatewayAccountPolicyPatch map[string]interface{} `json:"PrivatePathServiceGatewayAccountPolicy_patch" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdatePrivatePathServiceGatewayAccountPolicyOptions : Instantiate UpdatePrivatePathServiceGatewayAccountPolicyOptions
+func (*VpcV1) NewUpdatePrivatePathServiceGatewayAccountPolicyOptions(privatePathServiceGatewayID string, id string, privatePathServiceGatewayAccountPolicyPatch map[string]interface{}) *UpdatePrivatePathServiceGatewayAccountPolicyOptions {
+	return &UpdatePrivatePathServiceGatewayAccountPolicyOptions{
+		PrivatePathServiceGatewayID: core.StringPtr(privatePathServiceGatewayID),
+		ID:                          core.StringPtr(id),
+		PrivatePathServiceGatewayAccountPolicyPatch: privatePathServiceGatewayAccountPolicyPatch,
+	}
+}
+
+// SetPrivatePathServiceGatewayID : Allow user to set PrivatePathServiceGatewayID
+func (_options *UpdatePrivatePathServiceGatewayAccountPolicyOptions) SetPrivatePathServiceGatewayID(privatePathServiceGatewayID string) *UpdatePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.PrivatePathServiceGatewayID = core.StringPtr(privatePathServiceGatewayID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdatePrivatePathServiceGatewayAccountPolicyOptions) SetID(id string) *UpdatePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetPrivatePathServiceGatewayAccountPolicyPatch : Allow user to set PrivatePathServiceGatewayAccountPolicyPatch
+func (_options *UpdatePrivatePathServiceGatewayAccountPolicyOptions) SetPrivatePathServiceGatewayAccountPolicyPatch(privatePathServiceGatewayAccountPolicyPatch map[string]interface{}) *UpdatePrivatePathServiceGatewayAccountPolicyOptions {
+	_options.PrivatePathServiceGatewayAccountPolicyPatch = privatePathServiceGatewayAccountPolicyPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdatePrivatePathServiceGatewayAccountPolicyOptions) SetHeaders(param map[string]string) *UpdatePrivatePathServiceGatewayAccountPolicyOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdatePrivatePathServiceGatewayOptions : The UpdatePrivatePathServiceGateway options.
+type UpdatePrivatePathServiceGatewayOptions struct {
+	// The private path service gateway identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The private path service gateway patch.
+	PrivatePathServiceGatewayPatch map[string]interface{} `json:"PrivatePathServiceGateway_patch" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdatePrivatePathServiceGatewayOptions : Instantiate UpdatePrivatePathServiceGatewayOptions
+func (*VpcV1) NewUpdatePrivatePathServiceGatewayOptions(id string, privatePathServiceGatewayPatch map[string]interface{}) *UpdatePrivatePathServiceGatewayOptions {
+	return &UpdatePrivatePathServiceGatewayOptions{
+		ID:                             core.StringPtr(id),
+		PrivatePathServiceGatewayPatch: privatePathServiceGatewayPatch,
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdatePrivatePathServiceGatewayOptions) SetID(id string) *UpdatePrivatePathServiceGatewayOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetPrivatePathServiceGatewayPatch : Allow user to set PrivatePathServiceGatewayPatch
+func (_options *UpdatePrivatePathServiceGatewayOptions) SetPrivatePathServiceGatewayPatch(privatePathServiceGatewayPatch map[string]interface{}) *UpdatePrivatePathServiceGatewayOptions {
+	_options.PrivatePathServiceGatewayPatch = privatePathServiceGatewayPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdatePrivatePathServiceGatewayOptions) SetHeaders(param map[string]string) *UpdatePrivatePathServiceGatewayOptions {
+	options.Headers = param
+	return options
+}
+
 // UpdatePublicGatewayOptions : The UpdatePublicGateway options.
 type UpdatePublicGatewayOptions struct {
 	// The public gateway identifier.
@@ -63684,8 +66413,7 @@ type Volume struct {
 	// The unique identifier for this volume.
 	ID *string `json:"id" validate:"required"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
-	// `family` of `custom`.
+	// The maximum I/O operations per second (IOPS) for this volume.
 	Iops *int64 `json:"iops" validate:"required"`
 
 	// The name for this volume. The name is unique across all volumes in the region.
@@ -64180,7 +66908,7 @@ type VolumeAttachmentPrototypeVolume struct {
 	// The URL for this volume.
 	Href *string `json:"href,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -64606,7 +67334,7 @@ type VolumePatch struct {
 	// The minimum and maximum capacity limits for creating or updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`. The volume must be attached as a data volume to a running virtual server instance.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -64862,7 +67590,7 @@ func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interf
 // - VolumePrototypeVolumeByCapacity
 // - VolumePrototypeVolumeBySourceSnapshot
 type VolumePrototype struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -64961,7 +67689,7 @@ type VolumePrototypeInstanceByImageContext struct {
 	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -65030,7 +67758,7 @@ type VolumePrototypeInstanceBySourceSnapshotContext struct {
 	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -65310,6 +68038,37 @@ func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AccountIdentityByID : AccountIdentityByID struct
+// This model "extends" AccountIdentity
+type AccountIdentityByID struct {
+	// The unique identifier for this account.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewAccountIdentityByID : Instantiate AccountIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewAccountIdentityByID(id string) (_model *AccountIdentityByID, err error) {
+	_model = &AccountIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*AccountIdentityByID) isaAccountIdentity() bool {
+	return true
+}
+
+// UnmarshalAccountIdentityByID unmarshals an instance of AccountIdentityByID from the specified map of raw messages.
+func UnmarshalAccountIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(AccountIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -68371,6 +71130,53 @@ func UnmarshalEndpointGatewayReservedIPReservedIPPrototypeTargetContext(m map[st
 	return
 }
 
+// EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN : EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN struct
+// This model "extends" EndpointGatewayTargetPrototype
+type EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN struct {
+	// The type of target for this endpoint gateway.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The CRN for this private path service gateway.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// Constants associated with the EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN.ResourceType property.
+// The type of target for this endpoint gateway.
+const (
+	EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRNResourceTypePrivatePathServiceGatewayConst     = "private_path_service_gateway"
+	EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRNResourceTypeProviderCloudServiceConst          = "provider_cloud_service"
+	EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRNResourceTypeProviderInfrastructureServiceConst = "provider_infrastructure_service"
+)
+
+// NewEndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN : Instantiate EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewEndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN(resourceType string, crn string) (_model *EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN, err error) {
+	_model = &EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN{
+		ResourceType: core.StringPtr(resourceType),
+		CRN:          core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN) isaEndpointGatewayTargetPrototype() bool {
+	return true
+}
+
+// UnmarshalEndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN unmarshals an instance of EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN from the specified map of raw messages.
+func UnmarshalEndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(EndpointGatewayTargetPrototypePrivatePathServiceGatewayIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // EndpointGatewayTargetPrototypeProviderCloudServiceIdentity : EndpointGatewayTargetPrototypeProviderCloudServiceIdentity struct
 // Models which "extend" this model:
 // - EndpointGatewayTargetPrototypeProviderCloudServiceIdentityProviderCloudServiceIdentityByCRN
@@ -68386,6 +71192,7 @@ type EndpointGatewayTargetPrototypeProviderCloudServiceIdentity struct {
 // Constants associated with the EndpointGatewayTargetPrototypeProviderCloudServiceIdentity.ResourceType property.
 // The type of target for this endpoint gateway.
 const (
+	EndpointGatewayTargetPrototypeProviderCloudServiceIdentityResourceTypePrivatePathServiceGatewayConst     = "private_path_service_gateway"
 	EndpointGatewayTargetPrototypeProviderCloudServiceIdentityResourceTypeProviderCloudServiceConst          = "provider_cloud_service"
 	EndpointGatewayTargetPrototypeProviderCloudServiceIdentityResourceTypeProviderInfrastructureServiceConst = "provider_infrastructure_service"
 )
@@ -68434,6 +71241,7 @@ type EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentity struct 
 // Constants associated with the EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentity.ResourceType property.
 // The type of target for this endpoint gateway.
 const (
+	EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityResourceTypePrivatePathServiceGatewayConst     = "private_path_service_gateway"
 	EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityResourceTypeProviderCloudServiceConst          = "provider_cloud_service"
 	EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityResourceTypeProviderInfrastructureServiceConst = "provider_infrastructure_service"
 )
@@ -68459,6 +71267,71 @@ func UnmarshalEndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentit
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// EndpointGatewayTargetPrivatePathServiceGatewayReference : EndpointGatewayTargetPrivatePathServiceGatewayReference struct
+// This model "extends" EndpointGatewayTarget
+type EndpointGatewayTargetPrivatePathServiceGatewayReference struct {
+	// The CRN for this private path service gateway.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *PrivatePathServiceGatewayReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this private path service gateway.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this private path service gateway.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this private path service gateway. The name is unique across all private path service gateways in the
+	// VPC.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the EndpointGatewayTargetPrivatePathServiceGatewayReference.ResourceType property.
+// The resource type.
+const (
+	EndpointGatewayTargetPrivatePathServiceGatewayReferenceResourceTypePrivatePathServiceGatewayConst = "private_path_service_gateway"
+)
+
+func (*EndpointGatewayTargetPrivatePathServiceGatewayReference) isaEndpointGatewayTarget() bool {
+	return true
+}
+
+// UnmarshalEndpointGatewayTargetPrivatePathServiceGatewayReference unmarshals an instance of EndpointGatewayTargetPrivatePathServiceGatewayReference from the specified map of raw messages.
+func UnmarshalEndpointGatewayTargetPrivatePathServiceGatewayReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(EndpointGatewayTargetPrivatePathServiceGatewayReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalPrivatePathServiceGatewayReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -77759,6 +80632,68 @@ func UnmarshalPublicGatewayIdentityPublicGatewayIdentityByID(m map[string]json.R
 	return
 }
 
+// RegionIdentityByHref : RegionIdentityByHref struct
+// This model "extends" RegionIdentity
+type RegionIdentityByHref struct {
+	// The URL for this region.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewRegionIdentityByHref : Instantiate RegionIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewRegionIdentityByHref(href string) (_model *RegionIdentityByHref, err error) {
+	_model = &RegionIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*RegionIdentityByHref) isaRegionIdentity() bool {
+	return true
+}
+
+// UnmarshalRegionIdentityByHref unmarshals an instance of RegionIdentityByHref from the specified map of raw messages.
+func UnmarshalRegionIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(RegionIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// RegionIdentityByName : RegionIdentityByName struct
+// This model "extends" RegionIdentity
+type RegionIdentityByName struct {
+	// The globally unique name for this region.
+	Name *string `json:"name" validate:"required"`
+}
+
+// NewRegionIdentityByName : Instantiate RegionIdentityByName (Generic Model Constructor)
+func (*VpcV1) NewRegionIdentityByName(name string) (_model *RegionIdentityByName, err error) {
+	_model = &RegionIdentityByName{
+		Name: core.StringPtr(name),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*RegionIdentityByName) isaRegionIdentity() bool {
+	return true
+}
+
+// UnmarshalRegionIdentityByName unmarshals an instance of RegionIdentityByName from the specified map of raw messages.
+func UnmarshalRegionIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(RegionIdentityByName)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // ReservedIPTargetPrototypeEndpointGatewayIdentity : ReservedIPTargetPrototypeEndpointGatewayIdentity struct
 // Models which "extend" this model:
 // - ReservedIPTargetPrototypeEndpointGatewayIdentityEndpointGatewayIdentityByID
@@ -81928,7 +84863,7 @@ func UnmarshalVolumeAttachmentPrototypeVolumeVolumeIdentity(m map[string]json.Ra
 // - VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot
 // This model "extends" VolumeAttachmentPrototypeVolume
 type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -82162,7 +85097,7 @@ func UnmarshalVolumeProfileIdentityByName(m map[string]json.RawMessage, result i
 // VolumePrototypeVolumeByCapacity : VolumePrototypeVolumeByCapacity struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeByCapacity struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -82248,7 +85183,7 @@ func UnmarshalVolumePrototypeVolumeByCapacity(m map[string]json.RawMessage, resu
 // VolumePrototypeVolumeBySourceSnapshot : VolumePrototypeVolumeBySourceSnapshot struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeBySourceSnapshot struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -82485,6 +85420,7 @@ type EndpointGatewayTargetPrototypeProviderCloudServiceIdentityProviderCloudServ
 // Constants associated with the EndpointGatewayTargetPrototypeProviderCloudServiceIdentityProviderCloudServiceIdentityByCRN.ResourceType property.
 // The type of target for this endpoint gateway.
 const (
+	EndpointGatewayTargetPrototypeProviderCloudServiceIdentityProviderCloudServiceIdentityByCRNResourceTypePrivatePathServiceGatewayConst     = "private_path_service_gateway"
 	EndpointGatewayTargetPrototypeProviderCloudServiceIdentityProviderCloudServiceIdentityByCRNResourceTypeProviderCloudServiceConst          = "provider_cloud_service"
 	EndpointGatewayTargetPrototypeProviderCloudServiceIdentityProviderCloudServiceIdentityByCRNResourceTypeProviderInfrastructureServiceConst = "provider_infrastructure_service"
 )
@@ -82536,6 +85472,7 @@ type EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityProvider
 // Constants associated with the EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityProviderInfrastructureServiceIdentityByName.ResourceType property.
 // The type of target for this endpoint gateway.
 const (
+	EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityProviderInfrastructureServiceIdentityByNameResourceTypePrivatePathServiceGatewayConst     = "private_path_service_gateway"
 	EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityProviderInfrastructureServiceIdentityByNameResourceTypeProviderCloudServiceConst          = "provider_cloud_service"
 	EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentityProviderInfrastructureServiceIdentityByNameResourceTypeProviderInfrastructureServiceConst = "provider_infrastructure_service"
 )
@@ -84956,7 +87893,7 @@ func UnmarshalVolumeAttachmentPrototypeVolumeVolumeIdentityVolumeIdentityByID(m 
 // VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct
 // This model "extends" VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext
 type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -85032,7 +87969,7 @@ func UnmarshalVolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolum
 // VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot : VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot struct
 // This model "extends" VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext
 type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -89327,5 +92264,179 @@ func (pager *FlowLogCollectorsPager) GetNext() (page []FlowLogCollector, err err
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *FlowLogCollectorsPager) GetAll() (allItems []FlowLogCollector, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// PrivatePathServiceGatewayAccountPoliciesPager can be used to simplify the use of the "ListPrivatePathServiceGatewayAccountPolicies" method.
+//
+type PrivatePathServiceGatewayAccountPoliciesPager struct {
+	hasNext     bool
+	options     *ListPrivatePathServiceGatewayAccountPoliciesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewPrivatePathServiceGatewayAccountPoliciesPager returns a new PrivatePathServiceGatewayAccountPoliciesPager instance.
+func (vpc *VpcV1) NewPrivatePathServiceGatewayAccountPoliciesPager(options *ListPrivatePathServiceGatewayAccountPoliciesOptions) (pager *PrivatePathServiceGatewayAccountPoliciesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListPrivatePathServiceGatewayAccountPoliciesOptions = *options
+	pager = &PrivatePathServiceGatewayAccountPoliciesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *PrivatePathServiceGatewayAccountPoliciesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *PrivatePathServiceGatewayAccountPoliciesPager) GetNextWithContext(ctx context.Context) (page []PrivatePathServiceGatewayAccountPolicy, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListPrivatePathServiceGatewayAccountPoliciesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.AccountPolicies
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *PrivatePathServiceGatewayAccountPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []PrivatePathServiceGatewayAccountPolicy, err error) {
+	for pager.HasNext() {
+		var nextPage []PrivatePathServiceGatewayAccountPolicy
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *PrivatePathServiceGatewayAccountPoliciesPager) GetNext() (page []PrivatePathServiceGatewayAccountPolicy, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *PrivatePathServiceGatewayAccountPoliciesPager) GetAll() (allItems []PrivatePathServiceGatewayAccountPolicy, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// PrivatePathServiceGatewayEndpointGatewayBindingsPager can be used to simplify the use of the "ListPrivatePathServiceGatewayEndpointGatewayBindings" method.
+//
+type PrivatePathServiceGatewayEndpointGatewayBindingsPager struct {
+	hasNext     bool
+	options     *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewPrivatePathServiceGatewayEndpointGatewayBindingsPager returns a new PrivatePathServiceGatewayEndpointGatewayBindingsPager instance.
+func (vpc *VpcV1) NewPrivatePathServiceGatewayEndpointGatewayBindingsPager(options *ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions) (pager *PrivatePathServiceGatewayEndpointGatewayBindingsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions = *options
+	pager = &PrivatePathServiceGatewayEndpointGatewayBindingsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *PrivatePathServiceGatewayEndpointGatewayBindingsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *PrivatePathServiceGatewayEndpointGatewayBindingsPager) GetNextWithContext(ctx context.Context) (page []PrivatePathServiceGatewayEndpointGatewayBinding, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListPrivatePathServiceGatewayEndpointGatewayBindingsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.EndpointGatewayBindings
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *PrivatePathServiceGatewayEndpointGatewayBindingsPager) GetAllWithContext(ctx context.Context) (allItems []PrivatePathServiceGatewayEndpointGatewayBinding, err error) {
+	for pager.HasNext() {
+		var nextPage []PrivatePathServiceGatewayEndpointGatewayBinding
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *PrivatePathServiceGatewayEndpointGatewayBindingsPager) GetNext() (page []PrivatePathServiceGatewayEndpointGatewayBinding, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *PrivatePathServiceGatewayEndpointGatewayBindingsPager) GetAll() (allItems []PrivatePathServiceGatewayEndpointGatewayBinding, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
