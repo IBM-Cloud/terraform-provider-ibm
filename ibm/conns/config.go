@@ -405,6 +405,7 @@ type clientSession struct {
 
 	vpcErr     error
 	vpcAPI     *vpc.VpcV1
+	vpcbetaErr error
 	vpcBetaAPI *vpcbeta.VpcbetaV1
 
 	directlinkAPI *dl.DirectLinkV1
@@ -823,7 +824,7 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 }
 
 func (sess clientSession) VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error) {
-	return sess.vpcBetaAPI, sess.vpcErr
+	return sess.vpcBetaAPI, sess.vpcbetaErr
 }
 
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
@@ -1224,6 +1225,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
+		session.vpcbetaErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
@@ -1750,7 +1752,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	vpcbetaclient, err := vpcbeta.NewVpcbetaV1(vpcbetaoptions)
 	if err != nil {
-		session.vpcErr = fmt.Errorf("[ERROR] Error occured while configuring vpc service: %q", err)
+		session.vpcbetaErr = fmt.Errorf("[ERROR] Error occured while configuring vpc beta service: %q", err)
 	}
 	if vpcbetaclient != nil && vpcbetaclient.Service != nil {
 		vpcbetaclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
