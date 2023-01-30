@@ -66,7 +66,7 @@ go get -u github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcclassicv1
 To install VPC Go SDK service, use the following.
 
 ```
-go get -u github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1
+go get -u github.com/IBM/vpc-beta-go-sdk/vpcbetav1
 ```
 
 #### Go modules
@@ -77,7 +77,7 @@ Go application, like this:
 ```go
 import (
 	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcclassicv1"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 )
 ```
 
@@ -94,7 +94,7 @@ to your `Gopkg.toml` file.  Here is an example:
   name = "github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcclassicv1"
   version = "0.0.1"
 [[constraint]]
-  name = "github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
+  name = "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
   version = "0.0.1"
 ```
 
@@ -134,7 +134,7 @@ import (
 	"log"
 
 	"github.com/IBM/go-sdk-core/v3/core"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 )
 
 var APIKey = "YOUR_KEY_HERE"                            // required, Add a valid API key here

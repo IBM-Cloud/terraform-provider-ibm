@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 )
 
 func ResourceIbmIsShareReplicaOperations() *schema.Resource {
@@ -101,7 +101,7 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 	if !splitShare {
 		fallback_policy := d.Get("fallback_policy").(string)
 		timeout := d.Get("timeout").(int)
-		failOverShareOptions := &vpcv1.FailoverShareOptions{
+		failOverShareOptions := &vpcbetav1.FailoverShareOptions{
 			ShareID: &share_id,
 		}
 		failOverShareOptions.FallbackPolicy = &fallback_policy
@@ -114,7 +114,7 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 			return diag.FromErr(fmt.Errorf("[ERROR] FailoverShareWithContext failed %s\n%s", err, response))
 		}
 	} else {
-		deleteShareSourceOptions := &vpcv1.DeleteShareSourceOptions{
+		deleteShareSourceOptions := &vpcbetav1.DeleteShareSourceOptions{
 			ShareID: &share_id,
 		}
 		response, err := vpcClient.DeleteShareSourceWithContext(context, deleteShareSourceOptions)
@@ -145,7 +145,7 @@ func resourceIbmIsShareReplicaOperationsDelete(context context.Context, d *schem
 	return nil
 }
 
-func isWaitForShareSplit(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+func isWaitForShareSplit(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for share (%s) to be available.", shareid)
 
 	stateConf := &resource.StateChangeConf{
@@ -160,9 +160,9 @@ func isWaitForShareSplit(context context.Context, vpcClient *vpcv1.VpcV1, sharei
 	return stateConf.WaitForState()
 }
 
-func isShareSplitRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isShareSplitRefreshFunc(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		shareOptions := &vpcv1.GetShareOptions{}
+		shareOptions := &vpcbetav1.GetShareOptions{}
 
 		shareOptions.SetID(shareid)
 

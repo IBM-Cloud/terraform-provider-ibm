@@ -10,10 +10,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func DataSourceIbmIsSourceShare() *schema.Resource {
@@ -338,7 +337,7 @@ func dataSourceIbmIsSourceShareRead(context context.Context, d *schema.ResourceD
 
 	replicaShareId := d.Get("share_replica").(string)
 
-	getShareSourceOptions := &vpcv1.GetShareSourceOptions{
+	getShareSourceOptions := &vpcbetav1.GetShareSourceOptions{
 		ShareID: &replicaShareId,
 	}
 

@@ -80,12 +80,12 @@ import (
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
+	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
-	vpcbeta "github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -238,7 +238,7 @@ type ClientSession interface {
 	KeyProtectAPI() (*kp.Client, error)
 	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
-	VpcV1BetaAPI() (*vpcbeta.VpcV1, error)
+	VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
@@ -405,7 +405,7 @@ type clientSession struct {
 
 	vpcErr     error
 	vpcAPI     *vpc.VpcV1
-	vpcBetaAPI *vpcbeta.VpcV1
+	vpcBetaAPI *vpcbeta.VpcbetaV1
 
 	directlinkAPI *dl.DirectLinkV1
 	directlinkErr error
@@ -822,7 +822,7 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
 }
 
-func (sess clientSession) VpcV1BetaAPI() (*vpcbeta.VpcV1, error) {
+func (sess clientSession) VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error) {
 	return sess.vpcBetaAPI, sess.vpcErr
 }
 
@@ -1744,11 +1744,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.vpcAPI = vpcclient
 
-	vpcbetaoptions := &vpcbeta.VpcV1Options{
+	vpcbetaoptions := &vpcbeta.VpcbetaV1Options{
 		URL:           EnvFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
 		Authenticator: authenticator,
 	}
-	vpcbetaclient, err := vpcbeta.NewVpcV1(vpcbetaoptions)
+	vpcbetaclient, err := vpcbeta.NewVpcbetaV1(vpcbetaoptions)
 	if err != nil {
 		session.vpcErr = fmt.Errorf("[ERROR] Error occured while configuring vpc service: %q", err)
 	}

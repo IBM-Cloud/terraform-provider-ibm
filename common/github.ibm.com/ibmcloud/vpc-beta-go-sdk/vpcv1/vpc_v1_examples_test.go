@@ -20,14 +20,14 @@ package vpcv1_test
 
 import (
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 	"os"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/IBM/go-sdk-core/v5/core"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var (

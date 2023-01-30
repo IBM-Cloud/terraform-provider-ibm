@@ -8,14 +8,13 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func TestAccIbmIsShareReplicaOperationsFailover(t *testing.T) {
-	var conf vpcv1.Share
+	var conf vpcbetav1.Share
 	shareName := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	replicaName := fmt.Sprintf("tf-fsrep-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
@@ -39,7 +38,7 @@ func TestAccIbmIsShareReplicaOperationsFailover(t *testing.T) {
 }
 
 func TestAccIbmIsShareReplicaOperationsSplit(t *testing.T) {
-	var conf vpcv1.Share
+	var conf vpcbetav1.Share
 
 	shareName := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	replicaName := fmt.Sprintf("tf-fsrep-name-%d", acctest.RandIntRange(10, 100))
