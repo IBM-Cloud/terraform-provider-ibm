@@ -12,7 +12,7 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.3.0
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
-	github.com/IBM/continuous-delivery-go-sdk v0.1.9
+	github.com/IBM/continuous-delivery-go-sdk v1.0.4
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.10.2
@@ -28,7 +28,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
-	github.com/IBM/vpc-go-sdk v0.28.0
+	github.com/IBM/vpc-go-sdk v0.30.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105

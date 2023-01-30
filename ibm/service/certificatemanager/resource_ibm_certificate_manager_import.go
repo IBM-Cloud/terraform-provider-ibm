@@ -4,24 +4,31 @@
 package certificatemanager
 
 import (
-	"fmt"
-	"strings"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 func ResourceIBMCertificateManagerImport() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMCertificateManagerImportCertificate,
-		Read:     resourceIBMCertificateManagerGet,
-		Update:   resourceIBMCertificateManagerUpdate,
-		Importer: &schema.ResourceImporter{},
-		Delete:   resourceIBMCertificateManagerDelete,
-		Exists:   resourceIBMCertificateManagerExists,
+		Create: func(d *schema.ResourceData, meta any) error {
+			return errors.New("Certificate Manager Service is not supported anymore.")
+		},
+		Read: func(d *schema.ResourceData, meta any) error {
+			return errors.New("Certificate Manager Service is not supported anymore.")
+		},
+		Update: func(d *schema.ResourceData, meta any) error {
+			return errors.New("Certificate Manager Service is not supported anymore.")
+		},
+		// Importer: func(d *schema.ResourceData, meta any) error {
+		// 	return errors.New("Certificate Manager Service is not supported anymore.")
+		// },
+		Delete: func(d *schema.ResourceData, meta any) error {
+			return errors.New("Certificate Manager Service is not supported anymore.")
+		},
+		Exists: func(d *schema.ResourceData, meta any) (bool, error) {
+			return false, errors.New("Certificate Manager Service is not supported anymore.")
+		},
 		Schema: map[string]*schema.Schema{
 			"certificate_manager_instance_id": {
 				Type:        schema.TypeString,
@@ -82,150 +89,150 @@ func ResourceIBMCertificateManagerImport() *schema.Resource {
 	}
 }
 
-func resourceIBMCertificateManagerImportCertificate(d *schema.ResourceData, meta interface{}) error {
+// func resourceIBMCertificateManagerImportCertificate(d *schema.ResourceData, meta interface{}) error {
 
-	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
-	if err != nil {
-		return err
-	}
+// 	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	instanceID := d.Get("certificate_manager_instance_id").(string)
-	importData := models.Data{}
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
+// 	instanceID := d.Get("certificate_manager_instance_id").(string)
+// 	importData := models.Data{}
+// 	name := d.Get("name").(string)
+// 	description := d.Get("description").(string)
 
-	if certificateimpdata, ok := d.GetOk("data"); ok && certificateimpdata != nil {
-		datainfo := certificateimpdata.(map[string]interface{})
-		if content, ok := datainfo["content"]; ok && content != nil {
-			importData.Content = content.(string)
-		}
-		if privkey, ok := datainfo["priv_key"]; ok && privkey != nil {
-			importData.Privatekey = privkey.(string)
-		}
-		if intermediate, ok := datainfo["intermediate"]; ok && intermediate != nil {
-			importData.IntermediateCertificate = intermediate.(string)
-		}
-	}
+// 	if certificateimpdata, ok := d.GetOk("data"); ok && certificateimpdata != nil {
+// 		datainfo := certificateimpdata.(map[string]interface{})
+// 		if content, ok := datainfo["content"]; ok && content != nil {
+// 			importData.Content = content.(string)
+// 		}
+// 		if privkey, ok := datainfo["priv_key"]; ok && privkey != nil {
+// 			importData.Privatekey = privkey.(string)
+// 		}
+// 		if intermediate, ok := datainfo["intermediate"]; ok && intermediate != nil {
+// 			importData.IntermediateCertificate = intermediate.(string)
+// 		}
+// 	}
 
-	client := cmService.Certificate()
-	payload := models.CertificateImportData{Name: name, Description: description, Data: importData}
+// 	client := cmService.Certificate()
+// 	payload := models.CertificateImportData{Name: name, Description: description, Data: importData}
 
-	result, importCertError := client.ImportCertificate(instanceID, payload)
-	if importCertError != nil {
-		return importCertError
-	}
-	d.SetId(result.ID)
-	return resourceIBMCertificateManagerUpdate(d, meta)
-}
-func resourceIBMCertificateManagerGet(d *schema.ResourceData, meta interface{}) error {
-	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
-	if err != nil {
-		return err
-	}
-	certID := d.Id()
-	certificatedata, err := cmService.Certificate().GetCertData(certID)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting certificate during import: %s", err)
-	}
-	cminstanceid := strings.Split(certID, ":certificate:")
-	d.Set("certificate_manager_instance_id", cminstanceid[0]+"::")
-	d.Set("name", certificatedata.Name)
-	d.Set("description", certificatedata.Description)
-	if certificatedata.Data != nil {
-		data := map[string]interface{}{
-			"content": certificatedata.Data.Content,
-		}
-		if certificatedata.Data.Privatekey != "" {
-			data["priv_key"] = certificatedata.Data.Privatekey
-		}
-		if certificatedata.Data.IntermediateCertificate != "" {
-			data["intermediate"] = certificatedata.Data.IntermediateCertificate
-		}
-		d.Set("data", data)
-	}
-	d.Set("begins_on", certificatedata.BeginsOn)
-	d.Set("expires_on", certificatedata.ExpiresOn)
-	d.Set("status", certificatedata.Status)
-	d.Set("issuer", certificatedata.Issuer)
-	d.Set("imported", certificatedata.Imported)
-	d.Set("has_previous", certificatedata.HasPrevious)
-	d.Set("key_algorithm", certificatedata.KeyAlgorithm)
-	d.Set("algorithm", certificatedata.Algorithm)
+// 	result, importCertError := client.ImportCertificate(instanceID, payload)
+// 	if importCertError != nil {
+// 		return importCertError
+// 	}
+// 	d.SetId(result.ID)
+// 	return resourceIBMCertificateManagerUpdate(d, meta)
+// }
+// func resourceIBMCertificateManagerGet(d *schema.ResourceData, meta interface{}) error {
+// 	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	certID := d.Id()
+// 	certificatedata, err := cmService.Certificate().GetCertData(certID)
+// 	if err != nil {
+// 		return fmt.Errorf("[ERROR] Error getting certificate during import: %s", err)
+// 	}
+// 	cminstanceid := strings.Split(certID, ":certificate:")
+// 	d.Set("certificate_manager_instance_id", cminstanceid[0]+"::")
+// 	d.Set("name", certificatedata.Name)
+// 	d.Set("description", certificatedata.Description)
+// 	if certificatedata.Data != nil {
+// 		data := map[string]interface{}{
+// 			"content": certificatedata.Data.Content,
+// 		}
+// 		if certificatedata.Data.Privatekey != "" {
+// 			data["priv_key"] = certificatedata.Data.Privatekey
+// 		}
+// 		if certificatedata.Data.IntermediateCertificate != "" {
+// 			data["intermediate"] = certificatedata.Data.IntermediateCertificate
+// 		}
+// 		d.Set("data", data)
+// 	}
+// 	d.Set("begins_on", certificatedata.BeginsOn)
+// 	d.Set("expires_on", certificatedata.ExpiresOn)
+// 	d.Set("status", certificatedata.Status)
+// 	d.Set("issuer", certificatedata.Issuer)
+// 	d.Set("imported", certificatedata.Imported)
+// 	d.Set("has_previous", certificatedata.HasPrevious)
+// 	d.Set("key_algorithm", certificatedata.KeyAlgorithm)
+// 	d.Set("algorithm", certificatedata.Algorithm)
 
-	return nil
-}
+// 	return nil
+// }
 
-func resourceIBMCertificateManagerUpdate(d *schema.ResourceData, meta interface{}) error {
-	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
-	if err != nil {
-		return err
-	}
-	certID := d.Id()
-	client := cmService.Certificate()
-	if d.HasChange("name") || d.HasChange("description") {
-		name := d.Get("name").(string)
-		description := d.Get("description").(string)
-		payload := models.CertificateMetadataUpdate{Name: name, Description: description}
+// func resourceIBMCertificateManagerUpdate(d *schema.ResourceData, meta interface{}) error {
+// 	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	certID := d.Id()
+// 	client := cmService.Certificate()
+// 	if d.HasChange("name") || d.HasChange("description") {
+// 		name := d.Get("name").(string)
+// 		description := d.Get("description").(string)
+// 		payload := models.CertificateMetadataUpdate{Name: name, Description: description}
 
-		importCertError := client.UpdateCertificateMetaData(certID, payload)
-		if importCertError != nil {
-			return importCertError
-		}
-	}
-	if d.HasChange("data") {
-		importData := models.Data{}
-		if certificateimpdata, ok := d.GetOk("data"); ok && certificateimpdata != nil {
-			datainfo := certificateimpdata.(map[string]interface{})
-			if content, ok := datainfo["content"]; ok && content != nil {
-				importData.Content = content.(string)
-			}
-			if privkey, ok := datainfo["priv_key"]; ok && privkey != nil {
-				importData.Privatekey = privkey.(string)
-			}
-			if intermediate, ok := datainfo["intermediate"]; ok && intermediate != nil {
-				importData.IntermediateCertificate = intermediate.(string)
-			}
-		}
-		payload := models.CertificateReimportData{Content: importData.Content, Privatekey: importData.Privatekey, IntermediateCertificate: importData.IntermediateCertificate}
-		_, reImportCertError := client.ReimportCertificate(certID, payload)
-		if reImportCertError != nil {
-			return reImportCertError
-		}
-	}
-	return resourceIBMCertificateManagerGet(d, meta)
-}
-func resourceIBMCertificateManagerDelete(d *schema.ResourceData, meta interface{}) error {
-	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
-	if err != nil {
-		return err
-	}
-	certID := d.Id()
-	err = cmService.Certificate().DeleteCertificate(certID)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting Certificate: %s", err)
-	}
-	d.SetId("")
+// 		importCertError := client.UpdateCertificateMetaData(certID, payload)
+// 		if importCertError != nil {
+// 			return importCertError
+// 		}
+// 	}
+// 	if d.HasChange("data") {
+// 		importData := models.Data{}
+// 		if certificateimpdata, ok := d.GetOk("data"); ok && certificateimpdata != nil {
+// 			datainfo := certificateimpdata.(map[string]interface{})
+// 			if content, ok := datainfo["content"]; ok && content != nil {
+// 				importData.Content = content.(string)
+// 			}
+// 			if privkey, ok := datainfo["priv_key"]; ok && privkey != nil {
+// 				importData.Privatekey = privkey.(string)
+// 			}
+// 			if intermediate, ok := datainfo["intermediate"]; ok && intermediate != nil {
+// 				importData.IntermediateCertificate = intermediate.(string)
+// 			}
+// 		}
+// 		payload := models.CertificateReimportData{Content: importData.Content, Privatekey: importData.Privatekey, IntermediateCertificate: importData.IntermediateCertificate}
+// 		_, reImportCertError := client.ReimportCertificate(certID, payload)
+// 		if reImportCertError != nil {
+// 			return reImportCertError
+// 		}
+// 	}
+// 	return resourceIBMCertificateManagerGet(d, meta)
+// }
+// func resourceIBMCertificateManagerDelete(d *schema.ResourceData, meta interface{}) error {
+// 	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	certID := d.Id()
+// 	err = cmService.Certificate().DeleteCertificate(certID)
+// 	if err != nil {
+// 		return fmt.Errorf("[ERROR] Error deleting Certificate: %s", err)
+// 	}
+// 	d.SetId("")
 
-	return nil
-}
+// 	return nil
+// }
 
-func resourceIBMCertificateManagerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
-	if err != nil {
-		return false, err
-	}
-	client := cmService.Certificate()
-	certID := d.Id()
+// func resourceIBMCertificateManagerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+// 	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	client := cmService.Certificate()
+// 	certID := d.Id()
 
-	_, err = client.GetCertData(certID)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 {
-				return false, nil
-			}
-		}
-		return false, fmt.Errorf("[ERROR] Error gettting certificate details in exists %s", err)
-	}
+// 	_, err = client.GetCertData(certID)
+// 	if err != nil {
+// 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+// 			if apiErr.StatusCode() == 404 {
+// 				return false, nil
+// 			}
+// 		}
+// 		return false, fmt.Errorf("[ERROR] Error gettting certificate details in exists %s", err)
+// 	}
 
-	return true, nil
-}
+// 	return true, nil
+// }

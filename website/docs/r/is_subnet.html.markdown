@@ -96,7 +96,7 @@ Review the argument references that you can specify for your resource.
 - `ipv4_cidr_block` - (Optional, Forces new resource, String) The IPv4 range of the subnet.
 
   ~> **NOTE:**
-    - if using a IPv4 range from a `ibm_is_vpc_address_prefix` resource, add a `depends_on` to handle hidden `ibm_is_vpc_address_prefix` dependency if not using interpolation.
+    If using a IPv4 range from a `ibm_is_vpc_address_prefix` resource, add a `depends_on` to handle hidden `ibm_is_vpc_address_prefix` dependency if not using interpolation.
 
 - `ip_version` - (Optional, Forces new resource, String) The IP Version. The default is `ipv4`.
 - `name` - (Required, String) The name of the subnet.
@@ -106,6 +106,10 @@ Review the argument references that you can specify for your resource.
 - `routing_table` - (Optional, String) The routing table ID associated with the subnet.
 - `tags`  - (Optional, List of Strings) The tags associated with the subnet.
 - `total_ipv4_address_count` - (Optional, Forces new resource, String) The total number of IPv4 addresses. Either `ipv4_cidr_block` or `total_pv4_address_count` input parameters must be provided in the resource.
+  
+  ~> **Note** 
+  The VPC must have a default address prefix in the specified zone, and that prefix must have a free CIDR range with at least this number of addresses.
+
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String) The subnet zone name.
 
