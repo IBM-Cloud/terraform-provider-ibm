@@ -24,7 +24,7 @@ resource "ibm_en_subscription_email" "email_subscription" {
       reply_to_mail = "compliancealert@ibm.com"
       reply_to_name = "Compliance User"
       from_name     = "en@ibm.com"
-      to            = ["usernew1@gmail.com","testuser@gamil.com"]
+      invited       = ["usernew1@gmail.com","testuser@gamil.com"]
   }
 }
 ```
@@ -44,7 +44,7 @@ resource "ibm_en_subscription_email" "email_subscription" {
       reply_to_name            = "Compliance User"
       from_name                = "en@ibm.com"
       add                      = ["productionuser@ibm.com"]
-      unsubscribed             = ["testuser@gamil.com"]
+      remove                   = ["testuser@gamil.com"]
   }
 }
 ```
@@ -72,11 +72,11 @@ Review the argument reference that you can specify for your resource.
 
   - `from_name` - (Optional, String) The email address user from which email is addressed.
 
-  - `to`- (List) The Email address to send the email to.
+  - `invited`- (List) The Email address to send the email to.
 
   - `add`- (List) The Email address to add in case of updating the list of email addressses
 
-  - `unsubscribed`- (List) The Email address list to be provided in case of removing the email addresses from subscription
+  - `reomve`- (List) The Email address list to be provided in case of removing the email addresses from subscription
 
 ## Attribute reference
 

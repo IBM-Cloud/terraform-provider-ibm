@@ -15,9 +15,9 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnDestination() *schema.Resource {
+func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnDestinationRead,
+		ReadContext: dataSourceIBMEnPagerDutyeDestinationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -43,7 +43,7 @@ func DataSourceIBMEnDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type Email/SMS/Webhook.",
+				Description: "Destination type push_chrome.",
 			},
 			"config": {
 				Type:        schema.TypeList,
@@ -56,31 +56,16 @@ func DataSourceIBMEnDestination() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"url": {
+									"api_key": {
 										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "URL of webhook.",
+										Sensitive:   true,
+										Optional:    true,
+										Description: "The api key for chrome app authorization",
 									},
-									"verb": {
+									"routing_key": {
 										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "HTTP method of webhook.",
-									},
-									"custom_headers": {
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "Custom headers (Key-Value pair) for webhook call.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"sensitive_headers": {
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "List of sensitive headers from custom headers.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+										Optional:    true,
+										Description: "The website url",
 									},
 								},
 							},
@@ -107,11 +92,10 @@ func DataSourceIBMEnDestination() *schema.Resource {
 				},
 			},
 		},
-		DeprecationMessage: "This data source will be deprecated. A new data source ibm_en_destination_webhook will replace the existing ibm_en_destination data source",
 	}
 }
 
-func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,7 +128,7 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enPagerDutyDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -168,20 +152,20 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func enDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enPagerDutyDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enDestinationConfigToMap(result)
+	finalMap := enPagerDutyDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enPagerDutyDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enPagerDutyDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -189,22 +173,16 @@ func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[st
 	return configMap
 }
 
-func enDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
+func enPagerDutyDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
-	params := paramsItem.(*en.DestinationConfigParams)
+	params := paramsItem.(*en.DestinationConfigOneOf)
 
-	if params.URL != nil {
-		paramsMap["url"] = params.URL
+	if params.APIKey != nil {
+		paramsMap["api_key"] = params.APIKey
 	}
-	if params.Verb != nil {
-		paramsMap["verb"] = params.Verb
-	}
-	if params.CustomHeaders != nil {
-		paramsMap["custom_headers"] = params.CustomHeaders
-	}
-	if params.SensitiveHeaders != nil {
-		paramsMap["sensitive_headers"] = params.SensitiveHeaders
+	if params.RoutingKey != nil {
+		paramsMap["routing_key"] = params.RoutingKey
 	}
 
 	return paramsMap
