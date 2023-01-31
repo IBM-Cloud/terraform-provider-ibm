@@ -7,7 +7,7 @@ description: |-
   Manages IBM IS VPC route.
 ---
 
-!> **Removal Notification** Resource `ibm_is_vpc_route` support will be stopped by terraform provider from `v1.51.0`; [releases](https://github.com/IBM-Cloud/terraform-provider-ibm/releases/), recommendation is to use `ibm_is_vpc_routing_table_route` instead. </br>
+!> **Removal Notification** Resource `ibm_is_vpc_route` support will be stopped by terraform provider from `v1.52.0`; [releases](https://github.com/IBM-Cloud/terraform-provider-ibm/releases/), recommendation is to use `ibm_is_vpc_routing_table_route` instead. </br>
 **Documentation** on `ibm_is_vpc_routing_table_route` can be found [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_vpc_routing_table_route)
 
 

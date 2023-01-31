@@ -34,7 +34,7 @@ const (
 
 func ResourceIBMISVpcRoute() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "Resource Removal: Resource ibm_is_vpc_route is deprecated and being removed. Use ibm_is_vpc_routing_table_route for creating routes for VPC routing table.\n This resource will not be available from next release (v1.51.0).",
+		DeprecationMessage: "Resource Removal: Resource ibm_is_vpc_route is deprecated and being removed. Use ibm_is_vpc_routing_table_route for creating routes for VPC routing table.\n This resource will not be available from next release (v1.52.0).",
 		Create:             resourceIBMISVpcRouteCreate,
 		Read:               resourceIBMISVpcRouteRead,
 		Update:             resourceIBMISVpcRouteUpdate,
