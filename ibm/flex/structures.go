@@ -34,6 +34,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
@@ -892,6 +893,54 @@ func ReplicationRuleGet(in *s3.ReplicationConfiguration) []map[string]interface{
 	return rules
 }
 
+func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]interface{} {
+	rules := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		objectLockConfig := make(map[string]interface{})
+
+		if in.Rule != nil {
+			objectLockConfig["objectlockrule"] = ObjectLockRuleGet(in.Rule)
+		}
+
+		rules = append(rules, objectLockConfig)
+	}
+	return rules
+}
+func ObjectLockRuleGet(in *s3.ObjectLockRule) []map[string]interface{} {
+	rules := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		objectLockConfig := make(map[string]interface{})
+
+		if in.DefaultRetention != nil {
+			objectLockConfig["defaultretention"] = ObjectLockDefaultRetentionGet(in.DefaultRetention)
+		}
+
+		rules = append(rules, objectLockConfig)
+	}
+	return rules
+}
+
+func ObjectLockDefaultRetentionGet(in *s3.DefaultRetention) []map[string]interface{} {
+	rules := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		defaultRetentionMap := make(map[string]interface{})
+
+		if in.Days != nil {
+			defaultRetentionMap["days"] = int(aws.Int64Value(in.Days))
+		}
+
+		if in.Mode != nil {
+			defaultRetentionMap["mode"] = aws.StringValue(in.Mode)
+		}
+
+		if in.Years != nil {
+			defaultRetentionMap["years"] = int(aws.Int64Value(in.Years))
+		}
+
+		rules = append(rules, defaultRetentionMap)
+	}
+	return rules
+}
 func FlattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {

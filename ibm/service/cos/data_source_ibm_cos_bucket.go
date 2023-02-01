@@ -365,6 +365,13 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "sets a maximum amount of storage (in bytes) available for a bucket",
 			},
+			"object_lock": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				RequiredWith: []string{"object_versioning"},
+				Default:      true,
+				Description:  "Description",
+			},
 		},
 	}
 }
