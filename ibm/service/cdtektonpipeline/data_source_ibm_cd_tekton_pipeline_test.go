@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -36,6 +36,8 @@ func TestAccIBMCdTektonPipelineDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "worker.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "runs_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "build_number"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enabled"),
 				),
 			},
@@ -67,6 +69,7 @@ func TestAccIBMCdTektonPipelineDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "triggers.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "worker.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "runs_url"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "build_number"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning"),

@@ -73,25 +73,6 @@ func retry(f func() error) (err error) {
 		log.Println("retrying after error:", err)
 	}
 }
-func retryTask(f func() (icdv4.Task, error)) (task icdv4.Task, err error) {
-	attempts := 3
-
-	for i := 0; ; i++ {
-		sleep := time.Duration(5*i) * time.Second
-		time.Sleep(sleep)
-
-		task, err = f()
-		if err == nil {
-			return task, nil
-		}
-
-		if i == attempts {
-			return task, nil
-		}
-
-		log.Println("retrying after error:", err)
-	}
-}
 
 func ResourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
@@ -1597,57 +1578,44 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if cpuRecord, ok := d.GetOk("auto_scaling.0.cpu"); ok {
-		params := icdv4.AutoscalingSetGroup{}
-		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting cpuBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.CPU = &cpuBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database cpu auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err))
-		}
-	}
+	if _, ok := d.GetOk("auto_scaling.0"); ok {
+		autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
 
-	if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
-		params := icdv4.AutoscalingSetGroup{}
-		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.Disk = &diskBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database disk auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) disk auto_scaling group update task to complete: %s", icdId, err))
+		if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
+			diskGroup, err := expandAutoscalingDiskGroup(d, diskRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskGroup from expandAutoscalingDiskGroup %s", err))
+			}
+			autoscalingSetGroupAutoscaling.Disk = diskGroup
 		}
 
-	}
-	if memoryRecord, ok := d.GetOk("auto_scaling.0.memory"); ok {
-		params := icdv4.AutoscalingSetGroup{}
-		memoryBody, err := expandICDAutoScalingGroup(d, memoryRecord, "memory")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandICDAutoScalingGroup %s", err))
+		if memoryRecord, ok := d.GetOk("auto_scaling.0.memory"); ok {
+			memoryGroup, err := expandAutoscalingMemoryGroup(d, memoryRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandAutoscalingMemoryGroup %s", err))
+			}
+
+			autoscalingSetGroupAutoscaling.Memory = memoryGroup
 		}
-		params.Autoscaling.Memory = &memoryBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database memory auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) memory auto_scaling group update task to complete: %s", icdId, err))
+
+		if autoscalingSetGroupAutoscaling.Disk != nil || autoscalingSetGroupAutoscaling.Memory != nil {
+			setAutoscalingConditionsOptions := &clouddatabasesv5.SetAutoscalingConditionsOptions{
+				ID:          &instanceID,
+				GroupID:     core.StringPtr("member"),
+				Autoscaling: autoscalingSetGroupAutoscaling,
+			}
+
+			setAutoscalingConditionsResponse, _, err := cloudDatabasesClient.SetAutoscalingConditions(setAutoscalingConditionsOptions)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database auto_scaling: %s", err))
+			}
+
+			taskId := *setAutoscalingConditionsResponse.Task.ID
+
+			_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for database (%s) memory auto_scaling group update task to complete: %s", instanceID, err))
+			}
 		}
 	}
 
@@ -1863,11 +1831,16 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	d.Set("members_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount)
 	d.Set("node_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount/groupList.Groups[0].Members.AllocationCount)
 
-	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
+	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
+		ID:      instance.ID,
+		GroupID: core.StringPtr("member"),
+	}
+
+	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err))
 	}
-	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
+	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
 	_, hasWhitelist := d.GetOk("whitelist")
 
@@ -2138,60 +2111,47 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChange("auto_scaling.0.cpu") {
-		cpuRecord := d.Get("auto_scaling.0.cpu")
-		params := icdv4.AutoscalingSetGroup{}
-		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting cpuBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.CPU = &cpuBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database cpu auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err))
+	if d.HasChange("auto_scaling.0") {
+		autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
+
+		if d.HasChange("auto_scaling.0.disk") {
+			diskRecord := d.Get("auto_scaling.0.disk")
+
+			diskBody, err := expandAutoscalingDiskGroup(d, diskRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskBody from expandAutoscalingDiskGroup %s", err))
+			}
+
+			autoscalingSetGroupAutoscaling.Disk = diskBody
 		}
 
-	}
-	if d.HasChange("auto_scaling.0.disk") {
-		diskRecord := d.Get("auto_scaling.0.disk")
-		params := icdv4.AutoscalingSetGroup{}
-		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.Disk = &diskBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database disk auto_scaling  group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) disk auto_scaling group update task to complete: %s", icdId, err))
+		if d.HasChange("auto_scaling.0.memory") {
+			memoryRecord := d.Get("auto_scaling.0.memory")
+			memoryBody, err := expandAutoscalingMemoryGroup(d, memoryRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandAutoscalingMemoryGroup %s", err))
+			}
+
+			autoscalingSetGroupAutoscaling.Memory = memoryBody
 		}
 
-	}
-	if d.HasChange("auto_scaling.0.memory") {
-		memoryRecord := d.Get("auto_scaling.0.memory")
-		params := icdv4.AutoscalingSetGroup{}
-		memoryBody, err := expandICDAutoScalingGroup(d, memoryRecord, "memory")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandICDAutoScalingGroup %s", err))
+		setAutoscalingConditionsOptions := &clouddatabasesv5.SetAutoscalingConditionsOptions{
+			ID:          &instanceID,
+			GroupID:     core.StringPtr("member"),
+			Autoscaling: autoscalingSetGroupAutoscaling,
 		}
-		params.Autoscaling.Memory = &memoryBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
+
+		setAutoscalingConditionsResponse, _, err := cloudDatabasesClient.SetAutoscalingConditions(setAutoscalingConditionsOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database memory auto_scaling  group: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database memory auto_scaling group: %s", err))
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+		taskId := *setAutoscalingConditionsResponse.Task.ID
+
+		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) memory auto_scaling group update task to complete: %s", icdId, err))
+				"[ERROR] Error waiting for database (%s) auto scaling group update task to complete: %s", instanceID, err))
 		}
 	}
 
@@ -2680,32 +2640,41 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta interface{}, t time.Duration) (bool, error) {
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return false, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
+
 	delayDuration := 5 * time.Second
 
 	timeout := time.After(t)
 	delay := time.Tick(delayDuration)
-	innerTask := icdv4.Task{}
+	getTaskOptions := &clouddatabasesv5.GetTaskOptions{
+		ID: &taskId,
+	}
 
 	for {
 		select {
 		case <-timeout:
 			return false, fmt.Errorf("[Error] Time out waiting for database task to complete")
 		case <-delay:
-			innerTask, err = icdClient.Tasks().GetTask(flex.EscapeUrlParm(taskId))
+			getTaskResponse, _, err := cloudDatabasesClient.GetTask(getTaskOptions)
+
 			if err != nil {
-				return false, fmt.Errorf("[ERROR] The ICD Get task on database update errored: %v", err)
+				return false, fmt.Errorf("[ERROR] Database Task errored: %v", err)
 			}
-			if innerTask.Status == "failed" {
-				return false, fmt.Errorf("[Error] Database task failed")
-			}
-			// Completed status could be returned as "" due to interaction between bluemix-go and icd task response
-			// Otherwise Running an queued
-			if innerTask.Status == "completed" || innerTask.Status == "" {
+
+			if getTaskResponse.Task == nil {
 				return true, nil
+			}
+
+			switch *getTaskResponse.Task.Status {
+			case "failed":
+				return false, fmt.Errorf("[Error] Database Task failed")
+			case "complete", "":
+				return true, nil
+			case "queued", "running":
+				break
 			}
 		}
 	}
@@ -2759,78 +2728,108 @@ func filterDatabaseDeployments(deployments []models.ServiceDeployment, location 
 	return supportedDeployments, supportedLocations
 }
 
-func expandICDAutoScalingGroup(d *schema.ResourceData, asRecord interface{}, asType string) (asgBody icdv4.ASGBody, err error) {
+func expandAutoscalingDiskGroup(d *schema.ResourceData, asRecord interface{}) (autoscalingDiskGroup *clouddatabasesv5.AutoscalingDiskGroupDisk, err error) {
+	autoscalingRecord := asRecord.([]interface{})[0].(map[string]interface{})
 
-	asgRecord := asRecord.([]interface{})[0].(map[string]interface{})
-	asgCapacity := icdv4.CapacityBody{}
-	if _, ok := asgRecord["capacity_enabled"]; ok {
-		asgCapacity.Enabled = asgRecord["capacity_enabled"].(bool)
-		asgBody.Scalers.Capacity = &asgCapacity
+	autoscalingDiskGroup = &clouddatabasesv5.AutoscalingDiskGroupDisk{
+		Scalers: &clouddatabasesv5.AutoscalingDiskGroupDiskScalers{
+			Capacity:      &clouddatabasesv5.AutoscalingDiskGroupDiskScalersCapacity{},
+			IoUtilization: &clouddatabasesv5.AutoscalingDiskGroupDiskScalersIoUtilization{},
+		},
+		Rate: &clouddatabasesv5.AutoscalingDiskGroupDiskRate{},
 	}
-	if _, ok := asgRecord["free_space_less_than_percent"]; ok {
-		asgCapacity.FreeSpaceLessThanPercent = asgRecord["free_space_less_than_percent"].(int)
-		asgBody.Scalers.Capacity = &asgCapacity
+
+	if _, ok := autoscalingRecord["capacity_enabled"]; ok {
+		autoscalingDiskGroup.Scalers.Capacity.Enabled = core.BoolPtr(autoscalingRecord["capacity_enabled"].(bool))
+	}
+	if _, ok := autoscalingRecord["free_space_less_than_percent"]; ok {
+		autoscalingDiskGroup.Scalers.Capacity.FreeSpaceLessThanPercent = core.Int64Ptr(int64(autoscalingRecord["free_space_less_than_percent"].(int)))
 	}
 
 	// IO Payload
-	asgIO := icdv4.IOBody{}
-	if _, ok := asgRecord["io_enabled"]; ok {
-		asgIO.Enabled = asgRecord["io_enabled"].(bool)
-		asgBody.Scalers.IO = &asgIO
+	if _, ok := autoscalingRecord["io_enabled"]; ok {
+		autoscalingDiskGroup.Scalers.IoUtilization.Enabled = core.BoolPtr(autoscalingRecord["io_enabled"].(bool))
 	}
-	if _, ok := asgRecord["io_over_period"]; ok {
-		asgIO.OverPeriod = asgRecord["io_over_period"].(string)
-		asgBody.Scalers.IO = &asgIO
+	if _, ok := autoscalingRecord["io_over_period"]; ok {
+		autoscalingDiskGroup.Scalers.IoUtilization.OverPeriod = core.StringPtr(autoscalingRecord["io_over_period"].(string))
 	}
-	if _, ok := asgRecord["io_above_percent"]; ok {
-		asgIO.AbovePercent = asgRecord["io_above_percent"].(int)
-		asgBody.Scalers.IO = &asgIO
+	if _, ok := autoscalingRecord["io_above_percent"]; ok {
+		autoscalingDiskGroup.Scalers.IoUtilization.AbovePercent = core.Int64Ptr(int64(autoscalingRecord["io_above_percent"].(int)))
 	}
 
 	// Rate Payload
-	asgRate := icdv4.RateBody{}
-	if _, ok := asgRecord["rate_increase_percent"]; ok {
-		asgRate.IncreasePercent = asgRecord["rate_increase_percent"].(int)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_increase_percent"]; ok {
+		autoscalingDiskGroup.Rate.IncreasePercent = core.Float64Ptr(float64(autoscalingRecord["rate_increase_percent"].(int)))
 	}
-	if _, ok := asgRecord["rate_period_seconds"]; ok {
-		asgRate.PeriodSeconds = asgRecord["rate_period_seconds"].(int)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_period_seconds"]; ok {
+		autoscalingDiskGroup.Rate.PeriodSeconds = core.Int64Ptr(int64(autoscalingRecord["rate_period_seconds"].(int)))
 	}
-	if _, ok := asgRecord["rate_limit_mb_per_member"]; ok {
-		asgRate.LimitMBPerMember = asgRecord["rate_limit_mb_per_member"].(int)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_limit_mb_per_member"]; ok {
+		autoscalingDiskGroup.Rate.LimitMbPerMember = core.Float64Ptr(float64(autoscalingRecord["rate_limit_mb_per_member"].(int)))
 	}
-	if _, ok := asgRecord["rate_limit_count_per_member"]; ok {
-		asgRate.LimitCountPerMember = asgRecord["rate_limit_count_per_member"].(int)
-		asgBody.Rate = asgRate
-	}
-	if _, ok := asgRecord["rate_units"]; ok {
-		asgRate.Units = asgRecord["rate_units"].(string)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_units"]; ok {
+		autoscalingDiskGroup.Rate.Units = core.StringPtr(autoscalingRecord["rate_units"].(string))
 	}
 
-	return asgBody, nil
+	return
 }
 
-func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0)
+func expandAutoscalingMemoryGroup(d *schema.ResourceData, asRecord interface{}) (autoscalingMemoryGroup *clouddatabasesv5.AutoscalingMemoryGroupMemory, err error) {
+	autoscalingRecord := asRecord.([]interface{})[0].(map[string]interface{})
+	autoscalingMemoryGroup = &clouddatabasesv5.AutoscalingMemoryGroupMemory{
+		Scalers: &clouddatabasesv5.AutoscalingMemoryGroupMemoryScalers{
+			IoUtilization: &clouddatabasesv5.AutoscalingMemoryGroupMemoryScalersIoUtilization{},
+		},
+		Rate: &clouddatabasesv5.AutoscalingMemoryGroupMemoryRate{},
+	}
 
+	// IO Payload
+	if _, ok := autoscalingRecord["io_enabled"]; ok {
+		autoscalingMemoryGroup.Scalers.IoUtilization.Enabled = core.BoolPtr(autoscalingRecord["io_enabled"].(bool))
+	}
+	if _, ok := autoscalingRecord["io_over_period"]; ok {
+		autoscalingMemoryGroup.Scalers.IoUtilization.OverPeriod = core.StringPtr(autoscalingRecord["io_over_period"].(string))
+	}
+	if _, ok := autoscalingRecord["io_above_percent"]; ok {
+		autoscalingMemoryGroup.Scalers.IoUtilization.AbovePercent = core.Int64Ptr(int64(autoscalingRecord["io_above_percent"].(int)))
+	}
+
+	// Rate Payload
+	if _, ok := autoscalingRecord["rate_increase_percent"]; ok {
+		autoscalingMemoryGroup.Rate.IncreasePercent = core.Float64Ptr(float64(autoscalingRecord["rate_increase_percent"].(int)))
+	}
+	if _, ok := autoscalingRecord["rate_period_seconds"]; ok {
+		autoscalingMemoryGroup.Rate.PeriodSeconds = core.Int64Ptr(int64(autoscalingRecord["rate_period_seconds"].(int)))
+	}
+	if _, ok := autoscalingRecord["rate_limit_mb_per_member"]; ok {
+		autoscalingMemoryGroup.Rate.LimitMbPerMember = core.Float64Ptr(float64(autoscalingRecord["rate_limit_mb_per_member"].(int)))
+	}
+	if _, ok := autoscalingRecord["rate_units"]; ok {
+		autoscalingMemoryGroup.Rate.Units = core.StringPtr(autoscalingRecord["rate_units"].(string))
+	}
+
+	return
+}
+
+func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
 	memorys := make([]map[string]interface{}, 0)
 	memory := make(map[string]interface{})
 
-	if autoScalingGroup.Autoscaling.Memory.Scalers.IO != nil {
-		memoryIO := *autoScalingGroup.Autoscaling.Memory.Scalers.IO
+	if autoScalingGroup.Autoscaling.Memory.Scalers.IoUtilization != nil {
+		memoryIO := *autoScalingGroup.Autoscaling.Memory.Scalers.IoUtilization
 		memory["io_enabled"] = memoryIO.Enabled
 		memory["io_over_period"] = memoryIO.OverPeriod
 		memory["io_above_percent"] = memoryIO.AbovePercent
 	}
+
 	if &autoScalingGroup.Autoscaling.Memory.Rate != nil {
-		ip, _ := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent.Float64()
-		memory["rate_increase_percent"] = int(ip)
+		ip := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent
+		memory["rate_increase_percent"] = *ip
 		memory["rate_period_seconds"] = autoScalingGroup.Autoscaling.Memory.Rate.PeriodSeconds
-		lmp, _ := autoScalingGroup.Autoscaling.Memory.Rate.LimitMBPerMember.Float64()
-		memory["rate_limit_mb_per_member"] = int(lmp)
+
+		lmp := autoScalingGroup.Autoscaling.Memory.Rate.LimitMbPerMember
+		memory["rate_limit_mb_per_member"] = *lmp
 		memory["rate_units"] = autoScalingGroup.Autoscaling.Memory.Rate.Units
 	}
 	memorys = append(memorys, memory)
@@ -2839,9 +2838,8 @@ func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []ma
 	cpu := make(map[string]interface{})
 
 	if &autoScalingGroup.Autoscaling.CPU.Rate != nil {
-
-		ip, _ := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent.Float64()
-		cpu["rate_increase_percent"] = int(ip)
+		ip := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent
+		cpu["rate_increase_percent"] = *ip
 		cpu["rate_period_seconds"] = autoScalingGroup.Autoscaling.CPU.Rate.PeriodSeconds
 		cpu["rate_limit_count_per_member"] = autoScalingGroup.Autoscaling.CPU.Rate.LimitCountPerMember
 		cpu["rate_units"] = autoScalingGroup.Autoscaling.CPU.Rate.Units
@@ -2850,24 +2848,27 @@ func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []ma
 
 	disks := make([]map[string]interface{}, 0)
 	disk := make(map[string]interface{})
+
 	if autoScalingGroup.Autoscaling.Disk.Scalers.Capacity != nil {
 		diskCapacity := *autoScalingGroup.Autoscaling.Disk.Scalers.Capacity
 		disk["capacity_enabled"] = diskCapacity.Enabled
 		disk["free_space_less_than_percent"] = diskCapacity.FreeSpaceLessThanPercent
 	}
-	if autoScalingGroup.Autoscaling.Disk.Scalers.IO != nil {
-		diskIO := *autoScalingGroup.Autoscaling.Disk.Scalers.IO
+
+	if autoScalingGroup.Autoscaling.Disk.Scalers.IoUtilization != nil {
+		diskIO := *autoScalingGroup.Autoscaling.Disk.Scalers.IoUtilization
 		disk["io_enabled"] = diskIO.Enabled
 		disk["io_over_period"] = diskIO.OverPeriod
 		disk["io_above_percent"] = diskIO.AbovePercent
 	}
-	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
 
-		ip, _ := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent.Float64()
-		disk["rate_increase_percent"] = int(ip)
+	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
+		ip := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent
+		disk["rate_increase_percent"] = ip
 		disk["rate_period_seconds"] = autoScalingGroup.Autoscaling.Disk.Rate.PeriodSeconds
-		lpm, _ := autoScalingGroup.Autoscaling.Disk.Rate.LimitMBPerMember.Float64()
-		disk["rate_limit_mb_per_member"] = int(lpm)
+
+		lpm := autoScalingGroup.Autoscaling.Disk.Rate.LimitMbPerMember
+		disk["rate_limit_mb_per_member"] = lpm
 		disk["rate_units"] = autoScalingGroup.Autoscaling.Disk.Rate.Units
 	}
 
@@ -2877,6 +2878,7 @@ func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []ma
 		"cpu":    cpus,
 		"disk":   disks,
 	}
+
 	result = append(result, as)
 	return result
 }

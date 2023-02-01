@@ -27,6 +27,8 @@ resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit_instance
   parameters {
 		enable_traceability = false
 		integration_owner = "my-userid"
+		auth_type = "pat"
+		api_token = "<api_token>"
 		toolchain_issues_enabled = true
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
@@ -46,13 +48,16 @@ Nested scheme for **initialization**:
 	* `repo_name` - (Optional, Forces new resource, String) The name of the new GitLab repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `repo_url` - (Optional, Forces new resource, String) The URL of the GitLab repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
 	* `source_repo_url` - (Optional, Forces new resource, String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
-	* `type` - (Required, Forces new resource, String) The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.
+	* `type` - (Required, Forces new resource, String) The operation that should be performed to initialize the new tool integration. Use 'new' or 'new_if_not_exists' to create a new git repository, 'clone' or 'clone_if_not_exists' to clone an existing repository into a new git repository, 'fork' or 'fork_if_not_exists' to fork an existing git repository, or 'link' to link to an existing git repository. If you attempt to apply a resource with type 'new', 'clone', or 'fork' when the target repo already exists, the attempt will fail. If you apply a resource with type 'new_if_not_exists`, 'clone_if_not_exists', or 'fork_if_not_exists' when the target repo already exists, the existing repo will be used as-is.
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`, `new_if_not_exists`, `clone_if_not_exists`, `fork_if_not_exists`.
 * `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Computed, String) The API root URL for the GitLab server.
+	* `api_token` - (Optional, String) Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.
+	* `auth_type` - (Optional, String) Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.
+	  * Constraints: Allowable values are: `oauth`, `pat`.
 	* `default_branch` - (Computed, String) The default branch of the git repository.
 	* `enable_traceability` - (Optional, Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
@@ -68,7 +73,7 @@ Nested scheme for **parameters**:
 	* `token_url` - (Computed, String) The token URL used for authorizing with the Bitbucket server.
 	* `toolchain_issues_enabled` - (Optional, Boolean) Setting this value to true will enable issues on the GitLab repository and add an issues tool card to the toolchain.  Setting the value to false will remove the tool card from the toolchain, but will not impact whether or not issues are enabled on the GitLab repository itself.
 	  * Constraints: The default value is `true`.
-	* `type` - (Computed, String) The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.
+	* `type` - (Computed, String) The operation that should be performed to initialize the new tool integration. Use 'new' or 'new_if_not_exists' to create a new git repository, 'clone' or 'clone_if_not_exists' to clone an existing repository into a new git repository, 'fork' or 'fork_if_not_exists' to fork an existing git repository, or 'link' to link to an existing git repository. If you attempt to apply a resource with type 'new', 'clone', or 'fork' when the target repo already exists, the attempt will fail. If you apply a resource with type 'new_if_not_exists`, 'clone_if_not_exists', or 'fork_if_not_exists' when the target repo already exists, the existing repo will be used as-is.
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`, `new_if_not_exists`, `clone_if_not_exists`, `fork_if_not_exists`.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.

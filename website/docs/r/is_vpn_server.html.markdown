@@ -48,7 +48,10 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
-- `certificate_crn` - (Required, String) The certificate CRN instance from Certificate Manager or CRN of secret from Secrets Manager for this VPN server. As the usage of certificate CRN from Certificate Manager is getting deprecated, it is recommended to use CRN of secret from Secrets Manager. 
+- `certificate_crn` - (Required, String) The certificate CRN of secret from Secrets Manager for this VPN server. 
+
+  !> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
+
 - `client_authentication` - (Required, List) The methods used to authenticate VPN clients to this VPN server.
   
   Nested scheme for **client_authentication**:

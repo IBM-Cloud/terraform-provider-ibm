@@ -15,6 +15,8 @@ import (
 
 var AppIDTenantID string
 var AppIDTestUserEmail string
+var BackupPolicyJobID string
+var BackupPolicyID string
 var CfOrganization string
 var CfSpace string
 var CisDomainStatic string
@@ -23,6 +25,7 @@ var CisInstance string
 var CisResourceGroup string
 var CloudShellAccountID string
 var CosCRN string
+var CosName string
 var Ibmid1 string
 var Ibmid2 string
 var IAMUser string
@@ -49,6 +52,7 @@ var ZonePrivateVlan string
 var ZonePublicVlan string
 var ZoneUpdatePrivateVlan string
 var ZoneUpdatePublicVlan string
+var WorkerPoolSecondaryStorage string
 var CsRegion string
 var ExtendedHardwareTesting bool
 var err error
@@ -58,6 +62,7 @@ var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
 var ISAddressPrefixCIDR string
@@ -318,6 +323,12 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_COS_CRN with a VALID COS instance CRN for testing ibm_cos_* resources")
 	}
 
+	CosName = os.Getenv("IBM_COS_NAME")
+	if CosName == "" {
+		CosName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_NAME with a VALID COS instance name for testing resources with cos deps")
+	}
+
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")
 	if trustedMachineType == "" {
 		trustedMachineType = "mb1c.16x64"
@@ -449,6 +460,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2388375'")
 	}
 
+	WorkerPoolSecondaryStorage = os.Getenv("IBM_WORKER_POOL_SECONDARY_STORAGE")
+	if WorkerPoolSecondaryStorage == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_SECONDARY_STORAGE for testing secondary_storage attachment to IKS workerpools")
+	}
+
 	placementGroupName = os.Getenv("IBM_PLACEMENT_GROUP_NAME")
 	if placementGroupName == "" {
 		placementGroupName = "terraform_group"
@@ -491,6 +507,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
 	}
 
+	IsResourceGroupID = os.Getenv("SL_RESOURCE_GROUP_ID")
+	if IsResourceGroupID == "" {
+		IsResourceGroupID = "c01d34dff4364763476834c990398zz8"
+		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
+	}
+
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		//IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
@@ -509,6 +531,16 @@ func init() {
 	if InstanceName == "" {
 		InstanceName = "placement-check-ins" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
+	}
+
+	BackupPolicyJobID = os.Getenv("IS_BACKUP_POLICY_JOB_ID")
+	if BackupPolicyJobID == "" {
+		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_JOB_ID for testing ibm_is_backup_policy_job datasource")
+	}
+
+	BackupPolicyID = os.Getenv("IS_BACKUP_POLICY_ID")
+	if BackupPolicyID == "" {
+		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_ID for testing ibm_is_backup_policy_jobs datasource")
 	}
 
 	InstanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
