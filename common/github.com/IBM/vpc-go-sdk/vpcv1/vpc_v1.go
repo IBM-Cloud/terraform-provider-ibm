@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.60.2-95dc7721-20221102-203229
+ * IBM OpenAPI SDK Code Generator Version: 3.63.0-5dae26c1-20230111-193039
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
@@ -30,14 +30,14 @@ import (
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	common "github.com/IBM/vpc-go-sdk/common"
 	"github.com/go-openapi/strfmt"
+	common "github.ibm.com/ibmcloud/vpc-go-sdk/common"
 )
 
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2023-01-10
+// API Version: 2023-01-31
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -330,9 +330,9 @@ func (vpc *VpcV1) CreateVPCWithContext(ctx context.Context, createVPCOptions *Cr
 
 // DeleteVPC : Delete a VPC
 // This request deletes a VPC. This operation cannot be reversed. For this request to succeed, the VPC must not contain
-// any instances, subnets, or public gateways. All security groups and network ACLs associated with the VPC are
-// automatically deleted. All flow log collectors with `auto_delete` set to `true` targeting the VPC or any resource in
-// the VPC are automatically deleted.
+// any instances, subnets, public gateways, or endpoint gateways. All security groups and network ACLs associated with
+// the VPC are automatically deleted. All flow log collectors with `auto_delete` set to `true` targeting the VPC or any
+// resource in the VPC are automatically deleted.
 func (vpc *VpcV1) DeleteVPC(deleteVPCOptions *DeleteVPCOptions) (response *core.DetailedResponse, err error) {
 	return vpc.DeleteVPCWithContext(context.Background(), deleteVPCOptions)
 }
@@ -10408,6 +10408,9 @@ func (vpc *VpcV1) CreateBareMetalServerWithContext(ctx context.Context, createBa
 	if createBareMetalServerOptions.Zone != nil {
 		body["zone"] = createBareMetalServerOptions.Zone
 	}
+	if createBareMetalServerOptions.EnableSecureBoot != nil {
+		body["enable_secure_boot"] = createBareMetalServerOptions.EnableSecureBoot
+	}
 	if createBareMetalServerOptions.Name != nil {
 		body["name"] = createBareMetalServerOptions.Name
 	}
@@ -10416,6 +10419,9 @@ func (vpc *VpcV1) CreateBareMetalServerWithContext(ctx context.Context, createBa
 	}
 	if createBareMetalServerOptions.ResourceGroup != nil {
 		body["resource_group"] = createBareMetalServerOptions.ResourceGroup
+	}
+	if createBareMetalServerOptions.TrustedPlatformModule != nil {
+		body["trusted_platform_module"] = createBareMetalServerOptions.TrustedPlatformModule
 	}
 	if createBareMetalServerOptions.VPC != nil {
 		body["vpc"] = createBareMetalServerOptions.VPC
@@ -22879,6 +22885,7 @@ const (
 // Constants associated with the BareMetalServer.Status property.
 // The status of the bare metal server.
 const (
+	BareMetalServerStatusDeletingConst    = "deleting"
 	BareMetalServerStatusFailedConst      = "failed"
 	BareMetalServerStatusMaintenanceConst = "maintenance"
 	BareMetalServerStatusPendingConst     = "pending"
@@ -23968,15 +23975,32 @@ func UnmarshalBareMetalServerNetworkInterfacePrototype(m map[string]json.RawMess
 
 // BareMetalServerPatch : BareMetalServerPatch struct
 type BareMetalServerPatch struct {
+	// Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the bare metal server
+	// will fail to boot.
+	//
+	// For `enable_secure_boot` to be changed, the bare metal server `status` must be
+	// `stopped`.
+	EnableSecureBoot *bool `json:"enable_secure_boot,omitempty"`
+
 	// The name for this bare metal server. The name must not be used by another bare metal server in the region. Changing
 	// the name will not affect the system hostname.
 	Name *string `json:"name,omitempty"`
+
+	TrustedPlatformModule *BareMetalServerTrustedPlatformModulePatch `json:"trusted_platform_module,omitempty"`
 }
 
 // UnmarshalBareMetalServerPatch unmarshals an instance of BareMetalServerPatch from the specified map of raw messages.
 func UnmarshalBareMetalServerPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BareMetalServerPatch)
+	err = core.UnmarshalPrimitive(m, "enable_secure_boot", &obj.EnableSecureBoot)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "trusted_platform_module", &obj.TrustedPlatformModule, UnmarshalBareMetalServerTrustedPlatformModulePatch)
 	if err != nil {
 		return
 	}
@@ -25033,13 +25057,15 @@ const (
 
 // Constants associated with the BareMetalServerProfileSupportedTrustedPlatformModuleModes.Values property.
 // The trusted platform module (TPM) mode:
+// - `disabled`: No TPM functionality
 // - `tpm_2`: TPM 2.0
 //
 // The enumerated values for this property are expected to expand in the future. When processing this property, check
 // for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
 // unexpected property value was encountered.
 const (
-	BareMetalServerProfileSupportedTrustedPlatformModuleModesValuesTpm2Const = "tpm_2"
+	BareMetalServerProfileSupportedTrustedPlatformModuleModesValuesDisabledConst = "disabled"
+	BareMetalServerProfileSupportedTrustedPlatformModuleModesValuesTpm2Const     = "tpm_2"
 )
 
 // UnmarshalBareMetalServerProfileSupportedTrustedPlatformModuleModes unmarshals an instance of BareMetalServerProfileSupportedTrustedPlatformModuleModes from the specified map of raw messages.
@@ -25114,23 +25140,42 @@ type BareMetalServerTrustedPlatformModule struct {
 	Enabled *bool `json:"enabled" validate:"required"`
 
 	// The trusted platform module (TPM) mode:
+	// - `disabled`: No TPM functionality
 	// - `tpm_2`: TPM 2.0
 	//
 	// The enumerated values for this property are expected to expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
 	// unexpected property value was encountered.
-	Mode *string `json:"mode,omitempty"`
+	Mode *string `json:"mode" validate:"required"`
+
+	// The supported trusted platform module modes.
+	SupportedModes []string `json:"supported_modes" validate:"required"`
 }
 
 // Constants associated with the BareMetalServerTrustedPlatformModule.Mode property.
 // The trusted platform module (TPM) mode:
+// - `disabled`: No TPM functionality
 // - `tpm_2`: TPM 2.0
 //
 // The enumerated values for this property are expected to expand in the future. When processing this property, check
 // for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
 // unexpected property value was encountered.
 const (
-	BareMetalServerTrustedPlatformModuleModeTpm2Const = "tpm_2"
+	BareMetalServerTrustedPlatformModuleModeDisabledConst = "disabled"
+	BareMetalServerTrustedPlatformModuleModeTpm2Const     = "tpm_2"
+)
+
+// Constants associated with the BareMetalServerTrustedPlatformModule.SupportedModes property.
+// The trusted platform module (TPM) mode:
+// - `disabled`: No TPM functionality
+// - `tpm_2`: TPM 2.0
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+// unexpected property value was encountered.
+const (
+	BareMetalServerTrustedPlatformModuleSupportedModesDisabledConst = "disabled"
+	BareMetalServerTrustedPlatformModuleSupportedModesTpm2Const     = "tpm_2"
 )
 
 // UnmarshalBareMetalServerTrustedPlatformModule unmarshals an instance of BareMetalServerTrustedPlatformModule from the specified map of raw messages.
@@ -25140,6 +25185,66 @@ func UnmarshalBareMetalServerTrustedPlatformModule(m map[string]json.RawMessage,
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "supported_modes", &obj.SupportedModes)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BareMetalServerTrustedPlatformModulePatch : BareMetalServerTrustedPlatformModulePatch struct
+type BareMetalServerTrustedPlatformModulePatch struct {
+	// The trusted platform module mode to use. The specified value must be listed in the bare metal server's
+	// `supported_modes`.
+	//
+	// For the trusted platform module mode to be changed, the bare metal server `status` must be `stopped`.
+	Mode *string `json:"mode,omitempty"`
+}
+
+// Constants associated with the BareMetalServerTrustedPlatformModulePatch.Mode property.
+// The trusted platform module mode to use. The specified value must be listed in the bare metal server's
+// `supported_modes`.
+//
+// For the trusted platform module mode to be changed, the bare metal server `status` must be `stopped`.
+const (
+	BareMetalServerTrustedPlatformModulePatchModeDisabledConst = "disabled"
+	BareMetalServerTrustedPlatformModulePatchModeTpm2Const     = "tpm_2"
+)
+
+// UnmarshalBareMetalServerTrustedPlatformModulePatch unmarshals an instance of BareMetalServerTrustedPlatformModulePatch from the specified map of raw messages.
+func UnmarshalBareMetalServerTrustedPlatformModulePatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BareMetalServerTrustedPlatformModulePatch)
+	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BareMetalServerTrustedPlatformModulePrototype : BareMetalServerTrustedPlatformModulePrototype struct
+type BareMetalServerTrustedPlatformModulePrototype struct {
+	// The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's
+	// `supported_trusted_platform_module_modes`.
+	Mode *string `json:"mode,omitempty"`
+}
+
+// Constants associated with the BareMetalServerTrustedPlatformModulePrototype.Mode property.
+// The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's
+// `supported_trusted_platform_module_modes`.
+const (
+	BareMetalServerTrustedPlatformModulePrototypeModeDisabledConst = "disabled"
+	BareMetalServerTrustedPlatformModulePrototypeModeTpm2Const     = "tpm_2"
+)
+
+// UnmarshalBareMetalServerTrustedPlatformModulePrototype unmarshals an instance of BareMetalServerTrustedPlatformModulePrototype from the specified map of raw messages.
+func UnmarshalBareMetalServerTrustedPlatformModulePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BareMetalServerTrustedPlatformModulePrototype)
 	err = core.UnmarshalPrimitive(m, "mode", &obj.Mode)
 	if err != nil {
 		return
@@ -25654,6 +25759,10 @@ type CreateBareMetalServerOptions struct {
 	// The zone this bare metal server will reside in.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
+	// Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to
+	// boot.
+	EnableSecureBoot *bool `json:"enable_secure_boot,omitempty"`
+
 	// The name for this bare metal server. The name must not be used by another bare metal server in the region. If
 	// unspecified, the name will be a hyphenated list of randomly-selected words.
 	//
@@ -25666,6 +25775,8 @@ type CreateBareMetalServerOptions struct {
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	TrustedPlatformModule *BareMetalServerTrustedPlatformModulePrototype `json:"trusted_platform_module,omitempty"`
 
 	// The VPC this bare metal server will reside in.
 	//
@@ -25711,6 +25822,12 @@ func (_options *CreateBareMetalServerOptions) SetZone(zone ZoneIdentityIntf) *Cr
 	return _options
 }
 
+// SetEnableSecureBoot : Allow user to set EnableSecureBoot
+func (_options *CreateBareMetalServerOptions) SetEnableSecureBoot(enableSecureBoot bool) *CreateBareMetalServerOptions {
+	_options.EnableSecureBoot = core.BoolPtr(enableSecureBoot)
+	return _options
+}
+
 // SetName : Allow user to set Name
 func (_options *CreateBareMetalServerOptions) SetName(name string) *CreateBareMetalServerOptions {
 	_options.Name = core.StringPtr(name)
@@ -25726,6 +25843,12 @@ func (_options *CreateBareMetalServerOptions) SetNetworkInterfaces(networkInterf
 // SetResourceGroup : Allow user to set ResourceGroup
 func (_options *CreateBareMetalServerOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateBareMetalServerOptions {
 	_options.ResourceGroup = resourceGroup
+	return _options
+}
+
+// SetTrustedPlatformModule : Allow user to set TrustedPlatformModule
+func (_options *CreateBareMetalServerOptions) SetTrustedPlatformModule(trustedPlatformModule *BareMetalServerTrustedPlatformModulePrototype) *CreateBareMetalServerOptions {
+	_options.TrustedPlatformModule = trustedPlatformModule
 	return _options
 }
 
@@ -52177,7 +52300,9 @@ type NetworkACLRulePatch struct {
 	// Specify `null` to move this rule after all existing rules.
 	Before NetworkACLRuleBeforePatchIntf `json:"before,omitempty"`
 
-	// The ICMP traffic code to match.
+	// The ICMP traffic code to match. If set, `type` must also be set.
+	//
+	// Specify `null` to remove an existing ICMP traffic code.
 	Code *int64 `json:"code,omitempty"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
@@ -52208,6 +52333,8 @@ type NetworkACLRulePatch struct {
 	SourcePortMin *int64 `json:"source_port_min,omitempty"`
 
 	// The ICMP traffic type to match.
+	//
+	// Specify `null` to remove an existing ICMP traffic type value.
 	Type *int64 `json:"type,omitempty"`
 }
 
@@ -52323,6 +52450,9 @@ type NetworkACLRulePrototype struct {
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
+
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -52368,6 +52498,12 @@ const (
 const (
 	NetworkACLRulePrototypeDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototype.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeIPVersionIpv4Const = "ipv4"
 )
 
 // Constants associated with the NetworkACLRulePrototype.Protocol property.
@@ -52429,6 +52565,9 @@ type NetworkACLRulePrototypeNetworkACLContext struct {
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
+
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -52474,6 +52613,12 @@ const (
 const (
 	NetworkACLRulePrototypeNetworkACLContextDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeNetworkACLContextDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLContext.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeNetworkACLContextIPVersionIpv4Const = "ipv4"
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContext.Protocol property.
@@ -56073,7 +56218,8 @@ type RoutingTablePatch struct {
 	// Indicates whether this routing table is used to route traffic that originates from
 	// [Direct Link](https://cloud.ibm.com/docs/dl/) to this VPC. Updating to `true` selects this routing table, provided
 	// no other routing table in the VPC already has this property set to `true`, and no subnets are attached to this
-	// routing table. Updating to `false` deselects this routing table.
+	// routing table. Updating to
+	// `false` deselects this routing table.
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address bound to a network interface on a subnet in
@@ -63464,8 +63610,7 @@ type Volume struct {
 	// The unique identifier for this volume.
 	ID *string `json:"id" validate:"required"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
-	// `family` of `custom`.
+	// The maximum I/O operations per second (IOPS) for this volume.
 	Iops *int64 `json:"iops" validate:"required"`
 
 	// The name for this volume. The name is unique across all volumes in the region.
@@ -63960,7 +64105,7 @@ type VolumeAttachmentPrototypeVolume struct {
 	// The URL for this volume.
 	Href *string `json:"href,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -64386,7 +64531,7 @@ type VolumePatch struct {
 	// The minimum and maximum capacity limits for creating or updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`. The volume must be attached as a data volume to a running virtual server instance.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -64642,7 +64787,7 @@ func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interf
 // - VolumePrototypeVolumeByCapacity
 // - VolumePrototypeVolumeBySourceSnapshot
 type VolumePrototype struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -64741,7 +64886,7 @@ type VolumePrototypeInstanceByImageContext struct {
 	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -64810,7 +64955,7 @@ type VolumePrototypeInstanceBySourceSnapshotContext struct {
 	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
 
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -75957,6 +76102,9 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllPrototype 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
+
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -75980,6 +76128,12 @@ const (
 const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllPrototypeDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllPrototypeDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllPrototype.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllPrototypeIPVersionIpv4Const = "ipv4"
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllPrototype.Protocol property.
@@ -76020,6 +76174,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAllP
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -76047,6 +76205,9 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototype
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
@@ -76081,6 +76242,12 @@ const (
 const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototypeDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototypeDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototype.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototypeIPVersionIpv4Const = "ipv4"
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototype.Protocol property.
@@ -76121,6 +76288,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmp
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -76156,6 +76327,9 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototy
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
@@ -76194,6 +76368,12 @@ const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototypeDirectionOutboundConst = "outbound"
 )
 
+// Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototype.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototypeIPVersionIpv4Const = "ipv4"
+)
+
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototype.Protocol property.
 // The protocol to enforce.
 const (
@@ -76230,6 +76410,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpu
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -76279,6 +76463,9 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolAllPrototype struct {
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
+
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -76302,6 +76489,12 @@ const (
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolAllPrototypeDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeNetworkACLRuleProtocolAllPrototypeDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAllPrototype.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolAllPrototypeIPVersionIpv4Const = "ipv4"
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAllPrototype.Protocol property.
@@ -76346,6 +76539,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolAllPrototype(m map[st
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -76375,6 +76572,9 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototype struct {
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
+
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
@@ -76409,6 +76609,12 @@ const (
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototypeDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototypeDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototype.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototypeIPVersionIpv4Const = "ipv4"
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototype.Protocol property.
@@ -76453,6 +76659,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototype(m map[s
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -76491,6 +76701,9 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototype struct {
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
+	// The IP version for this rule.
+	IPVersion *string `json:"ip_version,omitempty"`
+
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -76526,6 +76739,12 @@ const (
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototypeDirectionInboundConst  = "inbound"
 	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototypeDirectionOutboundConst = "outbound"
+)
+
+// Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototype.IPVersion property.
+// The IP version for this rule.
+const (
+	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototypeIPVersionIpv4Const = "ipv4"
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototype.Protocol property.
@@ -76568,6 +76787,10 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototype(m map
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "ip_version", &obj.IPVersion)
 	if err != nil {
 		return
 	}
@@ -81498,7 +81721,7 @@ func UnmarshalVolumeAttachmentPrototypeVolumeVolumeIdentity(m map[string]json.Ra
 // - VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot
 // This model "extends" VolumeAttachmentPrototypeVolume
 type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -81732,7 +81955,7 @@ func UnmarshalVolumeProfileIdentityByName(m map[string]json.RawMessage, result i
 // VolumePrototypeVolumeByCapacity : VolumePrototypeVolumeByCapacity struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeByCapacity struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -81818,7 +82041,7 @@ func UnmarshalVolumePrototypeVolumeByCapacity(m map[string]json.RawMessage, resu
 // VolumePrototypeVolumeBySourceSnapshot : VolumePrototypeVolumeBySourceSnapshot struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeBySourceSnapshot struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -84526,7 +84749,7 @@ func UnmarshalVolumeAttachmentPrototypeVolumeVolumeIdentityVolumeIdentityByID(m 
 // VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct
 // This model "extends" VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext
 type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
@@ -84602,7 +84825,7 @@ func UnmarshalVolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolum
 // VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot : VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot struct
 // This model "extends" VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext
 type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
+	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
 	// `family` of `custom`.
 	Iops *int64 `json:"iops,omitempty"`
 
