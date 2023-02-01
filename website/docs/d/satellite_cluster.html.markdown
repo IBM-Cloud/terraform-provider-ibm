@@ -39,6 +39,7 @@ In addition to all argument references list, you can access the following attrib
 - `worker_count` - (String) The number of workers that are attached to the cluster.
 - `workers` - (String) The IDs of the workers that are attached to the cluster.
 - `worker_pools`- (List) The collection of worker nodes in a cluster.
+- `infrastructure_topology` - (String) The infrastructure topology status for this cluster.
 
   Nested scheme for `worker_pools`:
     - `name`- (String) The name of the worker pool.
