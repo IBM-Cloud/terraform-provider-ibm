@@ -22,6 +22,7 @@ resource "ibm_en_destination_android" "android_en_destination" {
     params {
       sender_id   = "5237288990"
       server_key  = "36228ghutwervhudokmk"
+      pre_prod = false
     }
   }
 }
@@ -50,6 +51,7 @@ Review the argument reference that you can specify for your resource.
 
   - `sender_id` - (String) Sender Id value for FCM project.
   - `server_key` - (String) Server Key value for FCM project
+  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
 
 ## Attribute reference
 

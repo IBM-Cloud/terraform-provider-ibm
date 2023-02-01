@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_android'
+page_title: 'IBM : ibm_en_destination_msteams'
 description: |-
-  Get information about a FCM destination
+  Get information about a MSTeams destination
 ---
 
-# ibm_en_destination_android
+# ibm_en_destination_msteams
 
-Provides a read-only data source for FCM destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for MSTeams destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_destination_android" "android_en_destination" {
+data "ibm_en_destination_msteams" "msteams_en_destination" {
   instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
-  destination_id = ibm_en_destination_android.destinationandroidnew.destination_id
+  destination_id = ibm_en_destination_msteams.destination1.destination_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `android_en_destination`.
+- `id` - The unique identifier of the `msteams_en_destination`.
 
 - `name` - (String) Destination name.
 
@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Destination type push_android.
+- `type` - (String) Destination type msteams.
 
 - `config` - (List) Payload describing a destination configuration.
   Nested scheme for **config**:
@@ -50,8 +50,6 @@ In addition to all argument references listed, you can access the following attr
 
   Nested scheme for **params**:
 
-  - `sender_id` - (String) Sender ID for your FCM Destination Configured.
-
-  - `server_key` - (String) Server Key for FCM Destination configured.
+  - `url` - (String) Slack Webhook url.
 
 - `updated_at` - (String) Last updated time.

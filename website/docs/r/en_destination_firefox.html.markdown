@@ -21,6 +21,7 @@ resource "ibm_en_destination_firefox" "firefox_en_destination" {
   config {
     params {
       website_url  = "https://testwebsite.com"
+      pre_prod = false
     }
   }
 }
@@ -47,6 +48,7 @@ Review the argument reference that you can specify for your resource.
   Nested scheme for **params**:
 
   - `website_url` - (Required, String) URL of the website project.
+  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
 
 ## Attribute reference
 

@@ -1,31 +1,27 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination'
+page_title: 'IBM : ibm_en_destination_cf'
 description: |-
-  Manages Event Notifications destinations.
+  Manages Event Notification Cloud Function destinations.
 ---
 
-# ibm_en_destination
+# ibm_en_destination_cf
 
-Create, update, or delete a destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a IBM Cloud Functions destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination" "en_destination" {
+resource "ibm_en_destination_cf" "cf_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Webhook Destination"
-  type          = "webhook"
-  description   = "This is en webhook destination"
+  name          = "Cloud Function Test Destination"
+  type          = "ibmcf"
+  description   = "Destination Chrome for event notification"
   config {
     params {
-      verb = "POST"
-      url  = "webhook url"
-      custom_headers = {
-        "authorization" = "authorization"
-      }
-      sensitive_headers = ["authorization"]
+      api_key     = "XYZ"
+      website_url = "https://www.ibmcfendpoint.com/*"
     }
   }
 }
@@ -41,9 +37,7 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) The type of destination.
-
-  - Constraints: Allowable values are: `webhook`.
+- `type` - (Required, String) ibmcf.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -53,16 +47,14 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `custom_headers` - (Optional, Map) Custom headers (Key-Value pair) for webhook call.
-  - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
-  - `url` - (Optional, String) URL of webhook.
-  - `verb` - (Optional, String) HTTP method of webhook. Allowable values are: `GET`, `POST`.
+  - `url` - (Required, string) URL of IBM Cloud Functions Trigger EndPoint.
+  - `api_key` - (Required, string) APIKey with access of IBM Cloud Functions IAM Namespace.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `en_destination`.
+- `id` - (String) The unique identifier of the `cf_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -71,7 +63,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination` resource by using `id`.
+You can import the `ibm_en_destination_cf` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -86,5 +78,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination.en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_cf.cf_en_destination <instance_guid>/<destination_id>
 ```
