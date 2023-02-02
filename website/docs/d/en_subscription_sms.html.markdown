@@ -43,6 +43,10 @@ In addition to all argument references listed, you can access the following attr
 
 - `additional_properties` - (Required, List)
 
-  - `to`- (List) The phone number to send the SMS to.
+  - `susbscribed`- (Map) The phone number who have subscribed for topic.
+
+  - `unsubscribed`- (List) The phone number which has opted for unsusbscribtion from that topic.
+
+  - `invited`- (List) The phone number for invitation.
 
 - `updated_at` - (String) Last updated time.
