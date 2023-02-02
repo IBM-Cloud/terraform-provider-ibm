@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_is_vpc_default_network_acl
-Create, update, or delete a network access control list (ACL). For more information, about network ACL, see [setting up network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
+Use, update the default vpc network access control list (ACL) which gets created during vpc creation. For more information, about network ACL, see [setting up network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
@@ -29,8 +29,6 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_vpc_default_network_acl" "example" {
-  name = "example-acl"
-  vpc  = ibm_is_vpc.example.id
   rules {
     name        = "outbound"
     action      = "allow"
@@ -66,8 +64,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
-- `name` - (Optional, String) The name of the network ACL. If unspecified, the name will be a hyphenated list of randomly-selected words.
-- `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the network ACL.
+- `default_vpc_network_acl` - (Required, String) The ID of the network ACL.
 - `rules`- (Optional, Array of Strings) A list of rules for a network ACL. The order in which the rules are added to the list determines the priority of the rules. For example, the first rule that you want to enforce must be specified as the first rule in this list.
 
   Nested scheme for `rules`:
@@ -96,19 +93,21 @@ Review the argument references that you can specify for your resource.
     - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
     - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, 1 is used.
 - `tags`- (Optional, List of Strings) Tags associated with the network ACL.
-- `vpc` - (Optional, Forces new resource, String) The VPC ID. This parameter is required if you want to create a network ACL for a Generation 2 VPC.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `crn` - (String) The CRN of the network ACL.
 - `id` - (String) The ID of the network ACL.
+- `name` - (Optional, String) The name of the network ACL. If unspecified, the name will be a hyphenated list of randomly-selected words.
+- `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the network ACL.
 - `rules`- (List) The rules for a network ACL.
 
   Nested scheme for `rules`:
   - `id` - (String) The rule ID.
   - `ip_version` - (String) The IP version of the rule.
   - `subnets` - (String) The subnets for the ACL rule.
+- `vpc` - (String) The VPC ID. This parameter is required if you want to create a network ACL for a Generation 2 VPC.
 
 ## Import
 The `ibm_is_vpc_default_network_acl` resource can be imported by using the network ACL ID. 

@@ -1168,3 +1168,32 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
+
+// vpc default resources
+
+resource "ibm_is_vpc_default_network_acl" "isExampleACL" {
+  tags = ["Tag1", "tag2"]
+  default_network_acl = ibm_is_vpc.this.default_network_acl // required field
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    icmp {
+    code = 8
+    type = 1
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    icmp {
+    code = 8
+    type = 1
+    }
+  }
+}
