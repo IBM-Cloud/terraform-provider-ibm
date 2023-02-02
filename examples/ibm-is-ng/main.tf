@@ -1168,3 +1168,8 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
+
+resource "ibm_is_vpc_default_security_group" "example" {
+  name = "example-security-group"
+  vpc  = ibm_is_vpc.example.id
+}
