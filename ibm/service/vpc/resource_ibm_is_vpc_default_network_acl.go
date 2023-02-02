@@ -656,42 +656,7 @@ func nwaclVPCDefaultUpdate(d *schema.ResourceData, meta interface{}, id, name st
 }
 
 func resourceIBMISVPCDefaultNetworkACLDelete(d *schema.ResourceData, meta interface{}) error {
-	id := d.Id()
-	err := nwaclVPCDefaultDelete(d, meta, id)
-	if err != nil {
-		return err
-	}
 
-	d.SetId("")
-	return nil
-}
-
-func nwaclVPCDefaultDelete(d *schema.ResourceData, meta interface{}, id string) error {
-	sess, err := vpcClient(meta)
-	if err != nil {
-		return err
-	}
-
-	getNetworkAclOptions := &vpcv1.GetNetworkACLOptions{
-		ID: &id,
-	}
-	_, response, err := sess.GetNetworkACL(getNetworkAclOptions)
-
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("[ERROR] Error Getting Network ACL (%s): %s\n%s", id, err, response)
-	}
-
-	deleteNetworkAclOptions := &vpcv1.DeleteNetworkACLOptions{
-		ID: &id,
-	}
-	response, err = sess.DeleteNetworkACL(deleteNetworkAclOptions)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Network ACL : %s\n%s", err, response)
-	}
 	d.SetId("")
 	return nil
 }
