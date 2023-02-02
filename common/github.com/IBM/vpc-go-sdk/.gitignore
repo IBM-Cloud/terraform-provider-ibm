@@ -1,0 +1,18 @@
+# OS stuff
+.DS_Store
+
+# generator files
+.openapi-generator-ignore
+.openapi-generator/VERSION
+
+# credentials
+.env
+*.env
+
+# ignore vendor/
+vendor/
+
+/.project
+/.openapi-generator/
+
+main/
