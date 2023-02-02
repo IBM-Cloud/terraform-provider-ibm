@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -20,6 +20,12 @@ import (
 
 func TestAccIBMCdTektonPipelineTriggerBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.Trigger
+	typeVar := "manual"
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	eventListener := "listener"
+	typeVarUpdate := "manual"
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	eventListenerUpdate := fmt.Sprintf("tf_event_listener_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,15 +33,22 @@ func TestAccIBMCdTektonPipelineTriggerBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineTriggerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerConfigBasic(""),
+				Config: testAccCheckIBMCdTektonPipelineTriggerConfigBasic("", typeVar, name, eventListener),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", conf),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "id"),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "trigger_id"),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "type", "manual"),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "name", "trigger"),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "event_listener", "listener"),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "type", typeVar),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "name", name),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "event_listener", eventListener),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCdTektonPipelineTriggerConfigBasic("", typeVarUpdate, nameUpdate, eventListenerUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "event_listener", eventListenerUpdate),
 				),
 			},
 		},
@@ -121,7 +134,7 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string) string {
+func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string, typeVar string, name string, eventListener string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -172,14 +185,14 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string) string
 		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			type = "manual"
-			event_listener = "listener"
 			depends_on = [
 				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
 			]
-			name = "trigger"
+			type = "%s"
+			name = "%s"
+			event_listener = "%s"
 		}
-	`, rgName, tcName)
+	`, rgName, tcName, typeVar, name, eventListener)
 }
 
 func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar string, name string, eventListener string, maxConcurrentRuns string, enabled string, cron string, timezone string) string {
@@ -233,11 +246,11 @@ func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar str
 		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			type = "manual"
-			event_listener = "listener"
 			depends_on = [
 				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
 			]
+			type = "manual"
+			event_listener = "listener"
 			name = "%s"
 			tags = [ "tag1", "tag2" ]
 			max_concurrent_runs = %s
