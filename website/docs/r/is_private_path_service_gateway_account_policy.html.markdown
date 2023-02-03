@@ -13,10 +13,17 @@ Provides a resource for PrivatePathServiceGatewayAccountPolicy. This allows Priv
 ## Example Usage
 
 ```hcl
-resource "ibm_is_private_path_service_gateway_account_policy" "is_private_path_service_gateway_account_policy_instance" {
+resource "ibm_is_private_path_service_gateway" "example" {
+  default_access_policy = "review"
+  name = "my-example-ppsg"
+  load_balancer = ibm_is_lb.testacc_LB.id
+  zonal_affinity = true
+  service_endpoints = ["myexamplefqdn"]
+}
+resource "ibm_is_private_path_service_gateway_account_policy" "example" {
   access_policy = "deny"
   account "fee82deba12e4c0fb69c3b09d1f12345"
-  private_path_service_gateway = "private_path_service_gateway_id"
+  private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
 }
 ```
 

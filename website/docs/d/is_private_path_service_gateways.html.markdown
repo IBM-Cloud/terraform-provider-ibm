@@ -48,35 +48,23 @@ In addition to all argument references listed, you can access the following attr
 		- `href` - (String) The URL for this region.
 		- `name` - (String) The globally unique name for this region.
 	- `resource_group` - (List) The resource group for this private path service gateway.
-	Nested scheme for --resource_group--:
+		Nested scheme for **resource_group**:
 		- `href` - (String) The URL for this resource group.
-		  - Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]-)([^?#]-)(\\?([^#]-))?(#(.-))?$/`.
 		- `id` - (String) The unique identifier for this resource group.
-		  - Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-f]{32}$/`.
 		- `name` - (String) The name for this resource group.
-		  - Constraints: The maximum length is `40` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-_ ]+$/`.
 	- `resource_type` - (String) The resource type.
-	  - Constraints: Allowable values are: `private_path_service_gateway`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]-(_[a-z0-9]+)-$/`.
-	- `service_endpoints` - (List) The fully qualified domain names for this private path service gateway.
-	  - Constraints: The list items must match regular expression `/^((?=[A-Za-z0-9-]{1,63}\\.)[A-Za-z0-9-]-\\.)+[A-Za-z]{2,63}\\.?$/`. The maximum length is `10` items. The minimum length is `1` item.
+	- `service_endpoints` - (List of strings) The fully qualified domain names for this private path service gateway.
 	- `vpc` - (List) The VPC this private path service gateway resides in.
-	Nested scheme for --vpc--:
+		Nested scheme for **vpc**:
 		- `crn` - (String) The CRN for this VPC.
-		  - Constraints: The maximum length is `512` characters. The minimum length is `9` characters.
 		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-		Nested scheme for --deleted--:
+			Nested scheme for **deleted**:
 			- `more_info` - (String) Link to documentation about deleted resources.
-			  - Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]-)([^?#]-)(\\?([^#]-))?(#(.-))?$/`.
 		- `href` - (String) The URL for this VPC.
-		  - Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]-)([^?#]-)(\\?([^#]-))?(#(.-))?$/`.
 		- `id` - (String) The unique identifier for this VPC.
-		  - Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 		- `name` - (String) The name for this VPC. The name is unique across all VPCs in the region.
-		  - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]-[a-z0-9]|[0-9][-a-z0-9]-([a-z]|[-a-z][-a-z0-9]-[a-z0-9]))$/`.
 		- `resource_type` - (String) The resource type.
-		  - Constraints: Allowable values are: `vpc`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]-(_[a-z0-9]+)-$/`.
 	- `zonal_affinity` - (Boolean) Indicates whether this private path service gateway has zonal affinity.- `true`:  Traffic to the service from a zone will favor service endpoints in           the same zone.- `false`: Traffic to the service from a zone will be load balanced across all zones           in the region the service resides in.
 
-- `total_count` - (Integer) The total number of resources across all pages.
-  - Constraints: The minimum value is `0`.
+
 
