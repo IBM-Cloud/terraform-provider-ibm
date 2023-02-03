@@ -136,7 +136,7 @@ func DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindings() *schema.R
 }
 
 func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}

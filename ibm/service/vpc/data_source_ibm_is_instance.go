@@ -1129,7 +1129,7 @@ func dataSourceInstanceDisksToMap(disksItem vpcv1.InstanceDisk) (disksMap map[st
 
 	return disksMap
 }
-func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.LifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
+func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.InstanceLifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
 	lifecycleReasonsList = make([]map[string]interface{}, 0)
 	for _, lr := range lifecycleReasons {
 		currentLR := map[string]interface{}{}

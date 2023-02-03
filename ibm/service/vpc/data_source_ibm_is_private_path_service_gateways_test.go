@@ -37,4 +37,3 @@ func testAccCheckIBMIsPrivatePathServiceGatewaysDataSourceConfigBasic() string {
 		}
 	`)
 }
-

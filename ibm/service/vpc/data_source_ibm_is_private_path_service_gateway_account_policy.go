@@ -84,15 +84,15 @@ func DataSourceIBMIsPrivatePathServiceGatewayAccountPolicy() *schema.Resource {
 }
 
 func dataSourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	getPrivatePathServiceGatewayAccountPolicyOptions := &vpcv1.GetPrivatePathServiceGatewayAccountPolicyOptions{}
 
-	getPrivatePathServiceGatewayAccountPolicyOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway_id").(string))
-	getPrivatePathServiceGatewayAccountPolicyOptions.SetID(d.Get("id").(string))
+	getPrivatePathServiceGatewayAccountPolicyOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway").(string))
+	getPrivatePathServiceGatewayAccountPolicyOptions.SetID(d.Get("account_id").(string))
 
 	privatePathServiceGatewayAccountPolicy, response, err := vpcClient.GetPrivatePathServiceGatewayAccountPolicyWithContext(context, getPrivatePathServiceGatewayAccountPolicyOptions)
 	if err != nil {

@@ -73,7 +73,7 @@ func testAccCheckIBMIsPrivatePathServiceGatewayAccountPolicyExists(n string, obj
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1()
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
 		}
@@ -99,7 +99,7 @@ func testAccCheckIBMIsPrivatePathServiceGatewayAccountPolicyExists(n string, obj
 }
 
 func testAccCheckIBMIsPrivatePathServiceGatewayAccountPolicyDestroy(s *terraform.State) error {
-	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1()
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return err
 	}

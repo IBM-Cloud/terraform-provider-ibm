@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -40,20 +39,10 @@ func ResourceIBMIsPrivatePathServiceGatewayAccountPolicy() *schema.Resource {
 				Description:  "The access policy for the account:- permit: access will be permitted- deny:  access will be denied- review: access will be manually reviewed.",
 			},
 			"account": &schema.Schema{
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
+				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The account for this access policy.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The unique identifier for this account.",
-						},
-					},
-				},
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -75,7 +64,7 @@ func ResourceIBMIsPrivatePathServiceGatewayAccountPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that the account policy was updated.",
 			},
-			"private_path_service_gateway_account_policy_id": &schema.Schema{
+			"private_path_service_gateway_account_policy": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this account policy.",
@@ -113,11 +102,11 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyCreate(context context.C
 
 	createPrivatePathServiceGatewayAccountPolicyOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway").(string))
 	createPrivatePathServiceGatewayAccountPolicyOptions.SetAccessPolicy(d.Get("access_policy").(string))
-	accountModel, err := resourceIBMIsPrivatePathServiceGatewayAccountPolicyMapToAccountIdentity(d.Get("account.0").(map[string]interface{}))
-	if err != nil {
-		return diag.FromErr(err)
+	accountId := d.Get("account").(string)
+	account := &vpcv1.AccountIdentity{
+		ID: &accountId,
 	}
-	createPrivatePathServiceGatewayAccountPolicyOptions.SetAccount(accountModel)
+	createPrivatePathServiceGatewayAccountPolicyOptions.SetAccount(account)
 
 	privatePathServiceGatewayAccountPolicy, response, err := vpcClient.CreatePrivatePathServiceGatewayAccountPolicyWithContext(context, createPrivatePathServiceGatewayAccountPolicyOptions)
 	if err != nil {
@@ -156,18 +145,8 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Con
 		return diag.FromErr(fmt.Errorf("GetPrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("private_path_service_gateway", getPrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateway: %s", err))
-	}
 	if err = d.Set("access_policy", privatePathServiceGatewayAccountPolicy.AccessPolicy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting access_policy: %s", err))
-	}
-	accountMap, err := resourceIBMIsPrivatePathServiceGatewayAccountPolicyAccountIdentityToMap(privatePathServiceGatewayAccountPolicy.Account)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("account", []map[string]interface{}{accountMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
@@ -181,7 +160,7 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Con
 	if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
-	if err = d.Set("private_path_service_gateway_account_policy_id", privatePathServiceGatewayAccountPolicy.ID); err != nil {
+	if err = d.Set("private_path_service_gateway_account_policy", privatePathServiceGatewayAccountPolicy.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateway_account_policy_id: %s", err))
 	}
 
@@ -207,23 +186,19 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyUpdate(context context.C
 	hasChange := false
 
 	patchVals := &vpcv1.PrivatePathServiceGatewayAccountPolicyPatch{}
-	if d.HasChange("private_path_service_gateway") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "private_path_service_gateway"))
-	}
-	if d.HasChange("access_policy") || d.HasChange("account") {
+
+	if d.HasChange("access_policy") {
 		newAccessPolicy := d.Get("access_policy").(string)
 		patchVals.AccessPolicy = &newAccessPolicy
-		account, err := resourceIBMIsPrivatePathServiceGatewayAccountPolicyMapToAccountIdentity(d.Get("account.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updatePrivatePathServiceGatewayAccountPolicyOptions.SetAccount(account)
 		hasChange = true
 	}
 
 	if hasChange {
 		updatePrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayAccountPolicyPatch, _ = patchVals.AsPatch()
+		if err != nil {
+			log.Printf("[DEBUG] Error calling AsPatch for PrivatePathServiceGatewayAccountPolicyPatch %s", err)
+			return diag.FromErr(err)
+		}
 		_, response, err := vpcClient.UpdatePrivatePathServiceGatewayAccountPolicyWithContext(context, updatePrivatePathServiceGatewayAccountPolicyOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdatePrivatePathServiceGatewayAccountPolicyWithContext failed %s\n%s", err, response)
@@ -259,39 +234,4 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyDelete(context context.C
 	d.SetId("")
 
 	return nil
-}
-
-func resourceIBMIsPrivatePathServiceGatewayAccountPolicyMapToAccountIdentity(modelMap map[string]interface{}) (vpcv1.AccountIdentityIntf, error) {
-	model := &vpcv1.AccountIdentity{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsPrivatePathServiceGatewayAccountPolicyMapToAccountIdentityByID(modelMap map[string]interface{}) (*vpcv1.AccountIdentityByID, error) {
-	model := &vpcv1.AccountIdentityByID{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
-	return model, nil
-}
-
-func resourceIBMIsPrivatePathServiceGatewayAccountPolicyAccountIdentityToMap(model vpcv1.AccountIdentityIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*vpcv1.AccountIdentityByID); ok {
-		return resourceIBMIsPrivatePathServiceGatewayAccountPolicyAccountIdentityByIDToMap(model.(*vpcv1.AccountIdentityByID))
-	} else if _, ok := model.(*vpcv1.AccountIdentity); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*vpcv1.AccountIdentity)
-		if model.ID != nil {
-			modelMap["id"] = model.ID
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.AccountIdentityIntf subtype encountered")
-	}
-}
-
-func resourceIBMIsPrivatePathServiceGatewayAccountPolicyAccountIdentityByIDToMap(model *vpcv1.AccountIdentityByID) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
-	return modelMap, nil
 }

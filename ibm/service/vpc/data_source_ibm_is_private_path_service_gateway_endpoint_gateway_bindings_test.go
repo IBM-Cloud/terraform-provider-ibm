@@ -35,8 +35,7 @@ func TestAccIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceBasic
 func testAccCheckIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_is_private_path_service_gateway_endpoint_gateway_bindings" "is_private_path_service_gateway_endpoint_gateway_bindings_instance" {
-			private_path_service_gateway_id = "private_path_service_gateway_id"
+			private_path_service_gateway = "private_path_service_gateway_id"
 		}
 	`)
 }
-

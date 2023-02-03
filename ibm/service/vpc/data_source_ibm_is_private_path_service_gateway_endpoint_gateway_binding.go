@@ -21,12 +21,12 @@ func DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBinding() *schema.Re
 		ReadContext: dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead,
 
 		Schema: map[string]*schema.Schema{
-			"private_path_service_gateway_id": &schema.Schema{
+			"private_path_service_gateway": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The private path service gateway identifier.",
 			},
-			"id": &schema.Schema{
+			"endpoint_gateway_binding": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The endpoint gateway binding identifier.",
@@ -89,15 +89,15 @@ func DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBinding() *schema.Re
 }
 
 func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	getPrivatePathServiceGatewayEndpointGatewayBindingOptions := &vpcv1.GetPrivatePathServiceGatewayEndpointGatewayBindingOptions{}
 
-	getPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway_id").(string))
-	getPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetID(d.Get("id").(string))
+	getPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway").(string))
+	getPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetID(d.Get("endpoint_gateway_binding").(string))
 
 	privatePathServiceGatewayEndpointGatewayBinding, response, err := vpcClient.GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, getPrivatePathServiceGatewayEndpointGatewayBindingOptions)
 	if err != nil {
