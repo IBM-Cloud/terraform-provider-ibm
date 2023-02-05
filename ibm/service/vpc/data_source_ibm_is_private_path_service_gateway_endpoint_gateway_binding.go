@@ -105,7 +105,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead(context 
 		return diag.FromErr(fmt.Errorf("GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*privatePathServiceGatewayEndpointGatewayBinding.ID)
+	d.SetId(fmt.Sprintf("%s//%s", *getPrivatePathServiceGatewayEndpointGatewayBindingOptions.PrivatePathServiceGatewayID, *privatePathServiceGatewayEndpointGatewayBinding.ID))
 
 	account := []map[string]interface{}{}
 	if privatePathServiceGatewayEndpointGatewayBinding.Account != nil {
@@ -143,8 +143,10 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead(context 
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	if privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt != nil {
+		if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
 	}
 
 	return nil

@@ -21,59 +21,66 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 		ReadContext: dataSourceIBMIsPrivatePathServiceGatewayRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The private path service gateway identifier.",
+			"private_path_service_gateway": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"private_path_service_gateway_name", "private_path_service_gateway"},
+				Description:  "The private path service gateway identifier.",
 			},
-			"created_at": &schema.Schema{
+			"private_path_service_gateway_name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"private_path_service_gateway_name", "private_path_service_gateway"},
+				Description:  "The private path service gateway name.",
+			},
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time that the private path service gateway was created.",
 			},
-			"crn": &schema.Schema{
+			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this private path service gateway.",
 			},
-			"default_access_policy": &schema.Schema{
+			"default_access_policy": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The policy to use for bindings from accounts without an explicit account policy.",
 			},
-			"endpoint_gateways_count": &schema.Schema{
+			"endpoint_gateways_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The number of endpoint gateways using this private path service gateway.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL for this private path service gateway.",
 			},
-			"lifecycle_state": &schema.Schema{
+			"lifecycle_state": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The lifecycle state of the private path service gateway.",
 			},
-			"load_balancer": &schema.Schema{
+			"load_balancer": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The load balancer for this private path service gateway.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
+						"crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The load balancer's CRN.",
 						},
-						"deleted": &schema.Schema{
+						"deleted": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"more_info": &schema.Schema{
+									"more_info": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Link to documentation about deleted resources.",
@@ -81,22 +88,22 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 								},
 							},
 						},
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The load balancer's canonical URL.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this load balancer.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name for this load balancer. The name is unique across all load balancers in the VPC.",
 						},
-						"resource_type": &schema.Schema{
+						"resource_type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The resource type.",
@@ -104,28 +111,28 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 					},
 				},
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name for this private path service gateway. The name is unique across all private path service gateways in the VPC.",
 			},
-			"published": &schema.Schema{
+			"published": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicates the availability of this private path service gateway- `true`: Any account can request access to this private path service gateway.- `false`: Access is restricted to the account that created this private path service gateway.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The region served by this private path service gateway.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL for this region.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The globally unique name for this region.",
@@ -133,23 +140,23 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 					},
 				},
 			},
-			"resource_group": &schema.Schema{
+			"resource_group": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The resource group for this private path service gateway.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL for this resource group.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this resource group.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name for this resource group.",
@@ -157,12 +164,12 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 					},
 				},
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The resource type.",
 			},
-			"service_endpoints": &schema.Schema{
+			"service_endpoints": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The fully qualified domain names for this private path service gateway.",
@@ -170,24 +177,24 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"vpc": &schema.Schema{
+			"vpc": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The VPC this private path service gateway resides in.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
+						"crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this VPC.",
 						},
-						"deleted": &schema.Schema{
+						"deleted": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"more_info": &schema.Schema{
+									"more_info": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Link to documentation about deleted resources.",
@@ -195,22 +202,22 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 								},
 							},
 						},
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL for this VPC.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this VPC.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name for this VPC. The name is unique across all VPCs in the region.",
 						},
-						"resource_type": &schema.Schema{
+						"resource_type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The resource type.",
@@ -218,7 +225,7 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 					},
 				},
 			},
-			"zonal_affinity": &schema.Schema{
+			"zonal_affinity": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicates whether this private path service gateway has zonal affinity.- `true`:  Traffic to the service from a zone will favor service endpoints in           the same zone.- `false`: Traffic to the service from a zone will be load balanced across all zones           in the region the service resides in.",
@@ -233,16 +240,37 @@ func dataSourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sc
 		return diag.FromErr(err)
 	}
 
-	getPrivatePathServiceGatewayOptions := &vpcv1.GetPrivatePathServiceGatewayOptions{}
+	var privatePathServiceGateway *vpcv1.PrivatePathServiceGateway
+	if ppsgId, ok := d.GetOk("private_path_service_gateway"); ok {
 
-	getPrivatePathServiceGatewayOptions.SetID(d.Get("id").(string))
+		getPrivatePathServiceGatewayOptions := &vpcv1.GetPrivatePathServiceGatewayOptions{}
 
-	privatePathServiceGateway, response, err := vpcClient.GetPrivatePathServiceGatewayWithContext(context, getPrivatePathServiceGatewayOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
+		getPrivatePathServiceGatewayOptions.SetID(ppsgId.(string))
+
+		ppsg, response, err := vpcClient.GetPrivatePathServiceGatewayWithContext(context, getPrivatePathServiceGatewayOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("GetPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
+		}
+		privatePathServiceGateway = ppsg
+	} else {
+		ppsgName := d.Get("private_path_service_gateway_name").(string)
+
+		listPrivatePathServiceGatewaysOptions := &vpcv1.ListPrivatePathServiceGatewaysOptions{}
+
+		privatePathServiceGatewayCollection, response, err := vpcClient.ListPrivatePathServiceGatewaysWithContext(context, listPrivatePathServiceGatewaysOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ListPrivatePathServiceGatewaysWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ListPrivatePathServiceGatewaysWithContext failed %s\n%s", err, response))
+		}
+		if privatePathServiceGatewayCollection.PrivatePathServiceGateways != nil {
+			for _, ppsgItem := range privatePathServiceGatewayCollection.PrivatePathServiceGateways {
+				if *ppsgItem.Name == ppsgName {
+					privatePathServiceGateway = &ppsgItem
+				}
+			}
+		}
 	}
-
 	d.SetId(*privatePathServiceGateway.ID)
 
 	if err = d.Set("created_at", flex.DateTimeToString(privatePathServiceGateway.CreatedAt)); err != nil {

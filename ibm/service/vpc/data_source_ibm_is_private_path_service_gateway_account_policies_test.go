@@ -14,23 +14,27 @@ import (
 )
 
 func TestAccIBMIsPrivatePathServiceGatewayAccountPoliciesDataSourceBasic(t *testing.T) {
-	ppsgId := fmt.Sprintf("tf_private_path_service_gateway_id_%d", acctest.RandIntRange(10, 100))
+	accessPolicy1 := "deny"
 	accessPolicy := "deny"
-
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tf-test-lb%dd", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-test-ppsg%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsPrivatePathServiceGatewayAccountPoliciesDataSourceConfigBasic(ppsgId, accessPolicy),
+				Config: testAccCheckIBMIsPrivatePathServiceGatewayAccountPoliciesDataSourceConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name, accessPolicy1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.#"),
-					resource.TestCheckResourceAttr("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.access_policy", accessPolicy),
+					resource.TestCheckResourceAttr("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.access_policy", accessPolicy1),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.account.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.account.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.account.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.account.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.account.0.resource_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policies.is_private_path_service_gateway_account_policies", "account_policies.0.resource_type"),
 				),
@@ -39,16 +43,16 @@ func TestAccIBMIsPrivatePathServiceGatewayAccountPoliciesDataSourceBasic(t *test
 	})
 }
 
-func testAccCheckIBMIsPrivatePathServiceGatewayAccountPoliciesDataSourceConfigBasic(ppsgId, accessPolicy string) string {
-	return fmt.Sprintf(`
-		resource "ibm_is_private_path_service_gateway_account_policy" "is_private_path_service_gateway_account_policy_instance" {
-			private_path_service_gateway = "%s"
+func testAccCheckIBMIsPrivatePathServiceGatewayAccountPoliciesDataSourceConfigBasic(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, accessPolicy1 string) string {
+	return testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name) + fmt.Sprintf(`
+		resource "ibm_is_private_path_service_gateway_account_policy" "is_private_path_service_gateway_account_policy" {
+			private_path_service_gateway = ibm_is_private_path_service_gateway.is_private_path_service_gateway.id
 			access_policy = "%s"
 			account = "%s"
 		}
 
-		data "ibm_is_private_path_service_gateway_account_policies" "is_private_path_service_gateway_account_policies_instance" {
-			private_path_service_gateway_id = ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy.private_path_service_gateway_id
+		data "ibm_is_private_path_service_gateway_account_policies" "is_private_path_service_gateway_account_policies" {
+			private_path_service_gateway = ibm_is_private_path_service_gateway.is_private_path_service_gateway.id
 		}
-	`, ppsgId, accessPolicy, acc.AccountId)
+	`, accessPolicy1, acc.AccountId)
 }

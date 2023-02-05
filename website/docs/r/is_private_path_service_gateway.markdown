@@ -20,20 +20,15 @@ resource "ibm_is_private_path_service_gateway" "example" {
   zonal_affinity = true
   service_endpoints = ["myexamplefqdn"]
 }
-resource "ibm_is_private_path_service_gateway_account_policy" "example" {
-  access_policy = "deny"
-  account "fee82deba12e4c0fb69c3b09d1f12345"
-  private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
-}
 ```
 
 ## Argument Reference
 
 Review the argument reference that you can specify for your resource.
 
-- `access_policy` - (Required, String) The access policy for the account:- permit: access will be permitted- deny:  access will be denied- review: access will be manually reviewed. Allowable values are: `deny`, `permit`, `review`. 
-- `account` - (Required, Forces new resource, String) The ID of the account for this access policy.
-- `private_path_service_gateway` - (Required, Forces new resource, String) The private path service gateway identifier.
+- `default_access_policy` - (Required, String) The access policy for the account:- permit: access will be permitted- deny:  access will be denied- review: access will be manually reviewed. Allowable values are: `deny`, `permit`, `review`. 
+- `load_balancer` - (Required, String) The ID of the load balancer.
+- `service_endpoints` - (Required,  String) The private path service gateway identifier.
 
 ## Attribute Reference
 

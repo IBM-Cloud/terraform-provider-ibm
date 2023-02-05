@@ -26,6 +26,11 @@ func DataSourceIBMIsPrivatePathServiceGatewayAccountPolicies() *schema.Resource 
 				Required:    true,
 				Description: "The private path service gateway identifier.",
 			},
+			"account": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filters the collection to resources with the specified account identifier.",
+			},
 			"account_policies": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -97,7 +102,10 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPoliciesRead(context context
 	listPrivatePathServiceGatewayAccountPoliciesOptions := &vpcv1.ListPrivatePathServiceGatewayAccountPoliciesOptions{}
 
 	listPrivatePathServiceGatewayAccountPoliciesOptions.SetPrivatePathServiceGatewayID(ppsgId)
-
+	if accountIntf, ok := d.GetOk("account"); ok {
+		account := accountIntf.(string)
+		listPrivatePathServiceGatewayAccountPoliciesOptions.AccountID = &account
+	}
 	var pager *vpcv1.PrivatePathServiceGatewayAccountPoliciesPager
 	pager, err = vpcClient.NewPrivatePathServiceGatewayAccountPoliciesPager(listPrivatePathServiceGatewayAccountPoliciesOptions)
 	if err != nil {

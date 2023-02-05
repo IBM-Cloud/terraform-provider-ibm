@@ -13,9 +13,33 @@ Provides a read-only data source for PrivatePathServiceGatewayEndpointGatewayBin
 ## Example Usage
 
 ```hcl
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+
+resource "ibm_is_subnet" "example" {
+  name = "example-subnet"
+  vpc = ibm_is_vpc.example.id
+  zone = "us-south-2"
+  ipv4_cidr_block = "10.240.0.0/24"
+}
+resource "ibm_is_lb" "example" {
+  name = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
+}
+resource "ibm_is_private_path_service_gateway" "example" {
+  default_access_policy = "review"
+  name = "my-example-ppsg"
+  load_balancer = ibm_is_lb.example.id
+  zonal_affinity = true
+  service_endpoints = ["example-fqdn"]
+}
+data "ibm_is_private_path_service_gateway_endpoint_gateway_bindings" "example" {
+	private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
+}
 data "ibm_is_private_path_service_gateway_endpoint_gateway_binding" "is_private_path_service_gateway_endpoint_gateway_binding" {
-	id = "id"
-	private_path_service_gateway_id = "private_path_service_gateway_id"
+	endpoint_gateway_binding = data.ibm_is_private_path_service_gateway_endpoint_gateway_bindings.example.endpoint_gateway_bindings.0.id
+	private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
 }
 ```
 
@@ -23,37 +47,23 @@ data "ibm_is_private_path_service_gateway_endpoint_gateway_binding" "is_private_
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) The endpoint gateway binding identifier.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
-* `private_path_service_gateway_id` - (Required, Forces new resource, String) The private path service gateway identifier.
+- `endpoint_gateway_binding` - (Required, String) The endpoint gateway binding identifier.
+- `private_path_service_gateway` - (Required, String) The private path service gateway identifier.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the PrivatePathServiceGatewayEndpointGatewayBinding.
-* `account` - (List) The account that created the endpoint gateway.
-Nested scheme for **account**:
-	* `id` - (String)
-	  * Constraints: The value must match regular expression `/^[0-9a-f]{32}$/`.
-	* `resource_type` - (String) The resource type.
-	  * Constraints: Allowable values are: `account`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
-
-* `created_at` - (String) The date and time that the endpoint gateway binding was created.
-
-* `expiration_at` - (String) The expiration date and time for the endpoint gateway binding.
-
-* `href` - (String) The URL for this endpoint gateway binding.
-  * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
-* `lifecycle_state` - (String) The lifecycle state of the endpoint gateway binding.
-  * Constraints: Allowable values are: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating`, `waiting`.
-
-* `resource_type` - (String) The resource type.
-  * Constraints: Allowable values are: `private_path_service_gateway_endpoint_gateway_binding`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
-
-* `status` - (String) The status of the endpoint gateway binding- `denied`: endpoint gateway binding was denied- `expired`: endpoint gateway binding has expired- `pending`: endpoint gateway binding is awaiting review- `permitted`: endpoint gateway binding was permittedThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-  * Constraints: Allowable values are: `denied`, `expired`, `pending`, `permitted`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
-
-* `updated_at` - (String) The date and time that the endpoint gateway binding was updated.
+- `id` - The unique identifier of the PrivatePathServiceGatewayEndpointGatewayBinding. The ID is composed of `<private_path_service_gateway_id>/<endpoint_gateway_binding_id>`.
+- `account` - (List) The account that created the endpoint gateway.
+  Nested scheme for **account**:
+	- `id` - (String)
+	- `resource_type` - (String) The resource type.
+- `created_at` - (String) The date and time that the endpoint gateway binding was created.
+- `expiration_at` - (String) The expiration date and time for the endpoint gateway binding.
+- `href` - (String) The URL for this endpoint gateway binding.
+- `lifecycle_state` - (String) The lifecycle state of the endpoint gateway binding.
+- `resource_type` - (String) The resource type.
+- `status` - (String) The status of the endpoint gateway binding- `denied`: endpoint gateway binding was denied- `expired`: endpoint gateway binding has expired- `pending`: endpoint gateway binding is awaiting review- `permitted`: endpoint gateway binding was permittedThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+- `updated_at` - (String) The date and time that the endpoint gateway binding was updated.
 

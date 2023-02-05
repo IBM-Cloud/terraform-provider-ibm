@@ -488,7 +488,7 @@ func init() {
 
 	AccountId = os.Getenv("IS_ACCOUNT_ID")
 	if AccountId == "" {
-		AccountId = "10.120.0.0/24"
+		AccountId = "fee82deba12e4c0fb69c3b09d1f12345"
 		fmt.Println("[INFO] Set the environment variable IS_ACCOUNT_ID for testing private_path_service_gateway_account_policy else it is set to default value 'fee82deba12e4c0fb69c3b09d1f12345'")
 	}
 
