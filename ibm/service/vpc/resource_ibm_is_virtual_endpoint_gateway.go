@@ -247,7 +247,7 @@ func ResourceIBMISEndpointGatewayValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "provider_cloud_service, provider_infrastructure_service"})
+			AllowedValues:              "provider_cloud_service, provider_infrastructure_service, private_path_service_gateway"})
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{

@@ -49,7 +49,7 @@ data "ibm_is_private_path_service_gateway_account_policy" "example" {
 
 Review the argument reference that you can specify for your data source.
 
-- `account_id` - (Required, String) The account policy identifier.
+- `account_policy` - (Required, String) The account policy identifier.
 - `private_path_service_gateway` - (Required, String) The private path service gateway identifier.
 
 ## Attribute Reference

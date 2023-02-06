@@ -36,6 +36,33 @@ func TestAccIBMISVirtualEndpointGateway_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVirtualEndpointGateway_PPSG(t *testing.T) {
+	var endpointGateway string
+	accessPolicy := "deny"
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tf-test-lb%dd", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-test-ppsg%d", acctest.RandIntRange(10, 100))
+	name := "ibm_is_virtual_endpoint_gateway.endpoint_gateway"
+	targetName := fmt.Sprintf("tf-egw-target%d", acctest.RandIntRange(10, 100))
+	egwName := fmt.Sprintf("tf-egw%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name1, egwName, targetName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
+					resource.TestCheckResourceAttr(name, "name", name1),
+					resource.TestCheckResourceAttr(name, "target.0.name", targetName),
+					resource.TestCheckResourceAttr(name, "target.0.resource_type", "private_path_service_gateway"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISVirtualEndpointGateway_CharacterCount(t *testing.T) {
 	var endpointGateway string
 	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
@@ -251,6 +278,19 @@ func testAccCheckisVirtualEndpointGatewayConfigBasic(vpcname1, subnetname1, name
 		vpc = ibm_is_vpc.testacc_vpc.id
 		resource_group = data.ibm_resource_group.test_acc.id
 	}`, vpcname1, subnetname1, acc.ISZoneName, acc.ISCIDR, name1)
+}
+
+func testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, egwName, targetName string) string {
+	return testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name) + fmt.Sprintf(`
+	resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+		name = "%s"
+		target {
+		  name          = "%s"
+		  resource_type = "private_path_service_gateway"
+		}
+		vpc = ibm_is_vpc.testacc_vpc.id
+		resource_group = data.ibm_resource_group.test_acc.id
+	}`, egwName, targetName)
 }
 
 func testAccCheckisVirtualEndpointGatewayConfigFullySpecified(vpcname1, subnetname1, name1 string) string {

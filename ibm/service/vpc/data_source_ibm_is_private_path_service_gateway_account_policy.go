@@ -26,7 +26,7 @@ func DataSourceIBMIsPrivatePathServiceGatewayAccountPolicy() *schema.Resource {
 				Required:    true,
 				Description: "The private path service gateway identifier.",
 			},
-			"account_id": &schema.Schema{
+			"account_policy": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The account policy identifier.",

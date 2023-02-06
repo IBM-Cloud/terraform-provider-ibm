@@ -52,7 +52,7 @@ func testAccCheckIBMIsPrivatePathServiceGatewayAccountPolicyDataSourceConfigBasi
 		}
 		data "ibm_is_private_path_service_gateway_account_policy" "is_private_path_service_gateway_account_policy" {
 			private_path_service_gateway = ibm_is_private_path_service_gateway.is_private_path_service_gateway.id
-			account_id = ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy.id
+			account_policy = ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy.id
 		}
-	`)
+	`, accessPolicy1, acc.AccountId)
 }
