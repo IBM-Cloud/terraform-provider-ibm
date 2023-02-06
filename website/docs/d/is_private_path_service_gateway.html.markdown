@@ -54,9 +54,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `id` - The unique identifier of the PrivatePathServiceGateway.
 - `created_at` - (String) The date and time that the private path service gateway was created.
-
 - `crn` - (String) The CRN for this private path service gateway.
-
 - `default_access_policy` - (String) The policy to use for bindings from accounts without an explicit account policy.
 - `endpoint_gateways_count` - (Integer) The number of endpoint gateways using this private path service gateway.
 - `href` - (String) The URL for this private path service gateway.
@@ -83,7 +81,7 @@ In addition to all argument references listed, you can access the following attr
 	- `id` - (String) The unique identifier for this resource group.
 	- `name` - (String) The name for this resource group.
 - `resource_type` - (String) The resource type.
-- `service_endpoints` - (List) The fully qualified domain names for this private path service gateway.
+- `service_endpoints` - (List of strings) The fully qualified domain names for this private path service gateway.
 - `vpc` - (List) The VPC this private path service gateway resides in.
 	Nested scheme for **vpc**:
 	- `crn` - (String) The CRN for this VPC.

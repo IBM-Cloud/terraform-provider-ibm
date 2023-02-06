@@ -35,7 +35,7 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 			},
 			"default_access_policy": &schema.Schema{
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_private_path_service_gateway", "access_policy"),
 				Description:  "The access policy for the account:- permit: access will be permitted- deny:  access will be denied- review: access will be manually reviewed.",
 			},
@@ -218,6 +218,9 @@ func resourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sche
 	}
 	if err = d.Set("published", privatePathServiceGateway.Published); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting published: %s", err))
+	}
+	if err = d.Set("load_balancer", *privatePathServiceGateway.LoadBalancer.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
 	}
 	if err = d.Set("lifecycle_state", privatePathServiceGateway.LifecycleState); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
