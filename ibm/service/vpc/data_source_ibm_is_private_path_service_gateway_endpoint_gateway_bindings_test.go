@@ -19,12 +19,14 @@ func TestAccIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceBasic
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
 	lbname := fmt.Sprintf("tf-test-lb%dd", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-test-ppsg%d", acctest.RandIntRange(10, 100))
+	targetName := fmt.Sprintf("tf-egw-target%d", acctest.RandIntRange(10, 100))
+	egwName := fmt.Sprintf("tf-egw%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name),
+				Config: testAccCheckIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name, egwName, targetName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_endpoint_gateway_bindings.is_private_path_service_gateway_endpoint_gateway_bindings", "private_path_service_gateway"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_endpoint_gateway_bindings.is_private_path_service_gateway_endpoint_gateway_bindings", "endpoint_gateway_bindings.#"),
@@ -44,10 +46,19 @@ func TestAccIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceBasic
 	})
 }
 
-func testAccCheckIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceConfigBasic(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name string) string {
+func testAccCheckIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsDataSourceConfigBasic(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, egwName, targetName string) string {
 	return testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name) + fmt.Sprintf(`
+		resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+			name = "%s"
+			target {
+			name          = "%s"
+			resource_type = "private_path_service_gateway"
+			}
+			vpc = ibm_is_vpc.testacc_vpc.id
+			resource_group = data.ibm_resource_group.test_acc.id
+		}
 		data "ibm_is_private_path_service_gateway_endpoint_gateway_bindings" "is_private_path_service_gateway_endpoint_gateway_bindings" {
 			private_path_service_gateway = ibm_is_private_path_service_gateway.is_private_path_service_gateway.id
 		}
-	`)
+	`, egwName, targetName)
 }
