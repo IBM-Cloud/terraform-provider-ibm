@@ -49,6 +49,14 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 					"cluster"),
 			},
 
+			"default_worker_pool": {
+				Type:        schema.TypeBool,
+				Required:    false,
+				ForceNew:    false,
+				Optional:    true,
+				Description: "If true, instead of creating one, the create function will read the the clsuter's \"default\" workerpool ",
+			},
+
 			"flavor": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -231,6 +239,10 @@ func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
+
+	if b, ok := d.GetOk("default_worker_pool"); ok && b.(bool) {
+		return resourceIBMContainerVpcWorkerPoolRead(d, meta)
+	}
 
 	wpClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {

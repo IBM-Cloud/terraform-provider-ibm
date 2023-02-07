@@ -251,7 +251,7 @@ func ResourceIBMContainerCluster() *schema.Resource {
 
 			"machine_type": {
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				ForceNew:    false,
 				Optional:    true,
 				Description: "Machine type",
 			},
@@ -314,7 +314,7 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			"operating_system": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Computed:    true,
 				Description: "The operating system of the workers in the default worker pool.",
 			},
@@ -1066,38 +1066,38 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		d.Set("force_delete_storage", forceDeleteStorage)
 	}
 
-	if d.HasChange("default_pool_size") && !d.IsNewResource() {
-		workerPoolsAPI := csClient.WorkerPools()
-		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
-		if err != nil {
-			return err
-		}
-		var poolName string
-		var poolContains bool
+	// if d.HasChange("default_pool_size") && !d.IsNewResource() {
+	// 	workerPoolsAPI := csClient.WorkerPools()
+	// 	workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	var poolName string
+	// 	var poolContains bool
 
-		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-			poolName = defaultWorkerPool
+	// 	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
+	// 		poolName = defaultWorkerPool
 
-			poolContains = true
-		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
-			poolName = computeWorkerPool
-			poolContains = true
-		}
-		if poolContains {
-			poolSize := d.Get("default_pool_size").(int)
-			err = workerPoolsAPI.ResizeWorkerPool(clusterID, poolName, poolSize, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating the default_pool_size %d: %s", poolSize, err)
-			}
+	// 		poolContains = true
+	// 	} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
+	// 		poolName = computeWorkerPool
+	// 		poolContains = true
+	// 	}
+	// 	if poolContains {
+	// 		poolSize := d.Get("default_pool_size").(int)
+	// 		err = workerPoolsAPI.ResizeWorkerPool(clusterID, poolName, poolSize, targetEnv)
+	// 		if err != nil {
+	// 			return fmt.Errorf("[ERROR] Error updating the default_pool_size %d: %s", poolSize, err)
+	// 		}
 
-			_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
-			}
-		} else {
-			return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
-		}
-	}
+	// 		_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+	// 		if err != nil {
+	// 			return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+	// 		}
+	// 	} else {
+	// 		return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
+	// 	}
+	// }
 
 	if d.HasChange("labels") {
 		workerPoolsAPI := csClient.WorkerPools()
@@ -1171,83 +1171,83 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	}
 
-	if d.HasChange("worker_num") {
-		old, new := d.GetChange("worker_num")
-		oldCount := old.(int)
-		newCount := new.(int)
-		if newCount > oldCount {
-			count := newCount - oldCount
-			machineType := d.Get("machine_type").(string)
-			publicVlanID := d.Get("public_vlan_id").(string)
-			privateVlanID := d.Get("private_vlan_id").(string)
-			hardware := d.Get("hardware").(string)
-			switch strings.ToLower(hardware) {
-			case hardwareDedicated:
-				hardware = isolationPrivate
-			case hardwareShared:
-				hardware = isolationPublic
-			}
-			params := v1.WorkerParam{
-				WorkerNum:   count,
-				MachineType: machineType,
-				PublicVlan:  publicVlanID,
-				PrivateVlan: privateVlanID,
-				Isolation:   hardware,
-			}
-			wrkAPI.Add(clusterID, params, targetEnv)
-		} else if oldCount > newCount {
-			count := oldCount - newCount
-			workerFields, err := wrkAPI.List(clusterID, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
-			}
-			for i := 0; i < count; i++ {
-				err := wrkAPI.Delete(clusterID, workerFields[i].ID, targetEnv)
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error deleting workers of cluster (%s): %s", d.Id(), err)
-				}
-			}
-		}
+	// if d.HasChange("worker_num") {
+	// 	old, new := d.GetChange("worker_num")
+	// 	oldCount := old.(int)
+	// 	newCount := new.(int)
+	// 	if newCount > oldCount {
+	// 		count := newCount - oldCount
+	// 		machineType := d.Get("machine_type").(string)
+	// 		publicVlanID := d.Get("public_vlan_id").(string)
+	// 		privateVlanID := d.Get("private_vlan_id").(string)
+	// 		hardware := d.Get("hardware").(string)
+	// 		switch strings.ToLower(hardware) {
+	// 		case hardwareDedicated:
+	// 			hardware = isolationPrivate
+	// 		case hardwareShared:
+	// 			hardware = isolationPublic
+	// 		}
+	// 		params := v1.WorkerParam{
+	// 			WorkerNum:   count,
+	// 			MachineType: machineType,
+	// 			PublicVlan:  publicVlanID,
+	// 			PrivateVlan: privateVlanID,
+	// 			Isolation:   hardware,
+	// 		}
+	// 		wrkAPI.Add(clusterID, params, targetEnv)
+	// 	} else if oldCount > newCount {
+	// 		count := oldCount - newCount
+	// 		workerFields, err := wrkAPI.List(clusterID, targetEnv)
+	// 		if err != nil {
+	// 			return fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
+	// 		}
+	// 		for i := 0; i < count; i++ {
+	// 			err := wrkAPI.Delete(clusterID, workerFields[i].ID, targetEnv)
+	// 			if err != nil {
+	// 				return fmt.Errorf("[ERROR] Error deleting workers of cluster (%s): %s", d.Id(), err)
+	// 			}
+	// 		}
+	// 	}
 
-		_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
-		}
-	}
+	// 	_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+	// 	if err != nil {
+	// 		return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+	// 	}
+	// }
 
-	if d.HasChange("workers_info") {
-		oldWorkers, newWorkers := d.GetChange("workers_info")
-		oldWorker := oldWorkers.([]interface{})
-		newWorker := newWorkers.([]interface{})
-		for _, nW := range newWorker {
-			newPack := nW.(map[string]interface{})
-			for _, oW := range oldWorker {
-				oldPack := oW.(map[string]interface{})
-				if strings.Compare(newPack["version"].(string), oldPack["version"].(string)) != 0 {
-					cluster, err := clusterAPI.Find(clusterID, targetEnv)
-					if err != nil {
-						return fmt.Errorf("[ERROR] workers_info Error retrieving cluster %s: %s", clusterID, err)
-					}
-					if newPack["version"].(string) != strings.Split(cluster.MasterKubeVersion, "_")[0] {
-						return fmt.Errorf("[ERROR] Worker version %s should match the master kube version %s", newPack["version"].(string), strings.Split(cluster.MasterKubeVersion, "_")[0])
-					}
-					params := v1.WorkerUpdateParam{
-						Action: "update",
-					}
-					err = wrkAPI.Update(clusterID, oldPack["id"].(string), params, targetEnv)
-					if err != nil {
-						return fmt.Errorf("[ERROR] Error updating worker %s: %s", oldPack["id"].(string), err)
-					}
+	// if d.HasChange("workers_info") {
+	// 	oldWorkers, newWorkers := d.GetChange("workers_info")
+	// 	oldWorker := oldWorkers.([]interface{})
+	// 	newWorker := newWorkers.([]interface{})
+	// 	for _, nW := range newWorker {
+	// 		newPack := nW.(map[string]interface{})
+	// 		for _, oW := range oldWorker {
+	// 			oldPack := oW.(map[string]interface{})
+	// 			if strings.Compare(newPack["version"].(string), oldPack["version"].(string)) != 0 {
+	// 				cluster, err := clusterAPI.Find(clusterID, targetEnv)
+	// 				if err != nil {
+	// 					return fmt.Errorf("[ERROR] workers_info Error retrieving cluster %s: %s", clusterID, err)
+	// 				}
+	// 				if newPack["version"].(string) != strings.Split(cluster.MasterKubeVersion, "_")[0] {
+	// 					return fmt.Errorf("[ERROR] Worker version %s should match the master kube version %s", newPack["version"].(string), strings.Split(cluster.MasterKubeVersion, "_")[0])
+	// 				}
+	// 				params := v1.WorkerUpdateParam{
+	// 					Action: "update",
+	// 				}
+	// 				err = wrkAPI.Update(clusterID, oldPack["id"].(string), params, targetEnv)
+	// 				if err != nil {
+	// 					return fmt.Errorf("[ERROR] Error updating worker %s: %s", oldPack["id"].(string), err)
+	// 				}
 
-					_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-					if err != nil {
-						return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
-					}
-				}
-			}
-		}
+	// 				_, err = WaitForWorkerAvailable(d, meta, targetEnv)
+	// 				if err != nil {
+	// 					return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
-	}
+	// }
 
 	//TODO put webhooks can't deleted in the error message if such case is observed in the chnages
 	if d.HasChange("webhook") {

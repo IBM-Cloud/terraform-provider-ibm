@@ -42,6 +42,14 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 					"cluster"),
 			},
 
+			"default_worker_pool": {
+				Type:        schema.TypeBool,
+				Required:    false,
+				ForceNew:    false,
+				Optional:    true,
+				Description: "If true, instead of creating one, the create function will read the the clsuter's \"default\" workerpool ",
+			},
+
 			"machine_type": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -216,6 +224,10 @@ func ResourceIBMContainerWorkerPoolValidator() *validate.ResourceValidator {
 	return &containerWorkerPoolTaintsValidator
 }
 func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
+
+	if b, ok := d.GetOk("default_worker_pool"); ok && b.(bool) {
+		return resourceIBMContainerWorkerPoolRead(d, meta)
+	}
 
 	csClient, err := meta.(conns.ClientSession).ContainerAPI()
 	if err != nil {

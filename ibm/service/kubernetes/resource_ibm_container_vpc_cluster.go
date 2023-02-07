@@ -55,7 +55,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"flavor": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "Cluster nodes flavour",
 			},
 
@@ -201,7 +201,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"operating_system": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Computed:    true,
 				Description: "The operating system of the workers in the default worker pool.",
 			},
@@ -210,7 +210,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "The secondary storage option for the default worker pool.",
 			},
 
@@ -418,7 +418,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"host_pool_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "The ID of the cluster's associated host pool",
 			},
 
@@ -560,6 +560,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 			labels[k] = v.(string)
 		}
 		workerpool.Labels = labels
+	}
+
+	if wpname, ok := d.GetOk("workerpool_name"); ok {
+		workerpool.Name = wpname.(string)
 	}
 
 	params := v2.ClusterCreateRequest{
@@ -850,20 +854,20 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	if d.HasChange("worker_count") && !d.IsNewResource() {
-		count := d.Get("worker_count").(int)
-		ClusterClient, err := meta.(conns.ClientSession).ContainerAPI()
-		if err != nil {
-			return err
-		}
-		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+	// if d.HasChange("worker_count") && !d.IsNewResource() {
+	// 	count := d.Get("worker_count").(int)
+	// 	ClusterClient, err := meta.(conns.ClientSession).ContainerAPI()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
 
-		err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterID, "default", count, Env)
-		if err != nil {
-			return fmt.Errorf(
-				"[ERROR] Error updating the worker_count %d: %s", count, err)
-		}
-	}
+	// 	err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterID, "default", count, Env)
+	// 	if err != nil {
+	// 		return fmt.Errorf(
+	// 			"[ERROR] Error updating the worker_count %d: %s", count, err)
+	// 	}
+	// }
 	if d.HasChange("zones") && !d.IsNewResource() {
 		oldList, newList := d.GetChange("zones")
 		if oldList == nil {
@@ -1028,7 +1032,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	}
-	d.Set("worker_count", workerPool.WorkerCount)
+	// d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("worker_labels", flex.IgnoreSystemLabels(workerPool.Labels))
 	if cls.Vpcs != nil {
 		d.Set("vpc_id", cls.Vpcs[0])
@@ -1037,7 +1041,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("taints", flattenWorkerPoolTaints(workerPool))
 	}
 	d.Set("master_url", cls.MasterURL)
-	d.Set("flavor", workerPool.Flavor)
+	// d.Set("flavor", workerPool.Flavor)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
@@ -1053,11 +1057,11 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("disable_public_service_endpoint", true)
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
-	d.Set("host_pool_id", workerPool.HostPoolID)
-	d.Set("operating_system", workerPool.OperatingSystem)
-	if workerPool.SecondaryStorageOption != nil {
-		d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
-	}
+	// d.Set("host_pool_id", workerPool.HostPoolID)
+	// d.Set("operating_system", workerPool.OperatingSystem)
+	// if workerPool.SecondaryStorageOption != nil {
+	// 	d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
+	// }
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
@@ -1225,6 +1229,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 		return nil, err
 	}
 	clusterID := d.Id()
+
 	createStateConf := &resource.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{normal},
