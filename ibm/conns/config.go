@@ -1531,7 +1531,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an "options" struct for creating Context Based Restrictions service client.
 	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		session.contextBasedRestrictionsClientErr = fmt.Errorf("Context Based Restrictions Service API does not support private endpoints") //return this error if private endpoints are not supported
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-de" {
+			cbrURL = ContructEndpoint(fmt.Sprintf("private.%s.cbr", c.Region), cloudEndpoint)
+		} else {
+			cbrURL = ContructEndpoint("private.cbr", cloudEndpoint)
+		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
