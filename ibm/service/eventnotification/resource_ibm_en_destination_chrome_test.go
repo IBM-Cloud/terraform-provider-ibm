@@ -75,6 +75,7 @@ func testAccCheckIBMEnChromeDestinationConfig(instanceName, name, description st
 			params {
 				api_key = "vvshlgwwfvjj"
 				website_url = "https://testweb.com" 
+				pre_prod = false
 			}
 		}
 	}

@@ -4,16 +4,16 @@ go 1.18
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1
-	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220922071204-21813161c36f
+	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037
 	github.com/IBM-Cloud/power-go-client v1.2.2
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.3.0
+	github.com/IBM/cloud-databases-go-sdk v0.3.1
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/continuous-delivery-go-sdk v1.0.4
-	github.com/IBM/event-notifications-go-admin-sdk v0.1.2
+	github.com/IBM/event-notifications-go-admin-sdk v0.1.7
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.12.0
 	github.com/IBM/ibm-cos-sdk-go v1.9.0

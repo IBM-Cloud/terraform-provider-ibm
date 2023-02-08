@@ -38,6 +38,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1 h1:5cVMU5MglJ
 github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1/go.mod h1:cO5KCpiop9eP/pM/5W07TprYUkv/kHtajW1FiZgE59k=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220922071204-21813161c36f h1:VMMqaAUXrNQH84ba/EDbfe8lvQJF9FBUnaQbIa1iKZ0=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220922071204-21813161c36f/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
+github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037 h1:C1gOsj2A5ouRUXrmKHebXjs4FXRE8ApMUC3GBUpd9Co=
+github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM-Cloud/power-go-client v1.2.2 h1:VNlzizoG2x06c3nL1ZBILF701QcvXcu6nEH3hmEKCkw=
 github.com/IBM-Cloud/power-go-client v1.2.2/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
@@ -49,8 +51,8 @@ github.com/IBM/appconfiguration-go-admin-sdk v0.3.0 h1:OqFxnDxro0JiRwHBKytCcseY2
 github.com/IBM/appconfiguration-go-admin-sdk v0.3.0/go.mod h1:xPxAYhr/uywUIDEo/JqWbkUdTryPdzRdYBfUpA5IjoE=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
-github.com/IBM/cloud-databases-go-sdk v0.3.0 h1:yTCfBF05PjBLTuhrwBH5P1onCSls/vbJB2HawBjheOU=
-github.com/IBM/cloud-databases-go-sdk v0.3.0/go.mod h1:ZOujnMABgw39Mr/5sFd16eniw9mSS4/if1Vht3m+F4M=
+github.com/IBM/cloud-databases-go-sdk v0.3.1 h1:wmR9RX9aFUtW1EPrgHGvE6nruGilW8XrU1o//4lHuFM=
+github.com/IBM/cloud-databases-go-sdk v0.3.1/go.mod h1:o05Dt04BOr+0ArQPeAEeZBBYK3Fe7vQwShX/6PJvh4Q=
 github.com/IBM/cloudant-go-sdk v0.0.43 h1:YxTy4RpAEezX32YIWnds76hrBREmO4u6IkBz1WylNuQ=
 github.com/IBM/cloudant-go-sdk v0.0.43/go.mod h1:WeYrJPaHTw19943ndWnVfwMIlZ5z0XUM2uEXNBrwZ1M=
 github.com/IBM/container-registry-go-sdk v0.0.15 h1:sfEXm4qNj9ZCwTlFOsdjF5P/lvajU/Sc22yNlzg0F9I=
@@ -59,6 +61,8 @@ github.com/IBM/continuous-delivery-go-sdk v1.0.4 h1:Qq6EG4dMyX6tD2HhNaMihFFEeoKX
 github.com/IBM/continuous-delivery-go-sdk v1.0.4/go.mod h1:/pSji7d4POPVd1tQA9CLrNT1XMsCJMGLqOtTwXbWAdE=
 github.com/IBM/event-notifications-go-admin-sdk v0.1.2 h1:LLA12WFqSD0+Uf16SNdErcu2MVK4EnyXHJmDIkKkudE=
 github.com/IBM/event-notifications-go-admin-sdk v0.1.2/go.mod h1:VCtV/cAN8qSPeWEjIWeXOQGTq6LCWP9yZEk7wt3g0HM=
+github.com/IBM/event-notifications-go-admin-sdk v0.1.7 h1:PkgkYzPAd3f6jhzV89oVwQoNS6oQg/82cy2JMWO2UzA=
+github.com/IBM/event-notifications-go-admin-sdk v0.1.7/go.mod h1:Lh4dp5FaW1hB5FEm2oWKqxjbCz9WonZMisNkKiVgnnE=
 github.com/IBM/eventstreams-go-sdk v1.2.0 h1:eP0afHArMGjwhGqvZAhhu/3EDKRch2JehpveqF1TUjs=
 github.com/IBM/eventstreams-go-sdk v1.2.0/go.mod h1:2tuAxaYLctfqfr5jvyqSrxxEQGMwYPm3yJGWSj85YVQ=
 github.com/IBM/go-sdk-core/v3 v3.0.0/go.mod h1:JI5NS2+iCoY/D8Oq3JNEZNA7qO42agu6fnaUmDsRcJA=
@@ -671,7 +675,6 @@ github.com/onsi/gomega v1.10.3/go.mod h1:V9xEwhxec5O8UDM77eCW8vLymOMltsqPVYWrpDs
 github.com/onsi/gomega v1.10.5/go.mod h1:gza4q3jKQJijlu05nKWRCW/GavJumGt8aNRxWg7mt48=
 github.com/onsi/gomega v1.13.0/go.mod h1:lRk9szgn8TxENtWd0Tp4c3wjlRfMTMH27I+3Je41yGY=
 github.com/onsi/gomega v1.14.0/go.mod h1:cIuvLEne0aoVhAgh/O6ac0Op8WWw9H6eYCriF+tEHG0=
-github.com/onsi/gomega v1.16.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAlGdZY=
 github.com/onsi/gomega v1.17.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAlGdZY=
 github.com/onsi/gomega v1.18.0/go.mod h1:0q+aL8jAiMXy9hbwj2mr5GziHiwhAIQpFmmtT5hitRs=
 github.com/onsi/gomega v1.18.1/go.mod h1:0q+aL8jAiMXy9hbwj2mr5GziHiwhAIQpFmmtT5hitRs=

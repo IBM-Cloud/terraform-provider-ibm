@@ -7,7 +7,10 @@ description: |-
   Manages IBM IS VPC route.
 ---
 
-~>**Note**  This resource is deprecated, use `ibm_is_vpc_routing_table_route` instead.
+!> **Removal Notification** Resource `ibm_is_vpc_route` support will be stopped by terraform provider from `v1.52.0`; [releases](https://github.com/IBM-Cloud/terraform-provider-ibm/releases/), recommendation is to use `ibm_is_vpc_routing_table_route` instead. </br>
+**Documentation** on `ibm_is_vpc_routing_table_route` can be found [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_vpc_routing_table_route)
+
+
 # ibm_is_vpc_route
 Create, update, or delete a VPC route. For more information, about VPC routes, see [setting up advanced routing in VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 
