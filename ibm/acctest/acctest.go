@@ -152,6 +152,7 @@ var IsImageEncryptedDataKey string
 var IsImageEncryptionKey string
 var IsWinImage string
 var IsCosBucketName string
+var IsCosBucketCRN string
 var Image_cos_url string
 var Image_cos_url_encrypted string
 var Image_operating_system string
@@ -517,7 +518,7 @@ func init() {
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		//IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		IsImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
+		IsImage = "r134-88c1ae4c-0c54-48ad-946b-a36ac28560ee" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
 	}
 
@@ -530,8 +531,14 @@ func init() {
 
 	IsCosBucketName = os.Getenv("IS_COS_BUCKET_NAME")
 	if IsCosBucketName == "" {
-		IsCosBucketName = "bucket-27200-lwx4cfvcue"
-		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_NAME for testing ibm_is_image_export else it is set to default value 'bucket-27200-lwx4cfvcue'")
+		IsCosBucketName = "vpcui-dev-us-south"
+		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_NAME for testing ibm_is_image_export_job else it is set to default value 'bucket-27200-lwx4cfvcue'")
+	}
+
+	IsCosBucketCRN = os.Getenv("IS_COS_BUCKET_CRN")
+	if IsCosBucketCRN == "" {
+		IsCosBucketCRN = "crn:v1:staging:public:cloud-object-storage:global:a/efe5afc483594adaa8325e2b4d1290df:f24c3b20-a6c1-4e4d-bafe-0953ef729023:bucket:vpcui-dev-us-south"
+		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_CRN for testing ibm_is_image_export_job else it is set to default value 'bucket-27200-lwx4cfvcue'")
 	}
 
 	InstanceName = os.Getenv("IS_INSTANCE_NAME")

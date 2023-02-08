@@ -19,7 +19,6 @@ import (
 
 func TestAccIBMIsImageExportBasic(t *testing.T) {
 	var conf vpcv1.ImageExportJob
-	imageID := fmt.Sprintf("tf_image_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,10 +26,13 @@ func TestAccIBMIsImageExportBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsImageExportDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsImageExportConfigBasic(imageID),
+				Config: testAccCheckIBMIsImageExportConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsImageExportExists("ibm_is_image_export.is_image_export", conf),
-					resource.TestCheckResourceAttr("ibm_is_image_export.is_image_export", "image", imageID),
+					testAccCheckIBMIsImageExportExists("ibm_is_image_export_job.is_image_export", conf),
+					resource.TestCheckResourceAttr("ibm_is_image_export_job.is_image_export", "image", acc.IsImage),
+					resource.TestCheckResourceAttrSet("ibm_is_image_export_job.is_image_export", "status"),
+					resource.TestCheckResourceAttrSet("ibm_is_image_export_job.is_image_export", "storage_bucket.0.name"),
+					resource.TestCheckResourceAttrSet("ibm_is_image_export_job.is_image_export", "storage_bucket.0.crn"),
 				),
 			},
 		},
@@ -39,11 +41,9 @@ func TestAccIBMIsImageExportBasic(t *testing.T) {
 
 func TestAccIBMIsImageExportAllArgs(t *testing.T) {
 	var conf vpcv1.ImageExportJob
-	imageID := fmt.Sprintf("tf_image_id_%d", acctest.RandIntRange(10, 100))
 	format := "qcow2"
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	formatUpdate := "vhd"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-imageexport-job%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf-name%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -51,52 +51,47 @@ func TestAccIBMIsImageExportAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsImageExportDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsImageExportConfig(imageID, format, name),
+				Config: testAccCheckIBMIsImageExportConfig(format, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsImageExportExists("ibm_is_image_export.is_image_export", conf),
-					resource.TestCheckResourceAttr("ibm_is_image_export.is_image_export", "image", imageID),
-					resource.TestCheckResourceAttr("ibm_is_image_export.is_image_export", "format", format),
-					resource.TestCheckResourceAttr("ibm_is_image_export.is_image_export", "name", name),
+					testAccCheckIBMIsImageExportExists("ibm_is_image_export_job.is_image_export", conf),
+					resource.TestCheckResourceAttr("ibm_is_image_export_job.is_image_export", "format", format),
+					resource.TestCheckResourceAttr("ibm_is_image_export_job.is_image_export", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsImageExportConfig(imageID, formatUpdate, nameUpdate),
+				Config: testAccCheckIBMIsImageExportConfig(format, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_image_export.is_image_export", "image", imageID),
-					resource.TestCheckResourceAttr("ibm_is_image_export.is_image_export", "format", formatUpdate),
-					resource.TestCheckResourceAttr("ibm_is_image_export.is_image_export", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_is_image_export_job.is_image_export", "name", nameUpdate),
 				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_is_image_export.is_image_export",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckIBMIsImageExportConfigBasic(imageID string) string {
+func testAccCheckIBMIsImageExportConfigBasic() string {
 	return fmt.Sprintf(`
 
-		resource "ibm_is_image_export" "is_image_export" {
+		resource "ibm_is_image_export_job" "is_image_export" {
 			image = "%s"
-			storage_bucket_name = "%s"
-			
+			storage_bucket {
+				name = "%s"
+			}
 		}
-	`, imageID, acc.IsCosBucketName)
+	`, acc.IsImage, acc.IsCosBucketName)
 }
 
-func testAccCheckIBMIsImageExportConfig(imageID string, format string, name string) string {
+func testAccCheckIBMIsImageExportConfig(format string, name string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_is_image_export" "is_image_export" {
+		resource "ibm_is_image_export_job" "is_image_export" {
 			image = "%s"
-			storage_bucket_name = "%s"
+			storage_bucket {
+				crn = "%s"
+			}
 			format = "%s"
 			name = "%s"
 		}
-	`, imageID, acc.IsCosBucketName, format, name)
+	`, acc.IsImage, acc.IsCosBucketCRN, format, name)
 }
 
 func testAccCheckIBMIsImageExportExists(n string, obj vpcv1.ImageExportJob) resource.TestCheckFunc {
@@ -138,7 +133,7 @@ func testAccCheckIBMIsImageExportDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_image_export" {
+		if rs.Type != "ibm_is_image_export_job" {
 			continue
 		}
 

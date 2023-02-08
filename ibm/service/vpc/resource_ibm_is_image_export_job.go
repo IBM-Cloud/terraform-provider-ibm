@@ -18,7 +18,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
-func ResourceIBMIsImageExport() *schema.Resource {
+func ResourceIBMIsImageExportJob() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceIBMIsImageExportCreate,
 		ReadContext:   ResourceIBMIsImageExportRead,
@@ -27,93 +27,105 @@ func ResourceIBMIsImageExport() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"image": &schema.Schema{
+			"image": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "The image identifier.",
 			},
-			"storage_bucket_name": &schema.Schema{
-				Type:          schema.TypeList,
-				Optional:      true,
-				AtLeastOneOf:  []string{"storage_bucket_name", "storage_bucket_crn"},
-				ConflictsWith: []string{"storage_bucket_crn"},
-				ForceNew:      true,
-				Description:   "The name of the Cloud Object Storage bucket to export the image to. The bucket must exist and an IAMservice authorization must grant `Image Service for VPC` of`VPC Infrastructure Services` writer access to the bucket.",
+			"storage_bucket": {
+				Type:        schema.TypeList,
+				Required:    true,
+				ForceNew:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "The name of the Cloud Object Storage bucket to export the image to.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ExactlyOneOf: []string{"storage_bucket.0.name", "storage_bucket.0.crn"},
+							Description:  "Name of this Cloud Object Storage bucket",
+						},
+						"crn": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ExactlyOneOf: []string{"storage_bucket.0.name", "storage_bucket.0.crn"},
+							Description:  "CRN of this Cloud Object Storage bucket",
+						},
+					},
+				},
 			},
-			"storage_bucket_crn": &schema.Schema{
-				Type:          schema.TypeList,
-				Optional:      true,
-				AtLeastOneOf:  []string{"storage_bucket_name", "storage_bucket_crn"},
-				ConflictsWith: []string{"storage_bucket_name"},
-				ForceNew:      true,
-				Description:   "The CRN of the Cloud Object Storage bucket to export the image to. The bucket must exist and an IAMservice authorization must grant `Image Service for VPC` of`VPC Infrastructure Services` writer access to the bucket.",
-			},
-			"format": &schema.Schema{
+			"format": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_image_export", "format"),
+				Default:      "qcow2",
+				ValidateFunc: validate.InvokeValidator("ibm_is_image_export_job", "format"),
 				Description:  "The format to use for the exported image. If the image is encrypted, only `qcow2` is supported.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_image_export", "name"),
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_image_export_job", "name"),
 				Description:  "The user-defined name for this image export job. Names must be unique within the image this export job resides in. If unspecified, the name will be a hyphenated list of randomly-selected words prefixed with the first 16 characters of the parent image name.The exported image object name in Cloud Object Storage (`storage_object.name` in the response) will be based on this name. The object name will be unique within the bucket.",
 			},
-			"completed_at": &schema.Schema{
+			"completed_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time that the image export job was completed.If absent, the export job has not yet completed.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time that the image export job was created.",
 			},
-			"encrypted_data_key": &schema.Schema{
+			"encrypted_data_key": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A base64-encoded, encrypted representation of the key that was used to encrypt the data for the exported image. This key can be unwrapped with the image's `encryption_key` root key using either Key Protect or Hyper Protect Crypto Service.If absent, the export job is for an unencrypted image.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL for this image export job.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of resource referenced.",
 			},
-			"started_at": &schema.Schema{
+			"started_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time that the image export job started running.If absent, the export job has not yet started.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of this image export job:- `deleting`: Export job is being deleted- `failed`: Export job could not be completed successfully- `queued`: Export job is queued- `running`: Export job is in progress- `succeeded`: Export job was completed successfullyThe exported image object is automatically deleted for `failed` jobs.",
 			},
-			"status_reasons": &schema.Schema{
+			"status_reasons": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The reasons for the current status (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"code": &schema.Schema{
+						"code": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "A snake case string succinctly identifying the status reason.",
 						},
-						"message": &schema.Schema{
+						"message": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "An explanation of the status reason.",
 						},
-						"more_info": &schema.Schema{
+						"more_info": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Link to documentation about this status reason.",
@@ -121,18 +133,18 @@ func ResourceIBMIsImageExport() *schema.Resource {
 					},
 				},
 			},
-			"storage_href": &schema.Schema{
+			"storage_href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The Cloud Object Storage location of the exported image object. The object at this location may not exist until the job is started, and will be incomplete while the job is running.After the job completes, the exported image object is not managed by the IBM VPC service, and may be removed or replaced with a different object by any user or service with IAM authorization to the bucket.",
 			},
-			"storage_object": &schema.Schema{
+			"storage_object": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The Cloud Object Storage object for the exported image. This object may not exist untilthe job is started, and will not be complete until the job completes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The name of this Cloud Object Storage object. Names are unique within a Cloud Object Storage bucket.",
@@ -140,7 +152,7 @@ func ResourceIBMIsImageExport() *schema.Resource {
 					},
 				},
 			},
-			"image_export_job": &schema.Schema{
+			"image_export_job": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this image export job.",
@@ -170,7 +182,7 @@ func ResourceIBMIsImageExportValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_image_export", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_image_export_job", Schema: validateSchema}
 	return &resourceValidator
 }
 
@@ -183,8 +195,9 @@ func ResourceIBMIsImageExportCreate(context context.Context, d *schema.ResourceD
 	createImageExportJobOptions := &vpcv1.CreateImageExportJobOptions{}
 
 	createImageExportJobOptions.SetImageID(d.Get("image").(string))
-	storage_bucket_name := d.Get("storage_bucket_name").(string)
-	storage_bucket_crn := d.Get("storage_bucket_crn").(string)
+	storageBucket := d.Get("storage_bucket").([]interface{})[0].(map[string]interface{})
+	storage_bucket_name := storageBucket["name"].(string)
+	storage_bucket_crn := storageBucket["crn"].(string)
 	torageBucket := &vpcv1.CloudObjectStorageBucketIdentity{}
 	if storage_bucket_crn != "" {
 		torageBucket.CRN = &storage_bucket_crn
@@ -254,6 +267,7 @@ func ResourceIBMIsImageExportRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("href", imageExportJob.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
+
 	if err = d.Set("resource_type", imageExportJob.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
@@ -264,12 +278,15 @@ func ResourceIBMIsImageExportRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
 
-	if err = d.Set("storage_bucket_name", imageExportJob.StorageBucket.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_bucket_name: %s", err))
-	}
+	if imageExportJob.StorageBucket != nil {
+		storageBucketList := []map[string]interface{}{}
+		storageBucketMap := map[string]interface{}{
+			"name": *imageExportJob.StorageBucket.Name,
+			"crn":  *imageExportJob.StorageBucket.CRN,
+		}
 
-	if err = d.Set("storage_bucket_crn", imageExportJob.StorageBucket.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_bucket_crn: %s", err))
+		storageBucketList = append(storageBucketList, storageBucketMap)
+		d.Set("storage_bucket", storageBucketList)
 	}
 
 	statusReasons := []map[string]interface{}{}

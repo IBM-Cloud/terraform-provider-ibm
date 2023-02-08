@@ -1,26 +1,26 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_is_image_export"
+page_title: "IBM : ibm_is_image_export_job"
 description: |-
   Get information about ImageExportJob
 subcategory: "VPC infrastructure"
 ---
 
-# ibm_is_image_export
+# ibm_is_image_export_job
 
 Provides a read-only data source for ImageExportJob. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_is_image_export" "example" {
+resource "ibm_is_image_export_job" "example" {
   image = "d7bec597-4726-451f-8a63-e62e6f121c32c"
   name = "my-image-export"
   storage_bucket = "bucket-27200-lwx4cfvcue"
 }
-data "ibm_is_image_export" "example" {
-  image_export_job = ibm_is_image_export.example.image_export_job
-  image = ibm_is_image_export.is_image_export.image
+data "ibm_is_image_export_job" "example" {
+  image_export_job = ibm_is_image_export_job.example.image_export_job
+  image = ibm_is_image_export_job.is_image_export.image
 }
 ```
 

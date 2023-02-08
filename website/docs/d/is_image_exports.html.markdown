@@ -1,20 +1,25 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_is_image_exports"
+page_title: "IBM : ibm_is_image_export_jobs"
 description: |-
   Get information about ImageExportJobUnpaginatedCollection
 subcategory: "VPC infrastructure"
 ---
 
-# ibm_is_image_exports
+# ibm_is_image_export_jobs
 
 Provides a read-only data source for ImageExportJobUnpaginatedCollection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_is_image_exports" "example" {
-	image = "d7bec597-4726-451f-8a63-e62e6f121c32c"
+resource "ibm_is_image_export_job" "example" {
+  image = "d7bec597-4726-451f-8a63-e62e6f121c32c"
+  name = "my-image-export"
+  storage_bucket = "bucket-27200-lwx4cfvcue"
+}
+data "ibm_is_image_export_jobs" "example" {
+	image = ibm_is_image_export_job.example.id
 }
 ```
 
