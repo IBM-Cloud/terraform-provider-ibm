@@ -37,7 +37,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2023-01-31
+// API Version: 2023-02-07
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -9372,6 +9372,9 @@ func (vpc *VpcV1) CreateBackupPolicyPlanWithContext(ctx context.Context, createB
 	if createBackupPolicyPlanOptions.AttachUserTags != nil {
 		body["attach_user_tags"] = createBackupPolicyPlanOptions.AttachUserTags
 	}
+	if createBackupPolicyPlanOptions.ClonePolicy != nil {
+		body["clone_policy"] = createBackupPolicyPlanOptions.ClonePolicy
+	}
 	if createBackupPolicyPlanOptions.CopyUserTags != nil {
 		body["copy_user_tags"] = createBackupPolicyPlanOptions.CopyUserTags
 	}
@@ -12423,6 +12426,9 @@ func (vpc *VpcV1) ListSnapshotsWithContext(ctx context.Context, listSnapshotsOpt
 	if listSnapshotsOptions.BackupPolicyPlanID != nil {
 		builder.AddQuery("backup_policy_plan.id", fmt.Sprint(*listSnapshotsOptions.BackupPolicyPlanID))
 	}
+	if listSnapshotsOptions.ClonesZoneName != nil {
+		builder.AddQuery("clones[].zone.name", fmt.Sprint(*listSnapshotsOptions.ClonesZoneName))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -12691,6 +12697,251 @@ func (vpc *VpcV1) UpdateSnapshotWithContext(ctx context.Context, updateSnapshotO
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshot)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListSnapshotClones : List all clones for a snapshot
+// This request lists all clones for a snapshot. Use a clone to quickly restore a snapshot within the clone's zone.
+func (vpc *VpcV1) ListSnapshotClones(listSnapshotClonesOptions *ListSnapshotClonesOptions) (result *SnapshotCloneCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListSnapshotClonesWithContext(context.Background(), listSnapshotClonesOptions)
+}
+
+// ListSnapshotClonesWithContext is an alternate form of the ListSnapshotClones method which supports a Context parameter
+func (vpc *VpcV1) ListSnapshotClonesWithContext(ctx context.Context, listSnapshotClonesOptions *ListSnapshotClonesOptions) (result *SnapshotCloneCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listSnapshotClonesOptions, "listSnapshotClonesOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listSnapshotClonesOptions, "listSnapshotClonesOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *listSnapshotClonesOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshots/{id}/clones`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listSnapshotClonesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListSnapshotClones")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotCloneCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteSnapshotClone : Delete a snapshot clone
+// This request deletes a snapshot clone. This operation cannot be reversed, but an equivalent clone may be recreated
+// from the snapshot.
+func (vpc *VpcV1) DeleteSnapshotClone(deleteSnapshotCloneOptions *DeleteSnapshotCloneOptions) (response *core.DetailedResponse, err error) {
+	return vpc.DeleteSnapshotCloneWithContext(context.Background(), deleteSnapshotCloneOptions)
+}
+
+// DeleteSnapshotCloneWithContext is an alternate form of the DeleteSnapshotClone method which supports a Context parameter
+func (vpc *VpcV1) DeleteSnapshotCloneWithContext(ctx context.Context, deleteSnapshotCloneOptions *DeleteSnapshotCloneOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteSnapshotCloneOptions, "deleteSnapshotCloneOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteSnapshotCloneOptions, "deleteSnapshotCloneOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id":        *deleteSnapshotCloneOptions.ID,
+		"zone_name": *deleteSnapshotCloneOptions.ZoneName,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshots/{id}/clones/{zone_name}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteSnapshotCloneOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteSnapshotClone")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetSnapshotClone : Retrieve a snapshot clone
+// This request retrieves a single clone specified by the snapshot identifier and zone name in the URL.
+func (vpc *VpcV1) GetSnapshotClone(getSnapshotCloneOptions *GetSnapshotCloneOptions) (result *SnapshotClone, response *core.DetailedResponse, err error) {
+	return vpc.GetSnapshotCloneWithContext(context.Background(), getSnapshotCloneOptions)
+}
+
+// GetSnapshotCloneWithContext is an alternate form of the GetSnapshotClone method which supports a Context parameter
+func (vpc *VpcV1) GetSnapshotCloneWithContext(ctx context.Context, getSnapshotCloneOptions *GetSnapshotCloneOptions) (result *SnapshotClone, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSnapshotCloneOptions, "getSnapshotCloneOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getSnapshotCloneOptions, "getSnapshotCloneOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id":        *getSnapshotCloneOptions.ID,
+		"zone_name": *getSnapshotCloneOptions.ZoneName,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshots/{id}/clones/{zone_name}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getSnapshotCloneOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSnapshotClone")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotClone)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateSnapshotClone : Create a clone for a snapshot
+// This request creates a new clone for a snapshot in the specified zone. A request body is not required, and if
+// provided, is ignored. If the snapshot already has a clone in the zone, it is returned.
+func (vpc *VpcV1) CreateSnapshotClone(createSnapshotCloneOptions *CreateSnapshotCloneOptions) (result *SnapshotClone, response *core.DetailedResponse, err error) {
+	return vpc.CreateSnapshotCloneWithContext(context.Background(), createSnapshotCloneOptions)
+}
+
+// CreateSnapshotCloneWithContext is an alternate form of the CreateSnapshotClone method which supports a Context parameter
+func (vpc *VpcV1) CreateSnapshotCloneWithContext(ctx context.Context, createSnapshotCloneOptions *CreateSnapshotCloneOptions) (result *SnapshotClone, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createSnapshotCloneOptions, "createSnapshotCloneOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createSnapshotCloneOptions, "createSnapshotCloneOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id":        *createSnapshotCloneOptions.ID,
+		"zone_name": *createSnapshotCloneOptions.ZoneName,
+	}
+
+	builder := core.NewRequestBuilder(core.PUT)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshots/{id}/clones/{zone_name}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createSnapshotCloneOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateSnapshotClone")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotClone)
 		if err != nil {
 			return
 		}
@@ -22414,6 +22665,8 @@ type BackupPolicyPlan struct {
 	// The user tags to attach to backups (snapshots) created by this plan.
 	AttachUserTags []string `json:"attach_user_tags" validate:"required"`
 
+	ClonePolicy *BackupPolicyPlanClonePolicy `json:"clone_policy" validate:"required"`
+
 	// Indicates whether to copy the source's user tags to the created backups (snapshots).
 	CopyUserTags *bool `json:"copy_user_tags" validate:"required"`
 
@@ -22474,6 +22727,10 @@ func UnmarshalBackupPolicyPlan(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "clone_policy", &obj.ClonePolicy, UnmarshalBackupPolicyPlanClonePolicy)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "copy_user_tags", &obj.CopyUserTags)
 	if err != nil {
 		return
@@ -22507,6 +22764,88 @@ func UnmarshalBackupPolicyPlan(m map[string]json.RawMessage, result interface{})
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPlanClonePolicy : BackupPolicyPlanClonePolicy struct
+type BackupPolicyPlanClonePolicy struct {
+	// The maximum number of recent snapshots (per source) that will keep clones.
+	MaxSnapshots *int64 `json:"max_snapshots" validate:"required"`
+
+	// The zone this backup policy plan will create snapshot clones in.
+	Zones []ZoneReference `json:"zones" validate:"required"`
+}
+
+// UnmarshalBackupPolicyPlanClonePolicy unmarshals an instance of BackupPolicyPlanClonePolicy from the specified map of raw messages.
+func UnmarshalBackupPolicyPlanClonePolicy(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPlanClonePolicy)
+	err = core.UnmarshalPrimitive(m, "max_snapshots", &obj.MaxSnapshots)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zones", &obj.Zones, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPlanClonePolicyPatch : BackupPolicyPlanClonePolicyPatch struct
+type BackupPolicyPlanClonePolicyPatch struct {
+	// The maximum number of recent snapshots (per source) that will keep clones.
+	MaxSnapshots *int64 `json:"max_snapshots,omitempty"`
+
+	// The zones this backup policy plan will create snapshot clones in. Updating this value does not change the clones for
+	// snapshots that have already been created by this plan.
+	Zones []ZoneIdentityIntf `json:"zones,omitempty"`
+}
+
+// UnmarshalBackupPolicyPlanClonePolicyPatch unmarshals an instance of BackupPolicyPlanClonePolicyPatch from the specified map of raw messages.
+func UnmarshalBackupPolicyPlanClonePolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPlanClonePolicyPatch)
+	err = core.UnmarshalPrimitive(m, "max_snapshots", &obj.MaxSnapshots)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zones", &obj.Zones, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPlanClonePolicyPrototype : BackupPolicyPlanClonePolicyPrototype struct
+type BackupPolicyPlanClonePolicyPrototype struct {
+	// The maximum number of recent snapshots (per source) that will keep clones.
+	MaxSnapshots *int64 `json:"max_snapshots,omitempty"`
+
+	// The zone this backup policy plan will create snapshot clones in.
+	Zones []ZoneIdentityIntf `json:"zones" validate:"required"`
+}
+
+// NewBackupPolicyPlanClonePolicyPrototype : Instantiate BackupPolicyPlanClonePolicyPrototype (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyPlanClonePolicyPrototype(zones []ZoneIdentityIntf) (_model *BackupPolicyPlanClonePolicyPrototype, err error) {
+	_model = &BackupPolicyPlanClonePolicyPrototype{
+		Zones: zones,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalBackupPolicyPlanClonePolicyPrototype unmarshals an instance of BackupPolicyPlanClonePolicyPrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPlanClonePolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPlanClonePolicyPrototype)
+	err = core.UnmarshalPrimitive(m, "max_snapshots", &obj.MaxSnapshots)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zones", &obj.Zones, UnmarshalZoneIdentity)
 	if err != nil {
 		return
 	}
@@ -22612,6 +22951,8 @@ type BackupPolicyPlanPatch struct {
 	// tags for backups that have already been created by this plan.
 	AttachUserTags []string `json:"attach_user_tags,omitempty"`
 
+	ClonePolicy *BackupPolicyPlanClonePolicyPatch `json:"clone_policy,omitempty"`
+
 	// Indicates whether to copy the source's user tags to the created backups (snapshots).
 	CopyUserTags *bool `json:"copy_user_tags,omitempty"`
 
@@ -22636,6 +22977,10 @@ func UnmarshalBackupPolicyPlanPatch(m map[string]json.RawMessage, result interfa
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "attach_user_tags", &obj.AttachUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "clone_policy", &obj.ClonePolicy, UnmarshalBackupPolicyPlanClonePolicyPatch)
 	if err != nil {
 		return
 	}
@@ -22677,6 +23022,8 @@ type BackupPolicyPlanPrototype struct {
 	// User tags to attach to each backup (snapshot) created by this plan. If unspecified, no user tags will be attached.
 	AttachUserTags []string `json:"attach_user_tags,omitempty"`
 
+	ClonePolicy *BackupPolicyPlanClonePolicyPrototype `json:"clone_policy,omitempty"`
+
 	// Indicates whether to copy the source's user tags to the created backups (snapshots).
 	CopyUserTags *bool `json:"copy_user_tags,omitempty"`
 
@@ -22711,6 +23058,10 @@ func UnmarshalBackupPolicyPlanPrototype(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "attach_user_tags", &obj.AttachUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "clone_policy", &obj.ClonePolicy, UnmarshalBackupPolicyPlanClonePolicyPrototype)
 	if err != nil {
 		return
 	}
@@ -25579,6 +25930,8 @@ type CreateBackupPolicyPlanOptions struct {
 	// User tags to attach to each backup (snapshot) created by this plan. If unspecified, no user tags will be attached.
 	AttachUserTags []string `json:"attach_user_tags,omitempty"`
 
+	ClonePolicy *BackupPolicyPlanClonePolicyPrototype `json:"clone_policy,omitempty"`
+
 	// Indicates whether to copy the source's user tags to the created backups (snapshots).
 	CopyUserTags *bool `json:"copy_user_tags,omitempty"`
 
@@ -25621,6 +25974,12 @@ func (_options *CreateBackupPolicyPlanOptions) SetActive(active bool) *CreateBac
 // SetAttachUserTags : Allow user to set AttachUserTags
 func (_options *CreateBackupPolicyPlanOptions) SetAttachUserTags(attachUserTags []string) *CreateBackupPolicyPlanOptions {
 	_options.AttachUserTags = attachUserTags
+	return _options
+}
+
+// SetClonePolicy : Allow user to set ClonePolicy
+func (_options *CreateBackupPolicyPlanOptions) SetClonePolicy(clonePolicy *BackupPolicyPlanClonePolicyPrototype) *CreateBackupPolicyPlanOptions {
+	_options.ClonePolicy = clonePolicy
 	return _options
 }
 
@@ -28119,6 +28478,44 @@ func (_options *CreateSecurityGroupTargetBindingOptions) SetID(id string) *Creat
 
 // SetHeaders : Allow user to set Headers
 func (options *CreateSecurityGroupTargetBindingOptions) SetHeaders(param map[string]string) *CreateSecurityGroupTargetBindingOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateSnapshotCloneOptions : The CreateSnapshotClone options.
+type CreateSnapshotCloneOptions struct {
+	// The snapshot identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The zone name.
+	ZoneName *string `json:"zone_name" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateSnapshotCloneOptions : Instantiate CreateSnapshotCloneOptions
+func (*VpcV1) NewCreateSnapshotCloneOptions(id string, zoneName string) *CreateSnapshotCloneOptions {
+	return &CreateSnapshotCloneOptions{
+		ID:       core.StringPtr(id),
+		ZoneName: core.StringPtr(zoneName),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *CreateSnapshotCloneOptions) SetID(id string) *CreateSnapshotCloneOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetZoneName : Allow user to set ZoneName
+func (_options *CreateSnapshotCloneOptions) SetZoneName(zoneName string) *CreateSnapshotCloneOptions {
+	_options.ZoneName = core.StringPtr(zoneName)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateSnapshotCloneOptions) SetHeaders(param map[string]string) *CreateSnapshotCloneOptions {
 	options.Headers = param
 	return options
 }
@@ -32366,6 +32763,44 @@ func (options *DeleteSecurityGroupTargetBindingOptions) SetHeaders(param map[str
 	return options
 }
 
+// DeleteSnapshotCloneOptions : The DeleteSnapshotClone options.
+type DeleteSnapshotCloneOptions struct {
+	// The snapshot identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The zone name.
+	ZoneName *string `json:"zone_name" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteSnapshotCloneOptions : Instantiate DeleteSnapshotCloneOptions
+func (*VpcV1) NewDeleteSnapshotCloneOptions(id string, zoneName string) *DeleteSnapshotCloneOptions {
+	return &DeleteSnapshotCloneOptions{
+		ID:       core.StringPtr(id),
+		ZoneName: core.StringPtr(zoneName),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *DeleteSnapshotCloneOptions) SetID(id string) *DeleteSnapshotCloneOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetZoneName : Allow user to set ZoneName
+func (_options *DeleteSnapshotCloneOptions) SetZoneName(zoneName string) *DeleteSnapshotCloneOptions {
+	_options.ZoneName = core.StringPtr(zoneName)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteSnapshotCloneOptions) SetHeaders(param map[string]string) *DeleteSnapshotCloneOptions {
+	options.Headers = param
+	return options
+}
+
 // DeleteSnapshotOptions : The DeleteSnapshot options.
 type DeleteSnapshotOptions struct {
 	// The snapshot identifier.
@@ -36225,6 +36660,44 @@ func (_options *GetSecurityGroupTargetOptions) SetID(id string) *GetSecurityGrou
 
 // SetHeaders : Allow user to set Headers
 func (options *GetSecurityGroupTargetOptions) SetHeaders(param map[string]string) *GetSecurityGroupTargetOptions {
+	options.Headers = param
+	return options
+}
+
+// GetSnapshotCloneOptions : The GetSnapshotClone options.
+type GetSnapshotCloneOptions struct {
+	// The snapshot identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The zone name.
+	ZoneName *string `json:"zone_name" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetSnapshotCloneOptions : Instantiate GetSnapshotCloneOptions
+func (*VpcV1) NewGetSnapshotCloneOptions(id string, zoneName string) *GetSnapshotCloneOptions {
+	return &GetSnapshotCloneOptions{
+		ID:       core.StringPtr(id),
+		ZoneName: core.StringPtr(zoneName),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *GetSnapshotCloneOptions) SetID(id string) *GetSnapshotCloneOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetZoneName : Allow user to set ZoneName
+func (_options *GetSnapshotCloneOptions) SetZoneName(zoneName string) *GetSnapshotCloneOptions {
+	_options.ZoneName = core.StringPtr(zoneName)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetSnapshotCloneOptions) SetHeaders(param map[string]string) *GetSnapshotCloneOptions {
 	options.Headers = param
 	return options
 }
@@ -46734,6 +47207,34 @@ func (options *ListSecurityGroupsOptions) SetHeaders(param map[string]string) *L
 	return options
 }
 
+// ListSnapshotClonesOptions : The ListSnapshotClones options.
+type ListSnapshotClonesOptions struct {
+	// The snapshot identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListSnapshotClonesOptions : Instantiate ListSnapshotClonesOptions
+func (*VpcV1) NewListSnapshotClonesOptions(id string) *ListSnapshotClonesOptions {
+	return &ListSnapshotClonesOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *ListSnapshotClonesOptions) SetID(id string) *ListSnapshotClonesOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListSnapshotClonesOptions) SetHeaders(param map[string]string) *ListSnapshotClonesOptions {
+	options.Headers = param
+	return options
+}
+
 // ListSnapshotsOptions : The ListSnapshots options.
 type ListSnapshotsOptions struct {
 	// A server-provided token determining what resource to start the page on.
@@ -46776,6 +47277,9 @@ type ListSnapshotsOptions struct {
 
 	// Filters the collection to backup policy jobs with the backup plan with the specified identifier.
 	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
+
+	// Filters the collection to resources with a clone in the specified zone.
+	ClonesZoneName *string `json:"clones[].zone.name,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -46858,6 +47362,12 @@ func (_options *ListSnapshotsOptions) SetSort(sort string) *ListSnapshotsOptions
 // SetBackupPolicyPlanID : Allow user to set BackupPolicyPlanID
 func (_options *ListSnapshotsOptions) SetBackupPolicyPlanID(backupPolicyPlanID string) *ListSnapshotsOptions {
 	_options.BackupPolicyPlanID = core.StringPtr(backupPolicyPlanID)
+	return _options
+}
+
+// SetClonesZoneName : Allow user to set ClonesZoneName
+func (_options *ListSnapshotsOptions) SetClonesZoneName(clonesZoneName string) *ListSnapshotsOptions {
+	_options.ClonesZoneName = core.StringPtr(clonesZoneName)
 	return _options
 }
 
@@ -57429,6 +57939,9 @@ type Snapshot struct {
 	// created before 1 January 2022.
 	CapturedAt *strfmt.DateTime `json:"captured_at,omitempty"`
 
+	// Clones for this snapshot.
+	Clones []SnapshotClone `json:"clones" validate:"required"`
+
 	// The date and time that this snapshot was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
@@ -57532,6 +58045,10 @@ func UnmarshalSnapshot(m map[string]json.RawMessage, result interface{}) (err er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "clones", &obj.Clones, UnmarshalSnapshotClone)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
@@ -57601,6 +58118,81 @@ func UnmarshalSnapshot(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotClone : SnapshotClone struct
+type SnapshotClone struct {
+	// Indicates whether this snapshot clone is available for use.
+	Available *bool `json:"available" validate:"required"`
+
+	// The date and time that this snapshot clone was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The zone this snapshot clone resides in.
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// UnmarshalSnapshotClone unmarshals an instance of SnapshotClone from the specified map of raw messages.
+func UnmarshalSnapshotClone(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotClone)
+	err = core.UnmarshalPrimitive(m, "available", &obj.Available)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotCloneCollection : SnapshotCloneCollection struct
+type SnapshotCloneCollection struct {
+	// Collection of snapshot clones.
+	Clones []SnapshotClone `json:"clones" validate:"required"`
+}
+
+// UnmarshalSnapshotCloneCollection unmarshals an instance of SnapshotCloneCollection from the specified map of raw messages.
+func UnmarshalSnapshotCloneCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotCloneCollection)
+	err = core.UnmarshalModel(m, "clones", &obj.Clones, UnmarshalSnapshotClone)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotClonePrototype : SnapshotClonePrototype struct
+type SnapshotClonePrototype struct {
+	// The zone this snapshot clone will reside in. Must be in the same region as the
+	// snapshot.
+	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
+}
+
+// NewSnapshotClonePrototype : Instantiate SnapshotClonePrototype (Generic Model Constructor)
+func (*VpcV1) NewSnapshotClonePrototype(zone ZoneIdentityIntf) (_model *SnapshotClonePrototype, err error) {
+	_model = &SnapshotClonePrototype{
+		Zone: zone,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalSnapshotClonePrototype unmarshals an instance of SnapshotClonePrototype from the specified map of raw messages.
+func UnmarshalSnapshotClonePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotClonePrototype)
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
 	if err != nil {
 		return
 	}
@@ -57781,6 +58373,9 @@ func (snapshotPatch *SnapshotPatch) AsPatch() (_patch map[string]interface{}, er
 // Models which "extend" this model:
 // - SnapshotPrototypeSnapshotBySourceVolume
 type SnapshotPrototype struct {
+	// Clones to create for this snapshot.
+	Clones []SnapshotClonePrototype `json:"clones,omitempty"`
+
 	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
 	// will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -57807,6 +58402,10 @@ type SnapshotPrototypeIntf interface {
 // UnmarshalSnapshotPrototype unmarshals an instance of SnapshotPrototype from the specified map of raw messages.
 func UnmarshalSnapshotPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SnapshotPrototype)
+	err = core.UnmarshalModel(m, "clones", &obj.Clones, UnmarshalSnapshotClonePrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -79664,6 +80263,9 @@ func UnmarshalSnapshotIdentityByID(m map[string]json.RawMessage, result interfac
 // SnapshotPrototypeSnapshotBySourceVolume : SnapshotPrototypeSnapshotBySourceVolume struct
 // This model "extends" SnapshotPrototype
 type SnapshotPrototypeSnapshotBySourceVolume struct {
+	// Clones to create for this snapshot.
+	Clones []SnapshotClonePrototype `json:"clones,omitempty"`
+
 	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
 	// will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
@@ -79693,6 +80295,10 @@ func (*SnapshotPrototypeSnapshotBySourceVolume) isaSnapshotPrototype() bool {
 // UnmarshalSnapshotPrototypeSnapshotBySourceVolume unmarshals an instance of SnapshotPrototypeSnapshotBySourceVolume from the specified map of raw messages.
 func UnmarshalSnapshotPrototypeSnapshotBySourceVolume(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SnapshotPrototypeSnapshotBySourceVolume)
+	err = core.UnmarshalModel(m, "clones", &obj.Clones, UnmarshalSnapshotClonePrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
