@@ -903,9 +903,13 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 		updateShareOptions.SetSharePatch(sharePatch)
-		_, response, err := vpcClient.UpdateShareWithContext(context, updateShareOptions)
+		share, response, err := vpcClient.UpdateShareWithContext(context, updateShareOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateShareWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		_, err = isWaitForShareAvailable(context, vpcClient, *share.ID, d, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
