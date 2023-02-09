@@ -518,6 +518,15 @@ func resourceIbmSmPrivateCertificateUpdate(context context.Context, d *schema.Re
 		patchVals.CustomMetadata = d.Get("custom_metadata").(map[string]interface{})
 		hasChange = true
 	}
+	if d.HasChange("rotation") {
+		RotationModel, err := resourceIbmSmPrivateCertificateMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			log.Printf("[DEBUG] UpdateSecretMetadataWithContext failed: Reading Rotation parameter failed: %s", err)
+			return diag.FromErr(fmt.Errorf("UpdateSecretMetadataWithContext failed: Reading Rotation parameter failed: %s", err))
+		}
+		patchVals.Rotation = RotationModel
+		hasChange = true
+	}
 
 	if hasChange {
 		updateSecretMetadataOptions.SecretMetadataPatch, _ = patchVals.AsPatch()

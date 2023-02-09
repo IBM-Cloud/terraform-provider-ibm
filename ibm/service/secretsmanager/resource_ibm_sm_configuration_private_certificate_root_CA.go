@@ -572,6 +572,9 @@ func resourceIbmSmConfigurationPrivateCertificateRootCAMapToConfigurationPrototy
 	if _, ok := d.GetOk("crl_distribution_points_encoded"); ok {
 		model.CrlDistributionPointsEncoded = core.BoolPtr(d.Get("crl_distribution_points_encoded").(bool))
 	}
+	if _, ok := d.GetOk("issuing_certificates_urls_encoded"); ok {
+		model.IssuingCertificatesUrlsEncoded = core.BoolPtr(d.Get("issuing_certificates_urls_encoded").(bool))
+	}
 	if _, ok := d.GetOk("common_name"); ok {
 		model.CommonName = core.StringPtr(d.Get("common_name").(string))
 	}
