@@ -55,7 +55,7 @@ func TestAccIBMIsPrivatePathServiceGatewayBasic(t *testing.T) {
 }
 
 func testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name string) string {
-	return testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, lbname) + fmt.Sprintf(`
+	return testAccCheckIBMISPPNLB(vpcname, subnetname, zone, cidr, lbname) + fmt.Sprintf(`
 		resource "ibm_is_private_path_service_gateway" "is_private_path_service_gateway" {
 			default_access_policy = "%s"
 			name = "%s"
