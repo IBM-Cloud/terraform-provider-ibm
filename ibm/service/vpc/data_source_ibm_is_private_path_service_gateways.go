@@ -267,10 +267,6 @@ func dataSourceIBMIsPrivatePathServiceGatewaysRead(context context.Context, d *s
 		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateways %s", err))
 	}
 
-	if err = d.Set("total_count", flex.IntValue(privatePathServiceGatewayCollection.TotalCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
-	}
-
 	return nil
 }
 
