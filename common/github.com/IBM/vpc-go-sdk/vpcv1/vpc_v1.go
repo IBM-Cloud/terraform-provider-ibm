@@ -18310,7 +18310,9 @@ func (vpc *VpcV1) CreateLoadBalancerWithContext(ctx context.Context, createLoadB
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
@@ -21398,9 +21400,10 @@ func (vpc *VpcV1) ListPrivatePathServiceGatewaysWithContext(ctx context.Context,
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -21460,9 +21463,10 @@ func (vpc *VpcV1) CreatePrivatePathServiceGatewayWithContext(ctx context.Context
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	body := make(map[string]interface{})
 	if createPrivatePathServiceGatewayOptions.Region != nil {
 		body["region"] = createPrivatePathServiceGatewayOptions.Region
@@ -21548,7 +21552,9 @@ func (vpc *VpcV1) DeletePrivatePathServiceGatewayWithContext(ctx context.Context
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	request, err := builder.Build()
@@ -21611,7 +21617,9 @@ func (vpc *VpcV1) GetPrivatePathServiceGatewayWithContext(ctx context.Context, g
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	request, err := builder.Build()
@@ -21677,7 +21685,9 @@ func (vpc *VpcV1) UpdatePrivatePathServiceGatewayWithContext(ctx context.Context
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	_, err = builder.SetBodyContentJSON(updatePrivatePathServiceGatewayOptions.PrivatePathServiceGatewayPatch)
@@ -21750,7 +21760,9 @@ func (vpc *VpcV1) ListPrivatePathServiceGatewayAccountPoliciesWithContext(ctx co
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 	if listPrivatePathServiceGatewayAccountPoliciesOptions.Start != nil {
 		builder.AddQuery("start", fmt.Sprint(*listPrivatePathServiceGatewayAccountPoliciesOptions.Start))
@@ -21824,7 +21836,9 @@ func (vpc *VpcV1) CreatePrivatePathServiceGatewayAccountPolicyWithContext(ctx co
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
@@ -21899,7 +21913,9 @@ func (vpc *VpcV1) DeletePrivatePathServiceGatewayAccountPolicyWithContext(ctx co
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	request, err := builder.Build()
@@ -21952,7 +21968,9 @@ func (vpc *VpcV1) GetPrivatePathServiceGatewayAccountPolicyWithContext(ctx conte
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	request, err := builder.Build()
@@ -22019,7 +22037,9 @@ func (vpc *VpcV1) UpdatePrivatePathServiceGatewayAccountPolicyWithContext(ctx co
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	_, err = builder.SetBodyContentJSON(updatePrivatePathServiceGatewayAccountPolicyOptions.PrivatePathServiceGatewayAccountPolicyPatch)
@@ -22094,7 +22114,9 @@ func (vpc *VpcV1) ListPrivatePathServiceGatewayEndpointGatewayBindingsWithContex
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 	if listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Start != nil {
 		builder.AddQuery("start", fmt.Sprint(*listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Start))
@@ -22170,7 +22192,9 @@ func (vpc *VpcV1) GetPrivatePathServiceGatewayEndpointGatewayBindingWithContext(
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	request, err := builder.Build()
@@ -22235,7 +22259,9 @@ func (vpc *VpcV1) DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext
 	}
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
@@ -22298,7 +22324,9 @@ func (vpc *VpcV1) PermitPrivatePathServiceGatewayEndpointGatewayBindingWithConte
 	}
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
@@ -22361,7 +22389,9 @@ func (vpc *VpcV1) RevokePrivatePathServiceGatewayWithContext(ctx context.Context
 	}
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2023-02-10"))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	builder.AddQuery("maturity", fmt.Sprint("development"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
 	body := make(map[string]interface{})
