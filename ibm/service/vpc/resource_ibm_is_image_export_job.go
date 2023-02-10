@@ -7,8 +7,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -375,7 +377,10 @@ func ResourceIBMIsImageExportDelete(context context.Context, d *schema.ResourceD
 		log.Printf("[DEBUG] DeleteImageExportJobWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteImageExportJobWithContext failed %s\n%s", err, response))
 	}
-
+	_, err = isWaitForImageExportJobDeleted(context, d, meta, vpcClient, d.Id(), d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId("")
 
 	return nil
@@ -450,4 +455,42 @@ func ResourceIBMIsImageExportCloudObjectStorageObjectReferenceToMap(model *vpcv1
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	return modelMap, nil
+}
+
+func isWaitForImageExportJobDeleted(context context.Context, d *schema.ResourceData, meta interface{}, vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for image export job (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", "deleting"},
+		Target:     []string{"", "done"},
+		Refresh:    isImageExportJobDeleteRefreshFunc(context, d, meta, vpcClient, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isImageExportJobDeleteRefreshFunc(context context.Context, d *schema.ResourceData, meta interface{}, vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		log.Printf("[DEBUG] is image export job delete refresh here")
+		parts, err := flex.SepIdParts(d.Id(), "/")
+		if err != nil {
+			return nil, "", err
+		}
+		getImgExpJobOptions := &vpcv1.GetImageExportJobOptions{}
+
+		getImgExpJobOptions.SetImageID(parts[0])
+		getImgExpJobOptions.SetID(parts[1])
+
+		imageExportJob, response, err := vpcClient.GetImageExportJob(getImgExpJobOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return imageExportJob, "done", nil
+			}
+			return imageExportJob, "", fmt.Errorf("[ERROR] Error Getting Image export job: %s\n%s", err, response)
+		}
+		return imageExportJob, *imageExportJob.Status, err
+	}
 }
