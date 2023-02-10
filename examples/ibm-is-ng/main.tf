@@ -1172,35 +1172,35 @@ resource "ibm_is_vpc" "vpc" {
   name = "my-vpc"
 }
 resource "ibm_is_share" "is_share" {
-  name = "myshare"
-	profile = "tier-3iops"
-	resource_group = data.ibm_resource_group.default.id
-	size = 32000
-	share_target_prototype {
-		vpc = ibm_is_vpc.vpc.id
-	}
-	zone = "us-south-2"
-  tags = ["tag1", "tag2"]
+  name           = "myshare"
+  profile        = "tier-3iops"
+  resource_group = data.ibm_resource_group.default.id
+  size           = 32000
+  share_target_prototype {
+    vpc = ibm_is_vpc.vpc.id
+  }
+  zone        = "us-south-2"
+  tags        = ["tag1", "tag2"]
   access_tags = ["accesstag1", "accesstag2"]
 }
 
 resource "ibm_is_share_target" "is_share_target" {
   share = ibm_is_share.is_share.id
-  vpc = ibm_is_vpc.vpc1.id
-  name = "my-share-target"
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target"
 }
 
 data "ibm_is_share_target" "is_share_target" {
-	share = ibm_is_share.is_share.id
-	share_target = ibm_is_share_target.is_share_target.share_target
+  share        = ibm_is_share.is_share.id
+  share_target = ibm_is_share_target.is_share_target.share_target
 }
 
 data "ibm_is_share_targets" "is_share_targets" {
-	share = ibm_is_share.is_share.id
+  share = ibm_is_share.is_share.id
 }
 
 data "ibm_is_share" "is_share" {
-	share = ibm_is_share.is_share.id
+  share = ibm_is_share.is_share.id
 }
 
 data "is_shares" "is_shares" {

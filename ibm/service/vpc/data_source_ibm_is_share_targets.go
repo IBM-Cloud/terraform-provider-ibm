@@ -242,12 +242,7 @@ func dataSourceShareTargetCollectionTargetsToMap(targetsItem vpcbetav1.ShareMoun
 	if targetsItem.ResourceType != nil {
 		targetsMap["resource_type"] = targetsItem.ResourceType
 	}
-	// if targetsItem.Subnet != nil {
-	// 	subnetList := []map[string]interface{}{}
-	// 	subnetMap := dataSourceShareTargetCollectionTargetsSubnetToMap(*targetsItem.Subnet)
-	// 	subnetList = append(subnetList, subnetMap)
-	// 	targetsMap["subnet"] = subnetList
-	// }
+
 	if targetsItem.VPC.CRN != nil {
 		vpcList := []map[string]interface{}{}
 		vpcMap := dataSourceShareTargetCollectionTargetsVpcToMap(*targetsItem.VPC)
@@ -279,11 +274,6 @@ func dataSourceShareTargetCollectionTargetsSubnetToMap(subnetItem vpcbetav1.Subn
 	if subnetItem.Name != nil {
 		subnetMap["name"] = subnetItem.Name
 	}
-	/*
-		if subnetItem.ResourceType != nil {
-			subnetMap["resource_type"] = subnetItem.ResourceType
-		}
-	*/
 
 	return subnetMap
 }
@@ -319,11 +309,6 @@ func dataSourceShareTargetCollectionTargetsVpcToMap(vpcItem vpcbetav1.VPCReferen
 	if vpcItem.Name != nil {
 		vpcMap["name"] = vpcItem.Name
 	}
-	/*
-		if vpcItem.ResourceType != nil {
-			vpcMap["resource_type"] = vpcItem.ResourceType
-		}
-	*/
 
 	return vpcMap
 }

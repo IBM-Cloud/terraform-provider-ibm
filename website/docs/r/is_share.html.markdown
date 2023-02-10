@@ -14,36 +14,36 @@ Provides a resource for Share. This allows Share to be created, updated and dele
 
 ```terraform
 resource "ibm_is_share" "example" {
-  name = "my-share"
-  size = 200
+  name    = "my-share"
+  size    = 200
   profile = "tier-3iops"
-  zone = "us-south-2"
+  zone    = "us-south-2"
 }
 ```
 ## Example Usage (Create a replica share)
 
 ```terraform
 resource "ibm_is_share" "example-1" {
-    zone = "us-south-3"
-    source_share = ibm_is_share.example.id
-    name = "my-replica1"
-    profile = "tier-3iops"
-    replication_cron_spec = "0 */5 * * *"
+  zone                  = "us-south-3"
+  source_share          = ibm_is_share.example.id
+  name                  = "my-replica1"
+  profile               = "tier-3iops"
+  replication_cron_spec = "0 */5 * * *"
 }
 ```
 ## Example Usage (Create a source share with replica share)
 
 ```terraform
 resource "ibm_is_share" "example-2" {
-  zone = "us-south-1"
-  size = 220
-  name = "my-share"
+  zone    = "us-south-1"
+  size    = 220
+  name    = "my-share"
   profile = "tier-3iops"
   replica_share {
-    name = "my-replica" 
+    name                  = "my-replica"
     replication_cron_spec = "0 */5 * * *"
-    profile = "tier-3iops"
-    zone = "us-south-3"
+    profile               = "tier-3iops"
+    zone                  = "us-south-3"
   }
 }
 ```
@@ -52,11 +52,11 @@ resource "ibm_is_share" "example-2" {
 The following arguments are supported:
 
 - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
-- `initial_owner_gid` - (Optional, int) The initial group identifier for the file share.
-- `initial_owner_uid` - (Optional, int) The initial user identifier for the file share.
-- `iops` - (Optional, int) The maximum input/output operation performance bandwidth per second for the file share.
-- `name` - (Required, string) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
-- `profile` - (Required, string) The globally unique name for this share profile.
+- `initial_owner_gid` - (Optional, Integer) The initial group identifier for the file share.
+- `initial_owner_uid` - (Optional, Integer) The initial user identifier for the file share.
+- `iops` - (Optional, Integer) The maximum input/output operation performance bandwidth per second for the file share.
+- `name` - (Required, String) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
+- `profile` - (Required, String) The globally unique name for this share profile.
 
   ~> **NOTE** 
   While updating `profile` from 'custom' to a tiered profile make sure to remove `iops` from the configuration.
@@ -71,14 +71,14 @@ The following arguments are supported:
     - `subnet` - (Optional, String)
     - `vpc` - (Required, String) 
   - `zone` - (Required, String)
-- `resource_group` - (Optional, string) The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-- `size` - (Required, int) The size of the file share rounded up to the next gigabyte.
+- `resource_group` - (Optional, String) The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+- `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte.
 - `share_target_prototype` - (Optional, List) Share targets for the file share.
-  - `name` - (Optional, string) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
-  - `vpc` - (Required, string) The VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.
+  - `name` - (Optional, String) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
+  - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.
 - `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `replication_cron_spec` - (Optional, String) The cron specification for the file share replication schedule.
-- `zone` - (Required, string) The globally unique name for this zone.
+- `zone` - (Required, String) The globally unique name for this zone.
 - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
 
@@ -104,8 +104,24 @@ The following attributes are exported:
 - `encryption_key` - The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 - `iops` - The maximum input/output operation performance bandwidth per second for the file share.
 - `resource_group` - The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-- `replication_role`  - The replication role of the file share.* `none`: This share is not participating in replication.* `replica`: This share is a replication target.* `source`: This share is a replication source.
-- `replication_status` - "The replication status of the file share.* `initializing`: This share is initializing replication.* `active`: This share is actively participating in replication.* `failover_pending`: This share is performing a replication failover.* `split_pending`: This share is performing a replication split.* `none`: This share is not participating in replication.* `degraded`: This share's replication sync is degraded.* `sync_pending`: This share is performing a replication sync.
+- `replication_role`  - The replication role of the file share.
+  
+  -> **replication_role could be one of the below:**
+   &#x2022; `none`: This share is not participating in replication. </br>
+   &#x2022; `replica`: This share is a replication target. </br>
+   &#x2022; `source`: This share is a replication source. </br>
+  
+- `replication_status` - "The replication status of the file share.
+
+  -> **replication_status could be one of the below:**
+   &#x2022; `initializing`: This share is initializing replication. </br>
+   &#x2022; `active`: This share is actively participating in replication. </br>
+   &#x2022; `failover_pending`: This share is performing a replication failover. </br>
+   &#x2022; `split_pending`: This share is performing a replication split. </br>
+   &#x2022; `none`: This share is not participating in replication. </br>
+   &#x2022; `degraded`: This share's replication sync is degraded. </br>
+   &#x2022; `sync_pending`: This share is performing a replication sync. </br>
+  
 - `replication_status_reasons` - The reasons for the current replication status (if any). Nested `replication_status_reasons` blocks have the following structure:
   - `code` - A snake case string succinctly identifying the status reason.
   - `message` - An explanation of the status reason.
@@ -119,3 +135,20 @@ The following attributes are exported:
 	- `resource_type` - The type of resource referenced.
 - `access_tags`  - (String) Access management tags associated to the share.
 - `tags`  - (String) User tags associated for to the share.
+
+
+## Import
+
+The `ibm_is_share` can be imported using ID.
+
+**Syntax**
+
+```
+$ terraform import ibm_is_share.example <id>
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_share.example d7bec597-4726-451f-8a63-e62e6f19c32c
+```

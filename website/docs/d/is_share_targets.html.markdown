@@ -18,14 +18,14 @@ resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
 resource "ibm_is_share" "example" {
-  name = "example-share"
-  size = 200
+  name    = "example-share"
+  size    = 200
   profile = "tier-3iops"
-  zone = "us-south-2"
+  zone    = "us-south-2"
 }
 
 data "ibm_is_share_targets" "example" {
-	share = ibm_is_share.example.id
+  share = ibm_is_share.example.id
 }
 ```
 
