@@ -56,6 +56,21 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "Load Balancer name",
 						},
+						isLBAvailability: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The availability of this load balancer",
+						},
+						isLBInstanceGroupsSupported: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this load balancer supports instance groups.",
+						},
+						isLBSourceIPPersistenceSupported: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this load balancer supports source IP session persistence.",
+						},
 						isLBUdpSupported: {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -302,6 +317,15 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		lbInfo := make(map[string]interface{})
 		//	log.Printf("******* lb ******** : (%+v)", lb)
 		lbInfo[ID] = *lb.ID
+		if lb.Availability != nil {
+			lbInfo[isLBAvailability] = *lb.Availability
+		}
+		if lb.InstanceGroupsSupported != nil {
+			lbInfo[isLBInstanceGroupsSupported] = *lb.InstanceGroupsSupported
+		}
+		if lb.SourceIPSessionPersistenceSupported != nil {
+			lbInfo[isLBSourceIPPersistenceSupported] = *lb.SourceIPSessionPersistenceSupported
+		}
 		lbInfo[isLBName] = *lb.Name
 		if lb.RouteMode != nil {
 			lbInfo[isLBRouteMode] = *lb.RouteMode

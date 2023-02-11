@@ -93,9 +93,11 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `availability` - (String) The availability of this load balancer
 - `crn` - (String) The CRN for this load balancer.
 - `hostname` - (String) The fully qualified domain name assigned to this load balancer.
 - `id` - (String) The unique identifier of the load balancer.
+- `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.
 - `operating_status` - (String) The operating status of this load balancer.
 - `public_ips` - (String) The public IP addresses assigned to this load balancer.
 - `private_ip` - (List) The Reserved IP address reference assigned to this load balancer.
@@ -109,6 +111,7 @@ In addition to all argument reference list, you can access the following attribu
 - `private_ips` - (String) The private IP addresses (Reserved IP address reference) assigned to this load balancer.
 - `status` - (String) The status of the load balancer.
 - `security_groups_supported`- (Bool) Indicates if this load balancer supports security groups.
+- `source_ip_session_persistence_supported` - (Boolean) Indicates whether this load balancer supports source IP session persistence.
 - `udp_supported`- (Bool) Indicates whether this load balancer supports UDP.
 
 

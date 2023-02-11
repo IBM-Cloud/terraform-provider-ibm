@@ -19,29 +19,32 @@ import (
 )
 
 const (
-	isLBName                    = "name"
-	isLBStatus                  = "status"
-	isLBCrn                     = "crn"
-	isLBTags                    = "tags"
-	isLBType                    = "type"
-	isLBSubnets                 = "subnets"
-	isLBHostName                = "hostname"
-	isLBPublicIPs               = "public_ips"
-	isLBPrivateIPs              = "private_ips"
-	isLBListeners               = "listeners"
-	isLBPools                   = "pools"
-	isLBOperatingStatus         = "operating_status"
-	isLBDeleting                = "deleting"
-	isLBDeleted                 = "done"
-	isLBProvisioning            = "provisioning"
-	isLBProvisioningDone        = "done"
-	isLBResourceGroup           = "resource_group"
-	isLBProfile                 = "profile"
-	isLBRouteMode               = "route_mode"
-	isLBUdpSupported            = "udp_supported"
-	isLBLogging                 = "logging"
-	isLBSecurityGroups          = "security_groups"
-	isLBSecurityGroupsSupported = "security_group_supported"
+	isLBAvailability                 = "availability"
+	isLBInstanceGroupsSupported      = "instance_groups_supported"
+	isLBSourceIPPersistenceSupported = "source_ip_session_persistence_supported"
+	isLBName                         = "name"
+	isLBStatus                       = "status"
+	isLBCrn                          = "crn"
+	isLBTags                         = "tags"
+	isLBType                         = "type"
+	isLBSubnets                      = "subnets"
+	isLBHostName                     = "hostname"
+	isLBPublicIPs                    = "public_ips"
+	isLBPrivateIPs                   = "private_ips"
+	isLBListeners                    = "listeners"
+	isLBPools                        = "pools"
+	isLBOperatingStatus              = "operating_status"
+	isLBDeleting                     = "deleting"
+	isLBDeleted                      = "done"
+	isLBProvisioning                 = "provisioning"
+	isLBProvisioningDone             = "done"
+	isLBResourceGroup                = "resource_group"
+	isLBProfile                      = "profile"
+	isLBRouteMode                    = "route_mode"
+	isLBUdpSupported                 = "udp_supported"
+	isLBLogging                      = "logging"
+	isLBSecurityGroups               = "security_groups"
+	isLBSecurityGroupsSupported      = "security_group_supported"
 
 	isLBAccessTags = "access_tags"
 )
@@ -96,6 +99,21 @@ func ResourceIBMISLB() *schema.Resource {
 				Description:  "Load Balancer type",
 			},
 
+			isLBAvailability: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The availability of this load balancer",
+			},
+			isLBInstanceGroupsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports instance groups.",
+			},
+			isLBSourceIPPersistenceSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports source IP session persistence.",
+			},
 			isLBStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -488,6 +506,16 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("[ERROR] Error getting Load Balancer : %s\n%s", err, response)
 	}
+	if lb.Availability != nil {
+		d.Set(isLBAvailability, *lb.Availability)
+	}
+	if lb.InstanceGroupsSupported != nil {
+		d.Set(isLBInstanceGroupsSupported, *lb.InstanceGroupsSupported)
+	}
+	if lb.SourceIPSessionPersistenceSupported != nil {
+		d.Set(isLBSourceIPPersistenceSupported, *lb.SourceIPSessionPersistenceSupported)
+	}
+
 	d.Set(isLBName, *lb.Name)
 	if *lb.IsPublic {
 		d.Set(isLBType, "public")

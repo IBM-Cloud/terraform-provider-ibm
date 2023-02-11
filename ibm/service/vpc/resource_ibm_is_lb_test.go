@@ -136,6 +136,9 @@ func TestAccIBMISLB_PPNLB(t *testing.T) {
 						"ibm_is_lb.testacc_LB", "type", "private_path"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "profile", "network-private-path"),
+					resource.TestCheckResourceAttrSet("ibm_is_lb.testacc_LB", "availability"),
+					resource.TestCheckResourceAttrSet("ibm_is_lb.testacc_LB", "instance_groups_supported"),
+					resource.TestCheckResourceAttrSet("ibm_is_lb.testacc_LB", "source_ip_persistence_supported"),
 				),
 			},
 		},

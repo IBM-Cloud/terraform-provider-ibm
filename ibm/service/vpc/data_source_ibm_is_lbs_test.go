@@ -30,6 +30,9 @@ func TestAccIBMISLBSDatasource_basic(t *testing.T) {
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_lb", lb),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_lb.ds_lb", "name", name),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.ds_lb", "load_balancers.0.availability"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.ds_lb", "load_balancers.0.instance_groups_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lbs.ds_lb", "load_balancers.0.source_ip_persistence_supported"),
 				),
 			},
 			{
