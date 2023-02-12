@@ -15,6 +15,8 @@ These types of resources are supported:
 * PrivateCertificateConfigurationIntermediateCA
 * PrivateCertificateConfigurationTemplate
 * PublicCertificateConfigurationCALetsEncrypt
+* PublicCertificateConfigurationDNSCloudInternetServices
+* PublicCertificateConfigurationDNSClassicInfrastructure
 * NotificationsRegistrationPrototype
 
 ## Usage
@@ -233,6 +235,24 @@ resource "sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration
   lets_encrypt_preferred_chain = var.sm_configuration_public_certificate_CA_Lets_Encrypt_lets_encrypt_preferred_chain
 }
 ```
+sm_configuration_public_certificate_cis resource:
+
+```hcl
+resource "sm_configuration_public_certificate_cis" "sm_configuration_public_certificate_cis_instance" {
+  config_type = var.sm_configuration_public_certificate_cis_config_type
+  cloud_internet_services_apikey = var.sm_configuration_public_certificate_cis_cloud_internet_services_apikey
+  cloud_internet_services_crn = var.sm_configuration_public_certificate_cis_cloud_internet_services_crn
+}
+```
+sm_configuration_public_certificate_classic_infrastructure resource:
+
+```hcl
+resource "sm_configuration_public_certificate_classic_infrastructure" "sm_configuration_public_certificate_classic_infrastructure_instance" {
+  config_type = var.sm_configuration_public_certificate_classic_infrastructure_config_type
+  classic_infrastructure_username = var.sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_username
+  classic_infrastructure_password = var.sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_password
+}
+```
 sm_en_registration resource:
 
 ```hcl
@@ -281,14 +301,6 @@ sm_private_certificate_action_revoke data source:
 data "sm_private_certificate_action_revoke" "sm_private_certificate_action_revoke_instance" {
   id = var.sm_private_certificate_action_revoke_id
   secret_action_prototype = var.sm_private_certificate_action_revoke_secret_action_prototype
-}
-```
-sm_private_certificate_configuration_action_sign_csr data source:
-
-```hcl
-data "sm_private_certificate_configuration_action_sign_csr" "sm_private_certificate_configuration_action_sign_csr_instance" {
-  name = var.sm_private_certificate_configuration_action_sign_csr_name
-  config_action_prototype = var.sm_private_certificate_configuration_action_sign_csr_config_action_prototype
 }
 ```
 sm_secrets data source:
@@ -458,6 +470,20 @@ data "sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration_pub
   name = var.sm_configuration_public_certificate_CA_Lets_Encrypt_name
 }
 ```
+sm_configuration_public_certificate_cis data source:
+
+```hcl
+data "sm_configuration_public_certificate_cis" "sm_configuration_public_certificate_cis_instance" {
+  name = var.sm_configuration_public_certificate_cis_name
+}
+```
+sm_configuration_public_certificate_classic_infrastructure data source:
+
+```hcl
+data "sm_configuration_public_certificate_classic_infrastructure" "sm_configuration_public_certificate_classic_infrastructure_instance" {
+  name = var.sm_configuration_public_certificate_classic_infrastructure_name
+}
+```
 sm_en_registration data source:
 
 ```hcl
@@ -586,7 +612,6 @@ data "sm_en_registration" "sm_en_registration_instance" {
 | sm_secret_version_action | sm_secret_version_action object |
 | sm_public_certificate_action_validate_manual_dns | sm_public_certificate_action_validate_manual_dns object |
 | sm_private_certificate_action_revoke | sm_private_certificate_action_revoke object |
-| sm_private_certificate_configuration_action_sign_csr | sm_private_certificate_configuration_action_sign_csr object |
 | sm_secrets | sm_secrets object |
 | sm_secret_versions | sm_secret_versions object |
 | sm_secret_version_metadata | sm_secret_version_metadata object |

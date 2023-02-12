@@ -543,6 +543,40 @@ variable "sm_configuration_public_certificate_CA_Lets_Encrypt_lets_encrypt_prefe
   default     = "lets_encrypt_preferred_chain"
 }
 
+// Resource arguments for sm_configuration_public_certificate_cis
+variable "sm_configuration_public_certificate_cis_config_type" {
+  description = "Th configuration type."
+  type        = string
+  default     = "public_cert_configuration_ca_lets_encrypt"
+}
+variable "sm_configuration_public_certificate_cis_cloud_internet_services_apikey" {
+  description = "An IBM Cloud API key that can to list domains in your Cloud Internet Services instance.To grant Secrets Manager the ability to view the Cloud Internet Services instance and all of its domains, the API key must be assigned the Reader service role on Internet Services (`internet-svcs`).If you need to manage specific domains, you can assign the Manager role. For production environments, it is recommended that you assign the Reader access role, and then use the[IAM Policy Management API](https://cloud.ibm.com/apidocs/iam-policy-management#create-policy) to control specific domains. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates#authorize-specific-domains)."
+  type        = string
+  default     = "cloud_internet_services_apikey"
+}
+variable "sm_configuration_public_certificate_cis_cloud_internet_services_crn" {
+  description = "A CRN that uniquely identifies an IBM Cloud resource."
+  type        = string
+  default     = "cloud_internet_services_crn"
+}
+
+// Resource arguments for sm_configuration_public_certificate_classic_infrastructure
+variable "sm_configuration_public_certificate_classic_infrastructure_config_type" {
+  description = "Th configuration type."
+  type        = string
+  default     = "public_cert_configuration_ca_lets_encrypt"
+}
+variable "sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_username" {
+  description = "The username that is associated with your classic infrastructure account.In most cases, your classic infrastructure username is your `<account_id>_<email_address>`. For more information, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys)."
+  type        = string
+  default     = "classic_infrastructure_username"
+}
+variable "sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_password" {
+  description = "Your classic infrastructure API key.For information about viewing and accessing your classic infrastructure API key, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys)."
+  type        = string
+  default     = "classic_infrastructure_password"
+}
+
 // Resource arguments for sm_en_registration
 variable "sm_en_registration_event_notifications_instance_crn" {
   description = "A CRN that uniquely identifies an IBM Cloud resource."
@@ -608,20 +642,6 @@ variable "sm_private_certificate_action_revoke_secret_action_prototype" {
   type        = list(object({ example=string }))
   default     = {"action_type":"private_cert_action_revoke_certificate"}
 }
-
-// Data source arguments for sm_private_certificate_configuration_action_sign_csr
-variable "sm_private_certificate_configuration_action_sign_csr_name" {
-  description = "The name of the configuration."
-  type        = string
-  default     = "configuration-name"
-}
-variable "sm_private_certificate_configuration_action_sign_csr_config_action_prototype" {
-  description = "The request body to specify the properties of the action to create a configuration."
-  type        = list(object({ example=string }))
-  default     = {"action_type":"private_cert_configuration_action_rotate_crl"}
-}
-
-
 
 // Data source arguments for sm_secret_versions
 variable "sm_secret_versions_secret_id" {
@@ -776,6 +796,20 @@ variable "sm_configuration_private_certificate_template_name" {
 
 // Data source arguments for sm_configuration_public_certificate_CA_Lets_Encrypt
 variable "sm_configuration_public_certificate_CA_Lets_Encrypt_name" {
+  description = "The name of the configuration."
+  type        = string
+  default     = "configuration-name"
+}
+
+// Data source arguments for sm_configuration_public_certificate_cis
+variable "sm_configuration_public_certificate_cis_name" {
+  description = "The name of the configuration."
+  type        = string
+  default     = "configuration-name"
+}
+
+// Data source arguments for sm_configuration_public_certificate_classic_infrastructure
+variable "sm_configuration_public_certificate_classic_infrastructure_name" {
   description = "The name of the configuration."
   type        = string
   default     = "configuration-name"
