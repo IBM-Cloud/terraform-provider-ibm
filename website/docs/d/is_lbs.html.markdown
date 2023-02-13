@@ -34,6 +34,7 @@ Review the attribute references that you can access after you retrieve your data
 - `load_balancers` - (List) The Collection of load balancers.
 
   Nested scheme for `load_balancers`:
+  	- `access_tags`  - (String) Access management tags associated for the load balancer.
 	- `id` - (String) The unique identifier of the load balancer.
 	- `created_at` - (String) The date and time this load balancer was created.
 	- `crn` - (String) The load balancer's CRN.

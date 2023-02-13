@@ -42,7 +42,7 @@ resource "ibm_is_vpc_address_prefix" "example" {
 Review the argument references that you can specify for your resource. 
 
 - `cidr` - (Required, Forces new resource, String) The CIDR block for the address prefix.
-- `is_default` - (Optional, String) Makes the prefix as default prefix for this zone in this VPC.
+- `is_default` - (Optional, Boolean) Makes the prefix as default prefix for this zone in this VPC. Default is `false`
 - `name` - (Required, String) The address prefix name.No.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String) The name of the zone.
@@ -54,6 +54,7 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The ID of the address prefix. The ID is composed of `<vpc_id>/<address_prefix_id>`.
 - `has_subnets`- (Bool) Indicates whether subnets exist with addresses from this prefix.
 - `address_prefix` - (String) the unique identifier of the address prefix.
+- `related_crn` - (String) CRN of the VPC this address prefix belongs to.
 
 ## Import
 The `ibm_is_vpc_address_prefix` resource can be imported by using the VPC ID and VPC address prefix ID.

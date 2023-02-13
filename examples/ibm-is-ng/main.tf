@@ -743,6 +743,22 @@ resource "ibm_is_instance" "instance8" {
   keys = [ibm_is_ssh_key.sshkey.id]
 }
 
+resource "ibm_is_instance_template" "instancetemplate3" {
+  name    = "instancetemplate-3"
+  catalog_offering {
+    version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
+  }
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
+
+  vpc       = ibm_is_vpc.vpc2.id
+  zone      = "us-south-2"
+  keys      = [ibm_is_ssh_key.sshkey.id]
+}
+
 
 data "ibm_is_instance_network_interface_reserved_ip" "data_reserved_ip" {
   instance = ibm_is_instance.test_instance.id
@@ -1119,6 +1135,16 @@ resource "ibm_is_vpn_server_route" "is_vpn_server_route" {
   destination   = "172.16.0.0/16"
   action        = "translate"
   name          = "example-vpn-server-route"
+}
+
+data "ibm_is_backup_policy_job" "is_backup_policy_job" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  identifier       = ""
+}
+
+data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
+  backup_policy_plan_id = ibm_is_backup_policy.is_backup_policy.backup_policy_plan_id
+  backup_policy_id      = ibm_is_backup_policy.is_backup_policy.id
 }
 
 data "ibm_is_vpn_server" "is_vpn_server" {

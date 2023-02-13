@@ -35,7 +35,9 @@ In addition to all argument references listed, you can access the following attr
 
 - `id` - The unique identifier of the InstanceGroupCollection.
 - `instance_groups` - (List) Collection of instance groups.
-  Nested scheme for `instance_groups`:
+
+Nested scheme for `instance_groups`:
+  - `access_tags`  - (List) Access management tags associated for the instance group.
   - `application_port` - (Integer) Required if specifying a load balancer pool only. Used by the instance group when scaling up instances to supply the port for the load balancer pool member.
   - `created_at` - (String) The date and time that the instance group was created.
   - `crn` - (String) The CRN for this instance group.

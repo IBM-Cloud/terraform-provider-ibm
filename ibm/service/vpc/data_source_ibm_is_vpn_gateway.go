@@ -249,6 +249,20 @@ func DataSourceIBMISVPNGateway() *schema.Resource {
 					},
 				},
 			},
+			isVPNGatewayTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "VPN Gateway tags list",
+			},
+			isVPNGatewayAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
 		},
 	}
 }
@@ -361,6 +375,19 @@ func dataSourceIBMIsVPNGatewayRead(context context.Context, d *schema.ResourceDa
 			return diag.FromErr(fmt.Errorf("Error setting vpc: %s", err))
 		}
 	}
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *vpnGateway.CRN, "", isUserTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isVPNGatewayTags, tags)
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpnGateway.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource VPC VPN Gateway (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isVPNGatewayAccessTags, accesstags)
 	return nil
 }
 

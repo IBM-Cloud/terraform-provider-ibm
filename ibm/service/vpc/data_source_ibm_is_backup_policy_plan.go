@@ -73,7 +73,7 @@ func DataSourceIBMIsBackupPolicyPlan() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"delete_after": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "The maximum number of days to keep each backup after creation.",
 						},
 						"delete_over_count": &schema.Schema{

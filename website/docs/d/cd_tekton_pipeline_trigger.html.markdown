@@ -43,7 +43,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 
 * `events` - (List) Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.
-  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The list items must match regular expression `/^[-0-9a-zA-Z_,]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The maximum length is `3` items. The minimum length is `0` items.
 
 * `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -116,7 +116,7 @@ Nested scheme for **source**:
 
 * `worker` - (List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
 Nested scheme for **worker**:
-	* `id` - (Forces new resource, String) ID of the worker.
+	* `id` - (String) ID of the worker.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
 	* `name` - (String) Name of the worker. Computed based on the worker ID.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.

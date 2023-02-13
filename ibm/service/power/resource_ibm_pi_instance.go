@@ -641,7 +641,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			if err != nil {
 				return diag.Errorf("failed to update the lpar with the change %v", err)
 			}
-			_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
+			_, err = isWaitforPIInstanceUpdate(ctx, client, instanceID)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -962,7 +962,7 @@ func performChangeAndReboot(ctx context.Context, client *st.IBMPIInstanceClient,
 }
 
 func isWaitforPIInstanceUpdate(ctx context.Context, client *st.IBMPIInstanceClient, id string) (interface{}, error) {
-	log.Printf("Waiting for PIInstance (%s) to be SHUTOFF AFTER THE RESIZE Due to DLPAR Operation ", id)
+	log.Printf("Waiting for PIInstance (%s) to be ACTIVE or SHUTOFF AFTER THE RESIZE Due to DLPAR Operation ", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"RESIZE", "VERIFY_RESIZE"},

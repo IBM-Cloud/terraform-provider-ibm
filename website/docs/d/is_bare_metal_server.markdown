@@ -50,6 +50,7 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (List) Access management tags associated for the bare metal server.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces.
 - `boot_target` - (String) The unique identifier for this bare metal server disk.
 - `cpu` - (List) A nested block describing the CPU configuration of this bare metal server.

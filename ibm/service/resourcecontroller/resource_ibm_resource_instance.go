@@ -631,7 +631,10 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("resource_bindings_url", instance.ResourceBindingsURL)
 	d.Set("resource_aliases_url", instance.ResourceAliasesURL)
 	if instance.LastOperation != nil {
-		d.Set("last_operation", flex.Flatten(instance.LastOperation))
+		operation, err := flex.StructToMap(instance.LastOperation)
+		if err == nil {
+			d.Set("last_operation", flex.Flatten(operation))
+		}
 	}
 	d.Set("locked", instance.Locked)
 	d.Set("allow_cleanup", instance.AllowCleanup)

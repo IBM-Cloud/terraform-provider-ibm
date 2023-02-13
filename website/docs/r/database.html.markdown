@@ -35,12 +35,12 @@ resource "ibm_database" "<your_database>" {
 
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 14336
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 20480
     }
 
@@ -54,7 +54,8 @@ resource "ibm_database" "<your_database>" {
     password = "password12"
     type     = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.1/32"
     description = "desc"
   }
@@ -92,7 +93,8 @@ resource "ibm_database" "<your_database>" {
     password  = "password12"
     type      = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.1/32"
     description = "desc"
   }
@@ -143,7 +145,7 @@ resource "ibm_database" "<your_database>" {
     password = "password12"
   }
 
-  whitelist {
+  allowlist {
     address     = "172.168.1.1/32"
     description = "desc"
   }
@@ -231,14 +233,15 @@ resource "ibm_database" "cassandra" {
   plan                         = "enterprise"
   location                     = "us-south"
   adminpassword                = "password12"
+
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 24576
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 368640
     }
 
@@ -246,12 +249,14 @@ resource "ibm_database" "cassandra" {
       allocation_count = 6
     }
   }
+
   users {
     name      = "user123"
     password  = "password12"
     type      = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.2/32"
     description = "desc1"
   }
@@ -283,12 +288,12 @@ resource "ibm_database" "mongodb" {
 
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 24576
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 122880
     }
 
@@ -298,21 +303,25 @@ resource "ibm_database" "mongodb" {
   }
 
   tags                         = ["one:two"]
+
   users {
     name      = "dbuser"
     password  = "password12"
     type      = "database"
   }
+
   users {
     name     = "opsmanageruser"
     password = "$ecurepa$$word12"
     type     = "ops_manager"
     role     = "group_read_only"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.2/32"
     description = "desc1"
   }
+
   timeouts {
     create = "120m"
     update = "120m"
@@ -341,12 +350,12 @@ resource "ibm_database" "mongodb_enterprise" {
 
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 24576
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 122880
     }
 
@@ -354,23 +363,23 @@ resource "ibm_database" "mongodb_enterprise" {
       allocation_count = 6
     }
   }
-  
+
   group {
     group_id = "analytics"
-    
-    members { 
+
+    members {
       allocation_count = 1
     }
   }
-  
+
   group {
     group_id = "bi_connector"
-    
-    members { 
+
+    members {
       allocation_count = 1
     }
   }
-    
+
   timeouts {
     create = "120m"
     update = "120m"
@@ -412,14 +421,15 @@ resource "ibm_database" "edb" {
   plan                         = "standard"
   location                     = "us-south"
   adminpassword                = "password12"
+
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 12288
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 131072
     }
 
@@ -427,16 +437,20 @@ resource "ibm_database" "edb" {
       allocation_count = 3
     }
   }
+
   tags                         = ["one:two"]
+
   users {
     name      = "user123"
     password  = "password12"
     type      = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.2/32"
     description = "desc1"
   }
+
   timeouts {
     create = "120m"
     update = "120m"
@@ -455,12 +469,12 @@ resource "ibm_database" "db" {
   location                     = "us-east"
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 12288
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 131072
     }
 
@@ -492,7 +506,7 @@ resource "ibm_database" "db" {
   service                      = "databases-for-postgresql"
   plan                         = "standard"
   location                     = "us-east"
-  
+
   users {
     name     = "repl"
     password = "repl123456"
@@ -551,7 +565,7 @@ Review the argument reference that you can specify for your resource.
          - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
          - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
          - `rate_units` - (Optional, String) Auto scaling rate in units.
-        
+
      - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
         - Nested scheme for `disk`:
           - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
@@ -594,7 +608,7 @@ Review the argument reference that you can specify for your resource.
 - `group` - (Optional, Set) A set of group scaling values for the database. Multiple blocks are allowed. Can only be performed on is_adjustable=true groups. Values set are per-member. Values must be greater than or equal to the minimum size and must be a multiple of the step size.
   - Nested scheme for `group`:
     - `group_id` - (Optional, String) The ID of the scaling group. Scaling group ID allowed values:  `member`, `analytics`, `bi_connector` or `search`. Read more about `analytics` and `bi_connector` [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics). Read more about `search` [here](https://cloud.ibm.com/docs/databases-for-cassandra?topic=databases-for-cassandra-dse-search)
-      
+
 
     - `members` (Set, Optional)
       - Nested scheme for `members`:
@@ -636,14 +650,14 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for `users`:
   - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
-  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users 
+  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
   - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
 
 - `allowlist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 
   Nested scheme for `allowlist`:
-  - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
+  - `address` - (Optional, String) The IP address or range of database client addresses to be allowlisted in CIDR format. Example, `172.168.1.2/32`.
   - `description` - (Optional, String) A description for the allowed IP addresses range.
 
 - `whitelist` **Deprecated** - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.

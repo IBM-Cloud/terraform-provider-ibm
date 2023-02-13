@@ -20,7 +20,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
       -
         name: Unshallow
         run: git fetch --prune --unshallow
@@ -39,7 +39,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
       -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v3
+        uses: goreleaser/goreleaser-action@v4
         with:
           version: latest
           args: release --rm-dist

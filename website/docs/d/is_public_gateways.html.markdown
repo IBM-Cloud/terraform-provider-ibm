@@ -28,12 +28,19 @@ data "ibm_is_public_gateways" "example"{
 
 ```
 
+## Argument reference
+
+Review the argument references that you can specify for your data source. 
+
+- `resource_group` - (String) The ID of the Resource group this public gateway belongs to.
+
 ## Attribute reference
 Review the attribute references that you can access after you retrieve your data source.
 
 - `public_gateways` - (List) List of all Public Gateways in the IBM Cloud infrastructure region.
 
   Nested scheme for `public_gateways`:
+  - `access_tags`  - (List) Access management tags associated for the public gateway.
   - `crn` - (String) The CRN for this public gateway.
   - `id` - (String) The ID of the public gateway.
   - `status` - (String) The status of the public gateway.
