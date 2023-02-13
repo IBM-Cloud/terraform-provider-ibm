@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -277,11 +276,6 @@ func ResourceIBMISFloatingIP() *schema.Resource {
 
 func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
-	return sess, err
-}
-
-func vpcBetaClient(meta interface{}) (*vpcbetav1.VpcbetaV1, error) {
-	sess, err := meta.(conns.ClientSession).VpcBetaV1API()
 	return sess, err
 }
 

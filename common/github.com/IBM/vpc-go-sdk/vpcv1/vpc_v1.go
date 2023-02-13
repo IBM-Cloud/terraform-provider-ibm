@@ -23077,13 +23077,13 @@ type BareMetalServerNetworkInterface struct {
 
 // Constants associated with the BareMetalServerNetworkInterface.InterfaceType property.
 // The network interface type:
-//   - `pci`: a physical PCI device which can only be created or deleted when the bare metal
-//     server is stopped
+// - `pci`: a physical PCI device which can only be created or deleted when the bare metal
+//   server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
 //   - Cannot directly use an IEEE 802.1q VLAN tag.
-//   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
-//     array of `allowed_vlans`.
+// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
+//   array of `allowed_vlans`.
 //   - Must use an IEEE 802.1q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.
@@ -23360,13 +23360,13 @@ type BareMetalServerNetworkInterfacePrototype struct {
 
 // Constants associated with the BareMetalServerNetworkInterfacePrototype.InterfaceType property.
 // The network interface type:
-//   - `pci`: a physical PCI device which can only be created or deleted when the bare metal
-//     server is stopped
+// - `pci`: a physical PCI device which can only be created or deleted when the bare metal
+//   server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
 //   - Cannot directly use an IEEE 802.1q VLAN tag.
-//   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
-//     array of `allowed_vlans`.
+// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
+//   array of `allowed_vlans`.
 //   - Must use an IEEE 802.1q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.
@@ -23482,8 +23482,8 @@ type BareMetalServerPrimaryNetworkInterfacePrototype struct {
 
 // Constants associated with the BareMetalServerPrimaryNetworkInterfacePrototype.InterfaceType property.
 // The network interface type:
-//   - `pci`: a physical PCI device which can only be created or deleted when the bare metal
-//     server is stopped
+// - `pci`: a physical PCI device which can only be created or deleted when the bare metal
+//   server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
 //   - Cannot directly use an IEEE 802.1q VLAN tag.
@@ -26283,10 +26283,10 @@ type CreateLoadBalancerListenerOptions struct {
 // `https`.
 //
 // Additional restrictions:
-//   - If `default_pool` is set, the pool's protocol must match, or be compatible with
-//     the listener's protocol. At present, the compatible protocols are `http` and
-//     `https`.
-//   - If `https_redirect` is set, the protocol must be `http`.
+// - If `default_pool` is set, the pool's protocol must match, or be compatible with
+//   the listener's protocol. At present, the compatible protocols are `http` and
+//   `https`.
+// - If `https_redirect` is set, the protocol must be `http`.
 const (
 	CreateLoadBalancerListenerOptionsProtocolHTTPConst  = "http"
 	CreateLoadBalancerListenerOptionsProtocolHTTPSConst = "https"
@@ -36857,15 +36857,15 @@ const (
 
 // Constants associated with the Image.Status property.
 // The status of this image
-//   - available: image can be used (provisionable)
-//   - deleting: image is being deleted, and can no longer be used to provision new
-//     resources
-//   - deprecated: image can be used, but is slated to become `obsolete` (provisionable)
-//   - failed: image is corrupt or did not pass validation
-//   - obsolete: image can no longer be used to provision new resources
-//   - pending: image is being imported and is not yet `available`
-//   - tentative: image import has timed out (contact support)
-//   - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
+// - available: image can be used (provisionable)
+// - deleting: image is being deleted, and can no longer be used to provision new
+//   resources
+// - deprecated: image can be used, but is slated to become `obsolete` (provisionable)
+// - failed: image is corrupt or did not pass validation
+// - obsolete: image can no longer be used to provision new resources
+// - pending: image is being imported and is not yet `available`
+// - tentative: image import has timed out (contact support)
+// - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
 //
 // The enumerated values for this property are expected to expand in the future. When processing this property, check
 // for and log unknown values. Optionally halt processing and surface the error, or bypass the image on which the
@@ -38327,11 +38327,11 @@ type InstanceGroup struct {
 
 // Constants associated with the InstanceGroup.Status property.
 // The status of the instance group
-//   - `deleting`: Group is being deleted
-//   - `healthy`: Group has `membership_count` instances
-//   - `scaling`: Instances in the group are being created or deleted to reach
-//     `membership_count`
-//   - `unhealthy`: Group is unable to reach `membership_count` instances.
+// - `deleting`: Group is being deleted
+// - `healthy`: Group has `membership_count` instances
+// - `scaling`: Instances in the group are being created or deleted to reach
+//              `membership_count`
+// - `unhealthy`: Group is unable to reach `membership_count` instances.
 const (
 	InstanceGroupStatusDeletingConst  = "deleting"
 	InstanceGroupStatusHealthyConst   = "healthy"
@@ -40452,14 +40452,13 @@ func (instancePatch *InstancePatch) AsPatch() (_patch map[string]interface{}, er
 
 // InstancePatchProfile : The profile to use for this virtual server instance. For the profile to be changed, the instance `status` must be
 // `stopping` or `stopped`. In addition, the requested profile must:
-//   - Have matching instance disk support. Any disks associated with the current profile
-//     will be deleted, and any disks associated with the requested profile will be
-//     created.
-//   - Be compatible with any `placement_target` constraints. For example, if the
-//     instance is placed on a dedicated host, the requested profile `family` must be
-//     the same as the dedicated host `family`.
-//   - Have the same `vcpu.architecture`.
-//
+// - Have matching instance disk support. Any disks associated with the current profile
+//   will be deleted, and any disks associated with the requested profile will be
+//   created.
+// - Be compatible with any `placement_target` constraints. For example, if the
+//   instance is placed on a dedicated host, the requested profile `family` must be
+//   the same as the dedicated host `family`.
+// - Have the same `vcpu.architecture`.
 // Models which "extend" this model:
 // - InstancePatchProfileInstanceProfileIdentityByName
 // - InstancePatchProfileInstanceProfileIdentityByHref
@@ -46532,13 +46531,13 @@ const (
 // Constants associated with the LoadBalancer.ProvisioningStatus property.
 // The provisioning status of this load balancer:
 //
-//   - `active`: The load balancer is running.
-//   - `create_pending`: The load balancer is being created.
-//   - `delete_pending`: The load balancer is being deleted.
-//   - `maintenance_pending`: The load balancer is unavailable due to an internal
-//     error (contact IBM support).
-//   - `update_pending`: The load balancer is being updated
-//     to the requested configuration.
+// - `active`: The load balancer is running.
+// - `create_pending`: The load balancer is being created.
+// - `delete_pending`: The load balancer is being deleted.
+// - `maintenance_pending`: The load balancer is unavailable due to an internal
+//       error (contact IBM support).
+// - `update_pending`: The load balancer is being updated
+//                     to the requested configuration.
 //
 // The enumerated values for this property are expected to expand in the future. When processing this property, check
 // for and log unknown values. Optionally halt processing and surface the error, or bypass the load balancer on which
@@ -47177,10 +47176,10 @@ type LoadBalancerListenerPatch struct {
 // `https`.
 //
 // Additional restrictions:
-//   - If `default_pool` is set, the protocol cannot be changed.
-//   - If `https_redirect` is set, the protocol must be `http`.
-//   - If another listener's `https_redirect` targets this listener, the protocol must be
-//     `https`.
+// - If `default_pool` is set, the protocol cannot be changed.
+// - If `https_redirect` is set, the protocol must be `http`.
+// - If another listener's `https_redirect` targets this listener, the protocol must be
+//   `https`.
 const (
 	LoadBalancerListenerPatchProtocolHTTPConst  = "http"
 	LoadBalancerListenerPatchProtocolHTTPSConst = "https"
@@ -47959,10 +47958,9 @@ func UnmarshalLoadBalancerListenerPolicyTarget(m map[string]json.RawMessage, res
 }
 
 // LoadBalancerListenerPolicyTargetPatch : - If `action` is `forward`, specify a `LoadBalancerPoolIdentity`.
-//   - If `action` is `redirect`, specify a `LoadBalancerListenerPolicyRedirectURLPatch`.
-//   - If `action` is `https_redirect`, specify a
-//     `LoadBalancerListenerPolicyHTTPSRedirectPatch`.
-//
+// - If `action` is `redirect`, specify a `LoadBalancerListenerPolicyRedirectURLPatch`.
+// - If `action` is `https_redirect`, specify a
+//   `LoadBalancerListenerPolicyHTTPSRedirectPatch`.
 // Models which "extend" this model:
 // - LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity
 // - LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch
@@ -48027,10 +48025,9 @@ func UnmarshalLoadBalancerListenerPolicyTargetPatch(m map[string]json.RawMessage
 }
 
 // LoadBalancerListenerPolicyTargetPrototype : - If `action` is `forward`, specify a `LoadBalancerPoolIdentity`.
-//   - If `action` is `redirect`, specify a `LoadBalancerListenerPolicyRedirectURLPrototype`.
-//   - If `action` is `https_redirect`, specify a
-//     `LoadBalancerListenerPolicyHTTPSRedirectPrototype`.
-//
+// - If `action` is `redirect`, specify a `LoadBalancerListenerPolicyRedirectURLPrototype`.
+// - If `action` is `https_redirect`, specify a
+//   `LoadBalancerListenerPolicyHTTPSRedirectPrototype`.
 // Models which "extend" this model:
 // - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity
 // - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype
@@ -48173,10 +48170,10 @@ type LoadBalancerListenerPrototypeLoadBalancerContext struct {
 // `https`.
 //
 // Additional restrictions:
-//   - If `default_pool` is set, the pool's protocol must match, or be compatible with
-//     the listener's protocol. At present, the compatible protocols are `http` and
-//     `https`.
-//   - If `https_redirect` is set, the protocol must be `http`.
+// - If `default_pool` is set, the pool's protocol must match, or be compatible with
+//   the listener's protocol. At present, the compatible protocols are `http` and
+//   `https`.
+// - If `https_redirect` is set, the protocol must be `http`.
 const (
 	LoadBalancerListenerPrototypeLoadBalancerContextProtocolHTTPConst  = "http"
 	LoadBalancerListenerPrototypeLoadBalancerContextProtocolHTTPSConst = "https"
@@ -64006,8 +64003,8 @@ const (
 )
 
 // Constants associated with the BareMetalServerNetworkInterfaceByPci.InterfaceType property.
-//   - `pci`: a physical PCI device which can only be created or deleted when the bare metal
-//     server is stopped
+// - `pci`: a physical PCI device which can only be created or deleted when the bare metal
+//   server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
 //   - Cannot directly use an IEEE 802.1q VLAN tag.
@@ -64189,8 +64186,8 @@ const (
 )
 
 // Constants associated with the BareMetalServerNetworkInterfaceByVlan.InterfaceType property.
-//   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
-//     of `allowed_vlans`.
+// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
+//    of `allowed_vlans`.
 //   - Must use an IEEE 802.1q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.
@@ -64328,8 +64325,8 @@ type BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPc
 }
 
 // Constants associated with the BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype.InterfaceType property.
-//   - `pci`: a physical PCI device which can only be created or deleted when the bare metal
-//     server is stopped
+// - `pci`: a physical PCI device which can only be created or deleted when the bare metal
+//   server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
 //   - Cannot directly use an IEEE 802.1q VLAN tag.
@@ -64442,8 +64439,8 @@ type BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVl
 }
 
 // Constants associated with the BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype.InterfaceType property.
-//   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
-//     of `allowed_vlans`.
+// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
+//    of `allowed_vlans`.
 //   - Must use an IEEE 802.1q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.

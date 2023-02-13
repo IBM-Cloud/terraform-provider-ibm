@@ -14,7 +14,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -2510,19 +2509,19 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 }
 
 func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
-	sess, err := vpcBetaClient(meta)
+	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
-	instanceproto := &vpcbetav1.InstancePrototypeInstanceByVolume{
-		Zone: &vpcbetav1.ZoneIdentity{
+	instanceproto := &vpcv1.InstancePrototypeInstanceByVolume{
+		Zone: &vpcv1.ZoneIdentity{
 			Name: &zone,
 		},
-		Profile: &vpcbetav1.InstanceProfileIdentity{
+		Profile: &vpcv1.InstanceProfileIdentity{
 			Name: &profile,
 		},
 		Name: &name,
-		VPC: &vpcbetav1.VPCIdentity{
+		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
 	}
@@ -2530,13 +2529,13 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
-		target := &vpcbetav1.TrustedProfileIdentity{}
+		target := &vpcv1.TrustedProfileIdentity{}
 		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
 			target.CRN = &defaultTrustedProfiletarget
 		} else {
 			target.ID = &defaultTrustedProfiletarget
 		}
-		instanceproto.DefaultTrustedProfile = &vpcbetav1.InstanceDefaultTrustedProfilePrototype{
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
 			Target: target,
 		}
 
@@ -2548,19 +2547,19 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
-		dHostPlaementTarget := &vpcbetav1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
+		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
 			ID: &dHostIdStr,
 		}
 		instanceproto.PlacementTarget = dHostPlaementTarget
 	} else if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
 		dHostGrpIdStr := dHostGrpIdInf.(string)
-		dHostGrpPlaementTarget := &vpcbetav1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
+		dHostGrpPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
 			ID: &dHostGrpIdStr,
 		}
 		instanceproto.PlacementTarget = dHostGrpPlaementTarget
 	} else if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
 		placementGrpStr := placementGroupInf.(string)
-		placementGrp := &vpcbetav1.InstancePlacementTargetPrototypePlacementGroupIdentity{
+		placementGrp := &vpcv1.InstancePlacementTargetPrototypePlacementGroupIdentity{
 			ID: &placementGrpStr,
 		}
 		instanceproto.PlacementTarget = placementGrp
@@ -2572,11 +2571,11 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		volumeIdStr := volumeId.(string)
 
 		if ok && volumeIdStr != "" {
-			volumeIdentity := &vpcbetav1.VolumeIdentity{
+			volumeIdentity := &vpcv1.VolumeIdentity{
 				ID: &volumeIdStr,
 			}
 			deletebool := true
-			instanceproto.BootVolumeAttachment = &vpcbetav1.VolumeAttachmentPrototypeInstanceByVolumeContext{
+			instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{
 				DeleteVolumeOnInstanceDelete: &deletebool,
 				Volume:                       volumeIdentity,
 			}
@@ -2591,8 +2590,8 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
 		subnetintf, _ := primnic[isInstanceNicSubnet]
 		subnetintfstr := subnetintf.(string)
-		var primnicobj = &vpcbetav1.NetworkInterfacePrototype{}
-		primnicobj.Subnet = &vpcbetav1.SubnetIdentity{
+		var primnicobj = &vpcv1.NetworkInterfacePrototype{}
+		primnicobj.Subnet = &vpcv1.SubnetIdentity{
 			ID: &subnetintfstr,
 		}
 		name, _ := primnic[isInstanceNicName]
@@ -2631,12 +2630,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
-			primnicobj.PrimaryIP = &vpcbetav1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
 				ID: &reservedIp,
 			}
 		} else {
 			if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
-				primaryipobj := &vpcbetav1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+				primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
 				if ipv4str != "" {
 					primaryipobj.Address = &ipv4str
 				}
@@ -2662,10 +2661,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		if ok {
 			secgrpSet := secgrpintf.(*schema.Set)
 			if secgrpSet.Len() != 0 {
-				var secgrpobjs = make([]vpcbetav1.SecurityGroupIdentityIntf, secgrpSet.Len())
+				var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
 				for i, secgrpIntf := range secgrpSet.List() {
 					secgrpIntfstr := secgrpIntf.(string)
-					secgrpobjs[i] = &vpcbetav1.SecurityGroupIdentity{
+					secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
 						ID: &secgrpIntfstr,
 					}
 				}
@@ -2677,13 +2676,13 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	if nicsintf, ok := d.GetOk(isInstanceNetworkInterfaces); ok {
 		nics := nicsintf.([]interface{})
-		var intfs []vpcbetav1.NetworkInterfacePrototype
+		var intfs []vpcv1.NetworkInterfacePrototype
 		for _, resource := range nics {
 			nic := resource.(map[string]interface{})
-			nwInterface := &vpcbetav1.NetworkInterfacePrototype{}
+			nwInterface := &vpcv1.NetworkInterfacePrototype{}
 			subnetintf, _ := nic[isInstanceNicSubnet]
 			subnetintfstr := subnetintf.(string)
-			nwInterface.Subnet = &vpcbetav1.SubnetIdentity{
+			nwInterface.Subnet = &vpcv1.SubnetIdentity{
 				ID: &subnetintfstr,
 			}
 			name, ok := nic[isInstanceNicName]
@@ -2721,12 +2720,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
-				nwInterface.PrimaryIP = &vpcbetav1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
 					ID: &reservedIp,
 				}
 			} else {
 				if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
-					primaryipobj := &vpcbetav1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+					primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
 					if ipv4str != "" {
 						primaryipobj.Address = &ipv4str
 					}
@@ -2751,10 +2750,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			if ok {
 				secgrpSet := secgrpintf.(*schema.Set)
 				if secgrpSet.Len() != 0 {
-					var secgrpobjs = make([]vpcbetav1.SecurityGroupIdentityIntf, secgrpSet.Len())
+					var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
 					for i, secgrpIntf := range secgrpSet.List() {
 						secgrpIntfstr := secgrpIntf.(string)
-						secgrpobjs[i] = &vpcbetav1.SecurityGroupIdentity{
+						secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
 							ID: &secgrpIntfstr,
 						}
 					}
@@ -2768,10 +2767,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	keySet := d.Get(isInstanceKeys).(*schema.Set)
 	if keySet.Len() != 0 {
-		keyobjs := make([]vpcbetav1.KeyIdentityIntf, keySet.Len())
+		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
 		for i, key := range keySet.List() {
 			keystr := key.(string)
-			keyobjs[i] = &vpcbetav1.KeyIdentity{
+			keyobjs[i] = &vpcv1.KeyIdentity{
 				ID: &keystr,
 			}
 		}
@@ -2785,25 +2784,25 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	if grp, ok := d.GetOk(isInstanceResourceGroup); ok {
 		grpstr := grp.(string)
-		instanceproto.ResourceGroup = &vpcbetav1.ResourceGroupIdentity{
+		instanceproto.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &grpstr,
 		}
 
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcbetav1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
 	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
 	if metadataServiceEnabled {
-		instanceproto.MetadataService = &vpcbetav1.InstanceMetadataServicePrototype{
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
 			Enabled: &metadataServiceEnabled,
 		}
 	}
 
-	options := &vpcbetav1.CreateInstanceOptions{
+	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
 
@@ -2878,27 +2877,6 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	return resourceIBMisInstanceUpdate(d, meta)
 }
 
-func isWaitForInstanceBetaAvailable(instanceC *vpcbetav1.VpcbetaV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
-	log.Printf("Waiting for instance (%s) to be available.", id)
-
-	communicator := make(chan interface{})
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", isInstanceProvisioning},
-		Target:     []string{isInstanceStatusRunning, "available", "failed", ""},
-		Refresh:    isInstanceRefreshFunc(instanceC, id, d, communicator),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	if v, ok := d.GetOk("force_recovery_time"); ok {
-		forceTimeout := v.(int)
-		go isRestartStartAction(instanceC, id, d, forceTimeout, communicator)
-	}
-
-	return stateConf.WaitForState()
-}
 func isWaitForInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for instance (%s) to be available.", id)
 
