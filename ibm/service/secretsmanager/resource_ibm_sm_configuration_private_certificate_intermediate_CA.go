@@ -690,6 +690,7 @@ func resourceIbmSmConfigurationPrivateCertificateIntermediateCAMapToConfiguratio
 		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
 	return model, nil
+	// TODO all other config attributes
 }
 
 func resourceIbmSmConfigurationPrivateCertificateIntermediateCAPrivateCertificateCADataToMap(modelIntf secretsmanagerv2.PrivateCertificateCADataIntf) (map[string]interface{}, error) {

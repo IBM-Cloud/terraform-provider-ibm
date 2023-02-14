@@ -38,6 +38,11 @@ func DataSourceIbmSmSecrets() *schema.Resource {
 				Optional:    true,
 				Description: "Filter secrets by groups. You can apply multiple filters by using a comma-separated list of secret group IDs. If you need to filter secrets that are in the default secret group, use the `default` keyword.",
 			},
+			"total_count": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The total number of resources in a collection.",
+			},
 			"secrets": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -439,6 +444,10 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 
 	if err = d.Set("secrets", mapSlice); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting secrets %s", err))
+	}
+
+	if err = d.Set("total_count", len(mapSlice)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
 	}
 
 	return nil

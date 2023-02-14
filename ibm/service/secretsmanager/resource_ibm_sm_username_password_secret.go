@@ -53,7 +53,7 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "A human-readable name to assign to your secret.To protect your privacy, do not use personal data, such as your name or location, as a name for your secret.",
 			},
 			"secret_group_id": &schema.Schema{
@@ -104,13 +104,13 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			},
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
 				Description: "The username that is assigned to the secret.",
 			},
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
 				Sensitive:   true,
 				Description: "The password that is assigned to the secret.",

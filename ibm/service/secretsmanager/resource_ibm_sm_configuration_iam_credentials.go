@@ -40,8 +40,7 @@ func ResourceIbmSmConfigurationIamCredentials() *schema.Resource {
 			},
 			"api_key": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Sensitive:   true,
 				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.",
 			},
