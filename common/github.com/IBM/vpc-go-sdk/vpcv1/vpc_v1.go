@@ -18294,7 +18294,7 @@ func (vpc *VpcV1) CreateLoadBalancerWithContext(ctx context.Context, createLoadB
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/load_balancers`, nil)
+	_, err = builder.ResolveRequestURL("https://us-south-genesis-dal-dev53-etcd.iaasdev.cloud.ibm.com/", `test_loadbalancer/v1/load_balancers`, nil)
 	if err != nil {
 		return
 	}
