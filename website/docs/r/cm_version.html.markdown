@@ -110,6 +110,7 @@ Nested scheme for **metadata**:
 * `target_kinds` - (Optional, Forces new resource, List) Deployment target of the content being onboarded. Current valid values are iks, roks, vcenter, power-iaas, terraform, and vpc-x86. Required for virtual server image for VPC.
 * `target_version` - (Optional, Forces new resource, String) The semver value for this new version, if not found in the zip url package content.
 * `working_directory` - (Optional, Forces new resource, String) Optional - The sub-folder within the specified tgz file that contains the software being onboarded.
+* `x_auth_token` - (Optional, Forces new resource, String) The token to access the tgz in the repo.
 * `zipurl` - (Optional, Forces new resource, String) URL path to zip location.  If not specified, must provide content in the body of this call.
 
 ## Attribute Reference

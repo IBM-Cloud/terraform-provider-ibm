@@ -260,6 +260,24 @@ func ResourceIBMCmVersion() *schema.Resource {
 							Computed:    true,
 							Description: "Working directory of source files.",
 						},
+						"end_deploy_time": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The time validation ended.",
+						},
+						"usage": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Usage text for the version.",
+						},
+						"usage_template": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Usage text for the version.",
+						},
 						"modules": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
