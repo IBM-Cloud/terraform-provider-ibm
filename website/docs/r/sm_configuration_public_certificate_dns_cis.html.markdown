@@ -1,24 +1,24 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" (Beta)
+page_title: "IBM : ibm_sm_configuration_public_certificate_dns_cis"
 description: |-
-  Manages PublicCertificateConfigurationCALetsEncrypt.
+  Manages PublicCertificateConfigurationDNSCloudInternetServices.
 subcategory: "Secrets Manager"
 ---
 
-# ibm_sm_configuration_public_certificate_CA_Lets_Encrypt
+# ibm_sm_configuration_public_certificate_dns_cis
 
-Provides a resource for PublicCertificateConfigurationCALetsEncrypt. This allows PublicCertificateConfigurationCALetsEncrypt to be created, updated and deleted.
+Provides a resource for PublicCertificateConfigurationDNSCloudInternetServices. This allows PublicCertificateConfigurationDNSCloudInternetServices to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration_public_certificate_CA_Lets_Encrypt" {
+resource "ibm_sm_configuration_public_certificate_dns_cis" "sm_configuration_public_certificate_dns_cis_instance" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
-  name          = lets-encrypt-config"
-  lets_encrypt_environment = "production",
-  lets_encrypt_private_key = "-----BEGIN PRIVATE KEY-----\nMIIEowIBAAKCAQEAqcRbzV1wp0nVrPtEpMtnWMO6Js1q3rhREZluKZfu0Q8SY4H3\n-----END PRIVATE KEY-----",
+  name          = "DNS provider configuration name"
+  cloud_internet_services_apikey = "apikey"
+  cloud_internet_services_crn = "ics crn"
 }
 ```
 
@@ -26,21 +26,17 @@ resource "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configura
 
 Review the argument reference that you can specify for your resource.
 
-* `lets_encrypt_environment` - (Required, String) The configuration of the Let's Encrypt CA environment.
-  * Constraints: Allowable values are: `production`, `staging`.
-* `lets_encrypt_preferred_chain` - (Optional, String) Prefer the chain with an issuer matching this Subject Common Name.
-  * Constraints: The maximum length is `30` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
-* `lets_encrypt_private_key` - (Required, String) The PEM encoded private key of your Lets Encrypt account.
-  * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/(^-----BEGIN PRIVATE KEY-----.*?)/`.
-* `name` - (Required, String) A human-readable unique name to assign to your configuration.
+* `name` - (Required, String) A human-readable unique name to assign to your DNS provider configuration name.
+* `cloud_internet_services_apikey` - (Optional, String) An IBM Cloud API key that can to list domains in your Cloud Internet Services instance.To grant Secrets Manager the ability to view the Cloud Internet Services instance and all of its domains, the API key must be assigned the Reader service role on Internet Services (`internet-svcs`).If you need to manage specific domains, you can assign the Manager role. For production environments, it is recommended that you assign the Reader access role, and then use the[IAM Policy Management API](https://cloud.ibm.com/apidocs/iam-policy-management#create-policy) to control specific domains. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates#authorize-specific-domains).
+  * Constraints: The maximum length is `128` characters. The minimum length is `4` characters. The value must match regular expression `/(.*?)/`.
+* `cloud_internet_services_crn` - (Required, String) A CRN that uniquely identifies an IBM Cloud resource.
+  * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the PublicCertificateConfigurationCALetsEncrypt.
-* `config_type` - (String) The configuration type.
-  * Constraints: Allowable values are: `public_cert_configuration_ca_lets_encrypt`, `public_cert_configuration_dns_classic_infrastructure`, `public_cert_configuration_dns_cloud_internet_services`, `iam_credentials_configuration`, `private_cert_configuration_root_ca`, `private_cert_configuration_intermediate_ca`, `private_cert_configuration_template`.
+* `id` - The unique identifier of the PublicCertificateConfigurationDNSCloudInternetServices.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
   * Constraints: The maximum length is `128` characters. The minimum length is `4` characters.
@@ -100,15 +96,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_configuration_public_certificate_CA_Lets_Encrypt` resource by using `name`. The unique name of your configuration.
+You can import the `ibm_sm_configuration_public_certificate_dns_cis` resource by using `name`. The unique name of your configuration.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
 ```
-$ terraform import ibm_sm_configuration_public_certificate_CA_Lets_Encrypt.sm_configuration_public_certificate_ca_lets_encrypt <name>
+$ terraform import ibm_sm_configuration_public_certificate_dns_cis.sm_configuration_public_certificate_dns_cis <name>
 ```
 
 # Example
 ```
-$ terraform import ibm_sm_configuration_public_certificate_CA_Lets_Encrypt.sm_configuration_public_certificate_ca_lets_encrypt my-secret-engine-config
+$ terraform import ibm_sm_configuration_public_certificate_dns_cis.sm_configuration_public_certificate_dns_cis my-secret-engine-config
 ```

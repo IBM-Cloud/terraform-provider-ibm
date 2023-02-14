@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_public_certificate" (Beta)
 description: |-
   Manages PublicCertificate.
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_public_certificate
@@ -13,13 +13,16 @@ Provides a resource for PublicCertificate. This allows PublicCertificate to be c
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_public_certificate" {
+resource "ibm_sm_public_certificate" "sm_public_certificate" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
+  name 			= "secret-name"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
-  expiration_date = "2022-04-12T23:20:50.520Z"
-  labels = my-label
+  labels = ["my-label"]
+  ca = "ca"
+  dns = "dns"
+  common_name = "example.com"
   rotation {
 		auto_rotate = true
 		interval = 1
@@ -33,9 +36,15 @@ resource "ibm_sm_public_certificate" {
 
 Review the argument reference that you can specify for your resource.
 
+* `name` - (Required, String) The human-readable name of your secret.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+* `ca` - (Required, Forces new resource, String) The name that is assigned to the certificate authority configuration.
+* `common_name` - (Required, Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
+  * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
+* `dns` - (Required, Forces new resource, String) The name that is assigned to the DNS provider configuration.
 * `expiration_date` - (Optional, Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
@@ -49,8 +58,6 @@ Nested scheme for **rotation**:
 	  * Constraints: Allowable values are: `day`, `month`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
-* `secret_type` - (Optional, String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
-  * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 
 ## Attribute Reference
 
@@ -60,17 +67,13 @@ In addition to all argument references listed, you can access the following attr
 * `alt_names` - (Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
   * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 * `bundle_certs` - (Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
-* `ca` - (String) The name that is assigned to the certificate authority configuration.
 * `certificate` - (Forces new resource, String) The PEM-encoded contents of your certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
-* `common_name` - (Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
-  * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
   * Constraints: The maximum length is `128` characters. The minimum length is `4` characters.
 * `crn` - (String) A CRN that uniquely identifies an IBM Cloud resource.
   * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
-* `dns` - (String) The name that is assigned to the DNS provider configuration.
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 * `intermediate` - (Forces new resource, String) (Optional) The PEM-encoded intermediate certificate to associate with the root certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
@@ -99,12 +102,12 @@ Nested scheme for **issuance_info**:
   * Constraints: The default value is `RSA2048`. The maximum length is `7` characters. The minimum length is `5` characters. The value must match regular expression `/^(RSA2048|RSA4096|EC256|EC384)$/`.
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
-* `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `private_key` - (Forces new resource, String) (Optional) The PEM-encoded private key to associate with the certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
+* `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
+	* Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `signing_algorithm` - (String) The identifier for the cryptographic algorithm that was used by the issuing certificate authority to sign a certificate.
   * Constraints: The maximum length is `64` characters. The minimum length is `4` characters.
 * `state` - (Integer) The secret state that is based on NIST SP 800-57. States are integers and correspond to the `Pre-activation = 0`, `Active = 1`,  `Suspended = 2`, `Deactivated = 3`, and `Destroyed = 5` values.

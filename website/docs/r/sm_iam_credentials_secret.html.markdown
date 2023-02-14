@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_iam_credentials_secret" (Beta)
 description: |-
   Manages IAMCredentialsSecret.
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_iam_credentials_secret
@@ -13,13 +13,14 @@ Provides a resource for IAMCredentialsSecret. This allows IAMCredentialsSecret t
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_iam_credentials_secret" {
+resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
-  access_groups = AccessGroupId-45884031-54be-4dd7-86ff-112511e92699
+  name 			= "secret-name"
+  access_groups = ["AccessGroupId-45884031-54be-4dd7-86ff-112511e92699"]
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
-  labels = my-label
+  labels = ["my-label"]
   rotation {
 		auto_rotate = true
 		interval = 1
@@ -28,6 +29,7 @@ resource "ibm_sm_iam_credentials_secret" {
   secret_group_id = "default"
   service_id = "ServiceId-bb4ccc31-bd31-493a-bb58-52ec399800be"
   ttl = "30m"
+  reuse_api_key = false
 }
 ```
 
@@ -42,6 +44,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
+* `name` - (Required, String) The human-readable name of your secret.
+    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `reuse_api_key` - (Optional, Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
@@ -53,8 +57,6 @@ Nested scheme for **rotation**:
 	  * Constraints: Allowable values are: `day`, `month`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
-* `secret_type` - (Optional, String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
-  * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `service_id` - (Optional, Forces new resource, String) The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter.
   * Constraints: The maximum length is `50` characters. The minimum length is `40` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:-?[A-Za-z0-9]+)*$/`.
 * `ttl` - (Optional, String) The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days.
@@ -76,14 +78,14 @@ In addition to all argument references listed, you can access the following attr
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
-* `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 * `service_id_is_static` - (Boolean) Indicates whether an `iam_credentials` secret was created with a static service ID.If it is set to `true`, the service ID for the secret was provided by the user at secret creation. If it is set to `false`, the service ID was generated by Secrets Manager.
 * `state` - (Integer) The secret state that is based on NIST SP 800-57. States are integers and correspond to the `Pre-activation = 0`, `Active = 1`,  `Suspended = 2`, `Deactivated = 3`, and `Destroyed = 5` values.
   * Constraints: Allowable values are: `0`, `1`, `2`, `3`, `5`.
 * `state_description` - (String) A text representation of the secret state.
   * Constraints: Allowable values are: `pre_activation`, `active`, `suspended`, `deactivated`, `destroyed`.
+* `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
+    * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 * `versions_total` - (Integer) The number of versions of the secret.
   * Constraints: The maximum value is `50`. The minimum value is `0`.

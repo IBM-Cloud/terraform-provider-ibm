@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_imported_certificate" (Beta)
 description: |-
   Manages ImportedCertificate.
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_imported_certificate
@@ -13,13 +13,13 @@ Provides a resource for ImportedCertificate. This allows ImportedCertificate to 
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_imported_certificate" {
+resource "ibm_sm_imported_certificate" "sm_imported_certificate" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
+  name 			= "secret-name"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
-  expiration_date = "2022-04-12T23:20:50.520Z"
-  labels = my-label
+  labels = ["my-label"]
   secret_group_id = "default"
 }
 ```
@@ -38,12 +38,12 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
+* `name` - (Required, String) The human-readable name of your secret.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `private_key` - (Computed, Forces new resource, String) (Optional) The PEM-encoded private key to associate with the certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
-* `secret_type` - (Optional, String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
-  * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 
 ## Attribute Reference
 
@@ -67,9 +67,9 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `10` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
-* `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `private_key_included` - (Boolean) Indicates whether the certificate was imported with an associated private key.
+* `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
+  * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `signing_algorithm` - (String) The identifier for the cryptographic algorithm that was used by the issuing certificate authority to sign a certificate.

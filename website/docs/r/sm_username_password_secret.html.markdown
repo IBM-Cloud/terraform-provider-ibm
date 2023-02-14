@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_username_password_secret" (Beta)
 description: |-
   Manages UsernamePasswordSecret.
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_username_password_secret
@@ -13,19 +13,22 @@ Provides a resource for UsernamePasswordSecret. This allows UsernamePasswordSecr
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_username_password_secret" {
+resource "ibm_sm_username_password_secret" "sm_username_password_secret" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
-  expiration_date = "2022-04-12T23:20:50.520Z"
-  labels = my-label
+  expiration_date = "2022-04-12T23:20:50.000Z"
+  labels = [my-label]
   rotation {
 		auto_rotate = true
 		interval = 1
 		unit = "day"
   }
   secret_group_id = "default"
+  name = "username_password-secret-example"
+  username = "username-example"
+  password = "password-example"
 }
 ```
 
@@ -33,13 +36,15 @@ resource "ibm_sm_username_password_secret" {
 
 Review the argument reference that you can specify for your resource.
 
+* `name` - (String) The human-readable name of your secret.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `expiration_date` - (Optional, Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
-* `password` - (Optional, Forces new resource, String) The password that is assigned to the secret.
+* `password` - (Required, Forces new resource, String) The password that is assigned to the secret.
   * Constraints: The maximum length is `64` characters. The minimum length is `6` characters. The value must match regular expression `/[A-Za-z0-9+-=.]*/`.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
@@ -51,9 +56,7 @@ Nested scheme for **rotation**:
 	  * Constraints: Allowable values are: `day`, `month`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
-* `secret_type` - (Optional, String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
-  * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
-* `username` - (Optional, Forces new resource, String) The username that is assigned to the secret.
+* `username` - (Required, Forces new resource, String) The username that is assigned to the secret.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9+-=.]*/`.
 
 ## Attribute Reference
@@ -69,8 +72,6 @@ In addition to all argument references listed, you can access the following attr
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
-* `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 * `state` - (Integer) The secret state that is based on NIST SP 800-57. States are integers and correspond to the `Pre-activation = 0`, `Active = 1`,  `Suspended = 2`, `Deactivated = 3`, and `Destroyed = 5` values.
   * Constraints: Allowable values are: `0`, `1`, `2`, `3`, `5`.
@@ -79,6 +80,8 @@ In addition to all argument references listed, you can access the following attr
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 * `versions_total` - (Integer) The number of versions of the secret.
   * Constraints: The maximum value is `50`. The minimum value is `0`.
+* `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
+    * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 
 ## Provider Configuration
 

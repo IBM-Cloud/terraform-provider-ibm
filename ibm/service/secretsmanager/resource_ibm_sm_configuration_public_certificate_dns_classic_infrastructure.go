@@ -18,12 +18,12 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
 )
 
-func ResourceIbmSmConfigurationPublicCertificateClassicInfrastructure() *schema.Resource {
+func ResourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructure() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmSmConfigurationPublicCertificateClassicInfrastructureCreate,
-		ReadContext:   resourceIbmSmConfigurationPublicCertificateClassicInfrastructureRead,
-		UpdateContext: resourceIbmSmConfigurationPublicCertificateClassicInfrastructureUpdate,
-		DeleteContext: resourceIbmSmConfigurationPublicCertificateClassicInfrastructureDelete,
+		CreateContext: resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureCreate,
+		ReadContext:   resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureRead,
+		UpdateContext: resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureUpdate,
+		DeleteContext: resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -41,13 +41,13 @@ func ResourceIbmSmConfigurationPublicCertificateClassicInfrastructure() *schema.
 			"classic_infrastructure_username": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_classic_infrastructure", "classic_infrastructure_username"),
+				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_dns_classic_infrastructure", "classic_infrastructure_username"),
 				Description:  "The username that is associated with your classic infrastructure account.In most cases, your classic infrastructure username is your `<account_id>_<email_address>`. For more information, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys).",
 			},
 			"classic_infrastructure_password": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_classic_infrastructure", "classic_infrastructure_password"),
+				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_dns_classic_infrastructure", "classic_infrastructure_password"),
 				Description:  "Your classic infrastructure API key.For information about viewing and accessing your classic infrastructure API key, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys).",
 			},
 			"secret_type": &schema.Schema{
@@ -74,7 +74,7 @@ func ResourceIbmSmConfigurationPublicCertificateClassicInfrastructure() *schema.
 	}
 }
 
-func ResourceIbmSmConfigurationPublicCertificateClassicInfrastructureValidator() *validate.ResourceValidator {
+func ResourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -97,11 +97,11 @@ func ResourceIbmSmConfigurationPublicCertificateClassicInfrastructureValidator()
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_sm_configuration_public_certificate_classic_infrastructure", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_sm_configuration_public_certificate_dns_classic_infrastructure", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIbmSmConfigurationPublicCertificateClassicInfrastructureCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -138,10 +138,10 @@ func resourceIbmSmConfigurationPublicCertificateClassicInfrastructureCreate(cont
 	configuration := configurationIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSClassicInfrastructure)
 	d.SetId(*configuration.Name)
 
-	return resourceIbmSmConfigurationPublicCertificateClassicInfrastructureRead(context, d, meta)
+	return resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureRead(context, d, meta)
 }
 
-func resourceIbmSmConfigurationPublicCertificateClassicInfrastructureRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -197,7 +197,7 @@ func resourceIbmSmConfigurationPublicCertificateClassicInfrastructureRead(contex
 	return nil
 }
 
-func resourceIbmSmConfigurationPublicCertificateClassicInfrastructureUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -231,10 +231,10 @@ func resourceIbmSmConfigurationPublicCertificateClassicInfrastructureUpdate(cont
 		}
 	}
 
-	return resourceIbmSmConfigurationPublicCertificateClassicInfrastructureRead(context, d, meta)
+	return resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureRead(context, d, meta)
 }
 
-func resourceIbmSmConfigurationPublicCertificateClassicInfrastructureDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)

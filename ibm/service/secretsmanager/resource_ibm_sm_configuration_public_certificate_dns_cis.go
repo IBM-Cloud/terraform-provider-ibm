@@ -18,12 +18,12 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
 )
 
-func ResourceIbmSmConfigurationPublicCertificateCis() *schema.Resource {
+func ResourceIbmSmConfigurationPublicCertificateDNSCis() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmSmConfigurationPublicCertificateCisCreate,
-		ReadContext:   resourceIbmSmConfigurationPublicCertificateCisRead,
-		UpdateContext: resourceIbmSmConfigurationPublicCertificateCisUpdate,
-		DeleteContext: resourceIbmSmConfigurationPublicCertificateCisDelete,
+		CreateContext: resourceIbmSmConfigurationPublicCertificateDNSCisCreate,
+		ReadContext:   resourceIbmSmConfigurationPublicCertificateDNSCisRead,
+		UpdateContext: resourceIbmSmConfigurationPublicCertificateDNSCisUpdate,
+		DeleteContext: resourceIbmSmConfigurationPublicCertificateDNSCisDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -41,13 +41,13 @@ func ResourceIbmSmConfigurationPublicCertificateCis() *schema.Resource {
 			"cloud_internet_services_apikey": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_cis", "cloud_internet_services_apikey"),
+				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_dns_cis", "cloud_internet_services_apikey"),
 				Description:  "An IBM Cloud API key that can to list domains in your Cloud Internet Services instance.To grant Secrets Manager the ability to view the Cloud Internet Services instance and all of its domains, the API key must be assigned the Reader service role on Internet Services (`internet-svcs`).If you need to manage specific domains, you can assign the Manager role. For production environments, it is recommended that you assign the Reader access role, and then use the[IAM Policy Management API](https://cloud.ibm.com/apidocs/iam-policy-management#create-policy) to control specific domains. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates#authorize-specific-domains).",
 			},
 			"cloud_internet_services_crn": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_cis", "cloud_internet_services_crn"),
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_sm_configuration_public_certificate_dns_cis", "cloud_internet_services_crn"),
 				Description:  "A CRN that uniquely identifies an IBM Cloud resource.",
 			},
 			"secret_type": &schema.Schema{
@@ -74,7 +74,7 @@ func ResourceIbmSmConfigurationPublicCertificateCis() *schema.Resource {
 	}
 }
 
-func ResourceIbmSmConfigurationPublicCertificateCisValidator() *validate.ResourceValidator {
+func ResourceIbmSmConfigurationPublicCertificateDNSCisValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -97,11 +97,11 @@ func ResourceIbmSmConfigurationPublicCertificateCisValidator() *validate.Resourc
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_sm_configuration_public_certificate_cis", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_sm_configuration_public_certificate_dns_cis", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIbmSmConfigurationPublicCertificateCisCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSCisCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -140,10 +140,10 @@ func resourceIbmSmConfigurationPublicCertificateCisCreate(context context.Contex
 	configuration := configurationIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSCloudInternetServices)
 	d.SetId(*configuration.Name)
 
-	return resourceIbmSmConfigurationPublicCertificateCisRead(context, d, meta)
+	return resourceIbmSmConfigurationPublicCertificateDNSCisRead(context, d, meta)
 }
 
-func resourceIbmSmConfigurationPublicCertificateCisRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -199,7 +199,7 @@ func resourceIbmSmConfigurationPublicCertificateCisRead(context context.Context,
 	return nil
 }
 
-func resourceIbmSmConfigurationPublicCertificateCisUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSCisUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -233,10 +233,10 @@ func resourceIbmSmConfigurationPublicCertificateCisUpdate(context context.Contex
 		}
 	}
 
-	return resourceIbmSmConfigurationPublicCertificateCisRead(context, d, meta)
+	return resourceIbmSmConfigurationPublicCertificateDNSCisRead(context, d, meta)
 }
 
-func resourceIbmSmConfigurationPublicCertificateCisDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmConfigurationPublicCertificateDNSCisDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)

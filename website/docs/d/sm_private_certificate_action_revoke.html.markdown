@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_private_certificate_action_revoke" (Beta)
 description: |-
   Get information about PrivateCertificateActionRevoke
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_private_certificate_action_revoke
@@ -25,7 +25,7 @@ data "ibm_sm_private_certificate_action_revoke" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) The ID of the secret.
+* `id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 * `secret_action_prototype` - (Required, List) Specify the properties for your secret action.
 Nested scheme for **secret_action_prototype**:

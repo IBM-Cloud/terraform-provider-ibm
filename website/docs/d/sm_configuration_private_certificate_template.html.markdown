@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_configuration_private_certificate_template" (Beta)
 description: |-
   Get information about PrivateCertificateConfigurationTemplate
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_configuration_private_certificate_template
@@ -24,7 +24,7 @@ data "ibm_sm_configuration_private_certificate_template" {
 
 Review the argument reference that you can specify for your data source.
 
-* `name` - (Required, Forces new resource, String) The name of the configuration.
+* `name` - (Required, String) The name of the configuration.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
 
 ## Attribute Reference
@@ -70,7 +70,7 @@ In addition to all argument references listed, you can access the following attr
 * `config_type` - (String) Th configuration type.
   * Constraints: Allowable values are: `public_cert_configuration_ca_lets_encrypt`, `public_cert_configuration_dns_classic_infrastructure`, `public_cert_configuration_dns_cloud_internet_services`, `iam_credentials_configuration`, `private_cert_configuration_root_ca`, `private_cert_configuration_intermediate_ca`, `private_cert_configuration_template`.
 
-* `country` - (Forces new resource, List) The Country (C) values to define in the subject field of the resulting certificate.
+* `country` - (List) The Country (C) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
@@ -88,34 +88,34 @@ In addition to all argument references listed, you can access the following attr
 * `ext_key_usage_oids` - (List) A list of extended key usage Object Identifiers (OIDs).
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `100` items. The minimum length is `0` items.
 
-* `key_bits` - (Forces new resource, Integer) The number of bits to use to generate the private key.Allowable values for RSA keys are: `2048` and `4096`. Allowable values for EC keys are: `224`, `256`, `384`, and `521`. The default for RSA keys is `2048`. The default for EC keys is `256`.
+* `key_bits` - (Integer) The number of bits to use to generate the private key.Allowable values for RSA keys are: `2048` and `4096`. Allowable values for EC keys are: `224`, `256`, `384`, and `521`. The default for RSA keys is `2048`. The default for EC keys is `256`.
 
-* `key_type` - (Forces new resource, String) The type of private key to generate.
+* `key_type` - (String) The type of private key to generate.
   * Constraints: Allowable values are: `rsa`, `ec`.
 
 * `key_usage` - (List) The allowed key usage constraint to define for private certificates.You can find valid values in the [Go x509 package documentation](https://pkg.go.dev/crypto/x509#KeyUsage). Omit the `KeyUsage` part of the value. Values are not case-sensitive. To specify no key usage constraints, set this field to an empty list.
   * Constraints: The list items must match regular expression `/^[a-zA-Z]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
-* `locality` - (Forces new resource, List) The Locality (L) values to define in the subject field of the resulting certificate.
+* `locality` - (List) The Locality (L) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 
 * `max_ttl_seconds` - (Integer) The maximum time-to-live (TTL) for certificates that are created by this CA in seconds.
 
 * `not_before_duration_seconds` - (Integer) The duration in seconds by which to backdate the `not_before` property of an issued private certificate.
 
-* `organization` - (Forces new resource, List) The Organization (O) values to define in the subject field of the resulting certificate.
+* `organization` - (List) The Organization (O) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 
-* `ou` - (Forces new resource, List) The Organizational Unit (OU) values to define in the subject field of the resulting certificate.
+* `ou` - (List) The Organizational Unit (OU) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 
 * `policy_identifiers` - (List) A list of policy Object Identifiers (OIDs).
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `100` items. The minimum length is `0` items.
 
-* `postal_code` - (Forces new resource, List) The postal code values to define in the subject field of the resulting certificate.
+* `postal_code` - (List) The postal code values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 
-* `province` - (Forces new resource, List) The Province (ST) values to define in the subject field of the resulting certificate.
+* `province` - (List) The Province (ST) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 
 * `require_cn` - (Boolean) Determines whether to require a common name to create a private certificate.By default, a common name is required to generate a certificate. To make the `common_name` field optional, set the `require_cn` option to `false`.
@@ -123,12 +123,12 @@ In addition to all argument references listed, you can access the following attr
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
   * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 
-* `serial_number` - (Forces new resource, String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
+* `serial_number` - (String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
   * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 
 * `server_flag` - (Boolean) Determines whether private certificates are flagged for server use.
 
-* `street_address` - (Forces new resource, List) The street address values to define in the subject field of the resulting certificate.
+* `street_address` - (List) The street address values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 
 * `ttl_seconds` - (Integer) The requested Time To Live, after which the certificate will be expired.

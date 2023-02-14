@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_en_registration" (Beta)
 description: |-
   Manages NotificationsRegistrationPrototype.
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_en_registration
@@ -13,7 +13,7 @@ Provides a resource for NotificationsRegistrationPrototype. This allows Notifica
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_en_registration" {
+resource "ibm_sm_en_registration" "sm_en_registration" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   event_notifications_instance_crn = "crn:v1:bluemix:public:event-notifications:us-south:a/22018f3c34ff4ff193698d15ca316946:578ad1a4-2fd8-4e66-95d5-79a842ba91f8::"

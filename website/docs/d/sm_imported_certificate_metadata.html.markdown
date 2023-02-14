@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_imported_certificate_metadata" (Beta)
 description: |-
   Get information about ImportedCertificateMetadata
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_imported_certificate_metadata
@@ -24,7 +24,7 @@ data "ibm_sm_imported_certificate_metadata" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) The ID of the secret.
+* `id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 
 ## Attribute Reference
@@ -32,10 +32,10 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the ImportedCertificateMetadata.
-* `alt_names` - (Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
+* `alt_names` - (List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
   * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 
-* `common_name` - (Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
+* `common_name` - (String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
   * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
@@ -53,11 +53,11 @@ In addition to all argument references listed, you can access the following attr
 
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 
-* `expiration_date` - (Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
+* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.
 
 * `intermediate_included` - (Boolean) Indicates whether the certificate was imported with an associated intermediate certificate.
 
-* `issuer` - (Forces new resource, String) The distinguished name that identifies the entity that signed and issued the certificate.
+* `issuer` - (String) The distinguished name that identifies the entity that signed and issued the certificate.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 
 * `key_algorithm` - (String) The identifier for the cryptographic algorithm used to generate the public key that is associated with the certificate.
@@ -74,7 +74,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `private_key_included` - (Boolean) Indicates whether the certificate was imported with an associated private key.
 
-* `secret_group_id` - (Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

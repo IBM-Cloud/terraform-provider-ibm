@@ -235,22 +235,22 @@ resource "sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration
   lets_encrypt_preferred_chain = var.sm_configuration_public_certificate_CA_Lets_Encrypt_lets_encrypt_preferred_chain
 }
 ```
-sm_configuration_public_certificate_cis resource:
+sm_configuration_public_certificate_dns_cis resource:
 
 ```hcl
-resource "sm_configuration_public_certificate_cis" "sm_configuration_public_certificate_cis_instance" {
-  config_type = var.sm_configuration_public_certificate_cis_config_type
-  cloud_internet_services_apikey = var.sm_configuration_public_certificate_cis_cloud_internet_services_apikey
-  cloud_internet_services_crn = var.sm_configuration_public_certificate_cis_cloud_internet_services_crn
+resource "sm_configuration_public_certificate_dns_cis" "sm_configuration_public_certificate_dns_cis_instance" {
+  config_type = var.sm_configuration_public_certificate_dns_cis_config_type
+  cloud_internet_services_apikey = var.sm_configuration_public_certificate_dns_cis_cloud_internet_services_apikey
+  cloud_internet_services_crn = var.sm_configuration_public_certificate_dns_cis_cloud_internet_services_crn
 }
 ```
-sm_configuration_public_certificate_classic_infrastructure resource:
+sm_configuration_public_certificate_dns_classic_infrastructure resource:
 
 ```hcl
-resource "sm_configuration_public_certificate_classic_infrastructure" "sm_configuration_public_certificate_classic_infrastructure_instance" {
-  config_type = var.sm_configuration_public_certificate_classic_infrastructure_config_type
-  classic_infrastructure_username = var.sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_username
-  classic_infrastructure_password = var.sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_password
+resource "sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure_instance" {
+  config_type = var.sm_configuration_public_certificate_dns_classic_infrastructure_config_type
+  classic_infrastructure_username = var.sm_configuration_public_certificate_dns_classic_infrastructure_classic_infrastructure_username
+  classic_infrastructure_password = var.sm_configuration_public_certificate_dns_classic_infrastructure_classic_infrastructure_password
 }
 ```
 sm_en_registration resource:
@@ -470,18 +470,18 @@ data "sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration_pub
   name = var.sm_configuration_public_certificate_CA_Lets_Encrypt_name
 }
 ```
-sm_configuration_public_certificate_cis data source:
+sm_configuration_public_certificate_dns_cis data source:
 
 ```hcl
-data "sm_configuration_public_certificate_cis" "sm_configuration_public_certificate_cis_instance" {
-  name = var.sm_configuration_public_certificate_cis_name
+data "sm_configuration_public_certificate_dns_cis" "sm_configuration_public_certificate_dns_cis_instance" {
+  name = var.sm_configuration_public_certificate_dns_cis_name
 }
 ```
-sm_configuration_public_certificate_classic_infrastructure data source:
+sm_configuration_public_certificate_dns_classic_infrastructure data source:
 
 ```hcl
-data "sm_configuration_public_certificate_classic_infrastructure" "sm_configuration_public_certificate_classic_infrastructure_instance" {
-  name = var.sm_configuration_public_certificate_classic_infrastructure_name
+data "sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure_instance" {
+  name = var.sm_configuration_public_certificate_dns_classic_infrastructure_name
 }
 ```
 sm_en_registration data source:

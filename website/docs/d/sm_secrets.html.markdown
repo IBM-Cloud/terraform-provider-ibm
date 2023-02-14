@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_secrets" (Beta)
 description: |-
   Get information about sm_secrets
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_secrets
@@ -28,17 +28,17 @@ In addition to all argument references listed, you can access the following attr
 * `secrets` - (List) A collection of secret metadata.
   * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 Nested scheme for **secrets**:
-	* `access_groups` - (Forces new resource, List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
+	* `access_groups` - (List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
 	  * Constraints: The list items must match regular expression `/^AccessGroupId-[a-z0-9-]+[a-z0-9]$/`. The maximum length is `10` items. The minimum length is `1` item.
-	* `alt_names` - (Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
+	* `alt_names` - (List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
 	  * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 	* `api_key_id` - (String) The ID of the API key that is generated for this secret.
 	* `bundle_certs` - (Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
 	* `ca` - (String) The name that is assigned to the certificate authority configuration.
 	* `certificate_authority` - (String) The intermediate certificate authority that signed this certificate.
-	* `certificate_template` - (Forces new resource, String) The name of the certificate template.
+	* `certificate_template` - (String) The name of the certificate template.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
-	* `common_name` - (Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
+	* `common_name` - (String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
 	* `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 	* `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
@@ -50,7 +50,7 @@ Nested scheme for **secrets**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 	* `dns` - (String) The name that is assigned to the DNS provider configuration.
 	* `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
-	* `expiration_date` - (Forces new resource, String) The date a secret is expired. The date format follows RFC 3339.
+	* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.
 	* `id` - (String) A v4 UUID identifier.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 	* `intermediate_included` - (Boolean) Indicates whether the certificate was imported with an associated intermediate certificate.
@@ -73,7 +73,7 @@ Nested scheme for **secrets**:
 		  * Constraints: Allowable values are: `0`, `1`, `2`, `3`, `5`.
 		* `state_description` - (String) A text representation of the secret state.
 		  * Constraints: Allowable values are: `pre_activation`, `active`, `suspended`, `deactivated`, `destroyed`.
-	* `issuer` - (Forces new resource, String) The distinguished name that identifies the entity that signed and issued the certificate.
+	* `issuer` - (String) The distinguished name that identifies the entity that signed and issued the certificate.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 	* `key_algorithm` - (String) The identifier for the cryptographic algorithm used to generate the public key that is associated with the certificate.
 	  * Constraints: The maximum length is `10` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
@@ -96,13 +96,13 @@ Nested scheme for **secrets**:
 		* `rotate_keys` - (Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 		* `unit` - (String) The units for the secret rotation time interval.
 		  * Constraints: Allowable values are: `day`, `month`.
-	* `secret_group_id` - (Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+	* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 	* `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
 	  * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 	* `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
-	* `service_id` - (Forces new resource, String) The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter.
+	* `service_id` - (String) The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter.
 	  * Constraints: The maximum length is `50` characters. The minimum length is `40` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:-?[A-Za-z0-9]+)*$/`.
 	* `service_id_is_static` - (Boolean) Indicates whether an `iam_credentials` secret was created with a static service ID.If it is set to `true`, the service ID for the secret was provided by the user at secret creation. If it is set to `false`, the service ID was generated by Secrets Manager.
 	* `signing_algorithm` - (String) The identifier for the cryptographic algorithm that was used by the issuing certificate authority to sign a certificate.

@@ -90,17 +90,17 @@ output "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" {
   value       = ibm_sm_configuration_public_certificate_CA_Lets_Encrypt.sm_configuration_public_certificate_CA_Lets_Encrypt_instance
   description = "sm_configuration_public_certificate_CA_Lets_Encrypt resource instance"
 }
-// This allows sm_configuration_public_certificate_cis data to be referenced by other resources and the terraform CLI
+// This allows sm_configuration_public_certificate_dns_cis data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_public_certificate_cis" {
-  value       = ibm_sm_configuration_public_certificate_cis.sm_configuration_public_certificate_cis_instance
-  description = "sm_configuration_public_certificate_cis resource instance"
+output "ibm_sm_configuration_public_certificate_dns_cis" {
+  value       = ibm_sm_configuration_public_certificate_dns_cis.sm_configuration_public_certificate_dns_cis_instance
+  description = "sm_configuration_public_certificate_dns_cis resource instance"
 }
-// This allows sm_configuration_public_certificate_classic_infrastructure data to be referenced by other resources and the terraform CLI
+// This allows sm_configuration_public_certificate_dns_classic_infrastructure data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_public_certificate_classic_infrastructure" {
-  value       = ibm_sm_configuration_public_certificate_classic_infrastructure.sm_configuration_public_certificate_classic_infrastructure_instance
-  description = "sm_configuration_public_certificate_classic_infrastructure resource instance"
+output "ibm_sm_configuration_public_certificate_dns_classic_infrastructure" {
+  value       = ibm_sm_configuration_public_certificate_dns_classic_infrastructure.sm_configuration_public_certificate_dns_classic_infrastructure_instance
+  description = "sm_configuration_public_certificate_dns_classic_infrastructure resource instance"
 }
 // This allows sm_en_registration data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed

@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_public_certificate_classic_infrastructure"
+page_title: "IBM : ibm_sm_configuration_public_certificate_dns_classic_infrastructure"
 description: |-
   Get information about PublicCertificateConfigurationDNSClassicInfrastructure
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
-# ibm_sm_configuration_public_certificate_classic_infrastructure
+# ibm_sm_configuration_public_certificate_dns_classic_infrastructure
 
 Provides a read-only data source for PublicCertificateConfigurationDNSClassicInfrastructure. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_sm_configuration_public_certificate_classic_infrastructure" "sm_configuration_public_certificate_classic_infrastructure" {
+data "ibm_sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   name          = "configuration-name"
@@ -24,7 +24,7 @@ data "ibm_sm_configuration_public_certificate_classic_infrastructure" "sm_config
 
 Review the argument reference that you can specify for your data source.
 
-* `name` - (Required, Forces new resource, String) The name of the configuration.
+* `name` - (Required, String) The name of the configuration.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
 
 ## Attribute Reference

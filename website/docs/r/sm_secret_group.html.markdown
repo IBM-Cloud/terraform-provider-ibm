@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_secret_group" (Beta)
 description: |-
   Manages SecretGroup.
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_secret_group
@@ -13,9 +13,10 @@ Provides a resource for SecretGroup. This allows SecretGroup to be created, upda
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_secret_group" {
+resource "ibm_sm_secret_group" "sm_secret_group"{
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
+  name          = "group-name"
   description = "Extended description for this group."
 }
 ```
@@ -24,6 +25,8 @@ resource "ibm_sm_secret_group" {
 
 Review the argument reference that you can specify for your resource.
 
+* `name` - (Required, String) The name of your existing secret group.
+  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 * `description` - (Optional, String) An extended description of your secret group.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 
@@ -33,8 +36,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the SecretGroup.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
-* `name` - (String) The name of your existing secret group.
-  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 
 ## Provider Configuration

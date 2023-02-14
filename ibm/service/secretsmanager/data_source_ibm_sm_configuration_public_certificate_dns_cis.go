@@ -16,9 +16,9 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
 )
 
-func DataSourceIbmSmConfigurationPublicCertificateClassicInfrastructure() *schema.Resource {
+func DataSourceIbmSmConfigurationPublicCertificateDNSCis() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmSmConfigurationPublicCertificateClassicInfrastructureRead,
+		ReadContext: dataSourceIbmSmConfigurationPublicCertificateDNSCisRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -29,7 +29,7 @@ func DataSourceIbmSmConfigurationPublicCertificateClassicInfrastructure() *schem
 			"config_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Th configuration type.",
+				Description: "The configuration type.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -51,66 +51,68 @@ func DataSourceIbmSmConfigurationPublicCertificateClassicInfrastructure() *schem
 				Computed:    true,
 				Description: "The date when a resource was recently modified. The date format follows RFC 3339.",
 			},
-			"classic_infrastructure_username": &schema.Schema{
+			"cloud_internet_services_apikey": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The username that is associated with your classic infrastructure account.In most cases, your classic infrastructure username is your `<account_id>_<email_address>`. For more information, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys).",
+				Description: "An IBM Cloud API key that can to list domains in your Cloud Internet Services instance.To grant Secrets Manager the ability to view the Cloud Internet Services instance and all of its domains, the API key must be assigned the Reader service role on Internet Services (`internet-svcs`).If you need to manage specific domains, you can assign the Manager role. For production environments, it is recommended that you assign the Reader access role, and then use the[IAM Policy Management API](https://cloud.ibm.com/apidocs/iam-policy-management#create-policy) to control specific domains. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates#authorize-specific-domains).",
 			},
-			"classic_infrastructure_password": &schema.Schema{
+			"cloud_internet_services_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Your classic infrastructure API key.For information about viewing and accessing your classic infrastructure API key, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys).",
+				Description: "A CRN that uniquely identifies an IBM Cloud resource.",
 			},
 		},
 	}
 }
 
-func dataSourceIbmSmConfigurationPublicCertificateClassicInfrastructureRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+
 	getConfigurationOptions := &secretsmanagerv2.GetConfigurationOptions{}
 
 	getConfigurationOptions.SetName(d.Get("name").(string))
 
-	publicCertificateConfigurationDNSClassicInfrastructureInf, response, err := secretsManagerClient.GetConfigurationWithContext(context, getConfigurationOptions)
+	publicCertificateConfigurationDNSCloudInternetServicesIntf, response, err := secretsManagerClient.GetConfigurationWithContext(context, getConfigurationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetConfigurationWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetConfigurationWithContext failed %s\n%s", err, response))
 	}
 
-	publicCertificateConfigurationDNSClassicInfrastructure := publicCertificateConfigurationDNSClassicInfrastructureInf.(*secretsmanagerv2.PublicCertificateConfigurationDNSClassicInfrastructure)
+	publicCertificateConfigurationDNSCloudInternetServices := publicCertificateConfigurationDNSCloudInternetServicesIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSCloudInternetServices)
+
 	d.SetId(fmt.Sprintf("%s", *getConfigurationOptions.Name))
 
-	if err = d.Set("config_type", publicCertificateConfigurationDNSClassicInfrastructure.ConfigType); err != nil {
+	if err = d.Set("config_type", publicCertificateConfigurationDNSCloudInternetServices.ConfigType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting config_type: %s", err))
 	}
 
-	if err = d.Set("secret_type", publicCertificateConfigurationDNSClassicInfrastructure.SecretType); err != nil {
+	if err = d.Set("secret_type", publicCertificateConfigurationDNSCloudInternetServices.SecretType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
 	}
 
-	if err = d.Set("created_by", publicCertificateConfigurationDNSClassicInfrastructure.CreatedBy); err != nil {
+	if err = d.Set("created_by", publicCertificateConfigurationDNSCloudInternetServices.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(publicCertificateConfigurationDNSClassicInfrastructure.CreatedAt)); err != nil {
+	if err = d.Set("created_at", flex.DateTimeToString(publicCertificateConfigurationDNSCloudInternetServices.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(publicCertificateConfigurationDNSClassicInfrastructure.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(publicCertificateConfigurationDNSCloudInternetServices.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
-	if err = d.Set("classic_infrastructure_username", publicCertificateConfigurationDNSClassicInfrastructure.ClassicInfrastructureUsername); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting classic_infrastructure_username: %s", err))
+	if err = d.Set("cloud_internet_services_apikey", publicCertificateConfigurationDNSCloudInternetServices.CloudInternetServicesApikey); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting cloud_internet_services_apikey: %s", err))
 	}
 
-	if err = d.Set("classic_infrastructure_password", publicCertificateConfigurationDNSClassicInfrastructure.ClassicInfrastructurePassword); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting classic_infrastructure_password: %s", err))
+	if err = d.Set("cloud_internet_services_crn", publicCertificateConfigurationDNSCloudInternetServices.CloudInternetServicesCrn); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting cloud_internet_services_crn: %s", err))
 	}
 
 	return nil

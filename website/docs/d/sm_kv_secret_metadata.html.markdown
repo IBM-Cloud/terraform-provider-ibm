@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_kv_secret_metadata" (Beta)
 description: |-
   Get information about KVSecretMetadata
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_kv_secret_metadata
@@ -24,7 +24,7 @@ data "ibm_sm_kv_secret_metadata" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) The ID of the secret.
+* `id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 
 ## Attribute Reference
@@ -56,7 +56,7 @@ In addition to all argument references listed, you can access the following attr
 * `name` - (String) The human-readable name of your secret.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 
-* `secret_group_id` - (Forces new resource, String) A v4 UUID identifier, or `default` secret group.
+* `secret_group_id` - (String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_configurations" (Beta)
 description: |-
   Get information about sm_configurations
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_configurations

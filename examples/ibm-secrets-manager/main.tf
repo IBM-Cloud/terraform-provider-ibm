@@ -216,22 +216,22 @@ resource "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configura
   lets_encrypt_preferred_chain = var.sm_configuration_public_certificate_CA_Lets_Encrypt_lets_encrypt_preferred_chain
 }
 
-// Provision sm_configuration_public_certificate_cis resource instance
-resource "ibm_sm_configuration_public_certificate_cis" "sm_configuration_public_certificate_cis_instance" {
+// Provision sm_configuration_public_certificate_dns_cis resource instance
+resource "ibm_sm_configuration_public_certificate_dns_cis" "sm_configuration_public_certificate_dns_cis_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
-  cloud_internet_services_apikey = var.sm_configuration_public_certificate_cis_cloud_internet_services_apikey
-  cloud_internet_services_crn = var.sm_configuration_public_certificate_cis_cloud_internet_services_crn
+  cloud_internet_services_apikey = var.sm_configuration_public_certificate_dns_cis_cloud_internet_services_apikey
+  cloud_internet_services_crn = var.sm_configuration_public_certificate_dns_cis_cloud_internet_services_crn
 }
 
-// Provision sm_configuration_public_certificate_classic_infrastructure resource instance
-resource "ibm_sm_configuration_public_certificate_classic_infrastructure" "sm_configuration_public_certificate_classic_infrastructure_instance" {
+// Provision sm_configuration_public_certificate_dns_classic_infrastructure resource instance
+resource "ibm_sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
-  classic_infrastructure_username = var.sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_username
-  classic_infrastructure_password = var.sm_configuration_public_certificate_classic_infrastructure_classic_infrastructure_password
+  classic_infrastructure_username = var.sm_configuration_public_certificate_dns_classic_infrastructure_classic_infrastructure_username
+  classic_infrastructure_password = var.sm_configuration_public_certificate_dns_classic_infrastructure_classic_infrastructure_password
 }
 
 // Provision sm_en_registration resource instance
@@ -479,20 +479,20 @@ data "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration
   name = var.sm_configuration_public_certificate_CA_Lets_Encrypt_name
 }
 
-// Create sm_configuration_public_certificate_cis data source
-data "ibm_sm_configuration_public_certificate_cis" "sm_configuration_public_certificate_cis_instance" {
+// Create sm_configuration_public_certificate_dns_cis data source
+data "ibm_sm_configuration_public_certificate_dns_cis" "sm_configuration_public_certificate_dns_cis_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
-  name = var.sm_configuration_public_certificate_cis_name
+  name = var.sm_configuration_public_certificate_dns_cis_name
 }
 
-// Create sm_configuration_public_certificate_classic_infrastructure data source
-data "ibm_sm_configuration_public_certificate_classic_infrastructure" "sm_configuration_public_certificate_classic_infrastructure_instance" {
+// Create sm_configuration_public_certificate_dns_classic_infrastructure data source
+data "ibm_sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
-  name = var.sm_configuration_public_certificate_classic_infrastructure_name
+  name = var.sm_configuration_public_certificate_dns_classic_infrastructure_name
 }
 
 // Create sm_en_registration data source

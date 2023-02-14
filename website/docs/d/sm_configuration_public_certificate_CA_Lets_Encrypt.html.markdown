@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" (Beta)
 description: |-
   Get information about PublicCertificateConfigurationCALetsEncrypt
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_configuration_public_certificate_CA_Lets_Encrypt
@@ -24,7 +24,7 @@ data "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" {
 
 Review the argument reference that you can specify for your data source.
 
-* `name` - (Required, Forces new resource, String) The name of the configuration.
+* `name` - (Required, String) The name of the configuration.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
 
 ## Attribute Reference

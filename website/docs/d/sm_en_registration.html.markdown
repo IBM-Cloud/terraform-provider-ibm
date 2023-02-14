@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_en_registration" (Beta)
 description: |-
   Get information about NotificationsRegistration
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_en_registration

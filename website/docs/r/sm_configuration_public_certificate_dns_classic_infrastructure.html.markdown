@@ -1,24 +1,24 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" (Beta)
+page_title: "IBM : ibm_sm_configuration_public_certificate_dns_classic_infrastructure"
 description: |-
-  Manages PublicCertificateConfigurationCALetsEncrypt.
+  Manages PublicCertificateConfigurationDNSClassicInfrastructure.
 subcategory: "Secrets Manager"
 ---
 
-# ibm_sm_configuration_public_certificate_CA_Lets_Encrypt
+# ibm_sm_configuration_public_certificate_dns_classic_infrastructure
 
-Provides a resource for PublicCertificateConfigurationCALetsEncrypt. This allows PublicCertificateConfigurationCALetsEncrypt to be created, updated and deleted.
+Provides a resource for PublicCertificateConfigurationDNSClassicInfrastructure. This allows PublicCertificateConfigurationDNSClassicInfrastructure to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration_public_certificate_CA_Lets_Encrypt" {
+resource "ibm_sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure_instance" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
-  name          = lets-encrypt-config"
-  lets_encrypt_environment = "production",
-  lets_encrypt_private_key = "-----BEGIN PRIVATE KEY-----\nMIIEowIBAAKCAQEAqcRbzV1wp0nVrPtEpMtnWMO6Js1q3rhREZluKZfu0Q8SY4H3\n-----END PRIVATE KEY-----",
+  name          = "DNS provider configuration name"
+  classic_infrastructure_password = "username"
+  classic_infrastructure_username = "password"
 }
 ```
 
@@ -26,21 +26,17 @@ resource "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configura
 
 Review the argument reference that you can specify for your resource.
 
-* `lets_encrypt_environment` - (Required, String) The configuration of the Let's Encrypt CA environment.
-  * Constraints: Allowable values are: `production`, `staging`.
-* `lets_encrypt_preferred_chain` - (Optional, String) Prefer the chain with an issuer matching this Subject Common Name.
-  * Constraints: The maximum length is `30` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
-* `lets_encrypt_private_key` - (Required, String) The PEM encoded private key of your Lets Encrypt account.
-  * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/(^-----BEGIN PRIVATE KEY-----.*?)/`.
-* `name` - (Required, String) A human-readable unique name to assign to your configuration.
+* `name` - A human-readable unique name to assign to your DNS provider configuration name.
+* `classic_infrastructure_password` - (Required, String) Your classic infrastructure API key.For information about viewing and accessing your classic infrastructure API key, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys).
+  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
+* `classic_infrastructure_username` - (Required, String) The username that is associated with your classic infrastructure account.In most cases, your classic infrastructure username is your `<account_id>_<email_address>`. For more information, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys).
+  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the PublicCertificateConfigurationCALetsEncrypt.
-* `config_type` - (String) The configuration type.
-  * Constraints: Allowable values are: `public_cert_configuration_ca_lets_encrypt`, `public_cert_configuration_dns_classic_infrastructure`, `public_cert_configuration_dns_cloud_internet_services`, `iam_credentials_configuration`, `private_cert_configuration_root_ca`, `private_cert_configuration_intermediate_ca`, `private_cert_configuration_template`.
+* `id` - The unique identifier of the PublicCertificateConfigurationDNSClassicInfrastructure.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
   * Constraints: The maximum length is `128` characters. The minimum length is `4` characters.
@@ -100,15 +96,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_configuration_public_certificate_CA_Lets_Encrypt` resource by using `name`. The unique name of your configuration.
+You can import the `ibm_sm_configuration_public_certificate_dns_classic_infrastructure` resource by using `name`. The unique name of your configuration.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
 ```
-$ terraform import ibm_sm_configuration_public_certificate_CA_Lets_Encrypt.sm_configuration_public_certificate_ca_lets_encrypt <name>
+$ terraform import ibm_sm_configuration_public_certificate_dns_classic_infrastructure.sm_configuration_public_certificate_dns_classic_infrastructure <name>
 ```
 
 # Example
 ```
-$ terraform import ibm_sm_configuration_public_certificate_CA_Lets_Encrypt.sm_configuration_public_certificate_ca_lets_encrypt my-secret-engine-config
+$ terraform import ibm_sm_configuration_public_certificate_dns_classic_infrastructure.sm_configuration_public_certificate_dns_classic_infrastructure my-secret-engine-config
 ```

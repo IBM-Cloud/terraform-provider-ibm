@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_secret_group" (Beta)
 description: |-
   Get information about SecretGroup
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
 ---
 
 # ibm_sm_secret_group
@@ -24,7 +24,7 @@ data "ibm_sm_secret_group" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) The ID of the secret group.
+* `id` - (Required, String) The ID of the secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 ## Attribute Reference

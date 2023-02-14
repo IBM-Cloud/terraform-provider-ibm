@@ -173,6 +173,4 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/platform-services-go-sdk => github.com/adya1303/platform-services-go-sdk v0.0.0-20230117172144-bd4c95d35229
-
 replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230202132733-fd8f31729d57
