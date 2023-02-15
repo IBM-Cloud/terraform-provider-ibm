@@ -52,6 +52,11 @@ In addition to all argument references listed, you can access the following attr
 - `accept_routes_from` - (List) The filters specifying the resources that may create routes in this routing table.At present, only the `resource_type` filter is permitted, and only the `vpn_gateway` value is supported, but filter support is expected to expand in the future.
 	Nested scheme for **accept_routes_from**:
 	- `resource_type` - (String) The resource type.
+- `advertise_routes_to` - (Optional, List) The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.
+
+  ->**Options** An ingress source that routes can be advertised to:</br>
+        **&#x2022;** `direct_link` (requires `route_direct_link_ingress` be set to `true`)</br>
+        **&#x2022;** `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`)
 - `created_at` - (String) The date and time that this routing table was created.
 - `href` - (String) The URL for this routing table.
 - `id` - (String) The unique identifier of the RoutingTable.
