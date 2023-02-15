@@ -24,6 +24,8 @@ func TestAccIBMISVPCRoutingTableRoute_basic(t *testing.T) {
 	routeName1 := fmt.Sprintf("tfvpcuat-create-%d", acctest.RandIntRange(10, 100))
 	routeTableName := fmt.Sprintf("tfvpcrt-create-%d", acctest.RandIntRange(10, 100))
 	routeTableName1 := fmt.Sprintf("tfvpcrt-up-create-%d", acctest.RandIntRange(10, 100))
+	advertiseVal := fmt.Sprintf("tfpvpcuat-create-%d", acctest.RandIntRange(10, 50))
+	advertiseValUpd := fmt.Sprintf("tfpvpcuat-update-%d", acctest.RandIntRange(60, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,19 +33,23 @@ func TestAccIBMISVPCRoutingTableRoute_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISVPCRouteTableRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISVPCRouteTableRouteConfig(routeTableName, name1, subnetName, routeName),
+				Config: testAccCheckIBMISVPCRouteTableRouteConfig(routeTableName, name1, subnetName, routeName, advertiseVal),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCRouteTableRouteExists("ibm_is_vpc_routing_table_route.test_custom_route1", vpcRouteTables),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_routing_table_route.test_custom_route1", "name", routeName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table_route.test_custom_route1", "advertise", advertiseVal),
 				),
 			},
 			{
-				Config: testAccCheckIBMISVPCRouteTableRouteConfig(routeTableName1, name1, subnetName, routeName1),
+				Config: testAccCheckIBMISVPCRouteTableRouteConfig(routeTableName1, name1, subnetName, routeName1, advertiseValUpd),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCRouteTableRouteExists("ibm_is_vpc_routing_table_route.test_custom_route1", vpcRouteTables),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpc_routing_table_route.test_custom_route1", "name", routeName1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table_route.test_custom_route1", "advertise", advertiseValUpd),
 				),
 			},
 		},
@@ -114,7 +120,7 @@ func testAccCheckIBMISVPCRouteTableRouteExists(n, vpcrouteTableID string) resour
 	}
 }
 
-func testAccCheckIBMISVPCRouteTableRouteConfig(rtName, name, subnetName, routeName string) string {
+func testAccCheckIBMISVPCRouteTableRouteConfig(rtName, name, subnetName, routeName, advertise string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
     name = "%s"
@@ -137,10 +143,11 @@ resource "ibm_is_vpc_routing_table_route" "test_custom_route1" {
   depends_on = [ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table, ibm_is_subnet.test_cr_subnet1]
   vpc = ibm_is_vpc.testacc_vpc.id
   routing_table = ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table.routing_table
+  advertise = "%s"
   name = "%s"
   zone = "%s"
   next_hop = "%s"
   destination = ibm_is_subnet.test_cr_subnet1.ipv4_cidr_block
 }
-`, name, rtName, subnetName, acc.ISZoneName, acc.ISCIDR, routeName, acc.ISZoneName, acc.ISRouteNextHop)
+`, name, rtName, subnetName, acc.ISZoneName, acc.ISCIDR, advertise, routeName, acc.ISZoneName, acc.ISRouteNextHop)
 }

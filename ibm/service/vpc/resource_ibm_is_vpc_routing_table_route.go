@@ -79,6 +79,12 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				Description:  "The action to perform with a packet matching the route.",
 				ValidateFunc: validate.InvokeValidator("ibm_is_vpc_routing_table_route", rAction),
 			},
+			"advertise": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to` routing table property.",
+			},
 			rName: {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -230,6 +236,11 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 		createVpcRoutingTableRouteOptions.SetAction(routeAction)
 	}
 
+	if advertiseVal, ok := d.GetOk("advertise"); ok {
+		advertise := advertiseVal.(bool)
+		createVpcRoutingTableRouteOptions.SetAdvertise(advertise)
+	}
+
 	if name, ok := d.GetOk(rName); ok {
 		routeName := name.(string)
 		createVpcRoutingTableRouteOptions.SetName(routeName)
@@ -264,6 +275,9 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 	}
 
 	d.Set(rID, *route.ID)
+	if route.Advertise != nil {
+		d.Set("Advertise", route.Advertise)
+	}
 	d.Set(rName, *route.Name)
 	d.Set(rDestination, *route.Destination)
 	if route.NextHop != nil {
@@ -305,14 +319,22 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 	}
 
 	idSet := strings.Split(d.Id(), "/")
-	if d.HasChange(rName) {
+	if d.HasChange(rName) || d.HasChange("advertise") {
 		routePatch := make(map[string]interface{})
 		updateVpcRoutingTableRouteOptions := sess.NewUpdateVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2], routePatch)
 
 		// Construct an instance of the RoutePatch model
 		routePatchModel := new(vpcv1.RoutePatch)
-		name := d.Get(rName).(string)
-		routePatchModel.Name = &name
+		if d.HasChange(rName) {
+			name := d.Get(rName).(string)
+			routePatchModel.Name = &name
+		}
+
+		if d.HasChange("advertise") {
+			advertiseVal := d.Get("advertise").(bool)
+			routePatchModel.Advertise = &advertiseVal
+		}
+
 		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
 
 		if patchErr != nil {

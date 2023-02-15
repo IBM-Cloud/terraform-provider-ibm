@@ -65,6 +65,12 @@ func ResourceIBMISVPCRoutingTable() *schema.Resource {
 				Set:         schema.HashString,
 				Description: "The filters specifying the resources that may create routes in this routing table, The resource type: vpn_gateway or vpn_server",
 			},
+			"advertise_routes_to": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			rtRouteDirectLinkIngress: {
 				Type:        schema.TypeBool,
 				ForceNew:    false,
@@ -209,6 +215,9 @@ func resourceIBMISVPCRoutingTableCreate(d *schema.ResourceData, meta interface{}
 		}
 		createVpcRoutingTableOptions.AcceptRoutesFrom = aroutes
 	}
+	if _, ok := d.GetOk("advertise_routes_to"); ok {
+		createVpcRoutingTableOptions.SetAdvertiseRoutesTo(d.Get("advertise_routes_to").([]string))
+	}
 
 	if _, ok := d.GetOk(rtRouteInternetIngress); ok {
 		rtRouteInternetIngress := d.Get(rtRouteInternetIngress).(bool)
@@ -269,6 +278,7 @@ func resourceIBMISVPCRoutingTableRead(d *schema.ResourceData, meta interface{}) 
 	if err = d.Set("accept_routes_from_resource_type", acceptRoutesFromArray); err != nil {
 		return fmt.Errorf("[ERROR] Error setting accept_routes_from_resource_type: %s", err)
 	}
+
 	subnets := make([]map[string]interface{}, 0)
 
 	for _, s := range routeTable.Subnets {
@@ -318,6 +328,11 @@ func resourceIBMISVPCRoutingTableUpdate(d *schema.ResourceData, meta interface{}
 			aroutes = append(aroutes, resourceFilter)
 		}
 		routingTablePatchModel.AcceptRoutesFrom = aroutes
+		hasChange = true
+	}
+	if d.HasChange("advertise_routes_to") {
+		advertiseRoutesTo := d.Get("advertise_routes_to").([]string)
+		routingTablePatchModel.AdvertiseRoutesTo = advertiseRoutesTo
 		hasChange = true
 	}
 	if d.HasChange(rtRouteDirectLinkIngress) {

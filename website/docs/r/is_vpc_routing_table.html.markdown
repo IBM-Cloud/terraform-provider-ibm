@@ -38,8 +38,33 @@ resource "ibm_is_vpc_routing_table" "example" {
 
 ```
 
+## Example usage: Advertising routes
+
+```terraform
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+resource "ibm_is_vpc_routing_table" "is_vpc_routing_table_instance" {
+  vpc                           = ibm_is_vpc.example.id
+  name                          = "example-vpc-routing-table"
+  route_direct_link_ingress     = true
+  route_transit_gateway_ingress = false
+  route_vpc_zone_ingress        = false
+  advertise_routes_to           = transit_gateway
+
+}
+
+```
+
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
+
+- `advertise_routes_to` - (Optional, List) The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.
+
+  ->**Options** An ingress source that routes can be advertised to:</br>
+        **&#x2022;** `direct_link` (requires `route_direct_link_ingress` be set to `true`)</br>
+        **&#x2022;** `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`)
 
 - `created_at` - (Timestamp)  The date and time when the routing table was created.
 - `name` - (Optional, String) The routing table name.

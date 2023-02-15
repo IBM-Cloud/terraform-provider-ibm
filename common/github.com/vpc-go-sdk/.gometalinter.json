@@ -1,0 +1,4 @@
+{
+  "Enable": ["golint"],
+  "Exclude": ["don't use MixedCaps in package name", "should not use dot imports"]
+}
