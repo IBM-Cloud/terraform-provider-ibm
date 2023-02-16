@@ -564,37 +564,41 @@ func DataSourceIBMCmOffering() *schema.Resource {
 												},
 												"working_directory": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Working directory of source files.",
 												},
 												"example_name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Working directory of source files.",
 												},
+												"start_deploy_time": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The time validation started.",
+												},
 												"end_deploy_time": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "The time validation ended.",
 												},
+												"est_deploy_time": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The estimated time validation takes.",
+												},
 												"usage": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Usage text for the version.",
 												},
 												"usage_template": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
 													Computed:    true,
 													Description: "Usage text for the version.",
 												},
 												"modules": &schema.Schema{
 													Type:        schema.TypeList,
-													Optional:    true,
 													Computed:    true,
 													Description: "Terraform modules.",
 													Elem: &schema.Resource{
@@ -611,7 +615,6 @@ func DataSourceIBMCmOffering() *schema.Resource {
 															},
 															"offering_reference": &schema.Schema{
 																Type:        schema.TypeList,
-																Optional:    true,
 																Computed:    true,
 																Description: "Terraform modules.",
 																Elem: &schema.Resource{
