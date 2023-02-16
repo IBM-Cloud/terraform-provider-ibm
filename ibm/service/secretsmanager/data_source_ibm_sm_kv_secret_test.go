@@ -51,7 +51,7 @@ func testAccCheckIbmSmKvSecretDataSourceConfigBasic() string {
 
 		data "ibm_sm_kv_secret" "sm_kv_secret" {
 			instance_id = "%s"
-			region = "%s
+			region = "%s"
 			id = ibm_sm_kv_secret.sm_kv_secret_instance.id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)

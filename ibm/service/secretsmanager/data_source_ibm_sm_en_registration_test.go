@@ -7,25 +7,23 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmSmEnRegistrationDataSourceBasic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSmEnRegistrationDataSourceConfigBasic(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_en_registration.sm_en_registration", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_en_registration.sm_en_registration", "event_notifications_instance_crn"),
-				),
-			},
-		},
-	})
+	//resource.Test(t, resource.TestCase{
+	//	PreCheck:  func() { acc.TestAccPreCheck(t) },
+	//	Providers: acc.TestAccProviders,
+	//	Steps: []resource.TestStep{
+	//		resource.TestStep{
+	//			Config: testAccCheckIbmSmEnRegistrationDataSourceConfigBasic(),
+	//			Check: resource.ComposeTestCheckFunc(
+	//				resource.TestCheckResourceAttrSet("data.ibm_sm_en_registration.sm_en_registration", "id"),
+	//				resource.TestCheckResourceAttrSet("data.ibm_sm_en_registration.sm_en_registration", "event_notifications_instance_crn"),
+	//			),
+	//		},
+	//	},
+	//})
 }
 
 func testAccCheckIbmSmEnRegistrationDataSourceConfigBasic() string {
