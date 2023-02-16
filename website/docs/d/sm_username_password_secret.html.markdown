@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_username_password_secret" (Beta)
+page_title: "IBM : ibm_sm_username_password_secret (Beta)"
 description: |-
   Get information about UsernamePasswordSecret
 subcategory: "Secrets Manager"

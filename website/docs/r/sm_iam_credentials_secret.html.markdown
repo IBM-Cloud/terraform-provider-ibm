@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_iam_credentials_secret" (Beta)
+page_title: "IBM : ibm_sm_iam_credentials_secret (Beta)"
 description: |-
   Manages IAMCredentialsSecret.
 subcategory: "Secrets Manager"

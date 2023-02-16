@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_kv_secret_metadata" (Beta)
+page_title: "IBM : ibm_sm_kv_secret_metadata (Beta)"
 description: |-
   Get information about KVSecretMetadata
 subcategory: "Secrets Manager"

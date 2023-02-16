@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_private_certificate_root_CA" (Beta)
+page_title: "IBM : ibm_sm_configuration_private_certificate_root_CA (Beta)"
 description: |-
   Get information about PrivateCertificateConfigurationRootCA
 subcategory: "Secrets Manager"

@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" (Beta)
+page_title: "IBM : ibm_sm_configuration_public_certificate_CA_Lets_Encrypt (Beta)"
 description: |-
   Manages PublicCertificateConfigurationCALetsEncrypt.
 subcategory: "Secrets Manager"

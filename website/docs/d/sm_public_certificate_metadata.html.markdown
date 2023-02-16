@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_public_certificate_metadata" (Beta)
+page_title: "IBM : ibm_sm_public_certificate_metadata (Beta)"
 description: |-
   Get information about PublicCertificateMetadata
 subcategory: "Secrets Manager"

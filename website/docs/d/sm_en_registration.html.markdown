@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_en_registration" (Beta)
+page_title: "IBM : ibm_sm_en_registration (Beta)"
 description: |-
   Get information about NotificationsRegistration
 subcategory: "Secrets Manager"

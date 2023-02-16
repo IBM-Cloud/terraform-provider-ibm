@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_private_certificate_template" (Beta)
+page_title: "IBM : ibm_sm_configuration_private_certificate_template (Beta)"
 description: |-
   Get information about PrivateCertificateConfigurationTemplate
 subcategory: "Secrets Manager"

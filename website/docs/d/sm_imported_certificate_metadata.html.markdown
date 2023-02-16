@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_imported_certificate_metadata" (Beta)
+page_title: "IBM : ibm_sm_imported_certificate_metadata (Beta)"
 description: |-
   Get information about ImportedCertificateMetadata
 subcategory: "Secrets Manager"

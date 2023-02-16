@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_public_certificate_dns_classic_infrastructure"
+page_title: "IBM : ibm_sm_configuration_public_certificate_dns_classic_infrastructure (Beta)"
 description: |-
   Manages PublicCertificateConfigurationDNSClassicInfrastructure.
 subcategory: "Secrets Manager"

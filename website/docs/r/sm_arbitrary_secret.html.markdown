@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_arbitrary_secret" (Beta)
+page_title: "IBM : ibm_sm_arbitrary_secret (Beta)"
 description: |-
   Manages ArbitrarySecret.
 subcategory: "Secrets Manager"

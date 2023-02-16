@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_configuration_public_certificate_dns_cis"
+page_title: "IBM : ibm_sm_configuration_public_certificate_dns_cis (Beta)"
 description: |-
   Get information about PublicCertificateConfigurationDNSCloudInternetServices
 subcategory: "Secrets Manager"
