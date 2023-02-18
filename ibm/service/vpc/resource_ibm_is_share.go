@@ -65,19 +65,30 @@ func ResourceIbmIsShare() *schema.Resource {
 				Computed:     true,
 				Description:  "The CRN of the key to use for encrypting this file share.If no encryption key is provided, the share will not be encrypted.",
 			},
-			"initial_owner_gid": {
-				Type:         schema.TypeInt,
+			"initial_owner": {
+				Type:         schema.TypeList,
 				Optional:     true,
+				MinItems:     1,
+				MaxItems:     1,
 				RequiredWith: []string{"size"},
 				ForceNew:     true,
-				Description:  "The owner assigned to the file share at creation. The initial group identifier for the file share. Subsequent changes to the owner must be performed by a virtual server instance that has mounted the file share.",
-			},
-			"initial_owner_uid": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				RequiredWith: []string{"size"},
-				ForceNew:     true,
-				Description:  "The owner assigned to the file share at creation. The initial user identifier for the file share. Subsequent changes to the owner must be performed by a virtual server instance that has mounted the file share.",
+				Description:  "The owner assigned to the file share at creation.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"gid": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The initial group identifier for the file share.",
+						},
+						"uid": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The initial user identifier for the file share.",
+						},
+					},
+				},
 			},
 			"resource_group": {
 				Type:         schema.TypeString,
@@ -96,21 +107,36 @@ func ResourceIbmIsShare() *schema.Resource {
 				ValidateFunc:  validate.InvokeValidator("ibm_is_share", "size"),
 				Description:   "The size of the file share rounded up to the next gigabyte.",
 			},
-			"share_target_prototype": {
+			"mount_targets": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Share targets for the file share.",
+				Description: "The share targets for this file share.Share targets mounted from a replica must be mounted read-only.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "href of mount target",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "ID of this share target.",
+						},
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
-						"vpc": {
+						"vpc": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
+							Description: "The ID of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
+						},
+						"resource_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Resource type of virtual network interface",
 						},
 					},
 				},
@@ -141,6 +167,16 @@ func ResourceIbmIsShare() *schema.Resource {
 				Description:   "Configuration for a replica file share to create and associate with this file share. Ifunspecified, a replica may be subsequently added by creating a new file share with a`source_share` referencing this file share.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this replica share.",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this replica share.",
+						},
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -150,7 +186,6 @@ func ResourceIbmIsShare() *schema.Resource {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Computed:     true,
-							ForceNew:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_share", "iops"),
 							Description:  "The maximum input/output operation per second (IOPS) for the file share.",
 						},
@@ -163,7 +198,6 @@ func ResourceIbmIsShare() *schema.Resource {
 						"profile": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "Share profile name.",
 						},
 						"replication_cron_spec": &schema.Schema{
@@ -172,26 +206,70 @@ func ResourceIbmIsShare() *schema.Resource {
 							ForceNew:    true,
 							Description: "The cron specification for the file share replication schedule.Replication of a share can be scheduled to occur at most once per hour.",
 						},
-						"targets": &schema.Schema{
+						"replication_role": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The replication role of the file share.",
+						},
+						"replication_status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The replication status of the file share.",
+						},
+						"replication_status_reasons": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current replication status.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the status reason.",
+									},
+									"message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the status reason.",
+									},
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about this status reason.",
+									},
+								},
+							},
+						},
+						"mount_targets": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "The share targets for this replica file share.Share targets mounted from a replica must be mounted read-only.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "href of mount target",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "ID of this share target.",
+									},
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 									},
-									"subnet": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The ID of the subnet associated with this file share target.Only virtual server instances in the same VPC as this subnetwill be allowed to mount the file share.In the future, this property may be required and used to assignan IP address for the file share target.",
-									},
 									"vpc": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "The ID of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
+									},
+									"resource_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Resource type of virtual network interface",
 									},
 								},
 							},
@@ -203,6 +281,14 @@ func ResourceIbmIsShare() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", isFileShareTags)},
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "User Tags for the replica share",
+						},
+						isFileShareAccessTags: {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", "accesstag")},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access management tags for this replica share",
 						},
 						"zone": {
 							Type:        schema.TypeString,
@@ -312,6 +398,11 @@ func ResourceIbmIsShare() *schema.Resource {
 					},
 				},
 			},
+			"lifecycle_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the file share.",
+			},
 			"zone": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -334,49 +425,6 @@ func ResourceIbmIsShare() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access management tags",
 			},
-			"share_targets": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Mount targets for the file share.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"deleted": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"more_info": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Link to documentation about deleted resources.",
-									},
-								},
-							},
-						},
-						"href": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this share target.",
-						},
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The unique identifier for this share target.",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The user-defined name for this share target.",
-						},
-						"resource_type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The type of resource referenced.",
-						},
-					},
-				},
-			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -397,11 +445,7 @@ func ResourceIbmIsShare() *schema.Resource {
 				Computed:    true,
 				Description: "The URL for this share.",
 			},
-			"lifecycle_state": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The lifecycle state of the file share.",
-			},
+
 			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -483,15 +527,16 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			sharePrototype.EncryptionKey = encryptionKeyIdentity
 		}
 		initial_owner := &vpcbetav1.ShareInitialOwner{}
-		if o_gid, ok := d.GetOk("initial_owner_gid"); ok {
-			o_gidstr := o_gid.(int64)
-			initial_owner.Gid = &o_gidstr
-			sharePrototype.InitialOwner = initial_owner
-		}
-		if u_gid, ok := d.GetOk("initial_owner_gid"); ok {
-			o_uidstr := u_gid.(int64)
-			initial_owner.Uid = &o_uidstr
-			sharePrototype.InitialOwner = initial_owner
+		if initialOwnerIntf, ok := d.GetOk("initial_owner"); ok {
+			initialOwnerMap := initialOwnerIntf.([]interface{})[0].(map[string]interface{})
+			if initialOwnerGIDIntf, ok := initialOwnerMap["gid"]; ok {
+				initialOwnerGID := int64(initialOwnerGIDIntf.(int))
+				initial_owner.Gid = &initialOwnerGID
+			}
+			if initialOwnerUIDIntf, ok := initialOwnerMap["uid"]; ok {
+				initialOwnerUID := int64(initialOwnerUIDIntf.(int))
+				initial_owner.Uid = &initialOwnerUID
+			}
 		}
 		if resgrp, ok := d.GetOk("resource_group"); ok {
 			resgrpstr := resgrp.(string)
@@ -501,33 +546,31 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			sharePrototype.ResourceGroup = resourceGroup
 		}
 		if replicaShareIntf, ok := d.GetOk("replica_share"); ok {
-			replicaShare := replicaShareIntf.([]interface{})[0].(map[string]interface{})
-			model := &vpcbetav1.SharePrototypeShareContext{}
-			iopsIntf, ok := replicaShare["iops"]
+			replicaShareMap := replicaShareIntf.([]interface{})[0].(map[string]interface{})
+			replicaShare := &vpcbetav1.SharePrototypeShareContext{}
+			iopsIntf, ok := replicaShareMap["iops"]
 			iops := iopsIntf.(int)
 			if ok && iops != 0 {
-
-				model.Iops = core.Int64Ptr(int64(iops))
+				replicaShare.Iops = core.Int64Ptr(int64(iops))
 			}
-			if replicaShare["name"] != nil {
-				model.Name = core.StringPtr(replicaShare["name"].(string))
+			if replicaShareMap["name"] != nil {
+				replicaShare.Name = core.StringPtr(replicaShareMap["name"].(string))
 			}
-			if replicaShare["profile"] != nil {
-				model.Profile = &vpcbetav1.ShareProfileIdentity{
-					Name: core.StringPtr(replicaShare["profile"].(string)),
+			if replicaShareMap["profile"] != nil {
+				replicaShare.Profile = &vpcbetav1.ShareProfileIdentity{
+					Name: core.StringPtr(replicaShareMap["profile"].(string)),
 				}
-
 			}
-			if replicaShare["replication_cron_spec"] != nil {
-				model.ReplicationCronSpec = core.StringPtr(replicaShare["replication_cron_spec"].(string))
+			if replicaShareMap["replication_cron_spec"] != nil {
+				replicaShare.ReplicationCronSpec = core.StringPtr(replicaShareMap["replication_cron_spec"].(string))
 			}
-			if replicaShare["zone"] != nil {
-				model.Zone = &vpcbetav1.ZoneIdentity{
-					Name: core.StringPtr(replicaShare["zone"].(string)),
+			if replicaShareMap["zone"] != nil {
+				replicaShare.Zone = &vpcbetav1.ZoneIdentity{
+					Name: core.StringPtr(replicaShareMap["zone"].(string)),
 				}
 			}
 
-			replicaTargets, ok := replicaShare["targets"]
+			replicaTargets, ok := replicaShareMap["mount_targets"]
 			if ok {
 				var targets []vpcbetav1.ShareMountTargetPrototype
 				targetsIntf := replicaTargets.([]interface{})
@@ -536,11 +579,11 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 					targetsItem := resourceIbmIsShareMapToShareMountTargetPrototype(target)
 					targets = append(targets, targetsItem)
 				}
-				model.Targets = targets
+				replicaShare.Targets = targets
 			}
 
 			var userTags *schema.Set
-			if v, ok := replicaShare[isFileShareTags]; ok {
+			if v, ok := replicaShareMap[isFileShareTags]; ok {
 				userTags = v.(*schema.Set)
 				if userTags != nil && userTags.Len() != 0 {
 					userTagsArray := make([]string, userTags.Len())
@@ -554,11 +597,10 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 						envTags = strings.Split(schematicTags, ",")
 						userTagsArray = append(userTagsArray, envTags...)
 					}
-					sharePrototype.UserTags = userTagsArray
+					replicaShare.UserTags = userTagsArray
 				}
 			}
-
-			sharePrototype.ReplicaShare = model
+			sharePrototype.ReplicaShare = replicaShare
 		}
 	} else {
 		sourceShare := d.Get("source_share").(string)
@@ -587,7 +629,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		sharePrototype.Profile = profile
 	}
 
-	if shareTargetPrototypeIntf, ok := d.GetOk("share_target_prototype"); ok {
+	if shareTargetPrototypeIntf, ok := d.GetOk("mount_targets"); ok {
 		var targets []vpcbetav1.ShareMountTargetPrototype
 		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
@@ -638,16 +680,17 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		replicaShareAccessTagsSchema := "replica_share.0.access_tags"
+		if _, ok := d.GetOk(replicaShareAccessTagsSchema); ok {
+			oldList, newList := d.GetChange(replicaShareAccessTagsSchema)
+			err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *share.ReplicaShare.CRN, "", isAccessTagType)
+			if err != nil {
+				log.Printf(
+					"Error creating replica file share (%s) access tags: %s", d.Id(), err)
+			}
+		}
 	}
 	d.SetId(*share.ID)
-	// if _, ok := d.GetOk(isFileShareTags); ok {
-	// 	oldList, newList := d.GetChange(isFileShareTags)
-	// 	err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *share.CRN, "", isUserTagType)
-	// 	if err != nil {
-	// 		log.Printf(
-	// 			"Error creating file share (%s) tags: %s", d.Id(), err)
-	// 	}
-	// }
 
 	if _, ok := d.GetOk(isFileShareAccessTags); ok {
 		oldList, newList := d.GetChange(isFileShareAccessTags)
@@ -729,7 +772,7 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 			targets = append(targets, targetsItemMap)
 		}
 	}
-	if err = d.Set("share_targets", targets); err != nil {
+	if err = d.Set("mount_targets", targets); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting targets: %s", err))
 	}
 	if share.Zone != nil {
