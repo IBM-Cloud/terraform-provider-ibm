@@ -29000,7 +29000,7 @@ type CreatePrivatePathServiceGatewayOptions struct {
 	LoadBalancer LoadBalancerIdentityIntf `json:"load_balancer" validate:"required"`
 
 	// The region served by this private path service gateway.
-	Region RegionIdentityIntf `json:"region" validate:"required"`
+	Region RegionIdentityIntf `json:"region,omitempty"`
 
 	// The fully qualified domain names for this private path service gateway. Any uppercase letters will be converted to
 	// lowercase.
