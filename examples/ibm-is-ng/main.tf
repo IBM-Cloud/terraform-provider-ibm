@@ -580,10 +580,11 @@ resource "ibm_is_instance" "instance4" {
   keys      = [ibm_is_ssh_key.sshkey.id]
 }
 
-// creating a snapshot from boot volume
+// creating a snapshot from boot volume with clone
 resource "ibm_is_snapshot" "b_snapshot" {
   name          = "my-snapshot-boot"
   source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
+  clones        = [var.zone1]
   tags          = ["tags1"]
 }
 
@@ -601,6 +602,17 @@ data "ibm_is_snapshot" "ds_snapshot" {
 
 // data source for snapshots
 data "ibm_is_snapshots" "ds_snapshots" {
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clones" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clone" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+  zone     = var.zone1
 }
 
 // restoring a boot volume from snapshot in a new instance
