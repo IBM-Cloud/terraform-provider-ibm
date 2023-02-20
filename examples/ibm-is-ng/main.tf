@@ -1096,6 +1096,22 @@ resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   }
   name = "my-backup-policy-plan-1"
 }
+resource "ibm_is_backup_policy_plan" "is_backup_policy_plan_clone" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  cron_spec        = "30 09 * * *"
+  active           = false
+  attach_user_tags = ["tag2"]
+  copy_user_tags = true
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = "20"
+  }
+  name = "my-backup-policy-plan-1"
+  clone_policy {
+    zones 			= ["us-south-1", "us-south-2"]
+    max_snapshots 	= 3
+  }
+}
 
 data "ibm_is_backup_policies" "is_backup_policies" {
 }

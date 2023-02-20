@@ -80,6 +80,76 @@ func TestAccIBMIsBackupPolicyPlanBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsBackupPolicyPlanClonesBasic(t *testing.T) {
+	var conf vpcv1.BackupPolicyPlan
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	bakupPolicyName := fmt.Sprintf("tfbakuppolicyname%d", acctest.RandIntRange(10, 100))
+	bakupPolicyPlanName := fmt.Sprintf("tfbakuppolicyplanname%d", acctest.RandIntRange(10, 100))
+	bakupPolicyPlanNameUpdate := fmt.Sprintf("tfbakuppolicyplannameupdate%d", acctest.RandIntRange(10, 100))
+	cronSpec := strings.TrimSpace(strconv.Itoa(time.Now().UTC().Minute()) + " " + strconv.Itoa(time.Now().UTC().Hour()) + " " + "*" + " " + "*" + " " + "*")
+	cronSpecUpdate := strings.TrimSpace(strconv.Itoa(time.Now().UTC().Minute()+1) + " " + strconv.Itoa(time.Now().UTC().Hour()) + " " + "*" + " " + "*" + " " + "*")
+	if strings.TrimSpace(strconv.Itoa(time.Now().UTC().Minute())) == "61" {
+		cronSpecUpdate = strings.TrimSpace(("1") + " " + strconv.Itoa(time.Now().UTC().Hour()+1) + " " + "*" + " " + "*" + " " + "*")
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsBackupPolicyPlanDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsBackupPolicyPlanConfigClonesBasic(bakupPolicyName, vpcname, subnetname, sshname, volname, name, cronSpec, bakupPolicyPlanName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsBackupPolicyPlanExists("ibm_is_backup_policy_plan.is_backup_policy_plan.0", conf),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "name", bakupPolicyPlanName+"-1"),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "cron_spec", cronSpec),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "backup_policy_id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "backup_policy_plan_id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "active"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "copy_user_tags"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "deletion_trigger.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "resource_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "version"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.max_snapshots"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.zones.#"),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.zones.0", acc.ISZoneName),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.zones.1", acc.ISZoneName2),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMIsBackupPolicyPlanConfigClonesBasic(bakupPolicyName, vpcname, subnetname, sshname, volname, name, cronSpecUpdate, bakupPolicyPlanNameUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsBackupPolicyPlanExists("ibm_is_backup_policy_plan.is_backup_policy_plan.0", conf),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "name", bakupPolicyPlanNameUpdate+"-1"),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "cron_spec", cronSpecUpdate),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "backup_policy_id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "backup_policy_plan_id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "active"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "copy_user_tags"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "deletion_trigger.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "resource_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "version"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.max_snapshots"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.zones.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.max_snapshots"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.zones.#"),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.zones.0", acc.ISZoneName),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan.0", "clone_policy.0.zones.1", acc.ISZoneName2),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIsBackupPolicyPlanImport(t *testing.T) {
 	var conf vpcv1.BackupPolicyPlan
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -133,6 +203,21 @@ func testAccCheckIBMIsBackupPolicyPlanConfigBasic(backupPolicyName, vpcname, sub
 			cron_spec = "%s"
 		}
 	`, bakupPolicyPlanName, cronSpec)
+}
+func testAccCheckIBMIsBackupPolicyPlanConfigClonesBasic(backupPolicyName, vpcname, subnetname, sshname, volName, name, cronSpec, backupPolicyPlanName string) string {
+
+	return testAccCheckIBMIsBackupPolicyConfigBasic(backupPolicyName, vpcname, subnetname, sshname, volName, name) + fmt.Sprintf(`
+		resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
+			count  = 2
+			backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+			name = "%s-${count.index+1}"
+			cron_spec = "%s"
+			clone_policy {
+				zones 			= ["%s", "%s"]
+				max_snapshots 	= 3
+			}
+		}
+	`, backupPolicyPlanName, cronSpec, acc.ISZoneName, acc.ISZoneName2)
 }
 
 func testAccCheckIBMIsBackupPolicyPlanConfigImport(backupPolicyName, vpcname, subnetname, sshname, volName, name, cronSpec, bakupPolicyPlanName string) string {
