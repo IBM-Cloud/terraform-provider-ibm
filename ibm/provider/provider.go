@@ -460,6 +460,8 @@ func Provider() *schema.Provider {
 			"ibm_is_security_group_rules":            vpc.DataSourceIBMIsSecurityGroupRules(),
 			"ibm_is_security_group_target":           vpc.DataSourceIBMISSecurityGroupTarget(),
 			"ibm_is_security_group_targets":          vpc.DataSourceIBMISSecurityGroupTargets(),
+			"ibm_is_snapshot_clone":                  vpc.DataSourceSnapshotClone(),
+			"ibm_is_snapshot_clones":                 vpc.DataSourceSnapshotClones(),
 			"ibm_is_snapshot":                        vpc.DataSourceSnapshot(),
 			"ibm_is_snapshots":                       vpc.DataSourceSnapshots(),
 			"ibm_is_volume":                          vpc.DataSourceIBMISVolume(),
