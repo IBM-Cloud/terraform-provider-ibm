@@ -133,7 +133,7 @@ func TestAccIBMCOSBucketObject_Versioning_Enabled_Sequential_Upload(t *testing.T
 
 func TestAccIBMCOSBucketObject_Overwriting(t *testing.T) {
 	key := "plaintext.txt"
-	bucketCRN := "crn:v1:bluemix:public:cloud-object-storage:global:a/ee747e45752d4696b2d082bcf2357559:017d227c-fb2e-4260-8874-d53951eb50ad:bucket:object-versioning-tf-fix"
+	bucketCRN := acc.BucketCRN
 	objectBody1 := "Acceptance Testing"
 	objectBody2 := "Acceptance Testing object 2"
 	resource.Test(t, resource.TestCase{
