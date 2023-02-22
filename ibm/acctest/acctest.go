@@ -157,6 +157,7 @@ var Image_operating_system string
 
 // Transit Gateway cross account
 var Tg_cross_network_account_id string
+var Tg_cross_network_account_api_key string
 var Tg_cross_network_id string
 
 // Enterprise Management
@@ -913,6 +914,10 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
+	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
+	if Tg_cross_network_account_api_key == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_API_KEY for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
 	Tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
 	if Tg_cross_network_account_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
