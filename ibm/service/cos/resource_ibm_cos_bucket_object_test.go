@@ -68,7 +68,7 @@ func TestAccIBMCOSBucketObject_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMCOSBucketObject_Versioning_Enabled(t *testing.T) {
+func TestAccIBMCOSBucketObject_VersioningEnabled(t *testing.T) {
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
 	key := "plaintext.txt"
 	instanceCRN := acc.CosCRN
@@ -82,6 +82,7 @@ func TestAccIBMCOSBucketObject_Versioning_Enabled(t *testing.T) {
 				Config: testAccIBMCOSBucketBucketObject_Versioning_Enabled(name, key, instanceCRN, objectBody1, objectBody2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cos_bucket.testacc", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.testacc", "object_versioning.0.enable", "true"),
 					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "id"),
 					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content"),
 					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content_length"),
@@ -98,7 +99,7 @@ func TestAccIBMCOSBucketObject_Versioning_Enabled(t *testing.T) {
 	})
 }
 
-func TestAccIBMCOSBucketObject_Versioning_Enabled_Sequential_Upload(t *testing.T) {
+func TestAccIBMCOSBucketObject_Versioning_Enabled_Sequential_Upload_on_Existing_Bucket(t *testing.T) {
 	key := "plaintext.txt"
 	bucketCRN := acc.BucketCRN
 	objectBody1 := "Acceptance Testing"
@@ -108,7 +109,7 @@ func TestAccIBMCOSBucketObject_Versioning_Enabled_Sequential_Upload(t *testing.T
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIBMCOSBucketBucketObject_Versioning_Enabled_Upload1(bucketCRN, key, objectBody1),
+				Config: testAccIBMCOSBucketBucketObjectUpload(bucketCRN, key, objectBody1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "id"),
 					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content"),
@@ -118,20 +119,20 @@ func TestAccIBMCOSBucketObject_Versioning_Enabled_Sequential_Upload(t *testing.T
 				),
 			},
 			{
-				Config: testAccIBMCOSBucketBucketObject_Versioning_Enabled_Upload2(bucketCRN, key, objectBody2),
+				Config: testAccIBMCOSBucketBucketObjectUpload(bucketCRN, key, objectBody2),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "id"),
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "content"),
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "content_length"),
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "content_type"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc_object2", "content", objectBody2),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "id"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content_length"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content_type"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc_object", "content", objectBody2),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMCOSBucketObject_Overwriting(t *testing.T) {
+func TestAccIBMCOSBucketObject_Uploading_Multile_Objects_on_Existing_Bucket_without_Versioning(t *testing.T) {
 	key := "plaintext.txt"
 	bucketCRN := acc.BucketCRN
 	objectBody1 := "Acceptance Testing"
@@ -141,7 +142,7 @@ func TestAccIBMCOSBucketObject_Overwriting(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIBMCOSBucketBucketObject_Versioning_Enabled_Upload1(bucketCRN, key, objectBody1),
+				Config: testAccIBMCOSBucketBucketObjectUpload(bucketCRN, key, objectBody1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "id"),
 					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content"),
@@ -151,13 +152,13 @@ func TestAccIBMCOSBucketObject_Overwriting(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccIBMCOSBucketBucketObject_Versioning_Enabled_Upload2(bucketCRN, key, objectBody2),
+				Config: testAccIBMCOSBucketBucketObjectUpload(bucketCRN, key, objectBody2),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "id"),
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "content"),
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "content_length"),
-					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object2", "content_type"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc_object2", "content", objectBody2),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "id"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content_length"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket_object.testacc_object", "content_type"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc_object", "content", objectBody2),
 				),
 			},
 		},
@@ -237,22 +238,12 @@ func testAccIBMCOSBucketBucketObject_Versioning_Enabled(name string, key string,
 		}`, name, key, instanceCRN, objectBody1, objectBody2)
 }
 
-func testAccIBMCOSBucketBucketObject_Versioning_Enabled_Upload1(bucketCrn string, key string, objectBody1 string) string {
+func testAccIBMCOSBucketBucketObjectUpload(bucketCrn string, key string, objectBody1 string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket_object" "testacc_object" {
 			bucket_crn	    = "%[1]s"
-			bucket_location = "us"
+			bucket_location = "us-south"
 			key 			= "%[2]s"
 			content			= "%[3]s"
 		}`, bucketCrn, key, objectBody1)
-}
-
-func testAccIBMCOSBucketBucketObject_Versioning_Enabled_Upload2(bucketCrn string, key string, objectBody string) string {
-	return fmt.Sprintf(`
-		resource "ibm_cos_bucket_object" "testacc_object2" {
-			bucket_crn	    = "%[1]s"
-			bucket_location = "us"
-			key 					  = "%[2]s"
-			content			    = "%[3]s"
-		}`, bucketCrn, key, objectBody)
 }
