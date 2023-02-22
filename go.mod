@@ -3,17 +3,17 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20230118080803-9a11ac0420f9
-	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220922071204-21813161c36f
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1
+	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037
 	github.com/IBM-Cloud/power-go-client v1.2.2
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.3.0
+	github.com/IBM/cloud-databases-go-sdk v0.3.1
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
-	github.com/IBM/continuous-delivery-go-sdk v1.0.3
-	github.com/IBM/event-notifications-go-admin-sdk v0.1.2
+	github.com/IBM/continuous-delivery-go-sdk v1.0.4
+	github.com/IBM/event-notifications-go-admin-sdk v0.1.7
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.10.2
 	github.com/IBM/ibm-cos-sdk-go v1.9.0
@@ -27,8 +27,8 @@ require (
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
-	github.com/IBM/secrets-manager-go-sdk v0.1.19
-	github.com/IBM/vpc-go-sdk v0.30.0
+	github.com/IBM/secrets-manager-go-sdk v1.0.49
+	github.com/IBM/vpc-go-sdk v0.32.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
@@ -172,3 +172,5 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
+
+replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230202132733-fd8f31729d57

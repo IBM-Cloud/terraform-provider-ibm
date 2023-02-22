@@ -4,16 +4,16 @@
 package certificatemanager
 
 import (
-	"fmt"
-	"strconv"
+	"errors"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataIBMCertificateManagerCertificate() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCertificateManagerCertificateRead,
+		Read: func(d *schema.ResourceData, meta any) error {
+			return errors.New("Certificate Manager Service is not supported anymore.")
+		},
 		Schema: map[string]*schema.Schema{
 			"certificate_manager_instance_id": {
 				Type:     schema.TypeString,
@@ -92,75 +92,76 @@ func DataIBMCertificateManagerCertificate() *schema.Resource {
 		},
 	}
 }
-func dataIBMCertificateManagerCertificateRead(d *schema.ResourceData, meta interface{}) error {
-	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
-	if err != nil {
-		return err
-	}
-	instanceID := d.Get("certificate_manager_instance_id").(string)
-	certName := d.Get("name").(string)
 
-	certificateList, err := cmService.Certificate().ListCertificates(instanceID)
-	if err != nil {
-		return err
-	}
-	record := make([]map[string]interface{}, 0)
-	for _, cert := range certificateList {
-		if certName == cert.Name {
-			certificate := make(map[string]interface{})
-			certificatedata, err := cmService.Certificate().GetCertData(cert.ID)
-			if err != nil {
-				return err
-			}
-			certificate["cert_id"] = certificatedata.ID
-			certificate["name"] = certificatedata.Name
-			certificate["domains"] = certificatedata.Domains
-			certificate["description"] = certificatedata.Description
-			if certificatedata.Data != nil {
-				data := map[string]interface{}{
-					"content": certificatedata.Data.Content,
-				}
-				if certificatedata.Data.Privatekey != "" {
-					data["priv_key"] = certificatedata.Data.Privatekey
-				}
-				if certificatedata.Data.IntermediateCertificate != "" {
-					data["intermediate"] = certificatedata.Data.IntermediateCertificate
-				}
-				certificate["data"] = data
-			}
-			if &certificatedata.IssuanceInfo != nil {
-				issuanceinfo := map[string]interface{}{}
-				if certificatedata.IssuanceInfo.Status != "" {
-					issuanceinfo["status"] = certificatedata.IssuanceInfo.Status
-				}
-				if certificatedata.IssuanceInfo.Code != "" {
-					issuanceinfo["code"] = certificatedata.IssuanceInfo.Code
-				}
-				if certificatedata.IssuanceInfo.AdditionalInfo != "" {
-					issuanceinfo["additional_info"] = certificatedata.IssuanceInfo.AdditionalInfo
-				}
-				if certificatedata.IssuanceInfo.OrderedOn != 0 {
-					order := certificatedata.IssuanceInfo.OrderedOn
-					orderedOn := strconv.FormatInt(order, 10)
-					issuanceinfo["ordered_on"] = orderedOn
-				}
-				certificate["issuance_info"] = issuanceinfo
-			}
-			certificate["status"] = certificatedata.Status
-			certificate["issuer"] = certificatedata.Issuer
-			certificate["imported"] = certificatedata.Imported
-			certificate["has_previous"] = certificatedata.HasPrevious
-			certificate["key_algorithm"] = certificatedata.KeyAlgorithm
-			certificate["algorithm"] = certificatedata.Algorithm
-			certificate["begins_on"] = certificatedata.BeginsOn
-			certificate["expires_on"] = certificatedata.ExpiresOn
+// func dataIBMCertificateManagerCertificateRead(d *schema.ResourceData, meta interface{}) error {
+// 	cmService, err := meta.(conns.ClientSession).CertificateManagerAPI()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	instanceID := d.Get("certificate_manager_instance_id").(string)
+// 	certName := d.Get("name").(string)
 
-			record = append(record, certificate)
-			d.Set("certificate_details", record)
-		}
-	}
-	d.SetId(fmt.Sprintf("%s:%s", certName, instanceID))
-	d.Set("certificate_manager_instance_id", instanceID)
-	d.Set("name", certName)
-	return nil
-}
+// 	certificateList, err := cmService.Certificate().ListCertificates(instanceID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	record := make([]map[string]interface{}, 0)
+// 	for _, cert := range certificateList {
+// 		if certName == cert.Name {
+// 			certificate := make(map[string]interface{})
+// 			certificatedata, err := cmService.Certificate().GetCertData(cert.ID)
+// 			if err != nil {
+// 				return err
+// 			}
+// 			certificate["cert_id"] = certificatedata.ID
+// 			certificate["name"] = certificatedata.Name
+// 			certificate["domains"] = certificatedata.Domains
+// 			certificate["description"] = certificatedata.Description
+// 			if certificatedata.Data != nil {
+// 				data := map[string]interface{}{
+// 					"content": certificatedata.Data.Content,
+// 				}
+// 				if certificatedata.Data.Privatekey != "" {
+// 					data["priv_key"] = certificatedata.Data.Privatekey
+// 				}
+// 				if certificatedata.Data.IntermediateCertificate != "" {
+// 					data["intermediate"] = certificatedata.Data.IntermediateCertificate
+// 				}
+// 				certificate["data"] = data
+// 			}
+// 			if &certificatedata.IssuanceInfo != nil {
+// 				issuanceinfo := map[string]interface{}{}
+// 				if certificatedata.IssuanceInfo.Status != "" {
+// 					issuanceinfo["status"] = certificatedata.IssuanceInfo.Status
+// 				}
+// 				if certificatedata.IssuanceInfo.Code != "" {
+// 					issuanceinfo["code"] = certificatedata.IssuanceInfo.Code
+// 				}
+// 				if certificatedata.IssuanceInfo.AdditionalInfo != "" {
+// 					issuanceinfo["additional_info"] = certificatedata.IssuanceInfo.AdditionalInfo
+// 				}
+// 				if certificatedata.IssuanceInfo.OrderedOn != 0 {
+// 					order := certificatedata.IssuanceInfo.OrderedOn
+// 					orderedOn := strconv.FormatInt(order, 10)
+// 					issuanceinfo["ordered_on"] = orderedOn
+// 				}
+// 				certificate["issuance_info"] = issuanceinfo
+// 			}
+// 			certificate["status"] = certificatedata.Status
+// 			certificate["issuer"] = certificatedata.Issuer
+// 			certificate["imported"] = certificatedata.Imported
+// 			certificate["has_previous"] = certificatedata.HasPrevious
+// 			certificate["key_algorithm"] = certificatedata.KeyAlgorithm
+// 			certificate["algorithm"] = certificatedata.Algorithm
+// 			certificate["begins_on"] = certificatedata.BeginsOn
+// 			certificate["expires_on"] = certificatedata.ExpiresOn
+
+// 			record = append(record, certificate)
+// 			d.Set("certificate_details", record)
+// 		}
+// 	}
+// 	d.SetId(fmt.Sprintf("%s:%s", certName, instanceID))
+// 	d.Set("certificate_manager_instance_id", instanceID)
+// 	d.Set("name", certName)
+// 	return nil
+// }

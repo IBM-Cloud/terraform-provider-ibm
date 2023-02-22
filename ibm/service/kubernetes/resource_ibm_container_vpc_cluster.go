@@ -206,6 +206,14 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "The operating system of the workers in the default worker pool.",
 			},
 
+			"secondary_storage": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The secondary storage option for the default worker pool.",
+			},
+
 			"taints": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -528,6 +536,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 
 	if os, ok := d.GetOk("operating_system"); ok {
 		workerpool.OperatingSystem = os.(string)
+	}
+
+	if secondarystorage, ok := d.GetOk("secondary_storage"); ok {
+		workerpool.SecondaryStorageOption = secondarystorage.(string)
 	}
 
 	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
@@ -1043,6 +1055,9 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set("host_pool_id", workerPool.HostPoolID)
 	d.Set("operating_system", workerPool.OperatingSystem)
+	if workerPool.SecondaryStorageOption != nil {
+		d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
+	}
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {

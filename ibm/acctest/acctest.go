@@ -52,6 +52,7 @@ var ZonePrivateVlan string
 var ZonePublicVlan string
 var ZoneUpdatePrivateVlan string
 var ZoneUpdatePublicVlan string
+var WorkerPoolSecondaryStorage string
 var CsRegion string
 var ExtendedHardwareTesting bool
 var err error
@@ -63,6 +64,7 @@ var SecretGroupID string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
 var ISAddressPrefixCIDR string
@@ -89,6 +91,13 @@ var imageName string
 var functionNamespace string
 var HpcsInstanceID string
 var SecretsManagerInstanceID string
+var SecretsManagerInstanceRegion string
+var SecretsManagerENInstanceCrn string
+var SecretsManagerIamCredentialsConfigurationApiKey string
+var SecretsManagerIamCredentialsSecretServiceId string
+var SecretsManagerIamCredentialsSecretServiceAccessGroup string
+var SecretsManagerPublicCertificateLetsEncryptEnvironment string
+var SecretsManagerPublicCertificateLetsEncryptPrivateKey string
 var SecretsManagerSecretType string
 var SecretsManagerSecretID string
 var HpcsAdmin1 string
@@ -470,6 +479,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2388375'")
 	}
 
+	WorkerPoolSecondaryStorage = os.Getenv("IBM_WORKER_POOL_SECONDARY_STORAGE")
+	if WorkerPoolSecondaryStorage == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_SECONDARY_STORAGE for testing secondary_storage attachment to IKS workerpools")
+	}
+
 	placementGroupName = os.Getenv("IBM_PLACEMENT_GROUP_NAME")
 	if placementGroupName == "" {
 		placementGroupName = "terraform_group"
@@ -510,6 +524,12 @@ func init() {
 	if ISAddressPrefixCIDR == "" {
 		ISAddressPrefixCIDR = "10.120.0.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	}
+
+	IsResourceGroupID = os.Getenv("SL_RESOURCE_GROUP_ID")
+	if IsResourceGroupID == "" {
+		IsResourceGroupID = "c01d34dff4364763476834c990398zz8"
+		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
 	}
 
 	IsImage = os.Getenv("IS_IMAGE")
@@ -897,7 +917,39 @@ func init() {
 	SecretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
 	if SecretsManagerInstanceID == "" {
 		// SecretsManagerInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
-		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_ID for testing data_source_ibm_secrets_manager_secrets_test else tests will fail if this is not set correctly")
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_ID for testing Secrets Manager's tests else tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerInstanceRegion = os.Getenv("SECRETS_MANAGER_INSTANCE_REGION")
+	if SecretsManagerInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_REGION for testing Secrets Manager's tests else tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerENInstanceCrn = os.Getenv("SECRETS_MANAGER_EN_INSTANCE_CRN")
+	if SecretsManagerENInstanceCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_EN_INSTANCE_CRN for testing Event Notifications for Secrets Manager tests else tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerIamCredentialsConfigurationApiKey = os.Getenv("SECRETS_MANAGER_IAM_CREDENTIALS_CONFIGURATION_API_KEY")
+	if SecretsManagerENInstanceCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_EN_INSTANCE_CRN for testing IAM Credentials secret's tests else tests will assume that IAM Credentials engine is already configured and fail if not set correctly")
+	}
+
+	SecretsManagerIamCredentialsSecretServiceId = os.Getenv("SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_SERVICE_ID")
+	SecretsManagerIamCredentialsSecretServiceAccessGroup = os.Getenv("SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_ACCESS_GROUP")
+	if SecretsManagerIamCredentialsSecretServiceId == "" && SecretsManagerIamCredentialsSecretServiceAccessGroup == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_SERVICE_ID or SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_ACCESS_GROUP for testing IAM Credentials secret's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateLetsEncryptEnvironment = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_ENVIRONMENT")
+	if SecretsManagerPublicCertificateLetsEncryptEnvironment == "" {
+		SecretsManagerPublicCertificateLetsEncryptEnvironment = "production"
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_ENVIRONMENT for testing public certificate's tests, else it is set to default value ('production'). For public certificate's tests, tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerPublicCertificateLetsEncryptPrivateKey = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_PRIVATE_KEY")
+	if SecretsManagerPublicCertificateLetsEncryptPrivateKey == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_PRIVATE_KEY for testing public certificate's tests, else tests fail if not set correctly")
 	}
 
 	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")

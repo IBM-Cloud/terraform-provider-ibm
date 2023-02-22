@@ -120,6 +120,32 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
+			isInstanceMetadataService: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceMetadataServiceEnabled1: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+						},
+
+						isInstanceMetadataServiceProtocol: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+						},
+
+						isInstanceMetadataServiceRespHopLimit: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The hop limit (IP time to live) for IP response packets from the metadata service",
+						},
+					},
+				},
+			},
 			isInstanceAvailablePolicyHostFailure: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -448,6 +474,20 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 
 		if instance.MetadataService != nil {
 			d.Set(isInstanceTemplateMetadataServiceEnabled, instance.MetadataService.Enabled)
+
+			metadataService := []map[string]interface{}{}
+			metadataServiceMap := map[string]interface{}{}
+
+			metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+			if instance.MetadataService.Protocol != nil {
+				metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+			}
+			if instance.MetadataService.ResponseHopLimit != nil {
+				metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+			}
+
+			metadataService = append(metadataService, metadataServiceMap)
+			d.Set(isInstanceMetadataService, metadataService)
 		}
 
 		if instance.Profile != nil {
@@ -729,6 +769,19 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 
 				if instance.MetadataService != nil {
 					d.Set(isInstanceTemplateMetadataServiceEnabled, instance.MetadataService.Enabled)
+					metadataService := []map[string]interface{}{}
+					metadataServiceMap := map[string]interface{}{}
+
+					metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+					if instance.MetadataService.Protocol != nil {
+						metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+					}
+					if instance.MetadataService.ResponseHopLimit != nil {
+						metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+					}
+
+					metadataService = append(metadataService, metadataServiceMap)
+					d.Set(isInstanceMetadataService, metadataService)
 				}
 
 				if instance.Profile != nil {
