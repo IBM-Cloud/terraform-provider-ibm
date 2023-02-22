@@ -435,6 +435,13 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Default:     true,
 				Description: "COS buckets need to be empty before they can be deleted. force_delete option empty the bucket and delete it.",
 			},
+			"object_lock": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				RequiredWith: []string{"object_versioning"},
+				Default:      false,
+				Description:  "Enable objectlock for the bucket.When Enabled, Buckets within the Container Vault can have Object Lock Configuration applied to the bucket.",
+			},
 		},
 	}
 }
@@ -1251,6 +1258,7 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketName := d.Get("bucket_name").(string)
 	storageClass := d.Get("storage_class").(string)
+	objectLockEnabled := d.Get("object_lock").(bool)
 	var bLocation string
 	var apiType string
 	var satlc_id string
@@ -1315,6 +1323,11 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	if satlc_id != "" || storageClass == "" {
 		create = &s3.CreateBucketInput{
 			Bucket: aws.String(bucketName),
+		}
+	} else if objectLockEnabled == true {
+		create = &s3.CreateBucketInput{
+			Bucket:                     aws.String(bucketName),
+			ObjectLockEnabledForBucket: aws.Bool(true),
 		}
 	} else {
 		create = &s3.CreateBucketInput{

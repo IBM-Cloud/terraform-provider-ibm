@@ -365,6 +365,13 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "sets a maximum amount of storage (in bytes) available for a bucket",
 			},
+			"object_lock": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				RequiredWith: []string{"object_versioning"},
+				Default:      true,
+				Description:  "Description",
+			},
 		},
 	}
 }
@@ -637,6 +644,26 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		if len(replicationRules) > 0 {
 			d.Set("replication_rule", replicationRules)
 		}
+	}
+	//object lock configuration
+	getObjectLockConfigurationInput := &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
+
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+		return err
+	}
+	if output.ObjectLockConfiguration != nil {
+		objectLockConfigurationptr := output.ObjectLockConfiguration
+
+		// if objectLockConfigurationptr != nil {
+		objectLockConfigurationrule := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
+		if len(objectLockConfigurationrule) > 0 {
+			d.Set("object_lock_configuration", objectLockConfigurationrule)
+		}
+		// }
 	}
 
 	return nil

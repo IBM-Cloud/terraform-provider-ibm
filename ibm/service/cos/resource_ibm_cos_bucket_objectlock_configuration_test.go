@@ -1,0 +1,770 @@
+package cos_test
+
+import (
+	"fmt"
+	"regexp"
+	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+)
+
+// Replication features
+func TestAccIBMCosBucket_Objectlock_Bucket_Enabled(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Bucket_Enabled(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_lock", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Without_Rule(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Without_Rule(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_lock", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Valid_Mode_and_Days(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Days(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_lock", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_Objectlock_Configuration_Valid_Mode_and_Years(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Years(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_lock", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_ExistingBucket(t *testing.T) {
+	bucketRegion := "us"
+	bucketCRN := acc.BucketCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket(bucketCRN, bucketRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Updating_Objectlockrule_Years(t *testing.T) {
+	bucketRegion := "us"
+	bucketCRN := acc.BucketCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Years(bucketCRN, bucketRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.years", "4"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Updated_Years(bucketCRN, bucketRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.years", "6"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Updating_Objectlockrule_Days(t *testing.T) {
+	bucketRegion := "us"
+	bucketCRN := acc.BucketCRN
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Days(bucketCRN, bucketRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.days", "6"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Updated_Days(bucketCRN, bucketRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.days", "9"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_Objectlock_Configuration_Empty(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Objectlock_Empty(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_Objectlock_Configuration_Without_Mode(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Objectlock_Without_Mode(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_With_Mode_Only(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Objectlock_With_Mode_Only(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_With_Versioning_Not_Enabled(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Objectlock_Versioning_not_enabled(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Invalid_Mode(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Objectlock_Invalid_Mode(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Invalid_Days(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Objectlock_Invalid_Days(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Bucket_Enabled(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Versioning_not_enabled(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_lock = true
+	}
+	`, cosServiceName, bucketName, region, storageClass)
+}
+func testAccCheckIBMCosBucket_Objectlock_Without_Rule(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+		   objectlockenabled = "Enabled"
+		 }	   
+	   }
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Days(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				days = 4
+				}
+			}
+		  }   
+	   }
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Years(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				years = 1
+				}
+			}
+		  }   
+	   }
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Empty(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+		  }   
+	}
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Without_Mode(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				years = 1
+				}
+			}
+		  }   
+	}
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_With_Mode_Only(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				}
+			}
+		  }   
+	}
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Invalid_Mode(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "INVALID"
+				years = 1
+				}
+			}
+		  }   
+	   }
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Invalid_Days(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    cross_region_location = "%s"
+		storage_class         = "%s"
+		object_versioning {
+			enable  = true
+		}
+		object_lock = true
+	}
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.cross_region_location
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				days = -1
+				}
+			}
+		  }   
+	   }
+	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Existing_bucket(bucketCrn string, region string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = "%s"
+		bucket_location = "%s"
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				days = 4
+				}
+			}
+		  }   
+	   }
+	`, bucketCrn, region)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Years(bucketCrn string, region string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = "%s"
+		bucket_location = "%s"
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				years = 4
+				}
+			}
+		  }   
+	   }
+	`, bucketCrn, region)
+}
+func testAccCheckIBMCosBucket_Objectlock_Updated_Years(bucketCrn string, region string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = "%s"
+		bucket_location = "%s"
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				years = 6
+				}
+			}
+		  }   
+	   }
+	`, bucketCrn, region)
+}
+
+func testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Days(bucketCrn string, region string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = "%s"
+		bucket_location = "%s"
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				days = 6
+				}
+			}
+		  }   
+	   }
+	`, bucketCrn, region)
+}
+func testAccCheckIBMCosBucket_Objectlock_Updated_Days(bucketCrn string, region string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+		bucket_crn      = "%s"
+		bucket_location = "%s"
+		object_lock_configuration{
+			objectlockenabled = "Enabled"
+			objectlockrule{
+			  defaultretention{
+				mode = "COMPLIANCE"
+				days = 9
+				}
+			}
+		  }   
+	   }
+	`, bucketCrn, region)
+}
