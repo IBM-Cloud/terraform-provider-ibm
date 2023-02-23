@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_iam_credentials_secret_metadata (Beta)"
+page_title: "IBM : ibm_sm_iam_credentials_secret_metadata"
 description: |-
   Get information about IAMCredentialsSecretMetadata
 subcategory: "Secrets Manager"
@@ -16,7 +16,7 @@ Provides a read-only data source for IAMCredentialsSecretMetadata. You can then 
 data "ibm_sm_iam_credentials_secret_metadata" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
-  id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+  secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 ```
 
@@ -24,7 +24,7 @@ data "ibm_sm_iam_credentials_secret_metadata" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, String) The ID of the secret.
+* `secret_id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 
 ## Attribute Reference

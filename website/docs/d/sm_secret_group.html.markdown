@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_secret_group (Beta)"
+page_title: "IBM : ibm_sm_secret_group"
 description: |-
   Get information about SecretGroup
 subcategory: "Secrets Manager"
@@ -16,7 +16,7 @@ Provides a read-only data source for SecretGroup. You can then reference the fie
 data "ibm_sm_secret_group" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
-  id = ibm_sm_secret_group.sm_secret_group_instance.secretGroup_id
+  secret_grouop_id = ibm_sm_secret_group.sm_secret_group_instance.secretGroup_id
 }
 ```
 
@@ -24,7 +24,7 @@ data "ibm_sm_secret_group" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, String) The ID of the secret group.
+* `secret_grouop_id` - (Required, String) The ID of the secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 ## Attribute Reference

@@ -36,7 +36,7 @@ func TestAccIbmSmEnRegistrationBasic(t *testing.T) {
 func testAccCheckIbmSmEnRegistrationConfigBasic() string {
 	return fmt.Sprintf(`
 
-		resource "ibm_sm_en_registration" "ibm_sm_en_registration"{
+		resource "ibm_sm_en_registration" "sm_en_registration"{
   			instance_id   = "%s"
   			region        = "%s"
   			event_notifications_instance_crn = "%s"

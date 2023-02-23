@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_secret_groups (Beta)"
+page_title: "IBM : ibm_sm_secret_groups"
 description: |-
   Get information about SecretGroupCollection
 subcategory: "Secrets Manager"

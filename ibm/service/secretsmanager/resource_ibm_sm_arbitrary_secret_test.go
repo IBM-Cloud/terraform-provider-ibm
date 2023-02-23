@@ -31,11 +31,11 @@ func TestAccIbmSmArbitrarySecretBasic(t *testing.T) {
 					testAccCheckIbmSmArbitrarySecretExists("ibm_sm_arbitrary_secret.sm_arbitrary_secret", conf),
 				),
 			},
-			//resource.TestStep{
-			//	ResourceName:      "ibm_sm_arbitrary_secret.sm_arbitrary_secret",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//},
+			resource.TestStep{
+				ResourceName:      "ibm_sm_arbitrary_secret.sm_arbitrary_secret",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -72,7 +72,9 @@ func testAccCheckIbmSmArbitrarySecretExists(n string, obj secretsmanagerv2.Arbit
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		arbitrarySecretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
 		if err != nil {
@@ -100,7 +102,9 @@ func testAccCheckIbmSmArbitrarySecretDestroy(s *terraform.State) error {
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		// Try to find the key
 		_, response, err := secretsManagerClient.GetSecret(getSecretOptions)
