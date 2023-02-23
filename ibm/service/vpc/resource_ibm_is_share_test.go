@@ -43,7 +43,9 @@ func TestAccIbmIsShareAllArgs(t *testing.T) {
 
 	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	shareTargetName := fmt.Sprintf("tf-fs-tg-name-%d", acctest.RandIntRange(10, 100))
+	shareTargetName1 := fmt.Sprintf("tf-fs-tg-name1-%d", acctest.RandIntRange(10, 100))
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	vpcname1 := fmt.Sprintf("tf-vpc-name1-%d", acctest.RandIntRange(10, 100))
 	size := acctest.RandIntRange(10, 50)
 	sizeUpdate := acctest.RandIntRange(51, 70)
 	nameUpdate := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
@@ -54,7 +56,7 @@ func TestAccIbmIsShareAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsShareDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIsShareConfig(vpcname, name, size, shareTargetName),
+				Config: testAccCheckIbmIsShareConfig(vpcname, vpcname1, name, size, shareTargetName, shareTargetName1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
 					//resource.TestCheckResourceAttr("ibm_is_share.is_share", "iops", strconv.Itoa(iops)),
@@ -65,7 +67,7 @@ func TestAccIbmIsShareAllArgs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmIsShareConfig(vpcname, nameUpdate, sizeUpdate, shareTargetName),
+				Config: testAccCheckIbmIsShareConfig(vpcname, vpcname1, nameUpdate, sizeUpdate, shareTargetName, shareTargetName1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					//resource.TestCheckResourceAttr("ibm_is_share.is_share", "iops", strconv.Itoa(iops)),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", nameUpdate),
@@ -147,7 +149,7 @@ func testAccCheckIbmIsShareConfigBasic(name string) string {
 	`, name, acc.ShareProfileName)
 }
 
-func testAccCheckIbmIsShareConfig(vpcName, name string, size int, shareTergetName string) string {
+func testAccCheckIbmIsShareConfig(vpcName, vpcName1, name string, size int, shareTergetName, shareTergetName1 string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "group" {
@@ -156,19 +158,26 @@ func testAccCheckIbmIsShareConfig(vpcName, name string, size int, shareTergetNam
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+	}
 	resource "ibm_is_share" "is_share" {
 		name = "%s"
 		profile = "%s"
 		resource_group = data.ibm_resource_group.group.id
 		size = %d
-		share_target_prototype {
+		mount_targets {
 			name = "%s"
 			vpc = ibm_is_vpc.testacc_vpc.id
+		}
+		mount_targets {
+			name = "%s"
+			vpc = ibm_is_vpc.testacc_vpc1.id
 		}
 		zone = "us-south-2"
 		tags = ["sr01", "sr02"]
 	}
-	`, vpcName, name, acc.ShareProfileName, size, shareTergetName)
+	`, vpcName, vpcName1, name, acc.ShareProfileName, size, shareTergetName, shareTergetName1)
 }
 
 func testAccCheckIbmIsShareConfigReplica(vpcName, name string, size int, shareTergetName, replicaName string) string {

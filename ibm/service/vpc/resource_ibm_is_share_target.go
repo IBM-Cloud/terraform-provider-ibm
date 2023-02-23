@@ -166,7 +166,7 @@ func resourceIbmIsShareMountTargetRead(context context.Context, d *schema.Resour
 	if err = d.Set("name", *shareTarget.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	
+
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}

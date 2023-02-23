@@ -120,7 +120,7 @@ func ResourceIbmIsShare() *schema.Resource {
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "ID of this share target.",
 						},
 						"name": &schema.Schema{
@@ -253,7 +253,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									},
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "ID of this share target.",
 									},
 									"name": &schema.Schema{
@@ -768,13 +768,54 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 	targets := []map[string]interface{}{}
 	if share.Targets != nil {
 		for _, targetsItem := range share.Targets {
-			targetsItemMap := dataSourceShareTargetsToMap(targetsItem)
+			GetShareMountTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+			GetShareMountTargetOptions.SetShareID(d.Id())
+			GetShareMountTargetOptions.SetID(*targetsItem.ID)
+
+			shareTarget, response, err := vpcClient.GetShareMountTargetWithContext(context, GetShareMountTargetOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				log.Printf("[DEBUG] GetShareMountTargetWithContext failed %s\n%s", err, response)
+				return diag.FromErr(err)
+			}
+
+			targetsItemMap, err := ShareMountTargetToMap(context, vpcClient, d, *shareTarget)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			targets = append(targets, targetsItemMap)
 		}
 	}
 	if err = d.Set("mount_targets", targets); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting targets: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting mount_targets: %s", err))
 	}
+
+	replicaShare := []map[string]interface{}{}
+	if share.ReplicaShare != nil && share.ReplicaShare.ID != nil {
+		getShareOptions := &vpcbetav1.GetShareOptions{}
+
+		getShareOptions.SetID(*share.ReplicaShare.ID)
+
+		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		replicaShareItem, err := ShareReplicaToMap(context, vpcClient, d, meta, *share)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		replicaShare = append(replicaShare, replicaShareItem)
+		d.Set("replica_share", replicaShare)
+	}
+
 	if share.Zone != nil {
 		if err = d.Set("zone", *share.Zone.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting zone: %s", err))
@@ -838,11 +879,6 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		status_reasons = append(status_reasons, status_reason)
 	}
 	d.Set("replication_status_reasons", status_reasons)
-	// tags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isUserTagType)
-	// if err != nil {
-	// 	log.Printf(
-	// 		"Error getting shares (%s) tags: %s", d.Id(), err)
-	// }
 
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isAccessTagType)
 	if err != nil {
@@ -865,6 +901,45 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	getShareOptions := &vpcbetav1.GetShareOptions{}
+
+	getShareOptions.SetID(d.Id())
+
+	_, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
+	}
+	eTag := response.Headers.Get("ETag")
+
+	err = shareUpdate(vpcClient, context, d, meta, "share", d.Id(), eTag)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if d.HasChange("replica_share") {
+		getShareOptions := &vpcbetav1.GetShareOptions{}
+		getShareOptions.SetID(d.Id())
+
+		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		eTag := response.Headers.Get("ETag")
+		err = shareUpdate(vpcClient, context, d, meta, "replica_share", *share.ReplicaShare.ID, eTag)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	updateShareOptions := &vpcbetav1.UpdateShareOptions{}
@@ -1013,7 +1088,6 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 		}
-
 	}
 
 	if share.ReplicationRole != nil && *share.ReplicationRole == IsFileShareReplicationRoleSource && share.ReplicaShare != nil {
@@ -1121,4 +1195,242 @@ func isWaitForShareDelete(context context.Context, vpcClient *vpcbetav1.VpcbetaV
 
 func suppressCronSpecDiff(k, old, new string, d *schema.ResourceData) bool {
 	return d.Get("latest_job.0.type").(string) == "replication_failover" && d.Get("latest_job.0.status").(string) == "succeeded"
+}
+
+func ShareReplicaToMap(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, meta interface{}, shareReplica vpcbetav1.Share) (map[string]interface{}, error) {
+	shareReplicaMap := map[string]interface{}{}
+
+	shareReplicaMap["crn"] = shareReplica.CRN
+	shareReplicaMap["href"] = shareReplica.Href
+	shareReplicaMap["name"] = shareReplica.Name
+	shareReplicaMap["id"] = shareReplica.ID
+	shareReplicaMap["iops"] = shareReplica.Iops
+	shareReplicaMap["replication_cron_spec"] = shareReplica.ReplicationCronSpec
+	shareReplicaMap["replication_role"] = shareReplica.ReplicationRole
+	shareReplicaMap["profile"] = shareReplica.Profile.Name
+	shareReplicaMap["replication_status"] = shareReplica.ReplicationStatus
+	shareReplicaMap["zone"] = shareReplica.Zone.Name
+	status_reasons := []map[string]interface{}{}
+	for _, status_reason_item := range shareReplica.ReplicationStatusReasons {
+		status_reason := make(map[string]interface{})
+		status_reason["code"] = status_reason_item.Code
+		status_reason["message"] = status_reason_item.Message
+		if status_reason_item.MoreInfo != nil {
+			status_reason["more_info"] = status_reason_item.MoreInfo
+		}
+		status_reasons = append(status_reasons, status_reason)
+	}
+	shareReplicaMap["replication_status_reasons"] = status_reasons
+
+	targets := []map[string]interface{}{}
+	for _, mountTarget := range shareReplica.Targets {
+		GetShareMountTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+		GetShareMountTargetOptions.SetShareID(*shareReplica.ID)
+		GetShareMountTargetOptions.SetID(*mountTarget.ID)
+
+		shareTarget, response, err := vpcClient.GetShareMountTargetWithContext(context, GetShareMountTargetOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil, err
+			}
+			log.Printf("[DEBUG] GetShareMountTargetWithContext failed %s\n%s", err, response)
+			return nil, err
+		}
+		targetsItemMap, err := ShareMountTargetToMap(context, vpcClient, d, *shareTarget)
+		if err != nil {
+			return nil, err
+		}
+		targets = append(targets, targetsItemMap)
+	}
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *shareReplica.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error getting shares (%s) access tags: %s", d.Id(), err)
+	}
+	shareReplicaMap[isFileShareAccessTags] = accesstags
+	// d.Set(isFileShareTags, tags)
+	if shareReplica.UserTags != nil {
+		shareReplicaMap[isFileShareTags] = shareReplica.UserTags
+	}
+
+	shareReplicaMap["mount_targets"] = targets
+
+	return shareReplicaMap, nil
+}
+
+func ShareMountTargetToMap(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareMountTarget vpcbetav1.ShareMountTarget) (map[string]interface{}, error) {
+	mountTarget := map[string]interface{}{}
+
+	mountTarget["name"] = *shareMountTarget.Name
+	mountTarget["id"] = *shareMountTarget.ID
+	mountTarget["href"] = *shareMountTarget.Href
+	mountTarget["resource_type"] = *shareMountTarget.ResourceType
+	mountTarget["vpc"] = *shareMountTarget.VPC.ID
+	return mountTarget, nil
+}
+
+func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *schema.ResourceData, meta interface{}, shareType, shareId, eTag string) error {
+	updateShareOptions := &vpcbetav1.UpdateShareOptions{}
+
+	updateShareOptions.SetID(shareId)
+	updateShareOptions.IfMatch = &eTag
+
+	hasChange := false
+	hasSizeChanged := false
+	sharePatchModel := &vpcbetav1.SharePatch{}
+	shareNameSchema := ""
+	shareIopsSchema := ""
+	shareProfileSchema := ""
+	shareTagsSchema := ""
+	shareMountTargetSchema := ""
+	accessTagsSchema := ""
+	shareCRN := ""
+	if shareType == "share" {
+		shareNameSchema = "name"
+		shareIopsSchema = "iops"
+		shareProfileSchema = "profile"
+		shareTagsSchema = "tags"
+		shareMountTargetSchema = "mount_targets"
+		accessTagsSchema = "access_tags"
+		shareCRN = "crn"
+	} else {
+		shareNameSchema = "replica_share.0.name"
+		shareIopsSchema = "replica_share.0.iops"
+		shareProfileSchema = "replica_share.0.profile"
+		shareTagsSchema = "replica_share.0.tags"
+		shareMountTargetSchema = "replica_share.0.mount_targets"
+		accessTagsSchema = "replica_share.0.access_tags"
+		shareCRN = "replica_share.0.crn"
+	}
+	if d.HasChange(shareNameSchema) {
+		name := d.Get(shareNameSchema).(string)
+		sharePatchModel.Name = &name
+		hasChange = true
+	}
+	if shareType == "share" {
+		if d.HasChange("size") {
+			size := int64(d.Get("size").(int))
+			hasSizeChanged = true
+			sharePatchModel.Size = &size
+			hasChange = true
+		}
+	}
+
+	if d.HasChange(shareIopsSchema) {
+		iops := int64(d.Get(shareIopsSchema).(int))
+		sharePatchModel.Iops = &iops
+		hasChange = true
+	}
+
+	if d.HasChange(shareProfileSchema) {
+		_, new := d.GetChange(shareProfileSchema)
+		// if old.(string) == "custom" {
+		// 	if d.Get("iops").(int) != 0 {
+		// 		log.Println("iops there")
+		// 	} else {
+		// 		log.Println("iops not there")
+		// 	}
+		// }
+		profile := new.(string)
+		sharePatchModel.Profile = &vpcbetav1.ShareProfileIdentity{
+			Name: &profile,
+		}
+		hasChange = true
+	}
+
+	if d.HasChange(shareTagsSchema) {
+		var userTags *schema.Set
+		if v, ok := d.GetOk(shareTagsSchema); ok {
+
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				schematicTags := os.Getenv("IC_ENV_TAGS")
+				var envTags []string
+				if schematicTags != "" {
+					envTags = strings.Split(schematicTags, ",")
+					userTagsArray = append(userTagsArray, envTags...)
+				}
+
+				sharePatchModel.UserTags = userTagsArray
+			}
+		}
+	}
+	if hasChange {
+
+		sharePatch, err := sharePatchModel.AsPatch()
+
+		if err != nil {
+			log.Printf("[DEBUG] SharePatch AsPatch failed %s", err)
+			return err
+		}
+		updateShareOptions.SetSharePatch(sharePatch)
+		if hasSizeChanged {
+			_, err = isWaitForShareAvailable(context, vpcClient, d.Id(), d, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+		}
+		_, response, err := vpcClient.UpdateShareWithContext(context, updateShareOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateShareWithContext failed %s\n%s", err, response)
+			return err
+		}
+		_, err = isWaitForShareAvailable(context, vpcClient, d.Id(), d, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return err
+		}
+	}
+	if d.HasChange(shareMountTargetSchema) && !d.IsNewResource() {
+		target_prototype := d.Get(shareMountTargetSchema).([]interface{})
+		for targetIdx := range target_prototype {
+			targetName := fmt.Sprintf("%s.%d.name", shareMountTargetSchema, targetIdx)
+			targetId := fmt.Sprintf("%s.%d.id", shareMountTargetSchema, targetIdx)
+			mountTargetId := d.Get(targetId).(string)
+			if d.HasChange(targetName) {
+				updateShareTargetOptions := &vpcbetav1.UpdateShareMountTargetOptions{}
+
+				updateShareTargetOptions.SetShareID(shareId)
+				updateShareTargetOptions.SetID(mountTargetId)
+
+				shareTargetPatchModel := &vpcbetav1.ShareMountTargetPatch{}
+
+				name := d.Get(targetName).(string)
+				shareTargetPatchModel.Name = &name
+
+				shareTargetPatch, err := shareTargetPatchModel.AsPatch()
+				if err != nil {
+					log.Printf("[DEBUG] ShareTargetPatch AsPatch failed %s", err)
+					return err
+				}
+				updateShareTargetOptions.SetShareMountTargetPatch(shareTargetPatch)
+				_, response, err := vpcClient.UpdateShareMountTargetWithContext(context, updateShareTargetOptions)
+				if err != nil {
+					log.Printf("[DEBUG] UpdateShareTargetWithContext failed %s\n%s", err, response)
+					return err
+				}
+				_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	if d.HasChange(accessTagsSchema) {
+		oldList, newList := d.GetChange(accessTagsSchema)
+		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(shareCRN).(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error updating shares (%s) access tags: %s", d.Id(), err)
+		}
+	}
+	return nil
 }
