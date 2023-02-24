@@ -62,6 +62,7 @@ var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var ISZoneName3 string
 var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
@@ -494,6 +495,12 @@ func init() {
 	if ISZoneName2 == "" {
 		ISZoneName2 = "us-south-2"
 		fmt.Println("[INFO] Set the environment variable SL_ZONE_2 for testing ibm_is_zone datasource else it is set to default value 'us-south-2'")
+	}
+
+	ISZoneName3 = os.Getenv("SL_ZONE_3")
+	if ISZoneName3 == "" {
+		ISZoneName3 = "us-south-3"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE_3 for testing ibm_is_zone datasource else it is set to default value 'us-south-3'")
 	}
 
 	ISCIDR = os.Getenv("SL_CIDR")
