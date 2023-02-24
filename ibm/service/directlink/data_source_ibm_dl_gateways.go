@@ -32,6 +32,45 @@ func DataSourceIBMDLGateways() *schema.Resource {
 							Computed:    true,
 							Description: "Id of the data source gateways",
 						},
+						dlChangeRequestUpdates: {
+							Type:        schema.TypeList,
+							MinItems:    0,
+							MaxItems:    1,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Specify attribute updates being approved or rejected",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									dlSpeedMbps: {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Gateway speed in megabits per second",
+									},
+									dlBgpIbmCidr: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "BGP IBM CIDR",
+									},
+									dlBgpCerCidr: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "BGP customer edge router CIDR",
+									},
+									dlBgpAsn: {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "BGP ASN",
+									},
+									dlVlan: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "VLAN allocated for this gateway",
+									},
+								},
+							},
+						},
 						dlAsPrepends: {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -76,6 +115,16 @@ func DataSourceIBMDLGateways() *schema.Resource {
 									},
 								},
 							},
+						},
+						dlDefault_export_route_filter: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
+						},
+						dlDefault_import_route_filter: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
 						},
 						dlAuthenticationKey: {
 							Type:        schema.TypeString,
@@ -132,6 +181,12 @@ func DataSourceIBMDLGateways() *schema.Resource {
 							Computed:    true,
 							Description: "Gateway BGP status",
 						},
+						dlBgpStatusUpdatedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Optional:    true,
+							Description: "Date and time BGP status was updated",
+						},
 						dlCompletionNoticeRejectReason: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -166,6 +221,12 @@ func DataSourceIBMDLGateways() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Gateway link status",
+						},
+						dlLinkStatusUpdatedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Optional:    true,
+							Description: "Date and time Link status was updated",
 						},
 						dlLocationDisplayName: {
 							Type:        schema.TypeString,
@@ -363,6 +424,9 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 		if instance.BgpStatus != nil {
 			gateway[dlBgpStatus] = *instance.BgpStatus
 		}
+		if instance.BgpStatusUpdatedAt != nil {
+			gateway[dlBgpStatusUpdatedAt] = instance.BgpStatusUpdatedAt.String()
+		}
 		if instance.LocationName != nil {
 			gateway[dlLocationName] = *instance.LocationName
 		}
@@ -381,12 +445,21 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 		if instance.LinkStatus != nil {
 			gateway[dlLinkStatus] = *instance.LinkStatus
 		}
+		if instance.LinkStatusUpdatedAt != nil {
+			gateway[dlLinkStatusUpdatedAt] = instance.LinkStatusUpdatedAt.String()
+		}
 		if instance.CreatedAt != nil {
 			gateway[dlCreatedAt] = instance.CreatedAt.String()
 		}
 		if instance.ResourceGroup != nil {
 			rg := instance.ResourceGroup
 			gateway[dlResourceGroup] = *rg.ID
+		}
+		if instance.DefaultExportRouteFilter != nil {
+			gateway[dlDefault_export_route_filter] = *instance.DefaultExportRouteFilter
+		}
+		if instance.DefaultImportRouteFilter != nil {
+			gateway[dlDefault_import_route_filter] = *instance.DefaultImportRouteFilter
 		}
 
 		//Show the BFD Config parameters if set
@@ -481,6 +554,29 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 			gatewayChangeRequestIntf := instance.ChangeRequest
 			gatewayChangeRequest := gatewayChangeRequestIntf.(*directlinkv1.GatewayChangeRequest)
 			gateway[dlChangeRequest] = *gatewayChangeRequest.Type
+
+			updateList := make([]map[string]interface{}, 0)
+			for _, updatechangeReq := range gatewayChangeRequest.Updates {
+				updatechangeReqList := updatechangeReq.(*directlinkv1.GatewayChangeRequestUpdatesItem)
+				update := map[string]interface{}{}
+				if updatechangeReqList.SpeedMbps != nil {
+					update[dlSpeedMbps] = *updatechangeReqList.SpeedMbps
+				}
+				if updatechangeReqList.BgpIbmCidr != nil {
+					update[dlBgpIbmCidr] = *updatechangeReqList.BgpIbmCidr
+				}
+				if updatechangeReqList.BgpCerCidr != nil {
+					update[dlBgpCerCidr] = *updatechangeReqList.BgpCerCidr
+				}
+				if updatechangeReqList.BgpAsn != nil {
+					update[dlBgpAsn] = *updatechangeReqList.BgpAsn
+				}
+				if updatechangeReqList.Vlan != nil {
+					update[dlVlan] = *updatechangeReqList.Vlan
+				}
+				updateList = append(updateList, update)
+			}
+			d.Set(dlChangeRequestUpdates, updateList)
 		}
 
 		if instance.AuthenticationKey != nil {
