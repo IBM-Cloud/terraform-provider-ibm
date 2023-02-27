@@ -494,6 +494,15 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("key_algorithm", secret.KeyAlgorithm); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting key_algorithm: %s", err))
 	}
+	if err = d.Set("ca", secret.Ca); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting ca: %s", err))
+	}
+	if err = d.Set("dns", secret.Dns); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
+	}
+	if err = d.Set("bundle_certs", secret.BundleCerts); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting bundle_certs: %s", err))
+	}
 	rotationMap, err := resourceIbmSmPublicCertificateRotationPolicyToMap(secret.Rotation)
 	if err != nil {
 		return diag.FromErr(err)
