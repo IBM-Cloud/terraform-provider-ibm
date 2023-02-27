@@ -332,6 +332,9 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Description: "(Optional) The PEM-encoded private key to associate with the certificate.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(35 * time.Minute),
+		},
 	}
 }
 
