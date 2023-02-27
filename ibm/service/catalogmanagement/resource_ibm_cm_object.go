@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -318,7 +319,13 @@ func resourceIBMCmObjectRead(context context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
 	}
 	if catalogObject.Tags != nil {
-		if err = d.Set("tags", catalogObject.Tags); err != nil {
+		modifiedTags := []string{}
+		for _, tag := range catalogObject.Tags {
+			if !strings.HasPrefix(tag, "svc:") && !strings.HasPrefix(tag, "fqdn:") && tag != *catalogObject.ParentID {
+				modifiedTags = append(modifiedTags, tag)
+			}
+		}
+		if err = d.Set("tags", modifiedTags); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 		}
 	}
