@@ -32,19 +32,86 @@ func DataSourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Zone name",
 			},
-
+			isVolumesActive: &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether a running virtual server instance has an attachment to this volume.",
+			},
+			isVolumeAttachmentState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The attachment state of the volume.",
+			},
 			isVolumeBandwidth: {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The maximum bandwidth (in megabits per second) for the volume",
 			},
-
+			isVolumesBusy: &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this volume is performing an operation that must be serialized. If an operation specifies that it requires serialization, the operation will fail unless this property is `false`.",
+			},
+			isVolumesCreatedAt: &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time that the volume was created.",
+			},
 			isVolumeResourceGroup: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Resource group name",
 			},
+			isVolumesOperatingSystem: &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The operating system associated with this volume. If absent, this volume was notcreated from an image, or the image did not include an operating system.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isVolumeArchitecture: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The operating system architecture.",
+						},
+						isVolumeDHOnly: &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups.",
+						},
+						isVolumeDisplayName: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A unique, display-friendly name for the operating system.",
+						},
+						isVolumeOSFamily: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The software family for this operating system.",
+						},
 
+						isVolumesOperatingSystemHref: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this operating system.",
+						},
+						isVolumesOperatingSystemName: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this operating system.",
+						},
+						isVolumeOSVendor: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The vendor of the operating system.",
+						},
+						isVolumeOSVersion: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The major release version of this operating system.",
+						},
+					},
+				},
+			},
 			isVolumeProfileName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -251,8 +318,29 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 	vol := allrecs[0]
 	d.SetId(*vol.ID)
+	if vol.Active != nil {
+		d.Set(isVolumesActive, vol.Active)
+	}
+	if vol.AttachmentState != nil {
+		d.Set(isVolumeAttachmentState, vol.AttachmentState)
+	}
 	d.Set(isVolumeBandwidth, int(*vol.Bandwidth))
+	if vol.Busy != nil {
+		d.Set(isVolumesBusy, vol.Busy)
+	}
+	if vol.Capacity != nil {
+		d.Set(isVolumesCapacity, vol.Capacity)
+	}
+	if vol.CreatedAt != nil {
+		d.Set(isVolumesCreatedAt, flex.DateTimeToString(vol.CreatedAt))
+	}
 	d.Set(isVolumeName, *vol.Name)
+	if vol.OperatingSystem != nil {
+		operatingSystemList := []map[string]interface{}{}
+		operatingSystemMap := dataSourceVolumeCollectionVolumesOperatingSystemToMap(*vol.OperatingSystem)
+		operatingSystemList = append(operatingSystemList, operatingSystemMap)
+		d.Set(isVolumesOperatingSystem, operatingSystemList)
+	}
 	d.Set(isVolumeProfileName, *vol.Profile.Name)
 	d.Set(isVolumeZone, *vol.Zone.Name)
 	if vol.EncryptionKey != nil {

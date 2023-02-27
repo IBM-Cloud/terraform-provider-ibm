@@ -717,30 +717,29 @@ func TestAccIBMISInstance_ByVolume(t *testing.T) {
 	var instance string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-instnace1-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
-
+	sname := fmt.Sprintf("tfsnapshot-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMISInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceByVolume(vpcname, subnetname, sshname, publicKey, volname, name),
+				Config: testAccCheckIBMISInstanceByVolume(vpcname, subnetname, sshname, publicKey, volname, name, name1, sname),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					testAccCheckIBMISInstanceExists("ibm_is_instance.instancebyvol", instance),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance.testacc_instance", "name", name),
+						"ibm_is_instance.instancebyvol", "name", name1),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+						"ibm_is_instance.instancebyvol", "zone", acc.ISZoneName),
 					resource.TestCheckResourceAttrSet(
-						"data.ibm_is_dedicated_host.dhost", "instances.#"),
-					resource.TestCheckResourceAttr(
-						"data.ibm_is_dedicated_host.dhost", "instances.0.name", name),
+						"ibm_is_instance.instancebyvol", "boot_volume.0.volume_id"),
 				),
 			},
 		},
@@ -1632,31 +1631,10 @@ func testAccCheckIBMISInstancePlacement(vpcname, subnetname, sshname, publicKey,
 	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, volName, acc.ISZoneName, name, acc.IsImage, acc.InstanceProfileName, acc.DedicatedHostGroupID, acc.ISZoneName, acc.DedicatedHostName)
 }
 
-func testAccCheckIBMISInstanceByVolume(vpcname, subnetname, sshname, publicKey, volName, name string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
-		name = "%s"
-	  }
+func testAccCheckIBMISInstanceByVolume(vpcname, subnetname, sshname, publicKey, volName, name, name1, sname string) string {
+	return testAccCheckIBMISVolumeConfigSnapshot(vpcname, subnetname, sshname, publicKey, volName, name, sname) + fmt.Sprintf(`
 	  
-	  resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
-		ipv4_cidr_block = "%s"
-	  }
-	  
-	  resource "ibm_is_ssh_key" "testacc_sshkey" {
-		name       = "%s"
-		public_key = "%s"
-	  }
-	  
-	  resource "ibm_is_volume" "storage" {
-		name    = "%s"
-		profile = "10iops-tier"
-		zone    = "%s"
-	  }
-	  
-	  resource "ibm_is_instance" "testacc_instance" {
+	  resource "ibm_is_instance" "instancebyvol" {
 		name    = "%s"
 		profile = "%s"
 		primary_network_interface {
@@ -1671,7 +1649,7 @@ func testAccCheckIBMISInstanceByVolume(vpcname, subnetname, sshname, publicKey, 
 		}
 	  }
 	 
-	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, volName, acc.ISZoneName, name, acc.InstanceProfileName, acc.ISZoneName)
+	  `, name1, acc.InstanceProfileName, acc.ISZoneName)
 }
 
 func testAccCheckIBMISInstanceVolumeAutoDelete(vpcname, subnetname, sshname, publicKey, volName, name string) string {

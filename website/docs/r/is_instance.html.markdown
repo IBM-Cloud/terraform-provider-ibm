@@ -420,7 +420,11 @@ Review the argument references that you can specify for your resource.
   - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the volume to be used for creating boot volume attachment
     
     ~> **Note:**
-    `snapshot` conflicts with `image` id, `instance_template` and `catalog_offering`
+    `snapshot` conflicts with `image` id, `instance_template` , `catalog_offering` and `boot_volume.volume_id`
+  - `volume_id` - (Optional, Forces new resource, String) The ID of the volume to be used for creating boot volume attachment
+    ~> **Note:** 
+
+     - `volume_id` conflicts with `image` id, `instance_template` ,`boot_volume.snapshot`, `catalog_offering`, 
   - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `catalog_offering` - (Optional, List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
   Nested scheme for `catalog_offering`:
@@ -430,10 +434,6 @@ Review the argument references that you can specify for your resource.
     ~> **Note:**
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
-- `volume_id` - (Optional, Forces new resource, String) The ID of the volume to be used for creating boot volume attachment
-    ~> **Note:** 
-
-     - `volume_id` conflicts with `image` id, `instance_template` ,`boot_volume.snapshot`, `boot_volume.name`, `boot_volume.encryption`, 
 - `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 

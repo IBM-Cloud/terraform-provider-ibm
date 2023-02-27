@@ -629,7 +629,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Computed:      true,
 							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
 							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							Description:   "The unique identifier for this volume",
 						},
 						isInstanceVolAttVolAutoDelete: {
@@ -652,6 +652,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 							Optional:      true,
 							ForceNew:      true,
+							Computed:      true,
 						},
 						isInstanceBootEncryption: {
 							Type:             schema.TypeString,
@@ -1131,7 +1132,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -1516,7 +1517,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -1899,7 +1900,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -2524,7 +2525,7 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -2638,18 +2639,20 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
 		volumeId, ok := bootvol[isInstanceBootVolumeId]
-		volumeIdStr := volumeId.(string)
 
+		volumeIdStr := volumeId.(string)
+		bootVolAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{}
 		if ok && volumeIdStr != "" {
 			volumeIdentity := &vpcv1.VolumeIdentity{
 				ID: &volumeIdStr,
 			}
-			deletebool := true
-			instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{
-				DeleteVolumeOnInstanceDelete: &deletebool,
-				Volume:                       volumeIdentity,
-			}
+			bootVolAttachment.Volume = volumeIdentity
 		}
+		if autoDeleteIntf, ok := d.GetOk("boot_volume.0.auto_delete_volume"); ok {
+			autoDelete := autoDeleteIntf.(bool)
+			bootVolAttachment.DeleteVolumeOnInstanceDelete = &autoDelete
+		}
+		instanceproto.BootVolumeAttachment = bootVolAttachment
 	}
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
@@ -2861,7 +2864,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -2870,6 +2873,9 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
 			Enabled: &metadataServiceEnabled,
 		}
+	}
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
 	}
 
 	options := &vpcv1.CreateInstanceOptions{
@@ -2898,6 +2904,14 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
