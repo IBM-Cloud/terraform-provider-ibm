@@ -117,9 +117,13 @@ const (
 	isInstanceDefaultTrustedProfileTarget   = "default_trusted_profile_target"
 	isInstanceMetadataServiceEnabled        = "metadata_service_enabled"
 
-	isInstanceAccessTags    = "access_tags"
-	isInstanceUserTagType   = "user"
-	isInstanceAccessTagType = "access"
+	isInstanceAccessTags                  = "access_tags"
+	isInstanceUserTagType                 = "user"
+	isInstanceAccessTagType               = "access"
+	isInstanceMetadataService             = "metadata_service"
+	isInstanceMetadataServiceEnabled1     = "enabled"
+	isInstanceMetadataServiceProtocol     = "protocol"
+	isInstanceMetadataServiceRespHopLimit = "response_hop_limit"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
@@ -819,12 +823,49 @@ func ResourceIBMISInstance() *schema.Resource {
 				},
 			},
 			isInstanceMetadataServiceEnabled: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{isInstanceMetadataService},
+				Deprecated:    "Use metadata_service instead",
+				Description:   "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
 
+			isInstanceMetadataService: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Computed:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{isInstanceMetadataServiceEnabled},
+				Description:   "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceMetadataServiceEnabled1: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+						},
+
+						isInstanceMetadataServiceProtocol: {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							Description:  "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceMetadataServiceProtocol),
+						},
+
+						isInstanceMetadataServiceRespHopLimit: {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							Description:  "The hop limit (IP time to live) for IP response packets from the metadata service",
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceMetadataServiceRespHopLimit),
+						},
+					},
+				},
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -959,7 +1000,24 @@ func ResourceIBMISInstance() *schema.Resource {
 func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 	actions := "stop, start, reboot"
 	host_failure := "restart, stop"
+	metadataServiceProtocol := "https, http"
 	validateSchema := make([]validate.ValidateSchema, 0)
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceMetadataServiceRespHopLimit,
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			Optional:                   true,
+			MinValue:                   "1",
+			MaxValue:                   "64"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceMetadataServiceProtocol,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              metadataServiceProtocol})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isInstanceName,
@@ -1361,6 +1419,10 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		}
 	}
 
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1730,6 +1792,10 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		}
 	}
 
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -2096,6 +2162,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		}
 	}
 
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -2109,10 +2179,6 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	log.Printf("[INFO] Instance : %s", *instance.ID)
 	d.Set(isInstanceStatus, instance.Status)
-
-	if instance.MetadataService != nil {
-		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
-	}
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
@@ -2467,6 +2533,10 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
 			Enabled: &metadataServiceEnabled,
 		}
+	}
+
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
 	}
 
 	options := &vpcv1.CreateInstanceOptions{
@@ -3334,7 +3404,20 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if instance.MetadataService != nil {
 		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+		metadataService := []map[string]interface{}{}
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+		if instance.MetadataService.Protocol != nil {
+			metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+		}
+		if instance.MetadataService.ResponseHopLimit != nil {
+			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+		}
+		metadataService = append(metadataService, metadataServiceMap)
+		d.Set(isInstanceMetadataService, metadataService)
 	}
+
 	if instance.Disks != nil {
 		disks := []map[string]interface{}{}
 		for _, disksItem := range instance.Disks {
@@ -3930,6 +4013,50 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
+
+	if d.HasChange(isInstanceMetadataService) && !d.IsNewResource() {
+		metadataServiceIntf := d.Get(isInstanceMetadataService)
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		metadataServicePatchModel := &vpcv1.InstanceMetadataServicePatch{}
+		instancePatchModel := &vpcv1.InstancePatch{}
+		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
+		if d.HasChange(isInstanceMetadataService + ".0." + isInstanceMetadataServiceEnabled1) {
+			enabledIntf, ok := metadataServiceMap[isInstanceMetadataServiceEnabled1]
+			if ok {
+				enabled := enabledIntf.(bool)
+				metadataServicePatchModel.Enabled = &enabled
+			}
+		}
+		if d.HasChange(isInstanceMetadataService + ".0." + isInstanceMetadataServiceProtocol) {
+			protocolIntf, ok := metadataServiceMap[isInstanceMetadataServiceProtocol]
+			if ok {
+				protocol := protocolIntf.(string)
+				metadataServicePatchModel.Protocol = &protocol
+			}
+		}
+		if d.HasChange(isInstanceMetadataService + ".0." + isInstanceMetadataServiceRespHopLimit) {
+			respHopLimitIntf, ok := metadataServiceMap[isInstanceMetadataServiceRespHopLimit]
+			if ok {
+				respHopLimit := int64(respHopLimitIntf.(int))
+				metadataServicePatchModel.ResponseHopLimit = &respHopLimit
+			}
+		}
+		instancePatchModel.MetadataService = metadataServicePatchModel
+
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		if err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange(isInstanceAvailablePolicyHostFailure) && !d.IsNewResource() {
 
 		updatedoptions := &vpcv1.UpdateInstanceOptions{
@@ -4434,4 +4561,30 @@ func resourceIbmIsInstanceDedicatedHostGroupReferenceDeletedToMap(dedicatedHostG
 	dedicatedHostGroupReferenceDeletedMap["more_info"] = dedicatedHostGroupReferenceDeleted.MoreInfo
 
 	return dedicatedHostGroupReferenceDeletedMap
+}
+
+func GetInstanceMetadataServiceOptions(d *schema.ResourceData) (metadataService *vpcv1.InstanceMetadataServicePrototype) {
+
+	if metadataServiceIntf, ok := d.GetOk(isInstanceMetadataService); ok {
+		metadataService = &vpcv1.InstanceMetadataServicePrototype{}
+		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
+		enabledIntf, ok := metadataServiceMap[isInstanceMetadataServiceEnabled1]
+
+		if ok {
+			enabled := enabledIntf.(bool)
+			metadataService.Enabled = &enabled
+		}
+		protocolIntf, ok := metadataServiceMap[isInstanceMetadataServiceProtocol]
+		if ok && protocolIntf.(string) != "" {
+			protocol := protocolIntf.(string)
+			metadataService.Protocol = &protocol
+		}
+		respHopLimitIntf, ok := metadataServiceMap[isInstanceMetadataServiceRespHopLimit]
+		if ok && int64(respHopLimitIntf.(int)) != 0 {
+			respHopLimit := int64(respHopLimitIntf.(int))
+			metadataService.ResponseHopLimit = &respHopLimit
+		}
+		return
+	}
+	return nil
 }
