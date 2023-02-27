@@ -2417,9 +2417,6 @@ func ResourceSharesValidate(diff *schema.ResourceDiff) error {
 		iops = iopsIntf.(int)
 	}
 
-	if sizeIntf, ok := diff.GetOk("size"); ok {
-		size = sizeIntf.(int)
-	}
 	if diff.HasChange("size") {
 		oldSize, newSize := diff.GetChange("size")
 		if newSize.(int) < oldSize.(int) {
@@ -2429,6 +2426,17 @@ func ResourceSharesValidate(diff *schema.ResourceDiff) error {
 	if profileIntf, ok := diff.GetOk("profile"); ok {
 		profile = profileIntf.(string)
 	}
+	if sizeIntf, ok := diff.GetOk("size"); ok {
+		size = sizeIntf.(int)
+		if profile == "5iops-tier" && size > 9600 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 9600)
+		} else if profile == "10iops-tier" && size > 4800 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 4800)
+		} else if profile == "custom-iops" && size > 16000 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 16000)
+		}
+	}
+
 	if profile != "custom-iops" {
 		if iops != 0 && diff.NewValueKnown("iops") && diff.HasChange("iops") {
 			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")

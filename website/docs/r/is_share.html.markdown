@@ -66,21 +66,21 @@ The following arguments are supported:
   While updating `profile` from 'custom' to a tiered profile make sure to remove `iops` from the configuration.
   
 - `replica_share` - (Optional, List) Configuration for a replica file share to create and associate with this file share.
-  - `iops` - (Optional, Integer)
-  - `name` - (Required, String)
-  - `profile` - (Required, String)
+  - `iops` - (Optional, Integer) The maximum input/output operations per second (IOPS) for the file share. The share must be in the custom profile family, and the value must be in the range supported by the share's specified size.
+  - `name` - (Required, String) The name for this share. The name must not be used by another share in the region.
+  - `profile` - (Required, String) The profile to use for this file share.
   - `replication_cron_spec` - (Required, Forces new resource, String)
   - `mount_targets` - (Optional, List) Mount targets for the replica file share.
-    - `name` - (Optional, String)
-    - `vpc` - (Required, String) 
-  - `zone` - (Required, String)
+    - `name` - (Optional, String) The user-defined name for this share target. Names must be unique within the share the share target resides in.
+    - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.
+  - `zone` - (Required, String) The zone this replica file share will reside in. Must be a different zone in the same region as the source share.
   - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
   - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
 - `resource_group` - (Optional, String) The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 - `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte. 
 - `mount_targets` - (Optional, List) Share targets for the file share.
-  - `name` - (Optional, String) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
-  - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.
+  - `name` - (Optional, String) The user-defined name for this share target. Names must be unique within the share the share target resides in.
+  - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.
 - `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `replication_cron_spec` - (Optional, String) The cron specification for the file share replication schedule.
 - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
@@ -90,33 +90,57 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-
-- `created_at` - The date and time that the file share is created.
-- `crn` - The CRN for this share.
-- `encryption` - The type of encryption used for this file share.
-- `href` - The URL for this share.
-- `id` - The unique identifier of the Share.
-- `last_sync_at` - The date and time that the file share was last synchronized to its replica.This property will be present when the `replication_role` is `source`.
-- `latest_job` - The latest job associated with this file share.This property will be absent if no jobs have been created for this file share. Nested `latest_job` blocks have the following structure:
-  - `status` - The status of the file share job
-  - `status_reasons` - The reasons for the file share job status (if any). Nested `status_reasons` blocks have the following structure:
-    - `code` - A snake case string succinctly identifying the status reason.
-    - `message` - An explanation of the status reason.
-    - `more_info` - Link to documentation about this status reason.
-  - `type` - The type of the file share job
-- `lifecycle_state` - The lifecycle state of the file share.
+- `access_tags`  - (String) Access management tags associated to the share.
+- `created_at` - (String) The date and time that the file share is created.
+- `crn` - (String) The CRN for this share.
+- `encryption` - (String) The type of encryption used for this file share.
+- `href` - (String) The URL for this share.
+- `id` - (String) The unique identifier of the Share.
+- `iops` - (Integer) The maximum input/output operation performance bandwidth per second for the file share.
+- `latest_job` - (List) The latest job associated with this file share.This property will be absent if no jobs have been created for this file share. Nested `latest_job` blocks have the following structure:
+  - `status` - (String) The status of the file share job
+  - `status_reasons` - (List) The reasons for the file share job status (if any). Nested `status_reasons` blocks have the following structure:
+    - `code` - (String) A snake case string succinctly identifying the status reason.
+    - `message` - (String) An explanation of the status reason.
+    - `more_info` - (String) Link to documentation about this status reason.
+  - `type` - (String) The type of the file share job
+- `lifecycle_state` - (String) The lifecycle state of the file share.
+- `replica_share` - (List) Configuration for a replica file share to create and associate with this file share.
+  - `crn` - (String) The CRN for this replica share.
+  - `href` - (String) The href for this replica share.
+  - `id` - (String) The id for this replica share.
+  - `iops` - (Integer) The maximum input/output operations per second (IOPS) for the file share. The share must be in the custom profile family, and the value must be in the range supported by the share's specified size.
+  - `name` - (String) The name for this share. The name must not be used by another share in the region.
+  - `profile` - (String) The profile to use for this file share.
+  - `replication_cron_spec` - (String) The cron specification for the file share replication schedule.
+  - `replication_role` - (String) The replication role of the file share.
+  - `replication_status` - (String) The replication status of the file share.
+  - `replication_status_reasons` - (List) The reasons for the current replication status.
+    - `code` - (String) A snake case string succinctly identifying the status reason
+    - `message` - (String) An explanation of the status reason
+    - `more_info` - (String) Link to documentation about this status reason
+  - `mount_targets` - (List) Mount targets for the replica file share.
+    - `href` - (String) The href for this mount target.
+    - `id` - (String) The id for this mount target.
+    - `name` - (String) The user-defined name for this share target. Names must be unique within the share the share target resides in.
+    - `vpc` - (String) The VPC in which instances can mount the file share using this share target.
+    - `resource_type` - (String) Resource type of mount target
+  - `zone` - (String) The zone this replica file share will reside in.
+  - `access_tags`  - (List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+  - `tags`  - (List of Strings) The list of user tags to attach to the share.
 - `resource_type` - The type of resource referenced.
 - `encryption_key` - The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
-- `iops` - The maximum input/output operation performance bandwidth per second for the file share.
+
 - `resource_group` - The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-- `replication_role`  - The replication role of the file share.
+- `replication_cron_spec` - (String) The cron specification for the file share replication schedule.
+- `replication_role`  - (String) The replication role of the file share.
   
   -> **replication_role could be one of the below:**
    &#x2022; `none`: This share is not participating in replication. </br>
    &#x2022; `replica`: This share is a replication target. </br>
    &#x2022; `source`: This share is a replication source. </br>
   
-- `replication_status` - "The replication status of the file share.
+- `replication_status` - (String) "The replication status of the file share.
 
   -> **replication_status could be one of the below:**
    &#x2022; `initializing`: This share is initializing replication. </br>
@@ -127,18 +151,16 @@ The following attributes are exported:
    &#x2022; `degraded`: This share's replication sync is degraded. </br>
    &#x2022; `sync_pending`: This share is performing a replication sync. </br>
   
-- `replication_status_reasons` - The reasons for the current replication status (if any). Nested `replication_status_reasons` blocks have the following structure:
-  - `code` - A snake case string succinctly identifying the status reason.
-  - `message` - An explanation of the status reason.
-  - `more_info` - Link to documentation about this status reason.
-- `share_targets` - Mount targets for the file share. Nested `share_targets` blocks have the following structure:
-	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-		- `more_info` - Link to documentation about deleted resources.
-	- `href` - The URL for this share target.
-	- `id` - The unique identifier for this share target.
-	- `name` - The user-defined name for this share target.
-	- `resource_type` - The type of resource referenced.
-- `access_tags`  - (String) Access management tags associated to the share.
+- `replication_status_reasons` - (List) The reasons for the current replication status (if any). Nested `replication_status_reasons` blocks have the following structure:
+  - `code` - (String) A snake case string succinctly identifying the status reason.
+  - `message` - (String) An explanation of the status reason.
+  - `more_info` - (String) Link to documentation about this status reason.
+- `mount_targets` - (List) Mount targets for the file share. Nested `mount_targets` blocks have the following structure:
+	- `href` - (String) The href for this mount target.
+  - `id` - (String) The id for this mount target.
+  - `name` - (String) The user-defined name for this mount target.
+  - `vpc` - (String) The VPC in which instances can mount the file share using this mount target.
+  - `resource_type` - (String) Resource type of mount target
 - `tags`  - (String) User tags associated for to the share.
 
 

@@ -110,6 +110,7 @@ func ResourceIbmIsShare() *schema.Resource {
 			"mount_targets": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "The share targets for this file share.Share targets mounted from a replica must be mounted read-only.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -175,7 +176,7 @@ func ResourceIbmIsShare() *schema.Resource {
 						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The CRN for this replica share.",
+							Description: "The href for this replica share.",
 						},
 						"id": {
 							Type:        schema.TypeString,
@@ -243,6 +244,7 @@ func ResourceIbmIsShare() *schema.Resource {
 						"mount_targets": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
+							Computed:    true,
 							Description: "The share targets for this replica file share.Share targets mounted from a replica must be mounted read-only.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -269,7 +271,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									"resource_type": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Resource type of virtual network interface",
+										Description: "Resource type of mount target",
 									},
 								},
 							},
@@ -942,112 +944,6 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	updateShareOptions := &vpcbetav1.UpdateShareOptions{}
-
-	updateShareOptions.SetID(d.Id())
-
-	hasChange := false
-
-	sharePatchModel := &vpcbetav1.SharePatch{}
-	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		sharePatchModel.Name = &name
-		hasChange = true
-	}
-
-	if d.HasChange("size") {
-		size := int64(d.Get("size").(int))
-		sharePatchModel.Size = &size
-		hasChange = true
-	}
-
-	if d.HasChange("iops") {
-		iops := int64(d.Get("iops").(int))
-		sharePatchModel.Iops = &iops
-		hasChange = true
-	}
-
-	if d.HasChange("profile") {
-		old, new := d.GetChange("profile")
-		if old.(string) == "custom" {
-			if d.Get("iops").(int) != 0 {
-				log.Println("iops there")
-			} else {
-				log.Println("iops not there")
-			}
-		}
-		profile := new.(string)
-		sharePatchModel.Profile = &vpcbetav1.ShareProfileIdentity{
-			Name: &profile,
-		}
-		hasChange = true
-	}
-
-	if d.HasChange(isFileShareTags) {
-		var userTags *schema.Set
-		if v, ok := d.GetOk(isFileShareTags); ok {
-
-			userTags = v.(*schema.Set)
-			if userTags != nil && userTags.Len() != 0 {
-				userTagsArray := make([]string, userTags.Len())
-				for i, userTag := range userTags.List() {
-					userTagStr := userTag.(string)
-					userTagsArray[i] = userTagStr
-				}
-				schematicTags := os.Getenv("IC_ENV_TAGS")
-				var envTags []string
-				if schematicTags != "" {
-					envTags = strings.Split(schematicTags, ",")
-					userTagsArray = append(userTagsArray, envTags...)
-				}
-
-				sharePatchModel.UserTags = userTagsArray
-			}
-		}
-	}
-	/*
-		if d.HasChange("replication_cron_spec") {
-			replication_cron_spec := d.Get("replication_cron_spec").(string)
-			sharePatchModel.ReplicationCronSpec = &replication_cron_spec
-			hasChange = true
-		}
-	*/
-	if hasChange {
-
-		sharePatch, err := sharePatchModel.AsPatch()
-
-		if err != nil {
-			log.Printf("[DEBUG] SharePatch AsPatch failed %s", err)
-			return diag.FromErr(err)
-		}
-		updateShareOptions.SetSharePatch(sharePatch)
-		share, response, err := vpcClient.UpdateShareWithContext(context, updateShareOptions)
-		if err != nil {
-			log.Printf("[DEBUG] UpdateShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
-		}
-		_, err = isWaitForShareAvailable(context, vpcClient, *share.ID, d, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-	if d.HasChange(isFileShareTags) {
-		oldList, newList := d.GetChange(isFileShareTags)
-		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isUserTagType)
-		if err != nil {
-			log.Printf(
-				"Error updating shares (%s) tags: %s", d.Id(), err)
-		}
-	}
-
-	if d.HasChange(isFileShareAccessTags) {
-		oldList, newList := d.GetChange(isFileShareAccessTags)
-		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isAccessTagType)
-		if err != nil {
-			log.Printf(
-				"Error updating shares (%s) access tags: %s", d.Id(), err)
-		}
-	}
 	return resourceIbmIsShareRead(context, d, meta)
 }
 

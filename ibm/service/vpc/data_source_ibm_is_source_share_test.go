@@ -16,14 +16,16 @@ func TestAccIbmIsSourceShareDataSourceBasic(t *testing.T) {
 	shareName := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	replicaName := fmt.Sprintf("tf-fsrep-name-%d", acctest.RandIntRange(10, 100))
 	shareTargetName := fmt.Sprintf("tf-fs-tg-name-%d", acctest.RandIntRange(10, 100))
+	shareTargetName1 := fmt.Sprintf("tf-fs-tg-name-%d", acctest.RandIntRange(10, 100))
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	vpcname1 := fmt.Sprintf("tf-vpc-name1-%d", acctest.RandIntRange(10, 100))
 	size := acctest.RandIntRange(10, 50)
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIsSourceShareDataSourceConfigBasic(vpcname, shareName, size, shareTargetName, replicaName),
+				Config: testAccCheckIbmIsSourceShareDataSourceConfigBasic(vpcname, vpcname1, shareName, size, shareTargetName, shareTargetName1, replicaName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_source_share.test", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_source_share.test", "created_at"),
@@ -44,11 +46,11 @@ func TestAccIbmIsSourceShareDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmIsSourceShareDataSourceConfigBasic(vpcname, shareName string, size int, shareTargetName, replicaName string) string {
-	return testAccCheckIbmIsShareConfigReplica(vpcname, shareName, size, shareTargetName, replicaName) + fmt.Sprintf(`
+func testAccCheckIbmIsSourceShareDataSourceConfigBasic(vpcname, vpcname1, shareName string, size int, shareTargetName, shareTargetName1, replicaName string) string {
+	return testAccCheckIbmIsShareConfigReplica(vpcname, vpcname1, shareName, size, shareTargetName, shareTargetName1, replicaName) + fmt.Sprintf(`
 		
 		data "ibm_is_source_share" "test" {
-			share_replica = ibm_is_source_share_replica.test.id
+			share_replica = ibm_is_share.replica.id
 		}
 	`)
 }
