@@ -275,7 +275,7 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 
 	d.SetId(fmt.Sprintf("%s/%s", clusterNameorID, res.ID))
 
-	return resourceIBMContainerWorkerPoolRead(d, meta)
+	return resourceIBMContainerWorkerPoolUpdate(d, meta)
 }
 
 func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
