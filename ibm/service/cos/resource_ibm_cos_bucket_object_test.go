@@ -356,6 +356,7 @@ func testAccIBMCOSBucketBucketObjectUpload(bucketCrn string, key string, objectB
 		}`, bucketCrn, key, objectBody1)
 }
 
+
 func testAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(name string, instanceCRN string, objectBody string, mode string, retainUntilDate string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket" "testacc" {

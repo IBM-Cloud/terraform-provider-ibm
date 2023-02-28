@@ -344,6 +344,12 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
 	}
 
+	CosName = os.Getenv("IBM_COS_NAME")
+	if CosName == "" {
+		CosName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_NAME with a VALID COS instance name for testing resources with cos deps")
+	}
+
 	trustedMachineType = os.Getenv("IBM_TRUSTED_MACHINE_TYPE")
 	if trustedMachineType == "" {
 		trustedMachineType = "mb1c.16x64"
