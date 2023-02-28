@@ -237,6 +237,9 @@ In addition to all argument reference list, you can access the following attribu
   - `mode`- (String)  Default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Supported values: COMPLIANCE.
   - `days`- (Int) Specifies number of days after which the object can be deleted from the COS bucket.
   - `years`- (Int) Specifies number of years after which the object can be deleted from the COS bucket.
+**Note:**
+
+ Either days or years should be provided for default retention, both cannot be used simultaneoulsy.
 
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.

@@ -532,7 +532,7 @@ Review the argument references that you can specify for your resource.
 - `object_lock` - (Optional, Bool) Enables objectlock feature on a COS bucket.
 
     **Note:**
-     - To enable objectlock on a bucket , object_versioning should be enabled as well.
+     - To enable objectlock on a bucket , object_versioning should be enabled.
 
   
 ## Attribute reference

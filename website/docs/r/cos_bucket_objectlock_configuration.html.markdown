@@ -18,7 +18,7 @@ To configure ObjectLock on a bucket, you must enable object versioning on bucket
 ---
 
 ## Example usage
-The following example creates an instance of IBM Cloud Object Storage. Then,a bucket with objectlock enabled is created and the objectlock default retention is configured for that particular bucekt.
+The following example demonstrates creating a bucket with object lock enabled with default retention.
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
@@ -57,6 +57,39 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
     }
   }
 }
+
+```
+# Enabling Objectlockconfguration on an existing bucket
+To enable objectlock configuration on an existing bucket , create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_objectlock_configuration.bucket_crn` and `ibm_cos_bucket_objectlock_configuration.bucket_location` as shown in the example.
+
+## Example usage
+
+```terraform
+// To only enable objectlock configuration on an existing bucket
+resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+ bucket_crn      = "crn_of_existing_bucket"
+ bucket_location = "region_location_of_existing_bucket"
+ object_lock_configuration{
+   objectlockenabled = "Enabled"
+  }
+}
+
+// To enable object lock configuration and set default retention on a bucket
+
+resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+ bucket_crn      = "crn_of_existing_bucket"
+ bucket_location = "region_location_of_existing_bucket"
+ object_lock_configuration{
+   objectlockenabled = "Enabled"
+   objectlockrule{
+     defaultretention{
+        mode = "COMPLIANCE"
+        days = 4
+      }
+    }
+  }
+}
+
 
 ```
 

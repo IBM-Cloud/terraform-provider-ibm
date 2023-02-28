@@ -228,7 +228,7 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 			}
 			_, err = s3Client.PutObjectRetention(putObjectRetentionInput)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock on retention (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+				return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock retention on (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 			}
 
 		}
@@ -244,7 +244,7 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 		}
 		_, err = s3Client.PutObjectLegalHold(putObjectLegalHoldInput)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock on legalhold on (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock legalhold on (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 		}
 	}
 	objectID := getObjectId(bucketCRN, objectKey, bucketLocation)
@@ -450,7 +450,7 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 		_, err = s3Client.PutObjectRetention(putObjectRetentionInput)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock on retention (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock retention on (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 		}
 	}
 
