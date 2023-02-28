@@ -5,6 +5,7 @@ package secretsmanager_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -70,11 +71,11 @@ func TestAccIbmSmSecretGroupAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_sm_secret_group.sm_secret_group", "description", descriptionUpdate),
 				),
 			},
-			//resource.TestStep{
-			//	ResourceName:      "ibm_sm_secret_group.sm_secret_group",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//},
+			resource.TestStep{
+				ResourceName:      "ibm_sm_secret_group.sm_secret_group",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -119,7 +120,9 @@ func testAccCheckIbmSmSecretGroupExists(n string, obj secretsmanagerv2.SecretGro
 
 		getSecretGroupOptions := &secretsmanagerv2.GetSecretGroupOptions{}
 
-		getSecretGroupOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretGroupId := id[2]
+		getSecretGroupOptions.SetID(secretGroupId)
 
 		secretGroup, _, err := secretsManagerClient.GetSecretGroup(getSecretGroupOptions)
 		if err != nil {
@@ -146,7 +149,9 @@ func testAccCheckIbmSmSecretGroupDestroy(s *terraform.State) error {
 
 		getSecretGroupOptions := &secretsmanagerv2.GetSecretGroupOptions{}
 
-		getSecretGroupOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretGroupId := id[2]
+		getSecretGroupOptions.SetID(secretGroupId)
 
 		// Try to find the key
 		_, response, err := secretsManagerClient.GetSecretGroup(getSecretGroupOptions)

@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_secret_group (Beta)"
+page_title: "IBM : ibm_sm_secret_group"
 description: |-
   Manages SecretGroup.
 subcategory: "Secrets Manager"
@@ -34,7 +34,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the SecretGroup.
+* `secret_group_id` - The unique identifier of the SecretGroup.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 
@@ -90,15 +90,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_secret_group` resource by using `id`. A v4 UUID identifier, or `default` secret group.
+You can import the `ibm_sm_secret_group` resource by using `region`, `instance_id`, and `secret_group_id`.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
 ```
-$ terraform import ibm_sm_secret_group.sm_secret_group <id>
+$ terraform import ibm_sm_secret_group.sm_secret_group <region>/<instance_id>/<secret_group_id>
 ```
 
 # Example
 ```
-$ terraform import ibm_sm_secret_group.sm_secret_group default
+$ terraform import ibm_sm_secret_group.sm_secret_group us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/b49ad24d-81d4-5ebc-b9b9-b0937d1c84d5
 ```

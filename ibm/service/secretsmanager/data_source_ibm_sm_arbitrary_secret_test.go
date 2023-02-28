@@ -20,7 +20,7 @@ func TestAccIbmSmArbitrarySecretDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmArbitrarySecretDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "secret_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "created_at"),
@@ -51,7 +51,7 @@ func testAccCheckIbmSmArbitrarySecretDataSourceConfigBasic() string {
 		data "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
 			instance_id   = "%s"
 			region = "%s"
-			id = ibm_sm_arbitrary_secret.sm_arbitrary_secret_instance.id
+			secret_id = ibm_sm_arbitrary_secret.sm_arbitrary_secret_instance.secret_id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

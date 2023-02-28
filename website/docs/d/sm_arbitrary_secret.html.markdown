@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_arbitrary_secret (Beta)"
+page_title: "IBM : ibm_sm_arbitrary_secret"
 description: |-
   Get information about ArbitrarySecret
 subcategory: "Secrets Manager"
@@ -16,7 +16,7 @@ Provides a read-only data source for ArbitrarySecret. You can then reference the
 data "ibm_sm_arbitrary_secret" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
-  id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+  secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the ArbitrarySecret.
+* `secret_id` - The unique identifier of the ArbitrarySecret.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.

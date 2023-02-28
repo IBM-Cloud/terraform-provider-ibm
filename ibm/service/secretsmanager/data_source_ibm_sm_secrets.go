@@ -6,12 +6,10 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"log"
-	"strings"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -395,7 +393,9 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	listSecretsOptions := &secretsmanagerv2.ListSecretsOptions{}
 	sort, ok := d.GetOk("sort")
@@ -431,7 +431,7 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("SecretsPager.GetAll() failed %s", err))
 	}
 
-	d.SetId(dataSourceIbmSmSecretsID(d))
+	d.SetId(fmt.Sprintf("%s/%s", region, instanceId))
 
 	mapSlice := []map[string]interface{}{}
 	for _, modelItem := range allItems {
@@ -442,6 +442,9 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 		mapSlice = append(mapSlice, modelMap)
 	}
 
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("secrets", mapSlice); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting secrets %s", err))
 	}
@@ -451,11 +454,6 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 	}
 
 	return nil
-}
-
-// dataSourceIbmSmSecretsID returns a reasonable ID for the list.
-func dataSourceIbmSmSecretsID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }
 
 func dataSourceIbmSmSecretsSecretMetadataToMap(model secretsmanagerv2.SecretMetadataIntf) (map[string]interface{}, error) {
