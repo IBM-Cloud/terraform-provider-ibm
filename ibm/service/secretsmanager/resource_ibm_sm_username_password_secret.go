@@ -6,8 +6,11 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -59,8 +62,14 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
+			},
+			"secret_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A v4 UUID identifier.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -175,7 +184,9 @@ func resourceIbmSmUsernamePasswordSecretCreate(context context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -191,10 +202,48 @@ func resourceIbmSmUsernamePasswordSecretCreate(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("CreateSecretWithContext failed %s\n%s", err, response))
 	}
 	secret := secretIntf.(*secretsmanagerv2.UsernamePasswordSecret)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
+	d.Set("secret_id", *secret.ID)
 
-	d.SetId(*secret.ID)
+	_, err = waitForIbmSmUsernamePasswordSecretCreate(secretsManagerClient, d)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmUsernamePasswordSecret (%s) to be created: %s", d.Id(), err))
+	}
 
 	return resourceIbmSmUsernamePasswordSecretRead(context, d, meta)
+}
+
+func waitForIbmSmUsernamePasswordSecretCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
+	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+	id := strings.Split(d.Id(), "/")
+	secretId := id[2]
+	getSecretOptions.SetID(secretId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pre_activation"},
+		Target:  []string{"active"},
+		Refresh: func() (interface{}, string, error) {
+			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
+			stateObj := stateObjIntf.(*secretsmanagerv2.UsernamePasswordSecret)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"destroyed": true}
+			if failStates[*stateObj.StateDescription] {
+				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
+			}
+			return stateObj, *stateObj.StateDescription, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      0 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -203,11 +252,15 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Id())
+	getSecretOptions.SetID(secretId)
 
 	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -220,6 +273,15 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	}
 	secret := secretIntf.(*secretsmanagerv2.UsernamePasswordSecret)
 
+	if err = d.Set("secret_id", secretId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
@@ -296,11 +358,15 @@ func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
-	updateSecretMetadataOptions.SetID(d.Id())
+	updateSecretMetadataOptions.SetID(secretId)
 
 	hasChange := false
 
@@ -355,11 +421,15 @@ func resourceIbmSmUsernamePasswordSecretDelete(context context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
-	deleteSecretOptions.SetID(d.Id())
+	deleteSecretOptions.SetID(secretId)
 
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {

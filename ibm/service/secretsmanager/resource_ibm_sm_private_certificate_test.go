@@ -5,6 +5,7 @@ package secretsmanager_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,45 +17,72 @@ import (
 )
 
 func TestAccIbmSmPrivateCertificateBasic(t *testing.T) {
-	//var conf secretsmanagerv2.PrivateCertificate
-	//
-	//resource.Test(t, resource.TestCase{
-	//	PreCheck:     func() { acc.TestAccPreCheck(t) },
-	//	Providers:    acc.TestAccProviders,
-	//	CheckDestroy: testAccCheckIbmSmPrivateCertificateDestroy,
-	//	Steps: []resource.TestStep{
-	//		resource.TestStep{
-	//			Config: testAccCheckIbmSmPrivateCertificateConfigBasic(),
-	//			Check: resource.ComposeAggregateTestCheckFunc(
-	//				testAccCheckIbmSmPrivateCertificateExists("ibm_sm_private_certificate.sm_private_certificate", conf),
-	//			),
-	//		},
-	//		resource.TestStep{
-	//			ResourceName:      "ibm_sm_private_certificate.sm_private_certificate",
-	//			ImportState:       true,
-	//			ImportStateVerify: true,
-	//		},
-	//	},
-	//})
+	var conf secretsmanagerv2.PrivateCertificate
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmPrivateCertificateDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmSmPrivateCertificateConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmPrivateCertificateExists("ibm_sm_private_certificate.sm_private_certificate", conf),
+				),
+			},
+			resource.TestStep{
+				ResourceName:            "ibm_sm_private_certificate.sm_private_certificate",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"private_key_format", "ttl"},
+			},
+		},
+	})
 }
 
 func testAccCheckIbmSmPrivateCertificateConfigBasic() string {
 	return fmt.Sprintf(`
 
-		resource "ibm_sm_private_certificate" "sm_private_certificate_instance" {
-			secret_prototype {
-				custom_metadata = {"key":"value"}
-				description = "Extended description for this secret."
-				expiration_date = "2022-04-12T23:20:50.520Z"
-				labels = [ "my-label" ]
-				name = "my-secret-example"
-				secret_group_id = "default"
-				secret_type = "arbitrary"
-				payload = "secret-credentials"
-				version_custom_metadata = {"key":"value"}
-			}
+		resource "ibm_sm_private_certificate_configuration_root_ca" "ibm_sm_private_certificate_configuration_root_ca_instance" {
+			instance_id   = "%s"
+			region        = "%s"
+			max_ttl = "180000"
+			common_name = "ibm.com"
+			crl_expiry = "10000h"
+			name = "root-ca-terraform-private-cert-datasource-test"
 		}
-	`)
+		resource "ibm_sm_private_certificate_configuration_intermediate_ca" "ibm_sm_private_certificate_configuration_intermediate_ca_instance" {
+  			instance_id   = "%s"
+			region        = "%s"
+			max_ttl = "180000"
+			common_name = "ibm.com"
+			issuer = ibm_sm_private_certificate_configuration_root_ca.ibm_sm_private_certificate_configuration_root_ca_instance.name
+			signing_method = "internal"
+			name = "intermediate-ca-terraform-private-cert-datasource-test"
+		}
+		resource "ibm_sm_private_certificate_configuration_template" "sm_private_certificate_configuration_template_instance" {
+			instance_id   = "%s"
+			region        = "%s"
+			certificate_authority = ibm_sm_private_certificate_configuration_intermediate_ca.ibm_sm_private_certificate_configuration_intermediate_ca_instance.name
+			allow_any_name = true
+			name = "template-terraform-private-cert-test"
+		}
+
+		resource "ibm_sm_private_certificate" "sm_private_certificate" {
+			instance_id = "%s"
+			region = "%s"
+		  	name = "private_cert_terraform-test"
+  			description = "Extended description for this secret."
+  			labels = [ "my-label", "another"]
+  			custom_metadata = {"key":"value"}
+  			certificate_template = ibm_sm_private_certificate_configuration_template.sm_private_certificate_configuration_template_instance.name
+  			common_name = "ibm.com"
+  			ttl = "1800"
+  			secret_group_id = "default"
+		}
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID,
+		acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }
 
 func testAccCheckIbmSmPrivateCertificateExists(n string, obj secretsmanagerv2.PrivateCertificate) resource.TestCheckFunc {
@@ -74,7 +102,9 @@ func testAccCheckIbmSmPrivateCertificateExists(n string, obj secretsmanagerv2.Pr
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		privateCertificateIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
 		if err != nil {
@@ -102,7 +132,9 @@ func testAccCheckIbmSmPrivateCertificateDestroy(s *terraform.State) error {
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		// Try to find the key
 		_, response, err := secretsManagerClient.GetSecret(getSecretOptions)

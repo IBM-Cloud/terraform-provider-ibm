@@ -5,6 +5,7 @@ package secretsmanager_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -29,11 +30,11 @@ func TestAccIbmSmKvSecretBasic(t *testing.T) {
 					testAccCheckIbmSmKvSecretExists("ibm_sm_kv_secret.sm_kv_secret", conf),
 				),
 			},
-			//resource.TestStep{
-			//	ResourceName:      "ibm_sm_kv_secret.sm_kv_secret",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//},
+			resource.TestStep{
+				ResourceName:      "ibm_sm_kv_secret.sm_kv_secret",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -71,7 +72,9 @@ func testAccCheckIbmSmKvSecretExists(n string, obj secretsmanagerv2.KVSecret) re
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		kVSecretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
 		if err != nil {
@@ -99,7 +102,9 @@ func testAccCheckIbmSmKvSecretDestroy(s *terraform.State) error {
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		// Try to find the key
 		_, response, err := secretsManagerClient.GetSecret(getSecretOptions)

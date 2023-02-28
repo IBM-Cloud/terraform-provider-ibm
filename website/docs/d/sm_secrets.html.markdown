@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_secrets (Beta)"
+page_title: "IBM : ibm_sm_secrets"
 description: |-
   Get information about sm_secrets
 subcategory: "Secrets Manager"

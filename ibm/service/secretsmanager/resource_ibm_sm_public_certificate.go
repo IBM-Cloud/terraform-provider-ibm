@@ -6,7 +6,11 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -45,6 +49,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
+				Computed:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
 			},
 			"labels": &schema.Schema{
@@ -63,6 +68,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeList,
 				ForceNew:    true,
 				Optional:    true,
+				Computed:    true,
 				Description: "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -160,7 +166,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.",
 			},
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A v4 UUID identifier.",
@@ -326,6 +332,9 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Description: "(Optional) The PEM-encoded private key to associate with the certificate.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(35 * time.Minute),
+		},
 	}
 }
 
@@ -335,7 +344,9 @@ func resourceIbmSmPublicCertificateCreate(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -352,9 +363,50 @@ func resourceIbmSmPublicCertificateCreate(context context.Context, d *schema.Res
 	}
 
 	secret := secretIntf.(*secretsmanagerv2.PublicCertificate)
-	d.SetId(*secret.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
+	d.Set("secret_id", *secret.ID)
+
+	_, err = waitForIbmSmPublicCertificateCreate(secretsManagerClient, d)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmPublicCertificate (%s) to be created: %s", d.Id(), err))
+	}
 
 	return resourceIbmSmPublicCertificateRead(context, d, meta)
+}
+
+func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
+	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+
+	id := strings.Split(d.Id(), "/")
+	secretId := id[2]
+
+	getSecretOptions.SetID(secretId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pre_activation"},
+		Target:  []string{"active"},
+		Refresh: func() (interface{}, string, error) {
+			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
+			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"destroyed": true}
+			if failStates[*stateObj.StateDescription] {
+				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
+			}
+			return stateObj, *stateObj.StateDescription, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      0 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -363,11 +415,15 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Id())
+	getSecretOptions.SetID(secretId)
 
 	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -381,6 +437,15 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 
 	secret := secretIntf.(*secretsmanagerv2.PublicCertificate)
 
+	if err = d.Set("secret_id", secretId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
@@ -431,6 +496,15 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	}
 	if err = d.Set("key_algorithm", secret.KeyAlgorithm); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting key_algorithm: %s", err))
+	}
+	if err = d.Set("ca", secret.Ca); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting ca: %s", err))
+	}
+	if err = d.Set("dns", secret.Dns); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
+	}
+	if err = d.Set("bundle_certs", secret.BundleCerts); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting bundle_certs: %s", err))
 	}
 	rotationMap, err := resourceIbmSmPublicCertificateRotationPolicyToMap(secret.Rotation)
 	if err != nil {
@@ -494,11 +568,15 @@ func resourceIbmSmPublicCertificateUpdate(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
-	updateSecretMetadataOptions.SetID(d.Id())
+	updateSecretMetadataOptions.SetID(secretId)
 
 	hasChange := false
 
@@ -553,11 +631,15 @@ func resourceIbmSmPublicCertificateDelete(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
-	deleteSecretOptions.SetID(d.Id())
+	deleteSecretOptions.SetID(secretId)
 
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {

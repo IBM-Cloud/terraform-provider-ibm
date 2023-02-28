@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_en_registration (Beta)"
+page_title: "IBM : ibm_sm_en_registration"
 description: |-
   Manages NotificationsRegistrationPrototype.
 subcategory: "Secrets Manager"
@@ -91,10 +91,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_en_registration` resource by using `event_notifications_instance_crn`. A CRN that uniquely identifies an IBM Cloud resource.
+You can import the `ibm_sm_en_registration` resource by using `region` and `instance_id`. A CRN that uniquely identifies an IBM Cloud resource.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
 ```
-$ terraform import ibm_sm_en_registration.sm_en_registration <event_notifications_instance_crn>
+$ terraform import ibm_sm_en_registration.sm_en_registration <region>/<instance_id>
+```
+
+# Example
+```
+$ terraform import ibm_sm_en_registration.sm_en_registration us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175
 ```

@@ -21,7 +21,7 @@ func DataSourceIbmSmPublicCertificate() *schema.Resource {
 		ReadContext: dataSourceIbmSmPublicCertificateSecretRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -315,11 +315,14 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretOptions.SetID(secretId)
 
 	publicCertificateIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -329,7 +332,11 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 
 	publicCertificate := publicCertificateIntf.(*secretsmanagerv2.PublicCertificate)
 
-	d.SetId(fmt.Sprintf("%s", *getSecretOptions.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if err = d.Set("created_by", publicCertificate.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
