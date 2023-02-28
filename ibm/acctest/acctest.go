@@ -233,6 +233,9 @@ var IesApiKey string
 var IngestionKey string
 var COSApiKey string
 
+// For Code Engine
+var CeResourceGroupID string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -1250,6 +1253,13 @@ func init() {
 		IesApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
+
+	CeResourceGroupID = os.Getenv("IBM_CODE_ENGINE_RESOURCE_GROUP_ID")
+	if CeResourceGroupID == "" {
+		CeResourceGroupID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_GROUP_ID with the resource group for Code Engine")
+	}
+
 }
 
 var TestAccProviders map[string]*schema.Provider
@@ -1377,5 +1387,12 @@ func TestAccPreCheckEncryptedImage(t *testing.T) {
 	}
 	if IsImageEncryptionKey == "" {
 		t.Fatal("IS_IMAGE_ENCRYPTION_KEY must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckCodeEngine(t *testing.T) {
+	TestAccPreCheck(t)
+	if CeResourceGroupID == "" {
+		t.Fatal("IBM_CODE_ENGINE_RESOURCE_GROUP_ID must be set for acceptance tests")
 	}
 }
