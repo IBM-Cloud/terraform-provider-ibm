@@ -649,21 +649,16 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	getObjectLockConfigurationInput := &s3.GetObjectLockConfigurationInput{
 		Bucket: aws.String(bucketName),
 	}
-
 	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
-
 	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
 		return err
 	}
 	if output.ObjectLockConfiguration != nil {
 		objectLockConfigurationptr := output.ObjectLockConfiguration
-
-		// if objectLockConfigurationptr != nil {
 		objectLockConfigurationrule := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
 		if len(objectLockConfigurationrule) > 0 {
 			d.Set("object_lock_configuration", objectLockConfigurationrule)
 		}
-		// }
 	}
 
 	return nil

@@ -228,7 +228,7 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 			}
 			_, err = s3Client.PutObjectRetention(putObjectRetentionInput)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock retention (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+				return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock on retention (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 			}
 
 		}
@@ -244,7 +244,7 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 		}
 		_, err = s3Client.PutObjectLegalHold(putObjectLegalHoldInput)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock legalhold (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock on legalhold on (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 		}
 	}
 	objectID := getObjectId(bucketCRN, objectKey, bucketLocation)
@@ -336,7 +336,6 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
 			d.SetId("") // Set state back to empty for terraform refresh
 		}
-		// return diag.FromErr(fmt.Errorf("failed getting COS bucket (%s) object retention (%s): %w", bucketName, objectKey, err))
 	}
 	if response.Retention != nil {
 		objectretentionptr := response.Retention
@@ -354,7 +353,6 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
 			d.SetId("") // Set state back to empty for terraform refresh
 		}
-		// 	return diag.FromErr(fmt.Errorf("failed getting COS bucket (%s) object legalhold (%s): %w", bucketName, objectKey, err))
 	}
 	if response1.LegalHold != nil {
 		objectlegalholdptr := response1.LegalHold
@@ -437,7 +435,7 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 		_, err = s3Client.PutObjectLegalHold(putObjectLegalHoldInput)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock legalhold (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock on legalhold (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 		}
 	}
 
@@ -452,7 +450,7 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 		_, err = s3Client.PutObjectRetention(putObjectRetentionInput)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock retention (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock on retention (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 		}
 	}
 
@@ -642,7 +640,6 @@ func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, igno
 
 			if err != nil {
 				if strings.Contains(err.Error(), "AccessDenied") && force {
-					// Remove any legal hold.
 					_, err := conn.HeadObject(&s3.HeadObjectInput{
 						Bucket:    aws.String(bucketName),
 						Key:       objectVersion.Key,

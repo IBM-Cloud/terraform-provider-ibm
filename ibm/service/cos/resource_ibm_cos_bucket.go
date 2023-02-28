@@ -440,7 +440,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Optional:     true,
 				RequiredWith: []string{"object_versioning"},
 				Default:      false,
-				Description:  "Enable objectlock for the bucket.When Enabled, Buckets within the Container Vault can have Object Lock Configuration applied to the bucket.",
+				Description:  "Enable objectlock for the bucket. When enabled, buckets within the container vault can have Object Lock Configuration applied to the bucket.",
 			},
 		},
 	}

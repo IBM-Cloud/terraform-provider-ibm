@@ -5,14 +5,10 @@ import (
 	"strings"
 	"time"
 
-	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
-	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
-	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
-	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -105,86 +101,6 @@ func ResourceIBMCOSBucketObjectlock() *schema.Resource {
 	}
 }
 
-func objectLockDefaultRetentionSetFunction(objectLockDefaultRetentionList []interface{}) *s3.DefaultRetention {
-	var rules *s3.DefaultRetention
-	var days, years int64
-	var mode string
-
-	for _, l := range objectLockDefaultRetentionList {
-		object_lock_default_retention := s3.DefaultRetention{}
-		defaultRetentionMap, _ := l.(map[string]interface{})
-
-		if modeSet, exist := defaultRetentionMap["mode"]; exist {
-			mode = modeSet.(string)
-			object_lock_default_retention.Mode = aws.String(mode)
-
-		}
-		if daysSet, exist := defaultRetentionMap["days"]; exist {
-			objectLockdays := int64(daysSet.(int))
-			if objectLockdays > 0 {
-				days = objectLockdays
-				object_lock_default_retention.Days = aws.Int64(days)
-			}
-		}
-		if yearsSet, exist := defaultRetentionMap["years"]; exist {
-			objectLockyears := int64(yearsSet.(int))
-			if objectLockyears > 0 {
-				years = objectLockyears
-				object_lock_default_retention.Years = aws.Int64(years)
-			}
-
-		}
-		rules = &object_lock_default_retention
-	}
-
-	return rules
-}
-func objectLockRuleSetFunction(objectLockRuleList []interface{}) *s3.ObjectLockRule {
-	var rules *s3.ObjectLockRule
-
-	for _, l := range objectLockRuleList {
-		object_lock_rule := s3.ObjectLockRule{}
-		ruleMap, _ := l.(map[string]interface{})
-
-		if defaultRetentionSet, exist := ruleMap["defaultretention"]; exist {
-			object_lock_rule.DefaultRetention = objectLockDefaultRetentionSetFunction(defaultRetentionSet.([]interface{}))
-
-		}
-
-		rules = &object_lock_rule
-
-	}
-	return rules
-}
-func objectLockConfigurationSet(objectLockConfigurationList []interface{}) *s3.ObjectLockConfiguration {
-	var rules *s3.ObjectLockConfiguration
-	// var days, year int64
-	// var mode string
-
-	for _, l := range objectLockConfigurationList {
-		object_lock_configuration := s3.ObjectLockConfiguration{}
-		configurationMap, _ := l.(map[string]interface{})
-		//objectlock enabled
-		if objectLockEnabledSet, exist := configurationMap["objectlockenabled"]; exist {
-			objectLockEnabledValue := objectLockEnabledSet.(string)
-			if objectLockEnabledValue == "enabled" || objectLockEnabledValue == "Enabled" {
-				object_lock_configuration.ObjectLockEnabled = aws.String(s3.ObjectLockEnabledEnabled)
-			} else {
-				object_lock_configuration.ObjectLockEnabled = aws.String(objectLockEnabledValue)
-			}
-
-		}
-		// //ObjectLock configuration
-		if objectLockRuleSet, exist := configurationMap["objectlockrule"]; exist {
-			object_lock_configuration.Rule = objectLockRuleSetFunction(objectLockRuleSet.([]interface{}))
-
-		}
-		rules = &object_lock_configuration
-		println("Objetlockconfiguration rule =>", rules)
-
-	}
-	return rules
-}
 func resourceIBMCOSBucketObjectlockCreate(d *schema.ResourceData, meta interface{}) error {
 
 	bucketCRN := d.Get("bucket_crn").(string)
@@ -200,15 +116,15 @@ func resourceIBMCOSBucketObjectlockCreate(d *schema.ResourceData, meta interface
 	}
 
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
-	var objectLockConfigurationRule *s3.ObjectLockConfiguration
+	var objectLockConfiguration *s3.ObjectLockConfiguration
 	configuration, ok := d.GetOk("object_lock_configuration")
 	if ok {
-		objectLockConfigurationRule = objectLockConfigurationSet(configuration.([]interface{}))
+		objectLockConfiguration = objectLockConfigurationSet(configuration.([]interface{}))
 
 	}
 	putObjectLockConfigurationInput := &s3.PutObjectLockConfigurationInput{
 		Bucket:                  aws.String(bucketName),
-		ObjectLockConfiguration: objectLockConfigurationRule,
+		ObjectLockConfiguration: objectLockConfiguration,
 	}
 	_, err = s3Client.PutObjectLockConfiguration(putObjectLockConfigurationInput)
 
@@ -238,14 +154,14 @@ func resourceIBMCOSBucketObjectlockUpdate(d *schema.ResourceData, meta interface
 		return err
 	}
 	if d.HasChange("object_lock_configuration") {
-		var objectLockConfigurationRule *s3.ObjectLockConfiguration
+		var objectLockConfiguration *s3.ObjectLockConfiguration
 		configuration, ok := d.GetOk("object_lock_configuration")
 		if ok {
-			objectLockConfigurationRule = objectLockConfigurationSet(configuration.([]interface{}))
+			objectLockConfiguration = objectLockConfigurationSet(configuration.([]interface{}))
 		}
 		putObjectLockConfigurationInput := &s3.PutObjectLockConfigurationInput{
 			Bucket:                  aws.String(bucketName),
-			ObjectLockConfiguration: objectLockConfigurationRule,
+			ObjectLockConfiguration: objectLockConfiguration,
 		}
 		_, err = s3Client.PutObjectLockConfiguration(putObjectLockConfigurationInput)
 
@@ -291,12 +207,11 @@ func resourceIBMCOSBucketObjectlockRead(d *schema.ResourceData, meta interface{}
 	if output.ObjectLockConfiguration != nil {
 		objectLockConfigurationptr := output.ObjectLockConfiguration
 
-		// if objectLockConfigurationptr != nil {
-		objectLockConfigurationrule := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
-		if len(objectLockConfigurationrule) > 0 {
-			d.Set("object_lock_configuration", objectLockConfigurationrule)
+		objectLockConfiguration := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
+		if len(objectLockConfiguration) > 0 {
+			d.Set("object_lock_configuration", objectLockConfiguration)
 		}
-		// }
+
 	}
 	return nil
 }
@@ -354,53 +269,80 @@ func parseObjectLockId(id string, info string) string {
 	return parseBucketId(bucketCRN, info)
 }
 
-func getCosEndpointTypeOL(bucketLocation string, endpointType string) string {
-	if bucketLocation != "" {
-		switch endpointType {
-		case "public":
-			return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
-		case "private":
-			return fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
-		case "direct":
-			return fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
-		default:
-			return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bucketLocation)
+func objectLockDefaultRetentionSetFunction(objectLockDefaultRetentionList []interface{}) *s3.DefaultRetention {
+	var defaultRetention *s3.DefaultRetention
+	var days, years int64
+	var mode string
+
+	for _, l := range objectLockDefaultRetentionList {
+		object_lock_default_retention := s3.DefaultRetention{}
+		defaultRetentionMap, _ := l.(map[string]interface{})
+
+		if modeSet, exist := defaultRetentionMap["mode"]; exist {
+			mode = modeSet.(string)
+			object_lock_default_retention.Mode = aws.String(mode)
+
 		}
+		if daysSet, exist := defaultRetentionMap["days"]; exist {
+			objectLockdays := int64(daysSet.(int))
+			if objectLockdays > 0 {
+				days = objectLockdays
+				object_lock_default_retention.Days = aws.Int64(days)
+			}
+		}
+		if yearsSet, exist := defaultRetentionMap["years"]; exist {
+			objectLockyears := int64(yearsSet.(int))
+			if objectLockyears > 0 {
+				years = objectLockyears
+				object_lock_default_retention.Years = aws.Int64(years)
+			}
+
+		}
+		defaultRetention = &object_lock_default_retention
 	}
-	return ""
+
+	return defaultRetention
 }
+func objectLockRuleSetFunction(objectLockRuleList []interface{}) *s3.ObjectLockRule {
+	var rules *s3.ObjectLockRule
 
-func getS3ClientSessionOL(bxSession *bxsession.Session, bucketLocation string, endpointType string, instanceCRN string) (*s3.S3, error) {
-	var s3Conf *aws.Config
+	for _, l := range objectLockRuleList {
+		object_lock_rule := s3.ObjectLockRule{}
+		ruleMap, _ := l.(map[string]interface{})
 
-	apiEndpoint := getCosEndpointType(bucketLocation, endpointType)
-	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
-	if apiEndpoint == "" {
-		return nil, fmt.Errorf("the endpoint doesn't exists for given location %s and endpoint type %s", bucketLocation, endpointType)
-	}
+		if defaultRetentionSet, exist := ruleMap["defaultretention"]; exist {
+			object_lock_rule.DefaultRetention = objectLockDefaultRetentionSetFunction(defaultRetentionSet.([]interface{}))
 
-	authEndpoint, err := bxSession.Config.EndpointLocator.IAMEndpoint()
-	if err != nil {
-		return nil, err
-	}
-	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
-	apiKey := bxSession.Config.BluemixAPIKey
-	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, instanceCRN)).WithS3ForcePathStyle(true)
-	}
-	iamAccessToken := bxSession.Config.IAMAccessToken
-	if iamAccessToken != "" {
-		initFunc := func() (*token.Token, error) {
-			return &token.Token{
-				AccessToken:  bxSession.Config.IAMAccessToken,
-				RefreshToken: bxSession.Config.IAMRefreshToken,
-				TokenType:    "Bearer",
-				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
-				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
-			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, instanceCRN)).WithS3ForcePathStyle(true)
+
+		rules = &object_lock_rule
+
 	}
-	s3Sess := session.Must(session.NewSession())
-	return s3.New(s3Sess, s3Conf), nil
+	return rules
+}
+func objectLockConfigurationSet(objectLockConfigurationList []interface{}) *s3.ObjectLockConfiguration {
+	var objectLockConfig *s3.ObjectLockConfiguration
+
+	for _, l := range objectLockConfigurationList {
+		object_lock_configuration := s3.ObjectLockConfiguration{}
+		configurationMap, _ := l.(map[string]interface{})
+		//objectlock enabled
+		if objectLockEnabledSet, exist := configurationMap["objectlockenabled"]; exist {
+			objectLockEnabledValue := objectLockEnabledSet.(string)
+			if objectLockEnabledValue == "enabled" || objectLockEnabledValue == "Enabled" {
+				object_lock_configuration.ObjectLockEnabled = aws.String(s3.ObjectLockEnabledEnabled)
+			} else {
+				object_lock_configuration.ObjectLockEnabled = aws.String(objectLockEnabledValue)
+			}
+
+		}
+		//ObjectLock configuration
+		if objectLockRuleSet, exist := configurationMap["objectlockrule"]; exist {
+			object_lock_configuration.Rule = objectLockRuleSetFunction(objectLockRuleSet.([]interface{}))
+
+		}
+		objectLockConfig = &object_lock_configuration
+
+	}
+	return objectLockConfig
 }

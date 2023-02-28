@@ -126,6 +126,7 @@ func TestAccIBMCOSBucketObjectlock_legalhold_without_objectlock_enabled(t *testi
 func TestAccIBMCOSBucketObjectlock_Retention_Invalid_Mode(t *testing.T) {
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
 	instanceCRN := acc.CosCRN
+	mode := "INVALID"
 	objectBody := "Acceptance Testing"
 	retainUntilDate := time.Now().Local().Add(time.Second * 5)
 	retainUntilDateString := retainUntilDate.Format(time.RFC3339)
@@ -134,7 +135,7 @@ func TestAccIBMCOSBucketObjectlock_Retention_Invalid_Mode(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccIBMCOSBucketObjectlock_retention_invalid_mode(name, instanceCRN, objectBody, retainUntilDateString),
+				Config:      testAccIBMCOSBucketObjectlock_retention_invalid_mode(name, instanceCRN, objectBody, mode, retainUntilDateString),
 				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
 			},
 		},
@@ -145,8 +146,7 @@ func TestAccIBMCOSBucketObjectlock_Retention_Retainuntildate_Past(t *testing.T) 
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
 	instanceCRN := acc.CosCRN
 	objectBody := "Acceptance Testing"
-	retainUntilDate := time.Now().Local().Add(time.Second * 5)
-	retainUntilDateString := retainUntilDate.Format(time.RFC3339)
+	retainUntilDateString := "2020-02-15T00:00:00Z"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
 		Providers: acc.TestAccProviders,
@@ -163,14 +163,13 @@ func TestAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(t *testing.
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
 	instanceCRN := acc.CosCRN
 	objectBody := "Acceptance Testing"
-	retainUntilDate := time.Now().Local().Add(time.Second * 5)
-	retainUntilDateString := retainUntilDate.Format(time.RFC3339)
+	mode := "COMPLIANCE"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(name, instanceCRN, objectBody, retainUntilDateString),
+				Config:      testAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(name, instanceCRN, objectBody, mode),
 				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
 			},
 		},
@@ -289,7 +288,7 @@ func testAccIBMCOSBucketObjectlock_retention_without_mode(name string, instanceC
 		}`, name, instanceCRN, objectBody, retainUntilDate)
 }
 
-func testAccIBMCOSBucketObjectlock_retention_invalid_mode(name string, instanceCRN string, objectBody string, retainUntilDate string) string {
+func testAccIBMCOSBucketObjectlock_retention_invalid_mode(name string, instanceCRN string, objectBody string, mode string, retainUntilDate string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket" "testacc" {
 			bucket_name          = "%[1]s"
@@ -306,10 +305,10 @@ func testAccIBMCOSBucketObjectlock_retention_invalid_mode(name string, instanceC
 			bucket_location = ibm_cos_bucket.testacc.cross_region_location
 			key 					  = "%[1]s.txt"
 			content			    = "%[3]s"
-			object_lock_mode              = "Invalid"
-			object_lock_retain_until_date = "%[4]s"
+			object_lock_mode              = "%[4]s"
+			object_lock_retain_until_date = "%[5]s"
    			force_delete = true
-		}`, name, instanceCRN, objectBody, retainUntilDate)
+		}`, name, instanceCRN, objectBody, mode, retainUntilDate)
 }
 
 func testAccIBMCOSBucketObjectlock_Retention_Retainuntildate_Past(name string, instanceCRN string, objectBody string, retainUntilDate string) string {
@@ -335,7 +334,7 @@ func testAccIBMCOSBucketObjectlock_Retention_Retainuntildate_Past(name string, i
 		}`, name, instanceCRN, objectBody, retainUntilDate)
 }
 
-func testAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(name string, instanceCRN string, objectBody string, retainUntilDate string) string {
+func testAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(name string, instanceCRN string, objectBody string, mode string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket" "testacc" {
 			bucket_name          = "%[1]s"
@@ -352,9 +351,9 @@ func testAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(name string
 			bucket_location = ibm_cos_bucket.testacc.cross_region_location
 			key 					  = "%[1]s.txt"
 			content			    = "%[3]s"
-			object_lock_mode              = "COMPLIANCE"
+			object_lock_mode              = "%[4]s"
    			force_delete = true
-		}`, name, instanceCRN, objectBody, retainUntilDate)
+		}`, name, instanceCRN, objectBody, mode)
 }
 func testAccIBMCOSBucketObjectlock_legalhold_off(name string, instanceCRN string, objectBody string) string {
 	return fmt.Sprintf(`

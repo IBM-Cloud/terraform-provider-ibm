@@ -895,7 +895,7 @@ func ReplicationRuleGet(in *s3.ReplicationConfiguration) []map[string]interface{
 
 func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]interface{} {
 	fmt.Println("*** ObjectLockConfigurationGet from structure***")
-	rules := make([]map[string]interface{}, 0, 1)
+	configuration := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		objectLockConfig := make(map[string]interface{})
 
@@ -906,14 +906,13 @@ func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]int
 			objectLockConfig["objectlockrule"] = ObjectLockRuleGet(in.Rule)
 		}
 
-		rules = append(rules, objectLockConfig)
-		fmt.Println("rule ->", rules)
+		configuration = append(configuration, objectLockConfig)
 	}
-	return rules
+	return configuration
 }
 func ObjectLockRuleGet(in *s3.ObjectLockRule) []map[string]interface{} {
 	fmt.Println("*** ObjectLockConfigurationGet from structure***")
-	rules := make([]map[string]interface{}, 0, 1)
+	objectLockRule := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		objectLockConfig := make(map[string]interface{})
 
@@ -921,15 +920,14 @@ func ObjectLockRuleGet(in *s3.ObjectLockRule) []map[string]interface{} {
 			objectLockConfig["defaultretention"] = ObjectLockDefaultRetentionGet(in.DefaultRetention)
 		}
 
-		rules = append(rules, objectLockConfig)
-		fmt.Println("rule ->", rules)
+		objectLockRule = append(objectLockRule, objectLockConfig)
 	}
-	return rules
+	return objectLockRule
 }
 
 func ObjectLockDefaultRetentionGet(in *s3.DefaultRetention) []map[string]interface{} {
 	fmt.Println("*** ObjectLockConfigurationGet from structure***")
-	rules := make([]map[string]interface{}, 0, 1)
+	defaultRetention := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		defaultRetentionMap := make(map[string]interface{})
 
@@ -945,10 +943,10 @@ func ObjectLockDefaultRetentionGet(in *s3.DefaultRetention) []map[string]interfa
 			defaultRetentionMap["years"] = int(aws.Int64Value(in.Years))
 		}
 
-		rules = append(rules, defaultRetentionMap)
-		fmt.Println("rule ->", rules)
+		defaultRetention = append(defaultRetention, defaultRetentionMap)
+
 	}
-	return rules
+	return defaultRetention
 }
 func FlattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})

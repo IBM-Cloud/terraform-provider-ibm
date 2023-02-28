@@ -39,6 +39,8 @@ resource "ibm_cos_bucket_object" "file" {
   etag            = filemd5("${path.module}/helper/object.json")
 }
 
+// COS object lock
+
 resource "ibm_cos_bucket" "bucket_object_lock" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
