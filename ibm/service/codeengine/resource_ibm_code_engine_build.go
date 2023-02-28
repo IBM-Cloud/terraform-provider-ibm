@@ -76,7 +76,7 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_revision"),
 				Description:  "Commit, tag, or branch in the source repository to pull. This field is optional if the `source_type` is `git` and uses the HEAD of default branch if not specified. If the `source_type` value is `local`, this field must be omitted.",
 			},
-			"source_secret": &schema.Schema{
+			"source_secret": &schema.Schema{ // pragma: allowlist secret
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_secret"),
@@ -393,7 +393,7 @@ func resourceIbmCodeEngineBuildRead(context context.Context, d *schema.ResourceD
 	}
 	if !core.IsNil(build.SourceSecret) {
 		if err = d.Set("source_secret", build.SourceSecret); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_secret: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting source_secret: %s", err)) // pragma: allowlist secret
 		}
 	}
 	if !core.IsNil(build.SourceType) {
@@ -493,7 +493,7 @@ func resourceIbmCodeEngineBuildUpdate(context context.Context, d *schema.Resourc
 		newOutputImage := d.Get("output_image").(string)
 		patchVals.OutputImage = &newOutputImage
 		newOutputSecret := d.Get("output_secret").(string)
-		patchVals.OutputSecret = &newOutputSecret
+		patchVals.OutputSecret = &newOutputSecret // pragma: allowlist secret
 		newSourceURL := d.Get("source_url").(string)
 		patchVals.SourceURL = &newSourceURL
 		newStrategyType := d.Get("strategy_type").(string)

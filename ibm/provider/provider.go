@@ -1452,8 +1452,6 @@ func Validator() validate.ValidatorDict {
 				// // Added for Secrets Manager
 				"ibm_sm_secret_group":                                                secretsmanager.ResourceIbmSmSecretGroupValidator(),
 				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
-				"ibm_sm_configuration_public_certificate_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
-				"ibm_sm_configuration_public_certificate_dns_classic_infrastructure": secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSClassicInfrastructureValidator(),
 				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
 

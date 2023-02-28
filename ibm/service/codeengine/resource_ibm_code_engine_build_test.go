@@ -21,7 +21,7 @@ func TestAccIbmCodeEngineBuildBasic(t *testing.T) {
 	var conf codeenginev2.Build
 	name := fmt.Sprintf("tf-build-basic-%d", acctest.RandIntRange(10, 1000))
 	outputImage := fmt.Sprintf("stg.icr.io/icr_namespace/%s", name)
-	outputSecret := "ce-auto-icr-private-eu-de"
+	outputSecret := "ce-auto-icr-private-eu-de" // pragma: allowlist secret
 	sourceURL := "https://github.com/IBM/CodeEngine"
 	strategyType := "dockerfile"
 

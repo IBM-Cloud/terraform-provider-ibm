@@ -46,7 +46,7 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_job", "name"),
 				Description:  "The name of the job. Use a name that is unique within the project.",
 			},
-			"image_secret": &schema.Schema{
+			"image_secret": &schema.Schema{ // pragma: allowlist secret
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_job", "image_secret"),
@@ -462,7 +462,7 @@ func resourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceDat
 	}
 	if !core.IsNil(job.ImageSecret) {
 		if err = d.Set("image_secret", job.ImageSecret); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting image_secret: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting image_secret: %s", err)) // pragma: allowlist secret
 		}
 	}
 	if !core.IsNil(job.RunArguments) {
@@ -612,7 +612,7 @@ func resourceIbmCodeEngineJobUpdate(context context.Context, d *schema.ResourceD
 	}
 	if d.HasChange("image_secret") {
 		newImageSecret := d.Get("image_secret").(string)
-		patchVals.ImageSecret = &newImageSecret
+		patchVals.ImageSecret = &newImageSecret // pragma: allowlist secret
 		hasChange = true
 	}
 	if d.HasChange("run_arguments") {
