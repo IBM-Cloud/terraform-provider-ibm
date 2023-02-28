@@ -1033,6 +1033,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"solution_info": &schema.Schema{
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Optional:    true,
 				Description: "Version Solution Information.  Only supported for Product kind Solution.",
 				Elem: &schema.Resource{
@@ -1151,8 +1152,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 						},
 						"cost_estimate": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "Cost estimate definition.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -1908,10 +1908,14 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			method = "replace"
 		}
 		path := fmt.Sprintf("%s/solution_info", pathToVersion)
+		solutionInfoMap, err := solutionInfoToProperFormatMap(d.Get("solution_info.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s", err))
+		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
 			Path:  &path,
-			Value: d.Get("solution_info"),
+			Value: solutionInfoMap,
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
@@ -2369,10 +2373,14 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			method = "replace"
 		}
 		path := fmt.Sprintf("%s/solution_info", pathToVersion)
+		solutionInfoMap, err := solutionInfoToProperFormatMap(d.Get("solution_info.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n", err))
+		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
 			Path:  &path,
-			Value: d.Get("solution_info"),
+			Value: solutionInfoMap,
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
@@ -2422,6 +2430,52 @@ func resourceIBMCmVersionMapToFlavor(modelMap map[string]interface{}) (*catalogm
 		model.Index = core.Int64Ptr(int64(modelMap["index"].(int)))
 	}
 	return model, nil
+}
+
+func solutionInfoToProperFormatMap(solutionInfo map[string]interface{}) (map[string]interface{}, error) {
+	newSolutionInfo := make(map[string]interface{})
+	for k, v := range solutionInfo {
+		if k == "cost_estimate" {
+			if v != nil && len(v.([]interface{})) > 0 {
+				newCostEstimate := convertMapFieldFromListOfOneToMap(v.([]interface{})[0].(map[string]interface{}), "summary")
+				newSolutionInfo[k] = newCostEstimate
+			} else {
+				newSolutionInfo[k] = nil
+			}
+		} else if k == "architecture_diagrams" {
+			newArchDiagrams := archDiagramsToProperFormatMap(v.([]interface{}))
+			newSolutionInfo[k] = newArchDiagrams
+		} else {
+			newSolutionInfo[k] = v
+		}
+	}
+	return newSolutionInfo, nil
+}
+
+func archDiagramsToProperFormatMap(archDiagrams []interface{}) []interface{} {
+	// newDiagrams := make([]map[string]interface{}, 0)
+	for _, archDiagram := range archDiagrams {
+		if archDiagram.(map[string]interface{})["diagram"] != nil && len(archDiagram.(map[string]interface{})["diagram"].([]interface{})) > 0 {
+			archDiagram.(map[string]interface{})["diagram"] = convertMapFieldFromListOfOneToMap(archDiagram.(map[string]interface{})["diagram"].([]interface{})[0].(map[string]interface{}), "url_proxy")
+		}
+	}
+	return archDiagrams
+}
+
+func convertMapFieldFromListOfOneToMap(originalMap map[string]interface{}, fieldToCheck string) map[string]interface{} {
+	newMap := make(map[string]interface{})
+	for k, v := range originalMap {
+		if k == fieldToCheck {
+			if v != nil && len(v.([]interface{})) > 0 {
+				newMap[k] = v.([]interface{})[0].(map[string]interface{})
+			} else {
+				newMap[k] = nil
+			}
+		} else {
+			newMap[k] = v
+		}
+	}
+	return newMap
 }
 
 func resourceIBMCmVersionMapToImportOfferingBodyMetadata(modelMap map[string]interface{}) (*catalogmanagementv1.ImportOfferingBodyMetadata, error) {

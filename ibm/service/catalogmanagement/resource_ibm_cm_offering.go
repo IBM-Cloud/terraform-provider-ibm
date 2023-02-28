@@ -1336,8 +1336,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 												},
 												"cost_estimate": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
+													Computed:    true,
 													Description: "Cost estimate definition.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
