@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -90,6 +91,11 @@ func ResourceIBMCmOffering() *schema.Resource {
 				Optional:    true,
 				Description: "List of keywords associated with offering, typically used to search for it.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"deprecate": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Deprecate this offering.",
 			},
 			"rating": &schema.Schema{
 				Type:        schema.TypeList,
@@ -1193,24 +1199,23 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"deprecate_pending": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Deprecation information for an Offering.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"deprecate_date": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Date of deprecation.",
 												},
 												"deprecate_state": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Deprecation state.",
 												},
 												"description": &schema.Schema{
 													Type:     schema.TypeString,
-													Optional: true,
+													Computed: true,
 												},
 											},
 										},
@@ -1824,7 +1829,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"is_consumable": &schema.Schema{
 										Type:        schema.TypeBool,
-										Optional:    true,
+										Computed:    true,
 										Description: "Is the version able to be shared.",
 									},
 								},
@@ -2381,24 +2386,23 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"deprecate_pending": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Deprecation information for an Offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deprecate_date": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Date of deprecation.",
 						},
 						"deprecate_state": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Deprecation state.",
 						},
 						"description": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -2710,13 +2714,6 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 			media = append(media, *mediaItem)
 		}
 		createOfferingOptions.SetMedia(media)
-	}
-	if _, ok := d.GetOk("deprecate_pending"); ok {
-		deprecatePendingModel, err := resourceIBMCmOfferingMapToDeprecatePending(d.Get("deprecate_pending.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createOfferingOptions.SetDeprecatePending(deprecatePendingModel)
 	}
 	if _, ok := d.GetOk("product_kind"); ok {
 		createOfferingOptions.SetProductKind(d.Get("product_kind").(string))
@@ -3562,6 +3559,19 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		if err != nil {
 			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	if d.Get("deprecate") != nil {
+		deprecateOfferingOptions := &catalogmanagementv1.DeprecateOfferingOptions{}
+		deprecateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+		deprecateOfferingOptions.SetOfferingID(*offering.ID)
+		deprecateOfferingOptions.SetSetting(strconv.FormatBool(d.Get("deprecate").(bool)))
+
+		response, err := catalogManagementClient.DeprecateOfferingWithContext(context, deprecateOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed trying to deprecate offering - %s\n%s", err, response))
 		}
 	}
 

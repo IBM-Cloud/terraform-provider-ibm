@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -61,6 +62,11 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Display name of version. Required for virtual server image for VPC.",
+			},
+			"deprecate": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Deprecate this version.",
 			},
 			"install_kind": &schema.Schema{
 				Type:        schema.TypeString,
@@ -1031,6 +1037,29 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the image pull key to use from Offering.ImagePullKeys.",
 			},
+			"deprecate_pending": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Deprecation information for an Offering.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deprecate_date": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Date of deprecation.",
+						},
+						"deprecate_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Deprecation state.",
+						},
+						"description": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"solution_info": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -1640,7 +1669,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"is_consumable": &schema.Schema{
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 				Description: "Is the version able to be shared.",
 			},
 			"version_id": &schema.Schema{
@@ -2179,6 +2208,15 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("image_pull_key_name", version.ImagePullKeyName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting image_pull_key_name: %s", err))
 	}
+	if version.DeprecatePending != nil {
+		deprecatePendingMap, err := resourceIBMCmVersionDeprecatePendingToMap(version.DeprecatePending)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
+		}
+	}
 	if version.SolutionInfo != nil {
 		solutionInfoMap, err := resourceIBMCmVersionSolutionInfoToMap(version.SolutionInfo)
 		if err != nil {
@@ -2391,6 +2429,18 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		if err != nil {
 			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	if d.Get("deprecate") != nil {
+		setDeprecateVersionOptions := &catalogmanagementv1.SetDeprecateVersionOptions{}
+		setDeprecateVersionOptions.SetVersionLocID(*activeVersion.VersionLocator)
+		setDeprecateVersionOptions.SetSetting(strconv.FormatBool(d.Get("deprecate").(bool)))
+
+		response, err := catalogManagementClient.SetDeprecateVersionWithContext(context, setDeprecateVersionOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed trying to deprecate version - %s\n%s", err, response))
 		}
 	}
 
