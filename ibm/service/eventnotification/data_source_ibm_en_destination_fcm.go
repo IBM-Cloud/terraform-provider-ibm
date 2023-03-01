@@ -76,6 +76,11 @@ func DataSourceIBMEnFCMDestination() *schema.Resource {
 										Computed:    true,
 										Description: "The FCM client_email.",
 									},
+									"pre_prod": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The flag to enable destination as pre-prod or prod",
+									},
 								},
 							},
 						},
@@ -201,6 +206,9 @@ func enFCMDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf)
 
 	if params.ClientEmail != nil {
 		paramsMap["client_email"] = params.ClientEmail
+	}
+	if params.PreProd != nil {
+		paramsMap["pre_prod"] = params.PreProd
 	}
 
 	return paramsMap

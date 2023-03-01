@@ -79,6 +79,11 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 										Required:    true,
 										Description: "The FCM client_email.",
 									},
+									"pre_prod": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "The flag to enable destination as pre-prod or prod",
+									},
 								},
 							},
 						},
@@ -294,6 +299,10 @@ func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interfac
 
 	if configParams["client_email"] != nil {
 		params.ClientEmail = core.StringPtr(configParams["client_email"].(string))
+	}
+
+	if configParams["pre_prod"] != nil {
+		params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
 	}
 
 	destinationConfig := new(en.DestinationConfig)
