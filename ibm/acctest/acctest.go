@@ -52,6 +52,7 @@ var ZonePrivateVlan string
 var ZonePublicVlan string
 var ZoneUpdatePrivateVlan string
 var ZoneUpdatePublicVlan string
+var WorkerPoolSecondaryStorage string
 var CsRegion string
 var ExtendedHardwareTesting bool
 var err error
@@ -457,6 +458,11 @@ func init() {
 	if ZoneUpdatePublicVlan == "" {
 		ZoneUpdatePublicVlan = "2388375"
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2388375'")
+	}
+
+	WorkerPoolSecondaryStorage = os.Getenv("IBM_WORKER_POOL_SECONDARY_STORAGE")
+	if WorkerPoolSecondaryStorage == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_SECONDARY_STORAGE for testing secondary_storage attachment to IKS workerpools")
 	}
 
 	placementGroupName = os.Getenv("IBM_PLACEMENT_GROUP_NAME")
