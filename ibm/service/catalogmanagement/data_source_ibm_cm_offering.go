@@ -562,6 +562,110 @@ func DataSourceIBMCmOffering() *schema.Resource {
 													Computed:    true,
 													Description: "Version source URL.",
 												},
+												"working_directory": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Working directory of source files.",
+												},
+												"example_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Working directory of source files.",
+												},
+												"start_deploy_time": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The time validation started.",
+												},
+												"end_deploy_time": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The time validation ended.",
+												},
+												"est_deploy_time": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The estimated time validation takes.",
+												},
+												"usage": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Usage text for the version.",
+												},
+												"usage_template": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Usage text for the version.",
+												},
+												"modules": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Terraform modules.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the module.",
+															},
+															"source": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Source of the module.",
+															},
+															"offering_reference": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Terraform modules.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Name of the offering module.",
+																		},
+																		"id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "ID of the offering module.",
+																		},
+																		"kind": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Kind of the offeringmodule.",
+																		},
+																		"version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Version of the offering module.",
+																		},
+																		"flavor": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Flavor of the module.",
+																		},
+																		"flavors": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Flavors of the module.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																		"catalog_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Catalog ID of the module reference.",
+																		},
+																		"metadata": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Metadata of the module.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
 												"version_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,

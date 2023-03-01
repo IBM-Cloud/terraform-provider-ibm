@@ -31,6 +31,19 @@ resource "ibm_is_backup_policy_plan" "example" {
   name             = "example-backup-policy-plan"
 }
 ```
+## Example Usage (clones)
+
+```terraform
+resource "ibm_is_backup_policy_plan" "example" {
+  backup_policy_id = "backup_policy_id"
+  cron_spec        = "0 12 * * *"
+  name             = "example-backup-policy-plan"
+  clone_policy {
+    zones 			    = ["us-south-1", "us-south-2"]
+    max_snapshots 	= 3
+  }
+}
+```
 
 ->**Note:**  Backup Policy Jobs are getting enhanced, will be available soon.
 
@@ -46,7 +59,12 @@ backup_policy_plan_id
 - `cron_spec` - (Required, String) The cron specification for the backup schedule. The value must match regular expression `^((((\d+,)+\d+|([\d\*]+(\/|-)\d+)|\d+|\*) ?){5,7})$`.
 
 	->**Note** The backup policy jobs (which create and delete backups for this plan) will not start until this time, and may start for up to 90 minutes after this time.All backup schedules for plans in the same policy must be at least an hour apart.
-		
+- `clone_policy` - (Optional, List)
+  
+  Nested scheme for `clone_policy`:
+  - `max_snapshots` - (Optional, Integer) The maximum number of recent snapshots (per source) that will keep clones.
+  - `zones` - (Optional, List) The zone list this backup policy plan will create snapshot clones in.
+
 - `deletion_trigger` - (Optional, List)
   
   Nested scheme for `deletion_trigger`:

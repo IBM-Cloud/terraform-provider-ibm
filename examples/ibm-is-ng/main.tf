@@ -580,10 +580,11 @@ resource "ibm_is_instance" "instance4" {
   keys      = [ibm_is_ssh_key.sshkey.id]
 }
 
-// creating a snapshot from boot volume
+// creating a snapshot from boot volume with clone
 resource "ibm_is_snapshot" "b_snapshot" {
   name          = "my-snapshot-boot"
   source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
+  clones        = [var.zone1]
   tags          = ["tags1"]
 }
 
@@ -601,6 +602,17 @@ data "ibm_is_snapshot" "ds_snapshot" {
 
 // data source for snapshots
 data "ibm_is_snapshots" "ds_snapshots" {
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clones" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clone" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+  zone     = var.zone1
 }
 
 // restoring a boot volume from snapshot in a new instance
@@ -1095,6 +1107,22 @@ resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
     delete_over_count = "20"
   }
   name = "my-backup-policy-plan-1"
+}
+resource "ibm_is_backup_policy_plan" "is_backup_policy_plan_clone" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  cron_spec        = "30 09 * * *"
+  active           = false
+  attach_user_tags = ["tag2"]
+  copy_user_tags = true
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = "20"
+  }
+  name = "my-backup-policy-plan-1"
+  clone_policy {
+    zones 			= ["us-south-1", "us-south-2"]
+    max_snapshots 	= 3
+  }
 }
 
 data "ibm_is_backup_policies" "is_backup_policies" {

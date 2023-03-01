@@ -69,6 +69,11 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 										Required:    true,
 										Description: "The Server_key value for FCM project.",
 									},
+									"pre_prod": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "The flag to enable destination as pre-prod or prod",
+									},
 								},
 							},
 						},
@@ -268,7 +273,7 @@ func resourceIBMEnFCMDestinationDelete(context context.Context, d *schema.Resour
 }
 
 func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
-	params := new(en.DestinationConfigParams)
+	params := new(en.DestinationConfigOneOf)
 
 	if configParams["sender_id"] != nil {
 		params.SenderID = core.StringPtr(configParams["sender_id"].(string))
@@ -276,6 +281,10 @@ func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interfac
 
 	if configParams["server_key"] != nil {
 		params.ServerKey = core.StringPtr(configParams["server_key"].(string))
+	}
+
+	if configParams["pre_prod"] != nil {
+		params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
 	}
 
 	destinationConfig := new(en.DestinationConfig)

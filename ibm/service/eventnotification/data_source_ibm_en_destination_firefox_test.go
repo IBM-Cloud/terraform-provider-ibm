@@ -54,6 +54,7 @@ func testAccCheckIBMEnFirefoxDestinationDataSourceConfigBasic(instanceName, name
 		config {
 			params {
 				website_url = "https://testweb.com" 
+				pre_prod = false
 			}
 		}
 	}

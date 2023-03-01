@@ -1,3 +1,108 @@
+# 1.51.0-beta0(Feb 22, 2023)
+Features
+* Support for Virtual Private Cloud
+    - **DataSources**
+        - ibm_is_snapshot_clone
+        - ibm_is_snapshot_clones
+* Beta support for Secrets Manager
+    - **DataSources**
+        - ibm_sm_secret_group
+        - ibm_sm_secret_groups
+        - ibm_sm_configuration_private_certificate_intermediate_ca
+        - ibm_sm_configuration_private_certificate_root_ca
+        - ibm_sm_configuration_private_certificate_template
+        - ibm_sm_configuration_public_certificate_ca_lets_encrypt
+        - ibm_sm_configuration_public_certificate_dns_cis
+        - ibm_sm_configuration_public_certificate_dns_classic_infrastructure
+        - ibm_sm_configuration_iam_credentials
+        - ibm_sm_secrets
+        - ibm_sm_arbitrary_secret_metadata
+        - ibm_sm_imported_certificate_metadata
+        - ibm_sm_public_certificate_metadata
+        - ibm_sm_private_certificate_metadata
+        - ibm_sm_iam_credentials_secret_metadata
+        - ibm_sm_kv_secret_metadata
+        - ibm_sm_username_password_secret_metadata
+        - ibm_sm_arbitrary_secret
+        - ibm_sm_imported_certificate
+        - ibm_sm_public_certificate
+        - ibm_sm_private_certificate
+        - ibm_sm_iam_credentials_secret
+        - ibm_sm_kv_secret
+        - ibm_sm_username_password_secret
+        - ibm_sm_en_registration
+    - **Resources**
+        - ibm_sm_secret_group
+        - ibm_sm_arbitrary_secret
+        - ibm_sm_imported_certificate
+        - ibm_sm_public_certificate
+        - ibm_sm_private_certificate
+        - ibm_sm_iam_credentials_secret
+        - ibm_sm_username_password_secret
+        - ibm_sm_kv_secret
+        - ibm_sm_configuration_public_certificate_ca_lets_encrypt
+        - ibm_sm_configuration_public_certificate_dns_cis
+        - ibm_sm_configuration_public_certificate_dns_classic_infrastructure
+        - ibm_sm_configuration_private_certificate_root_ca
+        - ibm_sm_configuration_private_certificate_intermediate_ca
+        - ibm_sm_configuration_private_certificate_template
+        - ibm_sm_configuration_iam_credentials
+        - ibm_sm_en_registration
+* Support for Event Notification
+    - **Data Sources**
+        -ibm_en_destination_msteams
+        - ibm_en_subscription_msteams
+        - ibm_en_destination_cf
+        - ibm_en_subscription_cf
+        - ibm_en_destination_pagerduty
+        - ibm_en_subscription_pagerduty
+        - ibm_en_integration
+         - ibm_en_integrations
+    - **Resources**
+        -ibm_en_destination_msteams
+        - ibm_en_subscription_msteams
+        - ibm_en_destination_cf
+        - ibm_en_subscription_cf
+        - ibm_en_destination_pagerduty
+        - ibm_en_subscription_pagerduty
+        - ibm_en_integration
+        - ibm_en_integrations
+
+Enhancements
+* Deprecate ibm_private_dns_custom_resolver_location resource ([4296](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4296))
+* Add support for single node infrastructure in ibm_satellite_cluster ([4269](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4269))
+* Allow data to be set/updated when already unquoted for ibm_cm_object ([4320](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4320))
+* Refactor(Cloud Databases): configuration uses cloud-databases-go-sdk ([4234](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4234))
+* Enable Context-based Restriction service Private Endpoint support ([4268](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4268))
+* Feature: metadata post ga changes in instance and templates ([4352](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4352))
+* pass ibm cloud session token along to iaas ([4254](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4254))
+* New options for secrets manager tool for ibm_cd_toolchain_tool_secretsmanager ([4350](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4350))
+* enhancement(clone): support for backup policy plan clone ([4341](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4341))
+* enhancement(clone): support for snapshot clone ([4342](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4342))
+
+Bugfixes
+* fix: add fields to version metadata for onboarding fix ([4348](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4348))
+
+# 1.50.0-beta0(Jan 23, 2023)
+Features
+* Support for Virtual Private Cloud
+    - **DataSources**
+        - ibm_is_backup_policy_job
+        - ibm_is_backup_policy_jobs
+
+Enhancements
+* Updates to tekton-pipeline support resources and datasource ([4235](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4235))
+* Git PAT support for continous delivery ([4276](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4276))
+* made name optional to allow create_before_destroy for VPC network acl ([4289](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4289))
+* Remove certificate manager service support ([4290](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4290))
+
+Bugfixes
+* add ForceNew tag to OS fields ([4279](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4279))
+* warning state in pending list, WARN logs about warning and critical states of cluster ([4283](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4283))
+* vpc address prefix and subnet doc fix ([4262](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4262))
+* Schematics managing schematics fails after creation ([4132](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4132))
+* Fix ibm_appid_cloud_directory_user missing userName ([4284](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4284))
+
 # 1.50.0-beta0(Jan 23, 2023)
 Features
 * Support for Virtual Private Cloud
