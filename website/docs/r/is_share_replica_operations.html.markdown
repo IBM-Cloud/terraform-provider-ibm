@@ -10,6 +10,11 @@ subcategory: "Virtual Private Cloud API"
 
 Provides a resource for ShareTarget. This allows ShareTarget to be created, updated and deleted.
 
+
+~> **NOTE**
+This is a Beta feature and it is subject to change in the GA release 
+
+
 ## Example Usage
 
 ```hcl
