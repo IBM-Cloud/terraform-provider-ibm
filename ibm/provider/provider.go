@@ -712,6 +712,8 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_pagerduty": eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.DataSourceIBMEnIntegration(),
 			"ibm_en_integrations":           eventnotification.DataSourceIBMEnIntegrations(),
+			"ibm_en_destination_sn":         eventnotification.DataSourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.DataSourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1143,6 +1145,8 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_pagerduty":  eventnotification.ResourceIBMEnPagerDutyDestination(),
 			"ibm_en_subscription_pagerduty": eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.ResourceIBMEnIntegration(),
+			"ibm_en_destination_sn":         eventnotification.ResourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.ResourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
