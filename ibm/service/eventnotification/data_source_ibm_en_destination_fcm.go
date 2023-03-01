@@ -76,11 +76,6 @@ func DataSourceIBMEnFCMDestination() *schema.Resource {
 										Computed:    true,
 										Description: "The FCM client_email.",
 									},
-									"pre_prod": {
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "The flag to enable destination as pre-prod or prod",
-									},
 								},
 							},
 						},
