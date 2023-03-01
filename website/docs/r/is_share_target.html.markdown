@@ -106,6 +106,7 @@ The following arguments are supported:
       - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
   - `resource_group` - (Optional, String) The ID of the resource group to use.
   - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
+- `transit_encryption` - (Optional, String) The transit encryption mode for this share target. Supported values are **none**, **user_managed**. Default is **none**
   - `subnet` - (Optional, string) The associated subnet.
     
     ~> **Note**

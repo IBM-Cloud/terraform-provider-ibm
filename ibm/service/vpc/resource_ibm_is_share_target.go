@@ -153,6 +153,13 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 				ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
 				Description:   "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
 			},
+			"transit_encryption": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "none",
+				ForceNew: true,
+				Computed: true,
+			},
 			"share_target": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -234,7 +241,10 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		name := nameIntf.(string)
 		shareMountTargetPrototype.Name = &name
 	}
-
+	if transitEncryptionIntf, ok := d.GetOk("transit_encryption"); ok {
+		transitEncryption := transitEncryptionIntf.(string)
+		shareMountTargetPrototype.TransitEncryption = &transitEncryption
+	}
 	createShareTargetOptions.ShareMountTargetPrototype = shareMountTargetPrototype
 	shareTarget, response, err := vpcClient.CreateShareMountTargetWithContext(context, createShareTargetOptions)
 	if err != nil {
