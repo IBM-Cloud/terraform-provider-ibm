@@ -328,19 +328,20 @@ resource "ibm_is_instance" "example" {
   }
 }
 
-// Example to provision instance from a snapshot, restoring boot volume from an existing snapshot
+// Example for provisioning instance from an existing boot volume
 
 resource "ibm_is_volume" "example" {
-  name    = "example-volume"
-  profile = "10iops-tier"
-  zone    = "us-south-1"
+  name            = "example-volume"
+  profile         = "10iops-tier"
+  zone            = "us-south-1"
+  source_snapshot = ibm_is_snapshot.example.id
 }
 
 resource "ibm_is_instance" "example" {
   name    = "example-vsi-restore"
   profile = "cx2-2x4"
   boot_volume {
-    volume = ibm_is_volume.example.id
+    volume_id = ibm_is_volume.example.id
   }
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
