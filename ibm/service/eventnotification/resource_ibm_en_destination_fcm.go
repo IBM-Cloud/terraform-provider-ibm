@@ -301,10 +301,6 @@ func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interfac
 		params.ClientEmail = core.StringPtr(configParams["client_email"].(string))
 	}
 
-	if configParams["pre_prod"] != nil {
-		params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
-	}
-
 	destinationConfig := new(en.DestinationConfig)
 	destinationConfig.Params = params
 	return *destinationConfig

@@ -207,9 +207,6 @@ func enFCMDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf)
 	if params.ClientEmail != nil {
 		paramsMap["client_email"] = params.ClientEmail
 	}
-	if params.PreProd != nil {
-		paramsMap["pre_prod"] = params.PreProd
-	}
 
 	return paramsMap
 }
