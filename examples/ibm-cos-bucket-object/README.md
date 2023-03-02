@@ -52,7 +52,7 @@ ibm_cos_bucket_object objectlock:
 
 ```hcl
 resource "ibm_cos_bucket_object" "object" {
- bucket_crn      = ibm_cos_bucket.bucket.crn
+  bucket_crn      = ibm_cos_bucket.bucket.crn
   bucket_location = ibm_cos_bucket.bucket.cross_region_location
   content         = "Hello World 2"
   key             = "plaintext5.txt"
