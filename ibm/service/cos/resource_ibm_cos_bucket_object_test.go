@@ -91,6 +91,7 @@ func TestAccIBMCOSBucketObjectlock_Retention_Without_Mode(t *testing.T) {
 func TestAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(t *testing.T) {
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
 	instanceCRN := acc.CosCRN
+	mode := "COMLIANCE"
 	retainUntilDate := time.Now().Local().Add(time.Second * 22)
 	retainUntilDateString := retainUntilDate.Format(time.RFC3339)
 	objectBody := "Acceptance Testing"
@@ -99,7 +100,7 @@ func TestAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(t *testi
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(name, instanceCRN, objectBody, retainUntilDateString),
+				Config:      testAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(name, instanceCRN, objectBody, mode, retainUntilDateString),
 				ExpectError: regexp.MustCompile("InvalidRequest: Bucket is missing Object Lock Configuration"),
 			},
 		},
@@ -109,15 +110,14 @@ func TestAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(t *testi
 func TestAccIBMCOSBucketObjectlock_legalhold_without_objectlock_enabled(t *testing.T) {
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
 	instanceCRN := acc.CosCRN
-	retainUntilDate := time.Now().Local().Add(time.Second * 22)
-	retainUntilDateString := retainUntilDate.Format(time.RFC3339)
 	objectBody := "Acceptance Testing"
+	legalhold := "ON"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccIBMCOSBucketObjectlock_legalhold_without_objectlock_enabled(name, instanceCRN, objectBody, retainUntilDateString),
+				Config:      testAccIBMCOSBucketObjectlock_legalhold_without_objectlock_enabled(name, instanceCRN, objectBody, legalhold),
 				ExpectError: regexp.MustCompile("InvalidRequest: Bucket is missing Object Lock Configuration"),
 			},
 		},
@@ -224,7 +224,7 @@ func testAccIBMCOSBucketObjectConfig_file(name string, instanceCRN string, objec
 		}`, name, instanceCRN, objectFile)
 }
 
-func testAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(name string, instanceCRN string, objectBody string, retainUntilDate string) string {
+func testAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(name string, instanceCRN string, objectBody string, mode string, retainUntilDate string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket" "testacc" {
 			bucket_name          = "%[1]s"
@@ -240,13 +240,13 @@ func testAccIBMCOSBucketObjectlock_retention_without_objectlock_enabled(name str
 			bucket_location = ibm_cos_bucket.testacc.cross_region_location
 			key 					  = "%[1]s.txt"
 			content			    = "%[3]s"
-			object_lock_mode    = "COMPLIANCE"
-			object_lock_retain_until_date = "%[4]s"
+			object_lock_mode    = "%[4]s"
+			object_lock_retain_until_date = "%[5]s"
    			force_delete = true
-		}`, name, instanceCRN, objectBody, retainUntilDate)
+		}`, name, instanceCRN, objectBody, mode, retainUntilDate)
 }
 
-func testAccIBMCOSBucketObjectlock_legalhold_without_objectlock_enabled(name string, instanceCRN string, objectBody string, retainUntilDate string) string {
+func testAccIBMCOSBucketObjectlock_legalhold_without_objectlock_enabled(name string, instanceCRN string, objectBody string, legalhold string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket" "testacc" {
 			bucket_name          = "%[1]s"
@@ -262,9 +262,9 @@ func testAccIBMCOSBucketObjectlock_legalhold_without_objectlock_enabled(name str
 			bucket_location = ibm_cos_bucket.testacc.cross_region_location
 			key 					  = "%[1]s.txt"
 			content			    = "%[3]s"
-			object_lock_legal_hold_status = "ON"
+			object_lock_legal_hold_status = "%[4]s"
    			force_delete = true
-		}`, name, instanceCRN, objectBody, retainUntilDate)
+		}`, name, instanceCRN, objectBody, legalhold)
 }
 func testAccIBMCOSBucketObjectlock_retention_without_mode(name string, instanceCRN string, objectBody string, retainUntilDate string) string {
 	return fmt.Sprintf(`

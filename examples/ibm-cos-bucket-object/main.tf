@@ -53,7 +53,7 @@ resource "ibm_cos_bucket" "bucket_object_lock" {
 }
 
 resource "ibm_cos_bucket_object" "object_object_lock" {
- bucket_crn      = ibm_cos_bucket.object_lock.crn
+  bucket_crn      = ibm_cos_bucket.object_lock.crn
   bucket_location = ibm_cos_bucket.object_lock.cross_region_location
   content         = "Hello World 2"
   key             = "plaintext5.txt"

@@ -56,7 +56,7 @@ func ResourceIBMCOSBucketObjectlock() *schema.Resource {
 						"objectlockenabled": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Enable object lock on a COS bucket.This can be used to enable objectlock on an existing bucket",
+							Description: "Enable object lock on a COS bucket. This can be used to enable objectlock on an existing bucket",
 						},
 						"objectlockrule": {
 							Type:     schema.TypeList,
@@ -68,7 +68,7 @@ func ResourceIBMCOSBucketObjectlock() *schema.Resource {
 										Type:        schema.TypeList,
 										Optional:    true,
 										MaxItems:    1,
-										Description: "An object lock configuration on the object at a bucket level, in the form of a days , years and mode that establishes a point in time after which the object can be deleted.This is applied at bucket level hence it is by default applied to all the object in the bucket unless a seperate retention period is set on the object.",
+										Description: "An object lock configuration on the object at a bucket level, in the form of a days , years and mode that establishes a point in time after which the object can be deleted. This is applied at bucket level hence it is by default applied to all the object in the bucket unless a seperate retention period is set on the object.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"mode": {

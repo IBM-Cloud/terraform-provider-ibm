@@ -8,7 +8,7 @@ description:
 ---
 
 # ibm_cos_bucket_objectlock_configuration
-Provides an  Object Lock configuration resource.This resource is used to configure a default retention period for objects placed in the specified bucket.To enable objectlock for a new bucket see [ibm_cos_bucket](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cos_bucket).
+Provides an  Object Lock configuration resource. This resource is used to configure a default retention period for objects placed in the specified bucket. To enable objectlock for a new bucket see [ibm_cos_bucket](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cos_bucket).
 
 
 
@@ -66,9 +66,20 @@ To enable objectlock configuration on an existing bucket , create a COS bucket w
 
 ```terraform
 // To only enable objectlock configuration on an existing bucket
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name          = "a-standard-bucket"
+  resource_instance_id = data.ibm_resource_instance.cos_instance.id
+  bucket_region        = "us-south"
+  storage_class        = "Standard"
+  object_versioning {
+    enable  = true
+  }
+}
+
 resource ibm_cos_bucket_objectlock_configuration "objectlock" {
- bucket_crn      = "crn_of_existing_bucket"
- bucket_location = "region_location_of_existing_bucket"
+ bucket_crn      = ibm_cos_bucket.cos_bucket.crn
+ bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
    objectlockenabled = "Enabled"
   }
@@ -77,8 +88,8 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
 // To enable object lock configuration and set default retention on a bucket
 
 resource ibm_cos_bucket_objectlock_configuration "objectlock" {
- bucket_crn      = "crn_of_existing_bucket"
- bucket_location = "region_location_of_existing_bucket"
+ bucket_crn      = ibm_cos_bucket.cos_bucket.crn
+ bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
    objectlockenabled = "Enabled"
    objectlockrule{

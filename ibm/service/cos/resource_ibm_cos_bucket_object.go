@@ -125,7 +125,7 @@ func ResourceIBMCOSBucketObject() *schema.Resource {
 			"object_sql_url": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Access the object using an SQL Query instance.The reference url is used to perform queries against objects storing structured data.",
+				Description: "Access the object using an SQL Query instance. The reference url is used to perform queries against objects storing structured data.",
 			},
 			"object_lock_legal_hold_status": {
 				Type:         schema.TypeString,
