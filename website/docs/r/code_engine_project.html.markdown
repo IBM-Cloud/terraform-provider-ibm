@@ -34,7 +34,7 @@ Review the argument reference that you can specify for your resource.
 
 * `name` - (Required, Forces new resource, String) The name of the project.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9\\-._: ])+$/`.
-* `resource_group_id` - (Optional, Forces new resource, String) Optional ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used.
+* `resource_group_id` - (Required, Forces new resource, String) ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[a-z0-9]*$/`.
 
 ## Attribute Reference

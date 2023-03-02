@@ -37,7 +37,7 @@ func ResourceIbmCodeEngineProject() *schema.Resource {
 			},
 			"resource_group_id": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_project", "resource_group_id"),
 				Description:  "Optional ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used.",
@@ -246,7 +246,6 @@ func resourceIbmCodeEngineProjectDelete(context context.Context, d *schema.Resou
 	}
 
 	deleteProjectOptions := &codeenginev2.DeleteProjectOptions{}
-	deleteProjectOptions.SetHeaders(map[string]string{"x-terraform-operation": "true"})
 
 	deleteProjectOptions.SetID(d.Id())
 

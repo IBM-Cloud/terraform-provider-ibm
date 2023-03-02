@@ -43,10 +43,11 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_job", "name"),
 				Description:  "The name of the job. Use a name that is unique within the project.",
 			},
-			"image_secret": &schema.Schema{ // pragma: allowlist secret
+			"image_secret": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_job", "image_secret"),
@@ -160,6 +161,7 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 			"scale_array_spec": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Default:      "0",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_job", "scale_array_spec"),
 				Description:  "Define a custom set of array indices as comma-separated list containing single values and hyphen-separated ranges like `5,12-14,23,27`. Each instance can pick up its array index via environment variable `JOB_INDEX`. The number of unique array indices specified here determines the number of job instances to run.",
 			},
@@ -193,6 +195,7 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 			"scale_retry_limit": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Default:     3,
 				Description: "The number of times to rerun an instance of the job before the job is marked as failed. This property can only be specified if `run_mode` is `task`.",
 			},
 			"created_at": &schema.Schema{
@@ -462,7 +465,7 @@ func resourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceDat
 	}
 	if !core.IsNil(job.ImageSecret) {
 		if err = d.Set("image_secret", job.ImageSecret); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting image_secret: %s", err)) // pragma: allowlist secret
+			return diag.FromErr(fmt.Errorf("Error setting image_secret: %s", err))
 		}
 	}
 	if !core.IsNil(job.RunArguments) {
@@ -612,7 +615,7 @@ func resourceIbmCodeEngineJobUpdate(context context.Context, d *schema.ResourceD
 	}
 	if d.HasChange("image_secret") {
 		newImageSecret := d.Get("image_secret").(string)
-		patchVals.ImageSecret = &newImageSecret // pragma: allowlist secret
+		patchVals.ImageSecret = &newImageSecret
 		hasChange = true
 	}
 	if d.HasChange("run_arguments") {

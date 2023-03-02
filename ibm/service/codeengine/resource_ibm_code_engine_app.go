@@ -46,6 +46,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "name"),
 				Description:  "The name of the app. Use a name that is unique within the project.",
 			},
@@ -55,7 +56,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 				Default:     8080,
 				Description: "Optional port the app listens on. While the app will always be exposed via port `443` for end users, this port is used to connect to the port that is exposed by the container image.",
 			},
-			"image_secret": &schema.Schema{ // pragma: allowlist secret
+			"image_secret": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "image_secret"),
@@ -580,7 +581,7 @@ func resourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceDat
 	}
 	if !core.IsNil(app.ImageSecret) {
 		if err = d.Set("image_secret", app.ImageSecret); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting image_secret: %s", err)) // pragma: allowlist secret
+			return diag.FromErr(fmt.Errorf("Error setting image_secret: %s", err))
 		}
 	}
 	if !core.IsNil(app.ManagedDomainMappings) {
@@ -774,7 +775,7 @@ func resourceIbmCodeEngineAppUpdate(context context.Context, d *schema.ResourceD
 	}
 	if d.HasChange("image_secret") {
 		newImageSecret := d.Get("image_secret").(string)
-		patchVals.ImageSecret = &newImageSecret // pragma: allowlist secret
+		patchVals.ImageSecret = &newImageSecret
 		hasChange = true
 	}
 	if d.HasChange("managed_domain_mappings") {
