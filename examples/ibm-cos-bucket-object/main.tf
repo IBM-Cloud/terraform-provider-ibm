@@ -60,5 +60,5 @@ resource "ibm_cos_bucket_object" "object_object_lock" {
   object_lock_mode              = "COMPLIANCE"
   object_lock_retain_until_date = "2023-02-15T18:00:00Z"
   object_lock_legal_hold_status = "ON"
-   force_delete = true
+  force_delete = true
 }
