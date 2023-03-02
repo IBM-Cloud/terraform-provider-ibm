@@ -108,6 +108,11 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Computed:    true,
 				Description: "Semantic version of the software being onboarded. Required for virtual server image for VPC.",
 			},
+			"usage": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The usage text for this version.",
+			},
 			"flavor": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -360,19 +365,16 @@ func ResourceIBMCmVersion() *schema.Resource {
 						},
 						"version_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Version name.",
 						},
 						"terraform_version": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Terraform version.",
 						},
 						"validated_terraform_version": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Validated terraform version.",
 						},
@@ -384,49 +386,48 @@ func ResourceIBMCmVersion() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"operating_system": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Operating system included in this image. Required for virtual server image for VPC.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"dedicated_host_only": &schema.Schema{
 													Type:        schema.TypeBool,
-													Optional:    true,
+													Computed:    true,
 													Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups. Required for virtual server image for VPC.",
 												},
 												"vendor": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Vendor of the operating system. Required for virtual server image for VPC.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Globally unique name for this operating system Required for virtual server image for VPC.",
 												},
 												"href": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "URL for this operating system. Required for virtual server image for VPC.",
 												},
 												"display_name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Unique, display-friendly name for the operating system. Required for virtual server image for VPC.",
 												},
 												"family": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Software family for this operating system. Required for virtual server image for VPC.",
 												},
 												"version": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Major release version of this operating system. Required for virtual server image for VPC.",
 												},
 												"architecture": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Operating system architecture. Required for virtual server image for VPC.",
 												},
 											},
@@ -434,14 +435,13 @@ func ResourceIBMCmVersion() *schema.Resource {
 									},
 									"file": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Details for the stored image file. Required for virtual server image for VPC.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"size": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Size of the stored image file rounded up to the next gigabyte. Required for virtual server image for VPC.",
 												},
 											},
@@ -449,28 +449,28 @@ func ResourceIBMCmVersion() *schema.Resource {
 									},
 									"minimum_provisioned_size": &schema.Schema{
 										Type:        schema.TypeInt,
-										Optional:    true,
+										Computed:    true,
 										Description: "Minimum size (in gigabytes) of a volume onto which this image may be provisioned. Required for virtual server image for VPC.",
 									},
 									"images": &schema.Schema{
 										Type:        schema.TypeList,
-										Optional:    true,
+										Computed:    true,
 										Description: "Image operating system. Required for virtual server image for VPC.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Programmatic ID of virtual server image. Required for virtual server image for VPC.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Programmatic name of virtual server image. Required for virtual server image for VPC.",
 												},
 												"region": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Region the virtual server image is available in. Required for virtual server image for VPC.",
 												},
 											},
@@ -990,27 +990,27 @@ func ResourceIBMCmVersion() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"current": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "one of: new, validated, account-published, ibm-published, public-published.",
 						},
 						"current_entered": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Date and time of current request.",
 						},
 						"pending": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "one of: new, validated, account-published, ibm-published, public-published.",
 						},
 						"pending_requested": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Date and time of pending request.",
 						},
 						"previous": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "one of: new, validated, account-published, ibm-published, public-published.",
 						},
 					},
@@ -1040,7 +1040,8 @@ func ResourceIBMCmVersion() *schema.Resource {
 			"deprecate_pending": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Deprecation information for an Offering.",
+				Optional:    true,
+				Description: "Deprecation information for a Version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deprecate_date": &schema.Schema{
@@ -1949,17 +1950,17 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
 	}
-	if _, ok := d.GetOk("is_consumable"); ok {
-		if activeVersion.IsConsumable == nil {
+	if _, ok := d.GetOk("usage"); ok {
+		if activeVersion.Metadata["usage"] == nil {
 			method = "add"
 		} else {
 			method = "replace"
 		}
-		path := fmt.Sprintf("%s/is_consumable", pathToVersion)
+		path := fmt.Sprintf("%s/metadata/usage", pathToVersion)
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
 			Path:  &path,
-			Value: d.Get("is_consumable"),
+			Value: d.Get("usage"),
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
@@ -2423,6 +2424,21 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
 	}
+	if d.HasChange("usage") {
+		if activeVersion.Metadata["usage"] == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/metadata/usage", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("usage"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
 
 	if hasChange {
 		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
@@ -2432,7 +2448,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		}
 	}
 
-	if d.Get("deprecate") != nil {
+	if d.HasChange("deprecate") && d.Get("deprecate") != nil {
 		setDeprecateVersionOptions := &catalogmanagementv1.SetDeprecateVersionOptions{}
 		setDeprecateVersionOptions.SetVersionLocID(*activeVersion.VersionLocator)
 		setDeprecateVersionOptions.SetSetting(strconv.FormatBool(d.Get("deprecate").(bool)))

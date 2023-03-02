@@ -1200,7 +1200,8 @@ func ResourceIBMCmOffering() *schema.Resource {
 									"deprecate_pending": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Deprecation information for an Offering.",
+										Optional:    true,
+										Description: "Deprecation information for a Version.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"deprecate_date": &schema.Schema{
@@ -1347,114 +1348,113 @@ func ResourceIBMCmOffering() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"version": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost estimate version.",
 															},
 															"currency": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost estimate currency.",
 															},
 															"projects": &schema.Schema{
 																Type:        schema.TypeList,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost estimate projects.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"name": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Project name.",
 																		},
 																		"metadata": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Project metadata.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"past_breakdown": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost breakdown definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
 																					"total_monthly_c_ost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total monthly cost.",
 																					},
 																					"resources": &schema.Schema{
 																						Type:        schema.TypeList,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Resources.",
 																						Elem: &schema.Resource{
 																							Schema: map[string]*schema.Schema{
 																								"name": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource name.",
 																								},
 																								"metadata": &schema.Schema{
 																									Type:        schema.TypeMap,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource metadata.",
 																									Elem:        &schema.Schema{Type: schema.TypeString},
 																								},
 																								"hourly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Hourly cost.",
 																								},
 																								"monthly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Monthly cost.",
 																								},
 																								"cost_components": &schema.Schema{
 																									Type:        schema.TypeList,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Cost components.",
 																									Elem: &schema.Resource{
 																										Schema: map[string]*schema.Schema{
 																											"name": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component name.",
 																											},
 																											"unit": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component unit.",
 																											},
 																											"hourly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly quantity.",
 																											},
 																											"monthly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly quantity.",
 																											},
 																											"price": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component price.",
 																											},
 																											"hourly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly cost.",
 																											},
 																											"monthly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly cist.",
 																											},
 																										},
@@ -1468,87 +1468,86 @@ func ResourceIBMCmOffering() *schema.Resource {
 																		},
 																		"breakdown": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost breakdown definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
 																					"total_monthly_c_ost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total monthly cost.",
 																					},
 																					"resources": &schema.Schema{
 																						Type:        schema.TypeList,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Resources.",
 																						Elem: &schema.Resource{
 																							Schema: map[string]*schema.Schema{
 																								"name": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource name.",
 																								},
 																								"metadata": &schema.Schema{
 																									Type:        schema.TypeMap,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource metadata.",
 																									Elem:        &schema.Schema{Type: schema.TypeString},
 																								},
 																								"hourly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Hourly cost.",
 																								},
 																								"monthly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Monthly cost.",
 																								},
 																								"cost_components": &schema.Schema{
 																									Type:        schema.TypeList,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Cost components.",
 																									Elem: &schema.Resource{
 																										Schema: map[string]*schema.Schema{
 																											"name": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component name.",
 																											},
 																											"unit": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component unit.",
 																											},
 																											"hourly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly quantity.",
 																											},
 																											"monthly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly quantity.",
 																											},
 																											"price": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component price.",
 																											},
 																											"hourly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly cost.",
 																											},
 																											"monthly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly cist.",
 																											},
 																										},
@@ -1562,87 +1561,86 @@ func ResourceIBMCmOffering() *schema.Resource {
 																		},
 																		"diff": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost breakdown definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
 																					"total_monthly_c_ost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total monthly cost.",
 																					},
 																					"resources": &schema.Schema{
 																						Type:        schema.TypeList,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Resources.",
 																						Elem: &schema.Resource{
 																							Schema: map[string]*schema.Schema{
 																								"name": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource name.",
 																								},
 																								"metadata": &schema.Schema{
 																									Type:        schema.TypeMap,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource metadata.",
 																									Elem:        &schema.Schema{Type: schema.TypeString},
 																								},
 																								"hourly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Hourly cost.",
 																								},
 																								"monthly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Monthly cost.",
 																								},
 																								"cost_components": &schema.Schema{
 																									Type:        schema.TypeList,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Cost components.",
 																									Elem: &schema.Resource{
 																										Schema: map[string]*schema.Schema{
 																											"name": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component name.",
 																											},
 																											"unit": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component unit.",
 																											},
 																											"hourly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly quantity.",
 																											},
 																											"monthly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly quantity.",
 																											},
 																											"price": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component price.",
 																											},
 																											"hourly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly cost.",
 																											},
 																											"monthly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly cist.",
 																											},
 																										},
@@ -1656,45 +1654,44 @@ func ResourceIBMCmOffering() *schema.Resource {
 																		},
 																		"summary": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost summary definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_detected_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total detected resources.",
 																					},
 																					"total_supported_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total supported resources.",
 																					},
 																					"total_unsupported_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total unsupported resources.",
 																					},
 																					"total_usage_based_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total usage based resources.",
 																					},
 																					"total_no_price_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total no price resources.",
 																					},
 																					"unsupported_resource_counts": &schema.Schema{
 																						Type:        schema.TypeMap,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Unsupported resource counts.",
 																						Elem:        &schema.Schema{Type: schema.TypeString},
 																					},
 																					"no_price_resource_counts": &schema.Schema{
 																						Type:        schema.TypeMap,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "No price resource counts.",
 																						Elem:        &schema.Schema{Type: schema.TypeString},
 																					},
@@ -1706,45 +1703,44 @@ func ResourceIBMCmOffering() *schema.Resource {
 															},
 															"summary": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost summary definition.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"total_detected_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total detected resources.",
 																		},
 																		"total_supported_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total supported resources.",
 																		},
 																		"total_unsupported_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total unsupported resources.",
 																		},
 																		"total_usage_based_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total usage based resources.",
 																		},
 																		"total_no_price_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total no price resources.",
 																		},
 																		"unsupported_resource_counts": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Unsupported resource counts.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"no_price_resource_counts": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "No price resource counts.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
@@ -1753,37 +1749,37 @@ func ResourceIBMCmOffering() *schema.Resource {
 															},
 															"total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total hourly cost.",
 															},
 															"total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total monthly cost.",
 															},
 															"past_total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Past total hourly cost.",
 															},
 															"past_total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Past total monthly cost.",
 															},
 															"diff_total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Difference in total hourly cost.",
 															},
 															"diff_total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Difference in total monthly cost.",
 															},
 															"time_generated": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "When this estimate was generated.",
 															},
 														},
@@ -2387,6 +2383,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"deprecate_pending": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "Deprecation information for an Offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -3562,7 +3559,7 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		}
 	}
 
-	if d.Get("deprecate") != nil {
+	if d.HasChange("deprecate") && d.Get("deprecate") != nil {
 		deprecateOfferingOptions := &catalogmanagementv1.DeprecateOfferingOptions{}
 		deprecateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
 		deprecateOfferingOptions.SetOfferingID(*offering.ID)
