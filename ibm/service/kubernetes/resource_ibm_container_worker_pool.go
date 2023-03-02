@@ -351,7 +351,7 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	if d.HasChange("size_per_zone") {
+	if d.HasChange("size_per_zone") && !d.IsNewResource() {
 		err = workerPoolsAPI.ResizeWorkerPool(clusterNameorID, workerPoolNameorID, d.Get("size_per_zone").(int), targetEnv)
 		if err != nil {
 			return err
@@ -362,7 +362,7 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 			return fmt.Errorf("[ERROR] Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPoolNameorID, clusterNameorID, err)
 		}
 	}
-	if d.HasChange("labels") {
+	if d.HasChange("labels") && !d.IsNewResource() {
 		labels := make(map[string]string)
 		if l, ok := d.GetOk("labels"); ok {
 			for k, v := range l.(map[string]interface{}) {
