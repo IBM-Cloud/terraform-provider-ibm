@@ -37,6 +37,7 @@ func ResourceIbmCodeEngineConfigMap() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_config_map", "name"),
 				Description:  "The name of the config map. Use a name that is unique within the project.",
 			},

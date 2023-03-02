@@ -20,12 +20,12 @@ import (
 func TestAccIbmCodeEngineBuildBasic(t *testing.T) {
 	var conf codeenginev2.Build
 	name := fmt.Sprintf("tf-build-basic-%d", acctest.RandIntRange(10, 1000))
-	outputImage := fmt.Sprintf("stg.icr.io/icr_namespace/%s", name)
-	outputSecret := "ce-auto-icr-private-eu-de" // pragma: allowlist secret
+	outputImage := fmt.Sprintf("private.us.icr.io/ce-terraform-test/%s", name)
+	outputSecret := "ce-terraform-test"
 	sourceURL := "https://github.com/IBM/CodeEngine"
 	strategyType := "dockerfile"
 
-	projectName := fmt.Sprintf("tf-project-build-%d", acctest.RandIntRange(10, 100))
+	projectID := acc.CeProjectId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -33,36 +33,36 @@ func TestAccIbmCodeEngineBuildBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineBuildDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineBuildConfigBasic(projectName, name, outputImage, outputSecret, sourceURL, strategyType),
+				Config: testAccCheckIbmCodeEngineBuildConfigBasic(projectID, name, outputImage, outputSecret, sourceURL, strategyType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmCodeEngineBuildExists("ibm_code_engine_build.code_engine_build", conf),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_build.code_engine_build", "project_id"),
-					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build", "name", name),
-					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build", "output_image", outputImage),
-					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build", "output_secret", outputSecret),
-					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build", "source_url", sourceURL),
-					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build", "strategy_type", strategyType),
+					testAccCheckIbmCodeEngineBuildExists("ibm_code_engine_build.code_engine_build_instance", conf),
+					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "output_image", outputImage),
+					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "output_secret", outputSecret),
+					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "source_url", sourceURL),
+					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "strategy_type", strategyType),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmCodeEngineBuildConfigBasic(projectName string, name string, outputImage string, outputSecret string, sourceURL string, strategyType string) string {
+func testAccCheckIbmCodeEngineBuildConfigBasic(projectID string, name string, outputImage string, outputSecret string, sourceURL string, strategyType string) string {
 	return fmt.Sprintf(`
-		resource "ibm_code_engine_project" "code_engine_project_instance" {
-			name = "%s"
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			id = "%s"
 		}
 
 		resource "ibm_code_engine_build" "code_engine_build_instance" {
-			project_id = ibm_code_engine_project.code_engine_project_instance.id
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
 			name = "%s"
 			output_image = "%s"
 			output_secret = "%s"
 			source_url = "%s"
 			strategy_type = "%s"
 		}
-	`, projectName, name, outputImage, outputSecret, sourceURL, strategyType)
+	`, projectID, name, outputImage, outputSecret, sourceURL, strategyType)
 }
 
 func testAccCheckIbmCodeEngineBuildExists(n string, obj codeenginev2.Build) resource.TestCheckFunc {

@@ -23,7 +23,7 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 	data := `{ "key" = "inner" }`
 	nameUpdate := fmt.Sprintf("tf-config-map-basic-update-%d", acctest.RandIntRange(10, 1000))
 
-	projectName := fmt.Sprintf("tf-project-config-map-basic-%d", acctest.RandIntRange(10, 100))
+	projectID := acc.CeProjectId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,26 +31,26 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineConfigMapDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectName, name, data),
+				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID, name, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmCodeEngineConfigMapExists("ibm_code_engine_config_map.code_engine_config_map", conf),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_config_map.code_engine_config_map", "data"),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_config_map.code_engine_config_map", "project_id"),
-					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map", "name", name),
-					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map", "resource_type", "config_map_v2"),
+					testAccCheckIbmCodeEngineConfigMapExists("ibm_code_engine_config_map.code_engine_config_map_instance", conf),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "data.key", "inner"),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "resource_type", "config_map_v2"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectName, nameUpdate, data),
+				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID, nameUpdate, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_code_engine_config_map.code_engine_config_map", "project_id"),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_config_map.code_engine_config_map", "data"),
-					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map", "resource_type", "config_map_v2"),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "data.key", "inner"),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "resource_type", "config_map_v2"),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_code_engine_config_map.code_engine_config_map",
+				ResourceName:      "ibm_code_engine_config_map.code_engine_config_map_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -58,18 +58,18 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineConfigMapConfigBasic(projectName string, name string, data string) string {
+func testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID string, name string, data string) string {
 	return fmt.Sprintf(`
-		resource "ibm_code_engine_project" "code_engine_project_instance" {
-			name = "%s"
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			id = "%s"
 		}
 
 		resource "ibm_code_engine_config_map" "code_engine_config_map_instance" {
-			project_id = ibm_code_engine_project.code_engine_project_instance.id
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
 			name = "%s"
 			data = %s
 		}
-	`, projectName, name, data)
+	`, projectID, name, data)
 }
 
 func testAccCheckIbmCodeEngineConfigMapExists(n string, obj codeenginev2.ConfigMap) resource.TestCheckFunc {

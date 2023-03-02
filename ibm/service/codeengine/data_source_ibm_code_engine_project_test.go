@@ -7,46 +7,41 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmCodeEngineProjectDataSourceBasic(t *testing.T) {
-	projectName := fmt.Sprintf("tf-project-data-basic-%d", acctest.RandIntRange(10, 100))
+	projectID := acc.CeProjectId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineProjectDataSourceConfigBasic(projectName),
+				Config: testAccCheckIbmCodeEngineProjectDataSourceConfigBasic(projectID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "resource_group_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "account_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "href"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "region"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project", "status"),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_project.code_engine_project", "name", projectName),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_project.code_engine_project", "resource_type", "project_v2"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "resource_group_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "account_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "region"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "status"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_project.code_engine_project_instance", "id", projectID),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_project.code_engine_project_instance", "resource_type", "project_v2"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmCodeEngineProjectDataSourceConfigBasic(projectName string) string {
+func testAccCheckIbmCodeEngineProjectDataSourceConfigBasic(projectID string) string {
 	return fmt.Sprintf(`
-		resource "ibm_code_engine_project" "code_engine_project_instance" {
-			name = "%s"
-		}
-
 		data "ibm_code_engine_project" "code_engine_project_instance" {
-			id = ibm_code_engine_project.code_engine_project_instance.id
+			id = "%s"
 		}
-	`, projectName)
+	`, projectID)
 }

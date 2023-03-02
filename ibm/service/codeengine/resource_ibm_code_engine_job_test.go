@@ -25,7 +25,7 @@ func TestAccIbmCodeEngineJobBasic(t *testing.T) {
 	nameUpdate := fmt.Sprintf("tf-job-basic-update-%d", acctest.RandIntRange(10, 1000))
 	imageReferenceUpdate := "icr.io/codeengine/hello"
 
-	projectName := fmt.Sprintf("tf-project-job-basic-%d", acctest.RandIntRange(10, 100))
+	projectID := acc.CeProjectId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -33,34 +33,34 @@ func TestAccIbmCodeEngineJobBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineJobDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineJobConfigBasic(projectName, imageReference, name),
+				Config: testAccCheckIbmCodeEngineJobConfigBasic(projectID, name, imageReference),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmCodeEngineJobExists("ibm_code_engine_job.code_engine_job", conf),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job", "project_id"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "name", name),
-					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app", "resource_type", "job_v2"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "image_reference", imageReference),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_service_account", "default"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_cpu_limit", "1"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_ephemeral_storage_limit", "400M"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_max_execution_time", "7200"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_memory_limit", "4G"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_retry_limit", "3"),
+					testAccCheckIbmCodeEngineJobExists("ibm_code_engine_job.code_engine_job_instance", conf),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "resource_type", "job_v2"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "image_reference", imageReference),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_service_account", "default"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_cpu_limit", "1"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_ephemeral_storage_limit", "400M"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", "7200"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", "4G"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", "3"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineJobConfigBasic(projectName, imageReferenceUpdate, nameUpdate),
+				Config: testAccCheckIbmCodeEngineJobConfigBasic(projectID, nameUpdate, imageReferenceUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job", "project_id"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app", "resource_type", "job_v2"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "image_reference", imageReferenceUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_service_account", "default"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_cpu_limit", "1"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_ephemeral_storage_limit", "400M"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_max_execution_time", "7200"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_memory_limit", "4G"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_retry_limit", "3"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "resource_type", "job_v2"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "image_reference", imageReferenceUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_service_account", "default"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_cpu_limit", "1"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_ephemeral_storage_limit", "400M"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", "7200"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", "4G"),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", "3"),
 				),
 			},
 		},
@@ -78,20 +78,20 @@ func TestAccIbmCodeEngineJobExtended(t *testing.T) {
 	scaleEphemeralStorageLimit := "500M"
 	scaleMaxExecutionTime := "3600"
 	scaleMemoryLimit := "1G"
-	scaleRetryLimit := "6"
+	scaleRetryLimit := "2"
 
 	nameUpdate := fmt.Sprintf("tf-job-extended-update-%d", acctest.RandIntRange(10, 1000))
 	imageReferenceUpdate := "icr.io/codeengine/hello"
 	runAsUserUpdate := "0"
-	runModeUpdate := "daemon"
+	runModeUpdate := "task"
 	runServiceAccountUpdate := "none"
 	scaleCpuLimitUpdate := "1"
 	scaleEphemeralStorageLimitUpdate := "1G"
-	scaleMaxExecutionTimeUpdate := "3600"
+	scaleMaxExecutionTimeUpdate := "7200"
 	scaleMemoryLimitUpdate := "2G"
-	scaleRetryLimitUpdate := "4"
+	scaleRetryLimitUpdate := "3"
 
-	projectName := fmt.Sprintf("tf-project-job-extended-%d", acctest.RandIntRange(10, 100))
+	projectID := acc.CeProjectId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -99,71 +99,72 @@ func TestAccIbmCodeEngineJobExtended(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineJobDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineJobConfig(projectName, imageReference, name, runAsUser, runMode, runServiceAccount, scaleCpuLimit, scaleEphemeralStorageLimit, scaleMaxExecutionTime, scaleMemoryLimit, scaleRetryLimit),
+				Config: testAccCheckIbmCodeEngineJobConfig(projectID, name, imageReference, runAsUser, runMode, runServiceAccount, scaleCpuLimit, scaleEphemeralStorageLimit, scaleMaxExecutionTime, scaleMemoryLimit, scaleRetryLimit),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmCodeEngineJobExists("ibm_code_engine_job.code_engine_job", conf),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job", "project_id"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "image_reference", imageReference),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "name", name),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_as_user", runAsUser),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_mode", runMode),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_service_account", runServiceAccount),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_cpu_limit", scaleCpuLimit),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_ephemeral_storage_limit", scaleEphemeralStorageLimit),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_max_execution_time", scaleMaxExecutionTime),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_memory_limit", scaleMemoryLimit),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_retry_limit", scaleRetryLimit),
+					testAccCheckIbmCodeEngineJobExists("ibm_code_engine_job.code_engine_job_instance", conf),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "image_reference", imageReference),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_as_user", runAsUser),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_mode", runMode),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_service_account", runServiceAccount),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_cpu_limit", scaleCpuLimit),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_ephemeral_storage_limit", scaleEphemeralStorageLimit),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", scaleMaxExecutionTime),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", scaleMemoryLimit),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", scaleRetryLimit),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineJobConfig(projectName, imageReferenceUpdate, nameUpdate, runAsUserUpdate, runModeUpdate, runServiceAccountUpdate, scaleCpuLimitUpdate, scaleEphemeralStorageLimitUpdate, scaleMaxExecutionTimeUpdate, scaleMemoryLimitUpdate, scaleRetryLimitUpdate),
+				Config: testAccCheckIbmCodeEngineJobConfig(projectID, nameUpdate, imageReferenceUpdate, runAsUserUpdate, runModeUpdate, runServiceAccountUpdate, scaleCpuLimitUpdate, scaleEphemeralStorageLimitUpdate, scaleMaxExecutionTimeUpdate, scaleMemoryLimitUpdate, scaleRetryLimitUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job", "project_id"),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "image_reference", imageReferenceUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_as_user", runAsUserUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_mode", runModeUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "run_service_account", runServiceAccountUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_cpu_limit", scaleCpuLimitUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_ephemeral_storage_limit", scaleEphemeralStorageLimitUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_max_execution_time", scaleMaxExecutionTimeUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_memory_limit", scaleMemoryLimitUpdate),
-					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job", "scale_retry_limit", scaleRetryLimitUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "image_reference", imageReferenceUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_as_user", runAsUserUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_mode", runModeUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "run_service_account", runServiceAccountUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_cpu_limit", scaleCpuLimitUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_ephemeral_storage_limit", scaleEphemeralStorageLimitUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", scaleMaxExecutionTimeUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", scaleMemoryLimitUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", scaleRetryLimitUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_code_engine_job.code_engine_job",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_code_engine_job.code_engine_job_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"run_as_user"},
 			},
 		},
 	})
 }
 
-func testAccCheckIbmCodeEngineJobConfigBasic(projectName string, imageReference string, name string) string {
+func testAccCheckIbmCodeEngineJobConfigBasic(projectID string, name string, imageReference string) string {
 	return fmt.Sprintf(`
-		resource "ibm_code_engine_project" "code_engine_project_instance" {
-			name = "%s"
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			id = "%s"
 		}
 
 		resource "ibm_code_engine_job" "code_engine_job_instance" {
-			project_id = ibm_code_engine_project.code_engine_project_instance.id
-			image_reference = "%s"
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
 			name = "%s"
+			image_reference = "%s"
 		}
-	`, projectName, imageReference, name)
+	`, projectID, name, imageReference)
 }
 
-func testAccCheckIbmCodeEngineJobConfig(projectName string, imageReference string, name string, runAsUser string, runMode string, runServiceAccount string, scaleCpuLimit string, scaleEphemeralStorageLimit string, scaleMaxExecutionTime string, scaleMemoryLimit string, scaleRetryLimit string) string {
+func testAccCheckIbmCodeEngineJobConfig(projectID string, name string, imageReference string, runAsUser string, runMode string, runServiceAccount string, scaleCpuLimit string, scaleEphemeralStorageLimit string, scaleMaxExecutionTime string, scaleMemoryLimit string, scaleRetryLimit string) string {
 	return fmt.Sprintf(`
-		resource "ibm_code_engine_project" "code_engine_project_instance" {
-			name = "%s"
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			id = "%s"
 		}
 
 		resource "ibm_code_engine_job" "code_engine_job_instance" {
-			project_id = ibm_code_engine_project.code_engine_project_instance.id
-			image_reference = "%s"
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
 			name = "%s"
+			image_reference = "%s"
 			run_as_user = %s
 			run_mode = "%s"
 			run_service_account = "%s"
@@ -173,7 +174,7 @@ func testAccCheckIbmCodeEngineJobConfig(projectName string, imageReference strin
 			scale_memory_limit = "%s"
 			scale_retry_limit = %s
 		}
-	`, projectName, imageReference, name, runAsUser, runMode, runServiceAccount, scaleCpuLimit, scaleEphemeralStorageLimit, scaleMaxExecutionTime, scaleMemoryLimit, scaleRetryLimit)
+	`, projectID, name, imageReference, runAsUser, runMode, runServiceAccount, scaleCpuLimit, scaleEphemeralStorageLimit, scaleMaxExecutionTime, scaleMemoryLimit, scaleRetryLimit)
 }
 
 func testAccCheckIbmCodeEngineJobExists(n string, obj codeenginev2.Job) resource.TestCheckFunc {

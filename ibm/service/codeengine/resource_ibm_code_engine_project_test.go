@@ -18,28 +18,6 @@ import (
 
 func TestAccIbmCodeEngineProjectBasic(t *testing.T) {
 	var conf codeenginev2.Project
-	projectName := fmt.Sprintf("tf-project-basic-%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmCodeEngineProjectDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineProjectConfigBasic(projectName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmCodeEngineProjectExists("ibm_code_engine_project.code_engine_project", conf),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project", "resource_group_id"),
-					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project", "name", projectName),
-					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project", "resource_type", "project_v2"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIbmCodeEngineProjectExtended(t *testing.T) {
-	var conf codeenginev2.Project
 	projectName := fmt.Sprintf("tf-project-extended-%d", acctest.RandIntRange(10, 100))
 	resourceGroupID := acc.CeResourceGroupID
 
@@ -51,14 +29,21 @@ func TestAccIbmCodeEngineProjectExtended(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmCodeEngineProjectConfig(projectName, resourceGroupID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmCodeEngineProjectExists("ibm_code_engine_project.code_engine_project", conf),
-					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project", "name", projectName),
-					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project", "resource_group_id", resourceGroupID),
-					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project", "resource_type", "project_v2"),
+					testAccCheckIbmCodeEngineProjectExists("ibm_code_engine_project.code_engine_project_instance", conf),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "id"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "account_id"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "crn"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "href"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "region"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "status"),
+					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project_instance", "name", projectName),
+					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project_instance", "resource_group_id", resourceGroupID),
+					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project_instance", "resource_type", "project_v2"),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_code_engine_project.code_engine_project",
+				ResourceName:      "ibm_code_engine_project.code_engine_project_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
