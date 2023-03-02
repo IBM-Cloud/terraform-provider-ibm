@@ -358,7 +358,7 @@ func DataSourceIBMCmVersion() *schema.Resource {
 							Description: "The time validation ended.",
 						},
 						"est_deploy_time": &schema.Schema{
-							Type:        schema.TypeString,
+							Type:        schema.TypeFloat,
 							Computed:    true,
 							Description: "The estimated time validation takes.",
 						},

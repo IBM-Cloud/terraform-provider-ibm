@@ -602,7 +602,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 													Description: "The time validation ended.",
 												},
 												"est_deploy_time": &schema.Schema{
-													Type:        schema.TypeString,
+													Type:        schema.TypeFloat,
 													Computed:    true,
 													Description: "The estimated time validation takes.",
 												},
@@ -1990,33 +1990,26 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"share_with_all": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Denotes public availability of an Offering - if share_enabled is true.",
 			},
 			"share_with_ibm": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Denotes IBM employee availability of an Offering - if share_enabled is true.",
 			},
 			"share_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Denotes sharing including access list availability of an Offering is enabled.",
 			},
-			"publish_to_access_list": &schema.Schema{
+			"share_with_access_list": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "A list of account IDs to add to this offering's access list.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"publish_to_ibm": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether you would like to publish this offering to IBM or not.",
-			},
-			"publish_to_public": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether you would like to publish this offering to the public catalog or not.",
 			},
 			"permit_request_ibm_public_publish": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -2740,13 +2733,13 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
 	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
 	shareOfferingOptions.SetOfferingID(*offering.ID)
-	shareOfferingOptions.SetEnabled(true)
+	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
 
-	if _, ok := d.GetOk("publish_to_access_list"); ok {
+	if _, ok := d.GetOk("share_with_access_list"); ok {
 		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
 		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
 		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
-		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("publish_to_access_list").([]interface{})))
+		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
 		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
 		if err != nil {
 			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
@@ -2754,14 +2747,14 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 		}
 	}
 
-	if _, ok := d.GetOk("publish_to_ibm"); ok {
+	if _, ok := d.GetOk("share_with_ibm"); ok {
 		shareOffering = true
-		shareOfferingOptions.SetIBM(d.Get("publish_to_ibm").(bool))
+		shareOfferingOptions.SetIBM(d.Get("share_with_ibm").(bool))
 	}
 
-	if _, ok := d.GetOk("publish_to_public"); ok {
+	if _, ok := d.GetOk("share_with_all"); ok {
 		shareOffering = true
-		shareOfferingOptions.SetPublic(d.Get("publish_to_public").(bool))
+		shareOfferingOptions.SetPublic(d.Get("share_with_all").(bool))
 	}
 
 	if shareOffering {
@@ -3261,54 +3254,6 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
 	}
-	if d.HasChange("share_with_all") {
-		var method string
-		if offering.ShareWithAll == nil {
-			method = "add"
-		} else {
-			method = "replace"
-		}
-		path := "/share_with_all"
-		update := catalogmanagementv1.JSONPatchOperation{
-			Op:    &method,
-			Path:  &path,
-			Value: d.Get("share_with_all"),
-		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
-		hasChange = true
-	}
-	if d.HasChange("share_with_ibm") {
-		var method string
-		if offering.ShareWithIBM == nil {
-			method = "add"
-		} else {
-			method = "replace"
-		}
-		path := "/share_with_ibm"
-		update := catalogmanagementv1.JSONPatchOperation{
-			Op:    &method,
-			Path:  &path,
-			Value: d.Get("share_with_ibm"),
-		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
-		hasChange = true
-	}
-	if d.HasChange("share_enabled") {
-		var method string
-		if offering.ShareEnabled == nil {
-			method = "add"
-		} else {
-			method = "replace"
-		}
-		path := "/share_enabled"
-		update := catalogmanagementv1.JSONPatchOperation{
-			Op:    &method,
-			Path:  &path,
-			Value: d.Get("share_enabled"),
-		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
-		hasChange = true
-	}
 	if d.HasChange("public_original_crn") {
 		var method string
 		if offering.PublicOriginalCRN == nil {
@@ -3526,14 +3471,14 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
 	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
 	shareOfferingOptions.SetOfferingID(*offering.ID)
-	shareOfferingOptions.SetEnabled(true)
+	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
 
-	if d.HasChange("publish_to_access_list") {
+	if d.HasChange("share_with_access_list") {
 		publishStatusChanged = true
 		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
 		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
 		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
-		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("publish_to_access_list").([]interface{})))
+		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
 		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
 		if err != nil {
 			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
@@ -3541,14 +3486,14 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		}
 	}
 
-	if d.HasChange("publish_to_ibm") {
+	if d.HasChange("share_with_ibm") {
 		publishStatusChanged = true
-		shareOfferingOptions.SetIBM(d.Get("publish_to_ibm").(bool))
+		shareOfferingOptions.SetIBM(d.Get("share_with_ibm").(bool))
 	}
 
-	if d.HasChange("publish_to_public") {
+	if d.HasChange("share_with_all") {
 		publishStatusChanged = true
-		shareOfferingOptions.SetPublic(d.Get("publish_to_public").(bool))
+		shareOfferingOptions.SetPublic(d.Get("share_with_all").(bool))
 	}
 
 	if publishStatusChanged {

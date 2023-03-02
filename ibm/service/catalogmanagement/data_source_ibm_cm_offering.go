@@ -583,7 +583,7 @@ func DataSourceIBMCmOffering() *schema.Resource {
 													Description: "The time validation ended.",
 												},
 												"est_deploy_time": &schema.Schema{
-													Type:        schema.TypeString,
+													Type:        schema.TypeFloat,
 													Computed:    true,
 													Description: "The estimated time validation takes.",
 												},
@@ -1967,21 +1967,11 @@ func DataSourceIBMCmOffering() *schema.Resource {
 				Computed:    true,
 				Description: "Denotes sharing including access list availability of an Offering is enabled.",
 			},
-			"publish_to_access_list": &schema.Schema{
+			"share_with_access_list": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "A list of account IDs to add to this offering's access list.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"publish_to_ibm": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether you would like to publish this offering to IBM or not.",
-			},
-			"publish_to_public": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether you would like to publish this offering to the public catalog or not.",
 			},
 			"permit_request_ibm_public_publish": &schema.Schema{
 				Type:        schema.TypeBool,
