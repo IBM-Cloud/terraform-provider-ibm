@@ -14,7 +14,7 @@ Provides a resource for VPNServerRoute. This allows VPNServerRoute to be created
 
 ```terraform
 resource "ibm_is_vpn_server_route" "example" {
-  vpn_server_id = ibm_is_vpn_server.example.vpn_server
+  vpn_server    = ibm_is_vpn_server.example.vpn_server
   destination   = "172.16.0.0/16"
   action        = "translate"
   name          = "example-vpn-server-route"
@@ -35,7 +35,7 @@ Review the argument reference that you can specify for your resource.
   - Constraints: The value must match regular expression `/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$/`
 - `name` - (Optional, String) The user-defined name for this VPN route. If unspecified, the name will be a hyphenated list of randomly-selected words. Names must be unique within the VPN server the VPN route resides in.
   - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$/`
-- `vpn_server_id` - (Required, Forces new resource, String) The VPN server identifier.
+- `vpn_server` - (Required, Forces new resource, String) The VPN server identifier.
 
 ## Attribute Reference
 
@@ -53,8 +53,8 @@ In addition to all argument references listed, you can access the following attr
 ## Import
 
 You can import the `ibm_is_vpn_server_route` resource by using `id`.
-The `id` property can be formed from `vpn_server_id`, and `vpn_route` in the following format:
-- `vpn_server_id`: A string. The VPN server identifier.
+The `id` property can be formed from `vpn_server`, and `vpn_route` in the following format:
+- `vpn_server`: A string. The VPN server identifier.
 - `vpn_route`: A string. The VPN route identifier.
 
 ```
