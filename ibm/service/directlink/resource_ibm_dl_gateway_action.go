@@ -434,7 +434,7 @@ func ResourceIBMDLGatewayAction() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlTags)},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_dl_gateway_action", dlTags)},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Tags for the direct link gateway",
 			},
@@ -748,7 +748,7 @@ func resourceIBMdlGatewayCreateAction(d *schema.ResourceData, meta interface{}) 
 	}
 
 	d.SetId(*gateway.ID)
-	_, err = isWaitForDirectLinkAvailable1(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForDirectLinkAvailableforAction(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -1022,19 +1022,19 @@ func resourceIBMdlGatewayActionRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func isWaitForDirectLinkAvailable1(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForDirectLinkAvailableforAction(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", dlGatewayProvisioning},
 		Target:     []string{dlGatewayProvisioningDone, ""},
-		Refresh:    isDirectLinkRefreshFunc1(client, id),
+		Refresh:    isDirectLinkRefreshFuncforAction(client, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 	return stateConf.WaitForState()
 }
-func isDirectLinkRefreshFunc1(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+func isDirectLinkRefreshFuncforAction(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,
@@ -1050,19 +1050,19 @@ func isDirectLinkRefreshFunc1(client *directlinkv1.DirectLinkV1, id string) reso
 	}
 }
 
-func isWaitForDirectLinkActionAvailable1(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForDirectLinkActionAvailable(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", dlGatewayActionUpdate},
 		Target:     []string{dlGatewayActionUpdateDone, ""},
-		Refresh:    isDirectLinkRefreshActionFunc1(client, id),
+		Refresh:    isDirectLinkRefreshActionFunc(client, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 	return stateConf.WaitForState()
 }
-func isDirectLinkRefreshActionFunc1(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+func isDirectLinkRefreshActionFunc(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,
@@ -1079,6 +1079,38 @@ func isDirectLinkRefreshActionFunc1(client *directlinkv1.DirectLinkV1, id string
 			}
 		}
 		return instance, dlGatewayActionUpdate, nil
+	}
+}
+
+func isWaitForDirectLinkDeleteActionAvailable(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", dlGatewayDeleteActionUpdate},
+		Target:     []string{dlGatewayDeleteActionUpdateDone, ""},
+		Refresh:    isDirectLinkRefreshDeleteActionFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+func isDirectLinkRefreshDeleteActionFunc(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getOptions := &directlinkv1.GetGatewayOptions{
+			ID: &id,
+		}
+		instance, response, err := client.GetGateway(getOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
+		}
+		if instance.ChangeRequest != nil {
+			gatewayChangeRequestIntf := instance.ChangeRequest
+			gatewayChangeRequest := gatewayChangeRequestIntf.(*directlinkv1.GatewayChangeRequest)
+			if *gatewayChangeRequest.Type == "delete_gateway" {
+				return instance, dlGatewayDeleteActionUpdateDone, nil
+			}
+		}
+		return instance, dlGatewayDeleteActionUpdate, nil
 	}
 }
 
@@ -1100,7 +1132,7 @@ func resourceIBMdlGatewayActionUpdate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if action == "update_attributes_approve" || action == "update_attributes_reject" {
-		_, err = isWaitForDirectLinkActionAvailable1(directLink, gatewayId, d.Timeout(schema.TimeoutCreate))
+		_, err = isWaitForDirectLinkActionAvailable(directLink, gatewayId, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return err
 		}
@@ -1155,13 +1187,17 @@ func resourceIBMdlGatewayActionUpdate(d *schema.ResourceData, meta interface{}) 
 			return fmt.Errorf("[DEBUG] Direct Link Gateway update_attributes_approve err %s\n%s", err, response)
 		}
 		d.SetId(*gateway.ID)
-		_, err = isWaitForDirectLinkAvailable1(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
+		_, err = isWaitForDirectLinkAvailableforAction(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return err
 		}
 		return resourceIBMdlGatewayActionRead(d, meta)
 	}
 	if action == "delete_gateway_approve" || action == "delete_gateway_reject" {
+		_, err = isWaitForDirectLinkDeleteActionAvailable(directLink, gatewayId, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return err
+		}
 		_, response, err := directLink.CreateGatewayAction(createGatewayActionOptionsModel)
 		if err != nil {
 			return fmt.Errorf("[DEBUG] delete_gateway_approve failed with error  %s\n%s", err, response)
@@ -1187,7 +1223,7 @@ func resourceIBMdlGatewayActionDelete(d *schema.ResourceData, meta interface{}) 
 	}
 	_, response, err := directLink.CreateGatewayAction(createGatewayActionOptionsModel)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] delete_gateway_approve failed with error  %s\n%s", err, response)
+		fmt.Printf("[DEBUG] delete_gateway_approve failed, may be gateway deleted already %s\n%s", err, response)
 	}
 	d.SetId("")
 	return nil
