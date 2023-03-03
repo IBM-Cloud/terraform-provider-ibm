@@ -573,6 +573,19 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 					currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 				}
 			}
+		case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+			{
+				primNic := bmsnic.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+				currentPrimNic[isInstanceNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
+
+				if len(primNic.SecurityGroups) != 0 {
+					secgrpList := []string{}
+					for i := 0; i < len(primNic.SecurityGroups); i++ {
+						secgrpList = append(secgrpList, string(*(primNic.SecurityGroups[i].ID)))
+					}
+					currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+				}
+			}
 		}
 
 		primaryNicList = append(primaryNicList, currentPrimNic)
@@ -635,6 +648,19 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 			case "*vpcv1.BareMetalServerNetworkInterfaceByVlan":
 				{
 					bmsnic := bmsnicintf.(*vpcv1.BareMetalServerNetworkInterfaceByVlan)
+					currentNic[isBareMetalServerNicAllowIPSpoofing] = *bmsnic.AllowIPSpoofing
+					currentNic[isBareMetalServerNicSubnet] = *bmsnic.Subnet.ID
+					if len(bmsnic.SecurityGroups) != 0 {
+						secgrpList := []string{}
+						for i := 0; i < len(bmsnic.SecurityGroups); i++ {
+							secgrpList = append(secgrpList, string(*(bmsnic.SecurityGroups[i].ID)))
+						}
+						currentNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+					}
+				}
+			case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+				{
+					bmsnic := bmsnicintf.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
 					currentNic[isBareMetalServerNicAllowIPSpoofing] = *bmsnic.AllowIPSpoofing
 					currentNic[isBareMetalServerNicSubnet] = *bmsnic.Subnet.ID
 					if len(bmsnic.SecurityGroups) != 0 {
