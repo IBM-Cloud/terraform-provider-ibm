@@ -8,12 +8,12 @@ Features
     - **DataSources**
         - ibm_sm_secret_group
         - ibm_sm_secret_groups
-        - ibm_sm_configuration_private_certificate_intermediate_ca
-        - ibm_sm_configuration_private_certificate_root_ca
-        - ibm_sm_configuration_private_certificate_template
-        - ibm_sm_configuration_public_certificate_ca_lets_encrypt
-        - ibm_sm_configuration_public_certificate_dns_cis
-        - ibm_sm_configuration_public_certificate_dns_classic_infrastructure
+        - ibm_sm_private_certificate_configuration_intermediate_ca
+        - ibm_sm_private_certificate_configuration_root_ca
+        - ibm_sm_private_certificate_configuration_template
+        - ibm_sm_public_certificate_configuration_ca_lets_encrypt
+        - ibm_sm_public_certificate_configuration_dns_cis
+        - ibm_sm_public_certificate_configuration_dns_classic_infrastructure
         - ibm_sm_configuration_iam_credentials
         - ibm_sm_secrets
         - ibm_sm_arbitrary_secret_metadata
@@ -40,12 +40,12 @@ Features
         - ibm_sm_iam_credentials_secret
         - ibm_sm_username_password_secret
         - ibm_sm_kv_secret
-        - ibm_sm_configuration_public_certificate_ca_lets_encrypt
-        - ibm_sm_configuration_public_certificate_dns_cis
-        - ibm_sm_configuration_public_certificate_dns_classic_infrastructure
-        - ibm_sm_configuration_private_certificate_root_ca
-        - ibm_sm_configuration_private_certificate_intermediate_ca
-        - ibm_sm_configuration_private_certificate_template
+        - ibm_sm_public_certificate_configuration_ca_lets_encrypt
+        - ibm_sm_public_certificate_configuration_dns_cis
+        - ibm_sm_public_certificate_configuration_dns_classic_infrastructure
+        - ibm_sm_private_certificate_configuration_root_ca
+        - ibm_sm_private_certificate_configuration_intermediate_ca
+        - ibm_sm_private_certificate_configuration_template
         - ibm_sm_configuration_iam_credentials
         - ibm_sm_en_registration
 * Support for Event Notification
