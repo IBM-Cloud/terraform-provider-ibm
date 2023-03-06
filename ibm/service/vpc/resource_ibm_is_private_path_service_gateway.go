@@ -70,7 +70,7 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 				Description: "The number of endpoint gateways using this private path service gateway.",
 			},
 			"published": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicates the availability of this private path service gateway.",
 			},
@@ -104,7 +104,7 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that the account policy was updated.",
 			},
-			"private_path_service_gateway_account_policy": &schema.Schema{
+			"private_path_service_gateway": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this account policy.",
@@ -220,10 +220,10 @@ func resourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting published: %s", err))
 	}
 	if err = d.Set("load_balancer", *privatePathServiceGateway.LoadBalancer.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting load balancer id: %s", err))
 	}
 	if err = d.Set("lifecycle_state", privatePathServiceGateway.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("name", privatePathServiceGateway.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
@@ -232,14 +232,14 @@ func resourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting vpc: %s", err))
 	}
 	if err = d.Set("zonal_affinity", privatePathServiceGateway.ZonalAffinity); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting zonal_affinity: %s", err))
 	}
 	serviceEndpointsList := make([]string, 0)
 	for i := 0; i < len(privatePathServiceGateway.ServiceEndpoints); i++ {
 		serviceEndpointsList = append(serviceEndpointsList, string(privatePathServiceGateway.ServiceEndpoints[i]))
 	}
-	if err = d.Set("endpoint_gateways_count", serviceEndpointsList); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
+	if err = d.Set("service_endpoints", serviceEndpointsList); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting service_endpoints: %s", err))
 	}
 	if err = d.Set("crn", privatePathServiceGateway.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
