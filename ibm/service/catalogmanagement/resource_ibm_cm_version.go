@@ -820,6 +820,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			"install": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				MaxItems:    1,
 				Description: "Script information.",
 				Elem: &schema.Resource{
@@ -1065,6 +1066,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "Version Solution Information.  Only supported for Product kind Solution.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1188,114 +1190,113 @@ func ResourceIBMCmVersion() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"version": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Cost estimate version.",
 									},
 									"currency": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Cost estimate currency.",
 									},
 									"projects": &schema.Schema{
 										Type:        schema.TypeList,
-										Optional:    true,
+										Computed:    true,
 										Description: "Cost estimate projects.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Project name.",
 												},
 												"metadata": &schema.Schema{
 													Type:        schema.TypeMap,
-													Optional:    true,
+													Computed:    true,
 													Description: "Project metadata.",
 													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
 												"past_breakdown": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
+													Computed:    true,
 													Description: "Cost breakdown definition.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total hourly cost.",
 															},
-															"total_monthly_c_ost": &schema.Schema{
+															"total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total monthly cost.",
 															},
 															"resources": &schema.Schema{
 																Type:        schema.TypeList,
-																Optional:    true,
+																Computed:    true,
 																Description: "Resources.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"name": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Resource name.",
 																		},
 																		"metadata": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Resource metadata.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"hourly_cost": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Hourly cost.",
 																		},
 																		"monthly_cost": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Monthly cost.",
 																		},
 																		"cost_components": &schema.Schema{
 																			Type:        schema.TypeList,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost components.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"name": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component name.",
 																					},
 																					"unit": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component unit.",
 																					},
 																					"hourly_quantity": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component hourly quantity.",
 																					},
 																					"monthly_quantity": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component monthly quantity.",
 																					},
 																					"price": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component price.",
 																					},
 																					"hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component hourly cost.",
 																					},
 																					"monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component monthly cist.",
 																					},
 																				},
@@ -1309,87 +1310,86 @@ func ResourceIBMCmVersion() *schema.Resource {
 												},
 												"breakdown": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
+													Computed:    true,
 													Description: "Cost breakdown definition.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total hourly cost.",
 															},
-															"total_monthly_c_ost": &schema.Schema{
+															"total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total monthly cost.",
 															},
 															"resources": &schema.Schema{
 																Type:        schema.TypeList,
-																Optional:    true,
+																Computed:    true,
 																Description: "Resources.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"name": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Resource name.",
 																		},
 																		"metadata": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Resource metadata.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"hourly_cost": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Hourly cost.",
 																		},
 																		"monthly_cost": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Monthly cost.",
 																		},
 																		"cost_components": &schema.Schema{
 																			Type:        schema.TypeList,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost components.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"name": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component name.",
 																					},
 																					"unit": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component unit.",
 																					},
 																					"hourly_quantity": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component hourly quantity.",
 																					},
 																					"monthly_quantity": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component monthly quantity.",
 																					},
 																					"price": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component price.",
 																					},
 																					"hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component hourly cost.",
 																					},
 																					"monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component monthly cist.",
 																					},
 																				},
@@ -1403,87 +1403,86 @@ func ResourceIBMCmVersion() *schema.Resource {
 												},
 												"diff": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
+													Computed:    true,
 													Description: "Cost breakdown definition.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total hourly cost.",
 															},
-															"total_monthly_c_ost": &schema.Schema{
+															"total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total monthly cost.",
 															},
 															"resources": &schema.Schema{
 																Type:        schema.TypeList,
-																Optional:    true,
+																Computed:    true,
 																Description: "Resources.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"name": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Resource name.",
 																		},
 																		"metadata": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Resource metadata.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"hourly_cost": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Hourly cost.",
 																		},
 																		"monthly_cost": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Monthly cost.",
 																		},
 																		"cost_components": &schema.Schema{
 																			Type:        schema.TypeList,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost components.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"name": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component name.",
 																					},
 																					"unit": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component unit.",
 																					},
 																					"hourly_quantity": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component hourly quantity.",
 																					},
 																					"monthly_quantity": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component monthly quantity.",
 																					},
 																					"price": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component price.",
 																					},
 																					"hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component hourly cost.",
 																					},
 																					"monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Cost component monthly cist.",
 																					},
 																				},
@@ -1497,45 +1496,44 @@ func ResourceIBMCmVersion() *schema.Resource {
 												},
 												"summary": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
+													Computed:    true,
 													Description: "Cost summary definition.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"total_detected_resources": &schema.Schema{
 																Type:        schema.TypeInt,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total detected resources.",
 															},
 															"total_supported_resources": &schema.Schema{
 																Type:        schema.TypeInt,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total supported resources.",
 															},
 															"total_unsupported_resources": &schema.Schema{
 																Type:        schema.TypeInt,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total unsupported resources.",
 															},
 															"total_usage_based_resources": &schema.Schema{
 																Type:        schema.TypeInt,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total usage based resources.",
 															},
 															"total_no_price_resources": &schema.Schema{
 																Type:        schema.TypeInt,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total no price resources.",
 															},
 															"unsupported_resource_counts": &schema.Schema{
 																Type:        schema.TypeMap,
-																Optional:    true,
+																Computed:    true,
 																Description: "Unsupported resource counts.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
 															"no_price_resource_counts": &schema.Schema{
 																Type:        schema.TypeMap,
-																Optional:    true,
+																Computed:    true,
 																Description: "No price resource counts.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -1547,45 +1545,44 @@ func ResourceIBMCmVersion() *schema.Resource {
 									},
 									"summary": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Cost summary definition.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"total_detected_resources": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Total detected resources.",
 												},
 												"total_supported_resources": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Total supported resources.",
 												},
 												"total_unsupported_resources": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Total unsupported resources.",
 												},
 												"total_usage_based_resources": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Total usage based resources.",
 												},
 												"total_no_price_resources": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Total no price resources.",
 												},
 												"unsupported_resource_counts": &schema.Schema{
 													Type:        schema.TypeMap,
-													Optional:    true,
+													Computed:    true,
 													Description: "Unsupported resource counts.",
 													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
 												"no_price_resource_counts": &schema.Schema{
 													Type:        schema.TypeMap,
-													Optional:    true,
+													Computed:    true,
 													Description: "No price resource counts.",
 													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
@@ -1594,37 +1591,37 @@ func ResourceIBMCmVersion() *schema.Resource {
 									},
 									"total_hourly_cost": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Total hourly cost.",
 									},
 									"total_monthly_cost": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Total monthly cost.",
 									},
 									"past_total_hourly_cost": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Past total hourly cost.",
 									},
 									"past_total_monthly_cost": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Past total monthly cost.",
 									},
 									"diff_total_hourly_cost": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Difference in total hourly cost.",
 									},
 									"diff_total_monthly_cost": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Difference in total monthly cost.",
 									},
 									"time_generated": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "When this estimate was generated.",
 									},
 								},
@@ -1761,6 +1758,10 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		importOfferingVersionOptions.SetXAuthToken(d.Get("x_auth_token").(string))
 	}
 
+	mk := fmt.Sprintf("%s.%s", d.Get("catalog_id").(string), d.Get("offering_id").(string))
+	conns.IbmMutexKV.Lock(mk)
+	defer conns.IbmMutexKV.Unlock(mk)
+
 	getOfferingOptions := &catalogmanagementv1.GetOfferingOptions{}
 	getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
 	getOfferingOptions.SetOfferingID(d.Get("offering_id").(string))
@@ -1780,22 +1781,13 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("ImportOfferingVersionWithContext failed %s\n%s", err, response))
 	}
 
-	activeVersionID, err := getVersionFromOffering(*oldOffering, *offering)
+	activeVersion, err := getVersionFromOffering(oldOffering, offering)
 	if err != nil {
 		log.Printf("[DEBUG] getVersionFromOffering failed %s\n", err)
 		return diag.FromErr(fmt.Errorf("getVersionFromOffering failed %s\n", err))
 	}
 
-	var activeVersion catalogmanagementv1.Version
-	for _, k := range offering.Kinds {
-		for _, v := range k.Versions {
-			if v.ID == &activeVersionID {
-				activeVersion = v
-			}
-		}
-	}
-
-	d.SetId(fmt.Sprintf("%s/%s", *offering.CatalogID, activeVersionID))
+	d.SetId(fmt.Sprintf("%s/%s", *offering.CatalogID, *activeVersion.ID))
 
 	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
 
@@ -1811,12 +1803,12 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	var kindIndex int
 	var versionIndex int
 	for i, kind := range offering.Kinds {
-		if kind.ID == activeVersion.KindID {
+		if *kind.ID == *activeVersion.KindID {
 			kindIndex = i
 
 			if kind.Versions != nil && len(kind.Versions) > 0 {
 				for j, version := range kind.Versions {
-					if version.ID == activeVersion.ID {
+					if *version.ID == *activeVersion.ID {
 						versionIndex = j
 					}
 				}
@@ -1826,21 +1818,6 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 
 	pathToVersion := fmt.Sprintf("/kinds/%d/versions/%d", kindIndex, versionIndex)
 
-	if _, ok := d.GetOk("flavor"); ok {
-		if activeVersion.Flavor == nil {
-			method = "add"
-		} else {
-			method = "replace"
-		}
-		path := fmt.Sprintf("%s/flavor", pathToVersion)
-		update := catalogmanagementv1.JSONPatchOperation{
-			Op:    &method,
-			Path:  &path,
-			Value: d.Get("flavor.0"),
-		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
-		hasChange = true
-	}
 	if _, ok := d.GetOk("tags"); ok {
 		if activeVersion.Tags == nil {
 			method = "add"
@@ -1940,7 +1917,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		path := fmt.Sprintf("%s/solution_info", pathToVersion)
 		solutionInfoMap, err := solutionInfoToProperFormatMap(d.Get("solution_info.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s", err))
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update solution_info %s", err))
 		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
@@ -1969,8 +1946,8 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	if hasChange {
 		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response))
 		}
 	}
 
@@ -2243,6 +2220,10 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	mk := fmt.Sprintf("%s.%s", d.Get("catalog_id").(string), d.Get("offering_id").(string))
+	conns.IbmMutexKV.Lock(mk)
+	defer conns.IbmMutexKV.Unlock(mk)
+
 	getVersionOptions := &catalogmanagementv1.GetVersionOptions{}
 	getVersionOptions.SetVersionLocID(strings.Replace(d.Id(), "/", ".", 1))
 
@@ -2285,12 +2266,12 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 	var kindIndex int
 	var versionIndex int
 	for i, kind := range offering.Kinds {
-		if kind.ID == activeVersion.KindID {
+		if *kind.ID == *activeVersion.KindID {
 			kindIndex = i
 
 			if kind.Versions != nil && len(kind.Versions) > 0 {
 				for j, version := range kind.Versions {
-					if version.ID == activeVersion.ID {
+					if *version.ID == *activeVersion.ID {
 						versionIndex = j
 					}
 				}
@@ -2414,7 +2395,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		path := fmt.Sprintf("%s/solution_info", pathToVersion)
 		solutionInfoMap, err := solutionInfoToProperFormatMap(d.Get("solution_info.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n", err))
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update solution_info %s\n", err))
 		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
@@ -2443,8 +2424,8 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 	if hasChange {
 		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response))
 		}
 	}
 
@@ -2455,8 +2436,8 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 
 		response, err := catalogManagementClient.SetDeprecateVersionWithContext(context, setDeprecateVersionOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed trying to deprecate version - %s\n%s", err, response))
+			log.Printf("[DEBUG] SetDeprecateVersionWithContext failed in ibm_cm_version  %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("SetDeprecateVersionWithContext failed trying to deprecate version - %s\n%s", err, response))
 		}
 	}
 
@@ -2468,6 +2449,10 @@ func resourceIBMCmVersionDelete(context context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	mk := fmt.Sprintf("%s.%s", d.Get("catalog_id").(string), d.Get("offering_id").(string))
+	conns.IbmMutexKV.Lock(mk)
+	defer conns.IbmMutexKV.Unlock(mk)
 
 	deleteVersionOptions := &catalogmanagementv1.DeleteVersionOptions{}
 
@@ -2533,7 +2518,11 @@ func convertMapFieldFromListOfOneToMap(originalMap map[string]interface{}, field
 	for k, v := range originalMap {
 		if k == fieldToCheck {
 			if v != nil && len(v.([]interface{})) > 0 {
+				// if v.([]interface{})[0] != nil {
 				newMap[k] = v.([]interface{})[0].(map[string]interface{})
+				// } else {
+				// 	newMap[k] = nil
+				// }
 			} else {
 				newMap[k] = nil
 			}
@@ -3177,7 +3166,7 @@ func resourceIBMCmVersionCostBreakdownToMap(model *catalogmanagementv1.CostBreak
 		modelMap["total_hourly_cost"] = model.TotalHourlyCost
 	}
 	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_c_ost"] = model.TotalMonthlyCOst
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCOst
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -3284,35 +3273,29 @@ func resourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.Dependency) 
 	return modelMap, nil
 }
 
-func getVersionFromOffering(oldOffering catalogmanagementv1.Offering, newOffering catalogmanagementv1.Offering) (string, error) {
-	var oldVersionList []string
-	var newVersionList []string
+func getVersionFromOffering(oldOffering *catalogmanagementv1.Offering, newOffering *catalogmanagementv1.Offering) (*catalogmanagementv1.Version, error) {
+	var oldVersionList []catalogmanagementv1.Version
+	var newVersionList []catalogmanagementv1.Version
 
 	for _, kind := range oldOffering.Kinds {
-		// oldVersionList = append(oldVersionList, kind.Versions...)
-		for _, version := range kind.Versions {
-			oldVersionList = append(oldVersionList, *version.ID)
-		}
+		oldVersionList = append(oldVersionList, kind.Versions...)
 	}
 
 	for _, kind := range newOffering.Kinds {
-		// newVersionList = append(newVersionList, kind.Versions...)
-		for _, version := range kind.Versions {
-			newVersionList = append(newVersionList, *version.ID)
-		}
+		newVersionList = append(newVersionList, kind.Versions...)
 	}
 
 	for _, newVer := range newVersionList {
 		isOld := false
 		for _, oldVer := range oldVersionList {
-			if newVer == oldVer {
+			if *newVer.ID == *oldVer.ID {
 				isOld = true
 				break
 			}
 		}
 		if !isOld {
-			return newVer, nil
+			return &newVer, nil
 		}
 	}
-	return "", fmt.Errorf("error finding imported version")
+	return nil, fmt.Errorf("error finding imported version")
 }

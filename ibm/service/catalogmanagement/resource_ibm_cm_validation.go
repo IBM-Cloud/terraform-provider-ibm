@@ -188,6 +188,10 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		version = offering.Kinds[0].Versions[0]
 	}
 
+	mk := fmt.Sprintf("%s.%s", *version.CatalogID, *version.OfferingID)
+	conns.IbmMutexKV.Lock(mk)
+	defer conns.IbmMutexKV.Unlock(mk)
+
 	valid := "valid"
 	if version.Validation.State == &valid && d.Get("revalidate_if_validated") != true {
 		// version already validated and do not wish to revalidate

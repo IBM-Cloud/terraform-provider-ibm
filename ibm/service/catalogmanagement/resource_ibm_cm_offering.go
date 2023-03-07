@@ -1384,7 +1384,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
-																					"total_monthly_c_ost": &schema.Schema{
+																					"total_monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
 																						Description: "Total monthly cost.",
@@ -1477,7 +1477,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
-																					"total_monthly_c_ost": &schema.Schema{
+																					"total_monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
 																						Description: "Total monthly cost.",
@@ -1570,7 +1570,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
-																					"total_monthly_c_ost": &schema.Schema{
+																					"total_monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
 																						Description: "Total monthly cost.",
@@ -4324,8 +4324,8 @@ func resourceIBMCmOfferingMapToCostBreakdown(modelMap map[string]interface{}) (*
 	if modelMap["total_hourly_cost"] != nil && modelMap["total_hourly_cost"].(string) != "" {
 		model.TotalHourlyCost = core.StringPtr(modelMap["total_hourly_cost"].(string))
 	}
-	if modelMap["total_monthly_c_ost"] != nil && modelMap["total_monthly_c_ost"].(string) != "" {
-		model.TotalMonthlyCOst = core.StringPtr(modelMap["total_monthly_c_ost"].(string))
+	if modelMap["total_monthly_cost"] != nil && modelMap["total_monthly_cost"].(string) != "" {
+		model.TotalMonthlyCOst = core.StringPtr(modelMap["total_monthly_cost"].(string))
 	}
 	if modelMap["resources"] != nil {
 		resources := []catalogmanagementv1.CostResource{}
@@ -5527,7 +5527,7 @@ func resourceIBMCmOfferingCostBreakdownToMap(model *catalogmanagementv1.CostBrea
 		modelMap["total_hourly_cost"] = model.TotalHourlyCost
 	}
 	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_c_ost"] = model.TotalMonthlyCOst
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCOst
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
