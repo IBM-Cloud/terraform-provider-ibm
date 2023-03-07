@@ -27,7 +27,46 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 		ReadContext: dataSourceIBMISBareMetalServersRead,
 
 		Schema: map[string]*schema.Schema{
-
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this bare metal server belongs to",
+			},
+			"vpc": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc ID this bare metal server is in",
+			},
+			"vpc_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc name this bare metal server is in",
+			},
+			"vpc_crn": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc CRN this bare metal server is in",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the bare metal server",
+			},
+			"network_interfaces_subnet": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the subnet of the bare metal server network interfaces",
+			},
+			"network_interfaces_subnet_crn": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The crn of the subnet of the bare metal server network interfaces",
+			},
+			"network_interfaces_subnet_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the subnet of the bare metal server network interfaces",
+			},
 			isBareMetalServers: {
 				Type:        schema.TypeList,
 				Description: "List of Bare Metal Servers",
@@ -371,6 +410,13 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "Tags for the Bare metal server",
 						},
+						isBareMetalServerAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
+						},
 					},
 				},
 			},
@@ -386,8 +432,42 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 	}
 	start := ""
 	allrecs := []vpcv1.BareMetalServer{}
+
+	listBareMetalServersOptions := &vpcv1.ListBareMetalServersOptions{}
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listBareMetalServersOptions.ResourceGroupID = &resGroup
+	}
+	if nameintf, ok := d.GetOk("name"); ok {
+		name := nameintf.(string)
+		listBareMetalServersOptions.Name = &name
+	}
+	if vpcIntf, ok := d.GetOk("vpc"); ok {
+		vpcid := vpcIntf.(string)
+		listBareMetalServersOptions.VPCID = &vpcid
+	}
+	if vpcNameIntf, ok := d.GetOk("vpc_name"); ok {
+		vpcName := vpcNameIntf.(string)
+		listBareMetalServersOptions.VPCName = &vpcName
+	}
+	if vpcCrnIntf, ok := d.GetOk("vpc_crn"); ok {
+		vpcCrn := vpcCrnIntf.(string)
+		listBareMetalServersOptions.VPCCRN = &vpcCrn
+	}
+	if subnetIntf, ok := d.GetOk("network_interfaces_subnet"); ok {
+		subnetId := subnetIntf.(string)
+		listBareMetalServersOptions.NetworkInterfacesSubnetID = &subnetId
+	}
+	if subnetNameIntf, ok := d.GetOk("network_interfaces_subnet_name"); ok {
+		subnetName := subnetNameIntf.(string)
+		listBareMetalServersOptions.NetworkInterfacesSubnetName = &subnetName
+	}
+	if subnetCrnIntf, ok := d.GetOk("network_interfaces_subnet_crn"); ok {
+		subnetCrn := subnetCrnIntf.(string)
+		listBareMetalServersOptions.NetworkInterfacesSubnetCRN = &subnetCrn
+	}
 	for {
-		listBareMetalServersOptions := &vpcv1.ListBareMetalServersOptions{}
+
 		if start != "" {
 			listBareMetalServersOptions.Start = &start
 		}
@@ -513,6 +593,19 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 						currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 					}
 				}
+			case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+				{
+					primNic := bmsnic.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+					currentPrimNic[isInstanceNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
+
+					if len(primNic.SecurityGroups) != 0 {
+						secgrpList := []string{}
+						for i := 0; i < len(primNic.SecurityGroups); i++ {
+							secgrpList = append(secgrpList, string(*(primNic.SecurityGroups[i].ID)))
+						}
+						currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+					}
+				}
 			}
 
 			primaryNicList = append(primaryNicList, currentPrimNic)
@@ -583,6 +676,19 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 							currentNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 						}
 					}
+				case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+					{
+						bmsnic := bmsnicintf.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+						currentNic[isBareMetalServerNicAllowIPSpoofing] = *bmsnic.AllowIPSpoofing
+						currentNic[isBareMetalServerNicSubnet] = *bmsnic.Subnet.ID
+						if len(bmsnic.SecurityGroups) != 0 {
+							secgrpList := []string{}
+							for i := 0; i < len(bmsnic.SecurityGroups); i++ {
+								secgrpList = append(secgrpList, string(*(bmsnic.SecurityGroups[i].ID)))
+							}
+							currentNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+						}
+					}
 				}
 				interfacesList = append(interfacesList, currentNic)
 			}
@@ -630,12 +736,20 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 		l[isBareMetalServerKeys] = keyListList
 
-		tags, err := flex.GetTagsUsingCRN(meta, *bms.CRN)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerUserTagType)
 		if err != nil {
 			log.Printf(
 				"[ERROR] Error on get of resource bare metal server (%s) tags: %s", *bms.ID, err)
 		}
 		l[isBareMetalServerTags] = tags
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerAccessTagType)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on get of resource bare metal server (%s) access tags: %s", *bms.ID, err)
+		}
+		l[isBareMetalServerAccessTags] = accesstags
+
 		if bms.ResourceGroup != nil {
 			l[isBareMetalServerResourceGroup] = *bms.ResourceGroup.ID
 		}

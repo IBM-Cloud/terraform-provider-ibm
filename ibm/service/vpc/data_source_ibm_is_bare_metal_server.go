@@ -366,6 +366,13 @@ func DataSourceIBMIsBareMetalServer() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Tags for the Bare metal server",
 			},
+			isBareMetalServerAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access tags",
+			},
 		},
 	}
 }
@@ -566,6 +573,19 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 					currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 				}
 			}
+		case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+			{
+				primNic := bmsnic.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+				currentPrimNic[isInstanceNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
+
+				if len(primNic.SecurityGroups) != 0 {
+					secgrpList := []string{}
+					for i := 0; i < len(primNic.SecurityGroups); i++ {
+						secgrpList = append(secgrpList, string(*(primNic.SecurityGroups[i].ID)))
+					}
+					currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+				}
+			}
 		}
 
 		primaryNicList = append(primaryNicList, currentPrimNic)
@@ -638,6 +658,19 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 						currentNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 					}
 				}
+			case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+				{
+					bmsnic := bmsnicintf.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+					currentNic[isBareMetalServerNicAllowIPSpoofing] = *bmsnic.AllowIPSpoofing
+					currentNic[isBareMetalServerNicSubnet] = *bmsnic.Subnet.ID
+					if len(bmsnic.SecurityGroups) != 0 {
+						secgrpList := []string{}
+						for i := 0; i < len(bmsnic.SecurityGroups); i++ {
+							secgrpList = append(secgrpList, string(*(bmsnic.SecurityGroups[i].ID)))
+						}
+						currentNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+					}
+				}
 			}
 			interfacesList = append(interfacesList, currentNic)
 		}
@@ -679,11 +712,19 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone: %s", err))
 	}
 
-	tags, err := flex.GetTagsUsingCRN(meta, *bms.CRN)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerAccessTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource bare metal server (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isBareMetalServerTags, tags)
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerAccessTagType)
+	if err != nil {
+		log.Printf(
+			"[ERROR] Error on get of resource bare metal server (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isBareMetalServerAccessTags, accesstags)
+
 	return nil
 }

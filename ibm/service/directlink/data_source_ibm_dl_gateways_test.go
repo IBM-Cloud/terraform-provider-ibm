@@ -16,7 +16,7 @@ import (
 func TestAccIBMDLGatewaysDataSource_basic(t *testing.T) {
 	var instance string
 	node := "data.ibm_dl_gateways.test1"
-	gatewayname := fmt.Sprintf("gateway-name-%d", acctest.RandIntRange(10, 100))
+	gatewayname := fmt.Sprintf("gateway-name-dgws-%d", acctest.RandIntRange(10, 100))
 	custname := fmt.Sprintf("customer-name-%d", acctest.RandIntRange(10, 100))
 	carriername := fmt.Sprintf("carrier-name-%d", acctest.RandIntRange(10, 100))
 
@@ -41,6 +41,11 @@ func testAccCheckIBMDLGatewaysDataSourceConfig(gatewayname, custname, carriernam
 		offering_type = "dedicated"
 		location_name = "dal10"
 	}
+
+	data "ibm_resource_group" "rg" {
+		is_default	= true
+	}
+
 	resource "ibm_dl_gateway" "test_dl_gateway" {
 		bgp_asn =  64999
         global = true
@@ -52,6 +57,7 @@ func testAccCheckIBMDLGatewaysDataSourceConfig(gatewayname, custname, carriernam
         location_name = data.ibm_dl_routers.test1.location_name
 	    customer_name = "%s"
         carrier_name = "%s"
+		resource_group=data.ibm_resource_group.rg.id
 	  }
 	 
 	  data "ibm_dl_gateways" "test1" {

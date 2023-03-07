@@ -54,15 +54,15 @@ Review the argument references that you can specify for your resource.
 - `pi_volume_group_action` - (Required, Forces new resource, List) Performs an action (`start` / `stop` / `reset`) on a volume group(one at a time).
   - Constraints: The maximum length is `1` items. The minimum length is `1` items.
   Nested scheme for **pi_volume_group_action**:
-    - `reset` - (Optional, List) Performs reset action on the volume group to update its status value.
+    - `reset` - (Optional, Forces new resource, List) Performs reset action on the volume group to update its status value.
       - Constraints: The maximum length is `1` items.
       Nested scheme for **reset**:
         - `status` - (Required, String) New status to be set for a volume group.
-    - `start` - (Optional, List) Performs start action on a volume group.
+    - `start` - (Optional, Forces new resource, List) Performs start action on a volume group.
       - Constraints: The maximum length is `1` items.
       Nested scheme for **start**:
         - `source` - (Required, String) Indicates the source of the action `master` or `aux`.
-    - `stop` - (Optional, List) Performs stop action on a volume group.
+    - `stop` - (Optional, Forces new resource, List) Performs stop action on a volume group.
       - Constraints: The maximum length is `1` items.
       Nested scheme for **reset**:
         - `access` - (Required, Boolean) Indicates the access mode of aux volumes.

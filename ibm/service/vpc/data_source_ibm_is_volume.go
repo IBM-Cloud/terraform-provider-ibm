@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -108,6 +109,38 @@ func DataSourceIBMISVolume() *schema.Resource {
 							Computed:    true,
 							Description: "Link to documentation about this status reason",
 						},
+
+						isVolumeHealthReasons: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isVolumeHealthReasonsCode: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this health state.",
+									},
+
+									isVolumeHealthReasonsMessage: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this health state.",
+									},
+
+									isVolumeHealthReasonsMoreInfo: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this health state.",
+									},
+								},
+							},
+						},
+
+						isVolumeHealthState: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The health of this resource.",
+						},
 					},
 				},
 			},
@@ -118,6 +151,14 @@ func DataSourceIBMISVolume() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Tags for the volume instance",
+			},
+
+			isVolumeAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "Access management tags for the volume instance",
 			},
 
 			isVolumeSourceSnapshot: {
@@ -242,6 +283,12 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isVolumeStatusReasons, statusReasonsList)
 		}
 		d.Set(isVolumeTags, vol.UserTags)
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc volume (%s) access tags: %s", d.Id(), err)
+		}
+		d.Set(isVolumeAccessTags, accesstags)
 		controller, err := flex.GetBaseController(meta)
 		if err != nil {
 			return err
@@ -255,6 +302,24 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
 		}
 		d.Set(isVolumeStatusReasons, statusReasonsList)
+	}
+	if vol.HealthReasons != nil {
+		healthReasonsList := make([]map[string]interface{}, 0)
+		for _, sr := range vol.HealthReasons {
+			currentSR := map[string]interface{}{}
+			if sr.Code != nil && sr.Message != nil {
+				currentSR[isVolumeHealthReasonsCode] = *sr.Code
+				currentSR[isVolumeHealthReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isVolumeHealthReasonsMoreInfo] = *sr.Message
+				}
+				healthReasonsList = append(healthReasonsList, currentSR)
+			}
+		}
+		d.Set(isVolumeHealthReasons, healthReasonsList)
+	}
+	if vol.HealthState != nil {
+		d.Set(isVolumeHealthState, *vol.HealthState)
 	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {

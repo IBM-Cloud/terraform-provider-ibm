@@ -84,6 +84,7 @@ Review the argument references that you can specify for your data source.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+- `access_tags`  - (List) Access management tags associated for instance.
 - `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume` - (List of Objects) A list of boot volumes that were created for the instance.
@@ -135,6 +136,16 @@ In addition to all argument reference list, you can access the following attribu
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+- `metadata_service` - (List) The metadata service configuration. 
+
+     Nested scheme for `metadata_service`:
+     - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+     - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+     - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+    
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
   Nested scheme for `network_interfaces`:

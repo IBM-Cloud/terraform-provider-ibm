@@ -79,12 +79,6 @@ Nested scheme for **credentials**:
 		* `winrm_usessl` - (String) Kerberos windows ssl.This is mandatory for Windows Kerberos Credential type.
 		  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.,_\\s]*$/`.
 	* `enabled` - (Boolean) Credentials status enabled/disbaled.
-	* `group` - (List) Credential group details.
-	Nested scheme for **group**:
-		* `id` - (String) credential group id.
-		  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
-		* `passphrase` - (String) passphase of the credential.
-		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
 	* `id` - (String) Credentials ID.
 	* `name` - (String) Credentials name.
 	* `purpose` - (String) Purpose for which the credential is created.

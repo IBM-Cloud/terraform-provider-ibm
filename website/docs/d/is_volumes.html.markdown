@@ -17,6 +17,11 @@ data "ibm_is_volumes" "example" {
 }
 ```
 
+## Argument reference
+Review the argument references that you can specify for your data source. 
+
+- `volume_name` - (Required, String) Filters the collection to resources with the exact specified name.
+- `zone_name` - (Optional, String) Filters the collection to resources in the zone with the exact specified name.
 
 ## Attribute Reference
 
@@ -25,6 +30,7 @@ In addition to all argument references listed, you can access the following attr
 - `id` - The unique identifier of the VolumeCollection.
 - `volumes` - (List) Collection of volumes.
 	Nested scheme for **volumes**:
+	- `access_tags`  - (List) Access management tags associated for the volume.
 	- `active` - (Boolean) Indicates whether a running virtual server instance has an attachment to this volume.
 	- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume.
 	- `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. If an operation specifies that it requires serialization, the operation will fail unless this property is `false`.
@@ -37,6 +43,13 @@ In addition to all argument references listed, you can access the following attr
 	- `encryption_key` - (Optional, List) The root key used to wrap the data encryption key for the volume.This property will be present for volumes with an `encryption` type of`user_managed`.
 	Nested scheme for **encryption_key**:
 		- `crn` - (String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+	- `health_reasons` - (List) The reasons for the current health_state (if any).
+	
+  	Nested scheme for `health_reasons`:
+  		- `code` - (String) A snake case string succinctly identifying the reason for this health state.
+  		- `message` - (String) An explanation of the reason for this health state.
+  		- `more_info` - (String) Link to documentation about the reason for this health state.
+	- `health_state` - (String) The health of this resource.
 	- `href` - (String) The URL for this volume.
 	  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	- `id` - (String) The unique identifier for this volume.

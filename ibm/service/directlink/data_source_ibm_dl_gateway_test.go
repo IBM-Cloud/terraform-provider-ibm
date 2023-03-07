@@ -14,8 +14,8 @@ import (
 )
 
 func TestAccIBMDLGatewayDataSource_basic(t *testing.T) {
-	node := "data.ibm_dl_gateway.test_dl_gateway_vc"
-	gatewayname := fmt.Sprintf("gateway-name-%d", acctest.RandIntRange(10, 100))
+	node := "data.ibm_dl_gateway.test_dl_gateway"
+	gatewayname := fmt.Sprintf("gateway-name-ds-%d", acctest.RandIntRange(10, 100))
 	custname := fmt.Sprintf("customer-name-%d", acctest.RandIntRange(10, 100))
 	carriername := fmt.Sprintf("carrier-name-%d", acctest.RandIntRange(10, 100))
 
@@ -27,6 +27,7 @@ func TestAccIBMDLGatewayDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMDLGatewayVCsDataSourceConfig(gatewayname, custname, carriername),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(node, "name", gatewayname),
+					// resource.TestCheckResourceAttrSet(node, "as_prepends.#"),
 				),
 			},
 		},
@@ -39,6 +40,12 @@ func testAccCheckIBMDLGatewayVCsDataSourceConfig(gatewayname, custname, carriern
 		offering_type = "dedicated"
 		location_name = "dal10"
 	}
+	/*
+	data "ibm_resource_group" "rg" {
+		is_default	= true
+	}
+	*/
+	
 	resource "ibm_dl_gateway" "test_dl_gateway" {
 		bgp_asn =  64999
         global = true
@@ -50,8 +57,9 @@ func testAccCheckIBMDLGatewayVCsDataSourceConfig(gatewayname, custname, carriern
         location_name = data.ibm_dl_routers.test1.location_name
         customer_name = "%s"
         carrier_name = "%s"
+		//resource_group=data.ibm_resource_group.rg.id
 	  }
-	   data "ibm_dl_gateway" "test_dl_gateway_vc" {
+	   data "ibm_dl_gateway" "test_dl_gateway" {
 			name = ibm_dl_gateway.test_dl_gateway.name
 		 }
 	  `, gatewayname, custname, carriername)

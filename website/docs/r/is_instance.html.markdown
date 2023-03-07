@@ -131,6 +131,9 @@ resource "ibm_is_instance" "example1" {
 
 The following example shows how you can create a virtual server instance with custom security group rules. Note that the security group, security group rules, and the virtual server instance must be created in a specific order to meet the dependencies of the individual resources. To force the creation in a specific order, you use the [`depends_on` parameter](https://www.terraform.io/docs/configuration/resources.html). If you do not provide this parameter, all resources are created at the same time which might lead to resource dependency errors during the provisioning of your virtual server, such as `The security group to attach to is not available`.
 
+~>**Conflict** 
+ IBM Cloud terraform provider currently provides both a standalone `ibm_is_security_group_target` resource and a `security_groups` block defined in-line in the `ibm_is_instance` resource to attach security group to a network interface target. At this time you cannot use the `security_groups` block inline with `ibm_is_instance` in conjunction with the standalone resource `ibm_is_security_group_target`. </br> Doing so will create a **conflict of security groups** attaching to the network interface and will overwrite it.
+
 ```terraform
 
 resource "ibm_is_vpc" "example" {
@@ -325,7 +328,33 @@ resource "ibm_is_instance" "example" {
   }
 }
 ```
+### Example to create an instance with metadata service configuration ###
 
+```terraform
+
+resource "ibm_is_instance" "example" {
+  metadata_service {
+    enabled = true
+    protocol = "https"
+    response_hop_limit = 5
+  }
+  name    = "example-vsi-catalog"
+  profile = "cx2-2x4"
+  catalog_offering {
+    version_crn = data.ibm_is_images.example.images.0.catalog_offering.0.version.0.crn
+  }
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+  network_interfaces {
+    subnet = ibm_is_subnet.example.id
+    name   = "eth1"
+  }
+}
+```
 ## Timeouts
 
 The `ibm_is_instance` resource provides the following [[Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -338,6 +367,14 @@ The `ibm_is_instance` resource provides the following [[Timeouts](https://www.te
 
 ## Argument reference
 Review the argument references that you can specify for your resource.
+
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the instance.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `action` - (Optional, String) Action to be taken on the instance. Supported values are `stop`, `start`, or `reboot`.
   
   ~> **Note** 
@@ -347,6 +384,7 @@ Review the argument references that you can specify for your resource.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
+  - `auto_delete_volume` - (Optional, String) If set to **true**, when deleting the instance the volume will also be deleted
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
   - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.
@@ -391,6 +429,15 @@ Review the argument references that you can specify for your resource.
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Optional, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance. Default value : **false**
+
+  ~> **NOTE**
+  `metadata_service_enabled` is deprecated and will be removed in the future. Use `metadata_service` instead
+- `metadata_service` - (Optional, List) The metadata service configuration. 
+
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Optional, Bool) Indicates whether the metadata service endpoint will be available to the virtual server instance. Default is **false**
+  - `protocol` - (Optional, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
+  - `response_hop_limit` - (Optional, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 

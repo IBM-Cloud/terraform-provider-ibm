@@ -43,6 +43,7 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `identifier` - The unique identifier of the FlowLogCollector.
+- `access_tags` - (String) Access management tags associated for flow log.
 - `active` - (Boolean) Indicates whether this collector is active.
 - `auto_delete` - (Boolean) If set to `true`, this flow log collector will be automatically deleted when the target is deleted.
 - `created_at` - (String) The date and time that the flow log collector was created.

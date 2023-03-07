@@ -188,7 +188,7 @@ Review the argument references that you can specify for your resource.
       - Not already be the default_pool for another listener 
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 
--> **NOTE:** Certificate Manager is deprecated. Migrate your load balancer certificates from Certificate Manager to Secrets Manager.
+  !> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
 
 - `connection_limit` - (Optional, Integer) The connection limit of the listener. Valid range is **1 to 15000**. Network load balancer do not support `connection_limit` argument.
 - `https_redirect_listener` - (Optional, String) ID of the listener that will be set as http redirect target.

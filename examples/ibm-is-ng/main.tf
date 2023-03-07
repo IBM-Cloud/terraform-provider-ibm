@@ -580,10 +580,11 @@ resource "ibm_is_instance" "instance4" {
   keys      = [ibm_is_ssh_key.sshkey.id]
 }
 
-// creating a snapshot from boot volume
+// creating a snapshot from boot volume with clone
 resource "ibm_is_snapshot" "b_snapshot" {
   name          = "my-snapshot-boot"
   source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
+  clones        = [var.zone1]
   tags          = ["tags1"]
 }
 
@@ -601,6 +602,17 @@ data "ibm_is_snapshot" "ds_snapshot" {
 
 // data source for snapshots
 data "ibm_is_snapshots" "ds_snapshots" {
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clones" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clone" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+  zone     = var.zone1
 }
 
 // restoring a boot volume from snapshot in a new instance
@@ -741,6 +753,22 @@ resource "ibm_is_instance" "instance8" {
   vpc  = ibm_is_vpc.vpc2.id
   zone = "us-south-2"
   keys = [ibm_is_ssh_key.sshkey.id]
+}
+
+resource "ibm_is_instance_template" "instancetemplate3" {
+  name    = "instancetemplate-3"
+  catalog_offering {
+    version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
+  }
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet2.id
+  }
+
+  vpc       = ibm_is_vpc.vpc2.id
+  zone      = "us-south-2"
+  keys      = [ibm_is_ssh_key.sshkey.id]
 }
 
 
@@ -1080,6 +1108,22 @@ resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   }
   name = "my-backup-policy-plan-1"
 }
+resource "ibm_is_backup_policy_plan" "is_backup_policy_plan_clone" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  cron_spec        = "30 09 * * *"
+  active           = false
+  attach_user_tags = ["tag2"]
+  copy_user_tags = true
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = "20"
+  }
+  name = "my-backup-policy-plan-1"
+  clone_policy {
+    zones 			= ["us-south-1", "us-south-2"]
+    max_snapshots 	= 3
+  }
+}
 
 data "ibm_is_backup_policies" "is_backup_policies" {
 }
@@ -1119,6 +1163,16 @@ resource "ibm_is_vpn_server_route" "is_vpn_server_route" {
   destination   = "172.16.0.0/16"
   action        = "translate"
   name          = "example-vpn-server-route"
+}
+
+data "ibm_is_backup_policy_job" "is_backup_policy_job" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  identifier       = ""
+}
+
+data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
+  backup_policy_plan_id = ibm_is_backup_policy.is_backup_policy.backup_policy_plan_id
+  backup_policy_id      = ibm_is_backup_policy.is_backup_policy.id
 }
 
 data "ibm_is_vpn_server" "is_vpn_server" {
