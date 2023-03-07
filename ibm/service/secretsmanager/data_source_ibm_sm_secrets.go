@@ -735,12 +735,6 @@ func dataSourceIbmSmSecretsPublicCertificateRotationPolicyToMap(model *secretsma
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
 	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
 	if model.RotateKeys != nil {
 		modelMap["rotate_keys"] = *model.RotateKeys
 	}

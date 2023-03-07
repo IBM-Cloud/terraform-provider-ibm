@@ -512,8 +512,6 @@ func resourceIbmSmUsernamePasswordSecretMapToRotationPolicy(modelMap map[string]
 func resourceIbmSmUsernamePasswordSecretRotationPolicyToMap(model secretsmanagerv2.RotationPolicyIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*secretsmanagerv2.CommonRotationPolicy); ok {
 		return resourceIbmSmUsernamePasswordSecretCommonRotationPolicyToMap(model.(*secretsmanagerv2.CommonRotationPolicy))
-	} else if _, ok := model.(*secretsmanagerv2.PublicCertificateRotationPolicy); ok {
-		return resourceIbmSmUsernamePasswordSecretPublicCertificateRotationPolicyToMap(model.(*secretsmanagerv2.PublicCertificateRotationPolicy))
 	} else if _, ok := model.(*secretsmanagerv2.RotationPolicy); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*secretsmanagerv2.RotationPolicy)
@@ -533,18 +531,6 @@ func resourceIbmSmUsernamePasswordSecretRotationPolicyToMap(model secretsmanager
 }
 
 func resourceIbmSmUsernamePasswordSecretCommonRotationPolicyToMap(model *secretsmanagerv2.CommonRotationPolicy) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["auto_rotate"] = model.AutoRotate
-	if model.Interval != nil {
-		modelMap["interval"] = flex.IntValue(model.Interval)
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = model.Unit
-	}
-	return modelMap, nil
-}
-
-func resourceIbmSmUsernamePasswordSecretPublicCertificateRotationPolicyToMap(model *secretsmanagerv2.PublicCertificateRotationPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["auto_rotate"] = model.AutoRotate
 	if model.Interval != nil {

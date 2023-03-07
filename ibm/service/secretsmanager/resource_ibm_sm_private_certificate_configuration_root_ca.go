@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -46,20 +47,24 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			"crl_expiry": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The time until the certificate revocation list (CRL) expires.The value can be supplied as a string representation of a duration in hours, such as `48h`. The default is 72 hours. In the API response, this value is returned in seconds (integer).**Note:** The CRL is rotated automatically before it expires.",
 			},
 			"crl_disable": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				Description: "Disables or enables certificate revocation list (CRL) building.If CRL building is disabled, a signed but zero-length CRL is returned when downloading the CRL. If CRL building is enabled, it will rebuild the CRL.",
 			},
 			"crl_distribution_points_encoded": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				Description: "Determines whether to encode the certificate revocation list (CRL) distribution points in the certificates that are issued by this certificate authority.",
 			},
 			"issuing_certificates_urls_encoded": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				Description: "Determines whether to encode the URL of the issuing certificate in the certificates that are issued by this certificate authority.",
 			},
@@ -102,6 +107,11 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 				Computed:    true,
 				Description: "The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).",
 			},
+			"ttl_seconds": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).",
+			},
 			"format": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -139,6 +149,7 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			},
 			"exclude_cn_from_sans": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Controls whether the common name is excluded from Subject Alternative Names (SANs).If the common name set to `true`, it is not included in DNS or Email SANs if they apply. This field can be useful if the common name is a human-readable identifier, instead of a hostname or an email address.",
@@ -369,6 +380,7 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	if err = d.Set("instance_id", instanceId); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
+
 	if err = d.Set("region", region); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
@@ -390,9 +402,20 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	if err = d.Set("max_ttl_seconds", flex.IntValue(configuration.MaxTtlSeconds)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting max_ttl_seconds: %s", err))
 	}
+	if d.Get("max_ttl") == nil || d.Get("max_ttl") == "" {
+		if err = d.Set("max_ttl", strconv.FormatInt(*configuration.MaxTtlSeconds, 10)+"s"); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+	}
 	if err = d.Set("crl_expiry_seconds", flex.IntValue(configuration.CrlExpirySeconds)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crl_expiry_seconds: %s", err))
 	}
+	if d.Get("crl_expiry") == nil || d.Get("crl_expiry") == "" {
+		if err = d.Set("crl_expiry", strconv.FormatInt(*configuration.CrlExpirySeconds, 10)+"s"); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+	}
+
 	if err = d.Set("crl_disable", configuration.CrlDisable); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crl_disable: %s", err))
 	}
@@ -421,8 +444,8 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 			return diag.FromErr(fmt.Errorf("Error setting other_sans: %s", err))
 		}
 	}
-	if err = d.Set("ttl", configuration.TTL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ttl: %s", err))
+	if err = d.Set("ttl_seconds", flex.IntValue(configuration.TtlSeconds)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting ttl_seconds: %s", err))
 	}
 	if err = d.Set("format", configuration.Format); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting format: %s", err))
