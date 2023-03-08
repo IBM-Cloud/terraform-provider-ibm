@@ -5,6 +5,7 @@ package catalogmanagement
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -566,7 +567,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"configuration": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "List of user solicited overrides.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -580,11 +581,11 @@ func ResourceIBMCmVersion() *schema.Resource {
 							Optional:    true,
 							Description: "Value type (string, boolean, int).",
 						},
-						// "default_value": &schema.Schema{
-						// 	Type:        schema.TypeMap,
-						// 	Optional:    true,
-						// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-						// },
+						"default_value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The default value as a JSON encoded string.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+						},
 						"display_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -620,32 +621,38 @@ func ResourceIBMCmVersion() *schema.Resource {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
+							Computed:    true,
 							Description: "Render type.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "ID of the widget type.",
 									},
 									"grouping": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Determines where this configuration type is rendered (3 sections today - Target, Resource, and Deployment).",
 									},
 									"original_grouping": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Original grouping type for this configuration (3 types - Target, Resource, and Deployment).",
 									},
 									"grouping_index": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
+										Computed:    true,
 										Description: "Determines the order that this configuration item shows in that particular grouping.",
 									},
 									"config_constraints": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
+										Computed:    true,
 										Description: "Map of constraint parameters that will be passed to the custom widget.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
@@ -653,23 +660,27 @@ func ResourceIBMCmVersion() *schema.Resource {
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
+										Computed:    true,
 										Description: "List of parameters that are associated with this configuration.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"parameters": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
+													Computed:    true,
 													Description: "Parameters for this association.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Name of this parameter.",
 															},
 															"options_refresh": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
+																Computed:    true,
 																Description: "Refresh options.",
 															},
 														},
@@ -937,32 +948,38 @@ func ResourceIBMCmVersion() *schema.Resource {
 			"licenses": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of licenses the product was built with.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "License ID.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "license name.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "type of license e.g., Apache xxx.",
 						},
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "URL for the license text.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "License description.",
 						},
 					},
@@ -1839,10 +1856,14 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			method = "replace"
 		}
 		path := fmt.Sprintf("%s/configuration", pathToVersion)
+		configurations, err := configurationToProperFormat(d.Get("configuration").([]interface{}))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version create \"configuration\" %s", err))
+		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
 			Path:  &path,
-			Value: d.Get("configuration"),
+			Value: configurations,
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
@@ -1916,7 +1937,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		path := fmt.Sprintf("%s/solution_info", pathToVersion)
 		solutionInfoMap, err := solutionInfoToProperFormatMap(d.Get("solution_info.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update solution_info %s", err))
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version create \"solution_info\" %s", err))
 		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
@@ -2318,10 +2339,14 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			method = "replace"
 		}
 		path := fmt.Sprintf("%s/configuration", pathToVersion)
+		configurations, err := configurationToProperFormat(d.Get("configuration").([]interface{}))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version create \"configuration\" %s", err))
+		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
 			Path:  &path,
-			Value: d.Get("configuration"),
+			Value: configurations,
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
@@ -2481,6 +2506,19 @@ func resourceIBMCmVersionMapToFlavor(modelMap map[string]interface{}) (*catalogm
 		model.Index = core.Int64Ptr(int64(modelMap["index"].(int)))
 	}
 	return model, nil
+}
+
+func configurationToProperFormat(configuration []interface{}) ([]map[string]interface{}, error) {
+	newConfigurations := make([]map[string]interface{}, 0)
+	for _, config := range configuration {
+		newConfiguration := convertMapFieldFromListOfOneToMap(config.(map[string]interface{}), "custom_config")
+		if newConfiguration["custom_config"] != nil {
+			newCustomConfig := convertMapFieldFromListOfOneToMap(newConfiguration["custom_config"].(map[string]interface{}), "associations")
+			newConfiguration["custom_config"] = newCustomConfig
+		}
+		newConfigurations = append(newConfigurations, newConfiguration)
+	}
+	return newConfigurations, nil
 }
 
 func solutionInfoToProperFormatMap(solutionInfo map[string]interface{}) (map[string]interface{}, error) {
@@ -2704,9 +2742,14 @@ func resourceIBMCmVersionConfigurationToMap(model *catalogmanagementv1.Configura
 	if model.Type != nil {
 		modelMap["type"] = model.Type
 	}
-	// if model.DefaultValue != nil {
-	// 	modelMap["default_value"] = model.DefaultValue
-	// }
+	if model.DefaultValue != nil {
+		defaultValueJson, err := json.Marshal(model.DefaultValue)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
+		}
+		defaultValueString, _ := strconv.Unquote(string(defaultValueJson))
+		modelMap["default_value"] = defaultValueString
+	}
 	if model.DisplayName != nil {
 		modelMap["display_name"] = model.DisplayName
 	}

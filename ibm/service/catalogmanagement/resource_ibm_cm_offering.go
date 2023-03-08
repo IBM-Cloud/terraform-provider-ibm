@@ -5,6 +5,7 @@ package catalogmanagement
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -395,11 +396,11 @@ func ResourceIBMCmOffering() *schema.Resource {
 													Optional:    true,
 													Description: "Value type (string, boolean, int).",
 												},
-												// "default_value": &schema.Schema{
-												// 	Type:        schema.TypeMap,
-												// 	Optional:    true,
-												// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-												// },
+												"default_value": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The default value as a JSON encoded string.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+												},
 												"display_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
@@ -435,32 +436,38 @@ func ResourceIBMCmOffering() *schema.Resource {
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Render type.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "ID of the widget type.",
 															},
 															"grouping": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Determines where this configuration type is rendered (3 sections today - Target, Resource, and Deployment).",
 															},
 															"original_grouping": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Original grouping type for this configuration (3 types - Target, Resource, and Deployment).",
 															},
 															"grouping_index": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Determines the order that this configuration item shows in that particular grouping.",
 															},
 															"config_constraints": &schema.Schema{
 																Type:        schema.TypeMap,
 																Optional:    true,
+																Computed:    true,
 																Description: "Map of constraint parameters that will be passed to the custom widget.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -468,23 +475,27 @@ func ResourceIBMCmOffering() *schema.Resource {
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "List of parameters that are associated with this configuration.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"parameters": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Parameters for this association.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"name": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Optional:    true,
+																						Computed:    true,
 																						Description: "Name of this parameter.",
 																					},
 																					"options_refresh": &schema.Schema{
 																						Type:        schema.TypeBool,
 																						Optional:    true,
+																						Computed:    true,
 																						Description: "Refresh options.",
 																					},
 																				},
@@ -5111,9 +5122,13 @@ func resourceIBMCmOfferingConfigurationToMap(model *catalogmanagementv1.Configur
 	if model.Type != nil {
 		modelMap["type"] = model.Type
 	}
-	// if model.DefaultValue != nil {
-	// 	modelMap["default_value"] = model.DefaultValue
-	// }
+	if model.DefaultValue != nil {
+		defaultValueJson, err := json.Marshal(model.DefaultValue)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
+		}
+		modelMap["default_value"] = string(defaultValueJson)
+	}
 	if model.DisplayName != nil {
 		modelMap["display_name"] = model.DisplayName
 	}

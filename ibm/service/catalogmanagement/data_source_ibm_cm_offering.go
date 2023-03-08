@@ -5,8 +5,10 @@ package catalogmanagement
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -380,11 +382,11 @@ func DataSourceIBMCmOffering() *schema.Resource {
 													Computed:    true,
 													Description: "Value type (string, boolean, int).",
 												},
-												// "default_value": &schema.Schema{
-												// 	Type:        schema.TypeMap,
-												// 	Computed:    true,
-												// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-												// },
+												"default_value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The default value as a JSON encoded string.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+												},
 												"display_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -3135,6 +3137,12 @@ func dataSourceIBMCmOfferingConfigurationToMap(model *catalogmanagementv1.Config
 		modelMap["type"] = *model.Type
 	}
 	if model.DefaultValue != nil {
+		defaultValueJson, err := json.Marshal(model.DefaultValue)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
+		}
+		defaultValueString, _ := strconv.Unquote(string(defaultValueJson))
+		modelMap["default_value"] = defaultValueString
 	}
 	if model.DisplayName != nil {
 		modelMap["display_name"] = *model.DisplayName
