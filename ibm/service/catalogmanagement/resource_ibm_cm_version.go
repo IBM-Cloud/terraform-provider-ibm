@@ -1041,7 +1041,6 @@ func ResourceIBMCmVersion() *schema.Resource {
 			"deprecate_pending": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "Deprecation information for a Version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -2186,14 +2185,15 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("image_pull_key_name", version.ImagePullKeyName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting image_pull_key_name: %s", err))
 	}
+	deprecatePendingMap := make(map[string]interface{})
 	if version.DeprecatePending != nil {
-		deprecatePendingMap, err := resourceIBMCmVersionDeprecatePendingToMap(version.DeprecatePending)
+		deprecatePendingMap, err = resourceIBMCmVersionDeprecatePendingToMap(version.DeprecatePending)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
-		}
+	}
+	if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
 	}
 	if version.SolutionInfo != nil {
 		solutionInfoMap, err := resourceIBMCmVersionSolutionInfoToMap(version.SolutionInfo)

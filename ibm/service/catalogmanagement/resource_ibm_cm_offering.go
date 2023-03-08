@@ -78,6 +78,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"offering_support_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "This argument is deprecated",
 				Description: "[deprecated] - Use offering.support instead.  URL to be displayed in the Consumption UI for getting support on this offering.",
 			},
 			"tags": &schema.Schema{
@@ -1979,12 +1980,12 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"pc_managed": &schema.Schema{
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 				Description: "Offering is managed by Partner Center.",
 			},
 			"publish_approved": &schema.Schema{
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 				Description: "Offering has been approved to publish to permitted to IBM or Public Catalog.",
 			},
 			"share_with_all": &schema.Schema{
@@ -2376,7 +2377,6 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"deprecate_pending": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "Deprecation information for an Offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -2736,14 +2736,17 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
 
 	if _, ok := d.GetOk("share_with_access_list"); ok {
-		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
-		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
-		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
-		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
-		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
-		if err != nil {
-			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
+		// Share with accounts if there are any
+		if len(d.Get("share_with_access_list").([]interface{})) > 0 {
+			addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
+			addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+			addOfferingAccessListOptions.SetOfferingID(*offering.ID)
+			addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
+			_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
+			if err != nil {
+				log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
+			}
 		}
 	}
 
@@ -2966,14 +2969,15 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("media", media); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting media: %s", err))
 	}
+	deprecatePendingMap := make(map[string]interface{})
 	if offering.DeprecatePending != nil {
-		deprecatePendingMap, err := resourceIBMCmOfferingDeprecatePendingToMap(offering.DeprecatePending)
+		deprecatePendingMap, err = resourceIBMCmOfferingDeprecatePendingToMap(offering.DeprecatePending)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
-		}
+	}
+	if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
 	}
 	if err = d.Set("product_kind", offering.ProductKind); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting product_kind: %s", err))
@@ -3474,15 +3478,46 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
 
 	if d.HasChange("share_with_access_list") {
-		publishStatusChanged = true
-		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
-		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
-		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
-		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
-		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
-		if err != nil {
-			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
+		// Find removed accounts, ones that are present in old list but not in new list
+		oldAccountList, newAccountList := d.GetChange("share_with_access_list")
+		accountsToRemove := make([]string, 0)
+		for _, oldAccount := range oldAccountList.([]interface{}) {
+			presentInNewList := false
+			for _, newAccount := range newAccountList.([]interface{}) {
+				if newAccount.(string) == oldAccount.(string) {
+					// found id in both lists, do not remove it
+					presentInNewList = true
+					break
+				}
+			}
+			if !presentInNewList {
+				accountsToRemove = append(accountsToRemove, oldAccount.(string))
+			}
+		}
+		// Delete accounts from access list that are no longer specified, if there are any to delete
+		if len(accountsToRemove) > 0 {
+			deleteOfferingAccessListOptions := catalogmanagementv1.DeleteOfferingAccessListOptions{}
+			deleteOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+			deleteOfferingAccessListOptions.SetOfferingID(*offering.ID)
+			deleteOfferingAccessListOptions.SetAccesses(accountsToRemove)
+			_, response, err = catalogManagementClient.DeleteOfferingAccessListWithContext(context, &deleteOfferingAccessListOptions)
+			if err != nil {
+				log.Printf("[DEBUG] DeleteOfferingAccessListWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("DeleteOfferingAccessListWithContext failed %s\n%s", err, response))
+			}
+		}
+
+		// Share with accounts if there are any
+		if len(newAccountList.([]interface{})) > 0 {
+			addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
+			addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+			addOfferingAccessListOptions.SetOfferingID(*offering.ID)
+			addOfferingAccessListOptions.SetAccesses(SIToSS(newAccountList.([]interface{})))
+			_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
+			if err != nil {
+				log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
+			}
 		}
 	}
 
