@@ -678,7 +678,7 @@ func resourceIBMComputeBareMetalRead(d *schema.ResourceData, meta interface{}) e
 			"datacenter[id,name,longName]," +
 			"primaryNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id]," +
 			"primaryIpAddressRecord[id]," +
-			"primaryVersion6IpAddressRecord[subnet,id]]," +
+			"primaryVersion6IpAddressRecord[subnet,id,ipAddress]]," +
 			"primaryBackendNetworkComponent[primarySubnet[networkVlan[id,primaryRouter,vlanNumber],id]," +
 			"primaryIpAddressRecord[id]," +
 			"maxSpeed,redundancyEnabledFlag]," +
