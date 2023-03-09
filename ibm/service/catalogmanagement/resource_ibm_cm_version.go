@@ -568,53 +568,63 @@ func ResourceIBMCmVersion() *schema.Resource {
 			"configuration": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of user solicited overrides.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Configuration key.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Value type (string, boolean, int).",
 						},
 						"default_value": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The default value as a JSON encoded string.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
 						},
 						"display_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Display name for configuration type.",
 						},
 						"value_constraint": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Constraint associated with value, e.g., for string type - regx:[a-z].",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Key description.",
 						},
 						"required": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Computed:    true,
 							Description: "Is key required to install.",
 						},
 						"options": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
+							Computed:    true,
 							Description: "List of options of type.",
 							Elem:        &schema.Schema{Type: schema.TypeMap},
 						},
 						"hidden": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Computed:    true,
 							Description: "Hide values.",
 						},
 						"custom_config": &schema.Schema{
@@ -695,6 +705,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 						"type_metadata": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The original type, as found in the source being onboarded.",
 						},
 					},
