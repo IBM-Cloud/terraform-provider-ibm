@@ -235,10 +235,6 @@ func resourceIbmCodeEngineConfigMapUpdate(context context.Context, d *schema.Res
 
 	hasChange := false
 
-	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id"))
-	}
 	if d.HasChange("name") {
 		replaceConfigMapOptions.SetName(d.Get("name").(string))
 		hasChange = true

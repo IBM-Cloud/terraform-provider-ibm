@@ -485,10 +485,6 @@ func resourceIbmCodeEngineBuildUpdate(context context.Context, d *schema.Resourc
 	hasChange := false
 
 	patchVals := &codeenginev2.BuildPatch{}
-	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id"))
-	}
 	if d.HasChange("name") || d.HasChange("output_image") || d.HasChange("output_secret") || d.HasChange("source_url") || d.HasChange("strategy_type") {
 		updateBuildOptions.SetName(d.Get("name").(string))
 		newOutputImage := d.Get("output_image").(string)

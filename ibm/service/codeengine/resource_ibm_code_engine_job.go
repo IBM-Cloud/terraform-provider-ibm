@@ -603,10 +603,6 @@ func resourceIbmCodeEngineJobUpdate(context context.Context, d *schema.ResourceD
 	hasChange := false
 
 	patchVals := &codeenginev2.JobPatch{}
-	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id"))
-	}
 	if d.HasChange("image_reference") || d.HasChange("name") {
 		newImageReference := d.Get("image_reference").(string)
 		patchVals.ImageReference = &newImageReference
