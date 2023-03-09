@@ -3259,9 +3259,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct the service options.
 	codeEngineEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.codeengine", c.Region), cloudEndpoint+"/v2")
+	if c.Visibility == "private" {
+		session.codeEngineClientErr = fmt.Errorf("Code Engines resource does not support private endpoints")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		codeEngineEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CODE_ENGINE_API_ENDPOINT", c.Region, codeEngineEndpoint)
+	}
 	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
 		Authenticator: authenticator,
-		URL:           codeEngineEndpoint,
+		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
 	}
 
 	// Construct the service client.
