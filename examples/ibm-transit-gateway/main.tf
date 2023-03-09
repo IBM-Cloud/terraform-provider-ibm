@@ -37,7 +37,7 @@ resource "ibm_tg_connection" "test_tg_cross_connection"{
                 # vpc crn from other account
                 network_id = var.network_id
 }
-resource "ibm_tg_connection_actions" "test_tg_cross_connection_approval" {
+resource "ibm_tg_connection_action" "test_tg_cross_connection_approval" {
                 provider = ibm.account2
                 gateway = ibm_tg_gateway.new_tg_gw.id
                 connection_id = ibm_tg_conneciton.test_tg_cross_connection

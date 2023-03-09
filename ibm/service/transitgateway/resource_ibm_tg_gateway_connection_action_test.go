@@ -53,7 +53,7 @@ resource "ibm_tg_connection" "test_tg_xac_connection" {
 	network_account_id = "%s"
 }
 
-resource "ibm_tg_connection_actions" "test_tg_xac_approve" {
+resource "ibm_tg_connection_action" "test_tg_xac_approve" {
 	provider = ibm.account2
     gateway = ibm_tg_gateway.test_tg_gateway.id
     connection_id = ibm_tg_connection.test_tg_xac_connection.connection_id

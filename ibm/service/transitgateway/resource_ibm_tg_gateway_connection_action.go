@@ -21,11 +21,11 @@ const (
 	tgConnectionAction = "action"
 )
 
-func ResourceIBMTransitGatewayConnectionActions() *schema.Resource {
+func ResourceIBMTransitGatewayConnectionAction() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMTransitGatewayConnectionActionsCreate,
-		Read:     resourceIBMTransitGatewayConnectionActionsRead,
-		Delete:   resourceIBMTransitGatewayConnectionActionsDelete,
+		Create:   resourceIBMTransitGatewayConnectionActionCreate,
+		Read:     resourceIBMTransitGatewayConnectionActionRead,
+		Delete:   resourceIBMTransitGatewayConnectionActionDelete,
 		Importer: &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.All(
@@ -65,14 +65,14 @@ func ResourceIBMTransitGatewayConnectionActions() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tg_connection_actions", tgConnectionAction),
+				ValidateFunc: validate.InvokeValidator("ibm_tg_connection_action", tgConnectionAction),
 				Description:  "The Transit Gateway Connection cross account action",
 			},
 		},
 	}
 }
 
-func ResourceIBMTransitGatewayConnectionActionsValidator() *validate.ResourceValidator {
+func ResourceIBMTransitGatewayConnectionActionValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	actions := "approve, reject"
@@ -84,12 +84,12 @@ func ResourceIBMTransitGatewayConnectionActionsValidator() *validate.ResourceVal
 			Required:                   true,
 			AllowedValues:              actions})
 
-	ibmTransitGatewayConnectionActionsResourceValidator := validate.ResourceValidator{ResourceName: "ibm_tg_connection_actions", Schema: validateSchema}
+	ibmTransitGatewayConnectionActionResourceValidator := validate.ResourceValidator{ResourceName: "ibm_tg_connection_action", Schema: validateSchema}
 
-	return &ibmTransitGatewayConnectionActionsResourceValidator
+	return &ibmTransitGatewayConnectionActionResourceValidator
 }
 
-func resourceIBMTransitGatewayConnectionActionsCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMTransitGatewayConnectionActionCreate(d *schema.ResourceData, meta interface{}) error {
 	client, err := transitgatewayClient(meta)
 	if err != nil {
 		return err
@@ -109,10 +109,10 @@ func resourceIBMTransitGatewayConnectionActionsCreate(d *schema.ResourceData, me
 
 	d.SetId(fmt.Sprintf("%s/%s", gatewayId, connectionId))
 	d.Set(tgConnectionId, connectionId)
-	return resourceIBMTransitGatewayConnectionActionsRead(d, meta)
+	return resourceIBMTransitGatewayConnectionActionRead(d, meta)
 }
 
-func resourceIBMTransitGatewayConnectionActionsRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMTransitGatewayConnectionActionRead(d *schema.ResourceData, meta interface{}) error {
 
 	client, err := transitgatewayClient(meta)
 	if err != nil {
@@ -144,7 +144,7 @@ func resourceIBMTransitGatewayConnectionActionsRead(d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceIBMTransitGatewayConnectionActionsDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMTransitGatewayConnectionActionDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 	return nil
 }

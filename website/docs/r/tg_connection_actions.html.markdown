@@ -1,7 +1,7 @@
 ---
 subcategory: "Transit Gateway"
 layout: "ibm"
-page_title: "IBM : tg_connection_actions"
+page_title: "IBM : tg_connection_action"
 description: |-
   Perform actions on a connection for a Transit Gateway
 ---
@@ -12,7 +12,7 @@ Create an action to approve or reject a cross account connection resource. For m
 ## Example usage
 
 ```terraform
-resource "ibm_tg_connection_actions" "test_tg_cross_connection_approval" {
+resource "ibm_tg_connection_action" "test_tg_cross_connection_approval" {
     provider = ibm.account2
     gateway = ibm_tg_gateway.new_tg_gw.id
     connection_id = ibm_tg_conneciton.test_ibm_tg_connection.connection_id
