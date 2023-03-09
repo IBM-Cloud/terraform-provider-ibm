@@ -1222,14 +1222,14 @@ func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *sch
 	}
 
 	if d.HasChange(shareProfileSchema) {
-		_, new := d.GetChange(shareProfileSchema)
-		// if old.(string) == "custom" {
-		// 	if d.Get("iops").(int) != 0 {
-		// 		log.Println("iops there")
-		// 	} else {
-		// 		log.Println("iops not there")
-		// 	}
-		// }
+		old, new := d.GetChange(shareProfileSchema)
+		log.Println("profile is changed")
+		if old.(string) == "custom-iops" {
+			if _, ok := d.GetOk("iops"); ok {
+				log.Println("iops there")
+				return fmt.Errorf("Error: The Share profile specified in the request cannot accept IOPS values")
+			}
+		}
 		profile := new.(string)
 		sharePatchModel.Profile = &vpcbetav1.ShareProfileIdentity{
 			Name: &profile,
