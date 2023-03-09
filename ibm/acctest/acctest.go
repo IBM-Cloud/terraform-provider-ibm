@@ -25,6 +25,7 @@ var CisInstance string
 var CisResourceGroup string
 var CloudShellAccountID string
 var CosCRN string
+var BucketCRN string
 var CosName string
 var Ibmid1 string
 var Ibmid2 string
@@ -62,6 +63,7 @@ var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var ISZoneName3 string
 var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
@@ -88,9 +90,24 @@ var RepoBranch string
 var imageName string
 var functionNamespace string
 var HpcsInstanceID string
+
+// Secrets Manager
 var SecretsManagerInstanceID string
+var SecretsManagerInstanceRegion string
+var SecretsManagerENInstanceCrn string
+var SecretsManagerIamCredentialsConfigurationApiKey string
+var SecretsManagerIamCredentialsSecretServiceId string
+var SecretsManagerIamCredentialsSecretServiceAccessGroup string
+var SecretsManagerPublicCertificateLetsEncryptEnvironment string
+var SecretsManagerPublicCertificateLetsEncryptPrivateKey string
+var SecretsManagerPublicCertificateCisCrn string
+var SecretsManagerPublicCertificateClassicInfrastructureUsername string
+var SecretsManagerPublicCertificateClassicInfrastructurePassword string
+var SecretsManagerPublicCertificateCommonName string
+var SecretsManagerImportedCertificatePathToCertificate string
 var SecretsManagerSecretType string
 var SecretsManagerSecretID string
+
 var HpcsAdmin1 string
 var HpcsToken1 string
 var HpcsAdmin2 string
@@ -322,6 +339,11 @@ func init() {
 		CosCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_CRN with a VALID COS instance CRN for testing ibm_cos_* resources")
 	}
+	BucketCRN = os.Getenv("IBM_COS_Bucket_CRN")
+	if BucketCRN == "" {
+		BucketCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
 
 	CosName = os.Getenv("IBM_COS_NAME")
 	if CosName == "" {
@@ -487,6 +509,12 @@ func init() {
 	if ISZoneName2 == "" {
 		ISZoneName2 = "us-south-2"
 		fmt.Println("[INFO] Set the environment variable SL_ZONE_2 for testing ibm_is_zone datasource else it is set to default value 'us-south-2'")
+	}
+
+	ISZoneName3 = os.Getenv("SL_ZONE_3")
+	if ISZoneName3 == "" {
+		ISZoneName3 = "us-south-3"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE_3 for testing ibm_is_zone datasource else it is set to default value 'us-south-3'")
 	}
 
 	ISCIDR = os.Getenv("SL_CIDR")
@@ -898,7 +926,64 @@ func init() {
 	SecretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
 	if SecretsManagerInstanceID == "" {
 		// SecretsManagerInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
-		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_ID for testing data_source_ibm_secrets_manager_secrets_test else tests will fail if this is not set correctly")
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_ID for testing Secrets Manager's tests else tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerInstanceRegion = os.Getenv("SECRETS_MANAGER_INSTANCE_REGION")
+	if SecretsManagerInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_REGION for testing Secrets Manager's tests else tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerENInstanceCrn = os.Getenv("SECRETS_MANAGER_EN_INSTANCE_CRN")
+	if SecretsManagerENInstanceCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_EN_INSTANCE_CRN for testing Event Notifications for Secrets Manager tests else tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerIamCredentialsConfigurationApiKey = os.Getenv("SECRETS_MANAGER_IAM_CREDENTIALS_CONFIGURATION_API_KEY")
+	if SecretsManagerENInstanceCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_EN_INSTANCE_CRN for testing IAM Credentials secret's tests else tests will assume that IAM Credentials engine is already configured and fail if not set correctly")
+	}
+
+	SecretsManagerIamCredentialsSecretServiceId = os.Getenv("SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_SERVICE_ID")
+	SecretsManagerIamCredentialsSecretServiceAccessGroup = os.Getenv("SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_ACCESS_GROUP")
+	if SecretsManagerIamCredentialsSecretServiceId == "" && SecretsManagerIamCredentialsSecretServiceAccessGroup == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_SERVICE_ID or SECRETS_MANAGER_IAM_CREDENTIALS_SECRET_ACCESS_GROUP for testing IAM Credentials secret's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateLetsEncryptEnvironment = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_ENVIRONMENT")
+	if SecretsManagerPublicCertificateLetsEncryptEnvironment == "" {
+		SecretsManagerPublicCertificateLetsEncryptEnvironment = "production"
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_ENVIRONMENT for testing public certificate's tests, else it is set to default value ('production'). For public certificate's tests, tests will fail if this is not set correctly")
+	}
+
+	SecretsManagerPublicCertificateLetsEncryptPrivateKey = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_PRIVATE_KEY")
+	if SecretsManagerPublicCertificateLetsEncryptPrivateKey == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_PRIVATE_KEY for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateCommonName = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_COMMON_NAME")
+	if SecretsManagerPublicCertificateCommonName == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_COMMON_NAME for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateCisCrn = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_CIS_CRN")
+	if SecretsManagerPublicCertificateCisCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_CIS_CRN for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateClassicInfrastructureUsername = os.Getenv("SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_USERNAME")
+	if SecretsManagerPublicCertificateClassicInfrastructureUsername == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_USERNAME for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateClassicInfrastructurePassword = os.Getenv("SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_PASSWORD")
+	if SecretsManagerPublicCertificateClassicInfrastructurePassword == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_PASSWORD for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerImportedCertificatePathToCertificate = os.Getenv("SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE")
+	if SecretsManagerImportedCertificatePathToCertificate == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE for testing imported certificate's tests, else tests fail if not set correctly")
 	}
 
 	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
