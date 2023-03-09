@@ -51,14 +51,6 @@ func TestAccIbmCodeEngineProjectBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineProjectConfigBasic(projectName string) string {
-	return fmt.Sprintf(`
-		resource "ibm_code_engine_project" "code_engine_project_instance" {
-			name = "%s"
-		}
-	`, projectName)
-}
-
 func testAccCheckIbmCodeEngineProjectConfig(projectName string, resourceGroupID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_code_engine_project" "code_engine_project_instance" {
