@@ -53,44 +53,52 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Display Name in the requested language.",
 			},
 			"label_i18n": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "A map of translated strings, by language code.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The programmatic name of this offering.",
 			},
 			"offering_icon_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "URL for an icon associated with this offering.",
 			},
 			"offering_docs_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "URL for an additional docs with this offering.",
 			},
 			"offering_support_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This argument is deprecated",
 				Description: "[deprecated] - Use offering.support instead.  URL to be displayed in the Consumption UI for getting support on this offering.",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of tags associated with this catalog.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"keywords": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of keywords associated with offering, typically used to search for it.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -107,22 +115,22 @@ func ResourceIBMCmOffering() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"one_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "One start rating.",
 						},
 						"two_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Two start rating.",
 						},
 						"three_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Three start rating.",
 						},
 						"four_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Four start rating.",
 						},
 					},
@@ -141,50 +149,59 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"short_description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Short description in the requested language.",
 			},
 			"short_description_i18n": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "A map of translated strings, by language code.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"long_description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Long description in the requested language.",
 			},
 			"long_description_i18n": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "A map of translated strings, by language code.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"features": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "list of features associated with this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"title": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Heading.",
 						},
 						"title_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Feature description.",
 						},
 						"description_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
@@ -2037,39 +2054,46 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"permit_request_ibm_public_publish": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This argument is deprecated",
 				Description: "Is it permitted to request publishing to IBM or Public.",
 			},
 			"ibm_publish_approved": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This argument is deprecated",
 				Description: "Indicates if this offering has been approved for use by all IBMers.",
 			},
 			"public_publish_approved": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This argument is deprecated",
 				Description: "Indicates if this offering has been approved for use by all IBM Cloud users.",
 			},
 			"public_original_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The original offering CRN that this publish entry came from.",
 			},
 			"publish_public_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The crn of the public catalog entry of this offering.",
 			},
 			"portal_approval_record": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The portal's approval record ID.",
 			},
 			"portal_ui_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The portal UI URL.",
 			},
 			"catalog_name": &schema.Schema{
@@ -2080,17 +2104,20 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "Map of metadata values for this offering.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"disclaimer": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "A disclaimer for this offering.",
 			},
 			"hidden": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Determine if this offering should be displayed in the Consumption UI.",
 			},
 			// "provider": &schema.Schema{
@@ -2103,17 +2130,20 @@ func ResourceIBMCmOffering() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "Information on the provider for this offering, or omitted if no provider information is given.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The id of this provider.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The name of this provider.",
 						},
 					},
@@ -2141,22 +2171,26 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"image_pull_keys": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Image pull keys for this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Key name.",
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Key value.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Key description.",
 						},
 					},
@@ -2170,57 +2204,56 @@ func ResourceIBMCmOffering() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "URL to be displayed in the Consumption UI for getting support on this offering.",
 						},
 						"process": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Support process as provided by an ISV.",
 						},
 						"process_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
-							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"locations": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "A list of country codes indicating where support is provided.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"support_details": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "A list of support options (e.g. email, phone, slack, other).",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Type of the current support detail.",
 									},
 									"contact": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Contact for the current support detail.",
 									},
 									"response_wait_time": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Time descriptor.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"value": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Amount of time to wait in unit 'type'.",
 												},
 												"type": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Valid values are hour or day.",
 												},
 											},
@@ -2228,30 +2261,29 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"availability": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Times when support is available.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"times": &schema.Schema{
 													Type:        schema.TypeList,
-													Optional:    true,
+													Computed:    true,
 													Description: "A list of support times.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"day": &schema.Schema{
 																Type:        schema.TypeInt,
-																Optional:    true,
+																Computed:    true,
 																Description: "The day of the week, represented as an integer.",
 															},
 															"start_time": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "HOURS:MINUTES:SECONDS using 24 hour time (e.g. 8:15:00).",
 															},
 															"end_time": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "HOURS:MINUTES:SECONDS using 24 hour time (e.g. 8:15:00).",
 															},
 														},
@@ -2259,12 +2291,12 @@ func ResourceIBMCmOffering() *schema.Resource {
 												},
 												"timezone": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Timezone (e.g. America/New_York).",
 												},
 												"always_available": &schema.Schema{
 													Type:        schema.TypeBool,
-													Optional:    true,
+													Computed:    true,
 													Description: "Is this support always available.",
 												},
 											},
@@ -2275,26 +2307,24 @@ func ResourceIBMCmOffering() *schema.Resource {
 						},
 						"support_escalation": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "Support escalation policy.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"escalation_wait_time": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Time descriptor.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"value": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Amount of time to wait in unit 'type'.",
 												},
 												"type": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Valid values are hour or day.",
 												},
 											},
@@ -2302,19 +2332,18 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"response_wait_time": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Time descriptor.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"value": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Amount of time to wait in unit 'type'.",
 												},
 												"type": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Valid values are hour or day.",
 												},
 											},
@@ -2322,7 +2351,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"contact": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Escalation contact.",
 									},
 								},
@@ -2330,7 +2359,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 						},
 						"support_type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Support type for this product.",
 						},
 					},
@@ -2339,34 +2368,40 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"media": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "A list of media items related to this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "URL of the specified media item.",
 						},
 						"api_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "CM API specific URL of the specified media item.",
 						},
 						"url_proxy": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
+							Computed:    true,
 							Description: "Offering URL proxy information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"url": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "URL of the specified media item being proxied.",
 									},
 									"sha": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "SHA256 fingerprint of image.",
 									},
 								},
@@ -2375,22 +2410,26 @@ func ResourceIBMCmOffering() *schema.Resource {
 						"caption": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Caption for this media item.",
 						},
 						"caption_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Type of this media item.",
 						},
 						"thumbnail_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Thumbnail URL for this media item.",
 						},
 					},
@@ -2422,71 +2461,71 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"product_kind": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The product kind.  Valid values are module, solution, or empty string.",
 			},
 			"badges": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "A list of badges for this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "ID of the current badge.",
 						},
 						"label": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Display name for the current badge.",
 						},
 						"label_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
-							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Description of the current badge.",
 						},
 						"description_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
-							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"icon": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Icon for the current badge.",
 						},
 						"authority": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Authority for the current badge.",
 						},
 						"tag": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Tag for the current badge.",
 						},
 						"learn_more_links": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "Learn more links for a badge.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"first_party": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "First party link.",
 									},
 									"third_party": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Third party link.",
 									},
 								},
@@ -2494,18 +2533,18 @@ func ResourceIBMCmOffering() *schema.Resource {
 						},
 						"constraints": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "An optional set of constraints indicating which versions in an Offering have this particular badge.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Type of the current constraint.",
 									},
 									"rule": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Rule for the current constraint.",
 									},
 								},
@@ -2550,6 +2589,12 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 		}
 
 		d.SetId(*offering.ID)
+
+		err = handleShareOfferingAfterCreate(catalogManagementClient, *offering, d, context)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		return resourceIBMCmOfferingRead(context, d, meta)
 	}
 
@@ -2751,43 +2796,9 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 
 	d.SetId(*offering.ID)
 
-	shareOffering := false
-	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
-	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
-	shareOfferingOptions.SetOfferingID(*offering.ID)
-	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
-
-	if _, ok := d.GetOk("share_with_access_list"); ok {
-		// Share with accounts if there are any
-		if len(d.Get("share_with_access_list").([]interface{})) > 0 {
-			addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
-			addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
-			addOfferingAccessListOptions.SetOfferingID(*offering.ID)
-			addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
-			_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
-			if err != nil {
-				log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
-			}
-		}
-	}
-
-	if _, ok := d.GetOk("share_with_ibm"); ok {
-		shareOffering = true
-		shareOfferingOptions.SetIBM(d.Get("share_with_ibm").(bool))
-	}
-
-	if _, ok := d.GetOk("share_with_all"); ok {
-		shareOffering = true
-		shareOfferingOptions.SetPublic(d.Get("share_with_all").(bool))
-	}
-
-	if shareOffering {
-		_, response, err = catalogManagementClient.ShareOfferingWithContext(context, &shareOfferingOptions)
-		if err != nil {
-			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response))
-		}
+	err = handleShareOfferingAfterCreate(catalogManagementClient, *offering, d, context)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceIBMCmOfferingRead(context, d, meta)
@@ -2826,6 +2837,9 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("label", offering.Label); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
 	}
+	if err = d.Set("label_i18n", offering.LabelI18n); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting label_i18n: %s", err))
+	}
 	if err = d.Set("name", offering.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -2838,10 +2852,15 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("offering_support_url", offering.OfferingSupportURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting offering_support_url: %s", err))
 	}
+	keywords := []string{}
 	if offering.Keywords != nil {
-		if err = d.Set("keywords", offering.Keywords); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting keywords: %s", err))
-		}
+		keywords = offering.Keywords
+	}
+	if err = d.Set("keywords", keywords); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting keywords: %s", err))
+	}
+	if err = d.Set("metadata", offering.Metadata); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting offering metadata: %s", err))
 	}
 	if offering.Rating != nil {
 		ratingMap, err := resourceIBMCmOfferingRatingToMap(offering.Rating)
@@ -2861,8 +2880,14 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("short_description", offering.ShortDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting short_description: %s", err))
 	}
+	if err = d.Set("short_description_i18n", offering.ShortDescriptionI18n); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting short_description_i18n: %s", err))
+	}
 	if err = d.Set("long_description", offering.LongDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting long_description: %s", err))
+	}
+	if err = d.Set("long_description_i18n", offering.LongDescriptionI18n); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting long_description_i18n: %s", err))
 	}
 	features := []map[string]interface{}{}
 	if offering.Features != nil {
@@ -3493,12 +3518,6 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		hasChange = true
 	}
 
-	publishStatusChanged := false
-	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
-	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
-	shareOfferingOptions.SetOfferingID(*offering.ID)
-	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
-
 	if d.HasChange("share_with_access_list") {
 		// Find removed accounts, ones that are present in old list but not in new list
 		oldAccountList, newAccountList := d.GetChange("share_with_access_list")
@@ -3541,6 +3560,16 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 				return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
 			}
 		}
+	}
+
+	publishStatusChanged := false
+	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
+	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	shareOfferingOptions.SetOfferingID(*offering.ID)
+	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
+
+	if d.HasChange("share_enabled") {
+		publishStatusChanged = true
 	}
 
 	if d.HasChange("share_with_ibm") {
@@ -6001,4 +6030,51 @@ func resourceIBMCmOfferingConstraintToMap(model *catalogmanagementv1.Constraint)
 	// 	modelMap["rule"] = model.Rule
 	// }
 	return modelMap, nil
+}
+
+func handleShareOfferingAfterCreate(catalogManagementClient *catalogmanagementv1.CatalogManagementV1, offering catalogmanagementv1.Offering, d *schema.ResourceData, context context.Context) error {
+	if _, ok := d.GetOk("share_with_access_list"); ok {
+		// Share with accounts if there are any
+		if len(d.Get("share_with_access_list").([]interface{})) > 0 {
+			addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
+			addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+			addOfferingAccessListOptions.SetOfferingID(*offering.ID)
+			addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
+			_, response, err := catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
+			if err != nil {
+				log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
+				return fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response)
+			}
+		}
+	}
+
+	shareOffering := false
+	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
+	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	shareOfferingOptions.SetOfferingID(*offering.ID)
+	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
+
+	if _, ok := d.GetOk("share_with_ibm"); ok {
+		shareOffering = true
+	}
+
+	if _, ok := d.GetOk("share_with_ibm"); ok {
+		shareOffering = true
+		shareOfferingOptions.SetIBM(d.Get("share_with_ibm").(bool))
+	}
+
+	if _, ok := d.GetOk("share_with_all"); ok {
+		shareOffering = true
+		shareOfferingOptions.SetPublic(d.Get("share_with_all").(bool))
+	}
+
+	if shareOffering {
+		_, response, err := catalogManagementClient.ShareOfferingWithContext(context, &shareOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
+			return fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response)
+		}
+	}
+
+	return nil
 }

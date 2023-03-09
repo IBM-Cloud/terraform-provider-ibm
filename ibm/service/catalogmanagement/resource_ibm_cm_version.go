@@ -850,32 +850,38 @@ func ResourceIBMCmVersion() *schema.Resource {
 						"instructions": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Instruction on step and by whom (role) that are needed to take place to prepare the target for installing this version.",
 						},
 						"instructions_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"script": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Optional script that needs to be run post any pre-condition script.",
 						},
 						"script_permission": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Optional iam permissions that are required on the target cluster to run this script.",
 						},
 						"delete_script": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Optional script that if run will remove the installed version.",
 						},
 						"scope": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Optional value indicating if this script is scoped to a namespace or the entire cluster.",
 						},
 					},
@@ -2143,14 +2149,15 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("single_instance", version.SingleInstance); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting single_instance: %s", err))
 	}
+	installMap := make(map[string]interface{})
 	if version.Install != nil {
-		installMap, err := resourceIBMCmVersionScriptToMap(version.Install)
+		installMap, err = resourceIBMCmVersionScriptToMap(version.Install)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("install", []map[string]interface{}{installMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting install: %s", err))
-		}
+	}
+	if err = d.Set("install", []map[string]interface{}{installMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting install: %s", err))
 	}
 	preInstall := []map[string]interface{}{}
 	if version.PreInstall != nil {
