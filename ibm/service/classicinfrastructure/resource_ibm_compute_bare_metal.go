@@ -354,7 +354,7 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 
 			// Quote based provisioning, Monthly
 			"public_subnet": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
@@ -370,7 +370,7 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 
 			// Quote based provisioning, Monthly
 			"private_subnet": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
