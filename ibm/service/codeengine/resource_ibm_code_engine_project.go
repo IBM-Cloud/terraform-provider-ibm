@@ -41,7 +41,7 @@ func ResourceIbmCodeEngineProject() *schema.Resource {
 			},
 			"resource_group_id": &schema.Schema{
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_project", "resource_group_id"),
 				Description:  "Optional ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used.",
