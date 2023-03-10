@@ -28,6 +28,10 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 		UpdateContext: resourceIbmCodeEngineAppUpdate,
 		DeleteContext: resourceIbmCodeEngineAppDelete,
 		Importer:      &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
@@ -532,8 +536,8 @@ func waitForIbmCodeEngineAppCreate(d *schema.ResourceData, meta interface{}) (in
 			return stateObj, *stateObj.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      60 * time.Second,
-		MinTimeout: 60 * time.Second,
+		Delay:      20 * time.Second,
+		MinTimeout: 20 * time.Second,
 	}
 
 	return stateConf.WaitForState()
@@ -889,7 +893,53 @@ func resourceIbmCodeEngineAppUpdate(context context.Context, d *schema.ResourceD
 		}
 	}
 
+	_, err = waitForIbmCodeEngineAppUpdate(d, meta)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmCodeEngineApp (%s) to be updated: %s", d.Id(), err))
+	}
+
 	return resourceIbmCodeEngineAppRead(context, d, meta)
+}
+
+func waitForIbmCodeEngineAppUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	codeEngineClient, err := meta.(conns.ClientSession).CodeEngineV2()
+	if err != nil {
+		return false, err
+	}
+	getAppOptions := &codeenginev2.GetAppOptions{}
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return false, err
+	}
+
+	getAppOptions.SetProjectID(parts[0])
+	getAppOptions.SetName(parts[1])
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"deploying"},
+		Target:  []string{"ready"},
+		Refresh: func() (interface{}, string, error) {
+			stateObj, response, err := codeEngineClient.GetApp(getAppOptions)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getAppOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"failed": true, "warning": true}
+			if failStates[*stateObj.Status] {
+				return stateObj, *stateObj.Status, fmt.Errorf("The instance %s failed: %s\n%s", "getAppOptions", err, response)
+			}
+			return stateObj, *stateObj.Status, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      20 * time.Second,
+		MinTimeout: 20 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmCodeEngineAppDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -27,6 +27,10 @@ func ResourceIbmCodeEngineProject() *schema.Resource {
 		DeleteContext: resourceIbmCodeEngineProjectDelete,
 		Importer:      &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
@@ -165,8 +169,8 @@ func waitForIbmCodeEngineProjectCreate(d *schema.ResourceData, meta interface{})
 			return stateObj, *stateObj.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      60 * time.Second,
-		MinTimeout: 60 * time.Second,
+		Delay:      20 * time.Second,
+		MinTimeout: 20 * time.Second,
 	}
 
 	return stateConf.WaitForState()
