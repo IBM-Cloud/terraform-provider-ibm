@@ -31,9 +31,9 @@ func ResourceIBMIsPrivatePathServiceGatewayRevokeAccount() *schema.Resource {
 				Description: "The private path service gateway identifier.",
 			},
 			"account": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				//ForceNew:    true,
 				Description: "The account for this access policy.",
 			},
 		},

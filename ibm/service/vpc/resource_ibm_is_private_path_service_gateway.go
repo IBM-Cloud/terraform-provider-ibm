@@ -261,7 +261,7 @@ func resourceIBMIsPrivatePathServiceGatewayUpdate(context context.Context, d *sc
 	}
 
 	updatePrivatePathServiceGatewayOptions := &vpcv1.UpdatePrivatePathServiceGatewayOptions{}
-
+	updatePrivatePathServiceGatewayOptions.SetID(d.Id())
 	hasChange := false
 
 	patchVals := &vpcv1.PrivatePathServiceGatewayPatch{}

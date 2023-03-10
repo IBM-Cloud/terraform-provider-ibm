@@ -40,7 +40,7 @@ resource "ibm_is_private_path_service_gateway_account_policy" "example" {
   account = "fee82deba12e4c0fb69c3b09d1f12345"
 }
 data "ibm_is_private_path_service_gateway_account_policy" "example" {
-	account_id = "fee82deba12e4c0fb69c3b09d1f12345"
+	account_policy = ibm_is_private_path_service_gateway_account_policy.example.id
 	private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
 }
 ```

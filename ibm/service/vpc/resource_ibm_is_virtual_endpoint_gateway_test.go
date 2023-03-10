@@ -51,7 +51,7 @@ func TestAccIBMISVirtualEndpointGateway_PPSG(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name1, egwName, targetName),
+				Config: testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name1, egwName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
 					resource.TestCheckResourceAttr(name, "name", name1),
@@ -280,17 +280,17 @@ func testAccCheckisVirtualEndpointGatewayConfigBasic(vpcname1, subnetname1, name
 	}`, vpcname1, subnetname1, acc.ISZoneName, acc.ISCIDR, name1)
 }
 
-func testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, egwName, targetName string) string {
+func testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, egwName string) string {
 	return testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name) + fmt.Sprintf(`
 	resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
 		name = "%s"
 		target {
-		  name          = "%s"
+		  crn          = ibm_is_private_path_service_gateway.is_private_path_service_gateway.crn
 		  resource_type = "private_path_service_gateway"
 		}
 		vpc = ibm_is_vpc.testacc_vpc.id
 		resource_group = data.ibm_resource_group.test_acc.id
-	}`, egwName, targetName)
+	}`, egwName)
 }
 
 func testAccCheckisVirtualEndpointGatewayConfigFullySpecified(vpcname1, subnetname1, name1 string) string {

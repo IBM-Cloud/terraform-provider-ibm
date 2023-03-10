@@ -92,7 +92,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.C
 	getPrivatePathServiceGatewayAccountPolicyOptions := &vpcv1.GetPrivatePathServiceGatewayAccountPolicyOptions{}
 
 	getPrivatePathServiceGatewayAccountPolicyOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway").(string))
-	getPrivatePathServiceGatewayAccountPolicyOptions.SetID(d.Get("account_id").(string))
+	getPrivatePathServiceGatewayAccountPolicyOptions.SetID(d.Get("account_policy").(string))
 
 	privatePathServiceGatewayAccountPolicy, response, err := vpcClient.GetPrivatePathServiceGatewayAccountPolicyWithContext(context, getPrivatePathServiceGatewayAccountPolicyOptions)
 	if err != nil {

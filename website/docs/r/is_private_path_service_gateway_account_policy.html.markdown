@@ -22,7 +22,7 @@ resource "ibm_is_private_path_service_gateway" "example" {
 }
 resource "ibm_is_private_path_service_gateway_account_policy" "example" {
   access_policy = "deny"
-  account "fee82deba12e4c0fb69c3b09d1f12345"
+  account = "fee82deba12e4c0fb69c3b09d1f12345"
   private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
 }
 ```

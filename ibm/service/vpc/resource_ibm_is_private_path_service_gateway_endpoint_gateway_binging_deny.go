@@ -39,7 +39,7 @@ func ResourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingDeny() *schema.
 			"set_account_policy": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    true,
+				Default:     false,
 				Description: "Indicates whether this will become the access policy for any pending and future endpoint gateway bindings from the same account.",
 			},
 		},
