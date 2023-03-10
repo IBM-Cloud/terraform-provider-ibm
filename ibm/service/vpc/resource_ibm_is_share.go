@@ -967,31 +967,65 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	if share.Targets != nil {
-		for _, targetsItem := range share.Targets {
+		if _, ok := d.GetOk("mount_targets"); ok {
+			for _, targetsItem := range share.Targets {
 
-			deleteShareMountTargetOptions := &vpcbetav1.DeleteShareMountTargetOptions{}
+				deleteShareMountTargetOptions := &vpcbetav1.DeleteShareMountTargetOptions{}
 
-			deleteShareMountTargetOptions.SetShareID(d.Id())
-			deleteShareMountTargetOptions.SetID(*targetsItem.ID)
+				deleteShareMountTargetOptions.SetShareID(d.Id())
+				deleteShareMountTargetOptions.SetID(*targetsItem.ID)
 
-			_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareMountTargetOptions)
-			if err != nil {
-				log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
-				return diag.FromErr(err)
-			}
-			_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
-			if err != nil {
-				return diag.FromErr(err)
+				_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareMountTargetOptions)
+				if err != nil {
+					log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
+					return diag.FromErr(err)
+				}
+				_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
 
 	if share.ReplicationRole != nil && *share.ReplicationRole == IsFileShareReplicationRoleSource && share.ReplicaShare != nil {
 
+		getShareOptions := &vpcbetav1.GetShareOptions{}
+		getShareOptions.SetID(*share.ReplicaShare.ID)
+
+		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		if share.Targets != nil {
+			if _, ok := d.GetOk("replica_share.0.mount_targets"); ok {
+				for _, targetsItem := range share.Targets {
+
+					deleteShareMountTargetOptions := &vpcbetav1.DeleteShareMountTargetOptions{}
+
+					deleteShareMountTargetOptions.SetShareID(d.Id())
+					deleteShareMountTargetOptions.SetID(*targetsItem.ID)
+
+					_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareMountTargetOptions)
+					if err != nil {
+						log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
+						return diag.FromErr(err)
+					}
+					_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+				}
+			}
+		}
 		deleteShareOptions := &vpcbetav1.DeleteShareOptions{}
 
 		deleteShareOptions.SetID(*share.ReplicaShare.ID)
-
 		_, response, err = vpcClient.DeleteShareWithContext(context, deleteShareOptions)
 		if err != nil {
 			log.Printf("[DEBUG] DeleteShareWithContext failed %s\n%s", err, response)
