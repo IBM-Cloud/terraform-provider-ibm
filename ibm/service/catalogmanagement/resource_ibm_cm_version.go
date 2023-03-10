@@ -569,6 +569,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Computed:    true,
+				ConfigMode:  schema.SchemaConfigModeAttr,
 				Description: "List of user solicited overrides.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -632,6 +633,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 							MaxItems:    1,
 							Optional:    true,
 							Computed:    true,
+							ConfigMode:  schema.SchemaConfigModeAttr,
 							Description: "Render type.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -671,6 +673,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 										MaxItems:    1,
 										Optional:    true,
 										Computed:    true,
+										ConfigMode:  schema.SchemaConfigModeAttr,
 										Description: "List of parameters that are associated with this configuration.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
@@ -678,6 +681,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 													Type:        schema.TypeList,
 													Optional:    true,
 													Computed:    true,
+													ConfigMode:  schema.SchemaConfigModeAttr,
 													Description: "Parameters for this association.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -2574,11 +2578,11 @@ func convertMapFieldFromListOfOneToMap(originalMap map[string]interface{}, field
 	for k, v := range originalMap {
 		if k == fieldToCheck {
 			if v != nil && len(v.([]interface{})) > 0 {
-				// if v.([]interface{})[0] != nil {
-				newMap[k] = v.([]interface{})[0].(map[string]interface{})
-				// } else {
-				// 	newMap[k] = nil
-				// }
+				if v.([]interface{})[0] != nil {
+					newMap[k] = v.([]interface{})[0].(map[string]interface{})
+				} else {
+					newMap[k] = nil
+				}
 			} else {
 				newMap[k] = nil
 			}
