@@ -460,6 +460,8 @@ func Provider() *schema.Provider {
 			"ibm_is_security_group_rules":            vpc.DataSourceIBMIsSecurityGroupRules(),
 			"ibm_is_security_group_target":           vpc.DataSourceIBMISSecurityGroupTarget(),
 			"ibm_is_security_group_targets":          vpc.DataSourceIBMISSecurityGroupTargets(),
+			"ibm_is_snapshot_clone":                  vpc.DataSourceSnapshotClone(),
+			"ibm_is_snapshot_clones":                 vpc.DataSourceSnapshotClones(),
 			"ibm_is_snapshot":                        vpc.DataSourceSnapshot(),
 			"ibm_is_snapshots":                       vpc.DataSourceSnapshots(),
 			"ibm_is_share":                           vpc.DataSourceIbmIsShare(),
@@ -636,8 +638,37 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
 
 			// //Added for Secrets Manager
+			// V1 data sources:
 			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
 			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
+
+			// V2 data sources
+			"ibm_sm_secret_group":  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroup()),
+			"ibm_sm_secret_groups": secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroups()),
+			"ibm_sm_private_certificate_configuration_intermediate_ca":           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationIntermediateCA()),
+			"ibm_sm_private_certificate_configuration_root_ca":                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationRootCA()),
+			"ibm_sm_private_certificate_configuration_template":                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationTemplate()),
+			"ibm_sm_public_certificate_configuration_ca_lets_encrypt":            secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateConfigurationCALetsEncrypt()),
+			"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmConfigurationPublicCertificateDNSCis()),
+			"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructure()),
+			"ibm_sm_iam_credentials_configuration":                               secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsConfiguration()),
+			"ibm_sm_configurations":                                              secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmConfigurations()),
+			"ibm_sm_secrets":                                                     secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecrets()),
+			"ibm_sm_arbitrary_secret_metadata":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmArbitrarySecretMetadata()),
+			"ibm_sm_imported_certificate_metadata":                               secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmImportedCertificateMetadata()),
+			"ibm_sm_public_certificate_metadata":                                 secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateMetadata()),
+			"ibm_sm_private_certificate_metadata":                                secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateMetadata()),
+			"ibm_sm_iam_credentials_secret_metadata":                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecretMetadata()),
+			"ibm_sm_kv_secret_metadata":                                          secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecretMetadata()),
+			"ibm_sm_username_password_secret_metadata":                           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecretMetadata()),
+			"ibm_sm_arbitrary_secret":                                            secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmArbitrarySecret()),
+			"ibm_sm_imported_certificate":                                        secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmImportedCertificate()),
+			"ibm_sm_public_certificate":                                          secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificate()),
+			"ibm_sm_private_certificate":                                         secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificate()),
+			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecret()),
+			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecret()),
+			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecret()),
+			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
 			// //Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -1091,6 +1122,24 @@ func Provider() *schema.Provider {
 			"ibm_schematics_inventory":      schematics.ResourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
 
+			// //Added for Secrets Manager
+			"ibm_sm_secret_group":                                                secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmSecretGroup()),
+			"ibm_sm_arbitrary_secret":                                            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmArbitrarySecret()),
+			"ibm_sm_imported_certificate":                                        secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmImportedCertificate()),
+			"ibm_sm_public_certificate":                                          secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificate()),
+			"ibm_sm_private_certificate":                                         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificate()),
+			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsSecret()),
+			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmUsernamePasswordSecret()),
+			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmKvSecret()),
+			"ibm_sm_public_certificate_configuration_ca_lets_encrypt":            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateConfigurationCALetsEncrypt()),
+			"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCis()),
+			"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructure()),
+			"ibm_sm_private_certificate_configuration_root_ca":                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationRootCA()),
+			"ibm_sm_private_certificate_configuration_intermediate_ca":           secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationIntermediateCA()),
+			"ibm_sm_private_certificate_configuration_template":                  secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationTemplate()),
+			"ibm_sm_iam_credentials_configuration":                               secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsConfiguration()),
+			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmEnRegistration()),
+
 			// //satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
 			"ibm_satellite_host":                                satellite.ResourceIBMSatelliteHost(),
@@ -1401,6 +1450,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_access_group_policy":    iampolicy.ResourceIBMIAMAccessGroupPolicyValidator(),
 				"ibm_iam_service_policy":         iampolicy.ResourceIBMIAMServicePolicyValidator(),
 				"ibm_iam_authorization_policy":   iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
+
+				// // Added for Secrets Manager
+				"ibm_sm_secret_group":                                                secretsmanager.ResourceIbmSmSecretGroupValidator(),
+				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
+				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
+				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

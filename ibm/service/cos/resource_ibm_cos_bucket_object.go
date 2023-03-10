@@ -150,16 +150,6 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 
 	objectKey := d.Get("key").(string)
 
-	// This check is to make sure new create does not
-	// overwrite objects that is not managed by Terraform
-	exists, err := objectExists(s3Client, bucketName, objectKey)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if exists {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error COS bucket (%s) object (%s) already exists", bucketName, objectKey))
-	}
-
 	var body io.ReadSeeker
 
 	if v, ok := d.GetOk("content"); ok {

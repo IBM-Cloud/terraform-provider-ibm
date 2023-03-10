@@ -44,12 +44,55 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						snpName, "snapshots.0.name", name1),
-					// resource.TestCheckResourceAttrSet(snpName, "snapshots.0.delatable"), // Commented as it is deprecated.
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.href"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.crn"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.lifecycle_state"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.encryption"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.captured_at"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISSnapshotsDatasource_clonesbasic(t *testing.T) {
+	var snapshot string
+	snpName := "data.ibm_is_snapshots.ds_snapshot"
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISSnapshotCloneConfig(vpcname, subnetname, sshname, publicKey, volname, name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "name", name1),
+				),
+			},
+			{
+				Config: testDSCheckIBMISSnapshotsConfig(name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						snpName, "snapshots.0.name", name1),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.href"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.crn"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.lifecycle_state"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.encryption"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.captured_at"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.clones.#"),
+					resource.TestCheckResourceAttr(snpName, "snapshots.0.clones.#", "2"),
+					resource.TestCheckResourceAttr(snpName, "snapshots.0.clones.0", acc.ISZoneName),
+					resource.TestCheckResourceAttr(snpName, "snapshots.0.clones.1", acc.ISZoneName2),
 				),
 			},
 		},

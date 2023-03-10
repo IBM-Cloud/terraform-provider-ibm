@@ -79,7 +79,6 @@ import (
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -118,6 +117,8 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv1"
+	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
+	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
 )
 
 // RetryAPIDelay - retry api delay
@@ -282,6 +283,7 @@ type ClientSession interface {
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
 	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
+	SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
@@ -539,7 +541,8 @@ type clientSession struct {
 	//Resource Controller Option
 	resourceControllerErr   error
 	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
-	secretsManagerClient    *secretsmanagerv1.SecretsManagerV1
+	secretsManagerClientV1  *secretsmanagerv1.SecretsManagerV1
+	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
 	// Schematics service options
@@ -1070,8 +1073,13 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
-// SecretsManager Session
+// IBM Cloud Secrets Manager V1 Basic API
 func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error) {
+	return session.secretsManagerClientV1, session.secretsManagerClientErr
+}
+
+// IBM Cloud Secrets Manager V2 Basic API
+func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
 }
 
@@ -1333,7 +1341,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.bmxUserDetails = userConfig
 
-	if sess.SoftLayerSession != nil && sess.SoftLayerSession.IAMToken != "" {
+	if sess.SoftLayerSession != nil && sess.SoftLayerSession.APIKey == "" {
+		log.Println("Configuring SoftLayer Session with token from IBM Cloud Session")
 		sess.SoftLayerSession.IAMToken = sess.BluemixSession.Config.IAMAccessToken
 		sess.SoftLayerSession.IAMRefreshToken = sess.BluemixSession.Config.IAMRefreshToken
 	}
@@ -1540,7 +1549,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an "options" struct for creating Context Based Restrictions service client.
 	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		session.contextBasedRestrictionsClientErr = fmt.Errorf("Context Based Restrictions Service API does not support private endpoints") //return this error if private endpoints are not supported
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-de" {
+			cbrURL = ContructEndpoint(fmt.Sprintf("private.%s.cbr", c.Region), cloudEndpoint)
+		} else {
+			cbrURL = ContructEndpoint("private.cbr", cloudEndpoint)
+		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
@@ -2989,7 +3002,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 	}
 	/// Construct the service client.
-	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
+	session.secretsManagerClientV1, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
 	if err != nil {
 		session.secretsManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
 	}
@@ -3000,6 +3013,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// SECRETS MANAGER Service V2
+	// Construct an "options" struct for creating the service client.
+	var smBaseUrl string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		smBaseUrl = ContructEndpoint(fmt.Sprintf("private.secrets-manager.%s", c.Region), cloudEndpoint)
+	} else {
+		smBaseUrl = ContructEndpoint(fmt.Sprintf("secrets-manager.%s", c.Region), cloudEndpoint)
+	}
+
+	secretsManagerClientOptionsV2 := &secretsmanagerv2.SecretsManagerV2Options{
+		Authenticator: authenticator,
+		URL:           smBaseUrl,
+	}
+
+	// Construct the service client.
+	session.secretsManagerClient, err = secretsmanagerv2.NewSecretsManagerV2UsingExternalConfig(secretsManagerClientOptionsV2)
+	if err == nil {
+		// Enable retries for API calls
+		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager Basic API service: %q", err)
 	}
 
 	// SATELLITE Service

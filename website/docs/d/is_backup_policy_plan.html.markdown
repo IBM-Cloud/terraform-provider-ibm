@@ -50,7 +50,11 @@ In addition to all argument reference list, you can access the following attribu
 - `cron_spec` - (String) The cron specification for the backup schedule.
 
 	->**Note** The backup policy jobs (which create and delete backups for this plan) will not start until this time, and may start for up to 90 minutes after this time.All backup schedules for plans in the same policy must be at least an hour apart.
-	
+- `clone_policy` - (List)
+  
+  Nested scheme for `clone_policy`:
+  - `max_snapshots` - (Integer) The maximum number of recent snapshots (per source) that will keep clones.
+  - `zones` - (List) The zone list this backup policy plan will create snapshot clones in.	
 - `deletion_trigger` (List) `deletion_trigger` block has the following structure:
 	
 	Nested scheme for `deletion_trigger`:
