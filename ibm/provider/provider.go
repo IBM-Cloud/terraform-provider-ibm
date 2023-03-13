@@ -1090,6 +1090,7 @@ func Provider() *schema.Provider {
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnection(),
+			"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionAction(),
 			"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilter(),
 			"ibm_tg_route_report":             transitgateway.ResourceIBMTransitGatewayRouteReport(),
 
@@ -1285,6 +1286,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_tg_gateway":                  transitgateway.ResourceIBMTGValidator(),
 				"ibm_app_config_feature":          appconfiguration.ResourceIBMAppConfigFeatureValidator(),
 				"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
+				"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
 				"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
 				"ibm_dl_virtual_connection":       directlink.ResourceIBMDLGatewayVCValidator(),
 				"ibm_dl_gateway":                  directlink.ResourceIBMDLGatewayValidator(),
