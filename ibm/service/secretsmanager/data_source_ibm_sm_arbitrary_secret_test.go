@@ -38,7 +38,7 @@ func TestAccIbmSmArbitrarySecretDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSmArbitrarySecretDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret_instance" {
-			name = "test_arbitrary_secret"
+			name = "test_arbitrary_secret_terraform"
 			instance_id   = "%s"
   			region        = "%s"
   			custom_metadata = {"key":"value"}
