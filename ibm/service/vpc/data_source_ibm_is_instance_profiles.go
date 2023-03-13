@@ -662,7 +662,7 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		}
 		if profile.NetworkInterfaceCount != nil {
 			networkInterfaceCountList := []map[string]interface{}{}
-			networkInterfaceCountMap := dataSourceInstanceProfileFlattenNetworkInterfaceCount(*profile.NetworkInterfaceCount.(*vpcv1.InstanceProfileNetworkInterfaceCount))
+			networkInterfaceCountMap := dataSourceInstanceProfileNetworkInterfaceCount(*profile.NetworkInterfaceCount.(*vpcv1.InstanceProfileNetworkInterfaceCount))
 			networkInterfaceCountList = append(networkInterfaceCountList, networkInterfaceCountMap)
 			l["network_interface_count"] = networkInterfaceCountList
 		}

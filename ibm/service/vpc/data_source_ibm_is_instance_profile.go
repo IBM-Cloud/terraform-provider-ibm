@@ -462,7 +462,7 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 				},
 			},
 			"network_interface_count": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -880,7 +880,15 @@ func dataSourceInstanceProfileMemoryToMap(memoryItem vpcv1.InstanceProfileMemory
 	return memoryMap
 }
 
-func dataSourceInstanceProfileFlattenNetworkInterfaceCount(networkInterfaceCountItem vpcv1.InstanceProfileNetworkInterfaceCount) (networkInterfaceCountMap map[string]interface{}) {
+func dataSourceInstanceProfileFlattenNetworkInterfaceCount(result vpcv1.InstanceProfileNetworkInterfaceCount) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileNetworkInterfaceCount(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileNetworkInterfaceCount(networkInterfaceCountItem vpcv1.InstanceProfileNetworkInterfaceCount) (networkInterfaceCountMap map[string]interface{}) {
 	networkInterfaceCountMap = map[string]interface{}{}
 
 	if networkInterfaceCountItem.Max != nil {
