@@ -13,7 +13,7 @@ Provides a read-only data source for NotificationsRegistration. You can then ref
 ## Example Usage
 
 ```hcl
-data "ibm_sm_en_registration" {
+data "ibm_sm_en_registration" "en_registration" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
 }

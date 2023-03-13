@@ -13,7 +13,7 @@ Provides a read-only data source for SecretGroupCollection. You can then referen
 ## Example Usage
 
 ```hcl
-data "ibm_sm_secret_groups" {
+data "ibm_sm_secret_groups" "secret_groups" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
 }

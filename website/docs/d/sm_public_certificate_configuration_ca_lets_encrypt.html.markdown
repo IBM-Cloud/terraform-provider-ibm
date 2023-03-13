@@ -13,7 +13,7 @@ Provides a read-only data source for PublicCertificateConfigurationCALetsEncrypt
 ## Example Usage
 
 ```hcl
-data "ibm_sm_public_certificate_configuration_ca_lets_encrypt" {
+data "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "ca_lets_encrypt" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   name = "configuration-name"

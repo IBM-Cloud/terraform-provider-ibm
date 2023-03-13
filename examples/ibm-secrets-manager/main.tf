@@ -37,8 +37,7 @@ resource "ibm_sm_public_certificate" "sm_public_certificate_instance" {
   secret_type = var.sm_public_certificate_secret_type
   rotation {
     auto_rotate = true
-    interval = 1
-    unit = "day"
+    rotate_keys = false
   }
 }
 

@@ -13,7 +13,7 @@ Provides a read-only data source for IAMCredentialsSecretMetadata. You can then 
 ## Example Usage
 
 ```hcl
-data "ibm_sm_iam_credentials_secret_metadata" {
+data "ibm_sm_iam_credentials_secret_metadata" "iam_secret_metadata" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"

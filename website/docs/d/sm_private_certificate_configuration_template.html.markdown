@@ -13,7 +13,7 @@ Provides a read-only data source for PrivateCertificateConfigurationTemplate. Yo
 ## Example Usage
 
 ```hcl
-data "ibm_sm_private_certificate_configuration_template" {
+data "ibm_sm_private_certificate_configuration_template" "private_certificate_template" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   name = "configuration-name"

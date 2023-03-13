@@ -25,7 +25,7 @@ resource "ibm_sm_public_certificate" "sm_public_certificate" {
   common_name = "example.com"
   rotation {
 		auto_rotate = true
-		rotate_keys = true
+		rotate_keys = false
   }
   secret_group_id = "default"
 }

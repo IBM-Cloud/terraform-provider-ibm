@@ -13,7 +13,7 @@ Provides a read-only data source for PrivateCertificateConfigurationIntermediate
 ## Example Usage
 
 ```hcl
-data "ibm_sm_private_certificate_configuration_intermediate_ca" {
+data "ibm_sm_private_certificate_configuration_intermediate_ca" "intermediate_ca" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   name = "configuration-name"

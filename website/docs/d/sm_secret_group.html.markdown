@@ -13,7 +13,7 @@ Provides a read-only data source for SecretGroup. You can then reference the fie
 ## Example Usage
 
 ```hcl
-data "ibm_sm_secret_group" {
+data "ibm_sm_secret_group" "secret_group" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   secret_grouop_id = ibm_sm_secret_group.sm_secret_group_instance.secretGroup_id

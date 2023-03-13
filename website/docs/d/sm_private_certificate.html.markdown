@@ -13,7 +13,7 @@ Provides a read-only data source for PrivateCertificate. You can then reference 
 ## Example Usage
 
 ```hcl
-data "ibm_sm_private_certificate" {
+data "ibm_sm_private_certificate" "private_certificate" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"

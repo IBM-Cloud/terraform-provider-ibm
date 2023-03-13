@@ -13,7 +13,7 @@ Provides a read-only data source for sm_configurations. You can then reference t
 ## Example Usage
 
 ```hcl
-data "ibm_sm_configurations" {
+data "ibm_sm_configurations" "configurations" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
 }
