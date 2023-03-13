@@ -2409,59 +2409,49 @@ func ResourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 }
 
 func ResourceSharesValidate(diff *schema.ResourceDiff) error {
+	err := ResourceSharesValidateHelper(diff, "size", "profile", "iops")
+	if err != nil {
+		return err
+	}
+	if _, ok := diff.GetOk("replica_share"); ok {
+		err := ResourceSharesValidateHelper(diff, "replica_share.0.size", "replica_share.0.profile", "replica_share.0.iops")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func ResourceSharesValidateHelper(diff *schema.ResourceDiff, sizeStr, profileStr, iopsStr string) error {
 
 	profile := ""
 	var size, iops int
 
-	if iopsIntf, ok := diff.GetOk("iops"); ok {
+	if iopsIntf, ok := diff.GetOk(iopsStr); ok {
 		iops = iopsIntf.(int)
 	}
-
-	if diff.HasChange("size") {
-		oldSize, newSize := diff.GetChange("size")
+	if profileIntf, ok := diff.GetOk(profileStr); ok {
+		profile = profileIntf.(string)
+	}
+	if diff.HasChange(sizeStr) && !diff.HasChange(profileStr) {
+		oldSize, newSize := diff.GetChange(sizeStr)
 		if newSize.(int) < oldSize.(int) {
 			return fmt.Errorf("The new share size '%d' must be greater than the current share size '%d'", newSize.(int), oldSize.(int))
 		}
 	}
-	if profileIntf, ok := diff.GetOk("profile"); ok {
-		profile = profileIntf.(string)
-	}
-	if sizeIntf, ok := diff.GetOk("size"); ok {
+
+	if sizeIntf, ok := diff.GetOk(sizeStr); ok {
 		size = sizeIntf.(int)
-		if profile == "5iops-tier" && size > 9600 {
+		if profile == "tier-5iops" && size > 9600 {
 			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 9600)
-		} else if profile == "10iops-tier" && size > 4800 {
+		} else if profile == "tier-10iops" && size > 4800 {
 			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 4800)
 		} else if profile == "custom-iops" && size > 16000 {
 			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 16000)
 		}
 	}
-	if diff.HasChange("profile") {
-		oldProfile, _ := diff.GetChange("profile")
-		if oldProfile == "custom-iops" {
-			diff.SetNewComputed("iops")
-			log.Println("old profile custom iops")
-			if _, ok := diff.GetOkExists("iops"); ok {
-				log.Println("get ok exists true")
-				log.Println("The Share profile specified in the request cannot accept IOPS values")
-			}
-			if diff.NewValueKnown("iops") {
-				log.Println("NewValueKnown true")
-			} else {
-				log.Println("NewValueKnown false")
-			}
-			if diff.HasChange("iops") {
-				log.Println("HasChange true")
-			}
-			if _, ok := diff.GetOkExists("iops"); ok {
-				log.Println("GetOkExists true")
-			} else {
-				log.Println("GetOkExists true")
-			}
-		}
-	}
+
 	if profile != "custom-iops" {
-		if iops != 0 && diff.NewValueKnown("iops") && diff.HasChange("iops") {
+		if iops != 0 && diff.NewValueKnown(iopsStr) && diff.HasChange(iopsStr) {
 			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")
 		}
 	} else {

@@ -797,25 +797,27 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 
 	replicaShare := []map[string]interface{}{}
 	if share.ReplicaShare != nil && share.ReplicaShare.ID != nil {
-		getShareOptions := &vpcbetav1.GetShareOptions{}
+		if _, ok := d.GetOk("replica_share"); ok {
+			getShareOptions := &vpcbetav1.GetShareOptions{}
 
-		getShareOptions.SetID(*share.ReplicaShare.ID)
+			getShareOptions.SetID(*share.ReplicaShare.ID)
 
-		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
+			share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+				return diag.FromErr(err)
 			}
-			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			replicaShareItem, err := ShareReplicaToMap(context, vpcClient, d, meta, *share)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			replicaShare = append(replicaShare, replicaShareItem)
+			d.Set("replica_share", replicaShare)
 		}
-		replicaShareItem, err := ShareReplicaToMap(context, vpcClient, d, meta, *share)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		replicaShare = append(replicaShare, replicaShareItem)
-		d.Set("replica_share", replicaShare)
 	}
 
 	if share.Zone != nil {
@@ -909,7 +911,7 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 
 	getShareOptions.SetID(d.Id())
 
-	_, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+	share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -925,22 +927,24 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	if d.HasChange("replica_share") {
-		getShareOptions := &vpcbetav1.GetShareOptions{}
-		getShareOptions.SetID(d.Id())
+		if share.ReplicaShare != nil && share.ReplicaShare.ID != nil {
+			getShareOptions := &vpcbetav1.GetShareOptions{}
+			getShareOptions.SetID(*share.ReplicaShare.ID)
 
-		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
+			replicaShare, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+				return diag.FromErr(err)
 			}
-			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
-		}
-		eTag := response.Headers.Get("ETag")
-		err = shareUpdate(vpcClient, context, d, meta, "replica_share", *share.ReplicaShare.ID, eTag)
-		if err != nil {
-			return diag.FromErr(err)
+			eTag := response.Headers.Get("ETag")
+			err = shareUpdate(vpcClient, context, d, meta, "replica_share", *replicaShare.ID, eTag)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -993,55 +997,76 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 		getShareOptions := &vpcbetav1.GetShareOptions{}
 		getShareOptions.SetID(*share.ReplicaShare.ID)
 
-		share, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
+		if _, ok := d.GetOk("replica_share"); ok {
+			replicaShare, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+				return diag.FromErr(err)
 			}
-			log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
-		}
-		if share.Targets != nil {
-			if _, ok := d.GetOk("replica_share.0.mount_targets"); ok {
-				for _, targetsItem := range share.Targets {
+			if replicaShare.Targets != nil {
+				if _, ok := d.GetOk("replica_share.0.mount_targets"); ok {
+					for _, targetsItem := range replicaShare.Targets {
 
-					deleteShareMountTargetOptions := &vpcbetav1.DeleteShareMountTargetOptions{}
+						deleteShareMountTargetOptions := &vpcbetav1.DeleteShareMountTargetOptions{}
 
-					deleteShareMountTargetOptions.SetShareID(d.Id())
-					deleteShareMountTargetOptions.SetID(*targetsItem.ID)
+						deleteShareMountTargetOptions.SetShareID(*replicaShare.ID)
+						deleteShareMountTargetOptions.SetID(*targetsItem.ID)
 
-					_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareMountTargetOptions)
-					if err != nil {
-						log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
-						return diag.FromErr(err)
-					}
-					_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
-					if err != nil {
-						return diag.FromErr(err)
+						_, response, err := vpcClient.DeleteShareMountTargetWithContext(context, deleteShareMountTargetOptions)
+						if err != nil {
+							log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
+							return diag.FromErr(err)
+						}
+						_, err = isWaitForTargetDelete(context, vpcClient, d, d.Id(), *targetsItem.ID)
+						if err != nil {
+							return diag.FromErr(err)
+						}
 					}
 				}
 			}
-		}
-		deleteShareOptions := &vpcbetav1.DeleteShareOptions{}
+			replicaShare, response, err = vpcClient.GetShareWithContext(context, getShareOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+				return diag.FromErr(err)
+			}
+			replicaETag := response.Headers.Get("ETag")
+			deleteShareOptions := &vpcbetav1.DeleteShareOptions{}
+			deleteShareOptions.IfMatch = &replicaETag
+			deleteShareOptions.SetID(*replicaShare.ID)
+			_, response, err = vpcClient.DeleteShareWithContext(context, deleteShareOptions)
+			if err != nil {
+				log.Printf("[DEBUG] DeleteShareWithContext failed %s\n%s", err, response)
+				return diag.FromErr(err)
+			}
 
-		deleteShareOptions.SetID(*share.ReplicaShare.ID)
-		_, response, err = vpcClient.DeleteShareWithContext(context, deleteShareOptions)
-		if err != nil {
-			log.Printf("[DEBUG] DeleteShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
-		}
-
-		_, err = isWaitForShareDelete(context, vpcClient, d, *share.ReplicaShare.ID)
-		if err != nil {
-			return diag.FromErr(err)
+			_, err = isWaitForShareDelete(context, vpcClient, d, *replicaShare.ID)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
-
+	share, response, err = vpcClient.GetShareWithContext(context, getShareOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetShareWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
+	}
+	ETag := response.Headers.Get("ETag")
 	deleteShareOptions := &vpcbetav1.DeleteShareOptions{}
 
 	deleteShareOptions.SetID(d.Id())
-
+	deleteShareOptions.IfMatch = &ETag
 	_, response, err = vpcClient.DeleteShareWithContext(context, deleteShareOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteShareWithContext failed %s\n%s", err, response)
@@ -1256,14 +1281,7 @@ func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *sch
 	}
 
 	if d.HasChange(shareProfileSchema) {
-		old, new := d.GetChange(shareProfileSchema)
-		log.Println("profile is changed")
-		if old.(string) == "custom-iops" {
-			if _, ok := d.GetOk("iops"); ok {
-				log.Println("iops there")
-				return fmt.Errorf("Error: The Share profile specified in the request cannot accept IOPS values")
-			}
-		}
+		_, new := d.GetChange(shareProfileSchema)
 		profile := new.(string)
 		sharePatchModel.Profile = &vpcbetav1.ShareProfileIdentity{
 			Name: &profile,

@@ -77,7 +77,7 @@ The following arguments are supported:
   - `mount_targets` - (Optional, List) Mount targets for the replica file share.
     - `name` - (Optional, String) The user-defined name for this share target. Names must be unique within the share the share target resides in.
     - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.
-  - `zone` - (Required, String) The zone this replica file share will reside in. Must be a different zone in the same region as the source share.
+  - `zone` - (Required, Forces new resource, String) The zone this replica file share will reside in. Must be a different zone in the same region as the source share.
   - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
   - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
 - `resource_group` - (Optional, String) The unique identifier for this resource group. If unspecified, the account's [default resourcegroup](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
