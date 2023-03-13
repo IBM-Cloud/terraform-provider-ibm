@@ -63,6 +63,7 @@ var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var ISZoneName3 string
 var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
@@ -173,6 +174,7 @@ var Image_operating_system string
 
 // Transit Gateway cross account
 var Tg_cross_network_account_id string
+var Tg_cross_network_account_api_key string
 var Tg_cross_network_id string
 
 // Enterprise Management
@@ -513,6 +515,12 @@ func init() {
 	if ISZoneName2 == "" {
 		ISZoneName2 = "us-south-2"
 		fmt.Println("[INFO] Set the environment variable SL_ZONE_2 for testing ibm_is_zone datasource else it is set to default value 'us-south-2'")
+	}
+
+	ISZoneName3 = os.Getenv("SL_ZONE_3")
+	if ISZoneName3 == "" {
+		ISZoneName3 = "us-south-3"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE_3 for testing ibm_is_zone datasource else it is set to default value 'us-south-3'")
 	}
 
 	ISCIDR = os.Getenv("SL_CIDR")
@@ -996,6 +1004,10 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
+	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
+	if Tg_cross_network_account_api_key == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_API_KEY for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
 	Tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
 	if Tg_cross_network_account_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")

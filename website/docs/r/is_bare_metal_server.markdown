@@ -133,7 +133,15 @@ Review the argument references that you can specify for your resource.
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface. [default : `false`]
     - `allowed_vlans` - (Optional, Array) Comma separated VLANs, Indicates what VLAN IDs (for VLAN type only) can use this physical (`PCI` type) interface. A given VLAN can only be in the allowed_vlans array for one PCI type adapter per bare metal server.
     - `enable_infrastructure_nat` - (Optional, Boolean) If true, the VPC infrastructure performs any needed NAT operations. If false, the packet is passed unmodified to/from the network interface, allowing the workload to perform any needed NAT operations. [default : `true`]
+
     - `name` - (Optional, String) The name of the network interface.
+    - `interface_type` - (Optional, String) The type of the network interface.[**pci**, **hipersocket**]. `allowed_vlans` is required for `pci` type.
+
+      The network interface type:
+
+          - `hipersocket`: a virtual network device that provides high-speed TCP/IP connectivity within a s390x based system. Not supported on bare metal servers with a cpu architecture of amd64
+          - `pci`: a physical PCI device which can only be created or deleted when the bare metal server is stopped. Has an allowed_vlans property which controls the VLANs that will be permitted to use the PCI interface. Cannot directly use an IEEE 802.1q VLAN tag. Not supported on bare metal servers with a cpu architecture of s390x
+
     - `primary_ip` - (Optional, List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
       Nested scheme for `primary_ip`:

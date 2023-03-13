@@ -125,7 +125,7 @@ func getClientWithInstanceEndpointTest(originalClient *secretsmanagerv2.SecretsM
 	if strings.Contains(os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"), "test") {
 		domain = "test.appdomain.cloud"
 	}
-	endpoint := fmt.Sprintf("https://%s.%s.secrets-manager.%s/api", acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, domain)
+	endpoint := fmt.Sprintf("https://%s.%s.secrets-manager.%s", acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, domain)
 	newClient := &secretsmanagerv2.SecretsManagerV2{
 		Service: originalClient.Service.Clone(),
 	}

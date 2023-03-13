@@ -458,12 +458,13 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 				backupPolicyPlanClonePolicyPatch.Zones = zonesbjs
 			}
 		}
-		if d.HasChange("clone_policy.0.zones") {
+		if d.HasChange("clone_policy.0.max_snapshots") {
 			maxSnapshotsOk := d.Get("clone_policy.0.max_snapshots")
 			maxSnapshots := int64(maxSnapshotsOk.(int))
 			backupPolicyPlanClonePolicyPatch.MaxSnapshots = &maxSnapshots
 		}
 		patchVals.ClonePolicy = backupPolicyPlanClonePolicyPatch
+		hasChange = true
 	}
 
 	if d.HasChange("name") {

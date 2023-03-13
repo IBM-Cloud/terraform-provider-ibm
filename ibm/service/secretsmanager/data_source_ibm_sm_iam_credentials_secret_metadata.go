@@ -313,8 +313,6 @@ func dataSourceIbmSmIamCredentialsSecretMetadataRead(context context.Context, d 
 func dataSourceIbmSmIamCredentialsSecretMetadataRotationPolicyToMap(model secretsmanagerv2.RotationPolicyIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*secretsmanagerv2.CommonRotationPolicy); ok {
 		return dataSourceIbmSmIamCredentialsSecretMetadataCommonRotationPolicyToMap(model.(*secretsmanagerv2.CommonRotationPolicy))
-	} else if _, ok := model.(*secretsmanagerv2.PublicCertificateRotationPolicy); ok {
-		return dataSourceIbmSmIamCredentialsSecretMetadataPublicCertificateRotationPolicyToMap(model.(*secretsmanagerv2.PublicCertificateRotationPolicy))
 	} else if _, ok := model.(*secretsmanagerv2.RotationPolicy); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*secretsmanagerv2.RotationPolicy)
@@ -346,23 +344,6 @@ func dataSourceIbmSmIamCredentialsSecretMetadataCommonRotationPolicyToMap(model 
 	}
 	if model.Unit != nil {
 		modelMap["unit"] = *model.Unit
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSmIamCredentialsSecretMetadataPublicCertificateRotationPolicyToMap(model *secretsmanagerv2.PublicCertificateRotationPolicy) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.AutoRotate != nil {
-		modelMap["auto_rotate"] = *model.AutoRotate
-	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
-	if model.RotateKeys != nil {
-		modelMap["rotate_keys"] = *model.RotateKeys
 	}
 	return modelMap, nil
 }
