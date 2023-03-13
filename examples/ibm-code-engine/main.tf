@@ -5,14 +5,14 @@ resource "ibm_code_engine_project" "code_engine_project_instance" {
 
 // Provision code_engine_config_map resource instance
 resource "ibm_code_engine_config_map" "code_engine_config_map_instance" {
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
   name       = var.code_engine_config_map_name
   data       = var.code_engine_config_map_data
 }
 
 // Provision code_engine_app resource instance
 resource "ibm_code_engine_app" "code_engine_app_instance" {
-  project_id      = ibm_code_engine_project.code_engine_project_instance.id
+  project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
   image_reference = var.code_engine_app_image_reference
   name            = var.code_engine_app_name
   run_env_variables {
@@ -24,7 +24,7 @@ resource "ibm_code_engine_app" "code_engine_app_instance" {
 
 // Provision code_engine_build resource instance
 resource "ibm_code_engine_build" "code_engine_build_instance" {
-  project_id    = ibm_code_engine_project.code_engine_project_instance.id
+  project_id    = ibm_code_engine_project.code_engine_project_instance.project_id
   name          = var.code_engine_build_name
   output_image  = var.code_engine_build_output_image
   output_secret = var.code_engine_build_output_secret
@@ -34,13 +34,13 @@ resource "ibm_code_engine_build" "code_engine_build_instance" {
 
 // Provision code_engine_job resource instance
 resource "ibm_code_engine_job" "code_engine_job_instance" {
-  project_id      = ibm_code_engine_project.code_engine_project_instance.id
+  project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
   image_reference = var.code_engine_job_image_reference
   name            = var.code_engine_job_name
 }
 
 // Create code_engine_project data source
 data "ibm_code_engine_project" "code_engine_project_instance" {
-  id = var.code_engine_project_id
+  project_id = var.code_engine_project_id
 }
 
