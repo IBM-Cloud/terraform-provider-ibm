@@ -36,8 +36,6 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9\\-._: ])+$/`.
 * `resource_group_id` - (Optional, Forces new resource, String) Optional ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[a-z0-9]*$/`.
-* `tags` - (Optional, Forces new resource, List) Optional list of labels to assign to your project. Tags are not part of the project resource that is returned by the server, but can be obtained and managed through the Global Tagging API in IBM Cloud. Find more information on [Global Tagging API docs](https://cloud.ibm.com/apidocs/tagging).
-  * Constraints: The list items must match regular expression `/^([ ]*[A-Za-z0-9:_.\\-]+[ ]*)+$/`. The maximum length is `10` items. The minimum length is `0` items.
 
 ## Attribute Reference
 
