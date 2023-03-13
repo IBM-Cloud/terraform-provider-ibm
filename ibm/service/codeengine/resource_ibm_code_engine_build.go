@@ -126,7 +126,7 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 				Computed:    true,
 				Description: "When you provision a new build,  a URL is created identifying the location of the instance.",
 			},
-			"id": &schema.Schema{
+			"build_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
@@ -154,11 +154,6 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 						},
 					},
 				},
-			},
-			"build_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The identifier of the resource.",
 			},
 			"etag": &schema.Schema{
 				Type:     schema.TypeString,
@@ -431,8 +426,8 @@ func resourceIbmCodeEngineBuildRead(context context.Context, d *schema.ResourceD
 		}
 	}
 	if !core.IsNil(build.ID) {
-		if err = d.Set("id", build.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		if err = d.Set("build_id", build.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting build_id: %s", err))
 		}
 	}
 	if !core.IsNil(build.ResourceType) {
@@ -452,11 +447,6 @@ func resourceIbmCodeEngineBuildRead(context context.Context, d *schema.ResourceD
 		}
 		if err = d.Set("status_details", []map[string]interface{}{statusDetailsMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting status_details: %s", err))
-		}
-	}
-	if !core.IsNil(build.ID) {
-		if err = d.Set("build_id", build.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting build_id: %s", err))
 		}
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {

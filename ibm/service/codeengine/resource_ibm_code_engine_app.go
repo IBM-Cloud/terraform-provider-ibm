@@ -252,7 +252,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 				Computed:    true,
 				Description: "When you provision a new app,  a URL is created identifying the location of the instance.",
 			},
-			"id": &schema.Schema{
+			"app_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
@@ -290,11 +290,6 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 						},
 					},
 				},
-			},
-			"app_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The identifier of the resource.",
 			},
 			"etag": &schema.Schema{
 				Type:     schema.TypeString,
@@ -708,8 +703,8 @@ func resourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 	if !core.IsNil(app.ID) {
-		if err = d.Set("id", app.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		if err = d.Set("app_id", app.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting app_id: %s", err))
 		}
 	}
 	if !core.IsNil(app.ResourceType) {
@@ -729,11 +724,6 @@ func resourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceDat
 		}
 		if err = d.Set("status_details", []map[string]interface{}{statusDetailsMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting status_details: %s", err))
-		}
-	}
-	if !core.IsNil(app.ID) {
-		if err = d.Set("app_id", app.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting app_id: %s", err))
 		}
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {

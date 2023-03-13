@@ -23,7 +23,7 @@ func TestAccIbmCodeEngineProjectDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmCodeEngineProjectDataSourceConfigBasic(projectID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "resource_group_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "crn"),
@@ -41,7 +41,7 @@ func TestAccIbmCodeEngineProjectDataSourceBasic(t *testing.T) {
 func testAccCheckIbmCodeEngineProjectDataSourceConfigBasic(projectID string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
-			id = "%s"
+			project_id = "%s"
 		}
 	`, projectID)
 }

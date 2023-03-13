@@ -18,7 +18,7 @@ import (
 
 func TestAccIbmCodeEngineProjectBasic(t *testing.T) {
 	var conf codeenginev2.Project
-	projectName := fmt.Sprintf("tf-project-extended-%d", acctest.RandIntRange(10, 100))
+	projectName := fmt.Sprintf("tf-project-basic-%d", acctest.RandIntRange(10, 100))
 	resourceGroupID := acc.CeResourceGroupID
 
 	resource.Test(t, resource.TestCase{
@@ -30,7 +30,7 @@ func TestAccIbmCodeEngineProjectBasic(t *testing.T) {
 				Config: testAccCheckIbmCodeEngineProjectConfig(projectName, resourceGroupID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineProjectExists("ibm_code_engine_project.code_engine_project_instance", conf),
-					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "id"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "project_id"),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "account_id"),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_project.code_engine_project_instance", "crn"),

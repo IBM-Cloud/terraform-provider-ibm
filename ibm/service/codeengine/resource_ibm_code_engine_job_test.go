@@ -36,6 +36,7 @@ func TestAccIbmCodeEngineJobBasic(t *testing.T) {
 				Config: testAccCheckIbmCodeEngineJobConfigBasic(projectID, name, imageReference),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineJobExists("ibm_code_engine_job.code_engine_job_instance", conf),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job_instance", "job_id"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "resource_type", "job_v2"),
@@ -51,6 +52,7 @@ func TestAccIbmCodeEngineJobBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmCodeEngineJobConfigBasic(projectID, nameUpdate, imageReferenceUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job_instance", "job_id"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "resource_type", "job_v2"),
@@ -102,6 +104,7 @@ func TestAccIbmCodeEngineJobExtended(t *testing.T) {
 				Config: testAccCheckIbmCodeEngineJobConfig(projectID, name, imageReference, runAsUser, runMode, runServiceAccount, scaleCpuLimit, scaleEphemeralStorageLimit, scaleMaxExecutionTime, scaleMemoryLimit, scaleRetryLimit),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineJobExists("ibm_code_engine_job.code_engine_job_instance", conf),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job_instance", "job_id"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "image_reference", imageReference),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", name),
@@ -118,6 +121,7 @@ func TestAccIbmCodeEngineJobExtended(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmCodeEngineJobConfig(projectID, nameUpdate, imageReferenceUpdate, runAsUserUpdate, runModeUpdate, runServiceAccountUpdate, scaleCpuLimitUpdate, scaleEphemeralStorageLimitUpdate, scaleMaxExecutionTimeUpdate, scaleMemoryLimitUpdate, scaleRetryLimitUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_code_engine_job.code_engine_job_instance", "job_id"),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "image_reference", imageReferenceUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_job.code_engine_job_instance", "name", nameUpdate),
@@ -144,11 +148,11 @@ func TestAccIbmCodeEngineJobExtended(t *testing.T) {
 func testAccCheckIbmCodeEngineJobConfigBasic(projectID string, name string, imageReference string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
-			id = "%s"
+			project_id = "%s"
 		}
 
 		resource "ibm_code_engine_job" "code_engine_job_instance" {
-			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			name = "%s"
 			image_reference = "%s"
 		}
@@ -158,11 +162,11 @@ func testAccCheckIbmCodeEngineJobConfigBasic(projectID string, name string, imag
 func testAccCheckIbmCodeEngineJobConfig(projectID string, name string, imageReference string, runAsUser string, runMode string, runServiceAccount string, scaleCpuLimit string, scaleEphemeralStorageLimit string, scaleMaxExecutionTime string, scaleMemoryLimit string, scaleRetryLimit string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
-			id = "%s"
+			project_id = "%s"
 		}
 
 		resource "ibm_code_engine_job" "code_engine_job_instance" {
-			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			name = "%s"
 			image_reference = "%s"
 			run_as_user = %s

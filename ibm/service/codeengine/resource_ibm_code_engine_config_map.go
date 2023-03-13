@@ -62,7 +62,7 @@ func ResourceIbmCodeEngineConfigMap() *schema.Resource {
 				Computed:    true,
 				Description: "When you provision a new config map,  a URL is created identifying the location of the instance.",
 			},
-			"id": &schema.Schema{
+			"config_map_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
@@ -71,11 +71,6 @@ func ResourceIbmCodeEngineConfigMap() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the config map.",
-			},
-			"config_map_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The identifier of the resource.",
 			},
 			"etag": &schema.Schema{
 				Type:     schema.TypeString,
@@ -196,18 +191,13 @@ func resourceIbmCodeEngineConfigMapRead(context context.Context, d *schema.Resou
 		}
 	}
 	if !core.IsNil(configMap.ID) {
-		if err = d.Set("id", configMap.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		if err = d.Set("config_map_id", configMap.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting config_map_id: %s", err))
 		}
 	}
 	if !core.IsNil(configMap.ResourceType) {
 		if err = d.Set("resource_type", configMap.ResourceType); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
-		}
-	}
-	if !core.IsNil(configMap.ID) {
-		if err = d.Set("config_map_id", configMap.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting config_map_id: %s", err))
 		}
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {

@@ -20,7 +20,7 @@ func DataSourceIbmCodeEngineProject() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineProjectRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
@@ -82,7 +82,7 @@ func dataSourceIbmCodeEngineProjectRead(context context.Context, d *schema.Resou
 
 	getProjectOptions := &codeenginev2.GetProjectOptions{}
 
-	getProjectOptions.SetID(d.Get("id").(string))
+	getProjectOptions.SetID(d.Get("project_id").(string))
 
 	project, response, err := codeEngineClient.GetProjectWithContext(context, getProjectOptions)
 	if err != nil {

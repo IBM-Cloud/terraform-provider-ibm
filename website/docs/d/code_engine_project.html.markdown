@@ -22,7 +22,7 @@ data "ibm_code_engine_project" "code_engine_project" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) The ID of the project.
+* `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 
 ## Attribute Reference

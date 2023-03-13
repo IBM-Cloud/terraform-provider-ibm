@@ -36,6 +36,7 @@ func TestAccIbmCodeEngineBuildBasic(t *testing.T) {
 				Config: testAccCheckIbmCodeEngineBuildConfigBasic(projectID, name, outputImage, outputSecret, sourceURL, strategyType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineBuildExists("ibm_code_engine_build.code_engine_build_instance", conf),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_build.code_engine_build_instance", "build_id"),
 					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_code_engine_build.code_engine_build_instance", "output_image", outputImage),
@@ -51,11 +52,11 @@ func TestAccIbmCodeEngineBuildBasic(t *testing.T) {
 func testAccCheckIbmCodeEngineBuildConfigBasic(projectID string, name string, outputImage string, outputSecret string, sourceURL string, strategyType string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
-			id = "%s"
+			project_id = "%s"
 		}
 
 		resource "ibm_code_engine_build" "code_engine_build_instance" {
-			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			name = "%s"
 			output_image = "%s"
 			output_secret = "%s"

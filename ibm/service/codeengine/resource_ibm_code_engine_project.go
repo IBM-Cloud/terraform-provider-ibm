@@ -39,6 +39,11 @@ func ResourceIbmCodeEngineProject() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_project", "name"),
 				Description:  "The name of the project.",
 			},
+			"project_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the project.",
+			},
 			"resource_group_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -198,6 +203,9 @@ func resourceIbmCodeEngineProjectRead(context context.Context, d *schema.Resourc
 
 	if err = d.Set("name", project.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if err = d.Set("project_id", project.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting project_id: %s", err))
 	}
 	if !core.IsNil(project.ResourceGroupID) {
 		if err = d.Set("resource_group_id", project.ResourceGroupID); err != nil {

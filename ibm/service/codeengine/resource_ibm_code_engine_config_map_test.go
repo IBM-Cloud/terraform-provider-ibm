@@ -34,6 +34,7 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID, name, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineConfigMapExists("ibm_code_engine_config_map.code_engine_config_map_instance", conf),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_config_map.code_engine_config_map_instance", "config_map_id"),
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "data.key", "inner"),
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "name", name),
@@ -43,6 +44,7 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID, nameUpdate, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_code_engine_config_map.code_engine_config_map_instance", "config_map_id"),
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "data.key", "inner"),
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_config_map.code_engine_config_map_instance", "name", nameUpdate),
@@ -61,11 +63,11 @@ func TestAccIbmCodeEngineConfigMapBasic(t *testing.T) {
 func testAccCheckIbmCodeEngineConfigMapConfigBasic(projectID string, name string, data string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
-			id = "%s"
+			project_id = "%s"
 		}
 
 		resource "ibm_code_engine_config_map" "code_engine_config_map_instance" {
-			project_id = data.ibm_code_engine_project.code_engine_project_instance.id
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			name = "%s"
 			data = %s
 		}

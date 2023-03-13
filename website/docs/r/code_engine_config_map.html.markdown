@@ -40,8 +40,6 @@ In addition to all argument references listed, you can access the following attr
 * `entity_tag` - (String) The version of the config map instance, which is used to achieve optimistic locking.
 * `href` - (String) When you provision a new config map,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `id` - (String) The identifier of the resource.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `resource_type` - (String) The type of the config map.
   * Constraints: Allowable values are: `config_map_v2`.
 * `etag` - ETag identifier for code_engine_config_map.

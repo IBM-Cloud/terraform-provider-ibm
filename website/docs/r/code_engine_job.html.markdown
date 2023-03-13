@@ -107,15 +107,13 @@ Nested scheme for **run_volume_mounts**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the code_engine_job.
+* `job_id` - (String) The identifier of the resource.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `created_at` - (String) The date when the resource was created.
 * `entity_tag` - (String) The version of the job instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new job,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `id` - (String) The identifier of the resource.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
-* `job_id` - (String) The identifier of the resource.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `resource_type` - (String) The type of the job.
   * Constraints: Allowable values are: `job_v2`.
 * `etag` - ETag identifier for code_engine_job.

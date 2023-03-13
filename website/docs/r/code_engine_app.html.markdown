@@ -123,8 +123,6 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new app,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `id` - (String) The identifier of the resource.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `resource_type` - (String) The type of the app.
   * Constraints: Allowable values are: `app_v2`.
 * `status` - (String) The current status of the app.

@@ -213,7 +213,7 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 				Computed:    true,
 				Description: "When you provision a new job,  a URL is created identifying the location of the instance.",
 			},
-			"id": &schema.Schema{
+			"job_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
@@ -222,11 +222,6 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the job.",
-			},
-			"job_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The identifier of the resource.",
 			},
 			"etag": &schema.Schema{
 				Type:     schema.TypeString,
@@ -563,18 +558,13 @@ func resourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 	if !core.IsNil(job.ID) {
-		if err = d.Set("id", job.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		if err = d.Set("job_id", job.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting job_id: %s", err))
 		}
 	}
 	if !core.IsNil(job.ResourceType) {
 		if err = d.Set("resource_type", job.ResourceType); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
-		}
-	}
-	if !core.IsNil(job.ID) {
-		if err = d.Set("job_id", job.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting job_id: %s", err))
 		}
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
