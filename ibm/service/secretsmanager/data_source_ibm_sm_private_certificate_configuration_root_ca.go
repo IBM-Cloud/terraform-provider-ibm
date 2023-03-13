@@ -107,8 +107,8 @@ func DataSourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"ttl": &schema.Schema{
-				Type:        schema.TypeString,
+			"ttl_seconds": &schema.Schema{
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).",
 			},
@@ -224,6 +224,7 @@ func DataSourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			"data": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The configuration data of your Private Certificate.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -366,8 +367,8 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 			return diag.FromErr(fmt.Errorf("Error setting other_sans: %s", err))
 		}
 	}
-	if err = d.Set("ttl", privateCertificateConfigurationRootCA.TTL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ttl: %s", err))
+	if err = d.Set("ttl_seconds", flex.IntValue(privateCertificateConfigurationRootCA.TtlSeconds)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting ttl_seconds: %s", err))
 	}
 
 	if err = d.Set("format", privateCertificateConfigurationRootCA.Format); err != nil {

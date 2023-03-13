@@ -3,7 +3,8 @@ layout: "ibm"
 page_title: "IBM : ibm_sm_iam_credentials_configuration"
 description: |-
   Get information about IAMCredentialsConfiguration
-subcategory: "IBM Cloud Secrets Manager API"
+subcategory: "Secrets Manager"
+
 ---
 
 # ibm_sm_iam_credentials_configuration
