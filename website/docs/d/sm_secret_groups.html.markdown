@@ -8,7 +8,7 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_secret_groups
 
-Provides a read-only data source for SecretGroupCollection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for secret group collection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -19,6 +19,14 @@ data "ibm_sm_secret_groups" "secret_groups" {
 }
 ```
 
+## Argument Reference
+
+Review the argument reference that you can specify for your data source.
+
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+	* Constraints: Allowable values are: `private`, `public`.
 
 ## Attribute Reference
 

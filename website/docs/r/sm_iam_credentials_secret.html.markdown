@@ -37,6 +37,10 @@ resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
 * `access_groups` - (Optional, Forces new resource, List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
   * Constraints: The list items must match regular expression `/^AccessGroupId-[a-z0-9-]+[a-z0-9]$/`. The maximum length is `10` items. The minimum length is `1` item.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.

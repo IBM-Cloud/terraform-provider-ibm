@@ -35,6 +35,10 @@ resource "ibm_sm_public_certificate" "sm_public_certificate" {
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+	* Constraints: Allowable values are: `private`, `public`.
 * `name` - (Required, String) The human-readable name of your secret.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `ca` - (Required, Forces new resource, String) The name that is assigned to the certificate authority configuration.

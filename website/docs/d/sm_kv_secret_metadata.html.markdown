@@ -8,7 +8,7 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_kv_secret_metadata
 
-Provides a read-only data source for KVSecretMetadata. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for the metadata of a KV Secret. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -24,6 +24,10 @@ data "ibm_sm_kv_secret_metadata" "kv_secret_metadata" {
 
 Review the argument reference that you can specify for your data source.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+  * Constraints: Allowable values are: `private`, `public`.
 * `secret_id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 
@@ -31,7 +35,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the KVSecretMetadata.
+* `id` - The unique identifier of the data source.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
