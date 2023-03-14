@@ -6,11 +6,12 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -61,7 +62,7 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			},
 			"ttl": &schema.Schema{
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: StringIsIntBetween(60, 7776000),
 				Description:  "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value is an integer that specifies the number of seconds .Minimum duration is 1 minute. Maximum is 90 days.",
 			},
@@ -81,7 +82,7 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			},
 			"reuse_api_key": &schema.Schema{
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.",
 			},
