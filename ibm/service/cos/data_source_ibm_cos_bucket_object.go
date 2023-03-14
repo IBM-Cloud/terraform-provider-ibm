@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
-	"github.com/IBM/ibm-cos-sdk-go/aws/awserr"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -172,9 +171,6 @@ func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceDat
 	getObjectRetentionInput.Key = aws.String(objectKey)
 	response, err := s3Client.GetObjectRetention(getObjectRetentionInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
-			d.SetId("") // Set state back to empty for terraform refresh
-		}
 		return diag.FromErr(fmt.Errorf("failed getting COS bucket (%s) object retention (%s): %w", bucketName, objectKey, err))
 	}
 	objectretentionptr := response.Retention
@@ -189,9 +185,6 @@ func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceDat
 	getObjectLegalHoldInput.Key = aws.String(objectKey)
 	response1, err := s3Client.GetObjectLegalHold(getObjectLegalHoldInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
-			d.SetId("") // Set state back to empty for terraform refresh
-		}
 		return diag.FromErr(fmt.Errorf("failed getting COS bucket (%s) object retention (%s): %w", bucketName, objectKey, err))
 	}
 	objectlegalholdptr := response1.LegalHold

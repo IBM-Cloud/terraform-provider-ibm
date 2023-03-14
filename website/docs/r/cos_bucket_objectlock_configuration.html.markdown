@@ -48,9 +48,9 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
-   objectlockenabled = "Enabled"
-   objectlockrule{
-     defaultretention{
+   object_lock_enabled = "Enabled"
+   object_lock_rule{
+     default_retention{
         mode = "COMPLIANCE"
         days = 4
       }
@@ -81,7 +81,7 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
-   objectlockenabled = "Enabled"
+   object_lock_enabled = "Enabled"
   }
 }
 
@@ -91,9 +91,9 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
-   objectlockenabled = "Enabled"
-   objectlockrule{
-     defaultretention{
+   object_lock_enabled = "Enabled"
+   object_lock_rule{
+     default_retention{
         mode = "COMPLIANCE"
         days = 4
       }
@@ -112,12 +112,12 @@ Review the argument references that you can specify for your resource.
 - `object_lock_configuration`- (Required, List) Nested block have the following structure:
   
   Nested scheme for `object_lock_configuration`:
-  - `objectlockenabled`- (String) Indicates whether this bucket has an Object Lock configuration enabled. Defaults to Enabled. Valid values: Enabled.
-  - `objectlockrule`- (List) Objectlockrule has following arguement:
+  - `object_lock_enabled`- (String) Indicates whether this bucket has an Object Lock configuration enabled. Defaults to Enabled. Valid values: Enabled.
+  - `object_lock_rule`- (List) Objectlockrule has following arguement:
   
-  Nested scheme for `objectlockrule`:
-  - `defaultretention`- (Required) Configuration block for specifying the default Object Lock retention settings for new objects placed in the specified bucket
-  Nested scheme for `defaultretention`:
+  Nested scheme for `object_lock_rule`:
+  - `default_retention`- (Required) Configuration block for specifying the default Object Lock retention settings for new objects placed in the specified bucket
+  Nested scheme for `default_retention`:
   - `mode`- (String)  Default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Supported values: COMPLIANCE.
   - `days`- (Int) Specifies number of days after which the object can be deleted from the COS bucket.
   - `years`- (Int) Specifies number of years after which the object can be deleted from the COS bucket.

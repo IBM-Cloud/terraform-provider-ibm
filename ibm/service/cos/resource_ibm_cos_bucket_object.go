@@ -134,13 +134,15 @@ func ResourceIBMCOSBucketObject() *schema.Resource {
 				Description:  "An object lock configuration on the object, the valid states are ON/OFF. When ON prevents deletion of the object version.",
 			},
 			"object_lock_mode": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Retention modes apply different levels of protection to the objects.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"object_lock_retain_until_date"},
+				Description:  "Retention modes apply different levels of protection to the objects.",
 			},
 			"object_lock_retain_until_date": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				RequiredWith: []string{"object_lock_mode"},
 				ValidateFunc: validation.IsRFC3339Time,
 				Description:  "An object cannot be deleted when the current time is earlier than the retainUntilDate. After this date, the object can be deleted.",
 			},
@@ -323,9 +325,7 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 	getObjectRetentionInput.Key = aws.String(objectKey)
 	response, err := s3Client.GetObjectRetention(getObjectRetentionInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
-			d.SetId("") // Set state back to empty for terraform refresh
-		}
+		return diag.FromErr(fmt.Errorf("Failed to get objectlock retention for the object (%s) : %w", objectKey, err))
 	}
 	if response.Retention != nil {
 		objectretentionptr := response.Retention
@@ -340,9 +340,8 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 	getObjectLegalHoldInput.Key = aws.String(objectKey)
 	response1, err := s3Client.GetObjectLegalHold(getObjectLegalHoldInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
-			d.SetId("") // Set state back to empty for terraform refresh
-		}
+		return diag.FromErr(fmt.Errorf("Failed to get objectlock legalhold for the object (%s) : %w", objectKey, err))
+
 	}
 	if response1.LegalHold != nil {
 		objectlegalholdptr := response1.LegalHold

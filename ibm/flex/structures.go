@@ -894,16 +894,15 @@ func ReplicationRuleGet(in *s3.ReplicationConfiguration) []map[string]interface{
 }
 
 func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]interface{} {
-	fmt.Println("*** ObjectLockConfigurationGet from structure***")
 	configuration := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		objectLockConfig := make(map[string]interface{})
 
 		if in.ObjectLockEnabled != nil {
-			objectLockConfig["objectlockenabled"] = s3.ObjectLockEnabledEnabled
+			objectLockConfig["object_lock_enabled"] = s3.ObjectLockEnabledEnabled
 		}
 		if in.Rule != nil {
-			objectLockConfig["objectlockrule"] = ObjectLockRuleGet(in.Rule)
+			objectLockConfig["object_lock_rule"] = ObjectLockRuleGet(in.Rule)
 		}
 
 		configuration = append(configuration, objectLockConfig)
@@ -911,13 +910,12 @@ func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]int
 	return configuration
 }
 func ObjectLockRuleGet(in *s3.ObjectLockRule) []map[string]interface{} {
-	fmt.Println("*** ObjectLockConfigurationGet from structure***")
 	objectLockRule := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		objectLockConfig := make(map[string]interface{})
 
 		if in.DefaultRetention != nil {
-			objectLockConfig["defaultretention"] = ObjectLockDefaultRetentionGet(in.DefaultRetention)
+			objectLockConfig["default_retention"] = ObjectLockDefaultRetentionGet(in.DefaultRetention)
 		}
 
 		objectLockRule = append(objectLockRule, objectLockConfig)
@@ -926,7 +924,6 @@ func ObjectLockRuleGet(in *s3.ObjectLockRule) []map[string]interface{} {
 }
 
 func ObjectLockDefaultRetentionGet(in *s3.DefaultRetention) []map[string]interface{} {
-	fmt.Println("*** ObjectLockConfigurationGet from structure***")
 	defaultRetention := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		defaultRetentionMap := make(map[string]interface{})

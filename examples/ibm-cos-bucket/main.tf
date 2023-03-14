@@ -387,9 +387,9 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.bucket.crn
  bucket_location = var.regional_loc
  object_lock_configuration{
-   objectlockenabled = "Enabled"
-   objectlockrule{
-     defaultretention{
+   object_lock_enabled = "Enabled"
+   object_lock_rule{
+     default_retention{
         mode = "COMPLIANCE"
         days = 6
       }

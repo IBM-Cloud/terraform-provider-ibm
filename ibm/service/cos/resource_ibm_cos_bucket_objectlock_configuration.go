@@ -53,18 +53,18 @@ func ResourceIBMCOSBucketObjectlock() *schema.Resource {
 				Description: "Bucket level object lock settings includes Days, Years, Mode.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"objectlockenabled": {
+						"object_lock_enabled": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Enable object lock on a COS bucket. This can be used to enable objectlock on an existing bucket",
 						},
-						"objectlockrule": {
+						"object_lock_rule": {
 							Type:     schema.TypeList,
 							Optional: true,
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"defaultretention": {
+									"default_retention": {
 										Type:        schema.TypeList,
 										Optional:    true,
 										MaxItems:    1,
@@ -79,13 +79,13 @@ func ResourceIBMCOSBucketObjectlock() *schema.Resource {
 												"years": {
 													Type:          schema.TypeInt,
 													Optional:      true,
-													ConflictsWith: []string{"object_lock_configuration.0.objectlockrule.0.defaultretention.0.days"},
+													ConflictsWith: []string{"object_lock_configuration.0.object_lock_rule.0.default_retention.0.days"},
 													Description:   "Retention period in terms of years after which the object can be deleted.",
 												},
 												"days": {
 													Type:          schema.TypeInt,
 													Optional:      true,
-													ConflictsWith: []string{"object_lock_configuration.0.objectlockrule.0.defaultretention.0.years"},
+													ConflictsWith: []string{"object_lock_configuration.0.object_lock_rule.0.default_retention.0.years"},
 													Description:   "Retention period in terms of days after which the object can be deleted.",
 												},
 											},
@@ -310,7 +310,7 @@ func objectLockRuleSetFunction(objectLockRuleList []interface{}) *s3.ObjectLockR
 		object_lock_rule := s3.ObjectLockRule{}
 		ruleMap, _ := l.(map[string]interface{})
 
-		if defaultRetentionSet, exist := ruleMap["defaultretention"]; exist {
+		if defaultRetentionSet, exist := ruleMap["default_retention"]; exist {
 			object_lock_rule.DefaultRetention = objectLockDefaultRetentionSetFunction(defaultRetentionSet.([]interface{}))
 
 		}
@@ -327,7 +327,7 @@ func objectLockConfigurationSet(objectLockConfigurationList []interface{}) *s3.O
 		object_lock_configuration := s3.ObjectLockConfiguration{}
 		configurationMap, _ := l.(map[string]interface{})
 		//objectlock enabled
-		if objectLockEnabledSet, exist := configurationMap["objectlockenabled"]; exist {
+		if objectLockEnabledSet, exist := configurationMap["object_lock_enabled"]; exist {
 			objectLockEnabledValue := objectLockEnabledSet.(string)
 			if objectLockEnabledValue == "enabled" || objectLockEnabledValue == "Enabled" {
 				object_lock_configuration.ObjectLockEnabled = aws.String(s3.ObjectLockEnabledEnabled)
@@ -337,7 +337,7 @@ func objectLockConfigurationSet(objectLockConfigurationList []interface{}) *s3.O
 
 		}
 		//ObjectLock configuration
-		if objectLockRuleSet, exist := configurationMap["objectlockrule"]; exist {
+		if objectLockRuleSet, exist := configurationMap["object_lock_rule"]; exist {
 			object_lock_configuration.Rule = objectLockRuleSetFunction(objectLockRuleSet.([]interface{}))
 
 		}

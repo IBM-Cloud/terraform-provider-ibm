@@ -136,7 +136,7 @@ func TestAccIBMCosBucket_Objectlock_Configuration_ExistingBucket(t *testing.T) {
 			{
 				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket(bucketCRN, bucketRegion, objectLockEnabled, mode, days),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_enabled", "Enabled"),
 					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
 				),
 			},
@@ -158,17 +158,17 @@ func TestAccIBMCosBucket_Objectlock_Configuration_Updating_Objectlockrule_Years(
 			{
 				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Years(bucketCRN, bucketRegion, mode, years),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_enabled", "Enabled"),
 					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.years", "4"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.years", "4"),
 				),
 			},
 			{
 				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Years(bucketCRN, bucketRegion, mode, updated_years),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_enabled", "Enabled"),
 					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.years", "6"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.years", "6"),
 				),
 			},
 		},
@@ -189,17 +189,17 @@ func TestAccIBMCosBucket_Objectlock_Configuration_Updating_Objectlockrule_Days(t
 			{
 				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Days(bucketCRN, bucketRegion, mode, days),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_enabled", "Enabled"),
 					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.days", "6"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.days", "6"),
 				),
 			},
 			{
 				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Days(bucketCRN, bucketRegion, mode, updated_days),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockenabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_enabled", "Enabled"),
 					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.#", "1"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.objectlockrule.0.defaultretention.0.days", "9"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_objectlock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.days", "9"),
 				),
 			},
 		},
@@ -408,7 +408,7 @@ func testAccCheckIBMCosBucket_Objectlock_Without_Rule(cosServiceName string, buc
 		bucket_crn      = ibm_cos_bucket.bucket.crn
 		bucket_location = ibm_cos_bucket.bucket.cross_region_location
 		object_lock_configuration{
-		   objectlockenabled = "Enabled"
+		   object_lock_enabled = "Enabled"
 		 }	   
 	   }
 	`, cosServiceName, bucketName, region, storageClass, objectLockEnabled)
@@ -442,9 +442,9 @@ func testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Days(cosServiceName stri
 		bucket_crn      = ibm_cos_bucket.bucket.crn
 		bucket_location = ibm_cos_bucket.bucket.cross_region_location
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				days = "%d"
 				}
@@ -482,9 +482,9 @@ func testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Years(cosServiceName str
 		bucket_crn      = ibm_cos_bucket.bucket.crn
 		bucket_location = ibm_cos_bucket.bucket.cross_region_location
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				years = "%d"
 				}
@@ -555,9 +555,9 @@ func testAccCheckIBMCosBucket_Objectlock_Without_Mode(cosServiceName string, buc
 		bucket_crn      = ibm_cos_bucket.bucket.crn
 		bucket_location = ibm_cos_bucket.bucket.cross_region_location
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				years = "%d"
 				}
 			}
@@ -594,9 +594,9 @@ func testAccCheckIBMCosBucket_Objectlock_With_Mode_Only(cosServiceName string, b
 		bucket_crn      = ibm_cos_bucket.bucket.crn
 		bucket_location = ibm_cos_bucket.bucket.cross_region_location
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				}
 			}
@@ -633,9 +633,9 @@ func testAccCheckIBMCosBucket_Objectlock_Invalid_Mode(cosServiceName string, buc
 		bucket_crn      = ibm_cos_bucket.bucket.crn
 		bucket_location = ibm_cos_bucket.bucket.cross_region_location
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				years = "%d"
 				}
@@ -673,9 +673,9 @@ func testAccCheckIBMCosBucket_Objectlock_Invalid_Days(cosServiceName string, buc
 		bucket_crn      = ibm_cos_bucket.bucket.crn
 		bucket_location = ibm_cos_bucket.bucket.cross_region_location
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				days = "%d"
 				}
@@ -696,9 +696,9 @@ func testAccCheckIBMCosBucket_Objectlock_Existing_bucket(bucketCrn string, regio
 		bucket_crn      = "%s"
 		bucket_location = "%s"
 		object_lock_configuration{
-			objectlockenabled = "%t"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "%t"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				days = "%d"
 				}
@@ -719,9 +719,9 @@ func testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Years(bucketCrn string,
 		bucket_crn      = "%s"
 		bucket_location = "%s"
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				years = "%d"
 				}
@@ -742,9 +742,9 @@ func testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Days(bucketCrn string, 
 		bucket_crn      = "%s"
 		bucket_location = "%s"
 		object_lock_configuration{
-			objectlockenabled = "Enabled"
-			objectlockrule{
-			  defaultretention{
+			object_lock_enabled = "Enabled"
+			object_lock_rule{
+			  default_retention{
 				mode = "%s"
 				days = "%d"
 				}

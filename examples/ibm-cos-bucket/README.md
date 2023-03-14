@@ -388,9 +388,9 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.region_location
  object_lock_configuration{
-   objectlockenabled = "Enabled"
-   objectlockrule{
-     defaultretention{
+   object_lock_enabled = "Enabled"
+   object_lock_rule{
+     default_retention{
         mode = "COMPLIANCE"
         days = 4
       }
@@ -454,7 +454,7 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
 | bucket_crn | The CRN of the COS bucket on which objectlock is enabled or should be enabled. | `String` | yes
 | bucket_location | Location of the COS bucket. | `String` | yes
 | endpoint_type | Endpoint types of the COS bucket. | `String` | no
-| objectlockenabled | Enable objectlock on an existing COS bucket. | `String` | yes
+| object_lock_enabled | Enable objectlock on an existing COS bucket. | `String` | yes
 | mode | Retention mode for the objectlock configuration. | `String` | yes
 | years | Retention period in terms of years after which the object can be deleted. | `int` | no
 | days | Retention period in terms of days after which the object can be deleted. | `int` | no

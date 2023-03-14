@@ -439,7 +439,6 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:         schema.TypeBool,
 				Optional:     true,
 				RequiredWith: []string{"object_versioning"},
-				Default:      false,
 				Description:  "Enable objectlock for the bucket. When enabled, buckets within the container vault can have Object Lock Configuration applied to the bucket.",
 			},
 		},
@@ -1245,6 +1244,17 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("object_versioning", versioningData)
 		} else {
 			d.Set("object_versioning", nil)
+		}
+	}
+	// reading objectlock
+	getObjectLockConfigurationInput := &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
+	if output.ObjectLockConfiguration != nil {
+		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
+		if objectLockEnabled == "Enabled" {
+			d.Set("object_lock", true)
 		}
 	}
 	return nil

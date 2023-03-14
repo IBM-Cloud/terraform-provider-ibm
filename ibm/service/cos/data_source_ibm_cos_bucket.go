@@ -366,11 +366,57 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Description: "sets a maximum amount of storage (in bytes) available for a bucket",
 			},
 			"object_lock": {
-				Type:         schema.TypeBool,
-				Optional:     true,
-				RequiredWith: []string{"object_versioning"},
-				Default:      true,
-				Description:  "Description",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Description",
+			},
+			"object_lock_configuration": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Bucket level object lock settings includes Days, Years, Mode.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"object_lock_enabled": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Enable object lock on a COS bucket. This can be used to enable objectlock on an existing bucket",
+						},
+						"object_lock_rule": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default_retention": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "An object lock configuration on the object at a bucket level, in the form of a days , years and mode that establishes a point in time after which the object can be deleted. This is applied at bucket level hence it is by default applied to all the object in the bucket unless a seperate retention period is set on the object.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"mode": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Retention modes apply different levels of protection to the objects.",
+												},
+												"years": {
+													Type:          schema.TypeInt,
+													Computed:      true,
+													ConflictsWith: []string{"object_lock_configuration.0.object_lock_rule.0.default_retention.0.days"},
+													Description:   "Retention period in terms of years after which the object can be deleted.",
+												},
+												"days": {
+													Type:          schema.TypeInt,
+													Computed:      true,
+													ConflictsWith: []string{"object_lock_configuration.0.object_lock_rule.0.default_retention.0.years"},
+													Description:   "Retention period in terms of days after which the object can be deleted.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -645,19 +691,21 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set("replication_rule", replicationRules)
 		}
 	}
-	//object lock configuration
+	// reading objectlock for bucket
 	getObjectLockConfigurationInput := &s3.GetObjectLockConfigurationInput{
 		Bucket: aws.String(bucketName),
 	}
 	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
-	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
-		return err
-	}
+	fmt.Println("Configurationptr from cos bucket pov->", output)
 	if output.ObjectLockConfiguration != nil {
+		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
+		if objectLockEnabled == "Enabled" {
+			d.Set("object_lock", true)
+		}
 		objectLockConfigurationptr := output.ObjectLockConfiguration
-		objectLockConfigurationrule := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
-		if len(objectLockConfigurationrule) > 0 {
-			d.Set("object_lock_configuration", objectLockConfigurationrule)
+		objectLockConfiguration := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
+		if len(objectLockConfiguration) > 0 {
+			d.Set("object_lock_configuration", objectLockConfiguration)
 		}
 	}
 
