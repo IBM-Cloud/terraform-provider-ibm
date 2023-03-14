@@ -4,12 +4,11 @@ This example illustrates how to use the CodeEngineV2
 
 These types of resources are supported:
 
+* code_engine_project
 * code_engine_app
 * code_engine_build
 * code_engine_config_map
 * code_engine_job
-* code_engine_project
-* code_engine_secret
 
 ## Usage
 
@@ -26,122 +25,79 @@ Run `terraform destroy` when you don't need these resources.
 
 ## CodeEngineV2 resources
 
-code_engine_app resource:
-
-```hcl
-resource "code_engine_app" "code_engine_app_instance" {
-  project_id = var.code_engine_app_project_id
-  image_reference = var.code_engine_app_image_reference
-  name = var.code_engine_app_name
-  image_port = var.code_engine_app_image_port
-  image_secret = var.code_engine_app_image_secret
-  managed_domain_mappings = var.code_engine_app_managed_domain_mappings
-  run_arguments = var.code_engine_app_run_arguments
-  run_as_user = var.code_engine_app_run_as_user
-  run_commands = var.code_engine_app_run_commands
-  run_env_variables = var.code_engine_app_run_env_variables
-  run_service_account = var.code_engine_app_run_service_account
-  run_volume_mounts = var.code_engine_app_run_volume_mounts
-  scale_concurrency = var.code_engine_app_scale_concurrency
-  scale_concurrency_target = var.code_engine_app_scale_concurrency_target
-  scale_cpu_limit = var.code_engine_app_scale_cpu_limit
-  scale_ephemeral_storage_limit = var.code_engine_app_scale_ephemeral_storage_limit
-  scale_initial_instances = var.code_engine_app_scale_initial_instances
-  scale_max_instances = var.code_engine_app_scale_max_instances
-  scale_memory_limit = var.code_engine_app_scale_memory_limit
-  scale_min_instances = var.code_engine_app_scale_min_instances
-  scale_request_timeout = var.code_engine_app_scale_request_timeout
-}
-```
-code_engine_build resource:
-
-```hcl
-resource "code_engine_build" "code_engine_build_instance" {
-  project_id = var.code_engine_build_project_id
-  name = var.code_engine_build_name
-  output_image = var.code_engine_build_output_image
-  output_secret = var.code_engine_build_output_secret
-  source_url = var.code_engine_build_source_url
-  strategy_type = var.code_engine_build_strategy_type
-  source_context_dir = var.code_engine_build_source_context_dir
-  source_revision = var.code_engine_build_source_revision
-  source_secret = var.code_engine_build_source_secret
-  source_type = var.code_engine_build_source_type
-  strategy_size = var.code_engine_build_strategy_size
-  strategy_spec_file = var.code_engine_build_strategy_spec_file
-  timeout = var.code_engine_build_timeout
-}
-```
-code_engine_config_map resource:
-
-```hcl
-resource "code_engine_config_map" "code_engine_config_map_instance" {
-  project_id = var.code_engine_config_map_project_id
-  name = var.code_engine_config_map_name
-  data = var.code_engine_config_map_data
-}
-```
-code_engine_job resource:
-
-```hcl
-resource "code_engine_job" "code_engine_job_instance" {
-  project_id = var.code_engine_job_project_id
-  image_reference = var.code_engine_job_image_reference
-  name = var.code_engine_job_name
-  image_secret = var.code_engine_job_image_secret
-  run_arguments = var.code_engine_job_run_arguments
-  run_as_user = var.code_engine_job_run_as_user
-  run_commands = var.code_engine_job_run_commands
-  run_env_variables = var.code_engine_job_run_env_variables
-  run_mode = var.code_engine_job_run_mode
-  run_service_account = var.code_engine_job_run_service_account
-  run_volume_mounts = var.code_engine_job_run_volume_mounts
-  scale_array_spec = var.code_engine_job_scale_array_spec
-  scale_cpu_limit = var.code_engine_job_scale_cpu_limit
-  scale_ephemeral_storage_limit = var.code_engine_job_scale_ephemeral_storage_limit
-  scale_max_execution_time = var.code_engine_job_scale_max_execution_time
-  scale_memory_limit = var.code_engine_job_scale_memory_limit
-  scale_retry_limit = var.code_engine_job_scale_retry_limit
-}
-```
 code_engine_project resource:
 
-```hcl
+```terraform
 resource "code_engine_project" "code_engine_project_instance" {
-  name = var.code_engine_project_name
+  name              = var.code_engine_project_name
   resource_group_id = var.code_engine_project_resource_group_id
 }
+```
+
+code_engine_app resource:
+
+```terraform
+resource "ibm_code_engine_app" "code_engine_app_instance" {
+  project_id      = var.code_engine_project_id
+  image_reference = var.code_engine_app_image_reference
+  name            = var.code_engine_app_name
+  run_env_variables {
+    type  = "literal"
+    name  = "name"
+    value = "value"
+  }
+}
+```
+
+code_engine_build resource:
+
+```terraform
+resource "ibm_code_engine_build" "code_engine_build_instance" {
+  project_id    = var.code_engine_project_id
+  name          = var.code_engine_build_name
+  output_image  = var.code_engine_build_output_image
+  output_secret = var.code_engine_build_output_secret
+  source_url    = var.code_engine_build_source_url
+  strategy_type = var.code_engine_build_strategy_type
+}
+```
+
+code_engine_config_map resource:
+
+```terraform
+resource "code_engine_config_map" "code_engine_config_map_instance" {
+  project_id = var.code_engine_project_id
+  name       = var.code_engine_config_map_name
+  data       = var.code_engine_config_map_data
+}
+```
+
+code_engine_job resource:
+
+```terraform
+resource "ibm_code_engine_job" "code_engine_job_instance" {
+  project_id      = var.code_engine_project_id
+  image_reference = var.code_engine_job_image_reference
+  name            = var.code_engine_job_name
+
+  run_env_variables {
+    type  = "literal"
+    name  = "name"
+    value = "value"
+  }
+}
+
 ```
 
 ## CodeEngineV2 Data sources
 
 code_engine_project data source:
 
-```hcl
+```terraform
 data "code_engine_project" "code_engine_project_instance" {
-  id = var.code_engine_project_id
+  project_id = var.code_engine_project_id
 }
 ```
-
-## Assumptions
-
-1. TODO
-
-## Notes
-
-1. TODO
-
-## Requirements
-
-| Name | Version |
-|------|---------|
-| terraform | ~> 0.12 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| ibm | 1.13.1 |
 
 ## Inputs
 
@@ -150,7 +106,7 @@ data "code_engine_project" "code_engine_project_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | project_id | The ID of the project. | `string` | true |
 | image_reference | The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`. | `string` | true |
-| name | The name of the app. Use a name that is unique within the project. | `string` | true |
+| name | The name of the resource. | `string` | true |
 | image_port | Optional port the app listens on. While the app will always be exposed via port `443` for end users, this port is used to connect to the port that is exposed by the container image. | `number` | false |
 | image_secret | Optional name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the app will be created but cannot reach the ready status, until this property is provided, too. | `string` | false |
 | managed_domain_mappings | Optional value controlling which of the system managed domain mappings will be setup for the application. Valid values are 'local_public', 'local_private' and 'local'. Visibility can only be 'local_private' if the project supports application private visibility. | `string` | false |
@@ -170,7 +126,6 @@ data "code_engine_project" "code_engine_project_instance" {
 | scale_min_instances | Optional minimum number of instances for this app. If you set this value to `0`, the app will scale down to zero, if not hit by any request for some time. | `number` | false |
 | scale_request_timeout | Optional amount of time in seconds that is allowed for a running app to respond to a request. | `number` | false |
 | project_id | The ID of the project. | `string` | true |
-| name | The name of the build. Use a name that is unique within the project. | `string` | true |
 | output_image | The name of the image. | `string` | true |
 | output_secret | The secret that is required to access the image registry. Make sure that the secret is granted with push permissions towards the specified container registry namespace. | `string` | true |
 | source_url | The URL of the code repository. This field is required if the `source_type` is `git`. If the `source_type` value is `local`, this field must be omitted. If the repository is publicly available you can provide a 'https' URL like `https://github.com/IBM/CodeEngine`. If the repository requires authentication, you need to provide a 'ssh' URL like `git@github.com:IBM/CodeEngine.git` along with a `source_secret` that points to a secret of format `ssh_auth`. | `string` | true |
@@ -183,11 +138,9 @@ data "code_engine_project" "code_engine_project_instance" {
 | strategy_spec_file | Optional path to the specification file that is used for build strategies for building an image. | `string` | false |
 | timeout | The maximum amount of time, in seconds, that can pass before the build must succeed or fail. | `number` | false |
 | project_id | The ID of the project. | `string` | true |
-| name | The name of the config map. Use a name that is unique within the project. | `string` | true |
 | data | The key-value pair for the config map. Values must be specified in `KEY=VALUE` format. Each `KEY` field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each `VALUE` field can consists of any character and must not be exceed a max length of 1048576 characters. | `map(string)` | false |
 | project_id | The ID of the project. | `string` | true |
 | image_reference | The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`. | `string` | true |
-| name | The name of the job. Use a name that is unique within the project. | `string` | true |
 | image_secret | The name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the job / job runs will be created but submitted job runs will fail, until this property is provided, too. This property must not be set on a job run, which references a job template. | `string` | false |
 | run_arguments | Set arguments for the job that are passed to start job run containers. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container. | `list(string)` | false |
 | run_as_user | The user ID (UID) to run the application (e.g., 1001). | `number` | false |
@@ -202,19 +155,16 @@ data "code_engine_project" "code_engine_project_instance" {
 | scale_max_execution_time | The maximum execution time in seconds for runs of the job. This property can only be specified if `run_mode` is `task`. | `number` | false |
 | scale_memory_limit | Optional amount of memory set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements). | `string` | false |
 | scale_retry_limit | The number of times to rerun an instance of the job before the job is marked as failed. This property can only be specified if `run_mode` is `task`. | `number` | false |
-| name | The name of the project. | `string` | true |
 | resource_group_id | Optional ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used. | `string` | false |
 | project_id | The ID of the project. | `string` | true |
 | data | Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each value field can consists of any character and must not be exceed a max length of 1048576 characters. | `map(string)` | false |
-| id | The ID of the project. | `string` | true |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| code_engine_project | code_engine_project object |
 | code_engine_app | code_engine_app object |
 | code_engine_build | code_engine_build object |
 | code_engine_config_map | code_engine_config_map object |
 | code_engine_job | code_engine_job object |
-| code_engine_project | code_engine_project object |
-| code_engine_project | code_engine_project object |

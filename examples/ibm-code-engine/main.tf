@@ -41,6 +41,6 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
 
 // Create code_engine_project data source
 data "ibm_code_engine_project" "code_engine_project_instance" {
-  project_id = var.code_engine_project_id
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
 }
 
