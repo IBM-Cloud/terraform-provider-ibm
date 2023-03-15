@@ -97,7 +97,7 @@ Nested scheme for **secrets**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 	* `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 	* `private_key_included` - (Boolean) Indicates whether the certificate was imported with an associated private key.
-	* `reuse_api_key` - (Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.
+	* `reuse_api_key` - (Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. The value is always `true` for IAM credentials secrets managed by Terraform.
 	* `revocation_time_rfc3339` - (String) The date and time that the certificate was revoked. The date format follows RFC 3339.
 	* `revocation_time_seconds` - (Integer) The timestamp of the certificate revocation.
 	* `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.

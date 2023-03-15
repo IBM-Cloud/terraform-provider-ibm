@@ -81,9 +81,9 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			},
 			"reuse_api_key": &schema.Schema{
 				Type:        schema.TypeBool,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.",
+				Optional:    true,
+				Default:     true,
+				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. Must be set to `true` for IAM credentials secrets managed with Terraform.",
 			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
@@ -203,7 +203,7 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.",
+				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.",
 			},
 		},
 	}
@@ -221,6 +221,9 @@ func resourceIbmSmIamCredentialsSecretCreate(context context.Context, d *schema.
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
+	if !d.Get("reuse_api_key").(bool) {
+		return diag.Errorf("IAM credentials secrets managed by Terraform must have reuse_api_key set to true")
+	}
 	secretPrototypeModel, err := resourceIbmSmIamCredentialsSecretMapToSecretPrototype(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -381,8 +384,14 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("service_id_is_static", secret.ServiceIdIsStatic); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting service_id_is_static: %s", err))
 	}
-	if err = d.Set("reuse_api_key", secret.ReuseApiKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting reuse_api_key: %s", err))
+
+	// Prevent import of secrets with reuse_api_key = false into Terraform
+	if !*secret.ReuseApiKey {
+		return diag.Errorf("IAM credentials secrets with Reuse IAM credentials turned off (reuse_api_key = false) cannot be managed by Terraform")
+	} else {
+		if err = d.Set("reuse_api_key", true); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting reuse_api_key: %s", err))
+		}
 	}
 	rotationMap, err := resourceIbmSmIamCredentialsSecretRotationPolicyToMap(secret.Rotation)
 	if err != nil {
@@ -532,7 +541,7 @@ func resourceIbmSmIamCredentialsSecretMapToSecretPrototype(d *schema.ResourceDat
 	if _, ok := d.GetOk("service_id"); ok {
 		model.ServiceID = core.StringPtr(d.Get("service_id").(string))
 	}
-	model.ReuseApiKey = core.BoolPtr(d.Get("reuse_api_key").(bool))
+	model.ReuseApiKey = core.BoolPtr(true) // Always true for IAM credentials secrets in Terraform
 	if _, ok := d.GetOk("rotation"); ok {
 		RotationModel, err := resourceIbmSmIamCredentialsSecretMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
 		if err != nil {

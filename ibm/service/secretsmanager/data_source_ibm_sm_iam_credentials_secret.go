@@ -138,7 +138,7 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 			"reuse_api_key": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.",
+				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. The value is always `true` for IAM credentials secrets managed by Terraform.",
 			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
@@ -178,7 +178,7 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.",
+				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.",
 			},
 		},
 	}
