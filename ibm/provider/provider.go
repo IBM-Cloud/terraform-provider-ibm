@@ -24,6 +24,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudant"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
@@ -774,6 +775,9 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMCdTektonPipelineProperty(),
 			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMCdTektonPipelineTrigger(),
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
+
+			// Added for Code Engine
+			"ibm_code_engine_project": codeengine.DataSourceIbmCodeEngineProject(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1224,6 +1228,13 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMCdTektonPipelineProperty(),
 			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMCdTektonPipelineTrigger(),
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMCdTektonPipeline(),
+
+			// // Added for Code Engine
+			"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineApp(),
+			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1445,6 +1456,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
 				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
+
+				// // Added for Code Engine
+				"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineAppValidator(),
+				"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuildValidator(),
+				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
+				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
