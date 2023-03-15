@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_private_certificate_configuration_root_ca"
+page_title: "IBM : ibm_sm_private_certificate_configuration_intermediate_ca"
 description: |-
-  Get information about PrivateCertificateConfigurationRootCA
+  Get information about PrivateCertificateConfigurationIntermediateCA
 subcategory: "Secrets Manager"
 ---
 
-# ibm_sm_private_certificate_configuration_root_ca
+# ibm_sm_private_certificate_configuration_intermediate_ca
 
-Provides a read-only data source for PrivateCertificateConfigurationRootCA. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for the configuraion of an intermediate CA. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_sm_private_certificate_configuration_root_ca" {
+data "ibm_sm_private_certificate_configuration_intermediate_ca" "intermediate_ca" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
   name = "configuration-name"
@@ -24,6 +24,10 @@ data "ibm_sm_private_certificate_configuration_root_ca" {
 
 Review the argument reference that you can specify for your data source.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
 * `name` - (Required, String) The name of the configuration.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
 
@@ -31,7 +35,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the PrivateCertificateConfigurationRootCA.
+* `id` - The unique identifier of the data source.
 * `alt_names` - (List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
   * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 
@@ -81,6 +85,9 @@ Nested scheme for **data**:
 * `ip_sans` - (String) The IP Subject Alternative Names to define for the CA certificate, in a comma-delimited list.
   * Constraints: The maximum length is `2048` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 
+* `issuer` - (String) The distinguished name that identifies the entity that signed and issued the certificate.
+  * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
+
 * `issuing_certificates_urls_encoded` - (Boolean) Determines whether to encode the URL of the issuing certificate in the certificates that are issued by this certificate authority.
 
 * `key_bits` - (Integer) The number of bits to use to generate the private key.Allowable values for RSA keys are: `2048` and `4096`. Allowable values for EC keys are: `224`, `256`, `384`, and `521`. The default for RSA keys is `2048`. The default for EC keys is `256`.
@@ -90,8 +97,6 @@ Nested scheme for **data**:
 
 * `locality` - (List) The Locality (L) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
-
-* `max_path_length` - (Integer) The maximum path length to encode in the generated certificate. `-1` means no limit.If the signing certificate has a maximum path length set, the path length is set to one less than that of the signing certificate. A limit of `0` means a literal path length of zero.
 
 * `max_ttl_seconds` - (Integer) The maximum time-to-live (TTL) for certificates that are created by this CA in seconds.
 
@@ -103,9 +108,6 @@ Nested scheme for **data**:
 
 * `ou` - (List) The Organizational Unit (OU) values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
-
-* `permitted_dns_domains` - (List) The allowed DNS domains or subdomains for the certificates that are to be signed and issued by this CA certificate.
-  * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `100` items. The minimum length is `0` items.
 
 * `postal_code` - (List) The postal code values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
@@ -122,14 +124,14 @@ Nested scheme for **data**:
 * `serial_number` - (String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
   * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 
+* `signing_method` - (String) The signing method to use with this certificate authority to generate private certificates.You can choose between internal or externally signed options. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-intermediate-certificate-authorities).
+  * Constraints: Allowable values are: `internal`, `external`.
+
 * `status` - (String) The status of the certificate authority. The status of a root certificate authority is either `configured` or `expired`. For intermediate certificate authorities, possible statuses include `signing_required`,`signed_certificate_required`, `certificate_template_required`, `configured`, `expired` or `revoked`.
   * Constraints: Allowable values are: `signing_required`, `signed_certificate_required`, `certificate_template_required`, `configured`, `expired`, `revoked`.
 
 * `street_address` - (List) The street address values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
-
-* `ttl` - (String) The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).
-  * Constraints: The maximum length is `10` characters. The minimum length is `2` characters. The value must match regular expression `/^[0-9]+[s,m,h,d]{0,1}$/`.
 
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 
