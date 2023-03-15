@@ -310,7 +310,7 @@ func DataSourceIbmKeyTemplateKeyPropertiesToMap(model *ukov4.KeyProperties) (map
 	return modelMap, nil
 }
 
-//func DataSourceIbmKeyTemplateKeystoresPropertiesToMap(model *ukov4.KeystoresProperties) (map[string]interface{}, error) {
+// func DataSourceIbmKeyTemplateKeystoresPropertiesToMap(model *ukov4.KeystoresProperties) (map[string]interface{}, error) {
 func dataSourceIbmHpcsKeyTemplateKeystoresPropertiesCreateToMap(model ukov4.KeystoresPropertiesCreateIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*ukov4.KeystoresPropertiesCreateGoogleKms); ok {
 		return dataSourceIbmHpcsKeyTemplateKeystoresPropertiesCreateGoogleKmsToMap(model.(*ukov4.KeystoresPropertiesCreateGoogleKms))

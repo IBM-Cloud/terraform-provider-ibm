@@ -431,7 +431,12 @@ func ResourceIbmManagedKeyRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("uko_vault", getManagedKeyOptions.UKOVault); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting uko_vault: %s", err))
 	}
-	d.Set("key_id", key_id)
+	if err = d.Set("key_id", key_id); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting key_id: %s", err))
+	}
+	// if err = d.Set("template_name", getManagedKeyOptions.TemplateName); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting template_name: %s", err))
+	// }
 	vaultMap, err := ResourceIbmManagedKeyVaultReferenceInCreationRequestToMap(managedKey.Vault)
 	if err != nil {
 		return diag.FromErr(err)
@@ -521,7 +526,7 @@ func ResourceIbmManagedKeyRead(context context.Context, d *schema.ResourceData, 
 	instances := []map[string]interface{}{}
 	for _, instancesItem := range managedKey.Instances {
 		// TODO: Worried about this typing
-		instancesItemMap, err := ResourceIbmManagedKeyKeyInstanceToMap(&instancesItem)
+		instancesItemMap, err := ResourceIbmManagedKeyKeyInstanceToMap(instancesItem)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -566,12 +571,12 @@ func ResourceIbmManagedKeyUpdate(context context.Context, d *schema.ResourceData
 
 	if d.HasChange("uko_vault") || d.HasChange("template_name") || d.HasChange("vault") || d.HasChange("label") {
 		updateManagedKeyOptions.SetUKOVault(d.Get("uko_vault").(string))
-		updateManagedKeyOptions.SetTemplateName(d.Get("template_name").(string))
-		vault, err := ResourceIbmManagedKeyMapToVaultReferenceInCreationRequest(d.Get("vault.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateManagedKeyOptions.SetVault(vault)
+		// updateManagedKeyOptions.SetTemplateName(d.Get("template_name").(string))
+		// vault, err := ResourceIbmManagedKeyMapToVaultReferenceInCreationRequest(d.Get("vault.0").(map[string]interface{}))
+		// if err != nil {
+		// 	return diag.FromErr(err)
+		// }
+		// updateManagedKeyOptions.SetUKOVault(vault)
 		updateManagedKeyOptions.SetLabel(d.Get("label").(string))
 		hasChange = true
 	}
@@ -761,7 +766,7 @@ func ResourceIbmManagedKeyTargetKeystoreReferenceToMap(model *ukov4.TargetKeysto
 }
 
 // TODO: Worried about typing
-func ResourceIbmManagedKeyKeyInstanceToMap(model *ukov4.KeyInstance) (map[string]interface{}, error) {
+func ResourceIbmManagedKeyKeyInstanceToMap(model ukov4.KeyInstanceIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*ukov4.KeyInstanceGoogleKms); ok {
 		return resourceIbmHpcsManagedKeyKeyInstanceGoogleKmsToMap(model.(*ukov4.KeyInstanceGoogleKms))
 	} else if _, ok := model.(*ukov4.KeyInstanceAwsKms); ok {

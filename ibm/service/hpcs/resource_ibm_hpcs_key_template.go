@@ -238,14 +238,14 @@ func ResourceIbmKeyTemplateCreate(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 	createKeyTemplateOptions.SetKey(keyModel)
-	var keystores []ukov4.KeystoresProperties
+	var keystores []ukov4.KeystoresPropertiesCreateIntf
 	for _, e := range d.Get("keystores").([]interface{}) {
 		value := e.(map[string]interface{})
 		keystoresItem, err := resourceIbmHpcsKeyTemplateMapToKeystoresPropertiesCreate(value)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		keystores = append(keystores, *keystoresItem)
+		keystores = append(keystores, keystoresItem)
 	}
 	createKeyTemplateOptions.SetKeystores(keystores)
 	if _, ok := d.GetOk("description"); ok {
@@ -298,7 +298,7 @@ func ResourceIbmKeyTemplateRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("uko_vault", getKeyTemplateOptions.UKOVault); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting uko_vault: %s", err))
 	}
-	vaultMap, err := resourceIbmHpcsKeyTemplateVaultReferenceInCreationRequestToMap(template.Vault)
+	vaultMap, err := ResourceIbmKeyTemplateVaultReferenceInCreationRequestToMap(template.Vault)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -317,7 +317,7 @@ func ResourceIbmKeyTemplateRead(context context.Context, d *schema.ResourceData,
 	}
 	keystores := []map[string]interface{}{}
 	for _, keystoresItem := range template.Keystores {
-		keystoresItemMap, err := resourceIbmHpcsKeyTemplateKeystoresPropertiesCreateToMap(&keystoresItem)
+		keystoresItemMap, err := resourceIbmHpcsKeyTemplateKeystoresPropertiesCreateToMap(keystoresItem)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -384,21 +384,21 @@ func ResourceIbmKeyTemplateUpdate(context context.Context, d *schema.ResourceDat
 	// 	keyprops, err := ResourceIbmKeyTemplateMapToKeyProperties(d.Get("key.0").(map[string]interface{}))
 	if d.HasChange("uko_vault") || d.HasChange("vault") || d.HasChange("name") || d.HasChange("key") || d.HasChange("keystores") {
 		updateKeyTemplateOptions.SetUKOVault(d.Get("uko_vault").(string))
-		vault, err := ResourceIbmKeyTemplateMapToVaultReferenceInCreationRequest(d.Get("vault.0").(map[string]interface{}))
+		// vault, err := ResourceIbmKeyTemplateMapToVaultReferenceInCreationRequest(d.Get("vault.0").(map[string]interface{}))
+		// if err != nil {
+		// 	return diag.FromErr(err)
+		// }
+		// updateKeyTemplateOptions.SetUKOVault(vault)
+		// updateKeyTemplateOptions.SetName(d.Get("name").(string))
+		keyprops, err := ResourceIbmKeyTemplateMapToKeyProperties(d.Get("key.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateKeyTemplateOptions.SetVault(vault)
-		updateKeyTemplateOptions.SetName(d.Get("name").(string))
-		key, err := ResourceIbmKeyTemplateMapToKeyProperties(d.Get("key.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		// var key *ukov4.KeyPropertiesUpdate
-		// key.Size = keyprops.Size
-		// key.ActivationDate = keyprops.ActivationDate
-		// key.ExpirationDate = keyprops.ExpirationDate
-		// key.State = keyprops.State
+		var key *ukov4.KeyPropertiesUpdate
+		key.Size = keyprops.Size
+		key.ActivationDate = keyprops.ActivationDate
+		key.ExpirationDate = keyprops.ExpirationDate
+		key.State = keyprops.State
 		updateKeyTemplateOptions.SetKey(key)
 		// TODO: handle Keystores of type TypeList -- not primitive, not model
 		hasChange = true
@@ -476,10 +476,11 @@ func ResourceIbmKeyTemplateMapToKeyProperties(modelMap map[string]interface{}) (
 }
 
 // TODO: worried about this
-// func ResourceIbmKeyTemplateMapToKeystoresProperties(modelMap map[string]interface{}) (*ukov4.KeystoresProperties, error) {
-// 	model := &ukov4.KeystoresProperties{}
-// 	model.Group = core.StringPtr(modelMap["group"].(string))
-// 	model.Type = core.StringPtr(modelMap["type"].(string))
+//
+//	func ResourceIbmKeyTemplateMapToKeystoresProperties(modelMap map[string]interface{}) (*ukov4.KeystoresProperties, error) {
+//		model := &ukov4.KeystoresProperties{}
+//		model.Group = core.StringPtr(modelMap["group"].(string))
+//		model.Type = core.StringPtr(modelMap["type"].(string))
 func resourceIbmHpcsKeyTemplateMapToKeystoresPropertiesCreate(modelMap map[string]interface{}) (ukov4.KeystoresPropertiesCreateIntf, error) {
 	model := &ukov4.KeystoresPropertiesCreate{}
 	if modelMap["group"] != nil && modelMap["group"].(string) != "" {
@@ -531,8 +532,6 @@ func resourceIbmHpcsKeyTemplateMapToKeystoresPropertiesCreateAwsKms(modelMap map
 	return model, nil
 }
 
-// TODO: Worried about this
-// func ResourceIbmKeyTemplateVaultReferenceInCreationRequestToMap(model *ukov4.VaultReference) (map[string]interface{}, error) {
 func resourceIbmHpcsKeyTemplateMapToKeystoresPropertiesCreateIbmCloudKms(modelMap map[string]interface{}) (*ukov4.KeystoresPropertiesCreateIbmCloudKms, error) {
 	model := &ukov4.KeystoresPropertiesCreateIbmCloudKms{}
 	if modelMap["group"] != nil && modelMap["group"].(string) != "" {
@@ -555,7 +554,7 @@ func resourceIbmHpcsKeyTemplateMapToKeystoresPropertiesCreateAzure(modelMap map[
 	return model, nil
 }
 
-func resourceIbmHpcsKeyTemplateVaultReferenceInCreationRequestToMap(model *ukov4.VaultReferenceInCreationRequest) (map[string]interface{}, error) {
+func ResourceIbmKeyTemplateVaultReferenceInCreationRequestToMap(model *ukov4.VaultReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	return modelMap, nil

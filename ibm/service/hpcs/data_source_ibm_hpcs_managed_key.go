@@ -502,7 +502,7 @@ func DataSourceIbmManagedKeyTargetKeystoreReferenceToMap(model *ukov4.TargetKeys
 	return modelMap, nil
 }
 
-//func DataSourceIbmManagedKeyKeyInstanceToMap(model *ukov4.KeyInstance) (map[string]interface{}, error) {
+// func DataSourceIbmManagedKeyKeyInstanceToMap(model *ukov4.KeyInstance) (map[string]interface{}, error) {
 func dataSourceIbmHpcsManagedKeyKeyInstanceToMap(model ukov4.KeyInstanceIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*ukov4.KeyInstanceGoogleKms); ok {
 		return dataSourceIbmHpcsManagedKeyKeyInstanceGoogleKmsToMap(model.(*ukov4.KeyInstanceGoogleKms))
@@ -588,7 +588,7 @@ func dataSourceIbmHpcsManagedKeyKeyInstanceGoogleKmsToMap(model *ukov4.KeyInstan
 	return modelMap, nil
 }
 
-//func DataSourceIbmManagedKeyInstanceInKeystoreToMap(model *ukov4.InstanceInKeystore) (map[string]interface{}, error) {
+// func DataSourceIbmManagedKeyInstanceInKeystoreToMap(model *ukov4.InstanceInKeystore) (map[string]interface{}, error) {
 func dataSourceIbmHpcsManagedKeyKeyInstanceAwsKmsToMap(model *ukov4.KeyInstanceAwsKms) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
