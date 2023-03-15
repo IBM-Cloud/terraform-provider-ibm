@@ -42,6 +42,8 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the code_engine_project.
+* `project_id` - (String) The ID of the project.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `account_id` - (String) An alphanumeric value identifying the account ID.
 * `created_at` - (String) The date when the project was created.
 * `crn` - (String) The CRN of the project.
@@ -56,11 +58,11 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_code_engine_project` resource by using `id`. The ID of the project.
+You can import the `ibm_code_engine_project` resource by using `project_id`. The ID of the project.
 
 # Syntax
 ```
-$ terraform import ibm_code_engine_project.code_engine_project <id>
+$ terraform import ibm_code_engine_project.code_engine_project <project_id>
 ```
 
 # Example
