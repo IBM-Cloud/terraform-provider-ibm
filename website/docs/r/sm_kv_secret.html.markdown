@@ -29,6 +29,10 @@ resource "ibm_sm_kv_secret" "sm_kv_secret"{
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+  * Constraints: Allowable values are: `private`, `public`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `data` - (Optional, Forces new resource, Map) The payload data of a key-value secret.
   * Constraints: The minimum length is `1` item.

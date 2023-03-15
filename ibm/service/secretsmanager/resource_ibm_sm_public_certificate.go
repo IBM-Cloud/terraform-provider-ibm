@@ -518,7 +518,8 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 	if secret.AltNames != nil {
-		if err = d.Set("alt_names", secret.AltNames); err != nil {
+		altNames := secret.AltNames[1:]
+		if err = d.Set("alt_names", altNames); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
 		}
 	}
