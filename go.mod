@@ -19,7 +19,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go v1.9.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
-	github.com/IBM/ibm-hpcs-uko-sdk v0.0.4
+	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.9.0
 	github.com/IBM/networking-go-sdk v0.36.0
 	github.com/IBM/platform-services-go-sdk v0.31.0
@@ -54,7 +54,10 @@ require (
 	k8s.io/client-go v0.25.0
 )
 
-require github.com/IBM/go-sdk-core/v3 v3.2.4
+require (
+	github.com/IBM/go-sdk-core/v3 v3.2.4
+	github.com/pkg/errors v0.9.1
+)
 
 require (
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
@@ -139,7 +142,6 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
