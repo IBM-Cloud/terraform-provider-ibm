@@ -20,20 +20,20 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
   project_id = ibm_code_engine_project.code_engine_project_instance.id
   run_as_user = 1001
   run_env_variables {
-		key = "MY_VARIABLE"
-		name = "SOME"
-		prefix = "PREFIX_"
-		reference = "my-secret"
-		type = "literal"
-		value = "VALUE"
+    key = "MY_VARIABLE"
+    name = "SOME"
+    prefix = "PREFIX_"
+    reference = "my-secret"
+    type = "literal"
+    value = "VALUE"
   }
   run_mode = "task"
   run_service_account = "default"
   run_volume_mounts {
-		mount_path = "/app"
-		name = "codeengine-mount-b69u90"
-		reference = "my-secret"
-		type = "secret"
+    mount_path = "/app"
+    name = "codeengine-mount-b69u90"
+    reference = "my-secret"
+    type = "secret"
   }
   scale_array_spec = "1-5,7-8,10"
   scale_cpu_limit = "1"

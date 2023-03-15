@@ -27,7 +27,7 @@ Run `terraform destroy` when you don't need these resources.
 
 code_engine_project resource:
 
-```terraform
+```hcl
 resource "code_engine_project" "code_engine_project_instance" {
   name              = var.code_engine_project_name
   resource_group_id = var.code_engine_project_resource_group_id
@@ -36,7 +36,7 @@ resource "code_engine_project" "code_engine_project_instance" {
 
 code_engine_app resource:
 
-```terraform
+```hcl
 resource "ibm_code_engine_app" "code_engine_app_instance" {
   project_id      = var.code_engine_project_id
   image_reference = var.code_engine_app_image_reference
@@ -51,7 +51,7 @@ resource "ibm_code_engine_app" "code_engine_app_instance" {
 
 code_engine_build resource:
 
-```terraform
+```hcl
 resource "ibm_code_engine_build" "code_engine_build_instance" {
   project_id    = var.code_engine_project_id
   name          = var.code_engine_build_name
@@ -64,7 +64,7 @@ resource "ibm_code_engine_build" "code_engine_build_instance" {
 
 code_engine_config_map resource:
 
-```terraform
+```hcl
 resource "code_engine_config_map" "code_engine_config_map_instance" {
   project_id = var.code_engine_project_id
   name       = var.code_engine_config_map_name
@@ -74,7 +74,7 @@ resource "code_engine_config_map" "code_engine_config_map_instance" {
 
 code_engine_job resource:
 
-```terraform
+```hcl
 resource "ibm_code_engine_job" "code_engine_job_instance" {
   project_id      = var.code_engine_project_id
   image_reference = var.code_engine_job_image_reference
@@ -93,7 +93,7 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
 
 code_engine_project data source:
 
-```terraform
+```hcl
 data "code_engine_project" "code_engine_project_instance" {
   project_id = var.code_engine_project_id
 }
