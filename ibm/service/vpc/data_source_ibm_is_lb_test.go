@@ -72,7 +72,6 @@ func TestAccIBMISLBDatasource_pDNS(t *testing.T) {
 	name := fmt.Sprintf("tflb-name-%d", acctest.RandIntRange(10, 100))
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
-	dnsRecordName := fmt.Sprintf("tf-dns-record-%d.com", acctest.RandIntRange(10, 100))
 	var lb string
 
 	resource.Test(t, resource.TestCase{
@@ -81,7 +80,7 @@ func TestAccIBMISLBDatasource_pDNS(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckIBMISDSLBDNS(vpcname, subnetname, name, dnsRecordName),
+				Config: testAccCheckIBMISDSLBDNS(vpcname, subnetname, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
@@ -120,9 +119,9 @@ data "ibm_is_lb" "ds_lb" {
 }`, vpcname, subnetname, zone, cidr, name)
 }
 
-func testAccCheckIBMISDSLBDNS(vpcname, subnetname, name, dnsRecordName string) string {
+func testAccCheckIBMISDSLBDNS(vpcname, subnetname, name string) string {
 	// status filter defaults to empty
-	return testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, acc.DNSInstanceCRN, dnsRecordName, acc.DNSZoneID) + fmt.Sprintf(`
+	return testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, acc.DNSInstanceCRN, acc.DNSZoneID) + fmt.Sprintf(`
       data "ibm_is_lb" "test_lb" {
 		name = ibm_is_lb.testacc_LB.name
 	  }`)

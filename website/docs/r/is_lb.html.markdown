@@ -54,7 +54,6 @@ resource "ibm_is_lb" "example" {
   dns   {
     instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
     zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
-    name = "my-pdns-updated-zone"
   }
 }
 
@@ -74,7 +73,6 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `dns`:
   - `instance_crn` - (Required, String) The CRN of the DNS instance associated with the DNS zone
-  - `name` - (Required, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
   - `zone_id` - (Required, String) The unique identifier of the DNS zone.
   ~> **Note**
   

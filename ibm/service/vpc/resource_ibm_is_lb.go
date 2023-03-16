@@ -102,11 +102,6 @@ func ResourceIBMISLB() *schema.Resource {
 							Required:    true,
 							Description: "The CRN for this DNS instance",
 						},
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name to use for the DNS 'A' records for this load balancer's private IP addresses.",
-						},
 						"zone_id": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -376,13 +371,11 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	if dnsIntf, ok := d.GetOk("dns"); ok {
 		dnsMap := dnsIntf.([]interface{})[0].(map[string]interface{})
 		dnsInstance, _ := dnsMap["instance_crn"].(string)
-		name, _ := dnsMap["name"].(string)
 		zone, _ := dnsMap["zone_id"].(string)
 		dns := &vpcv1.LoadBalancerDnsPrototype{
 			Instance: &vpcv1.DnsInstanceReference{
 				CRN: &dnsInstance,
 			},
-			Name: &name,
 			Zone: &vpcv1.DnsZoneReference{
 				ID: &zone,
 			},
@@ -494,7 +487,6 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		dns := map[string]interface{}{}
 		dns["instance_crn"] = lb.Dns.Instance.CRN
 		dns["zone_id"] = lb.Dns.Zone.ID
-		dns["name"] = lb.Dns.Name
 		dnsList = append(dnsList, dns)
 		d.Set("dns", dnsList)
 	} else {
@@ -686,10 +678,6 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 			dnsPatchModel.Instance = &vpcv1.DnsInstanceReference{
 				CRN: &dnsInstanceCrn,
 			}
-		}
-		if d.HasChange("dns.0.name") {
-			dnsName := d.Get("dns.0.name").(string)
-			dnsPatchModel.Name = &dnsName
 		}
 		if d.HasChange("dns.0.zone_id") {
 			dnsZoneId := d.Get("dns.0.zone_id").(string)

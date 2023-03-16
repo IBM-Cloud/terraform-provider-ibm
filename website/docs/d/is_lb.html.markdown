@@ -57,7 +57,6 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `dns`:
   - `instance_crn` - (String) The CRN of the DNS instance associated with the DNS zone
-  - `name` - (String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
   - `zone_id` - (String) The unique identifier of the DNS zone.
 
 - `hostname` - (String) Fully qualified domain name assigned to this load balancer.

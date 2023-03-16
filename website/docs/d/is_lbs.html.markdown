@@ -41,7 +41,6 @@ Review the attribute references that you can access after you retrieve your data
 
 		Nested scheme for `dns`:
 		- `instance_crn` - (String) The CRN of the DNS instance associated with the DNS zone
-		- `name` - (String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
 		- `zone_id` - (String) The unique identifier of the DNS zone.
 	- `name` - (String) Name of the load balancer.
 	- `subnets` - (List) The subnets this load balancer is part of.

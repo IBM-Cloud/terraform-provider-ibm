@@ -121,15 +121,13 @@ func TestAccIBMISLB_DNS(t *testing.T) {
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
-	dnsRecordName := fmt.Sprintf("tf-dns-record-%d.com", acctest.RandIntRange(10, 100))
-	dnsRecordName1 := fmt.Sprintf("tf-dns-record-updated-%d.com", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMISLBDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, acc.DNSInstanceCRN, dnsRecordName, acc.DNSZoneID),
+				Config: testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, acc.DNSInstanceCRN, acc.DNSZoneID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
@@ -137,22 +135,18 @@ func TestAccIBMISLB_DNS(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "dns.0.instance_crn", acc.DNSInstanceCRN),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb.testacc_LB", "dns.0.name", dnsRecordName),
-					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "dns.0.zone_id", acc.DNSZoneID),
 				),
 			},
 
 			{
-				Config: testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1, acc.DNSInstanceCRN1, dnsRecordName1, acc.DNSZoneID1),
+				Config: testAccCheckIBMISLBDNS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1, acc.DNSInstanceCRN1, acc.DNSZoneID1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "dns.0.instance_crn", acc.DNSInstanceCRN1),
-					resource.TestCheckResourceAttr(
-						"ibm_is_lb.testacc_LB", "dns.0.name", dnsRecordName1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "dns.0.zone_id", acc.DNSZoneID1),
 				),
@@ -484,7 +478,7 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 
 }
 
-func testAccCheckIBMISLBDNS(vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId string) string {
+func testAccCheckIBMISLBDNS(vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsZoneId string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -501,10 +495,9 @@ func testAccCheckIBMISLBDNS(vpcname, subnetname, zone, cidr, name, dnsInstanceCr
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 		dns {
 			instance_crn = "%s"
-			name = "%s"
 			zone_id = "%s"
 		}
-	}`, vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsRecordName, dnsZoneId)
+	}`, vpcname, subnetname, zone, cidr, name, dnsInstanceCrn, dnsZoneId)
 }
 
 func testAccCheckIBMISLBDNSRemoved(vpcname, subnetname, zone, cidr, name string) string {
