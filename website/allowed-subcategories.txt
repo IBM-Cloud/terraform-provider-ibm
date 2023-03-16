@@ -8,6 +8,7 @@ Classic infrastructure
 Cloud Database
 Cloud Foundry
 Cloudant Databases
+Code Engine
 Container Registry
 Context Based Restrictions
 CD Tekton Pipeline

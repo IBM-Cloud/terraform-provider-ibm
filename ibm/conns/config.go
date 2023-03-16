@@ -20,6 +20,7 @@ import (
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
@@ -79,7 +80,6 @@ import (
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -110,13 +110,15 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
-	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	codeengine "github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv1"
+	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
+	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
 )
 
 // RetryAPIDelay - retry api delay
@@ -280,6 +282,7 @@ type ClientSession interface {
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
 	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
+	SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
@@ -295,6 +298,7 @@ type ClientSession interface {
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
 	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
+	CodeEngineV2() (*codeengine.CodeEngineV2, error)
 }
 
 type clientSession struct {
@@ -535,7 +539,8 @@ type clientSession struct {
 	//Resource Controller Option
 	resourceControllerErr   error
 	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
-	secretsManagerClient    *secretsmanagerv1.SecretsManagerV1
+	secretsManagerClientV1  *secretsmanagerv1.SecretsManagerV1
+	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
 	// Schematics service options
@@ -611,6 +616,10 @@ type clientSession struct {
 	// CD Tekton Pipeline
 	cdTektonPipelineClient    *cdtektonpipelinev2.CdTektonPipelineV2
 	cdTektonPipelineClientErr error
+
+	// Code Engine options
+	codeEngineClient    *codeengine.CodeEngineV2
+	codeEngineClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1062,8 +1071,13 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
-// SecretsManager Session
+// IBM Cloud Secrets Manager V1 Basic API
 func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error) {
+	return session.secretsManagerClientV1, session.secretsManagerClientErr
+}
+
+// IBM Cloud Secrets Manager V2 Basic API
+func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
 }
 
@@ -1172,6 +1186,11 @@ func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonP
 	return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
 }
 
+// Code Engine
+func (session clientSession) CodeEngineV2() (*codeengine.CodeEngineV2, error) {
+	return session.codeEngineClient, session.codeEngineClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1265,6 +1284,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.configServiceApiClientErr = errEmptyBluemixCredentials
 		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
+		session.codeEngineClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1324,7 +1344,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.bmxUserDetails = userConfig
 
-	if sess.SoftLayerSession != nil && sess.SoftLayerSession.IAMToken != "" {
+	if sess.SoftLayerSession != nil && sess.SoftLayerSession.APIKey == "" {
+		log.Println("Configuring SoftLayer Session with token from IBM Cloud Session")
 		sess.SoftLayerSession.IAMToken = sess.BluemixSession.Config.IAMAccessToken
 		sess.SoftLayerSession.IAMRefreshToken = sess.BluemixSession.Config.IAMRefreshToken
 	}
@@ -1531,7 +1552,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an "options" struct for creating Context Based Restrictions service client.
 	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		session.contextBasedRestrictionsClientErr = fmt.Errorf("Context Based Restrictions Service API does not support private endpoints") //return this error if private endpoints are not supported
+		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-de" {
+			cbrURL = ContructEndpoint(fmt.Sprintf("private.%s.cbr", c.Region), cloudEndpoint)
+		} else {
+			cbrURL = ContructEndpoint("private.cbr", cloudEndpoint)
+		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
@@ -2964,7 +2989,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 	}
 	/// Construct the service client.
-	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
+	session.secretsManagerClientV1, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
 	if err != nil {
 		session.secretsManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
 	}
@@ -2975,6 +3000,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// SECRETS MANAGER Service V2
+	// Construct an "options" struct for creating the service client.
+	var smBaseUrl string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		smBaseUrl = ContructEndpoint(fmt.Sprintf("private.secrets-manager.%s", c.Region), cloudEndpoint)
+	} else {
+		smBaseUrl = ContructEndpoint(fmt.Sprintf("secrets-manager.%s", c.Region), cloudEndpoint)
+	}
+
+	secretsManagerClientOptionsV2 := &secretsmanagerv2.SecretsManagerV2Options{
+		Authenticator: authenticator,
+		URL:           smBaseUrl,
+	}
+
+	// Construct the service client.
+	session.secretsManagerClient, err = secretsmanagerv2.NewSecretsManagerV2UsingExternalConfig(secretsManagerClientOptionsV2)
+	if err == nil {
+		// Enable retries for API calls
+		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager Basic API service: %q", err)
 	}
 
 	// SATELLITE Service
@@ -3203,6 +3255,32 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
+	}
+
+	// Construct the service options.
+	codeEngineEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.codeengine", c.Region), cloudEndpoint+"/v2")
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		codeEngineEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s.codeengine", c.Region), cloudEndpoint+"/v2")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		codeEngineEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CODE_ENGINE_API_ENDPOINT", c.Region, codeEngineEndpoint)
+	}
+	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
+	}
+
+	// Construct the service client.
+	session.codeEngineClient, err = codeengine.NewCodeEngineV2(codeEngineClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.codeEngineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.codeEngineClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.codeEngineClientErr = fmt.Errorf("Error occurred while configuring Code Engine service: %q", err)
 	}
 
 	if os.Getenv("TF_LOG") != "" {

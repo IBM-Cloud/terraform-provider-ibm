@@ -136,6 +136,16 @@ In addition to all argument reference list, you can access the following attribu
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+- `metadata_service` - (List) The metadata service configuration. 
+
+     Nested scheme for `metadata_service`:
+     - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+     - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+     - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+    
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
   Nested scheme for `network_interfaces`:

@@ -66,6 +66,11 @@ func DataSourceIBMEnFCMDestination() *schema.Resource {
 										Computed:    true,
 										Description: "The Server_key value for FCM project.",
 									},
+									"pre_prod": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The flag to enable destination as pre-prod or prod",
+									},
 								},
 							},
 						},
@@ -172,16 +177,19 @@ func enFCMDestinationConfigToMap(configItem en.DestinationConfig) (configMap map
 	return configMap
 }
 
-func enFCMDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
+func enFCMDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
-	params := paramsItem.(*en.DestinationConfigParams)
+	params := paramsItem.(*en.DestinationConfigOneOf)
 
 	if params.SenderID != nil {
 		paramsMap["sender_id"] = params.SenderID
 	}
 	if params.ServerKey != nil {
 		paramsMap["server_key"] = params.ServerKey
+	}
+	if params.PreProd != nil {
+		paramsMap["pre_prod"] = params.PreProd
 	}
 
 	return paramsMap
