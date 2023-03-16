@@ -3,27 +3,26 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_jenkins"
 description: |-
   Manages cd_toolchain_tool_jenkins.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_jenkins
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_jenkins. This allows cd_toolchain_tool_jenkins to be created, updated and deleted.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-jenkins) page for more information.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_jenkins" "cd_toolchain_tool_jenkins" {
+resource "ibm_cd_toolchain_tool_jenkins" "cd_toolchain_tool_jenkins_instance" {
   parameters {
-		name = "name"
-		dashboard_url = "dashboard_url"
-		webhook_url = "webhook_url"
-		api_user_name = "api_user_name"
-		api_token = "api_token"
+		name = "jenkins-tool-01"
+		dashboard_url = "https://jenkins.mycompany.example.com"
+		api_user_name = "<api_user_name>"
+		api_token = "<api_token>"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -31,15 +30,15 @@ resource "ibm_cd_toolchain_tool_jenkins" "cd_toolchain_tool_jenkins" {
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Name of tool.
+* `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_token` - (Optional, String) Type the API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.
-	* `api_user_name` - (Optional, String) Type the user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.
-	* `dashboard_url` - (Required, String) Type the URL of the Jenkins server that you want to open when you click the Jenkins card in your toolchain.
-	* `name` - (Required, String) Type a name for this tool integration, for example: my-jenkins. This name displays on your toolchain.
-	* `webhook_url` - (Optional, String) Use this webhook in your Jenkins jobs to send notifications to other tools in your toolchain. For details, see the Configuring Jenkins instructions.
+	* `api_token` - (Optional, String) The API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
+	* `api_user_name` - (Optional, String) The user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.
+	* `dashboard_url` - (Required, String) The URL of the Jenkins server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Jenkins integration tile.
+	* `name` - (Required, String) The name for this tool integration.
+	* `webhook_url` - (Computed, String) The webhook to use in your Jenkins jobs to send notifications to other tools in your toolchain.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -52,9 +51,9 @@ In addition to all argument references listed, you can access the following attr
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
-* `resource_group_id` - (String) Resource group where tool can be found.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

@@ -3,21 +3,21 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_appconfig"
 description: |-
   Get information about cd_toolchain_tool_appconfig
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_appconfig
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_appconfig. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration) page for more information.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -41,24 +41,24 @@ In addition to all argument references listed, you can access the following attr
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `collection_name` - (String) App Configuration collection.
+	* `collection_id` - (String) The ID of the App Configuration collection.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `environment_name` - (String) App Configuration environment.
+	* `environment_id` - (String) The ID of the App Configuration environment.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `instance_name` - (String) The name of your App Configuration instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: App Configuration-01.
+	* `instance_id` - (String) The guid of the App Configuration service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `name` - (String) Type a name for this tool integration, for example: my-appconfig. This name displays on your toolchain.
-	* `region` - (String) Region.
-	* `resource_group` - (String) Resource group.
+	* `location` - (String) The IBM Cloud location where the App Configuration service instance is located.
+	* `name` - (String) The name used to identify this tool integration. App Configuration references include this name to identify the App Configuration instance where the configuration values reside. All App Configuration tools integrated into a toolchain should have a unique name to allow resolution to function properly.
+	* `resource_group_name` - (String) The name of the resource group where the App Configuration service instance is located.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_tekton_pipeline_definition"
 description: |-
   Manages cd_tekton_pipeline_definition.
-subcategory: "CD Tekton Pipeline"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_tekton_pipeline_definition
@@ -13,14 +13,19 @@ Provides a resource for cd_tekton_pipeline_definition. This allows cd_tekton_pip
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
+resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
-  scm_source {
-		url = "url"
-		branch = "branch"
-		tag = "tag"
-		path = "path"
-		service_instance_id = "service_instance_id"
+  source {
+		type = "git"
+		properties {
+			url = "url"
+			branch = "branch"
+			tag = "tag"
+			path = "path"
+			tool {
+				id = "id"
+			}
+		}
   }
 }
 ```
@@ -31,26 +36,34 @@ Review the argument reference that you can specify for your resource.
 
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `scm_source` - (Optional, List) SCM source for Tekton pipeline definition.
-Nested scheme for **scm_source**:
-	* `branch` - (Optional, String) A branch from the repo. One of branch or tag must be specified, but only one or the other.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `path` - (Required, String) The path to the definition's yaml files.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `service_instance_id` - (Optional, String) ID of the SCM repository service instance.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-	* `tag` - (Optional, String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,235}$/`.
-	* `url` - (Required, Forces new resource, String) URL of the definition repository.
-	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `source` - (Required, List) Source repository containing the Tekton pipeline definition.
+Nested scheme for **source**:
+	* `properties` - (Required, List) Properties of the source, which define the URL of the repository and a branch or tag.
+	Nested scheme for **properties**:
+		* `branch` - (Optional, String) A branch from the repo, specify one of branch or tag only.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+		* `path` - (Required, String) The path to the definition's YAML files.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+		* `tag` - (Optional, String) A tag from the repo, specify one of branch or tag only.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
+		* `tool` - (Optional, List) Reference to the repository tool in the parent toolchain.
+		Nested scheme for **tool**:
+			* `id` - (Computed, String) ID of the repository tool instance in the parent toolchain.
+			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+		* `url` - (Required, Forces new resource, String) URL of the definition repository.
+		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+	* `type` - (Required, String) The only supported source type is "git", indicating that the source is a git repository.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^git$/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cd_tekton_pipeline_definition.
-* `definition_id` - (String) UUID.
+* `definition_id` - (String) The aggregated definition ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+* `href` - (String) API URL for interacting with the definition.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 
 ## Provider Configuration
 

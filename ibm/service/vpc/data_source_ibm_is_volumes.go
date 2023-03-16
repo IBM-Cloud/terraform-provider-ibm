@@ -487,6 +487,44 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "User Tags for the Volume",
 						},
+						isVolumeAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "Access management tags for the volume instance",
+						},
+						isVolumeHealthReasons: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isVolumeHealthReasonsCode: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this health state.",
+									},
+
+									isVolumeHealthReasonsMessage: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this health state.",
+									},
+
+									isVolumeHealthReasonsMoreInfo: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this health state.",
+									},
+								},
+							},
+						},
+
+						isVolumeHealthState: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The health of this resource.",
+						},
 					},
 				},
 			},
@@ -536,7 +574,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 
 	d.SetId(dataSourceIBMIsVolumesID(d))
 
-	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs))
+	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs, meta))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
 	}
@@ -549,15 +587,15 @@ func dataSourceIBMIsVolumesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceVolumeCollectionFlattenVolumes(result []vpcv1.Volume) (volumes []map[string]interface{}) {
+func dataSourceVolumeCollectionFlattenVolumes(result []vpcv1.Volume, meta interface{}) (volumes []map[string]interface{}) {
 	for _, volumesItem := range result {
-		volumes = append(volumes, dataSourceVolumeCollectionVolumesToMap(volumesItem))
+		volumes = append(volumes, dataSourceVolumeCollectionVolumesToMap(volumesItem, meta))
 	}
 
 	return volumes
 }
 
-func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume) (volumesMap map[string]interface{}) {
+func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta interface{}) (volumesMap map[string]interface{}) {
 	volumesMap = map[string]interface{}{}
 
 	if volumesItem.Active != nil {
@@ -632,12 +670,22 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume) (volumesMa
 	if volumesItem.Status != nil {
 		volumesMap[isVolumesStatus] = volumesItem.Status
 	}
+	if volumesItem.HealthState != nil {
+		volumesMap[isVolumeHealthState] = volumesItem.HealthState
+	}
 	if volumesItem.StatusReasons != nil {
 		statusReasonsList := []map[string]interface{}{}
 		for _, statusReasonsItem := range volumesItem.StatusReasons {
 			statusReasonsList = append(statusReasonsList, dataSourceVolumeCollectionVolumesStatusReasonsToMap(statusReasonsItem))
 		}
 		volumesMap[isVolumesStatusReasons] = statusReasonsList
+	}
+	if volumesItem.HealthReasons != nil {
+		healthReasonsList := []map[string]interface{}{}
+		for _, healthReasonsItem := range volumesItem.HealthReasons {
+			healthReasonsList = append(healthReasonsList, dataSourceVolumeCollectionVolumesHealthReasonsToMap(healthReasonsItem))
+		}
+		volumesMap[isVolumeHealthReasons] = healthReasonsList
 	}
 	if volumesItem.VolumeAttachments != nil {
 		volumeAttachmentsList := []map[string]interface{}{}
@@ -655,6 +703,12 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume) (volumesMa
 	if volumesItem.UserTags != nil {
 		volumesMap[isVolumeTags] = volumesItem.UserTags
 	}
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *volumesItem.CRN, "", isVolumeAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc volume (%s) access tags: %s", *volumesItem.ID, err)
+	}
+	volumesMap[isVolumeAccessTags] = accesstags
 	return volumesMap
 }
 
@@ -797,6 +851,22 @@ func dataSourceVolumeCollectionVolumesStatusReasonsToMap(statusReasonsItem vpcv1
 	}
 
 	return statusReasonsMap
+}
+
+func dataSourceVolumeCollectionVolumesHealthReasonsToMap(statusReasonsItem vpcv1.VolumeHealthReason) (healthReasonsMap map[string]interface{}) {
+	healthReasonsMap = map[string]interface{}{}
+
+	if statusReasonsItem.Code != nil {
+		healthReasonsMap[isVolumeHealthReasonsCode] = statusReasonsItem.Code
+	}
+	if statusReasonsItem.Message != nil {
+		healthReasonsMap[isVolumeHealthReasonsMessage] = statusReasonsItem.Message
+	}
+	if statusReasonsItem.MoreInfo != nil {
+		healthReasonsMap[isVolumeHealthReasonsMoreInfo] = statusReasonsItem.MoreInfo
+	}
+
+	return healthReasonsMap
 }
 
 func dataSourceVolumeCollectionVolumesVolumeAttachmentsToMap(volumeAttachmentsItem vpcv1.VolumeAttachmentReferenceVolumeContext) (volumeAttachmentsMap map[string]interface{}) {

@@ -22,7 +22,7 @@ resource "ibm_cm_offering" "cm_offering_instance" {
 
 // Provision cm_version resource instance
 resource "ibm_cm_version" "cm_version_instance" {
-  catalog_identifier = var.cm_version_catalog_identifier
+  catalog_id = var.cm_version_catalog_id
   offering_id = var.cm_version_offering_id
   tags = var.cm_version_tags
   target_kinds = var.cm_version_target_kinds
@@ -45,12 +45,12 @@ resource "ibm_cm_offering_instance" "cm_offering_instance_instance" {
 
 // Create cm_catalog data source
 data "ibm_cm_catalog" "cm_catalog_instance" {
-  catalog_identifier = var.cm_catalog_catalog_identifier
+  catalog_identifier = var.cm_catalog_catalog_id
 }
 
 // Create cm_offering data source
 data "ibm_cm_offering" "cm_offering_instance" {
-  catalog_identifier = var.cm_offering_catalog_identifier
+  catalog_id = var.cm_offering_catalog_id
   offering_id = var.cm_offering_offering_id
 }
 

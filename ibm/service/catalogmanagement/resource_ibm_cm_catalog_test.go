@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package catalogmanagement_test
@@ -7,31 +7,59 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 )
 
-func TestAccIBMCmCatalog(t *testing.T) {
+func TestAccIBMCmCatalogBasic(t *testing.T) {
+	var conf catalogmanagementv1.Catalog
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCmCatalogDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCmCatalogConfig(),
+			resource.TestStep{
+				Config: testAccCheckIBMCmCatalogConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCmCatalogExists("ibm_cm_catalog.cm_catalog"),
-					resource.TestCheckResourceAttrSet("ibm_cm_catalog.cm_catalog", "label"),
-					resource.TestCheckResourceAttrSet("ibm_cm_catalog.cm_catalog", "resource_group_id"),
+					testAccCheckIBMCmCatalogExists("ibm_cm_catalog.cm_catalog", conf),
 				),
 			},
-			{
+		},
+	})
+}
+
+func TestAccIBMCmCatalogSimpleArgs(t *testing.T) {
+	var conf catalogmanagementv1.Catalog
+	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
+	shortDescription := fmt.Sprintf("tf_short_description_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCmCatalogDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCmCatalogConfig(label, shortDescription),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCmCatalogExists("ibm_cm_catalog.cm_catalog", conf),
+					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "label", label),
+					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "short_description", shortDescription),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCmCatalogConfig(label, shortDescription),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "label", label),
+					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "short_description", shortDescription),
+				),
+			},
+			resource.TestStep{
 				ResourceName:      "ibm_cm_catalog.cm_catalog",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -40,17 +68,28 @@ func TestAccIBMCmCatalog(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCmCatalogConfig() string {
-	return `
+func testAccCheckIBMCmCatalogConfigBasic() string {
+	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
-			label = "tf_test_catalog"
-			short_description = "testing terraform provider with catalog"
+			label = "basic-catalog-label-test"
+			kind = "offering"
 		}
-		`
+	`)
 }
 
-func testAccCheckIBMCmCatalogExists(n string) resource.TestCheckFunc {
+func testAccCheckIBMCmCatalogConfig(label string, shortDescription string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "%s"
+			kind = "offering"
+			short_description = "%s"
+		}
+	`, label, shortDescription)
+}
+
+func testAccCheckIBMCmCatalogExists(n string, obj catalogmanagementv1.Catalog) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -67,14 +106,12 @@ func testAccCheckIBMCmCatalogExists(n string) resource.TestCheckFunc {
 
 		getCatalogOptions.SetCatalogIdentifier(rs.Primary.ID)
 
-		_, response, err := catalogManagementClient.GetCatalog(getCatalogOptions)
+		catalog, _, err := catalogManagementClient.GetCatalog(getCatalogOptions)
 		if err != nil {
-			if response.StatusCode == 404 {
-				return nil
-			}
 			return err
 		}
 
+		obj = *catalog
 		return nil
 	}
 }
@@ -98,8 +135,8 @@ func testAccCheckIBMCmCatalogDestroy(s *terraform.State) error {
 
 		if err == nil {
 			return fmt.Errorf("cm_catalog still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 403 {
-			return fmt.Errorf("[ERROR] Error checking for cm_catalog (%s) has been destroyed: %s", rs.Primary.ID, err)
+		} else if response.StatusCode != 404 {
+			return fmt.Errorf("Error checking for cm_catalog (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

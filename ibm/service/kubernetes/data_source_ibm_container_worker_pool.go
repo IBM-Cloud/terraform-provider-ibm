@@ -101,6 +101,12 @@ func DataSourceIBMContainerWorkerPool() *schema.Resource {
 				Description: "list of labels to worker pool",
 			},
 
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The operating system of the workers in the worker pool",
+			},
+
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -160,6 +166,7 @@ func dataSourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface
 	if workerPool.Labels != nil {
 		d.Set("labels", workerPool.Labels)
 	}
+	d.Set("operating_system", workerPool.OperatingSystem)
 	d.Set("zones", flex.FlattenZones(workerPool.Zones))
 	if strings.Contains(machineType, "encrypted") {
 		d.Set("disk_encryption", true)

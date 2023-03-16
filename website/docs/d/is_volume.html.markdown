@@ -43,11 +43,19 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `access_tags`  - (List) Access management tags associated for the volume.
 - `bandwidth` - The maximum bandwidth (in megabits per second) for the volume
 - `capacity` - (String) The capacity of the volume in gigabytes.
 - `crn` - (String) The crn of this volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.
 - `encryption_type` - (String) The type of ecryption used in the volume [**provider_managed**, **user_managed**].
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+  Nested scheme for `health_reasons`:
+  - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+  - `message` - (String) An explanation of the reason for this health state.
+  - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `iops` - (String) The bandwidth for the volume.
 - `profile` - (String) The profile to use for this volume.
 - `resource_group` - (String) The resource group ID for this volume.

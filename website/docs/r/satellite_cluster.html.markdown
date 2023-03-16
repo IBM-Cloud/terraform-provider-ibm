@@ -53,10 +53,11 @@ Review the argument references that you can specify for your resource.
 - `zones` - (Optional, Array of Strings)  The name of the zones to create the default worker pool.
 - `worker_count` - (Optional, String) The number of worker nodes to create per zone in the default worker pool.
 - `enable_config_admin` - (Optional, Bool) User provided value to indicate opt-in agreement to SatCon admin agent.
-- `host_labels` - (Optional, Array of Strings) Key-value pairs to label the host, such as `cpu=4` to describe the host capabilities.
+- `host_labels` - (Optional, Set(Strings)) Labels to add to the default worker pool, formatted as `cpu:4` key-value pairs. Satellite uses host labels to automatically assign hosts to worker pools with matching labels.
 - `default_worker_pool_labels` - (Optional, String) The labels on all the workers in the default worker pool.
 - `pull_secret` - (Optional, String) The Red Hat pull secret to create the OpenShift cluster.
 - `zone` - (Optional, List) The zone for the worker pool in a multi-zone cluster. 
+- `infrastructure_topology` - (Optional, String) Specify whether the cluster should run a single worker node or the default number of worker nodes. Only works with kube version 4.11 and newer. To create a single-node cluster, specify 'single-replica'. To create a default cluster with multiple worker nodes, specify 'highly-available'. The 'highly-available' option is applied by default. Available options: single-replica, highly-available (default: "highly-available")
 
    Nested scheme for `zone`:
     - `id` - The name of the zone.

@@ -102,14 +102,14 @@ data "ibm_tg_location" "tg_location" {
 } 
 ```
 List all prefix filters for a Transit Gateway Connection
-````
+```hcl
 data "ibm_tg_connection_prefix_filters" "tg_prefix_filters" {
     gateway = ibm_tg_gateway.new_tg_gw.id
     connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
 }
 ```
 Retrieve specified Transit Gateway Connection Prefix Filter
-```
+```hcl
 data "ibm_tg_connection_prefix_filter" "tg_prefix_filter" {
     gateway = ibm_tg_gateway.new_tg_gw.id
     connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
@@ -117,15 +117,15 @@ data "ibm_tg_connection_prefix_filter" "tg_prefix_filter" {
 }
 ```
 List all route reports for a Transit Gateway
-```
+```hcl
 data "ibm_tg_route_reports" "tg_route_reports" {
 	gateway = ibm_tg_gateway.new_tg_gw.id
 }
 ```
 Retrieve specified Transit Gateway Route Report
-```
+```hcl
 data "ibm_tg_route_report" "tg_route_report" {
-	gateway = ibm_tg_gateway.new_tg_gw.
+	gateway = ibm_tg_gateway.new_tg_gw.id
 	route_report = ibm_tg_route_report_test_tg_route_report.route_report_id
 }
 ```

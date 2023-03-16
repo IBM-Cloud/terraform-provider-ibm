@@ -86,11 +86,17 @@ The `ibm_is_subnet` resource provides the following [Timeouts](https://www.terra
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the subnet. ~> **Note:** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the bare metal server.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `ipv4_cidr_block` - (Optional, Forces new resource, String) The IPv4 range of the subnet.
 
   ~> **NOTE:**
-    - if using a IPv4 range from a `ibm_is_vpc_address_prefix` resource, add a `depends_on` to handle hidden `ibm_is_vpc_address_prefix` dependency if not using interpolation.
+    If using a IPv4 range from a `ibm_is_vpc_address_prefix` resource, add a `depends_on` to handle hidden `ibm_is_vpc_address_prefix` dependency if not using interpolation.
 
 - `ip_version` - (Optional, Forces new resource, String) The IP Version. The default is `ipv4`.
 - `name` - (Required, String) The name of the subnet.
@@ -100,6 +106,10 @@ Review the argument references that you can specify for your resource.
 - `routing_table` - (Optional, String) The routing table ID associated with the subnet.
 - `tags`  - (Optional, List of Strings) The tags associated with the subnet.
 - `total_ipv4_address_count` - (Optional, Forces new resource, String) The total number of IPv4 addresses. Either `ipv4_cidr_block` or `total_pv4_address_count` input parameters must be provided in the resource.
+  
+  ~> **Note** 
+  The VPC must have a default address prefix in the specified zone, and that prefix must have a free CIDR range with at least this number of addresses.
+
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String) The subnet zone name.
 

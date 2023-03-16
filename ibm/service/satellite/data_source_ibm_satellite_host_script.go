@@ -191,6 +191,8 @@ if [[ "${OPERATING_SYSTEM}" == "RHEL7" ]]; then
 	subscription-manager repos --enable rhel-7-server-supplementary-rpms
 	subscription-manager repos --enable rhel-7-server-extras-rpms
 elif [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
+	subscription-manager release --set=8
+	subscription-manager repos --disable='*eus*'
 	subscription-manager repos --enable rhel-8-for-x86_64-baseos-rpms 
 	subscription-manager repos --enable rhel-8-for-x86_64-appstream-rpms;
 fi
@@ -198,18 +200,18 @@ yum install container-selinux -y
 `
 		case strings.ToLower(hostProvider) == "azure":
 			insertionText = `
-if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
-	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-	update-alternatives --set python3 /usr/bin/python3.8
-fi
+#if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
+#	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+#	update-alternatives --set python3 /usr/bin/python3.8
+#fi
 yum install container-selinux -y
 `
 		case strings.ToLower(hostProvider) == "google":
 			insertionText = `
-if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
-	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-	update-alternatives --set python3 /usr/bin/python3.8
-fi
+#if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
+#	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+#	update-alternatives --set python3 /usr/bin/python3.8
+#fi
 yum install container-selinux -y
 `
 		default:

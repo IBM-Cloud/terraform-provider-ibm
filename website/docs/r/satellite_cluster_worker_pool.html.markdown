@@ -70,7 +70,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `zones`:
   - `id` - (Required, String) The name of the zone.
-- `host_labels` - (Optional, Array of Strings) Key-value pairs to label the host, such as cpu=4 to describe the host capabilities.
+- `host_labels` - (Optional, Set(Strings)) Labels to add to the worker pool, formatted as `cpu:4` key-value pairs. Satellite uses host labels to automatically assign hosts to worker pools with matching labels.
 - `worker_pool_labels` - Labels on all the workers in the worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group.  You can retrieve the value from data source 
 - `entitlement` - (Optional, String) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.

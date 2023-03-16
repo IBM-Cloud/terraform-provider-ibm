@@ -52,6 +52,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (String) Access management tags associated for the load balancer.
 - `crn` - (String) The CRN for this load balancer.
 - `dns` - (List) The DNS configuration for this load balancer.
 

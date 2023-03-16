@@ -70,6 +70,14 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
 
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The operating system of the workers in the worker pool.",
+			},
+
 			"hardware": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -245,6 +253,10 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 		workerPoolConfig.Entitlement = v.(string)
 	}
 
+	if v, ok := d.GetOk("operating_system"); ok {
+		workerPoolConfig.OperatingSystem = v.(string)
+	}
+
 	params := v1.WorkerPoolRequest{
 		WorkerPoolConfig: workerPoolConfig,
 		DiskEncryption:   d.Get("disk_encryption").(bool),
@@ -263,7 +275,7 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 
 	d.SetId(fmt.Sprintf("%s/%s", clusterNameorID, res.ID))
 
-	return resourceIBMContainerWorkerPoolRead(d, meta)
+	return resourceIBMContainerWorkerPoolUpdate(d, meta)
 }
 
 func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
@@ -306,6 +318,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	d.Set("hardware", hardware)
 	d.Set("state", workerPool.State)
 	d.Set("labels", flex.IgnoreSystemLabels(workerPool.Labels))
+	d.Set("operating_system", workerPool.OperatingSystem)
 	d.Set("zones", flex.FlattenZones(workerPool.Zones))
 	d.Set("cluster", cluster)
 	if strings.Contains(machineType, "encrypted") {
@@ -338,7 +351,7 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	if d.HasChange("size_per_zone") {
+	if d.HasChange("size_per_zone") && !d.IsNewResource() {
 		err = workerPoolsAPI.ResizeWorkerPool(clusterNameorID, workerPoolNameorID, d.Get("size_per_zone").(int), targetEnv)
 		if err != nil {
 			return err
@@ -349,7 +362,7 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 			return fmt.Errorf("[ERROR] Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPoolNameorID, clusterNameorID, err)
 		}
 	}
-	if d.HasChange("labels") {
+	if d.HasChange("labels") && !d.IsNewResource() {
 		labels := make(map[string]string)
 		if l, ok := d.GetOk("labels"); ok {
 			for k, v := range l.(map[string]interface{}) {

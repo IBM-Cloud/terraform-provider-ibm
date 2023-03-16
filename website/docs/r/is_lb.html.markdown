@@ -69,12 +69,21 @@ The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+
+  ~> **Note**
+  
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the load balancer.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `dns` - (Optional, List) The DNS configuration for this load balancer.
 
   Nested scheme for `dns`:
   - `instance_crn` - (Required, String) The CRN of the DNS instance associated with the DNS zone
   - `zone_id` - (Required, String) The unique identifier of the DNS zone.
-  ~> **Note**
   
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.

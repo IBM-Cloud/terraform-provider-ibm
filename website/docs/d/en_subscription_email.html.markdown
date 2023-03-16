@@ -51,9 +51,9 @@ In addition to all argument references listed, you can access the following attr
 
   - `signing_enabled`- (Boolean) Signing webhook attributes.
 
-  - `to`- (Map) The Email address to send the email to.
+  - `susbscribed`- (Map) The Email address who have subscribed for topic.
 
-  - `unsubscribed`- (List) The Email address which are unsusbscribed.
+  - `unsubscribed`- (List) The Email address which has opted for unsusbscribtion from that topic.
 
   - `invited`- (List) The Email address for invitation.
 

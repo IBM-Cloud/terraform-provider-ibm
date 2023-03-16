@@ -70,8 +70,8 @@ The following arguments are supported:
 - `rotation` - (Optional,list) The key rotation time interval in months, with a minimum of 1, and a maximum of 12. Atleast one of `rotation` and `dual_auth_delete` is required
 
   Nested scheme for `rotation`:
-
-    - `interval_month`- (Required, Integer) Specifies the key rotation time interval in months. CONSTRAINTS: 1 ≤ value ≤ 12 **Note** Rotation policy cannot be set for standard key and imported key. Once the rotation policy is set, it cannot be unset or removed by using Terraform.
+    - `enabled` - (Optional, Bool) If set to **true**, Key Protect enables a rotation policy on a single key.
+    - `interval_month`- (Optional, Required if enabled = true, Integer) Specifies the key rotation time interval in months. CONSTRAINTS: 1 ≤ value ≤ 12 **Note** Rotation policy cannot be set for standard key and imported key. Once the rotation policy is set, it cannot be unset or removed by using Terraform.
 - `dual_auth_delete` - (Optional, List) Data associated with the dual authorization delete policy. Atleast one of `rotation` and `dual_auth_delete` is required.
 
     Nested scheme for `dual_auth_delete`:
@@ -87,21 +87,22 @@ In addition to all arguments above, the following attributes are exported:
 - `rotation` - (List) The key rotation time interval in months, with a minimum of 1, and a maximum of 12.
 
     Nested scheme for `rotation`:
+    - `enabled` - (Bool) If set to **true**, Key Protect enables a rotation policy on the key.
+    - `interval_month` - (Int) The key rotation time interval in months.
     - `created_by` - (String) The unique ID for the resource that created the policy.
     - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
     - `crn` - (String) The Cloud Resource Name (CRN) that uniquely identifies your cloud resources.
     - `id` - (String) The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
-    - `interval_month` - (Int) The key rotation time interval in months.
     - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
     - `updated_by` - (String) The unique ID for the resource that updated the policy.
 
 - `dual_auth_delete` - (List) The data associated with the dual authorization delete policy.
 
      Nested scheme for `dual_auth_delete`:
+     - `enabled` - (Bool) If set to **true**, Key Protect enables a dual authorization policy on the key.
      - `created_by` - (String) The unique ID for the resource that created the policy.
      - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
      - `crn` - (String) The Cloud Resource Name (CRN) that uniquely identifies your cloud resources.
-     - `enabled` - (Bool) If set to **true**, Key Protect enables a dual authorization policy on the key.
      - `id` - (String) The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
      - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
      - `updated_by` - (String) The unique ID for the resource that updated the policy.

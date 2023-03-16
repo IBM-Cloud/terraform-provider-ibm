@@ -8,9 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"path/filepath"
 
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -248,6 +251,25 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"address": {
 							Description: "Whitelist IP address in CIDR notation",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"description": {
+							Description: "Unique white list description",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
+				Deprecated: "The whitelist field is deprecated please use allowlist",
+			},
+			"allowlist": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Description: "Allowlist IP address in CIDR notation",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -689,10 +711,12 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(instance.ID)
 
-	err = flex.GetTags(d, meta)
+	tags, err := flex.GetTagsUsingCRN(meta, d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error on get of resource instance (%s) tags: %s", d.Id(), err)
+		log.Printf(
+			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
 	}
+	d.Set("tags", tags)
 
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
@@ -724,6 +748,11 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
 
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
 	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
@@ -751,17 +780,29 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
-	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
+	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
+		ID:      &instance.ID,
+		GroupID: core.StringPtr("member"),
 	}
-	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
-	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
+	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err)
 	}
-	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
+	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
+
+	alEntry := &clouddatabasesv5.GetAllowlistOptions{
+		ID: &instance.ID,
+	}
+
+	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
+
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database allowlist: %s", err)
+	}
+
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	connectionEndpoint := "public"
 	if instance.Parameters != nil {
