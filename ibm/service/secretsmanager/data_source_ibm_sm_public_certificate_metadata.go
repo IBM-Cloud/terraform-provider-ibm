@@ -21,7 +21,7 @@ func DataSourceIbmSmPublicCertificateMetadata() *schema.Resource {
 		ReadContext: dataSourceIbmSmPublicCertificateMetadataRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -253,16 +253,6 @@ func DataSourceIbmSmPublicCertificateMetadata() *schema.Resource {
 							Computed:    true,
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
-						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
-						},
-						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
-						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -296,11 +286,14 @@ func dataSourceIbmSmPublicCertificateMetadataRead(context context.Context, d *sc
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretMetadataOptions := &secretsmanagerv2.GetSecretMetadataOptions{}
 
-	getSecretMetadataOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretMetadataOptions.SetID(secretId)
 
 	publicCertificateMetadataIntf, response, err := secretsManagerClient.GetSecretMetadataWithContext(context, getSecretMetadataOptions)
 	if err != nil {
@@ -310,7 +303,11 @@ func dataSourceIbmSmPublicCertificateMetadataRead(context context.Context, d *sc
 
 	publicCertificateMetadata := publicCertificateMetadataIntf.(*secretsmanagerv2.PublicCertificateMetadata)
 
-	d.SetId(*publicCertificateMetadata.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if err = d.Set("created_by", publicCertificateMetadata.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
@@ -532,12 +529,6 @@ func dataSourceIbmSmPublicCertificateMetadataRotationPolicyToMap(model secretsma
 		if model.AutoRotate != nil {
 			modelMap["auto_rotate"] = *model.AutoRotate
 		}
-		if model.Interval != nil {
-			modelMap["interval"] = *model.Interval
-		}
-		if model.Unit != nil {
-			modelMap["unit"] = *model.Unit
-		}
 		if model.RotateKeys != nil {
 			modelMap["rotate_keys"] = *model.RotateKeys
 		}
@@ -552,12 +543,6 @@ func dataSourceIbmSmPublicCertificateMetadataCommonRotationPolicyToMap(model *se
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
 	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
 	return modelMap, nil
 }
 
@@ -565,12 +550,6 @@ func dataSourceIbmSmPublicCertificateMetadataPublicCertificateRotationPolicyToMa
 	modelMap := make(map[string]interface{})
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
-	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
 	}
 	if model.RotateKeys != nil {
 		modelMap["rotate_keys"] = *model.RotateKeys

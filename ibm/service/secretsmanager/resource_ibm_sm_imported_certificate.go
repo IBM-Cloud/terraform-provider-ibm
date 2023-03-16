@@ -6,10 +6,13 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"log"
-
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -29,6 +32,7 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -45,17 +49,24 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "A human-readable name to assign to your secret.To protect your privacy, do not use personal data, such as your name or location, as a name for your secret.",
+			},
+			"secret_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A v4 UUID identifier.",
 			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
 			},
@@ -71,24 +82,41 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"certificate": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Sensitive:   true,
+				Type:      schema.TypeString,
+				Required:  true,
+				Sensitive: true,
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					if removeNewLineFromCertificate(oldValue) == removeNewLineFromCertificate(newValue) {
+						return true
+					}
+					return false
+				},
 				Description: "The PEM-encoded contents of your certificate.",
 			},
 			"intermediate": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Sensitive:   true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				Computed:  true,
+				Sensitive: true,
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					if removeNewLineFromCertificate(oldValue) == removeNewLineFromCertificate(newValue) {
+						return true
+					}
+					return false
+				},
 				Description: "(Optional) The PEM-encoded intermediate certificate to associate with the root certificate.",
 			},
 			"private_key": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Sensitive:   true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				Computed:  true,
+				Sensitive: true,
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					if removeNewLineFromCertificate(oldValue) == removeNewLineFromCertificate(newValue) {
+						return true
+					}
+					return false
+				},
 				Description: "(Optional) The PEM-encoded private key to associate with the certificate.",
 			},
 			"common_name": &schema.Schema{
@@ -206,7 +234,9 @@ func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -223,9 +253,50 @@ func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.R
 	}
 	secret := secretIntf.(*secretsmanagerv2.ImportedCertificate)
 
-	d.SetId(*secret.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
+	d.Set("secret_id", *secret.ID)
+
+	_, err = waitForIbmSmImportedCertificateCreate(secretsManagerClient, d)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmImportedCertificate (%s) to be created: %s", d.Id(), err))
+	}
 
 	return resourceIbmSmImportedCertificateRead(context, d, meta)
+}
+
+func waitForIbmSmImportedCertificateCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
+	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+
+	id := strings.Split(d.Id(), "/")
+	secretId := id[2]
+
+	getSecretOptions.SetID(secretId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pre_activation"},
+		Target:  []string{"active"},
+		Refresh: func() (interface{}, string, error) {
+			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
+			stateObj := stateObjIntf.(*secretsmanagerv2.ImportedCertificate)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"destroyed": true}
+			if failStates[*stateObj.StateDescription] {
+				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
+			}
+			return stateObj, *stateObj.StateDescription, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      0 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -234,11 +305,15 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Id())
+	getSecretOptions.SetID(secretId)
 
 	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -251,6 +326,15 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	}
 	secret := secretIntf.(*secretsmanagerv2.ImportedCertificate)
 
+	if err = d.Set("secret_id", secretId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
@@ -353,11 +437,15 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
-	updateSecretMetadataOptions.SetID(d.Id())
+	updateSecretMetadataOptions.SetID(secretId)
 
 	hasChange := false
 
@@ -403,11 +491,15 @@ func resourceIbmSmImportedCertificateDelete(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
-	deleteSecretOptions.SetID(d.Id())
+	deleteSecretOptions.SetID(secretId)
 
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {
@@ -448,14 +540,15 @@ func resourceIbmSmImportedCertificateMapToSecretPrototype(d *schema.ResourceData
 		model.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
 	}
 	if _, ok := d.GetOk("certificate"); ok {
-		model.Certificate = core.StringPtr(d.Get("certificate").(string))
+		model.Certificate = core.StringPtr(formatCertificate(d.Get("certificate").(string)))
 	}
+
 	if _, ok := d.GetOk("intermediate"); ok {
-		model.Intermediate = core.StringPtr(d.Get("intermediate").(string))
+		model.Intermediate = core.StringPtr(formatCertificate(d.Get("intermediate").(string)))
 	}
 
 	if _, ok := d.GetOk("private_key"); ok {
-		model.PrivateKey = core.StringPtr(d.Get("private_key").(string))
+		model.PrivateKey = core.StringPtr(formatCertificate(d.Get("private_key").(string)))
 	}
 
 	return model, nil
@@ -495,4 +588,33 @@ func resourceIbmSmImportedCertificateCertificateValidityToMap(model *secretsmana
 	modelMap["not_before"] = model.NotBefore.String()
 	modelMap["not_after"] = model.NotAfter.String()
 	return modelMap, nil
+}
+
+func removeNewLineFromCertificate(originalCert string) string {
+	if originalCert == "" {
+		return originalCert
+	}
+	noR := strings.ReplaceAll(originalCert, "\r", "")
+	noNnoR := strings.ReplaceAll(noR, "\n", "")
+	return noNnoR
+}
+
+func formatCertificate(originalCert string) string {
+	if originalCert == "" {
+		return originalCert
+	}
+	noR := strings.ReplaceAll(originalCert, "\r", "")
+	noNnoR := strings.SplitN(noR, "\n", -1)
+	certParsed := ""
+	i := 0
+	for i < len(noNnoR) {
+		certParsed += noNnoR[i]
+		if i < len(noNnoR)-1 && len(noNnoR[i+1]) > 0 {
+			certParsed += "\r\n"
+		} else {
+			break
+		}
+		i++
+	}
+	return certParsed
 }

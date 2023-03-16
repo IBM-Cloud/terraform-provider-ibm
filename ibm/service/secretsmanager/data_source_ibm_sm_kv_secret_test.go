@@ -20,7 +20,7 @@ func TestAccIbmSmKvSecretDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmKvSecretDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret", "secret_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret.sm_kv_secret", "created_at"),
@@ -52,7 +52,7 @@ func testAccCheckIbmSmKvSecretDataSourceConfigBasic() string {
 		data "ibm_sm_kv_secret" "sm_kv_secret" {
 			instance_id = "%s"
 			region = "%s"
-			id = ibm_sm_kv_secret.sm_kv_secret_instance.id
+			secret_id = ibm_sm_kv_secret.sm_kv_secret_instance.secret_id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

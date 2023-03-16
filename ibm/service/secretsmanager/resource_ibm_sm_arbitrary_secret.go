@@ -6,9 +6,12 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/pkg/errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -49,6 +52,7 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -65,6 +69,7 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -72,6 +77,8 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
 			},
 
@@ -101,7 +108,7 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the secret data that is associated with a secret version was retrieved.",
 			},
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A v4 UUID identifier.",
@@ -141,7 +148,9 @@ func resourceIbmSmArbitrarySecretCreate(context context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -158,9 +167,49 @@ func resourceIbmSmArbitrarySecretCreate(context context.Context, d *schema.Resou
 	}
 
 	secret := secretIntf.(*secretsmanagerv2.ArbitrarySecret)
-	d.SetId(*secret.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
+	d.Set("secret_id", *secret.ID)
+
+	_, err = waitForIbmSmArbitrarySecretCreate(secretsManagerClient, d)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmArbitrarySecret (%s) to be created: %s", d.Id(), err))
+	}
 
 	return resourceIbmSmArbitrarySecretRead(context, d, meta)
+}
+
+func waitForIbmSmArbitrarySecretCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
+	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+	id := strings.Split(d.Id(), "/")
+	secretId := id[2]
+
+	getSecretOptions.SetID(secretId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pre_activation"},
+		Target:  []string{"active"},
+		Refresh: func() (interface{}, string, error) {
+			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
+			stateObj := stateObjIntf.(*secretsmanagerv2.ArbitrarySecret)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"destroyed": true}
+			if failStates[*stateObj.StateDescription] {
+				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
+			}
+			return stateObj, *stateObj.StateDescription, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      0 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -169,11 +218,15 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Id())
+	getSecretOptions.SetID(secretId)
 
 	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -187,6 +240,15 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 
 	secret := secretIntf.(*secretsmanagerv2.ArbitrarySecret)
 
+	if err = d.Set("secret_id", secretId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
@@ -250,21 +312,21 @@ func resourceIbmSmArbitrarySecretUpdate(context context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
-	updateSecretMetadataOptions.SetID(d.Id())
+	updateSecretMetadataOptions.SetID(secretId)
 
 	hasChange := false
 
 	patchVals := &secretsmanagerv2.SecretMetadataPatch{}
 
 	if d.HasChange("name") {
-		//secretPrototype, err := resourceIbmSmArbitrarySecretMapToSecretPrototype(d.Get("secret_prototype.0").(map[string]interface{}))
-		//if err != nil {
-		//	return diag.FromErr(err)
-		//}
 		patchVals.Name = core.StringPtr(d.Get("name").(string))
 		hasChange = true
 	}
@@ -286,15 +348,6 @@ func resourceIbmSmArbitrarySecretUpdate(context context.Context, d *schema.Resou
 		hasChange = true
 	}
 
-	//if d.HasChange("secret_prototype") {
-	//	secretPrototype, err := resourceIbmSmArbitrarySecretMapToSecretPrototype(d.Get("secret_prototype.0").(map[string]interface{}))
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//	updateSecretMetadataOptions.SetSecretPrototype(secretPrototype)
-	//	hasChange = true
-	//}
-
 	if hasChange {
 		updateSecretMetadataOptions.SecretMetadataPatch, _ = patchVals.AsPatch()
 		_, response, err := secretsManagerClient.UpdateSecretMetadataWithContext(context, updateSecretMetadataOptions)
@@ -313,11 +366,15 @@ func resourceIbmSmArbitrarySecretDelete(context context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
-	deleteSecretOptions.SetID(d.Id())
+	deleteSecretOptions.SetID(secretId)
 
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {

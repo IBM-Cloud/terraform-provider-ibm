@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_private_certificate (Beta)"
+page_title: "IBM : ibm_sm_private_certificate"
 description: |-
   Manages PrivateCertificate.
 subcategory: "Secrets Manager"
@@ -35,6 +35,10 @@ resource "ibm_sm_private_certificate" "sm_private_certificate"{
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
 * `certificate_template` - (Optional, Forces new resource, String) The name of the certificate template.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
 * `common_name` - (Required, Forces new resource, String) The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.
@@ -62,7 +66,7 @@ Nested scheme for **rotation**:
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the PrivateCertificate.
+* `secret_id` - The unique identifier of the PrivateCertificate.
 * `alt_names` - (Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
   * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 * `ca_chain` - (List) The chain of certificate authorities that are associated with the certificate.
@@ -159,15 +163,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_private_certificate` resource by using `id`. A v4 UUID identifier.
+You can import the `ibm_sm_private_certificate` resource by using `region`, `instance_id`, and `secret_id`.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
 ```
-$ terraform import ibm_sm_private_certificate.sm_private_certificate <id>
+$ terraform import ibm_sm_private_certificate.sm_private_certificate <region>/<instance_id>/<secret_id>
 ```
 
 # Example
 ```
-$ terraform import ibm_sm_private_certificate.sm_private_certificate b49ad24d-81d4-5ebc-b9b9-b0937d1c84d5
+$ terraform import ibm_sm_private_certificate.sm_private_certificate us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/b49ad24d-81d4-5ebc-b9b9-b0937d1c84d5
 ```

@@ -38,6 +38,8 @@ func TestAccIBMCmObjectSimpleArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "label", label),
 					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "short_description", shortDescription),
 					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "kind", kind),
+					resource.TestCheckResourceAttrSet("ibm_cm_object.cm_object", "data"),
+					resource.TestCheckResourceAttrSet("ibm_cm_object.cm_object", "tags.#"),
 				),
 			},
 		},
@@ -59,6 +61,8 @@ func testAccCheckIBMCmObjectConfig(name string, parentID string, label string, s
 			label = "%s"
 			short_description = "%s"
 			kind = "%s"
+			tags = ["test1", "test2"]
+			data = jsonencode(local.catalog_object_data)
 		}
 	`, kind, name, parentID, label, shortDescription, kind)
 }

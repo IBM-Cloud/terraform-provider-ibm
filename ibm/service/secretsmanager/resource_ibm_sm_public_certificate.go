@@ -6,7 +6,11 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -45,11 +49,13 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
+				Computed:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
 			},
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -63,6 +69,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeList,
 				ForceNew:    true,
 				Optional:    true,
+				Computed:    true,
 				Description: "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -106,18 +113,6 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 							Computed:    true,
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
-						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
-						},
-						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
-						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
@@ -130,6 +125,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -160,7 +156,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.",
 			},
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A v4 UUID identifier.",
@@ -326,6 +322,9 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Description: "(Optional) The PEM-encoded private key to associate with the certificate.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(35 * time.Minute),
+		},
 	}
 }
 
@@ -335,7 +334,9 @@ func resourceIbmSmPublicCertificateCreate(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -352,9 +353,50 @@ func resourceIbmSmPublicCertificateCreate(context context.Context, d *schema.Res
 	}
 
 	secret := secretIntf.(*secretsmanagerv2.PublicCertificate)
-	d.SetId(*secret.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
+	d.Set("secret_id", *secret.ID)
+
+	_, err = waitForIbmSmPublicCertificateCreate(secretsManagerClient, d)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmPublicCertificate (%s) to be created: %s", d.Id(), err))
+	}
 
 	return resourceIbmSmPublicCertificateRead(context, d, meta)
+}
+
+func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
+	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+
+	id := strings.Split(d.Id(), "/")
+	secretId := id[2]
+
+	getSecretOptions.SetID(secretId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pre_activation"},
+		Target:  []string{"active"},
+		Refresh: func() (interface{}, string, error) {
+			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
+			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"destroyed": true}
+			if failStates[*stateObj.StateDescription] {
+				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
+			}
+			return stateObj, *stateObj.StateDescription, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      0 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -363,11 +405,15 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Id())
+	getSecretOptions.SetID(secretId)
 
 	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -381,6 +427,15 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 
 	secret := secretIntf.(*secretsmanagerv2.PublicCertificate)
 
+	if err = d.Set("secret_id", secretId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
@@ -432,6 +487,15 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("key_algorithm", secret.KeyAlgorithm); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting key_algorithm: %s", err))
 	}
+	if err = d.Set("ca", secret.Ca); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting ca: %s", err))
+	}
+	if err = d.Set("dns", secret.Dns); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
+	}
+	if err = d.Set("bundle_certs", secret.BundleCerts); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting bundle_certs: %s", err))
+	}
 	rotationMap, err := resourceIbmSmPublicCertificateRotationPolicyToMap(secret.Rotation)
 	if err != nil {
 		return diag.FromErr(err)
@@ -454,7 +518,8 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 	if secret.AltNames != nil {
-		if err = d.Set("alt_names", secret.AltNames); err != nil {
+		altNames := secret.AltNames[1:]
+		if err = d.Set("alt_names", altNames); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
 		}
 	}
@@ -494,11 +559,15 @@ func resourceIbmSmPublicCertificateUpdate(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
-	updateSecretMetadataOptions.SetID(d.Id())
+	updateSecretMetadataOptions.SetID(secretId)
 
 	hasChange := false
 
@@ -553,11 +622,15 @@ func resourceIbmSmPublicCertificateDelete(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
-	deleteSecretOptions.SetID(d.Id())
+	deleteSecretOptions.SetID(secretId)
 
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {
@@ -615,7 +688,7 @@ func resourceIbmSmPublicCertificateMapToSecretPrototype(d *schema.ResourceData) 
 		model.BundleCerts = core.BoolPtr(d.Get("bundle_certs").(bool))
 	}
 	if _, ok := d.GetOk("rotation"); ok {
-		RotationModel, err := resourceIbmSmPublicCertificateMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
+		RotationModel, err := resourceIbmSmPublicCertificateMapToPublicCertificateRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -665,12 +738,6 @@ func resourceIbmSmPublicCertificateMapToPublicCertificateRotationPolicy(modelMap
 	model := &secretsmanagerv2.PublicCertificateRotationPolicy{}
 	if modelMap["auto_rotate"] != nil {
 		model.AutoRotate = core.BoolPtr(modelMap["auto_rotate"].(bool))
-	}
-	if modelMap["interval"] != nil {
-		model.Interval = core.Int64Ptr(int64(modelMap["interval"].(int)))
-	}
-	if modelMap["unit"] != nil && modelMap["unit"].(string) != "" {
-		model.Unit = core.StringPtr(modelMap["unit"].(string))
 	}
 	if modelMap["rotate_keys"] != nil {
 		model.RotateKeys = core.BoolPtr(modelMap["rotate_keys"].(bool))

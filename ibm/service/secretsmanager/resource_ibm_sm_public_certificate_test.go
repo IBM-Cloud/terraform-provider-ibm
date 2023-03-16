@@ -5,6 +5,7 @@ package secretsmanager_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,45 +17,57 @@ import (
 )
 
 func TestAccIbmSmPublicCertificateBasic(t *testing.T) {
-	//var conf secretsmanagerv2.PublicCertificate
-	//
-	//resource.Test(t, resource.TestCase{
-	//	PreCheck:     func() { acc.TestAccPreCheck(t) },
-	//	Providers:    acc.TestAccProviders,
-	//	CheckDestroy: testAccCheckIbmSmPublicCertificateDestroy,
-	//	Steps: []resource.TestStep{
-	//		resource.TestStep{
-	//			Config: testAccCheckIbmSmPublicCertificateConfigBasic(),
-	//			Check: resource.ComposeAggregateTestCheckFunc(
-	//				testAccCheckIbmSmPublicCertificateExists("ibm_sm_public_certificate.sm_public_certificate", conf),
-	//			),
-	//		},
-	//		resource.TestStep{
-	//			ResourceName:      "ibm_sm_public_certificate.sm_public_certificate",
-	//			ImportState:       true,
-	//			ImportStateVerify: true,
-	//		},
-	//	},
-	//})
+	var conf secretsmanagerv2.PublicCertificate
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmPublicCertificateDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmSmPublicCertificateConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmPublicCertificateExists("ibm_sm_public_certificate.sm_public_certificate", conf),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_sm_public_certificate.sm_public_certificate",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
 func testAccCheckIbmSmPublicCertificateConfigBasic() string {
 	return fmt.Sprintf(`
-
-		resource "ibm_sm_public_certificate" "sm_public_certificate_instance" {
-			secret_prototype {
-				custom_metadata = {"key":"value"}
-				description = "Extended description for this secret."
-				expiration_date = "2022-04-12T23:20:50.520Z"
-				labels = [ "my-label" ]
-				name = "my-secret-example"
-				secret_group_id = "default"
-				secret_type = "arbitrary"
-				payload = "secret-credentials"
-				version_custom_metadata = {"key":"value"}
-			}
+		resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt_instance" {
+			instance_id   = "%s"
+			region        = "%s"
+			name = "public_cert_ca_lets_encrypt-terraform-test-datasource"
+			lets_encrypt_environment = "%s"
+			lets_encrypt_private_key = "%s"
 		}
-	`)
+
+		resource "ibm_sm_public_certificate_configuration_dns_cis" "sm_public_certificate_configuration_dns_cis_instance" {
+			  instance_id   = "%s"
+       		  region        = "%s"
+			  cloud_internet_services_crn = "%s"
+  			  name = "cloud-internet-services-config-terraform-test"
+		}
+
+		resource "ibm_sm_public_certificate" "sm_public_certificate" {
+			instance_id = "%s"
+			region = "%s"
+  			name = "public-certificate-terraform-tests"
+  			secret_group_id = "default"
+  			common_name = "%s"
+  			ca = ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt_instance.name
+  			dns = ibm_sm_public_certificate_configuration_dns_cis.sm_public_certificate_configuration_dns_cis_instance.name
+		}
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateLetsEncryptEnvironment, acc.SecretsManagerPublicCertificateLetsEncryptPrivateKey,
+		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateCisCrn,
+		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateCommonName)
 }
 
 func testAccCheckIbmSmPublicCertificateExists(n string, obj secretsmanagerv2.PublicCertificate) resource.TestCheckFunc {
@@ -74,7 +87,9 @@ func testAccCheckIbmSmPublicCertificateExists(n string, obj secretsmanagerv2.Pub
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		publicCertificateIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
 		if err != nil {
@@ -102,7 +117,9 @@ func testAccCheckIbmSmPublicCertificateDestroy(s *terraform.State) error {
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		// Try to find the key
 		_, response, err := secretsManagerClient.GetSecret(getSecretOptions)

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,6 +27,11 @@ func ResourceIbmSmSecretGroup() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"secret_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A v4 UUID identifier.",
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -85,7 +91,9 @@ func resourceIbmSmSecretGroupCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretGroupOptions := &secretsmanagerv2.CreateSecretGroupOptions{}
 
@@ -100,7 +108,8 @@ func resourceIbmSmSecretGroupCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("CreateSecretGroupWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*secretGroup.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secretGroup.ID))
+	d.Set("secret_group_id", *secretGroup.ID)
 
 	return resourceIbmSmSecretGroupRead(context, d, meta)
 }
@@ -111,11 +120,15 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretGroupId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretGroupOptions := &secretsmanagerv2.GetSecretGroupOptions{}
 
-	getSecretGroupOptions.SetID(d.Id())
+	getSecretGroupOptions.SetID(secretGroupId)
 
 	secretGroup, response, err := secretsManagerClient.GetSecretGroupWithContext(context, getSecretGroupOptions)
 	if err != nil {
@@ -127,6 +140,15 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("GetSecretGroupWithContext failed %s\n%s", err, response))
 	}
 
+	if err = d.Set("secret_group_id", secretGroupId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_group_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("name", secretGroup.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -149,11 +171,15 @@ func resourceIbmSmSecretGroupUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretGroupId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretGroupOptions := &secretsmanagerv2.UpdateSecretGroupOptions{}
 
-	updateSecretGroupOptions.SetID(d.Id())
+	updateSecretGroupOptions.SetID(secretGroupId)
 
 	hasChange := false
 
@@ -187,11 +213,15 @@ func resourceIbmSmSecretGroupDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretGroupId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretGroupOptions := &secretsmanagerv2.DeleteSecretGroupOptions{}
 
-	deleteSecretGroupOptions.SetID(d.Id())
+	deleteSecretGroupOptions.SetID(secretGroupId)
 
 	response, err := secretsManagerClient.DeleteSecretGroupWithContext(context, deleteSecretGroupOptions)
 	if err != nil {
