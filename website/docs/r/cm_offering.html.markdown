@@ -62,6 +62,9 @@ Nested scheme for **media**:
 * `keywords` - (Optional, List) List of keywords associated with an offering, typically used to search for it.
 * `deprecate` - (Optional, Boolean) Specify if this offering should be deprecated.
 * `share_with_access_list` - (Optional, List) List of account, enterprise, or enterprise group IDs.  Enterprise IDs should be prefixed with `-ent-` and enterpries group IDs should be prefixed with `-entgrp-`.
+* `share_with_all` - (Optional, Boolean) Denotes public availability of an Offering - if share_enabled is true.
+* `share_with_ibm` - (Optional, Boolean) Denotes IBM employee availability of an Offering - if share_enabled is true.
+* `share_enabled` - (Optional, Boolean) Denotes sharing including access list availability of an Offering is enabled.
 
 ## Attribute Reference
 
