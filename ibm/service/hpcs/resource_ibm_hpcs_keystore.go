@@ -54,27 +54,27 @@ func ResourceIbmKeystore() *schema.Resource {
 			},
 			"google_credentials": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The value of the JSON key represented in the Base64 format.",
 			},
 			"google_location": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "Location represents the geographical region where a Cloud KMS resource is stored and can be accessed. A key's location impacts the performance of applications using the key.",
 			},
 			"google_project_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The project id associated with this keystore.",
 			},
 			"google_private_key_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The private key id associated with this keystore.",
 			},
 			"google_key_ring": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "A key ring organizes keys in a specific Google Cloud location and allows you to manage access control on groups of keys.",
 			},
 			"aws_region": &schema.Schema{
@@ -305,7 +305,10 @@ func ResourceIbmKeystoreCreate(context context.Context, d *schema.ResourceData, 
 	keystore := keystoreIntf.(*ukov4.Keystore)
 	d.SetId(fmt.Sprintf("%s/%s/%s/%s", region, instance_id, d.Get("uko_vault").(string), *keystore.ID))
 
-	SyncKeys(ukoClient, context, d.Get("uko_vault").(string), *keystore.ID)
+	diagnosis := SyncKeys(ukoClient, context, d.Get("uko_vault").(string), *keystore.ID)
+	if diagnosis != nil {
+		return diagnosis
+	}
 
 	return ResourceIbmKeystoreRead(context, d, meta)
 }
@@ -512,7 +515,10 @@ func ResourceIbmKeystoreUpdate(context context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	SyncKeys(ukoClient, context, vault_id, keystore_id)
+	diagnosis := SyncKeys(ukoClient, context, vault_id, keystore_id)
+	if diagnosis != nil {
+		return diagnosis
+	}
 
 	return ResourceIbmKeystoreRead(context, d, meta)
 }
@@ -526,7 +532,7 @@ func ResourceIbmKeystoreDelete(context context.Context, d *schema.ResourceData, 
 	deleteKeystoreOptions := &ukov4.DeleteKeystoreOptions{}
 
 	// Etag support
-	deleteKeystoreOptions.SetIfMatch(d.Get("version").(string))
+	deleteKeystoreOptions.SetIfMatch(d.Get("etag").(string))
 
 	id := strings.Split(d.Id(), "/")
 	region := id[0]
@@ -623,7 +629,9 @@ func resourceIbmHpcsKeystoreMapToKeystoreCreationRequestKeystoreTypeGoogleKmsCre
 		}
 		model.Groups = groups
 	}
-	model.GoogleCredentials = core.StringPtr(modelMap["google_credentials"].(string))
+	if modelMap["google_credentials"] != nil && modelMap["google_credentials"].(string) != "" {
+		model.GoogleCredentials = core.StringPtr(modelMap["google_credentials"].(string))
+	}
 	if modelMap["google_location"] != nil && modelMap["google_location"].(string) != "" {
 		model.GoogleLocation = core.StringPtr(modelMap["google_location"].(string))
 	}
@@ -1194,6 +1202,12 @@ func DKeystoreToKeystoreBody(d *schema.ResourceData) interface{} {
 			keystoreBody["ibm_instance_id"] = d.Get("ibm_instance_id").(string)
 			keystoreBody["ibm_key_ring"] = d.Get("ibm_key_ring").(string)
 		}
+	} else if keystoreType == "google_kms" {
+		keystoreBody["google_credentials"] = d.Get("google_credentials").(string)
+		keystoreBody["google_location"] = d.Get("google_location").(string)
+		keystoreBody["google_project_id"] = d.Get("google_project_id").(string)
+		keystoreBody["google_private_key_id"] = d.Get("google_private_key_id").(string)
+		keystoreBody["google_key_ring"] = d.Get("google_key_ring").(string)
 	}
 
 	return keystoreBody
@@ -1263,6 +1277,21 @@ func DKeystoreToKeystoreBodyUpdate(d *schema.ResourceData) *ukov4.KeystoreUpdate
 	if d.Get("ibm_key_ring") != nil && d.Get("ibm_key_ring") != "" {
 		keystoreBody.IbmKeyRing = core.StringPtr(d.Get("ibm_key_ring").(string))
 	}
+	if d.Get("google_credentials") != nil && d.Get("google_credentials") != "" {
+		keystoreBody.GoogleCredentials = core.StringPtr(d.Get("google_credentials").(string))
+	}
+	if d.Get("google_location") != nil && d.Get("google_location") != "" {
+		keystoreBody.GoogleLocation = core.StringPtr(d.Get("google_location").(string))
+	}
+	if d.Get("google_project_id") != nil && d.Get("google_project_id") != "" {
+		keystoreBody.GoogleProjectID = core.StringPtr(d.Get("google_project_id").(string))
+	}
+	if d.Get("google_private_key_id") != nil && d.Get("google_private_key_id") != "" {
+		keystoreBody.GooglePrivateKeyID = core.StringPtr(d.Get("google_private_key_id").(string))
+	}
+	if d.Get("google_key_ring") != nil && d.Get("google_key_ring") != "" {
+		keystoreBody.GoogleKeyRing = core.StringPtr(d.Get("google_key_ring").(string))
+	}
 
 	return &keystoreBody
 }
@@ -1329,6 +1358,21 @@ func DHasChanges(d *schema.ResourceData) bool {
 		return true
 	}
 	if d.HasChange("ibm_key_ring") {
+		return true
+	}
+	if d.HasChange("google_credentials") {
+		return true
+	}
+	if d.HasChange("google_location") {
+		return true
+	}
+	if d.HasChange("google_project_id") {
+		return true
+	}
+	if d.HasChange("google_private_key_id") {
+		return true
+	}
+	if d.HasChange("google_key_ring") {
 		return true
 	}
 	return false

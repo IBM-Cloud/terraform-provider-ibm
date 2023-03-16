@@ -622,7 +622,7 @@ func ResourceIbmManagedKeyUpdate(context context.Context, d *schema.ResourceData
 				return diag.FromErr(fmt.Errorf("Deactivate managed key failed: Cannot deactivate key not in active state"))
 			}
 		} else if new == "destroyed" {
-			if prev == "deactivated" {
+			if prev == "deactivated" || prev == "pre_activation" {
 				destroyManagedKeyOptions := &ukov4.DestroyManagedKeyOptions{}
 
 				destroyManagedKeyOptions.SetIfMatch(etag)
@@ -672,7 +672,7 @@ func ResourceIbmManagedKeyDelete(context context.Context, d *schema.ResourceData
 	}
 
 	// Etag support
-	etag := d.Get("version").(string)
+	etag := d.Get("etag").(string)
 
 	id := strings.Split(d.Id(), "/")
 	region := id[0]

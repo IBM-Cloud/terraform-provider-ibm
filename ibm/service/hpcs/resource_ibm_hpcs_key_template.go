@@ -65,6 +65,7 @@ func ResourceIbmKeyTemplate() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_hpcs_key_template", "name"),
 				Description:  "Name of the template, it will be referenced when creating managed keys.",
 			},
@@ -345,12 +346,12 @@ func ResourceIbmKeyTemplateRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 	// TODO: I'm worried about this line
-	// if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-	// 	return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
-	// }
-	if err = d.Set("version", flex.IntValue(template.Version)); err != nil {
+	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
 	}
+	// if err = d.Set("version", flex.IntValue(template.Version)); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+	// }
 
 	return nil
 }
@@ -382,15 +383,20 @@ func ResourceIbmKeyTemplateUpdate(context context.Context, d *schema.ResourceDat
 	// TODO: Worried about this
 	// if d.HasChange("key") || d.HasChange("keystores") {
 	// 	keyprops, err := ResourceIbmKeyTemplateMapToKeyProperties(d.Get("key.0").(map[string]interface{}))
-	if d.HasChange("uko_vault") || d.HasChange("vault") || d.HasChange("name") || d.HasChange("key") || d.HasChange("keystores") {
+	if d.HasChange("uko_vault") || d.HasChange("vault") {
 		updateKeyTemplateOptions.SetUKOVault(d.Get("uko_vault").(string))
 		// vault, err := ResourceIbmKeyTemplateMapToVaultReferenceInCreationRequest(d.Get("vault.0").(map[string]interface{}))
 		// if err != nil {
 		// 	return diag.FromErr(err)
 		// }
 		// updateKeyTemplateOptions.SetUKOVault(vault)
-		// updateKeyTemplateOptions.SetName(d.Get("name").(string))
-		keyprops, err := ResourceIbmKeyTemplateMapToKeyProperties(d.Get("key.0").(map[string]interface{}))
+		//
+	}
+	// if d.HasChange("name") {
+	// 	updateKeyTemplateOptions.SetName(d.Get("name").(string))
+	// }
+	if d.HasChange("key") || d.HasChange("keystores") {
+		keyprops, err := ResourceIbmKeyTemplateMapToKeyProperties(d.Get("key").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}

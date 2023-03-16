@@ -316,7 +316,19 @@ func getUkoUrl(context context.Context, region string, instance_id string, ukoCl
 			return fmt.Sprintf("https://%s/", v), nil
 		}
 	} else {
-		brokerUrl = fmt.Sprintf("https://%s.broker.hs-crypto.cloud.ibm.com", region)
+		if os.Getenv("IBMCLOUD_IAM_API_ENDPOINT") == "https://iam.test.cloud.ibm.com" {
+			if region == "us-south" {
+				brokerUrl = "https://broker.us-south.hs-crypto.test.cloud.ibm.com"
+			} else if region == "us-east-dev" {
+				brokerUrl = "https://broker.us-east.hs-crypto.test.cloud.ibm.com"
+			} else if region == "us-south-svt" {
+				brokerUrl = "https://broker.svt.us-south.hs-crypto.test.cloud.ibm.com"
+			} else if region == "us-south-test" {
+				brokerUrl = "https://broker.vpc.us-south.hs-crypto.test.cloud.ibm.com"
+			}
+		} else {
+			brokerUrl = fmt.Sprintf("https://%s.broker.hs-crypto.cloud.ibm.com", region)
+		}
 	}
 
 	builder := core.NewRequestBuilder(core.GET)
