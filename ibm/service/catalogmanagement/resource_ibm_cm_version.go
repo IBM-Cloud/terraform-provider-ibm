@@ -114,6 +114,11 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Optional:    true,
 				Description: "The usage text for this version.",
 			},
+			"terraform_version": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Provide a terraform version for this offering version to use.",
+			},
 			"flavor": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -1983,6 +1988,21 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
 	}
+	if _, ok := d.GetOk("terraform_version"); ok {
+		if activeVersion.Metadata["terraform_version"] == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/metadata/terraform_version", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("terraform_version"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
 
 	if hasChange {
 		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
@@ -2452,17 +2472,17 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
 	}
-	if d.HasChange("usage") {
-		if activeVersion.Metadata["usage"] == nil {
+	if d.HasChange("terraform_version") {
+		if activeVersion.Metadata["terraform_version"] == nil {
 			method = "add"
 		} else {
 			method = "replace"
 		}
-		path := fmt.Sprintf("%s/metadata/usage", pathToVersion)
+		path := fmt.Sprintf("%s/metadata/terraform_version", pathToVersion)
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
 			Path:  &path,
-			Value: d.Get("usage"),
+			Value: d.Get("terraform_version"),
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
