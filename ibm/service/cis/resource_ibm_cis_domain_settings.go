@@ -51,6 +51,7 @@ const (
 	cisDomainSettingsSecurityHeaderMaxAge            = "max_age"
 	cisDomainSettingsSecurityHeaderIncludeSubdomains = "include_subdomains"
 	cisDomainSettingsSecurityHeaderNoSniff           = "nosniff"
+	cisDomainSettingsSecurityHeaderPreload           = "preload"
 	cisDomainSettingsMobileRedirect                  = "mobile_redirect"
 	cisDomainSettingsMobileRedirectStatus            = "status"
 	cisDomainSettingsMobileRedirectMobileSubdomain   = "mobile_subdomain"
@@ -410,6 +411,11 @@ func ResourceIBMCISSettings() *schema.Resource {
 						cisDomainSettingsSecurityHeaderNoSniff: {
 							Type:        schema.TypeBool,
 							Description: "security header no sniff",
+							Required:    true,
+						},
+						cisDomainSettingsSecurityHeaderPreload: {
+							Type:        schema.TypeBool,
+							Description: "security header preload",
 							Required:    true,
 						},
 					},
@@ -1030,10 +1036,12 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 					dataMap := v.([]interface{})[0].(map[string]interface{})
 					enabled := dataMap[cisDomainSettingsSecurityHeaderEnabled].(bool)
 					nosniff := dataMap[cisDomainSettingsSecurityHeaderNoSniff].(bool)
+					preload := dataMap[cisDomainSettingsSecurityHeaderPreload].(bool)
+
 					includeSubdomain := dataMap[cisDomainSettingsSecurityHeaderIncludeSubdomains].(bool)
 					maxAge := int64(dataMap[cisDomainSettingsSecurityHeaderMaxAge].(int))
 					securityVal, err := cisClient.NewSecurityHeaderSettingValueStrictTransportSecurity(
-						enabled, maxAge, includeSubdomain, nosniff)
+						enabled, maxAge, includeSubdomain, preload, nosniff)
 					if err != nil {
 						log.Println("Invalid security header setting values")
 						return err
@@ -1379,6 +1387,9 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 					}
 					if securityHeader.Nosniff != nil {
 						value[cisDomainSettingsSecurityHeaderNoSniff] = *securityHeader.Nosniff
+					}
+					if securityHeader.Preload != nil {
+						value[cisDomainSettingsSecurityHeaderPreload] = *securityHeader.Preload
 					}
 					if securityHeader.IncludeSubdomains != nil {
 						value[cisDomainSettingsSecurityHeaderIncludeSubdomains] = *securityHeader.IncludeSubdomains

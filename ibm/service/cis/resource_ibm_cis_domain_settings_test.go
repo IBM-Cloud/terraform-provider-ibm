@@ -153,6 +153,7 @@ func testAccCheckCisSettingsConfigBasic4(id string, CisDomainStatic string) stri
 		  include_subdomains = true
 		  max_age            = 100
 		  nosniff            = false
+		  preload			 = false
 		}
 		mobile_redirect {
 		  status           = "off"
