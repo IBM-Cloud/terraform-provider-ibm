@@ -4015,6 +4015,9 @@ func resourceIBMCmOfferingMapToRenderType(modelMap map[string]interface{}) (*cat
 	if modelMap["grouping_index"] != nil {
 		model.GroupingIndex = core.Int64Ptr(int64(modelMap["grouping_index"].(int)))
 	}
+	if modelMap["config_constraints"] != nil {
+		model.ConfigConstraints = modelMap["config_constraints"]
+	}
 	if modelMap["associations"] != nil && len(modelMap["associations"].([]interface{})) > 0 {
 		AssociationsModel, err := resourceIBMCmOfferingMapToRenderTypeAssociations(modelMap["associations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -5232,6 +5235,9 @@ func resourceIBMCmOfferingRenderTypeToMap(model *catalogmanagementv1.RenderType)
 	}
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
+	}
+	if model.ConfigConstraints != nil {
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints.(map[string]interface{}))
 	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmOfferingRenderTypeAssociationsToMap(model.Associations)

@@ -3204,12 +3204,9 @@ func dataSourceIBMCmOfferingRenderTypeToMap(model *catalogmanagementv1.RenderTyp
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = *model.GroupingIndex
 	}
-	// if model.ConfigConstraints != nil {
-	// 	configConstraintsMap := make(map[string]interface{}, len(model.ConfigConstraints))
-	// 	for k, v := range model.ConfigConstraints {
-	// 	}
-	// 	modelMap["config_constraints"] = flex.Flatten(configConstraintsMap)
-	// }
+	if model.ConfigConstraints != nil {
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints.(map[string]interface{}))
+	}
 	if model.Associations != nil {
 		associationsMap, err := dataSourceIBMCmOfferingRenderTypeAssociationsToMap(model.Associations)
 		if err != nil {

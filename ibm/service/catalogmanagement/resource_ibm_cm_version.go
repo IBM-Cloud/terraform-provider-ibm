@@ -2841,6 +2841,9 @@ func resourceIBMCmVersionRenderTypeToMap(model *catalogmanagementv1.RenderType) 
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
 	}
+	if model.ConfigConstraints != nil {
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints.(map[string]interface{}))
+	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmVersionRenderTypeAssociationsToMap(model.Associations)
 		if err != nil {
