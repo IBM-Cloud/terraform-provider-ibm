@@ -2852,6 +2852,21 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("offering_support_url", offering.OfferingSupportURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting offering_support_url: %s", err))
 	}
+	tags := []string{}
+	if offering.Tags != nil {
+		specifiedTags := SIToSS(d.Get("tags").([]interface{}))
+		for _, specifiedTag := range specifiedTags {
+			for _, offeringTag := range offering.Tags {
+				if offeringTag == specifiedTag {
+					tags = append(tags, specifiedTag)
+					break
+				}
+			}
+		}
+	}
+	if err = d.Set("tags", tags); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+	}
 	keywords := []string{}
 	if offering.Keywords != nil {
 		keywords = offering.Keywords

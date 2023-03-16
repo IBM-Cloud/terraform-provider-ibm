@@ -2525,6 +2525,22 @@ func dataSourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("Error setting offering_support_url: %s", err))
 	}
 
+	tags := []string{}
+	if offering.Tags != nil {
+		tags = offering.Tags
+	}
+	if err = d.Set("tags", tags); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+	}
+
+	keywords := []string{}
+	if offering.Keywords != nil {
+		keywords = offering.Keywords
+	}
+	if err = d.Set("keywords", keywords); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting keywords: %s", err))
+	}
+
 	rating := []map[string]interface{}{}
 	if offering.Rating != nil {
 		modelMap, err := dataSourceIBMCmOfferingRatingToMap(offering.Rating)
