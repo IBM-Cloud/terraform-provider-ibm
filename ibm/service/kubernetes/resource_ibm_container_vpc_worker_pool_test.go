@@ -339,6 +339,11 @@ func testAccCheckIBMVpcContainerWorkerPoolEnvvar(name string) string {
 	  kms_instance_id = "%[4]s"
 	  crk = "%[5]s"
 	  secondary_storage = "%[6]s"
+	  taints {
+		key    = "key1"
+		value  = "value1"
+		effect = "NoSchedule"
+	  }
 	}
 		`, name, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.WorkerPoolSecondaryStorage)
 }
