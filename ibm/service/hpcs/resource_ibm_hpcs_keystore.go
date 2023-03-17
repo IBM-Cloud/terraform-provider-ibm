@@ -55,6 +55,7 @@ func ResourceIbmKeystore() *schema.Resource {
 			"google_credentials": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The value of the JSON key represented in the Base64 format.",
 			},
 			"google_location": &schema.Schema{
