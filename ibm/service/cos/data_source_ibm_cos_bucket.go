@@ -699,7 +699,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		Bucket: aws.String(bucketName),
 	}
 	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
-	fmt.Println("Configurationptr from cos bucket pov->", output)
 	if output.ObjectLockConfiguration != nil {
 		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
 		if objectLockEnabled == "Enabled" {

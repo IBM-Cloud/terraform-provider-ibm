@@ -384,7 +384,7 @@ resource "ibm_cos_bucket" "cos_bucket" {
   object_lock = true
 }
 
-resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.region_location
  object_lock_configuration{

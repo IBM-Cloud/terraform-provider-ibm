@@ -7,7 +7,7 @@ description:
   "Manages IBM Cloud Object Storage Object Lock Configuration"
 ---
 
-# ibm_cos_bucket_objectlock_configuration
+# ibm_cos_bucket_object_lock_configuration
 Provides an  Object Lock configuration resource. This resource is used to configure a default retention period for objects placed in the specified bucket. To enable objectlock for a new bucket see [ibm_cos_bucket](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cos_bucket).
 
 
@@ -44,7 +44,7 @@ resource "ibm_cos_bucket" "cos_bucket" {
   object_lock = true
 }
 
-resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
@@ -60,7 +60,7 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
 
 ```
 # Enabling Objectlockconfguration on an existing bucket
-To enable objectlock configuration on an existing bucket , create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_objectlock_configuration.bucket_crn` and `ibm_cos_bucket_objectlock_configuration.bucket_location` as shown in the example.
+To enable objectlock configuration on an existing bucket , create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_object_lock_configuration.bucket_crn` and `ibm_cos_bucket_object_lock_configuration.bucket_location` as shown in the example.
 
 ## Example usage
 
@@ -77,7 +77,7 @@ resource "ibm_cos_bucket" "cos_bucket" {
   }
 }
 
-resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
@@ -87,7 +87,7 @@ resource ibm_cos_bucket_objectlock_configuration "objectlock" {
 
 // To enable object lock configuration and set default retention on a bucket
 
-resource ibm_cos_bucket_objectlock_configuration "objectlock" {
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.cos_bucket.crn
  bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
  object_lock_configuration{
@@ -129,14 +129,14 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The ID of the bucket.
 
 ## Import IBM COS Bucket
-The `ibm_cos_bucket_objectlock_configuration` resource can be imported by using the `id`. The ID is formed from the `CRN` (Cloud Resource Name). The `CRN` and bucket location can be found on the portal.
+The `ibm_cos_bucket_object_lock_configuration` resource can be imported by using the `id`. The ID is formed from the `CRN` (Cloud Resource Name). The `CRN` and bucket location can be found on the portal.
 
 id = `$CRN:meta:$bucketlocation:$endpointtype`
 
 **Syntax**
 
 ```
-$ terraform import ibm_cos_bucket_objectlock_configuration.objectlock `$CRN:meta:$bucketlocation:public`
+$ terraform import ibm_cos_bucket_object_lock_configuration.objectlock `$CRN:meta:$bucketlocation:public`
 
 ```
 
@@ -144,6 +144,6 @@ $ terraform import ibm_cos_bucket_objectlock_configuration.objectlock `$CRN:meta
 
 ```
 
-$ terraform import ibm_cos_bucket_objectlock_configuration.objectlock crn:v1:bluemix:public:cloud-object-storage:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3:bucket:mybucketname:meta:us-south:public
+$ terraform import ibm_cos_bucket_object_lock_configuration.objectlock crn:v1:bluemix:public:cloud-object-storage:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3:bucket:mybucketname:meta:us-south:public
 
 ```
