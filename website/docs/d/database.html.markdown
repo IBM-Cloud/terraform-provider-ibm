@@ -47,7 +47,6 @@ In addition to all argument references list, you can access the following attrib
 - `platform_options`-  (String) The CRN of key protect key.
    
    Nested scheme for `platform_options`:
-   - `key_protect_key_id`-  **Deprecated** - (String) The CRN of key protect key. - replaced by `disk_encryption_key_crn`
    - `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
    - `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
    
