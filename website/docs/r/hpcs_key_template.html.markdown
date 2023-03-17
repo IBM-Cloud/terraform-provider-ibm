@@ -64,7 +64,7 @@ Nested scheme for **keystores**:
 	* `group` - (Required, String) Which keystore group to distribute the key to.
 	  * Constraints: The maximum length is `200` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9-_ ]+$/`.
 	* `type` - (Required, String) Type of keystore.
-	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`.
+	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`, `google_kms`.
 * `name` - (Required, String) Name of the template, it will be referenced when creating managed keys.
   * Constraints: The maximum length is `30` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9-]*$/`.
 * `uko_vault` - (Required, String) The UUID of the Vault in which the update is to take place.

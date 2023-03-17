@@ -53,7 +53,7 @@ Nested scheme for **key**:
 	* `activation_date` - (String) Key activation date can be provided as a period definition (e.g. PY1 means 1 year).
 	  * Constraints: The maximum length is `100` characters. The minimum length is `3` characters. The value must match regular expression `/P^[0-9YMWD]+$/`.
 	* `algorithm` - (String) The algorithm of the key.
-	  * Constraints: Allowable values are: `aes`, `rsa`.
+	  * Constraints: Allowable values are: `aes`, `rsa`, `hmac`, `ec`.
 	* `expiration_date` - (String) Key expiration date can be provided as a period definition (e.g. PY1 means 1 year).
 	  * Constraints: The maximum length is `100` characters. The minimum length is `3` characters. The value must match regular expression `/P^[0-9YMWD]+$/`.
 	* `size` - (String) The size of the underlying cryptographic key or key pair. E.g. "256" for AES keys, or "2048" for RSA.
@@ -65,9 +65,9 @@ Nested scheme for **key**:
   * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 Nested scheme for **keystores**:
 	* `group` - (String) Which keystore group to distribute the key to.
-	  * Constraints: The maximum length is `200` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9-_ ]+$/`.
+	  * Constraints: The maximum length is `200` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9-_ ]+$/`.
 	* `type` - (String) Type of keystore.
-	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`.
+	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`, `google_kms`.
 
 * `name` - (String) Name of the key template.
   * Constraints: The maximum length is `30` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Z0-9-]+$/`.
@@ -84,7 +84,7 @@ Nested scheme for **vault**:
 	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `name` - (String) Name of the referenced vault.
-	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9#@!$% '_-]*$/`.
+	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9#@!$%'_-][A-Za-z0-9#@!$% '_-]*$/`.
 
 * `version` - (Integer) Version of the key template. Every time the key template is updated, the version will be updated automatically.
   * Constraints: The maximum value is `2147483647`. The minimum value is `1`.
