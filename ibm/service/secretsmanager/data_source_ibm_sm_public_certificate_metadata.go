@@ -253,16 +253,6 @@ func DataSourceIbmSmPublicCertificateMetadata() *schema.Resource {
 							Computed:    true,
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
-						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
-						},
-						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
-						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -539,12 +529,6 @@ func dataSourceIbmSmPublicCertificateMetadataRotationPolicyToMap(model secretsma
 		if model.AutoRotate != nil {
 			modelMap["auto_rotate"] = *model.AutoRotate
 		}
-		if model.Interval != nil {
-			modelMap["interval"] = *model.Interval
-		}
-		if model.Unit != nil {
-			modelMap["unit"] = *model.Unit
-		}
 		if model.RotateKeys != nil {
 			modelMap["rotate_keys"] = *model.RotateKeys
 		}
@@ -559,12 +543,6 @@ func dataSourceIbmSmPublicCertificateMetadataCommonRotationPolicyToMap(model *se
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
 	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
 	return modelMap, nil
 }
 
@@ -572,12 +550,6 @@ func dataSourceIbmSmPublicCertificateMetadataPublicCertificateRotationPolicyToMa
 	modelMap := make(map[string]interface{})
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
-	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
 	}
 	if model.RotateKeys != nil {
 		modelMap["rotate_keys"] = *model.RotateKeys
