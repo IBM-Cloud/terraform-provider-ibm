@@ -240,6 +240,8 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 			"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
 		resource.TestCheckResourceAttr(
 			"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "taints.#", "1"),
 	}
 	if acc.CrkID != "" {
 		testChecks = append(testChecks,
