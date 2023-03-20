@@ -197,11 +197,6 @@ variable "sm_iam_credentials_secret_access_groups" {
   type        = list(string)
   default     = [ "AccessGroupId-45884031-54be-4dd7-86ff-112511e92699" ]
 }
-variable "sm_iam_credentials_secret_service_id" {
-  description = "The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter."
-  type        = string
-  default     = "ServiceId-bb4ccc31-bd31-493a-bb58-52ec399800be"
-}
 variable "sm_iam_credentials_secret_reuse_api_key" {
   description = "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed."
   type        = bool

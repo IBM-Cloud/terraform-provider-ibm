@@ -16,7 +16,7 @@ Provides a read-only data source for a secret group. You can then reference the 
 data "ibm_sm_secret_group" "secret_group" {
   instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
   region        = "us-south"
-  secret_grouop_id = ibm_sm_secret_group.sm_secret_group_instance.secretGroup_id
+  secret_group_id = ibm_sm_secret_group.sm_secret_group_instance.secret_group_id
 }
 ```
 
@@ -28,7 +28,7 @@ Review the argument reference that you can specify for your data source.
 * `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
   * Constraints: Allowable values are: `private`, `public`.
-* `secret_grouop_id` - (Required, String) The ID of the secret group.
+* `secret_group_id` - (Required, String) The ID of the secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 
 ## Attribute Reference
