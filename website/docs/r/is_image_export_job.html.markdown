@@ -8,7 +8,7 @@ subcategory: "VPC infrastructure"
 
 # ibm_is_image_export_job
 
-Provides a resource for ImageExportJob. This allows ImageExportJob to be created, updated and deleted.
+Provides a resource for ImageExportJob. This allows ImageExportJob to be created, updated and deleted. For more information about VPC custom images export, see [IBM Cloud Docs: Virtual Private Cloud - Exporting a custom image to IBM Cloud Object Storage](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-custom-images&interface=ui#custom-image-export-to-cos).
 
 ~> **Note**
   Image export jobs are asynchronous. Time taken to export the image depends on its size. Hence the resource will not wait for job status to be completed. It is recommended to check the status of the export job by refreshing this resource or the datasources `ibm_is_image_export_job` and `ibm_is_image_export_jobs` and recreate the export resource if it is failed.
@@ -18,14 +18,14 @@ Provides a resource for ImageExportJob. This allows ImageExportJob to be created
 ```hcl
 resource "ibm_is_image" "example" {
   name               = "example-image"
-  href               = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+  href               = "cos://us-south/custom-image-vpc-bucket/customImage-0.vhd"
   operating_system   = "ubuntu-16-04-amd64"
   encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
   encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
 }
 resource "ibm_is_image_export_job" "example" {
-  image = ibm_is_image.example.id
-  name = "my-image-export"
+  image               = ibm_is_image.example.id
+  name                = "my-image-export"
   storage_bucket_name = "bucket-27200-lwx4cfvcue"
 }
 ```

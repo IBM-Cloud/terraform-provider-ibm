@@ -8,19 +8,26 @@ subcategory: "VPC infrastructure"
 
 # ibm_is_image_export_job
 
-Provides a read-only data source for ImageExportJob. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ImageExportJob. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information about VPC custom images export, see [IBM Cloud Docs: Virtual Private Cloud - Exporting a custom image to IBM Cloud Object Storage](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-custom-images&interface=ui#custom-image-export-to-cos).
 
 ## Example Usage
 
 ```hcl
+resource "ibm_is_image" "example" {
+  name               = "example-image"
+  href               = "cos://us-south/custom-image-vpc-bucket/customImage-0.vhd"
+  operating_system   = "ubuntu-16-04-amd64"
+  encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+  encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+}
 resource "ibm_is_image_export_job" "example" {
-  image = "d7bec597-4726-451f-8a63-e62e6f121c32c"
-  name = "my-image-export"
+  image          = ibm_is_image.example.id
+  name           = "my-image-export"
   storage_bucket = "bucket-27200-lwx4cfvcue"
 }
 data "ibm_is_image_export_job" "example" {
   image_export_job = ibm_is_image_export_job.example.image_export_job
-  image = ibm_is_image_export_job.is_image_export.image
+  image            = ibm_is_image_export_job.is_image_export.image
 }
 ```
 
