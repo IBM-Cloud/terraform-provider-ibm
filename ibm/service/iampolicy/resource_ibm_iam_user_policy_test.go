@@ -412,6 +412,52 @@ func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Once(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_With_Resource_Attributes(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyTimeBasedWithResourceAttributes(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "time-based-conditions:once"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.0.key", "{{environment.attributes.current_date_time}}"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Once Time-Based Conditions Creation for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyResourceAttributes(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMUserPolicyUpdateConditions(),
+				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -891,6 +937,38 @@ func testAccCheckIBMIAMUserPolicyTimeBasedOnce() string {
 			rule_operator = "and"
 		  pattern = "time-based-conditions:once"
 			description = "IAM User Policy Once Time-Based Conditions Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyTimeBasedWithResourceAttributes() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+			resource_attributes {
+				name     = "resource"
+				value    = "test*"
+				operator = "stringMatch"
+			}
+			resource_attributes {
+				name     = "serviceName"
+				value    = "messagehub"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeGreaterThanOrEquals"
+				value = ["2022-10-01T12:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeLessThanOrEquals"
+				value = ["2022-10-31T12:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:once"
+			description = "IAM User Policy Once Time-Based Conditions with Resource Attributes Creation for test scenario"
 		}
 	`, acc.IAMUser)
 }

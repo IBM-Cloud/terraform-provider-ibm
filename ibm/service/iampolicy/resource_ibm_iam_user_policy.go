@@ -581,6 +581,11 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 				return fmt.Errorf("[ERROR] Error updating user policy: %s, %s", err, resp)
 			}
 		} else {
+			_, ruleConditionsDefined := d.GetOk("rule_conditions")
+			_, patternDefined := d.GetOk("pattern")
+			if ruleConditionsDefined || patternDefined {
+				return fmt.Errorf("Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern.")
+			}
 			createPolicyOptions, err := flex.GeneratePolicyOptions(d, meta)
 			if err != nil {
 				return err

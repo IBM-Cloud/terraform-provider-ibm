@@ -5,6 +5,7 @@ package iampolicy_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -405,6 +406,31 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Once(t *testin
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "rule_conditions.0.key", "{{environment.attributes.current_date_time}}"),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "description", "IAM Trusted Profile Policy Once Time-Based Conditions Creation for test scenario"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMTrustedProfilePolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyResourceAttributes(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyUpdateConditions(name),
+				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
 			},
 		},
 	})

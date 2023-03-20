@@ -210,7 +210,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ```
 
 ### Trusted Profile Policy by using service and rule_conditions
-Rule conditions can be used in conjunction with `pattern` and `rule_operator` to implement trusted profile policies with time-based conditions. For information see [Limiting access with time-based conditions](https://cloud.ibm.com/docs/account?topic=account-iam-time-based&interface=ui).
+`rule_conditions` can be used in conjunction with `pattern` and `rule_operator` to implement trusted profile policies with time-based conditions. For information see [Limiting access with time-based conditions](https://cloud.ibm.com/docs/account?topic=account-iam-time-based&interface=ui). **Note** Currently, a policy resource created without `rule_conditions`, `pattern`, and `rule_operator` cannot be updated including those conditions on update.
 
 ```terraform
 resource "ibm_iam_trusted_profile" "profile_id" {

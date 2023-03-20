@@ -5,6 +5,7 @@ package iampolicy_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -351,7 +352,7 @@ func TestAccIBMIAMServicePolicy_With_Time_Based_Conditions_Weekly_Custom(t *test
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.#", "3"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.2.key", "{{environment.attributes.day_of_week}}"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.2.value.#", "5"),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Trusted Profile Policy Custom Hours Creation for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Profile Policy Custom Hours Creation for test scenario"),
 				),
 			},
 			{
@@ -361,7 +362,7 @@ func TestAccIBMIAMServicePolicy_With_Time_Based_Conditions_Weekly_Custom(t *test
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "pattern", "time-based-conditions:weekly:custom-hours"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.2.value.#", "4"),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Trusted Profile Policy Custom Hours Update for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Profile Policy Custom Hours Update for test scenario"),
 				),
 			},
 		},
@@ -387,7 +388,7 @@ func TestAccIBMIAMServicePolicy_With_Time_Based_Conditions_Weekly_All_Day(t *tes
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.0.key", "{{environment.attributes.day_of_week}}"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.0.value.#", "5"),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Trusted Profile Policy All Day Weekly Time-Based Conditions Creation for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Profile Policy All Day Weekly Time-Based Conditions Creation for test scenario"),
 				),
 			},
 		},
@@ -412,8 +413,33 @@ func TestAccIBMIAMServicePolicy_With_Time_Based_Conditions_Once(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "pattern", "time-based-conditions:once"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "rule_conditions.0.key", "{{environment.attributes.current_date_time}}"),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Trusted Profile Policy Once Time-Based Conditions Creation for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Profile Policy Once Time-Based Conditions Creation for test scenario"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMServicePolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyResourceAttributes(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMServicePolicyUpdateConditions(name),
+				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
 			},
 		},
 	})
@@ -867,7 +893,7 @@ func testAccCheckIBMIAMServicePolicyWeeklyCustomHours(name string) string {
 			}
 			rule_operator = "and"
 		  pattern = "time-based-conditions:weekly:custom-hours"
-			description = "IAM Trusted Profile Policy Custom Hours Creation for test scenario"
+			description = "IAM Service Profile Policy Custom Hours Creation for test scenario"
 		}
 	`, name)
 }
@@ -901,7 +927,7 @@ func testAccCheckIBMIAMServicePolicyUpdateConditions(name string) string {
 			}
 			rule_operator = "and"
 		  pattern = "time-based-conditions:weekly:custom-hours"
-			description = "IAM Trusted Profile Policy Custom Hours Update for test scenario"
+			description = "IAM Service Profile Policy Custom Hours Update for test scenario"
 		}
 	`, name)
 }
@@ -925,7 +951,7 @@ func testAccCheckIBMIAMServicePolicyWeeklyAllDay(name string) string {
 			}
 
 		  pattern = "time-based-conditions:weekly:all-day"
-			description = "IAM Trusted Profile Policy All Day Weekly Time-Based Conditions Creation for test scenario"
+			description = "IAM Service Profile Policy All Day Weekly Time-Based Conditions Creation for test scenario"
 		}
 	`, name)
 }
@@ -954,7 +980,7 @@ func testAccCheckIBMIAMServicePolicyTimeBasedOnce(name string) string {
 			}
 			rule_operator = "and"
 		  pattern = "time-based-conditions:once"
-			description = "IAM Trusted Profile Policy Once Time-Based Conditions Creation for test scenario"
+			description = "IAM Service Profile Policy Once Time-Based Conditions Creation for test scenario"
 		}
 	`, name)
 }

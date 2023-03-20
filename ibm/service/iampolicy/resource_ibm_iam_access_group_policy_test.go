@@ -5,6 +5,7 @@ package iampolicy_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -390,7 +391,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_Custom(t *
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.#", "3"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.2.key", "{{environment.attributes.day_of_week}}"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.2.value.#", "5"),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Trusted Profile Policy Custom Hours Creation for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Custom Hours Creation for test scenario"),
 				),
 			},
 			{
@@ -400,7 +401,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_Custom(t *
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "time-based-conditions:weekly:custom-hours"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.2.value.#", "4"),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Trusted Profile Policy Custom Hours Update for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Custom Hours Update for test scenario"),
 				),
 			},
 		},
@@ -426,7 +427,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_All_Day(t 
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.0.key", "{{environment.attributes.day_of_week}}"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.0.value.#", "5"),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Trusted Profile Policy All Day Weekly Time-Based Conditions Creation for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy All Day Weekly Time-Based Conditions Creation for test scenario"),
 				),
 			},
 		},
@@ -451,8 +452,33 @@ func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Once(t *testing.T
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "time-based-conditions:once"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.#", "2"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.0.key", "{{environment.attributes.current_date_time}}"),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Trusted Profile Policy Once Time-Based Conditions Creation for test scenario"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Once Time-Based Conditions Creation for test scenario"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyResourceAttributes(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateConditions(name),
+				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
 			},
 		},
 	})
@@ -944,7 +970,7 @@ func testAccCheckIBMIAMAccessGroupPolicyWeeklyCustomHours(name string) string {
 			}
 			rule_operator = "and"
 		  pattern = "time-based-conditions:weekly:custom-hours"
-			description = "IAM Trusted Profile Policy Custom Hours Creation for test scenario"
+			description = "IAM Access Group Policy Custom Hours Creation for test scenario"
 		}
 	`, name)
 }
@@ -978,7 +1004,7 @@ func testAccCheckIBMIAMAccessGroupPolicyUpdateConditions(name string) string {
 			}
 			rule_operator = "and"
 		  pattern = "time-based-conditions:weekly:custom-hours"
-			description = "IAM Trusted Profile Policy Custom Hours Update for test scenario"
+			description = "IAM Access Group Policy Custom Hours Update for test scenario"
 		}
 	`, name)
 }
@@ -1002,7 +1028,7 @@ func testAccCheckIBMIAMAccessGroupPolicyWeeklyAllDay(name string) string {
 			}
 
 		  pattern = "time-based-conditions:weekly:all-day"
-			description = "IAM Trusted Profile Policy All Day Weekly Time-Based Conditions Creation for test scenario"
+			description = "IAM Access Group Policy All Day Weekly Time-Based Conditions Creation for test scenario"
 		}
 	`, name)
 }
@@ -1031,7 +1057,7 @@ func testAccCheckIBMIAMAccessGroupPolicyTimeBasedOnce(name string) string {
 			}
 			rule_operator = "and"
 		  pattern = "time-based-conditions:once"
-			description = "IAM Trusted Profile Policy Once Time-Based Conditions Creation for test scenario"
+			description = "IAM Access Group Policy Once Time-Based Conditions Creation for test scenario"
 		}
 	`, name)
 }
