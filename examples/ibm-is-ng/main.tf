@@ -1199,17 +1199,23 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 resource "ibm_is_vpc" "vpc" {
   name = "my-vpc"
 }
-resource "ibm_is_share" "is_share" {
-  name           = "myshare"
-  profile        = "tier-3iops"
-  resource_group = data.ibm_resource_group.default.id
-  size           = 32000
-  share_target_prototype {
-    vpc = ibm_is_vpc.vpc.id
-  }
-  zone        = "us-south-2"
-  tags        = ["tag1", "tag2"]
-  access_tags = ["accesstag1", "accesstag2"]
+resource "ibm_is_share" "share" {
+  zone = "us-south-1"
+  size = 30000
+  name = "my-share"
+  profile = "tier-3iops"
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share" "sharereplica" {
+  zone = "us-south-2"
+  name = "my-share-replica"
+  profile = "tier-3iops"
+  replication_cron_spec = "0 */5 * * *"
+  source_share = ibm_is_share.share.id
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
 }
 
 resource "ibm_is_share_target" "is_share_target" {
