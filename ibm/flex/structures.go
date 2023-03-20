@@ -26,6 +26,7 @@ import (
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
@@ -892,6 +893,58 @@ func ReplicationRuleGet(in *s3.ReplicationConfiguration) []map[string]interface{
 	return rules
 }
 
+func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]interface{} {
+	configuration := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		objectLockConfig := make(map[string]interface{})
+
+		if in.ObjectLockEnabled != nil {
+			objectLockConfig["object_lock_enabled"] = s3.ObjectLockEnabledEnabled
+		}
+		if in.Rule != nil {
+			objectLockConfig["object_lock_rule"] = ObjectLockRuleGet(in.Rule)
+		}
+
+		configuration = append(configuration, objectLockConfig)
+	}
+	return configuration
+}
+func ObjectLockRuleGet(in *s3.ObjectLockRule) []map[string]interface{} {
+	objectLockRule := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		objectLockConfig := make(map[string]interface{})
+
+		if in.DefaultRetention != nil {
+			objectLockConfig["default_retention"] = ObjectLockDefaultRetentionGet(in.DefaultRetention)
+		}
+
+		objectLockRule = append(objectLockRule, objectLockConfig)
+	}
+	return objectLockRule
+}
+
+func ObjectLockDefaultRetentionGet(in *s3.DefaultRetention) []map[string]interface{} {
+	defaultRetention := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		defaultRetentionMap := make(map[string]interface{})
+
+		if in.Days != nil {
+			defaultRetentionMap["days"] = int(aws.Int64Value(in.Days))
+		}
+
+		if in.Mode != nil {
+			defaultRetentionMap["mode"] = aws.StringValue(in.Mode)
+		}
+
+		if in.Years != nil {
+			defaultRetentionMap["years"] = int(aws.Int64Value(in.Years))
+		}
+
+		defaultRetention = append(defaultRetention, defaultRetentionMap)
+
+	}
+	return defaultRetention
+}
 func FlattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
