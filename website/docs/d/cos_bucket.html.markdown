@@ -95,6 +95,12 @@ resource "ibm_cos_bucket" "smart-us-south" {
 }
 
 ```
+
+# ibm_cos_objectlock_configuration
+
+Retrive an IBM Cloud Object Storage bucket with objectlock enabled and objectlock configuration set on the bucket.It allows objectlock configuration to be updated or deleted.But it does not allow to disable objectlock as objectloock cannot be disabled once enabled on a bucket.
+
+
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
@@ -105,6 +111,7 @@ Review the argument references that you can specify for your data source.
 - `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
 - `storage_class`- (Optional, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `smart` for `standard` and `lite` COS plans, `onerate_active` for `cos-one-rate-plan` COS instance.
 - `satellite_location_id` - (Optional, String) satellite location id. Provided by end users.
+- `object_lock` - (Optional, String) Specifies Objectlock status.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
@@ -178,6 +185,22 @@ In addition to all argument reference list, you can access the following attribu
   - `priority`- (Int) A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority
   - `deletemarker_replication_status`-  (Bool) Specifies whether Object storage replicates delete markers. Specify true for Enabling it  or false for Disabling it.
   - `destination_bucket_crn`-  (String) The CRN of your destination bucket that you want to replicate to.
+
+- `object_lock_configuration`- (Required, List) Nested block have the following structure:
+  
+  Nested scheme for `object_lock_configuration`:
+  - `object_lock_enabled`- (String) Indicates whether this bucket has an Object Lock configuration enabled. Defaults to Enabled. Valid values: Enabled.
+  - `object_lock_rule`- (List) Objectlockrule has following arguement:
+  
+  Nested scheme for `object_lock_rule`:
+  - `default_retention`- (Required) Configuration block for specifying the default Object Lock retention settings for new objects placed in the specified bucket
+  Nested scheme for `default_retention`:
+  - `mode`- (String)  Default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Supported values: COMPLIANCE.
+  - `days`- (Int) Specifies number of days after which the object can be deleted from the COS bucket.
+  - `years`- (Int) Specifies number of years after which the object can be deleted from the COS bucket.
+**Note:**
+
+ Either days or years should be provided for default retention, both cannot be used simultaneoulsy.
 
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.

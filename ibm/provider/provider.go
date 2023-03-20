@@ -24,6 +24,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudant"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
@@ -462,6 +463,8 @@ func Provider() *schema.Provider {
 			"ibm_is_security_group_rules":            vpc.DataSourceIBMIsSecurityGroupRules(),
 			"ibm_is_security_group_target":           vpc.DataSourceIBMISSecurityGroupTarget(),
 			"ibm_is_security_group_targets":          vpc.DataSourceIBMISSecurityGroupTargets(),
+			"ibm_is_snapshot_clone":                  vpc.DataSourceSnapshotClone(),
+			"ibm_is_snapshot_clones":                 vpc.DataSourceSnapshotClones(),
 			"ibm_is_snapshot":                        vpc.DataSourceSnapshot(),
 			"ibm_is_snapshots":                       vpc.DataSourceSnapshots(),
 			"ibm_is_volume":                          vpc.DataSourceIBMISVolume(),
@@ -631,8 +634,37 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
 
 			// //Added for Secrets Manager
+			// V1 data sources:
 			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
 			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
+
+			// V2 data sources
+			"ibm_sm_secret_group":  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroup()),
+			"ibm_sm_secret_groups": secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroups()),
+			"ibm_sm_private_certificate_configuration_intermediate_ca":           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationIntermediateCA()),
+			"ibm_sm_private_certificate_configuration_root_ca":                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationRootCA()),
+			"ibm_sm_private_certificate_configuration_template":                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationTemplate()),
+			"ibm_sm_public_certificate_configuration_ca_lets_encrypt":            secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateConfigurationCALetsEncrypt()),
+			"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmConfigurationPublicCertificateDNSCis()),
+			"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructure()),
+			"ibm_sm_iam_credentials_configuration":                               secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsConfiguration()),
+			"ibm_sm_configurations":                                              secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmConfigurations()),
+			"ibm_sm_secrets":                                                     secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecrets()),
+			"ibm_sm_arbitrary_secret_metadata":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmArbitrarySecretMetadata()),
+			"ibm_sm_imported_certificate_metadata":                               secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmImportedCertificateMetadata()),
+			"ibm_sm_public_certificate_metadata":                                 secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateMetadata()),
+			"ibm_sm_private_certificate_metadata":                                secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateMetadata()),
+			"ibm_sm_iam_credentials_secret_metadata":                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecretMetadata()),
+			"ibm_sm_kv_secret_metadata":                                          secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecretMetadata()),
+			"ibm_sm_username_password_secret_metadata":                           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecretMetadata()),
+			"ibm_sm_arbitrary_secret":                                            secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmArbitrarySecret()),
+			"ibm_sm_imported_certificate":                                        secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmImportedCertificate()),
+			"ibm_sm_public_certificate":                                          secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificate()),
+			"ibm_sm_private_certificate":                                         secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificate()),
+			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecret()),
+			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecret()),
+			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecret()),
+			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
 			// //Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -745,6 +777,9 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMCdTektonPipelineProperty(),
 			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMCdTektonPipelineTrigger(),
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
+
+			// Added for Code Engine
+			"ibm_code_engine_project": codeengine.DataSourceIbmCodeEngineProject(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -860,6 +895,7 @@ func Provider() *schema.Provider {
 			"ibm_cos_bucket":                            cos.ResourceIBMCOSBucket(),
 			"ibm_cos_bucket_replication_rule":           cos.ResourceIBMCOSBucketReplicationConfiguration(),
 			"ibm_cos_bucket_object":                     cos.ResourceIBMCOSBucketObject(),
+			"ibm_cos_bucket_object_lock_configuration":  cos.ResourceIBMCOSBucketObjectlock(),
 			"ibm_dns_domain":                            classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":   classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                         classicinfrastructure.ResourceIBMDNSSecondary(),
@@ -1061,6 +1097,7 @@ func Provider() *schema.Provider {
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnection(),
+			"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionAction(),
 			"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilter(),
 			"ibm_tg_route_report":             transitgateway.ResourceIBMTransitGatewayRouteReport(),
 
@@ -1083,6 +1120,24 @@ func Provider() *schema.Provider {
 			"ibm_schematics_job":            schematics.ResourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.ResourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
+
+			// //Added for Secrets Manager
+			"ibm_sm_secret_group":                                                secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmSecretGroup()),
+			"ibm_sm_arbitrary_secret":                                            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmArbitrarySecret()),
+			"ibm_sm_imported_certificate":                                        secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmImportedCertificate()),
+			"ibm_sm_public_certificate":                                          secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificate()),
+			"ibm_sm_private_certificate":                                         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificate()),
+			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsSecret()),
+			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmUsernamePasswordSecret()),
+			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmKvSecret()),
+			"ibm_sm_public_certificate_configuration_ca_lets_encrypt":            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateConfigurationCALetsEncrypt()),
+			"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCis()),
+			"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructure()),
+			"ibm_sm_private_certificate_configuration_root_ca":                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationRootCA()),
+			"ibm_sm_private_certificate_configuration_intermediate_ca":           secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationIntermediateCA()),
+			"ibm_sm_private_certificate_configuration_template":                  secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationTemplate()),
+			"ibm_sm_iam_credentials_configuration":                               secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsConfiguration()),
+			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmEnRegistration()),
 
 			// //satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
@@ -1177,6 +1232,13 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMCdTektonPipelineProperty(),
 			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMCdTektonPipelineTrigger(),
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMCdTektonPipeline(),
+
+			// // Added for Code Engine
+			"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineApp(),
+			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1238,6 +1300,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_tg_gateway":                  transitgateway.ResourceIBMTGValidator(),
 				"ibm_app_config_feature":          appconfiguration.ResourceIBMAppConfigFeatureValidator(),
 				"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
+				"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
 				"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
 				"ibm_dl_virtual_connection":       directlink.ResourceIBMDLGatewayVCValidator(),
 				"ibm_dl_gateway":                  directlink.ResourceIBMDLGatewayValidator(),
@@ -1392,6 +1455,19 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_access_group_policy":    iampolicy.ResourceIBMIAMAccessGroupPolicyValidator(),
 				"ibm_iam_service_policy":         iampolicy.ResourceIBMIAMServicePolicyValidator(),
 				"ibm_iam_authorization_policy":   iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
+
+				// // Added for Secrets Manager
+				"ibm_sm_secret_group":                                                secretsmanager.ResourceIbmSmSecretGroupValidator(),
+				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
+				"ibm_sm_public_certificate_configuration_dns_cis":                    secretsmanager.ResourceIbmSmConfigurationPublicCertificateDNSCisValidator(),
+				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
+
+				// // Added for Code Engine
+				"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineAppValidator(),
+				"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuildValidator(),
+				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
+				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

@@ -65,8 +65,21 @@ resource "ibm_is_snapshot" "example" {
     delete = "15m"
   }
 }
-
 ```
+
+## Example usage (clones)
+```
+resource "ibm_is_snapshot" "example_clones" {
+  name            = "example-snapshot"
+  source_volume   = ibm_is_instance.example.volume_attachments[0].volume_id
+  clones          = ["us-south-1", "us-south-2"]
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    delete = "15m"
+  }
+}  
+ ``` 
 
 ## Timeouts
 The `ibm_is_snapshot` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -85,6 +98,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+- `clones` - (Optional, List) The list of zones to create a clone of this snapshot.
 - `name` - (Optional, String) The name of the snapshot.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID where the snapshot is to be created
 - `source_volume` - (Required, Forces new resource, String) The unique identifier for the volume for which snapshot is to be created. 

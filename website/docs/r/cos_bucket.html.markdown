@@ -398,6 +398,34 @@ resource "ibm_cos_bucket" "cos_bucket_onerate" {
 
 
 ```
+# ibm_cos_objectlock_configuration
+
+COS objectlock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legalhold for an object.
+
+## Example usage
+
+```terraform
+data "ibm_resource_group" "cos_group" {
+  name = "cos-resource-group"
+}
+
+resource "ibm_resource_instance" "cos_instance" {
+  name              = "cos-instance"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+}
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name          = "a-standard-bucket"
+  resource_instance_id = data.ibm_resource_instance.cos_instance.id
+  bucket_region        = "us-south"
+  storage_class        = "Standard"
+  object_versioning {
+    enable  = true
+  }
+  object_lock = true
+}
+```
 
 
 ## Argument reference
@@ -501,7 +529,12 @@ Review the argument references that you can specify for your resource.
 - `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
 - `storage_class` - (Optional, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold` and `smart` for `standard` and `lite` COS plans, `onerate_active` for `cos-one-rate-plan` COS plan.For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).`storage_class` should not be used with Satellite location id.
 - `satellite_location_id` - (Optional, String) satellite location id. Provided by end users.
+- `object_lock` - (Optional, Bool) Enables objectlock feature on a COS bucket.
 
+    **Note:**
+     - To enable objectlock on a bucket , object_versioning should be enabled.
+
+  
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
