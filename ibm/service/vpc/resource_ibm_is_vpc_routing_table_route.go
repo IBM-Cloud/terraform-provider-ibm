@@ -248,7 +248,8 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 		createVpcRoutingTableRouteOptions.SetName(routeName)
 	}
 
-	if priority, ok := d.GetOk("priority"); ok {
+	// Using GetOkExists to detet 0 as the possible values.
+	if priority, ok := d.GetOkExists("priority"); ok {
 		routePriority := priority.(int)
 		createVpcRoutingTableRouteOptions.SetPriority(int64(routePriority))
 	}
