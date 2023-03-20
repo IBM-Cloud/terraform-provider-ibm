@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : is_share_replica_operations"
 description: |-
   Manages Share replica operations fallback and split.
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_share_target

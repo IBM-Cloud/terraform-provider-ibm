@@ -4,7 +4,7 @@ page_title: "IBM : is_share_targets"
 sidebar_current: "docs-ibm-datasource-is-share-targets"
 description: |-
   Get information about ShareTargetCollection
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_share_targets

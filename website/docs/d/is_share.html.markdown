@@ -4,7 +4,7 @@ page_title: "IBM : is_share"
 sidebar_current: "docs-ibm-datasource-is-share"
 description: |-
   Get information about Share
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_share

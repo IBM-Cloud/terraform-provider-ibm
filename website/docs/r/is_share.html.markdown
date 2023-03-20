@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : is_share"
 description: |-
   Manages Share.
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_share

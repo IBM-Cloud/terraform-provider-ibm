@@ -4,7 +4,7 @@ page_title: "IBM : is_share_profile"
 sidebar_current: "docs-ibm-datasource-is-share-profile"
 description: |-
   Get information about ShareProfile
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_share_profile

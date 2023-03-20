@@ -4,7 +4,7 @@ page_title: "IBM : is_shares"
 sidebar_current: "docs-ibm-datasource-is-shares"
 description: |-
   Get information about ShareCollection
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_shares
