@@ -284,6 +284,7 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 
 	d.Set(rID, *route.ID)
 	d.Set(rName, *route.Name)
+	d.Set(rDestination, *route.Destination)
 	if route.NextHop != nil {
 		nexthop := route.NextHop.(*vpcv1.RouteNextHop)
 		if nexthop.Address != nil {
