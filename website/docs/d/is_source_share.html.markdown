@@ -22,13 +22,15 @@ resource "ibm_is_share" "example" {
   profile = "tier-3iops"
   zone    = "us-south-2"
 }
-
-data "ibm_is_share" "example" {
-  share = ibm_is_share.example.id
+resource "ibm_is_share" "example1" {
+  zone                  = "us-south-3"
+  source_share          = ibm_is_share.example.id
+  name                  = "my-replica1"
+  profile               = "tier-3iops"
+  replication_cron_spec = "0 */5 * * *"
 }
-
-data "ibm_is_share" "example1" {
-  name = ibm_is_share.example.name
+data "ibm_is_source_share" "example" {
+  share_replica = ibm_is_share.example1.id
 }
 ```
 
@@ -36,8 +38,8 @@ data "ibm_is_share" "example1" {
 
 The following arguments are supported:
 
-- `share` - (Optional, String) The file share identifier.
-- `name` - (Optional, String) The file share name
+- `share_replica` - (Optional, String) The file share identifier.
+
 **Note** One of the aurgument is mandatory
 
 ## Attribute Reference

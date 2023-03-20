@@ -1,7 +1,6 @@
 ---
 layout: "ibm"
 page_title: "IBM : is_shares"
-sidebar_current: "docs-ibm-datasource-is-shares"
 description: |-
   Get information about ShareCollection
 subcategory: "VPC infrastructure"

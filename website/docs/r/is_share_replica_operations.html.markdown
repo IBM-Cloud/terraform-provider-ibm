@@ -36,10 +36,10 @@ resource "ibm_is_share_replica_operations" "test" {
 
 The following arguments are supported:
 
-* `share_replica` - (Required, string) The file share identifier.
-* `fallback_policy` - (Optional, string) The action to take if the failover request is accepted but cannot be performed or times out. Accepted values are **split**, **fail**
-* `timeout` - (Optional, string) The failover timeout in seconds. Required with `fallback_policy`
-* `split_share` - (Boolean, string) If set to true the replication relationship between source share and replica will be removed.
+- `share_replica` - (Required, string) The file share identifier.
+- `fallback_policy` - (Optional, string) The action to take if the failover request is accepted but cannot be performed or times out. Accepted values are **split**, **fail**
+- `timeout` - (Optional, string) The failover timeout in seconds. Required with `fallback_policy`
+- `split_share` - (Boolean, string) If set to true the replication relationship between source share and replica will be removed.
 
 ~>**Note**
 
@@ -49,4 +49,4 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the Share.
+- `id` - The unique identifier of the Share.

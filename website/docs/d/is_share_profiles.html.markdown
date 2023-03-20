@@ -1,7 +1,6 @@
 ---
 layout: "ibm"
 page_title: "IBM : is_share_profiles"
-sidebar_current: "docs-ibm-datasource-is-share-profiles"
 description: |-
   Get information about ShareProfileCollection
 subcategory: "VPC infrastructure"

@@ -1,7 +1,6 @@
 ---
 layout: "ibm"
 page_title: "IBM : is_share_target"
-sidebar_current: "docs-ibm-datasource-is-share-target"
 description: |-
   Get information about ShareTarget
 subcategory: "VPC infrastructure"
