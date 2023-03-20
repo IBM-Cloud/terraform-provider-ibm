@@ -44,7 +44,7 @@ Nested scheme for **parameters**:
 	* `repository_name` - (Optional, String) The name of your Artifactory repository where your docker images are located.
 	* `repository_url` - (Optional, String) The URL of your Artifactory repository where your docker images are located.
 	* `snapshot_url` - (Optional, String) The URL for your Artifactory snapshot repository.
-	* `token` - (Optional, String) The Identity Token or API key for your Artifactory repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
+	* `token` - (Optional, String) The Access token for your Artifactory repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `type` - (Required, String) The type of repository for your Artifactory integration.
 	  * Constraints: Allowable values are: `npm`, `maven`, `docker`.
 	* `user_id` - (Optional, String) The User ID or email for your Artifactory repository.
