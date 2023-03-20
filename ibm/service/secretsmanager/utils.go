@@ -47,9 +47,9 @@ func getClientWithInstanceEndpoint(originalClient *secretsmanagerv2.SecretsManag
 	}
 	var endpoint string
 	if endpointType == "private" {
-		endpoint = fmt.Sprintf("https://%s.private.%s.secrets-manager.%s/api", instanceId, region, domain)
+		endpoint = fmt.Sprintf("https://%s.private.%s.secrets-manager.%s", instanceId, region, domain)
 	} else {
-		endpoint = fmt.Sprintf("https://%s.%s.secrets-manager.%s/api", instanceId, region, domain)
+		endpoint = fmt.Sprintf("https://%s.%s.secrets-manager.%s", instanceId, region, domain)
 	}
 
 	// clone the client and set endpoint

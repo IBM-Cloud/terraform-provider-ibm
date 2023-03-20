@@ -29,7 +29,6 @@ resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
   secret_group_id = "default"
   service_id = "ServiceId-bb4ccc31-bd31-493a-bb58-52ec399800be"
   ttl = "30m"
-  reuse_api_key = false
 }
 ```
 
@@ -37,6 +36,10 @@ resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
 * `access_groups` - (Optional, Forces new resource, List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
   * Constraints: The list items must match regular expression `/^AccessGroupId-[a-z0-9-]+[a-z0-9]$/`. The maximum length is `10` items. The minimum length is `1` item.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
@@ -46,7 +49,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
 * `name` - (Required, String) The human-readable name of your secret.
     * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
-* `reuse_api_key` - (Optional, Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.
+* `reuse_api_key` - (Optional, Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. Must be set to `true` for IAM credentials secrets managed by Terraform.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
 	* `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
@@ -67,7 +70,7 @@ Nested scheme for **rotation**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `secret_id` - The unique identifier of the IAMCredentialsSecret.
-* `api_key` - (String) The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.
+* `api_key` - (String) The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.
   * Constraints: The maximum length is `60` characters. The minimum length is `5` characters. The value must match regular expression `/^(?:[A-Za-z0-9_\\-]{4})*(?:[A-Za-z0-9_\\-]{2}==|[A-Za-z0-9_\\-]{3}=)?$/`.
 * `api_key_id` - (String) The ID of the API key that is generated for this secret.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.

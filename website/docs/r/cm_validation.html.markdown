@@ -35,10 +35,12 @@ Review the argument reference that you can specify for your resource.
 * `x_auth_refresh_token` - (Required, Sensitive, String) Authentication token used to submit validation job.
 * `region` - (Optional, Forces new resource, String) Validation region.
 * `override_values` - (Optional, Forces new resource, Map) Map of override values to be used in validation.
+* `environment_variables` - (List) List of environment variables to pass to Schematics.
 Nested scheme for **environment_variables**:
 	* `name` - (Optional, String) Name of the environment variable.
 	* `value` - (Optional, String) Value of the environment variable.
 	* `secure` - (Optional, Bool) If the environment variablel should be secure.
+* `schematics` - (List) Other values to pass to Schematics.
 Nested scheme for **schematics**:
 	* `name` - (Optional, String) Name for the schematics workspace.
 	* `description` - (Optional, String) Description for the schematics workspace.
@@ -57,10 +59,12 @@ In addition to all argument references listed, you can access the following attr
 * `x_auth_refresh_token` - (String) Authentication token used to submit validation job.
 * `region` - (String) Validation region.
 * `override_values` - (Map) Map of override values to be used in validation.
+* `environment_variables` - (List) List of environment variables to pass to Schematics.
 Nested scheme for **environment_variables**:
 	* `name` - (String) Name of the environment variable.
 	* `value` - (String) Value of the environment variable.
 	* `secure` - (Bool) If the environment variablel should be secure.
+* `schematics` - (List) Other values to pass to Schematics.
 Nested scheme for **schematics**:
 	* `name` - (String) Name for the schematics workspace.
 	* `description` - (String) Description for the schematics workspace.

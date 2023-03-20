@@ -63,6 +63,7 @@ var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var ISZoneName3 string
 var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
@@ -173,6 +174,7 @@ var Image_operating_system string
 
 // Transit Gateway cross account
 var Tg_cross_network_account_id string
+var Tg_cross_network_account_api_key string
 var Tg_cross_network_id string
 
 // Enterprise Management
@@ -241,6 +243,11 @@ var IBM_AccountID_REPL string
 var IesApiKey string
 var IngestionKey string
 var COSApiKey string
+
+// For Code Engine
+
+var CeResourceGroupID string
+var CeProjectId string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -508,6 +515,12 @@ func init() {
 	if ISZoneName2 == "" {
 		ISZoneName2 = "us-south-2"
 		fmt.Println("[INFO] Set the environment variable SL_ZONE_2 for testing ibm_is_zone datasource else it is set to default value 'us-south-2'")
+	}
+
+	ISZoneName3 = os.Getenv("SL_ZONE_3")
+	if ISZoneName3 == "" {
+		ISZoneName3 = "us-south-3"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE_3 for testing ibm_is_zone datasource else it is set to default value 'us-south-3'")
 	}
 
 	ISCIDR = os.Getenv("SL_CIDR")
@@ -991,6 +1004,10 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
+	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
+	if Tg_cross_network_account_api_key == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_API_KEY for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
 	Tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
 	if Tg_cross_network_account_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
@@ -1289,6 +1306,19 @@ func init() {
 		IesApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
+
+	CeResourceGroupID = os.Getenv("IBM_CODE_ENGINE_RESOURCE_GROUP_ID")
+	if CeResourceGroupID == "" {
+		CeResourceGroupID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_GROUP_ID with the resource group for Code Engine")
+	}
+
+	CeProjectId = os.Getenv("IBM_CODE_ENGINE_PROJECT_INSTANCE_ID")
+	if CeProjectId == "" {
+		CeProjectId = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_PROJECT_INSTANCE_ID with the ID of a Code Engine project instance")
+	}
+
 }
 
 var TestAccProviders map[string]*schema.Provider
@@ -1416,5 +1446,15 @@ func TestAccPreCheckEncryptedImage(t *testing.T) {
 	}
 	if IsImageEncryptionKey == "" {
 		t.Fatal("IS_IMAGE_ENCRYPTION_KEY must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckCodeEngine(t *testing.T) {
+	TestAccPreCheck(t)
+	if CeResourceGroupID == "" {
+		t.Fatal("IBM_CODE_ENGINE_RESOURCE_GROUP_ID must be set for acceptance tests")
+	}
+	if CeProjectId == "" {
+		t.Fatal("IBM_CODE_ENGINE_PROJECT_INSTANCE_ID must be set for acceptance tests")
 	}
 }

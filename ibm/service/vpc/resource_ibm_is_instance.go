@@ -1126,7 +1126,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -1511,7 +1511,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -1894,7 +1894,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -2520,7 +2520,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
