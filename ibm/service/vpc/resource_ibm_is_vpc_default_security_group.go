@@ -158,9 +158,7 @@ func ResourceIBMISVPCDefaultSecurityGroup() *schema.Resource {
 
 			isSecurityGroupResourceGroup: {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "Resource Group ID",
 			},
 
