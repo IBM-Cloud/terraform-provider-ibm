@@ -143,6 +143,13 @@ func ResourceIBMCmValidation() *schema.Resource {
 				Computed:    true,
 				Description: "Any message needing to be conveyed as part of the validation job.",
 			},
+			"x_auth_refresh_token": &schema.Schema{
+				Deprecated:  "This argument is deprecated because it is now retrieved automatically.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Authentication token used to submit validation job.",
+			},
 			"revalidate_if_validated": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
