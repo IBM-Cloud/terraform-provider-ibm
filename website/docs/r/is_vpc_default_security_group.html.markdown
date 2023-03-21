@@ -53,7 +53,17 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `name` - (Optional, String) The security group name.
-- `resource_group` - (Optional, String) The resource group ID where the security group to be created.
+- `rules` - (Optional, List of Objects) A nested block describes the rules of this security group. Nested `rules` blocks have the following structure.
+
+  Nested scheme for `rules`:
+  - `code` - (Optional, String) The `ICMP` traffic code to allow.
+  - `direction`-  (Optional, String) The direction of the traffic either `inbound` or `outbound`.
+  - `ip_version` - (Optional, String) IP version: `ipv4`
+  - `protocol` - (Optional, String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
+  - `port_max`- (Optional, Integer) The `TCP/UDP` port range that includes the maximum bound.
+  - `port_min`- (Optional, Integer) The `TCP/UDP` port range that includes the minimum bound.
+  - `remote` - (Optional, String) Security group id, an IP address, a `CIDR` block, or a single security group identifier.
+  - `type` - (Optional, String) The `ICMP` traffic type to allow.
 - `tags`- (Optional, List of Strings) The tags associated with an instance.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 
@@ -62,17 +72,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `crn` - (String) The CRN of the security group.
 - `id` - (String) The ID of the security group.
-- `rules` - (List of Objects) A nested block describes the rules of this security group. Nested `rules` blocks have the following structure.
-
-  Nested scheme for `rules`:
-  - `code` - (String) The `ICMP` traffic code to allow.
-  - `direction`-  (String) The direction of the traffic either `inbound` or `outbound`.
-  - `ip_version` - (String) IP version: `ipv4`
-  - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
-  - `port_max`- (Integer) The `TCP/UDP` port range that includes the maximum bound.
-  - `port_min`- (Integer) The `TCP/UDP` port range that includes the minimum bound.
-  - `remote` - (String) Security group id, an IP address, a `CIDR` block, or a single security group identifier.
-  - `type` - (String) The `ICMP` traffic type to allow.
+- `resource_group` - (String) The resource group ID where the security group resides.
 
 ## Import
 The `ibm_is_vpc_default_security_group` resource can be imported by using security group ID. 
