@@ -429,7 +429,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Update_To_Time_Based_Conditions(t *t
 				),
 			},
 			{
-				Config: testAccCheckIBMIAMTrustedProfilePolicyUpdateConditions(name),
+				Config:      testAccCheckIBMIAMTrustedProfilePolicyUpdateConditions(name),
 				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
 			},
 		},

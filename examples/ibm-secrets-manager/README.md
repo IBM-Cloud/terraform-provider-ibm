@@ -127,7 +127,6 @@ resource "sm_iam_credentials_secret" "sm_iam_credentials_secret_instance" {
   secret_group_id = var.sm_iam_credentials_secret_secret_group_id
   ttl = var.sm_iam_credentials_secret_ttl
   access_groups = var.sm_iam_credentials_secret_access_groups
-  service_id = var.sm_iam_credentials_secret_service_id
   reuse_api_key = var.sm_iam_credentials_secret_reuse_api_key
   rotation = var.sm_iam_credentials_secret_rotation
 }

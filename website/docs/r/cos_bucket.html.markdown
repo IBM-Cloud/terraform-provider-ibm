@@ -10,7 +10,7 @@ description:
 # ibm_cos_bucket
 Create or delete an IBM Cloud Object Storage bucket. The bucket is used to store your data. For more information, about configuration options, see [Create some buckets to store your data](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-getting-started-cloud-object-storage#gs-create-buckets). 
 
-To create a bucket, you must provision an IBM Cloud Object Storage instance first by using the [`ibm_resource_instance`](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-resource-mgmt-resources#resource-instance) resource.
+To create a bucket, you must provision an IBM Cloud Object Storage instance first by using the [`ibm_resource_instance`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance) resource.
 
 ## Example usage
 The following example creates an instance of IBM Cloud Object Storage, IBM Cloud Activity Tracker, and IBM Cloud Monitoring. Then, multiple buckets are created and configured to send audit events and metrics to your service instances.
@@ -497,7 +497,7 @@ Review the argument references that you can specify for your resource.
   - `noncurrent_days` - (Optional, Integer) Configuration parameter in your policy that says how long to retain a non-current version before deleting it. Must be greater than 0.
   - `prefix` - (Optional, String) The rule applies to any objects with keys that match this prefix. You can use multiple rules for different actions for different prefixes within the same bucket.
   - `rule_id` - (Optional, String) Unique identifier for the rule. Rules allow you to remove versions from objects. Set Rule ID for cos bucket.
-- `object_versioning` - (List) Object Versioning allows the COS user to keep multiple versions of an objet in a bucke to protect against accidental deletion or overwrites. With versioning, you can easilyrecover from both unintended user actions and application failure. Nested block have the following structure:
+- `object_versioning` - (Object) Object Versioning allows the COS user to keep multiple versions of an object in a bucket to protect against accidental deletion or overwrites. With versioning, you can easily recover from both unintended user actions and application failure. Nested block have the following structure:
 
   Nested scheme for `object_versioning`:
   - `enable` : (Optional, Bool) Specifies Versioning status either enable or Suspended for the objects in the bucket.Default value set to false.
