@@ -1310,6 +1310,7 @@ func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *sch
 				sharePatchModel.UserTags = userTagsArray
 			}
 		}
+		hasChange = true
 	}
 	if hasChange {
 

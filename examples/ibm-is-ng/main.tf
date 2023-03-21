@@ -1237,5 +1237,5 @@ data "ibm_is_share" "is_share" {
   share = ibm_is_share.is_share.id
 }
 
-data "is_shares" "is_shares" {
+data "ibm_is_shares" "is_shares" {
 }
