@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -94,10 +95,11 @@ func ResourceIBMISVPCDefaultSecurityGroup() *schema.Resource {
 			},
 
 			isSecurityGroupRules: {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Computed:    true,
 				Optional:    true,
 				Description: "Security Group Rules",
+				Set:         securityGroupRuleHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSecurityGroupRuleDirection: {
@@ -656,4 +658,16 @@ func isVPCDefaultSgRefreshFunc(client *vpcv1.VpcV1, sgId string, groups []vpcv1.
 		}
 		return allrecs, "deleting", nil
 	}
+}
+
+func securityGroupRuleHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-", m[isSecurityGroupRuleDirection].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m[isSecurityGroupRuleRemote].(string)))
+	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRuleCode].(int)))
+	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRulePortMin].(int)))
+	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRulePortMax].(int)))
+	buf.WriteString(fmt.Sprintf("%s-", m[isSecurityGroupRuleProtocol].(string)))
+	return conns.String(buf.String())
 }
