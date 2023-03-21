@@ -36,6 +36,7 @@ const (
 	isLBListenerHTTPSRedirectListener   = "https_redirect_listener"
 	isLBListenerHTTPSRedirectStatusCode = "https_redirect_status_code"
 	isLBListenerHTTPSRedirectURI        = "https_redirect_uri"
+	isLBListenerIdleConnectionTimeout   = "idle_connection_timeout"
 )
 
 func ResourceIBMISLBListener() *schema.Resource {
@@ -60,6 +61,14 @@ func ResourceIBMISLBListener() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "Loadbalancer listener ID",
+			},
+
+			isLBListenerIdleConnectionTimeout: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "idle connection timeout of listener",
+				ValidateFunc: validate.InvokeValidator("ibm_is_lb_listener", isLBListenerIdleConnectionTimeout),
 			},
 
 			isLBListenerPort: {
@@ -189,7 +198,13 @@ func ResourceIBMISLBListenerValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              protocol})
-
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isLBListenerIdleConnectionTimeout,
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			MinValue:                   "50",
+			MaxValue:                   "7200"})
 	ibmISLBListenerResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_lb_listener", Schema: validateSchema}
 	return &ibmISLBListenerResourceValidator
 }
@@ -211,6 +226,10 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 		defPool = lbPool
 	}
 
+	var idleConnectionTimeout int64
+	if idleconnectiontimeout, ok := d.GetOk(isLBListenerIdleConnectionTimeout); ok {
+		idleConnectionTimeout = int64(idleconnectiontimeout.(int))
+	}
 	if crn, ok := d.GetOk(isLBListenerCertificateInstance); ok {
 		certificateCRN = crn.(string)
 	}
@@ -243,7 +262,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	conns.IbmMutexKV.Lock(isLBKey)
 	defer conns.IbmMutexKV.Unlock(isLBKey)
 
-	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, portMin, portMax, connLimit, httpStatusCode)
+	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, portMin, portMax, connLimit, httpStatusCode, idleConnectionTimeout)
 	if err != nil {
 		return err
 	}
@@ -251,7 +270,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	return resourceIBMISLBListenerRead(d, meta)
 }
 
-func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode int64) error {
+func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode, idleConnectionTimeout int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -302,6 +321,9 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 				options.PortMax = &portMax
 			}
 		}
+	}
+	if strings.EqualFold(*lb.Profile.Family, "application") {
+		options.IdleConnectionTimeout = &idleConnectionTimeout
 	}
 
 	if app, ok := d.GetOk(isLBListenerAcceptProxyProtocol); ok {
@@ -461,6 +483,9 @@ func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID 
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}
+	if lbListener.IdleConnectionTimeout != nil {
+		d.Set(isLBListenerIdleConnectionTimeout, *lbListener.IdleConnectionTimeout)
+	}
 	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
@@ -580,7 +605,11 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		loadBalancerListenerPatchModel.ConnectionLimit = &connLimit
 		hasChanged = true
 	}
-
+	if d.HasChange(isLBListenerIdleConnectionTimeout) {
+		idleConnectionTimeout := int64(d.Get(isLBListenerIdleConnectionTimeout).(int))
+		loadBalancerListenerPatchModel.IdleConnectionTimeout = &idleConnectionTimeout
+		hasChanged = true
+	}
 	if hasChanged {
 		loadBalancerListenerPatch, err := loadBalancerListenerPatchModel.AsPatch()
 		if err != nil {

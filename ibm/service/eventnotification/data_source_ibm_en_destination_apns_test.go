@@ -59,6 +59,7 @@ func testAccCheckIBMEnAPNSDestinationDataSourceConfigBasic(instanceName, name, d
 				cert_type = "p12"
                 is_sandbox = true
                 password = "certpassword"
+				pre_prod = false
 			}
 		}
 	}

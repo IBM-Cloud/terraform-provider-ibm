@@ -111,6 +111,32 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 						},
+						isInstanceMetadataService: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The metadata service configuration",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceMetadataServiceEnabled1: {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+									},
+
+									isInstanceMetadataServiceProtocol: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+									},
+
+									isInstanceMetadataServiceRespHopLimit: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The hop limit (IP time to live) for IP response packets from the metadata service",
+									},
+								},
+							},
+						},
 						isInstanceTemplatesHref: {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -151,6 +177,7 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Computed:    true,
 							Description: "The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.",
 						},
+
 						isInstanceTemplateVolumeAttachments: {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -473,6 +500,20 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 
 		if instance.MetadataService != nil {
 			template[isInstanceTemplateMetadataServiceEnabled] = *instance.MetadataService.Enabled
+
+			metadataService := []map[string]interface{}{}
+			metadataServiceMap := map[string]interface{}{}
+
+			metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+			if instance.MetadataService.Protocol != nil {
+				metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+			}
+			if instance.MetadataService.ResponseHopLimit != nil {
+				metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+			}
+
+			metadataService = append(metadataService, metadataServiceMap)
+			template[isInstanceMetadataService] = metadataService
 		}
 
 		if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {

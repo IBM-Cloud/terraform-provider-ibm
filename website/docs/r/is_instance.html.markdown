@@ -328,7 +328,33 @@ resource "ibm_is_instance" "example" {
   }
 }
 ```
+### Example to create an instance with metadata service configuration ###
 
+```terraform
+
+resource "ibm_is_instance" "example" {
+  metadata_service {
+    enabled = true
+    protocol = "https"
+    response_hop_limit = 5
+  }
+  name    = "example-vsi-catalog"
+  profile = "cx2-2x4"
+  catalog_offering {
+    version_crn = data.ibm_is_images.example.images.0.catalog_offering.0.version.0.crn
+  }
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+  network_interfaces {
+    subnet = ibm_is_subnet.example.id
+    name   = "eth1"
+  }
+}
+```
 ## Timeouts
 
 The `ibm_is_instance` resource provides the following [[Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -403,6 +429,15 @@ Review the argument references that you can specify for your resource.
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Optional, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance. Default value : **false**
+
+  ~> **NOTE**
+  `metadata_service_enabled` is deprecated and will be removed in the future. Use `metadata_service` instead
+- `metadata_service` - (Optional, List) The metadata service configuration. 
+
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Optional, Bool) Indicates whether the metadata service endpoint will be available to the virtual server instance. Default is **false**
+  - `protocol` - (Optional, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
+  - `response_hop_limit` - (Optional, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 

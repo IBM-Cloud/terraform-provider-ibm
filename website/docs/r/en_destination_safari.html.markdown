@@ -39,6 +39,7 @@ resource "ibm_en_destination_safari" "safari_en_destination" {
       website_name      = "petstore"
       website_push_id   = "petzz"
       website_url       = "https://test.petstorez.com"
+      pre_prod = false
   }
 }
 ```
@@ -100,6 +101,8 @@ Review the argument reference that you can specify for your resource.
   - `website_push_id` - (String) Website push ID  .
 
   - `website_url` - (String) Website url.
+
+  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
 
 ## Attribute reference
 
