@@ -9,8 +9,10 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -94,9 +96,61 @@ func ResourceIBMISVPCDefaultSecurityGroup() *schema.Resource {
 			isSecurityGroupRules: {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Security Rules",
+				Optional:    true,
+				Description: "Security Group Rules",
 				Elem: &schema.Resource{
-					Schema: makeIBMISSecurityRuleSchema(),
+					Schema: map[string]*schema.Schema{
+						isSecurityGroupRuleDirection: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Direction of traffic to enforce, either inbound or outbound",
+						},
+
+						isSecurityGroupRuleIPVersion: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "IP version: ipv4",
+						},
+
+						isSecurityGroupRuleRemote: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
+						},
+
+						isSecurityGroupRuleType: {
+							Optional: true,
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+
+						isSecurityGroupRuleCode: {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+
+						isSecurityGroupRulePortMin: {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+
+						isSecurityGroupRulePortMax: {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+
+						isSecurityGroupRuleProtocol: {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+					},
 				},
 			},
 
@@ -177,29 +231,26 @@ func resourceIBMISVPCDefaultSecurityGroupCreate(d *schema.ResourceData, meta int
 	if err != nil {
 		return err
 	}
-	vpc := d.Get(isSecurityGroupVPC).(string)
+	sgId := d.Get(isVPCDefaultSecurityGroup).(string)
 
-	createSecurityGroupOptions := &vpcv1.CreateSecurityGroupOptions{
-		VPC: &vpcv1.VPCIdentity{
-			ID: &vpc,
-		},
+	getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+		ID: &sgId,
 	}
-	var rg, name string
-	if grp, ok := d.GetOk(isSecurityGroupResourceGroup); ok {
-		rg = grp.(string)
-		createSecurityGroupOptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
-			ID: &rg,
-		}
-	}
-	if nm, ok := d.GetOk(isSecurityGroupName); ok {
-		name = nm.(string)
-		createSecurityGroupOptions.Name = &name
-	}
-	sg, response, err := sess.CreateSecurityGroup(createSecurityGroupOptions)
+
+	sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating Security Group %s\n%s", err, response)
+		return fmt.Errorf("[ERROR] Error while getting default Security Group of the vpc %s\n%s", err, response)
 	}
 	d.SetId(*sg.ID)
+
+	err = cleanExistingDefaultSecurityGroupRules(d, sess, sg)
+	if err != nil {
+		return err
+	}
+	err = addNewDefaultSecurityGroupRules(d, sess, sg)
+	if err != nil {
+		return err
+	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isSecurityGroupTags); ok || v != "" {
 		oldList, newList := d.GetChange(isSecurityGroupTags)
@@ -220,6 +271,249 @@ func resourceIBMISVPCDefaultSecurityGroupCreate(d *schema.ResourceData, meta int
 	return resourceIBMISSecurityGroupRead(d, meta)
 }
 
+func cleanExistingDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, sg *vpcv1.SecurityGroup) error {
+	id := d.Id()
+
+	for _, ruleIntf := range sg.Rules {
+		rule := ruleIntf.(*vpcv1.SecurityGroupRule)
+		removeSgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
+			SecurityGroupID: &id,
+			ID:              rule.ID,
+		}
+		res, err := sess.DeleteSecurityGroupRule(removeSgRuleOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error while removing default security group rule %s/%s", res, err)
+		}
+	}
+	return nil
+}
+func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, sg *vpcv1.SecurityGroup) error {
+	id := d.Id()
+
+	var rules []interface{}
+	if rulesIntf, ok := d.GetOk(isSecurityGroupRules); ok {
+		rules = rulesIntf.([]interface{})
+		for _, rule := range rules {
+			rulex := rule.(map[string]interface{})
+			direction := rulex[isSecurityGroupRuleDirection].(string)
+			direction = strings.ToLower(direction)
+			remote := rulex[isSecurityGroupRuleRemote].(string)
+			remote = strings.ToLower(direction)
+			ruletype := rulex[isSecurityGroupRuleType].(string)
+			ruletype = strings.ToLower(direction)
+			code := rulex[isSecurityGroupRuleCode].(string)
+			code = strings.ToLower(direction)
+			portmin := rulex[isSecurityGroupRulePortMin].(string)
+			portmin = strings.ToLower(direction)
+			portmax := rulex[isSecurityGroupRulePortMax].(string)
+			portmax = strings.ToLower(direction)
+			protocol := rulex[isSecurityGroupRuleProtocol].(string)
+			protocol = strings.ToLower(direction)
+
+			isSecurityGroupRuleKey := "security_group_rule_key_" + id
+			conns.IbmMutexKV.Lock(isSecurityGroupRuleKey)
+			defer conns.IbmMutexKV.Unlock(isSecurityGroupRuleKey)
+
+			parsed := &parsedIBMISSecurityGroupRuleDictionary{}
+			sgTemplate := &vpcv1.SecurityGroupRulePrototype{}
+			sgTemplateUpdate := &vpcv1.UpdateSecurityGroupRuleOptions{}
+			var err error
+			parsed.icmpType = -1
+			parsed.icmpCode = -1
+			parsed.portMin = -1
+			parsed.portMax = -1
+
+			parsed.secgrpID, parsed.ruleID, err = parseISTerraformID(d.Id())
+			if err != nil {
+				parsed.secgrpID = d.Get(isSecurityGroupID).(string)
+			} else {
+				sgTemplateUpdate.SecurityGroupID = &parsed.secgrpID
+				sgTemplateUpdate.ID = &parsed.ruleID
+			}
+
+			securityGroupRulePatchModel := &vpcv1.SecurityGroupRulePatch{}
+
+			parsed.direction = d.Get(isSecurityGroupRuleDirection).(string)
+			sgTemplate.Direction = &parsed.direction
+			securityGroupRulePatchModel.Direction = &parsed.direction
+
+			if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
+				parsed.ipversion = version.(string)
+				sgTemplate.IPVersion = &parsed.ipversion
+				securityGroupRulePatchModel.IPVersion = &parsed.ipversion
+			} else {
+				parsed.ipversion = "IPv4"
+				sgTemplate.IPVersion = &parsed.ipversion
+				securityGroupRulePatchModel.IPVersion = &parsed.ipversion
+			}
+
+			parsed.remote = ""
+			if pr, ok := d.GetOk(isSecurityGroupRuleRemote); ok {
+				parsed.remote = pr.(string)
+			}
+			parsed.remoteAddress = ""
+			parsed.remoteCIDR = ""
+			parsed.remoteSecGrpID = ""
+			err = nil
+			if parsed.remote != "" {
+				parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
+				remoteTemplate := &vpcv1.SecurityGroupRuleRemotePrototype{}
+				remoteTemplateUpdate := &vpcv1.SecurityGroupRuleRemotePatch{}
+				if parsed.remoteAddress != "" {
+					remoteTemplate.Address = &parsed.remoteAddress
+					remoteTemplateUpdate.Address = &parsed.remoteAddress
+				} else if parsed.remoteCIDR != "" {
+					remoteTemplate.CIDRBlock = &parsed.remoteCIDR
+					remoteTemplateUpdate.CIDRBlock = &parsed.remoteCIDR
+				} else if parsed.remoteSecGrpID != "" {
+					remoteTemplate.ID = &parsed.remoteSecGrpID
+					remoteTemplateUpdate.ID = &parsed.remoteSecGrpID
+
+					// check if remote is actually a SG identifier
+					getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+						ID: &parsed.remoteSecGrpID,
+					}
+					sg, res, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+					if err != nil || sg == nil {
+						if res != nil && res.StatusCode == 404 {
+							return nil, nil, nil, err
+						}
+						return nil, nil, nil, fmt.Errorf("Error getting Security Group in remote (%s): %s\n%s", parsed.remoteSecGrpID, err, res)
+					}
+				}
+				sgTemplate.Remote = remoteTemplate
+				securityGroupRulePatchModel.Remote = remoteTemplateUpdate
+			}
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			parsed.protocol = "all"
+
+			if icmpInterface, ok := d.GetOk("icmp"); ok {
+				if icmpInterface.([]interface{})[0] != nil {
+					haveType := false
+					icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
+					if value, ok := icmp["type"]; ok {
+						parsed.icmpType = int64(value.(int))
+						haveType = true
+					}
+					if value, ok := icmp["code"]; ok {
+						if !haveType {
+							return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
+						}
+						parsed.icmpCode = int64(value.(int))
+					}
+				}
+				parsed.protocol = "icmp"
+				if icmpInterface.([]interface{})[0] == nil {
+					parsed.icmpType = 0
+					parsed.icmpCode = 0
+				} else {
+					sgTemplate.Type = &parsed.icmpType
+					sgTemplate.Code = &parsed.icmpCode
+				}
+				sgTemplate.Protocol = &parsed.protocol
+				securityGroupRulePatchModel.Type = &parsed.icmpType
+				securityGroupRulePatchModel.Code = &parsed.icmpCode
+			}
+			for _, prot := range []string{"tcp", "udp"} {
+				if tcpInterface, ok := d.GetOk(prot); ok {
+					if tcpInterface.([]interface{})[0] != nil {
+						haveMin := false
+						haveMax := false
+						ports := tcpInterface.([]interface{})[0].(map[string]interface{})
+						if value, ok := ports["port_min"]; ok {
+							parsed.portMin = int64(value.(int))
+							haveMin = true
+						}
+						if value, ok := ports["port_max"]; ok {
+							parsed.portMax = int64(value.(int))
+							haveMax = true
+						}
+
+						// If only min or max is set, ensure that both min and max are set to the same value
+						if haveMin && !haveMax {
+							parsed.portMax = parsed.portMin
+						}
+						if haveMax && !haveMin {
+							parsed.portMin = parsed.portMax
+						}
+					}
+					parsed.protocol = prot
+					sgTemplate.Protocol = &parsed.protocol
+					if tcpInterface.([]interface{})[0] == nil {
+						parsed.portMax = 65535
+						parsed.portMin = 1
+					}
+					sgTemplate.PortMax = &parsed.portMax
+					sgTemplate.PortMin = &parsed.portMin
+					securityGroupRulePatchModel.PortMax = &parsed.portMax
+					securityGroupRulePatchModel.PortMin = &parsed.portMin
+				}
+			}
+			if parsed.protocol == "all" {
+				sgTemplate.Protocol = &parsed.protocol
+			}
+			securityGroupRulePatch, err := securityGroupRulePatchModel.AsPatch()
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupRulePatch: %s", err)
+			}
+			sgTemplateUpdate.SecurityGroupRulePatch = securityGroupRulePatch
+
+			options := &vpcv1.CreateSecurityGroupRuleOptions{
+				SecurityGroupID:            &id,
+				SecurityGroupRulePrototype: sgTemplate,
+			}
+
+			rule, response, err := sess.CreateSecurityGroupRule(options)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while creating Security Group Rule %s\n%s", err, response)
+			}
+		}
+
+	}
+	parsed, sgTemplate, _, err := parseIBMISSecurityGroupRuleDictionary(d, "create", sess)
+	if err != nil {
+		return err
+	}
+	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
+	conns.IbmMutexKV.Lock(isSecurityGroupRuleKey)
+	defer conns.IbmMutexKV.Unlock(isSecurityGroupRuleKey)
+
+	options := &vpcv1.CreateSecurityGroupRuleOptions{
+		SecurityGroupID:            &parsed.secgrpID,
+		SecurityGroupRulePrototype: sgTemplate,
+	}
+
+	rule, response, err := sess.CreateSecurityGroupRule(options)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error while creating Security Group Rule %s\n%s", err, response)
+	}
+	switch reflect.TypeOf(rule).String() {
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
+		{
+			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
+			d.Set(isSecurityGroupRuleID, *sgrule.ID)
+			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
+			d.SetId(tfID)
+		}
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
+		{
+			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+			d.Set(isSecurityGroupRuleID, *sgrule.ID)
+			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
+			d.SetId(tfID)
+		}
+	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
+		{
+			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
+			d.Set(isSecurityGroupRuleID, *sgrule.ID)
+			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
+			d.SetId(tfID)
+		}
+	}
+	return nil
+}
 func resourceIBMISVPCDefaultSecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := vpcClient(meta)
 	if err != nil {

@@ -2,7 +2,7 @@
 
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : security_group"
+page_title: "IBM : vpc_default_security_group"
 description: |-
   Manages IBM Cloud Security Group.
 ---
@@ -13,7 +13,7 @@ Provides a resource to manage a default security group of a VPC. Manage the defa
 
 ~> **NOTE:** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `ibm_is_vpc_default_security_group` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
 
-Every VPC has a default security group that can be managed but not destroyed. When Terraform first adopts a default security group, it **immediately removes all defined rules**. It then proceeds to create any rules specified in the configuration. This step is required so that only the rules specified in the configuration exist in the default security group.
+Every VPC has a default security group that can be managed but not destroyed. When Terraform first adopts a default security group, it **immediately removes all defined rules**. It then proceeds to create any rules specified in the configuration. This step is required so that only the rules specified in the configuration exist in the default security group. This resource treats its inline rules as absolute; only the rules defined inline are created, and any additions/removals external to this resource will result in diff shown. 
 
 For more information, about VPC, see [getting started with Virtual Private Cloud](https://cloud.ibm.com/docs/vpc?topic=vpc-getting-started). For more information, about updating default security group, see [updating a VPC's default security group rules](https://cloud.ibm.com/docs/vpc?topic=vpc-updating-the-default-security-group&interface=ui).
 
