@@ -8,7 +8,14 @@ description: |-
 ---
 
 # ibm_is_vpc_default_security_group
-Create, delete, and update a security group. Provides a networking security group resource that controls access to the public and private interfaces of a virtual server instance. To create rules for the security group, use the `is_security_group_rule` resource. For more information, about security group, see API Docs(https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups).
+
+Provides a resource to manage a default security group of a VPC. Manage the default security group created alongwith the vpc creation with this resource. Provides a networking security group resource that controls access to the public and private interfaces of a virtual server instance. To create rules for the security group, use the `rules` parameter. 
+
+~> **NOTE:** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `ibm_is_vpc_default_security_group` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
+
+Every VPC has a default security group that can be managed but not destroyed. When Terraform first adopts a default security group, it **immediately removes all defined rules**. It then proceeds to create any rules specified in the configuration. This step is required so that only the rules specified in the configuration exist in the default security group.
+
+For more information, about VPC, see [getting started with Virtual Private Cloud](https://cloud.ibm.com/docs/vpc?topic=vpc-getting-started). For more information, about updating default security group, see [updating a VPC's default security group rules](https://cloud.ibm.com/docs/vpc?topic=vpc-updating-the-default-security-group&interface=ui).
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
@@ -68,7 +75,7 @@ In addition to all argument reference list, you can access the following attribu
   - `type` - (String) The `ICMP` traffic type to allow.
 
 ## Import
-The `ibm_is_vpc_default_security_group` resource can be imported by using load balancer ID. 
+The `ibm_is_vpc_default_security_group` resource can be imported by using security group ID. 
 
 **Example**
 
