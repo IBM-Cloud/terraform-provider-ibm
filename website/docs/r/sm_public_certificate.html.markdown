@@ -177,11 +177,11 @@ You can import the `ibm_sm_public_certificate` resource by using `region`, `inst
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_public_certificate.sm_public_certificate <region>/<instance_id>/<secret_id>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_public_certificate.sm_public_certificate us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/b49ad24d-81d4-5ebc-b9b9-b0937d1c84d5
 ```

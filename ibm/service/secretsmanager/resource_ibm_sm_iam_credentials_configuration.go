@@ -105,6 +105,9 @@ func resourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *sc
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import IAM credentials configuration use the format `<region>/<instance_id>/<name>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]

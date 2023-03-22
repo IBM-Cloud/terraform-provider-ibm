@@ -165,11 +165,11 @@ You can import the `ibm_sm_private_certificate_configuration_root_ca` resource b
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my_root_ca
 ```

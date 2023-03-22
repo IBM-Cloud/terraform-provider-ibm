@@ -120,6 +120,9 @@ func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resource
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 2 {
+		return diag.Errorf("Wrong format of resource ID. To import event notification registration use the format `<region>/<instance_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))

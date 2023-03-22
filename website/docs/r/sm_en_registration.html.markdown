@@ -103,11 +103,11 @@ the source name after the registration resource is created.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager).
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_en_registration.sm_en_registration <region>/<instance_id>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_en_registration.sm_en_registration us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175
 ```
