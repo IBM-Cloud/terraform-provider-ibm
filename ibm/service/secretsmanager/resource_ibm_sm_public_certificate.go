@@ -84,13 +84,13 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "A human-readable unique name to assign to your configuration.To protect your privacy, do not use personal data, such as your name or location, as an name for your secret.",
+				Description: "The name of the certificate authority configuration.",
 			},
 			"dns": &schema.Schema{
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "A human-readable unique name to assign to your configuration.To protect your privacy, do not use personal data, such as your name or location, as an name for your secret.",
+				Description: "The name of the DNS provider configuration.",
 			},
 			"bundle_certs": &schema.Schema{
 				Type:        schema.TypeBool,
