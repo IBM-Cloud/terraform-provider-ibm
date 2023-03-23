@@ -108,11 +108,11 @@ You can import the `ibm_sm_public_certificate_configuration_ca_lets_encrypt` res
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/lets-encrypt-config
 ```

@@ -275,7 +275,13 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 
 	d.SetId(fmt.Sprintf("%s/%s", clusterNameorID, res.ID))
 
-	return resourceIBMContainerWorkerPoolUpdate(d, meta)
+	if taintRes, ok := d.GetOk("taints"); ok {
+		if err := updateWorkerpoolTaints(d, meta, clusterNameorID, workerPoolConfig.Name, taintRes.(*schema.Set).List()); err != nil {
+			return err
+		}
+	}
+
+	return resourceIBMContainerWorkerPoolRead(d, meta)
 }
 
 func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
@@ -351,7 +357,7 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	if d.HasChange("size_per_zone") && !d.IsNewResource() {
+	if d.HasChange("size_per_zone") {
 		err = workerPoolsAPI.ResizeWorkerPool(clusterNameorID, workerPoolNameorID, d.Get("size_per_zone").(int), targetEnv)
 		if err != nil {
 			return err
@@ -362,7 +368,8 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 			return fmt.Errorf("[ERROR] Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPoolNameorID, clusterNameorID, err)
 		}
 	}
-	if d.HasChange("labels") && !d.IsNewResource() {
+
+	if d.HasChange("labels") {
 		labels := make(map[string]string)
 		if l, ok := d.GetOk("labels"); ok {
 			for k, v := range l.(map[string]interface{}) {
@@ -379,20 +386,14 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 			return fmt.Errorf("[ERROR] Error waiting for workers of worker pool (%s) of cluster (%s) to become ready: %s", workerPoolNameorID, clusterNameorID, err)
 		}
 	}
-	if d.HasChange("taints") {
-		taintParam := expandWorkerPoolTaints(d, meta, clusterNameorID, workerPoolNameorID)
 
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
-		if err != nil {
-			return err
+	if d.HasChange("taints") {
+		var taints []interface{}
+		if taintRes, ok := d.GetOk("taints"); ok {
+			taints = taintRes.(*schema.Set).List()
 		}
-		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-		if err != nil {
+		if err := updateWorkerpoolTaints(d, meta, clusterNameorID, workerPoolNameorID, taints); err != nil {
 			return err
-		}
-		err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
 		}
 	}
 
