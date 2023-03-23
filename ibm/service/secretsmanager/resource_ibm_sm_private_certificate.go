@@ -394,6 +394,9 @@ func resourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Reso
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
