@@ -270,12 +270,12 @@ func DataSourceIbmSmPublicCertificate() *schema.Resource {
 			"ca": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name that is assigned to the certificate authority configuration.",
+				Description: "The name of the certificate authority configuration.",
 			},
 			"dns": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name that is assigned to the DNS provider configuration.",
+				Description: "The name of the DNS provider configuration.",
 			},
 			"certificate": &schema.Schema{
 				Type:        schema.TypeString,
