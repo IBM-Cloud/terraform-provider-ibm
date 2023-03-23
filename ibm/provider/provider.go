@@ -948,6 +948,7 @@ func Provider() *schema.Provider {
 			"ibm_is_flow_log":                                    vpc.ResourceIBMISFlowLog(),
 			"ibm_is_instance":                                    vpc.ResourceIBMISInstance(),
 			"ibm_is_instance_action":                             vpc.ResourceIBMISInstanceAction(),
+			"ibm_is_instance_boot_volume":                        vpc.ResourceIBMISInstanceBootVolume(),
 			"ibm_is_instance_network_interface":                  vpc.ResourceIBMIsInstanceNetworkInterface(),
 			"ibm_is_instance_network_interface_floating_ip":      vpc.ResourceIBMIsInstanceNetworkInterfaceFloatingIp(),
 			"ibm_is_instance_disk_management":                    vpc.ResourceIBMISInstanceDiskManagement(),

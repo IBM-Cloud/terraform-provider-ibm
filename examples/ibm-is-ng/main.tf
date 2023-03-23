@@ -1196,3 +1196,12 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
+
+// vsi boot volume
+
+resource "ibm_is_instance_boot_volume" "vol1" {
+  volume  = ibm_is_instance.boot_volume.0.volume_id
+  name    = "vol1"
+  profile = "10iops-tier"
+  zone    = var.zone1
+}
