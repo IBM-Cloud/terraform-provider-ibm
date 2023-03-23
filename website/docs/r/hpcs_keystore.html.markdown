@@ -162,6 +162,8 @@ Review the argument reference that you can specify for your resource.
 	* Constraints: Allowable values are: `hpcs`, `internal`, `key_protect`.
 * `name` - (Optional, String) Name of a target keystore.
 	* Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9 .-_]*$/`.
+* `dry_run` - (Optional, Boolean) Do not create a keystore, only verify if keystore created with given parameters can be communciated with successfully.
+  * Constraints: The default value is `false`.
 * `google_credentials` - (Optional, String) The value of the JSON key represented in the Base64 format.
   * Constraints: The maximum length is `524288` characters. The minimum length is `1` character. The value must match regular expression `/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/`.
 * `google_key_ring` - (Optional, String) A key ring organizes keys in a specific Google Cloud location and allows you to manage access control on groups of keys.
@@ -178,6 +180,7 @@ Review the argument reference that you can specify for your resource.
 Nested scheme for **vault**:
 	* `id` - (Required, String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 		* Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+* `location` - (Computed, String) Geographic location of the keystore, if available.
 * `uko_vault` - (Required, String) The UUID of the Vault in which the update is to take place.
 
 ## Attribute Reference
@@ -256,7 +259,7 @@ Nested scheme for **vault**:
 	* `name` - (String) Name of the referenced vault.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9#@!$% '_-]*$/`.
 
-* `version` - Version of the keystore.
+* `etag` - ETag identifier for keystore.
 
 ## Import
 

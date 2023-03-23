@@ -48,7 +48,7 @@ In addition to all argument references listed, you can access the following attr
 * `updated_by` - (String) ID of the user that last updated the vault.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9#@!$% '_-]*$/`.
 
-* `version` - Version of the vault.
+* `etag` - ETag identifier for hpcs_vault.
 
 ## Import
 

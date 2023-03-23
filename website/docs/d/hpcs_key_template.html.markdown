@@ -64,12 +64,18 @@ Nested scheme for **key**:
 * `keystores` - (List) 
   * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 Nested scheme for **keystores**:
+	* `google_key_protection_level` - (String)
+	  * Constraints: Allowable values are: `software`, `hsm`.
+	* `google_key_purpose` - (String)
+	  * Constraints: Allowable values are: `encrypt_decrypt`, `asymmetric_decrypt`, `asymmetric_sign`, `mac`.
+	* `google_kms_algorithm` - (String)
+	  * Constraints: Allowable values are: `google_symmetric_encryption`, `ec_sign_p256_sha256`, `ec_sign_p384_sha384`, `ec_sign_secp256k1_sha256`, `rsa_sign_pss_2048_sha256`, `rsa_sign_pss_3072_sha256`, `rsa_sign_pss_4096_sha256`, `rsa_sign_pss_4096_sha512`, `rsa_sign_pkcs1_2048_sha256`, `rsa_sign_pkcs1_3072_sha256`, `rsa_sign_pkcs1_4096_sha256`, `rsa_sign_pkcs1_4096_sha512`, `rsa_sign_raw_pkcs1_2048`, `rsa_sign_raw_pkcs1_3072`, `rsa_sign_raw_pkcs1_4096`, `rsa_decrypt_oaep_2048_sha1`, `rsa_decrypt_oaep_2048_sha256`, `rsa_decrypt_oaep_3072_sha1`, `rsa_decrypt_oaep_3072_sha256`, `rsa_decrypt_oaep_4096_sha1`, `rsa_decrypt_oaep_4096_sha256`, `rsa_decrypt_oaep_4096_sha512`, `hmac_sha256`.
 	* `group` - (String) Which keystore group to distribute the key to.
 	  * Constraints: The maximum length is `200` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9-_ ]+$/`.
 	* `type` - (String) Type of keystore.
 	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`, `google_kms`.
 
-* `name` - (String) Name of the key template.
+* `name` - (ForceNew, String) Name of the key template. Updating the name is not supported in this version, so changing this value will require recreating the resource, which may be impossible while other resources rely on it.
   * Constraints: The maximum length is `30` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Z0-9-]+$/`.
 
 * `updated_at` - (String) Date and time when the key template was updated.
