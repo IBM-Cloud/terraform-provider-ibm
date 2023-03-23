@@ -354,6 +354,62 @@ func dataSourceIBMISBareMetalServerNetworkInterfacesRead(context context.Context
 				l[isBareMetalServerNicAllowInterfaceToFloat] = *nic.AllowInterfaceToFloat
 				l[isBareMetalServerNicVlan] = *nic.Vlan
 			}
+		case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+			{
+				nic := nicIntf.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+				l[isBareMetalServerNicAllowIPSpoofing] = *nic.AllowIPSpoofing
+				l[isBareMetalServerNicEnableInfraNAT] = *nic.EnableInfrastructureNat
+				if nic.FloatingIps != nil {
+					floatingIPList := make([]map[string]interface{}, 0)
+					for _, ip := range nic.FloatingIps {
+						currentIP := map[string]interface{}{
+							isBareMetalServerNicIpID:      *ip.ID,
+							isBareMetalServerNicIpAddress: *ip.Address,
+						}
+						floatingIPList = append(floatingIPList, currentIP)
+					}
+					l[isBareMetalServerNicFloatingIPs] = floatingIPList
+				}
+				l[isBareMetalServerNicHref] = *nic.Href
+				l[isBareMetalServerNicInterfaceType] = *nic.InterfaceType
+				l[isBareMetalServerNicMacAddress] = *nic.MacAddress
+				l[isBareMetalServerNicName] = *nic.Name
+				if nic.PortSpeed != nil {
+					l[isBareMetalServerNicPortSpeed] = *nic.PortSpeed
+				}
+
+				primaryIpList := make([]map[string]interface{}, 0)
+				currentIP := map[string]interface{}{}
+				if nic.PrimaryIP.Href != nil {
+					currentIP[isBareMetalServerNicIpAddress] = *nic.PrimaryIP.Address
+				}
+				if nic.PrimaryIP.Href != nil {
+					currentIP[isBareMetalServerNicIpHref] = *nic.PrimaryIP.Href
+				}
+				if nic.PrimaryIP.Name != nil {
+					currentIP[isBareMetalServerNicIpName] = *nic.PrimaryIP.Name
+				}
+				if nic.PrimaryIP.ID != nil {
+					currentIP[isBareMetalServerNicIpID] = *nic.PrimaryIP.ID
+				}
+				if nic.PrimaryIP.ResourceType != nil {
+					currentIP[isBareMetalServerNicResourceType] = *nic.PrimaryIP.ResourceType
+				}
+				primaryIpList = append(primaryIpList, currentIP)
+				l[isBareMetalServerNicPrimaryIP] = primaryIpList
+				l[isBareMetalServerNicResourceType] = *nic.ResourceType
+				if nic.SecurityGroups != nil && len(nic.SecurityGroups) != 0 {
+					secgrpList := []string{}
+					for i := 0; i < len(nic.SecurityGroups); i++ {
+						secgrpList = append(secgrpList, string(*(nic.SecurityGroups[i].ID)))
+					}
+					l[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+				}
+				l[isBareMetalServerNicStatus] = *nic.Status
+				l[isBareMetalServerNicSubnet] = *nic.Subnet.ID
+				l[isBareMetalServerNicType] = *nic.Type
+				l["id"] = *nic.ID
+			}
 		}
 		nicsInfo = append(nicsInfo, l)
 	}

@@ -218,6 +218,11 @@ func DataSourceIBMISLBListeners() *schema.Resource {
 							Computed:    true,
 							Description: "The provisioning status of this listener.",
 						},
+						isLBListenerIdleConnectionTimeout: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "idle connection timeout of listener",
+						},
 					},
 				},
 			},
