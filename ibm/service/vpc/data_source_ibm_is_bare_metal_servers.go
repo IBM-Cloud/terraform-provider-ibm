@@ -88,6 +88,37 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 							Computed:    true,
 							Description: "The total bandwidth (in megabits per second)",
 						},
+						isBareMetalServerEnableSecureBoot: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot.",
+						},
+
+						isBareMetalServerTrustedPlatformModule: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isBareMetalServerTrustedPlatformModuleMode: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes",
+									},
+									isBareMetalServerTrustedPlatformModuleEnabled: {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether the trusted platform module is enabled.",
+									},
+									isBareMetalServerTrustedPlatformModuleSupportedModes: {
+										Type:        schema.TypeSet,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Set:         flex.ResourceIBMVPCHash,
+										Computed:    true,
+										Description: "The trusted platform module (TPM) mode:: disabled: No TPM functionality, tpm_2: TPM 2.0. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. Enum: [ disabled, tpm_2 ]",
+									},
+								},
+							},
+						},
 						isBareMetalServerBootTarget: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -527,6 +558,21 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		l[isBareMetalServerHref] = *bms.Href
 		l[isBareMetalServerMemory] = *bms.Memory
 		l[isBareMetalServerProfile] = *bms.Profile.Name
+
+		//enable secure boot
+		if bms.EnableSecureBoot != nil {
+			l[isBareMetalServerEnableSecureBoot] = bms.EnableSecureBoot
+		}
+
+		// tpm
+		if bms.TrustedPlatformModule != nil {
+			trustedPlatformModuleMap, err := resourceIBMIsBareMetalServerBareMetalServerTrustedPlatformModulePrototypeToMap(bms.TrustedPlatformModule)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			l[isBareMetalServerTrustedPlatformModule] = []map[string]interface{}{trustedPlatformModuleMap}
+		}
+
 		//pni
 
 		if bms.PrimaryNetworkInterface != nil && bms.PrimaryNetworkInterface.ID != nil {

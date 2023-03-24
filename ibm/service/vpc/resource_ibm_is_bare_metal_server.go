@@ -17,6 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -25,59 +26,64 @@ import (
 )
 
 const (
-	isBareMetalServerAction                  = "action"
-	isBareMetalServerBandwidth               = "bandwidth"
-	isBareMetalServerBootTarget              = "boot_target"
-	isBareMetalServerCreatedAt               = "created_at"
-	isBareMetalServerCPU                     = "cpu"
-	isBareMetalServerCPUArchitecture         = "architecture"
-	isBareMetalServerCPUCoreCount            = "core_count"
-	isBareMetalServerCpuSocketCount          = "socket_count"
-	isBareMetalServerCpuThreadPerCore        = "threads_per_core"
-	isBareMetalServerCRN                     = "crn"
-	isBareMetalServerDisks                   = "disks"
-	isBareMetalServerDiskID                  = "id"
-	isBareMetalServerDiskSize                = "size"
-	isBareMetalServerDiskName                = "name"
-	isBareMetalServerDiskInterfaceType       = "interface_type"
-	isBareMetalServerHref                    = "href"
-	isBareMetalServerMemory                  = "memory"
-	isBareMetalServerTags                    = "tags"
-	isBareMetalServerName                    = "name"
-	isBareMetalServerNetworkInterfaces       = "network_interfaces"
-	isBareMetalServerPrimaryNetworkInterface = "primary_network_interface"
-	isBareMetalServerProfile                 = "profile"
-	isBareMetalServerResourceGroup           = "resource_group"
-	isBareMetalServerResourceType            = "resource_type"
-	isBareMetalServerStatus                  = "status"
-	isBareMetalServerStatusReasons           = "status_reasons"
-	isBareMetalServerVPC                     = "vpc"
-	isBareMetalServerZone                    = "zone"
-	isBareMetalServerStatusReasonsCode       = "code"
-	isBareMetalServerStatusReasonsMessage    = "message"
-	isBareMetalServerStatusReasonsMoreInfo   = "more_info"
-	isBareMetalServerDeleteType              = "delete_type"
-	isBareMetalServerImage                   = "image"
-	isBareMetalServerKeys                    = "keys"
-	isBareMetalServerUserData                = "user_data"
-	isBareMetalServerNicName                 = "name"
-	isBareMetalServerNicPortSpeed            = "port_speed"
-	isBareMetalServerNicAllowIPSpoofing      = "allow_ip_spoofing"
-	isBareMetalServerNicSecurityGroups       = "security_groups"
-	isBareMetalServerNicSubnet               = "subnet"
-	isBareMetalServerUserAccounts            = "user_accounts"
-	isBareMetalServerActionDeleting          = "deleting"
-	isBareMetalServerActionDeleted           = "deleted"
-	isBareMetalServerActionStatusStopping    = "stopping"
-	isBareMetalServerActionStatusStopped     = "stopped"
-	isBareMetalServerActionStatusStarting    = "starting"
-	isBareMetalServerStatusRunning           = "running"
-	isBareMetalServerStatusPending           = "pending"
-	isBareMetalServerStatusRestarting        = "restarting"
-	isBareMetalServerStatusFailed            = "failed"
-	isBareMetalServerAccessTags              = "access_tags"
-	isBareMetalServerUserTagType             = "user"
-	isBareMetalServerAccessTagType           = "access"
+	isBareMetalServerAction                              = "action"
+	isBareMetalServerEnableSecureBoot                    = "enable_secure_boot"
+	isBareMetalServerTrustedPlatformModule               = "trusted_platform_module"
+	isBareMetalServerTrustedPlatformModuleMode           = "mode"
+	isBareMetalServerTrustedPlatformModuleEnabled        = "enabled"
+	isBareMetalServerTrustedPlatformModuleSupportedModes = "supported_modes"
+	isBareMetalServerBandwidth                           = "bandwidth"
+	isBareMetalServerBootTarget                          = "boot_target"
+	isBareMetalServerCreatedAt                           = "created_at"
+	isBareMetalServerCPU                                 = "cpu"
+	isBareMetalServerCPUArchitecture                     = "architecture"
+	isBareMetalServerCPUCoreCount                        = "core_count"
+	isBareMetalServerCpuSocketCount                      = "socket_count"
+	isBareMetalServerCpuThreadPerCore                    = "threads_per_core"
+	isBareMetalServerCRN                                 = "crn"
+	isBareMetalServerDisks                               = "disks"
+	isBareMetalServerDiskID                              = "id"
+	isBareMetalServerDiskSize                            = "size"
+	isBareMetalServerDiskName                            = "name"
+	isBareMetalServerDiskInterfaceType                   = "interface_type"
+	isBareMetalServerHref                                = "href"
+	isBareMetalServerMemory                              = "memory"
+	isBareMetalServerTags                                = "tags"
+	isBareMetalServerName                                = "name"
+	isBareMetalServerNetworkInterfaces                   = "network_interfaces"
+	isBareMetalServerPrimaryNetworkInterface             = "primary_network_interface"
+	isBareMetalServerProfile                             = "profile"
+	isBareMetalServerResourceGroup                       = "resource_group"
+	isBareMetalServerResourceType                        = "resource_type"
+	isBareMetalServerStatus                              = "status"
+	isBareMetalServerStatusReasons                       = "status_reasons"
+	isBareMetalServerVPC                                 = "vpc"
+	isBareMetalServerZone                                = "zone"
+	isBareMetalServerStatusReasonsCode                   = "code"
+	isBareMetalServerStatusReasonsMessage                = "message"
+	isBareMetalServerStatusReasonsMoreInfo               = "more_info"
+	isBareMetalServerDeleteType                          = "delete_type"
+	isBareMetalServerImage                               = "image"
+	isBareMetalServerKeys                                = "keys"
+	isBareMetalServerUserData                            = "user_data"
+	isBareMetalServerNicName                             = "name"
+	isBareMetalServerNicPortSpeed                        = "port_speed"
+	isBareMetalServerNicAllowIPSpoofing                  = "allow_ip_spoofing"
+	isBareMetalServerNicSecurityGroups                   = "security_groups"
+	isBareMetalServerNicSubnet                           = "subnet"
+	isBareMetalServerUserAccounts                        = "user_accounts"
+	isBareMetalServerActionDeleting                      = "deleting"
+	isBareMetalServerActionDeleted                       = "deleted"
+	isBareMetalServerActionStatusStopping                = "stopping"
+	isBareMetalServerActionStatusStopped                 = "stopped"
+	isBareMetalServerActionStatusStarting                = "starting"
+	isBareMetalServerStatusRunning                       = "running"
+	isBareMetalServerStatusPending                       = "pending"
+	isBareMetalServerStatusRestarting                    = "restarting"
+	isBareMetalServerStatusFailed                        = "failed"
+	isBareMetalServerAccessTags                          = "access_tags"
+	isBareMetalServerUserTagType                         = "user"
+	isBareMetalServerAccessTagType                       = "access"
 )
 
 func ResourceIBMIsBareMetalServer() *schema.Resource {
@@ -120,6 +126,43 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", isBareMetalServerName),
 				Description:  "Bare metal server name",
+			},
+
+			isBareMetalServerEnableSecureBoot: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot.",
+			},
+
+			isBareMetalServerTrustedPlatformModule: {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isBareMetalServerTrustedPlatformModuleMode: {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", isBareMetalServerTrustedPlatformModuleMode),
+							Description:  "The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes",
+						},
+						isBareMetalServerTrustedPlatformModuleEnabled: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the trusted platform module is enabled.",
+						},
+						isBareMetalServerTrustedPlatformModuleSupportedModes: {
+							Type:        schema.TypeSet,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Computed:    true,
+							Description: "The trusted platform module (TPM) mode:: disabled: No TPM functionality, tpm_2: TPM 2.0. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. Enum: [ disabled, tpm_2 ]",
+						},
+					},
+				},
 			},
 
 			isBareMetalServerAction: {
@@ -587,6 +630,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 
 func ResourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 	bareMetalServerActions := "start, restart, stop"
+	tpmModes := "disabled, tpm_2"
 	interface_types := "pci, hipersocket"
 	validateSchema := make([]validate.ValidateSchema, 1)
 
@@ -625,6 +669,13 @@ func ResourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              bareMetalServerActions})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isBareMetalServerTrustedPlatformModuleMode,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              tpmModes})
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -650,6 +701,23 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	if image, ok := d.GetOk(isBareMetalServerImage); ok {
 		imageStr = image.(string)
 	}
+
+	// enable secure boot
+
+	if _, ok := d.GetOkExists(isBareMetalServerEnableSecureBoot); ok {
+		options.SetEnableSecureBoot(d.Get(isBareMetalServerEnableSecureBoot).(bool))
+	}
+
+	// trusted_platform_module
+
+	if _, ok := d.GetOk(isBareMetalServerTrustedPlatformModule); ok {
+		trustedPlatformModuleModel, err := resourceIBMIsBareMetalServerMapToBareMetalServerTrustedPlatformModulePrototype(d.Get("trusted_platform_module.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		options.SetTrustedPlatformModule(trustedPlatformModuleModel)
+	}
+
 	keySet := d.Get(isBareMetalServerKeys).(*schema.Set)
 	if keySet.Len() != 0 {
 		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
@@ -1307,6 +1375,22 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	d.Set(isBareMetalServerCPU, cpuList)
 	d.Set(isBareMetalServerCRN, *bms.CRN)
 
+	//enable secure boot
+	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {
+		return fmt.Errorf("[ERROR] Error setting enable_secure_boot: %s", err)
+	}
+
+	// tpm
+	if bms.TrustedPlatformModule != nil {
+		trustedPlatformModuleMap, err := resourceIBMIsBareMetalServerBareMetalServerTrustedPlatformModulePrototypeToMap(bms.TrustedPlatformModule)
+		if err != nil {
+			return (err)
+		}
+		if err = d.Set(isBareMetalServerTrustedPlatformModule, []map[string]interface{}{trustedPlatformModuleMap}); err != nil {
+			return fmt.Errorf("[ERROR] Error setting trusted_platform_module: %s", err)
+		}
+	}
+
 	diskList := make([]map[string]interface{}, 0)
 	if bms.Disks != nil {
 		for _, disk := range bms.Disks {
@@ -1646,7 +1730,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return err
 	}
-
+	isServerStopped := false
 	if d.HasChange(isBareMetalServerTags) || d.HasChange(isBareMetalServerAccessTags) {
 		bmscrn := d.Get(isBareMetalServerCRN).(string)
 		if bmscrn == "" {
@@ -1762,7 +1846,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 				}
 			}
 			if flag {
-				err = resourceStopServerIfRunning(id, "hard", d, context, sess)
+				isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 				if err != nil {
 					return err
 				}
@@ -1780,12 +1864,6 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 				}
 			}
 
-			if flag {
-				err = resourceStartServerIfStopped(id, "hard", d, context, sess)
-				if err != nil {
-					return err
-				}
-			}
 		}
 		add := ns.Difference(os).List()
 		if len(add) > 0 {
@@ -1799,7 +1877,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 				}
 			}
 			if flag {
-				err = resourceStopServerIfRunning(id, "hard", d, context, sess)
+				isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 				if err != nil {
 					return err
 				}
@@ -2147,12 +2225,6 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					return err
 				}
 			}
-			if flag {
-				err = resourceStartServerIfStopped(id, "hard", d, context, sess)
-				if err != nil {
-					return err
-				}
-			}
 
 		}
 
@@ -2241,6 +2313,29 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	}
 	bmsPatchModel := &vpcv1.BareMetalServerPatch{}
 	flag := false
+
+	if d.HasChange(isBareMetalServerEnableSecureBoot) {
+		newEnableSecureBoot := d.Get(isBareMetalServerEnableSecureBoot).(bool)
+		bmsPatchModel.EnableSecureBoot = &newEnableSecureBoot
+		flag = true
+		isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
+		if err != nil {
+			return err
+		}
+	}
+
+	// tpm
+	if d.HasChange("trusted_platform_module") && d.HasChange("trusted_platform_module.0.mode") {
+		bareMetalServerTrustedPlatformModulePatch := &vpcv1.BareMetalServerTrustedPlatformModulePatch{}
+		newModeTPM := d.Get("trusted_platform_module.0.mode").(string)
+		bareMetalServerTrustedPlatformModulePatch.Mode = &newModeTPM
+		bmsPatchModel.TrustedPlatformModule = bareMetalServerTrustedPlatformModulePatch
+		flag = true
+		isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
+		if err != nil {
+			return err
+		}
+	}
 
 	if d.HasChange(isBareMetalServerPrimaryNetworkInterface) {
 		nicId := d.Get("primary_network_interface.0.id").(string)
@@ -2354,6 +2449,14 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			isBareMetalServerRestart(sess, d.Id(), d, 10)
 		}
 	}
+
+	if flag || isServerStopped {
+		isServerStopped, err = resourceStartServerIfStopped(id, "hard", d, context, sess, isServerStopped)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -2642,16 +2745,16 @@ func resourceIBMBMSNicSet(v interface{}) int {
 	return conns.String(buf.String())
 }
 
-func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1) error {
+func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
 	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
 		ID: &id,
 	}
 	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
-			return nil
+			return isServerStopped, nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
 	}
 	if *bms.Status == "running" {
 
@@ -2662,24 +2765,24 @@ func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData
 
 		response, err := sess.StopBareMetalServerWithContext(context, options)
 		if err != nil && response != nil && response.StatusCode != 204 {
-			return fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
+			return isServerStopped, fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
 		}
+		isServerStopped = true
 		isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
-
 	}
-	return nil
+	return isServerStopped, nil
 }
 
-func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1) error {
+func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
 	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
 		ID: &id,
 	}
 	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
-			return nil
+			return isServerStopped, nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
 	}
 	if *bms.Status == "stopped" {
 
@@ -2689,14 +2792,40 @@ func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceDat
 		response, err := sess.StartBareMetalServer(createbmsactoptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return nil
+				return isServerStopped, nil
 			}
-			return fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
+			return isServerStopped, fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
 		}
+		isServerStopped = true
 		_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
-			return err
+			return isServerStopped, err
 		}
 	}
-	return nil
+	return isServerStopped, nil
+}
+
+func resourceIBMIsBareMetalServerMapToBareMetalServerTrustedPlatformModulePrototype(modelMap map[string]interface{}) (*vpcv1.BareMetalServerTrustedPlatformModulePrototype, error) {
+	model := &vpcv1.BareMetalServerTrustedPlatformModulePrototype{}
+	// if modelMap[isBareMetalServerTrustedPlatformModuleEnabled] != nil {
+	// 	model.Enabled = core.BoolPtr(modelMap[isBareMetalServerTrustedPlatformModuleEnabled].(bool))
+	// }
+	if modelMap[isBareMetalServerTrustedPlatformModuleMode] != nil && modelMap[isBareMetalServerTrustedPlatformModuleMode].(string) != "" {
+		model.Mode = core.StringPtr(modelMap[isBareMetalServerTrustedPlatformModuleMode].(string))
+	}
+	return model, nil
+}
+
+func resourceIBMIsBareMetalServerBareMetalServerTrustedPlatformModulePrototypeToMap(model *vpcv1.BareMetalServerTrustedPlatformModule) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Enabled != nil {
+		modelMap[isBareMetalServerTrustedPlatformModuleEnabled] = model.Enabled
+	}
+	if model.Mode != nil {
+		modelMap[isBareMetalServerTrustedPlatformModuleMode] = model.Mode
+	}
+	if model.SupportedModes != nil {
+		modelMap[isBareMetalServerTrustedPlatformModuleSupportedModes] = model.SupportedModes
+	}
+	return modelMap, nil
 }

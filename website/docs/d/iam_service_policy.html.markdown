@@ -67,3 +67,13 @@ In addition to all argument reference list, you can access the following attribu
       - `name` - (String) The key of an access management tag. 
       - `value` - (String) The value of an access management tag.
       - `operator` - (String) Operator of an attribute.
+
+  - `rule_conditions` - (List of objects) A nested block describing the rule conditions of this policy.
+
+      Nested schema for `rule_conditions`:
+        - `key` - (String) The key of a rule condition.
+        - `operator` - (String) The operator of a rule condition.
+        - `value` - (List of Strings) The valjue of a rule condition.
+
+  - `rule_operator` - (String) The operator used to evaluate multiple rule conditions, e.g., all must be satisfied with `and`.
+  - `pattern` - (String) The pattern that the rule follows, e.g., `time-based-conditions:weekly:all-day`.

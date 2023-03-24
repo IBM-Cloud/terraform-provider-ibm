@@ -99,6 +99,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
+- `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
 - `image` - (Required, String) ID of the image.
 - `keys` - (Required, List) Comma separated IDs of ssh keys.  
 - `name` - (Optional, String) The bare metal server name.
@@ -155,6 +156,12 @@ Review the argument references that you can specify for your resource.
 
 - `profile` - (Required, Forces new resource, String) The name the profile to use for this bare metal server. 
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this bare metal server.
+- `trusted_platform_module` - (Optional, List) trusted platform module (TPM) configuration for the bare metals server
+
+  Nested scheme for **trusted_platform_module**:
+  
+    - `mode` - (Optional, String) The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes. Updating trusted_platform_module mode would require the server to be stopped then started again.
+      - Constraints: Allowable values are: `disabled`, `tpm_2`.
 - `user_data` - (Optional, String) User data to transfer to the server bare metal server.
 - `vpc` - (Required, Forces new resource, String) The VPC ID of the bare metal server is to be a part of. It must match the VPC tied to the subnets of the server's network interfaces.
 - `zone` - (Required, Forces new resource, String) Name of the zone in which this bare metal server will reside in.
@@ -203,7 +210,17 @@ In addition to all argument reference list, you can access the following attribu
     - `code` - (String) The status reason code
     - `message` - (String) An explanation of the status reason
     - `more_info` - (String) Link to documentation about this status reason
+- `trusted_platform_module` - (List) trusted platform module (TPM) configuration for this bare metal server
 
+    Nested scheme for **trusted_platform_module**:
+
+    - `enabled` - (Boolean) Indicates whether the trusted platform module is enabled. 
+    - `mode` - (String) The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes. Updating trusted_platform_module mode would require the server to be stopped then started again.
+      - Constraints: Allowable values are: `disabled`, `tpm_2`.
+    - `supported_modes` - (Array) The trusted platform module (TPM) mode:
+      - **disabled: No TPM functionality**
+      - **tpm_2: TPM 2.0**
+      - The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
 
 ## Import
 

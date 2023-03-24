@@ -40,7 +40,7 @@ In addition to all argument references listed, you can access the following attr
 * `activation_date` - (String) First day when the key is active.
 
 * `algorithm` - (String) The algorithm of the key.
-  * Constraints: Allowable values are: `aes`, `rsa`.
+  * Constraints: Allowable values are: `aes`, `rsa`, `hmac`, `ec`.
 
 * `created_at` - (String) Date and time when the key was created.
 
@@ -58,21 +58,27 @@ In addition to all argument references listed, you can access the following attr
 * `instances` - (List) key instances.
   * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 Nested scheme for **instances**:
+	* `google_key_protection_level` - (String)
+	  * Constraints: Allowable values are: `software`, `hsm`.
+	* `google_key_purpose` - (String)
+	  * Constraints: Allowable values are: `encrypt_decrypt`, `asymmetric_decrypt`, `asymmetric_sign`, `mac`.
+	* `google_kms_algorithm` - (String)
+	  * Constraints: Allowable values are: `google_symmetric_encryption`, `ec_sign_p256_sha256`, `ec_sign_p384_sha384`, `ec_sign_secp256k1_sha256`, `rsa_sign_pss_2048_sha256`, `rsa_sign_pss_3072_sha256`, `rsa_sign_pss_4096_sha256`, `rsa_sign_pss_4096_sha512`, `rsa_sign_pkcs1_2048_sha256`, `rsa_sign_pkcs1_3072_sha256`, `rsa_sign_pkcs1_4096_sha256`, `rsa_sign_pkcs1_4096_sha512`, `rsa_sign_raw_pkcs1_2048`, `rsa_sign_raw_pkcs1_3072`, `rsa_sign_raw_pkcs1_4096`, `rsa_decrypt_oaep_2048_sha1`, `rsa_decrypt_oaep_2048_sha256`, `rsa_decrypt_oaep_3072_sha1`, `rsa_decrypt_oaep_3072_sha256`, `rsa_decrypt_oaep_4096_sha1`, `rsa_decrypt_oaep_4096_sha256`, `rsa_decrypt_oaep_4096_sha512`, `hmac_sha256`.
 	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `keystore` - (List) Description of properties of a key within the context of keystores.
 	Nested scheme for **keystore**:
 		* `group` - (String)
-		  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9-_ ]+$/`.
+		  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9_ -]+$/`.
 		* `type` - (String) Type of keystore.
-		  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`.
+		  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`, `google_kms`.
 	* `label_in_keystore` - (String) The label of the key.
-	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._ -]+$/`.
+	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._ \/-]+$/`.
 	* `type` - (String) Type of the key instance.
 	  * Constraints: Allowable values are: `public_key`, `private_key`, `key_pair`, `secret_key`.
 
 * `label` - (String) The label of the key.
-  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._ -]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._ \/-]+$/`.
 
 * `referenced_keystores` - (List) referenced keystores.
   * Constraints: The maximum length is `128` items. The minimum length is `0` items.
@@ -82,9 +88,9 @@ Nested scheme for **referenced_keystores**:
 	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `name` - (String) Name of the target keystore.
-	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9 .-_]*$/`.
+	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9 ._-]*$/`.
 	* `type` - (String) Type of keystore.
-	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`.
+	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`, `google_kms`.
 
 * `size` - (String) The size of the underlying cryptographic key or key pair. E.g. "256" for AES keys, or "2048" for RSA.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9]+$/`.
@@ -98,7 +104,7 @@ Nested scheme for **tags**:
 	* `name` - (String) Name of a tag.
 	  * Constraints: The maximum length is `254` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9 -_]+$/`.
 	* `value` - (String) Value of a tag.
-	  * Constraints: The maximum length is `8192` characters. The minimum length is `1` character. The value must match regular expression `/^(\\w|\\s)*$/`.
+	  * Constraints: The maximum length is `8192` characters. The minimum length is `0` characters. The value must match regular expression `/^(\\w|\\s)*$/`.
 
 * `template` - (List) Reference to a key template.
 Nested scheme for **template**:
@@ -121,7 +127,7 @@ Nested scheme for **vault**:
 	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `name` - (String) Name of the referenced vault.
-	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9#@!$% '_-]*$/`.
+	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9#@!$%'_-][A-Za-z0-9#@!$% '_-]*$/`.
 
 * `verification_patterns` - (List) A list of verification patterns of the key (e.g. public key hash for RSA keys).
   * Constraints: The maximum length is `16` items. The minimum length is `1` item.

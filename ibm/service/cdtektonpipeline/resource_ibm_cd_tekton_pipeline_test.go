@@ -36,8 +36,10 @@ func TestAccIBMCdTektonPipelineBasic(t *testing.T) {
 
 func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 	var conf cdtektonpipelinev2.TektonPipeline
+	nextBuildNumber := "5"
 	enableNotifications := "true"
 	enablePartialCloning := "true"
+	nextBuildNumberUpdate := fmt.Sprintf("%d", acctest.RandIntRange(1, 99999999999999))
 	enableNotificationsUpdate := "false"
 	enablePartialCloningUpdate := "false"
 
@@ -47,16 +49,18 @@ func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineConfig(enableNotifications, enablePartialCloning),
+				Config: testAccCheckIBMCdTektonPipelineConfig(nextBuildNumber, enableNotifications, enablePartialCloning),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineExists("ibm_cd_tekton_pipeline.cd_tekton_pipeline", conf),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "next_build_number", nextBuildNumber),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications", enableNotifications),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning", enablePartialCloning),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineConfig(enableNotificationsUpdate, enablePartialCloningUpdate),
+				Config: testAccCheckIBMCdTektonPipelineConfig(nextBuildNumberUpdate, enableNotificationsUpdate, enablePartialCloningUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "next_build_number", nextBuildNumberUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications", enableNotificationsUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning", enablePartialCloningUpdate),
 				),
@@ -89,6 +93,7 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}
@@ -99,7 +104,7 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelineConfig(enableNotifications string, enablePartialCloning string) string {
+func testAccCheckIBMCdTektonPipelineConfig(nextBuildNumber string, enableNotifications string, enablePartialCloning string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -118,6 +123,7 @@ func testAccCheckIBMCdTektonPipelineConfig(enableNotifications string, enablePar
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = %s
 			enable_notifications = %s
 			enable_partial_cloning = %s
 			worker {
@@ -127,7 +133,7 @@ func testAccCheckIBMCdTektonPipelineConfig(enableNotifications string, enablePar
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
-	`, rgName, tcName, enableNotifications, enablePartialCloning)
+	`, rgName, tcName, nextBuildNumber, enableNotifications, enablePartialCloning)
 }
 
 func testAccCheckIBMCdTektonPipelineExists(n string, obj cdtektonpipelinev2.TektonPipeline) resource.TestCheckFunc {
