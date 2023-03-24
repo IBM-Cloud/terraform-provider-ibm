@@ -15,7 +15,7 @@ require (
 	github.com/IBM/continuous-delivery-go-sdk v1.0.4
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.7
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.10.2
+	github.com/IBM/go-sdk-core/v5 v5.12.1
 	github.com/IBM/ibm-cos-sdk-go v1.9.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -28,7 +28,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk v1.0.49
-	github.com/IBM/vpc-go-sdk v0.32.0
+	github.com/IBM/vpc-go-sdk v0.34.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
@@ -54,7 +54,10 @@ require (
 	k8s.io/client-go v0.25.0
 )
 
-require github.com/IBM/go-sdk-core/v3 v3.2.4
+require (
+	github.com/IBM/go-sdk-core/v3 v3.2.4
+	github.com/pkg/errors v0.9.1
+)
 
 require (
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
@@ -139,7 +142,6 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -147,11 +149,11 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.11.0 // indirect
-	golang.org/x/net v0.3.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/term v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154 // indirect
@@ -173,5 +175,4 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk
 replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230202132733-fd8f31729d57
