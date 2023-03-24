@@ -26,7 +26,30 @@ func TestAccIbmIsShareReplicaOperationsFailover(t *testing.T) {
 				Config: testAccCheckIbmIsShareReplicaOperationsFailover(shareName, replicaName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.share", conf),
-					//resource.TestCheckResourceAttr("ibm_is_share_replica.test", "iops", strconv.Itoa(iops)),
+					resource.TestCheckResourceAttr("ibm_is_share.share", "name", shareName),
+					resource.TestCheckResourceAttr("ibm_is_share.replica", "replication_role", "replica"),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareReplicaOperationsFailover(shareName, replicaName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.share", "name", shareName),
+					resource.TestCheckResourceAttr("ibm_is_share.replica", "replication_role", "source"),
+					resource.TestCheckResourceAttr("ibm_is_share.share", "replication_role", "replica"),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareReplicaOperationsFailoverStepTwo(shareName, replicaName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.share", "name", shareName),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareReplicaOperationsFailoverStepTwo(shareName, replicaName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.share", "name", shareName),
 					resource.TestCheckResourceAttr("ibm_is_share.replica", "replication_role", "replica"),
 				),
@@ -50,12 +73,16 @@ func TestAccIbmIsShareReplicaOperationsSplit(t *testing.T) {
 				Config: testAccCheckIbmIsShareReplicaOperationsSplit(shareName, replicaName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.share", conf),
-					//resource.TestCheckResourceAttr("ibm_is_share_replica.test", "iops", strconv.Itoa(iops)),
+					resource.TestCheckResourceAttr("ibm_is_share.share", "name", shareName),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareReplicaOperationsSplit(shareName, replicaName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.share", "name", shareName),
 					resource.TestCheckResourceAttr("ibm_is_share.replica", "replication_role", "none"),
 					resource.TestCheckResourceAttr("ibm_is_share.share", "replication_role", "none"),
-					resource.TestCheckResourceAttr("ibm_is_share.share", "tags.0", "sr01"),
-					resource.TestCheckResourceAttr("ibm_is_share.share", "tags.1", "sr02"),
 				),
 			},
 		},
@@ -80,6 +107,29 @@ func testAccCheckIbmIsShareReplicaOperationsFailover(shareName, replicaName stri
 
 		resource "ibm_is_share_replica_operations" "test" {
 			share_replica = ibm_is_share.replica.id
+			fallback_policy = "split"
+			timeout = 500
+		}
+	`, shareName, acc.ShareProfileName, replicaName, acc.ShareProfileName)
+}
+func testAccCheckIbmIsShareReplicaOperationsFailoverStepTwo(shareName, replicaName string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_share" "share" {
+			zone = "us-south-1"
+			size = 200
+			name = "%s"
+			profile = "%s"
+		}
+		resource "ibm_is_share" "replica" {
+			zone = "us-south-3"
+			name = "%s"
+			profile = "%s"
+			replication_cron_spec = "0 */5 * * *"
+			source_share = ibm_is_share.share.id
+		}
+
+		resource "ibm_is_share_replica_operations" "test" {
+			share_replica = ibm_is_share.share.id
 			fallback_policy = "split"
 			timeout = 500
 		}
