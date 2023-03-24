@@ -80,6 +80,7 @@ import (
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -239,6 +240,7 @@ type ClientSession interface {
 	KeyProtectAPI() (*kp.Client, error)
 	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
+	VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
@@ -405,8 +407,10 @@ type clientSession struct {
 	appConfigurationClient    *appconfigurationv1.AppConfigurationV1
 	appConfigurationClientErr error
 
-	vpcErr error
-	vpcAPI *vpc.VpcV1
+	vpcErr     error
+	vpcAPI     *vpc.VpcV1
+	vpcbetaErr error
+	vpcBetaAPI *vpcbeta.VpcbetaV1
 
 	directlinkAPI *dl.DirectLinkV1
 	directlinkErr error
@@ -828,6 +832,10 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
 }
 
+func (sess clientSession) VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error) {
+	return sess.vpcBetaAPI, sess.vpcbetaErr
+}
+
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
 }
@@ -1236,6 +1244,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
+		session.vpcbetaErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
@@ -1761,6 +1770,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.vpcAPI = vpcclient
+
+	vpcbetaoptions := &vpcbeta.VpcbetaV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
+		Authenticator: authenticator,
+	}
+	vpcbetaclient, err := vpcbeta.NewVpcbetaV1(vpcbetaoptions)
+	if err != nil {
+		session.vpcbetaErr = fmt.Errorf("[ERROR] Error occured while configuring vpc beta service: %q", err)
+	}
+	if vpcbetaclient != nil && vpcbetaclient.Service != nil {
+		vpcbetaclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		vpcbetaclient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	session.vpcBetaAPI = vpcbetaclient
 
 	// PUSH NOTIFICATIONS Service
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
