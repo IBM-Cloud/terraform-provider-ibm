@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccIBMISVolume_basic(t *testing.T) {
+func TestAccIBMISInstanceBootVolume_basic(t *testing.T) {
 	var vol string
 	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tf-vol-upd-%d", acctest.RandIntRange(10, 100))
@@ -49,7 +49,7 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMISVolume_snapshot(t *testing.T) {
+func TestAccIBMISInstanceBootVolume_snapshot(t *testing.T) {
 	var vol string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
@@ -78,7 +78,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
-func TestAccIBMISVolumeUsertag_basic(t *testing.T) {
+func TestAccIBMISInstanceBootVolumeUsertag_basic(t *testing.T) {
 	var vol string
 	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
 	tagname := fmt.Sprintf("tfusertag%d", acctest.RandIntRange(10, 100))
@@ -120,7 +120,7 @@ func TestAccIBMISVolumeUsertag_basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMISVolumeUpdateCustom_basic(t *testing.T) {
+func TestAccIBMISInstanceBootVolumeUpdateCustom_basic(t *testing.T) {
 	var vol string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
@@ -163,7 +163,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func TestAccIBMISVolumeUpdateTier_basic(t *testing.T) {
+func TestAccIBMISInstanceBootVolumeUpdateTier_basic(t *testing.T) {
 	var vol string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
@@ -206,7 +206,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func TestAccIBMISVolumeUpdateCapacity_basic(t *testing.T) {
+func TestAccIBMISInstanceBootVolumeUpdateCapacity_basic(t *testing.T) {
 	var vol string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
@@ -249,7 +249,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func TestAccIBMISVolumeAttachmentDelete_basic(t *testing.T) {
+func TestAccIBMISInstanceBootVolumeAttachmentDelete_basic(t *testing.T) {
 	var vol string
 	insname := fmt.Sprintf("tf-ins-%d", acctest.RandIntRange(10, 100))
 	initialVolumeCapacityArray := fmt.Sprintf("[%d, %d]", 10, 20)
@@ -294,7 +294,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func testAccCheckIBMISVolumeDestroy(s *terraform.State) error {
+func testAccCheckIBMISInstanceBootVolumeDestroy(s *terraform.State) error {
 
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	for _, rs := range s.RootModule().Resources {
@@ -315,7 +315,7 @@ func testAccCheckIBMISVolumeDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMISVolumeExists(n, volID string) resource.TestCheckFunc {
+func testAccCheckIBMISInstanceBootVolumeExists(n, volID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -340,7 +340,7 @@ func testAccCheckIBMISVolumeExists(n, volID string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIBMISVolumeConfig(name string) string {
+func testAccCheckIBMISInstanceBootVolumeConfig(name string) string {
 	return fmt.Sprintf(
 		`
 	resource "ibm_is_volume" "storage"{
@@ -353,7 +353,7 @@ func testAccCheckIBMISVolumeConfig(name string) string {
 
 }
 
-func testAccCheckIBMISVolumeCustomConfig(vpcname, subnetname, sshname, publicKey, name, volName string, iops int64) string {
+func testAccCheckIBMISInstanceBootVolumeCustomConfig(vpcname, subnetname, sshname, publicKey, name, volName string, iops int64) string {
 	return fmt.Sprintf(
 		`
 		resource "ibm_is_vpc" "testacc_vpc" {
@@ -394,7 +394,7 @@ func testAccCheckIBMISVolumeCustomConfig(vpcname, subnetname, sshname, publicKey
 
 }
 
-func testAccCheckIBMISVolumeTierConfig(vpcname, subnetname, sshname, publicKey, name, volName, profileName string) string {
+func testAccCheckIBMISInstanceBootVolumeTierConfig(vpcname, subnetname, sshname, publicKey, name, volName, profileName string) string {
 	return fmt.Sprintf(
 		`
 		resource "ibm_is_vpc" "testacc_vpc" {
@@ -434,7 +434,7 @@ func testAccCheckIBMISVolumeTierConfig(vpcname, subnetname, sshname, publicKey, 
 
 }
 
-func testAccCheckIBMISVolumeAttachmentDeleteConfig(vpcname, subnetname, sshname, publicKey, insname, capacityArray string) string {
+func testAccCheckIBMISInstanceBootVolumeAttachmentDeleteConfig(vpcname, subnetname, sshname, publicKey, insname, capacityArray string) string {
 	return fmt.Sprintf(
 		`
 		variable "vsi_vol_size" {
@@ -482,7 +482,7 @@ func testAccCheckIBMISVolumeAttachmentDeleteConfig(vpcname, subnetname, sshname,
 
 }
 
-func testAccCheckIBMISVolumeCapacityConfig(vpcname, subnetname, sshname, publicKey, name, volName string, capacity int64) string {
+func testAccCheckIBMISInstanceBootVolumeCapacityConfig(vpcname, subnetname, sshname, publicKey, name, volName string, capacity int64) string {
 	return fmt.Sprintf(
 		`
 		resource "ibm_is_vpc" "testacc_vpc" {
@@ -523,7 +523,7 @@ func testAccCheckIBMISVolumeCapacityConfig(vpcname, subnetname, sshname, publicK
 
 }
 
-func testAccCheckIBMISVolumeUsertagConfig(name, usertag string) string {
+func testAccCheckIBMISInstanceBootVolumeUsertagConfig(name, usertag string) string {
 	return fmt.Sprintf(
 		`
     resource "ibm_is_volume" "storage"{
@@ -537,7 +537,7 @@ func testAccCheckIBMISVolumeUsertagConfig(name, usertag string) string {
 
 }
 
-func testAccCheckIBMISVolumeConfigSnapshot(vpcname, subnetname, sshname, publicKey, volname, name, name1 string) string {
+func testAccCheckIBMISInstanceBootVolumeConfigSnapshot(vpcname, subnetname, sshname, publicKey, volname, name, name1 string) string {
 
 	return testAccCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, volname, name, name1) + fmt.Sprintf(`
 	 resource "ibm_is_volume" "storage" {
