@@ -209,6 +209,40 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 
 ```
 
+### Trusted Profile Policy by using service and rule_conditions
+`rule_conditions` can be used in conjunction with `pattern` and `rule_operator` to implement trusted profile policies with time-based conditions. For information see [Limiting access with time-based conditions](https://cloud.ibm.com/docs/account?topic=account-iam-time-based&interface=ui). **Note** Currently, a policy resource created without `rule_conditions`, `pattern`, and `rule_operator` cannot be updated including those conditions on update.
+
+```terraform
+resource "ibm_iam_trusted_profile" "profile_id" {
+  name = "test"
+}
+
+resource "ibm_iam_trusted_profile_policy" "policy" {
+  profile_id = ibm_iam_trusted_profile.profile_id.id
+  roles      = ["Viewer"]
+  resources {
+    service = "kms"
+  }
+  rule_conditions {
+    key = "{{environment.attributes.day_of_week}}"
+    operator = "dayOfWeekAnyOf"
+    value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+  }
+  rule_conditions {
+    key = "{{environment.attributes.current_time}}"
+    operator = "timeGreaterThanOrEquals"
+    value = ["09:00:00+00:00"]
+  }
+  rule_conditions {
+    key = "{{environment.attributes.current_time}}"
+    operator = "timeLessThanOrEquals"
+    value = ["17:00:00+00:00"]
+  }
+  rule_operator = "and"
+  pattern = "time-based-conditions:weekly:custom-hours"
+}
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -243,6 +277,17 @@ Review the argument references that you can specify for your resource.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
 
 - `transaction_id`- (Optional, String) The TransactionID can be passed to your request for tracking the calls.
+
+- `rule_conditions` - (Optional, List) A nested block describing the rule conditions of this policy.
+
+  Nested schema for `rule_conditions`:
+  - `key` - (Required, String) The key of a rule condition.
+  - `operator` - (Required, String) The operator of a rule condition.
+  - `value` - (Required, List) The valjue of a rule condition.
+
+- `rule_operator` - (Optional, String) The operator used to evaluate multiple rule conditions, e.g., all must be satisfied with `and`.
+
+- `pattern` - (Optional, String) The pattern that the rule follows, e.g., `time-based-conditions:weekly:all-day`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
