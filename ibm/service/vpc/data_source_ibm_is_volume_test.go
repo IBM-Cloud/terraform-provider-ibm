@@ -29,6 +29,36 @@ func TestAccIBMISVolumeDatasource_basic(t *testing.T) {
 						resName, "name", name),
 					resource.TestCheckResourceAttr(
 						resName, "zone", zone),
+					resource.TestCheckResourceAttrSet(
+						resName, "active"),
+					resource.TestCheckResourceAttrSet(
+						resName, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resName, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resName, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resName, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resName, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resName, "profile"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.0.architecture"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.0.display_name"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.0.dedicated_host_only"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.0.family"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.0.name"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.0.vendor"),
+					resource.TestCheckResourceAttrSet(
+						resName, "operating_system.0.version"),
 				),
 			},
 		},
