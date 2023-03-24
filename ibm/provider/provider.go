@@ -1337,6 +1337,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_instance_template":                 vpc.ResourceIBMISInstanceTemplateValidator(),
 				"ibm_is_instance":                          vpc.ResourceIBMISInstanceValidator(),
 				"ibm_is_instance_action":                   vpc.ResourceIBMISInstanceActionValidator(),
+				"ibm_is_instance_boot_volume":              vpc.ResourceIBMISInstanceBootVolumeValidator(),
 				"ibm_is_instance_network_interface":        vpc.ResourceIBMIsInstanceNetworkInterfaceValidator(),
 				"ibm_is_instance_disk_management":          vpc.ResourceIBMISInstanceDiskManagementValidator(),
 				"ibm_is_instance_volume_attachment":        vpc.ResourceIBMISInstanceVolumeAttachmentValidator(),
