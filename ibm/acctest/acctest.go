@@ -25,6 +25,7 @@ var CisInstance string
 var CisResourceGroup string
 var CloudShellAccountID string
 var CosCRN string
+var BucketCRN string
 var CosName string
 var Ibmid1 string
 var Ibmid2 string
@@ -62,6 +63,7 @@ var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
+var ISZoneName3 string
 var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
@@ -88,6 +90,8 @@ var RepoBranch string
 var imageName string
 var functionNamespace string
 var HpcsInstanceID string
+
+// Secrets Manager
 var SecretsManagerInstanceID string
 var SecretsManagerInstanceRegion string
 var SecretsManagerENInstanceCrn string
@@ -96,8 +100,14 @@ var SecretsManagerIamCredentialsSecretServiceId string
 var SecretsManagerIamCredentialsSecretServiceAccessGroup string
 var SecretsManagerPublicCertificateLetsEncryptEnvironment string
 var SecretsManagerPublicCertificateLetsEncryptPrivateKey string
+var SecretsManagerPublicCertificateCisCrn string
+var SecretsManagerPublicCertificateClassicInfrastructureUsername string
+var SecretsManagerPublicCertificateClassicInfrastructurePassword string
+var SecretsManagerPublicCertificateCommonName string
+var SecretsManagerImportedCertificatePathToCertificate string
 var SecretsManagerSecretType string
 var SecretsManagerSecretID string
+
 var HpcsAdmin1 string
 var HpcsToken1 string
 var HpcsAdmin2 string
@@ -164,6 +174,7 @@ var Image_operating_system string
 
 // Transit Gateway cross account
 var Tg_cross_network_account_id string
+var Tg_cross_network_account_api_key string
 var Tg_cross_network_id string
 
 // Enterprise Management
@@ -232,6 +243,11 @@ var IBM_AccountID_REPL string
 var IesApiKey string
 var IngestionKey string
 var COSApiKey string
+
+// For Code Engine
+
+var CeResourceGroupID string
+var CeProjectId string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -328,6 +344,11 @@ func init() {
 	if CosCRN == "" {
 		CosCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_CRN with a VALID COS instance CRN for testing ibm_cos_* resources")
+	}
+	BucketCRN = os.Getenv("IBM_COS_Bucket_CRN")
+	if BucketCRN == "" {
+		BucketCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
 	}
 
 	CosName = os.Getenv("IBM_COS_NAME")
@@ -494,6 +515,12 @@ func init() {
 	if ISZoneName2 == "" {
 		ISZoneName2 = "us-south-2"
 		fmt.Println("[INFO] Set the environment variable SL_ZONE_2 for testing ibm_is_zone datasource else it is set to default value 'us-south-2'")
+	}
+
+	ISZoneName3 = os.Getenv("SL_ZONE_3")
+	if ISZoneName3 == "" {
+		ISZoneName3 = "us-south-3"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE_3 for testing ibm_is_zone datasource else it is set to default value 'us-south-3'")
 	}
 
 	ISCIDR = os.Getenv("SL_CIDR")
@@ -940,6 +967,31 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_LETS_ENCRYPT_PRIVATE_KEY for testing public certificate's tests, else tests fail if not set correctly")
 	}
 
+	SecretsManagerPublicCertificateCommonName = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_COMMON_NAME")
+	if SecretsManagerPublicCertificateCommonName == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_COMMON_NAME for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateCisCrn = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_CIS_CRN")
+	if SecretsManagerPublicCertificateCisCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_CIS_CRN for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateClassicInfrastructureUsername = os.Getenv("SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_USERNAME")
+	if SecretsManagerPublicCertificateClassicInfrastructureUsername == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_USERNAME for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPublicCertificateClassicInfrastructurePassword = os.Getenv("SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_PASSWORD")
+	if SecretsManagerPublicCertificateClassicInfrastructurePassword == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CLASSIC_INFRASTRUCTURE_PASSWORD for testing public certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerImportedCertificatePathToCertificate = os.Getenv("SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE")
+	if SecretsManagerImportedCertificatePathToCertificate == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE for testing imported certificate's tests, else tests fail if not set correctly")
+	}
+
 	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
 	if SecretsManagerSecretType == "" {
 		SecretsManagerSecretType = "username_password"
@@ -952,6 +1004,10 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
+	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
+	if Tg_cross_network_account_api_key == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_API_KEY for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
 	Tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
 	if Tg_cross_network_account_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
@@ -1250,6 +1306,19 @@ func init() {
 		IesApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
+
+	CeResourceGroupID = os.Getenv("IBM_CODE_ENGINE_RESOURCE_GROUP_ID")
+	if CeResourceGroupID == "" {
+		CeResourceGroupID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_GROUP_ID with the resource group for Code Engine")
+	}
+
+	CeProjectId = os.Getenv("IBM_CODE_ENGINE_PROJECT_INSTANCE_ID")
+	if CeProjectId == "" {
+		CeProjectId = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_PROJECT_INSTANCE_ID with the ID of a Code Engine project instance")
+	}
+
 }
 
 var TestAccProviders map[string]*schema.Provider
@@ -1377,5 +1446,15 @@ func TestAccPreCheckEncryptedImage(t *testing.T) {
 	}
 	if IsImageEncryptionKey == "" {
 		t.Fatal("IS_IMAGE_ENCRYPTION_KEY must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckCodeEngine(t *testing.T) {
+	TestAccPreCheck(t)
+	if CeResourceGroupID == "" {
+		t.Fatal("IBM_CODE_ENGINE_RESOURCE_GROUP_ID must be set for acceptance tests")
+	}
+	if CeProjectId == "" {
+		t.Fatal("IBM_CODE_ENGINE_PROJECT_INSTANCE_ID must be set for acceptance tests")
 	}
 }

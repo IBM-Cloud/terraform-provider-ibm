@@ -20,6 +20,7 @@ import (
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
@@ -109,7 +110,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
-	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	codeengine "github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
@@ -297,6 +298,7 @@ type ClientSession interface {
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
 	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
+	CodeEngineV2() (*codeengine.CodeEngineV2, error)
 }
 
 type clientSession struct {
@@ -614,6 +616,10 @@ type clientSession struct {
 	// CD Tekton Pipeline
 	cdTektonPipelineClient    *cdtektonpipelinev2.CdTektonPipelineV2
 	cdTektonPipelineClientErr error
+
+	// Code Engine options
+	codeEngineClient    *codeengine.CodeEngineV2
+	codeEngineClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1180,6 +1186,11 @@ func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonP
 	return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
 }
 
+// Code Engine
+func (session clientSession) CodeEngineV2() (*codeengine.CodeEngineV2, error) {
+	return session.codeEngineClient, session.codeEngineClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1273,6 +1284,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.configServiceApiClientErr = errEmptyBluemixCredentials
 		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
+		session.codeEngineClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -3243,6 +3255,32 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
+	}
+
+	// Construct the service options.
+	codeEngineEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.codeengine", c.Region), cloudEndpoint+"/v2")
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		codeEngineEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s.codeengine", c.Region), cloudEndpoint+"/v2")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		codeEngineEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CODE_ENGINE_API_ENDPOINT", c.Region, codeEngineEndpoint)
+	}
+	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
+	}
+
+	// Construct the service client.
+	session.codeEngineClient, err = codeengine.NewCodeEngineV2(codeEngineClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.codeEngineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.codeEngineClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.codeEngineClientErr = fmt.Errorf("Error occurred while configuring Code Engine service: %q", err)
 	}
 
 	if os.Getenv("TF_LOG") != "" {

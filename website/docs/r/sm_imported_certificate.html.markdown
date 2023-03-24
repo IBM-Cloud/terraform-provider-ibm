@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_imported_certificate (Beta)"
+page_title: "IBM : ibm_sm_imported_certificate"
 description: |-
   Manages ImportedCertificate.
 subcategory: "Secrets Manager"
@@ -28,7 +28,11 @@ resource "ibm_sm_imported_certificate" "sm_imported_certificate" {
 
 Review the argument reference that you can specify for your resource.
 
-* `certificate` - (Computed, Forces new resource, String) The PEM-encoded contents of your certificate.
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+  * Constraints: Allowable values are: `private`, `public`.
+* `certificate` - (Required, Forces new resource, String) The PEM-encoded contents of your certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
@@ -49,7 +53,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the ImportedCertificate.
+* `secret_id` - The unique identifier of the ImportedCertificate.
 * `alt_names` - (Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
   * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 * `common_name` - (Forces new resource, String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
@@ -138,15 +142,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_imported_certificate` resource by using `id`. A v4 UUID identifier.
+You can import the `ibm_sm_imported_certificate` resource by using `region`, `instance_id`, and `secret_id`.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
-$ terraform import ibm_sm_imported_certificate.sm_imported_certificate <id>
+```bash
+$ terraform import ibm_sm_imported_certificate.sm_imported_certificate <region>/<instance_id>/<secret_id>
 ```
 
 # Example
-```
-$ terraform import ibm_sm_imported_certificate.sm_imported_certificate b49ad24d-81d4-5ebc-b9b9-b0937d1c84d5
+```bash
+$ terraform import ibm_sm_imported_certificate.sm_imported_certificate us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/b49ad24d-81d4-5ebc-b9b9-b0937d1c84d5
 ```

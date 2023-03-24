@@ -21,7 +21,7 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 		ReadContext: dataSourceIbmSmUsernamePasswordSecretRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -167,11 +167,14 @@ func dataSourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretOptions.SetID(secretId)
 
 	usernamePasswordSecretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -180,7 +183,11 @@ func dataSourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schem
 	}
 	usernamePasswordSecret := usernamePasswordSecretIntf.(*secretsmanagerv2.UsernamePasswordSecret)
 
-	d.SetId(fmt.Sprintf("%s", *getSecretOptions.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if err = d.Set("created_by", usernamePasswordSecret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
@@ -282,8 +289,6 @@ func dataSourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schem
 func dataSourceIbmSmUsernamePasswordSecretRotationPolicyToMap(model secretsmanagerv2.RotationPolicyIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*secretsmanagerv2.CommonRotationPolicy); ok {
 		return dataSourceIbmSmUsernamePasswordSecretCommonRotationPolicyToMap(model.(*secretsmanagerv2.CommonRotationPolicy))
-	} else if _, ok := model.(*secretsmanagerv2.PublicCertificateRotationPolicy); ok {
-		return dataSourceIbmSmUsernamePasswordSecretPublicCertificateRotationPolicyToMap(model.(*secretsmanagerv2.PublicCertificateRotationPolicy))
 	} else if _, ok := model.(*secretsmanagerv2.RotationPolicy); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*secretsmanagerv2.RotationPolicy)
@@ -315,23 +320,6 @@ func dataSourceIbmSmUsernamePasswordSecretCommonRotationPolicyToMap(model *secre
 	}
 	if model.Unit != nil {
 		modelMap["unit"] = *model.Unit
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSmUsernamePasswordSecretPublicCertificateRotationPolicyToMap(model *secretsmanagerv2.PublicCertificateRotationPolicy) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.AutoRotate != nil {
-		modelMap["auto_rotate"] = *model.AutoRotate
-	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
-	if model.RotateKeys != nil {
-		modelMap["rotate_keys"] = *model.RotateKeys
 	}
 	return modelMap, nil
 }

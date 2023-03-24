@@ -21,7 +21,7 @@ func DataSourceIbmSmPrivateCertificate() *schema.Resource {
 		ReadContext: dataSourceIbmSmPrivateCertificateRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -255,11 +255,14 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretOptions.SetID(secretId)
 
 	privateCertificateIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -269,7 +272,11 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 
 	privateCertificate := privateCertificateIntf.(*secretsmanagerv2.PrivateCertificate)
 
-	d.SetId(fmt.Sprintf("%s", *getSecretOptions.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if err = d.Set("created_by", privateCertificate.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
@@ -423,8 +430,6 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 func dataSourceIbmSmPrivateCertificateRotationPolicyToMap(model secretsmanagerv2.RotationPolicyIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*secretsmanagerv2.CommonRotationPolicy); ok {
 		return dataSourceIbmSmPrivateCertificateCommonRotationPolicyToMap(model.(*secretsmanagerv2.CommonRotationPolicy))
-	} else if _, ok := model.(*secretsmanagerv2.PublicCertificateRotationPolicy); ok {
-		return dataSourceIbmSmPrivateCertificatePublicCertificateRotationPolicyToMap(model.(*secretsmanagerv2.PublicCertificateRotationPolicy))
 	} else if _, ok := model.(*secretsmanagerv2.RotationPolicy); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*secretsmanagerv2.RotationPolicy)
@@ -456,23 +461,6 @@ func dataSourceIbmSmPrivateCertificateCommonRotationPolicyToMap(model *secretsma
 	}
 	if model.Unit != nil {
 		modelMap["unit"] = *model.Unit
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSmPrivateCertificatePublicCertificateRotationPolicyToMap(model *secretsmanagerv2.PublicCertificateRotationPolicy) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.AutoRotate != nil {
-		modelMap["auto_rotate"] = *model.AutoRotate
-	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
-	if model.RotateKeys != nil {
-		modelMap["rotate_keys"] = *model.RotateKeys
 	}
 	return modelMap, nil
 }

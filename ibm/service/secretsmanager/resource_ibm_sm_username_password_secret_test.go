@@ -5,6 +5,7 @@ package secretsmanager_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -29,11 +30,11 @@ func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 					testAccCheckIbmSmUsernamePasswordSecretExists("ibm_sm_username_password_secret.sm_username_password_secret", conf),
 				),
 			},
-			//resource.TestStep{
-			//	ResourceName:      "ibm_sm_username_password_secret.sm_username_password_secret",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//},
+			resource.TestStep{
+				ResourceName:      "ibm_sm_username_password_secret.sm_username_password_secret",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -77,7 +78,9 @@ func testAccCheckIbmSmUsernamePasswordSecretExists(n string, obj secretsmanagerv
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		usernamePasswordSecretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
 		if err != nil {
@@ -105,7 +108,9 @@ func testAccCheckIbmSmUsernamePasswordSecretDestroy(s *terraform.State) error {
 
 		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-		getSecretOptions.SetID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		secretId := id[2]
+		getSecretOptions.SetID(secretId)
 
 		// Try to find the key
 		_, response, err := secretsManagerClient.GetSecret(getSecretOptions)
