@@ -603,8 +603,6 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	start := ""
-	allrecs := []vpcv1.Volume{}
 	// filters - volume-name and zone-name
 	volumeName := d.Get("volume_name").(string)
 	zoneName := d.Get("zone_name").(string)
@@ -613,6 +611,8 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 	operatingSystemFamily := d.Get(isVolumesOperatingSystemFamily).(string)
 	operatingSystemArch := d.Get(isVolumesOperatingSystemArch).(string)
 
+	start := ""
+	allrecs := []vpcv1.Volume{}
 	listVolumesOptions := &vpcv1.ListVolumesOptions{}
 	if start != "" {
 		listVolumesOptions.Start = &start
@@ -638,7 +638,9 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 
 	// list
 	for {
-
+		if start != "" {
+			listVolumesOptions.Start = &start
+		}
 		volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListVolumesWithContext failed %s\n%s", err, response)
