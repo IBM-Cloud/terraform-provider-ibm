@@ -52,7 +52,7 @@ Review the argument reference that you can specify for your resource.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `max_path_length` - (Optional, Forces new resource, Integer) The maximum path length to encode in the generated certificate. `-1` means no limit.If the signing certificate has a maximum path length set, the path length is set to one less than that of the signing certificate. A limit of `0` means a literal path length of zero.
 * `max_ttl` - (Required, String) The maximum time-to-live (TTL) for certificates that are created by this CA.
-* `name` - (Required, String) A human-readable unique name to assign to your configuration.
+* `name` - (Required, String) A human-readable unique name to assign to the root CA configuration.
 * `organization` - (Optional, Forces new resource, List) The Organization (O) values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `other_sans` - (Optional, Forces new resource, List) The custom Object Identifier (OID) or UTF8-string Subject Alternative Names to define for the CA certificate.The alternative names must match the values that are specified in the `allowed_other_sans` field in the associated certificate template. The format is the same as OpenSSL: `<oid>:<type>:<value>` where the current valid type is `UTF8`.
@@ -165,11 +165,11 @@ You can import the `ibm_sm_private_certificate_configuration_root_ca` resource b
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my_root_ca
 ```

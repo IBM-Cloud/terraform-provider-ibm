@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `bundle_certs` - (Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
 
-* `ca` - (String) The name that is assigned to the certificate authority configuration.
+* `ca` - (String) The name of the certificate authority configuration..
 
 * `certificate` - (String) The PEM-encoded contents of your certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
@@ -62,7 +62,7 @@ In addition to all argument references listed, you can access the following attr
 * `description` - (String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 
-* `dns` - (String) The name that is assigned to the DNS provider configuration.
+* `dns` - (String) The name of the DNS provider configuration.
 
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 

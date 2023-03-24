@@ -121,6 +121,9 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret group use the format `<region>/<instance_id>/<secret_group_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretGroupId := id[2]

@@ -104,11 +104,11 @@ You can import the `ibm_sm_public_certificate_configuration_dns_classic_infrastr
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_public_certificate_configuration_dns_classic_infrastructure.sm_public_certificate_configuration_dns_classic_infrastructure <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_public_certificate_configuration_dns_classic_infrastructure.sm_public_certificate_configuration_dns_classic_infrastructure us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my_DNS_config
 ```

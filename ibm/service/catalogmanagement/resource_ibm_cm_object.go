@@ -174,6 +174,7 @@ func ResourceIBMCmObject() *schema.Resource {
 			"data": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Stringified map of data values for this object.",
 			},
 			"rev": &schema.Schema{
