@@ -231,6 +231,7 @@ var CdBitbucketRepoUrl string
 var CdGithubConsolidatedRepoUrl string
 var CdGitlabRepoUrl string
 var CdHostedGitRepoUrl string
+var CdEventNotificationsInstanceName string
 
 // VPN Server
 var ISCertificateCrn string
@@ -1272,6 +1273,11 @@ func init() {
 	CdHostedGitRepoUrl = os.Getenv("IBM_CD_HOSTED_GIT_REPO_URL")
 	if CdHostedGitRepoUrl == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_HOSTED_GIT_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdEventNotificationsInstanceName = os.Getenv("IBM_CD_EVENTNOTIFICATIONS_INSTANCE_NAME")
+	if CdEventNotificationsInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_EVENTNOTIFICATIONS_INSTANCE_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")
