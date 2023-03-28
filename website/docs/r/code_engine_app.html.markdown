@@ -14,37 +14,15 @@ Provides a resource for code_engine_app. This allows code_engine_app to be creat
 
 ```hcl
 resource "ibm_code_engine_app" "code_engine_app_instance" {
-  image_port = 8080
+  project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
+  name            = "my-app"
   image_reference = "icr.io/codeengine/helloworld"
-  image_secret = "my-secret"
-  managed_domain_mappings = "local_public"
-  name = "my-app"
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
-  run_as_user = 1001
+
   run_env_variables {
-    key = "MY_VARIABLE"
-    name = "SOME"
-    prefix = "PREFIX_"
-    reference = "my-secret"
-    type = "literal"
-    value = "VALUE"
+    type  = "literal"
+    name  = "name"
+    value = "value"
   }
-  run_service_account = "default"
-  run_volume_mounts {
-    mount_path = "/app"
-    name = "codeengine-mount-b69u90"
-    reference = "my-secret"
-    type = "secret"
-  }
-  scale_concurrency = 100
-  scale_concurrency_target = 80
-  scale_cpu_limit = "1"
-  scale_ephemeral_storage_limit = "4G"
-  scale_initial_instances = 1
-  scale_max_instances = 10
-  scale_memory_limit = "4G"
-  scale_min_instances = 1
-  scale_request_timeout = 300
 }
 ```
 

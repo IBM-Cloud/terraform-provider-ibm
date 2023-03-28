@@ -14,8 +14,8 @@ Provides a resource for code_engine_config_map. This allows code_engine_config_m
 
 ```hcl
 resource "ibm_code_engine_config_map" "code_engine_config_map_instance" {
-  name = "my-config-map"
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+  name       = "my-config-map"
 }
 ```
 

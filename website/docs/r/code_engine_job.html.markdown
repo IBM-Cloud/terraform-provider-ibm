@@ -14,33 +14,15 @@ Provides a resource for code_engine_job. This allows code_engine_job to be creat
 
 ```hcl
 resource "ibm_code_engine_job" "code_engine_job_instance" {
+  project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
+  name            = "my-job"
   image_reference = "icr.io/codeengine/helloworld"
-  image_secret = "my-secret"
-  name = "my-job"
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
-  run_as_user = 1001
+  
   run_env_variables {
-    key = "MY_VARIABLE"
-    name = "SOME"
-    prefix = "PREFIX_"
-    reference = "my-secret"
-    type = "literal"
-    value = "VALUE"
+    type  = "literal"
+    name  = "name"
+    value = "value"
   }
-  run_mode = "task"
-  run_service_account = "default"
-  run_volume_mounts {
-    mount_path = "/app"
-    name = "codeengine-mount-b69u90"
-    reference = "my-secret"
-    type = "secret"
-  }
-  scale_array_spec = "1-5,7-8,10"
-  scale_cpu_limit = "1"
-  scale_ephemeral_storage_limit = "4G"
-  scale_max_execution_time = 7200
-  scale_memory_limit = "4G"
-  scale_retry_limit = 3
 }
 ```
 

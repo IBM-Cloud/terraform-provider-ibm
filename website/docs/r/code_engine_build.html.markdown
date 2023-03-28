@@ -14,18 +14,12 @@ Provides a resource for code_engine_build. This allows code_engine_build to be c
 
 ```hcl
 resource "ibm_code_engine_build" "code_engine_build_instance" {
-  name = "my-build"
-  output_image = "private.de.icr.io/icr_namespace/image-name"
+  project_id    = ibm_code_engine_project.code_engine_project_instance.project_id
+  name          = "my-build"
+  output_image  = "private.de.icr.io/icr_namespace/image-name"
   output_secret = "ce-auto-icr-private-eu-de"
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
-  source_context_dir = "some/subfolder"
-  source_revision = "main"
-  source_type = "git"
-  source_url = "https://github.com/IBM/CodeEngine"
-  strategy_size = "medium"
-  strategy_spec_file = "Dockerfile"
+  source_url    = "https://github.com/IBM/CodeEngine"
   strategy_type = "dockerfile"
-  timeout = 600
 }
 ```
 
