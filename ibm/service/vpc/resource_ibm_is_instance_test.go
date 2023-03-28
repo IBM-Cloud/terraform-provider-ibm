@@ -433,7 +433,7 @@ func TestAccIBMISInstance_metadata_service(t *testing.T) {
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVtuCfWKVGKaRmaRG6JQZY8YdxnDgGzVOK93IrV9R5Hl0JP1oiLLWlZQS2reAKb8lBqyDVEREpaoRUDjqDqXG8J/kR42FKN51su914pjSBc86wJ02VtT1Wm1zRbSg67kT+g8/T1jCgB5XBODqbcICHVP8Z1lXkgbiHLwlUrbz6OZkGJHo/M/kD1Eme8lctceIYNz/Ilm7ewMXZA4fsidpto9AjyarrJLufrOBl4MRVcZTDSJ7rLP982aHpu9pi5eJAjOZc7Og7n4ns3NFppiCwgVMCVUQbN5GBlWhZ1OsT84ZiTf+Zy8ew+Yg5T7Il8HuC7loWnz+esQPf0s3xhC/kTsGgZreIDoh/rxJfD67wKXetNSh5RH/n5BqjaOuXPFeNXmMhKlhj9nJ8scayx/wsvOGuocEIkbyJSLj3sLUU403OafgatEdnJOwbqg6rUNNF5RIjpJpL7eEWlKIi1j9LyhmPJ+fEO7TmOES82VpCMHpLbe4gf/MhhJ/Xy8DKh9s= root@ffd8363b1226
 `)
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 
@@ -447,15 +447,35 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
-						"ibm_is_instance.testacc_instance", "metadata_service_enabled", "false"),
+						"ibm_is_instance.testacc_instance", "metadata_service.0.enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "metadata_service.0.protocol", "http"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "metadata_service.0.response_hop_limit", "1"),
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceWithMetaConfig(vpcname, subnetname, sshname, publicKey, name, true),
+				Config: testAccCheckIBMISInstanceWithMetaConfig(vpcname, subnetname, sshname, publicKey, name, true, "https", 5),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "metadata_service_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "metadata_service.0.protocol", "https"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "metadata_service.0.response_hop_limit", "5"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceWithMetaConfig(vpcname, subnetname, sshname, publicKey, name, true, "http", 10),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "metadata_service_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "metadata_service.0.protocol", "http"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "metadata_service.0.response_hop_limit", "10"),
 				),
 			},
 		},
@@ -910,7 +930,7 @@ func testAccCheckIBMISInstanceWithMetaConfigDefault(vpcname, subnetname, sshname
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
 
-func testAccCheckIBMISInstanceWithMetaConfig(vpcname, subnetname, sshname, publicKey, name string, metadata_service_enabled bool) string {
+func testAccCheckIBMISInstanceWithMetaConfig(vpcname, subnetname, sshname, publicKey, name string, metadata_service_enabled bool, protocol string, hop_limit int) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -942,8 +962,12 @@ func testAccCheckIBMISInstanceWithMetaConfig(vpcname, subnetname, sshname, publi
 		  subnet = ibm_is_subnet.testacc_subnet.id
 		  name   = "eth1"
 		}
-		metadata_service_enabled=%t
-	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, metadata_service_enabled)
+		metadata_service {
+			enabled = %t
+			protocol = "%s"
+			response_hop_limit = %d
+		  }
+	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, metadata_service_enabled, protocol, hop_limit)
 }
 
 func testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, name, userData string) string {

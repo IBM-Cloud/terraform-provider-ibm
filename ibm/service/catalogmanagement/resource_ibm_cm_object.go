@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -173,6 +174,7 @@ func ResourceIBMCmObject() *schema.Resource {
 			"data": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Stringified map of data values for this object.",
 			},
 			"rev": &schema.Schema{
@@ -260,7 +262,7 @@ func resourceIBMCmObjectCreate(context context.Context, d *schema.ResourceData, 
 		dataMap := make(map[string]interface{})
 		dataString, err := strconv.Unquote(d.Get("data").(string))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error unquoting json string %s", err))
+			dataString = d.Get("data").(string)
 		}
 		err = json.Unmarshal([]byte(dataString), &dataMap)
 		if err != nil {
@@ -318,7 +320,13 @@ func resourceIBMCmObjectRead(context context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
 	}
 	if catalogObject.Tags != nil {
-		if err = d.Set("tags", catalogObject.Tags); err != nil {
+		modifiedTags := []string{}
+		for _, tag := range catalogObject.Tags {
+			if !strings.HasPrefix(tag, "svc:") && !strings.HasPrefix(tag, "fqdn:") && tag != *catalogObject.ParentID {
+				modifiedTags = append(modifiedTags, tag)
+			}
+		}
+		if err = d.Set("tags", modifiedTags); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 		}
 	}
@@ -484,7 +492,7 @@ func resourceIBMCmObjectUpdate(context context.Context, d *schema.ResourceData, 
 		dataMap := make(map[string]interface{})
 		dataString, err := strconv.Unquote(d.Get("data").(string))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error unquoting json string %s", err))
+			dataString = d.Get("data").(string)
 		}
 		err = json.Unmarshal([]byte(dataString), &dataMap)
 		if err != nil {

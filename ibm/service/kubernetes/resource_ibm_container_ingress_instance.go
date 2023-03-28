@@ -34,6 +34,7 @@ func ResourceIBMContainerIngressInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Instance CRN id",
+				ForceNew:    true,
 			},
 			"cluster": {
 				Type:        schema.TypeString,

@@ -35,14 +35,12 @@ func DataSourceIBMContainerIngressInstance() *schema.Resource {
 			},
 			"secret_group_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "",
+				Computed:    true,
 				Description: "Secret group for the instance registration",
 			},
 			"is_default": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Description: "Designates if the instance is the default for the cluster",
 			},
 			"secret_group_name": {

@@ -69,6 +69,17 @@ In addition to all argument reference list, you can access the following attribu
 	- `id` - (String) The ID of the worker pool.
 	- `host_pool_id` - (String) The ID of the dedicated host pool.
 	- `labels` - List of strings - A list of labels that are added to the worker pool.
+	- `operating_system` (String) The operating system of the workers in the worker pool.
+	- `secondary_storage` - List of objects - The optional secondary storage configuration of the workers in the worker pool.
+
+	  Nested scheme for `secondary_storage`:
+		- `name` - (String) The name of the secondary storage.
+		- `count` - (Integer) The device count of the secondary storage.
+		- `size` - (Integer) The size of the secondary storage.
+		- `device_type` - (String) The device type of the secondary storage.
+		- `raid_configuration` - (String) The raid configuration of the secondary storage.
+		- `profile` - (String) The profile of the secondary storage.
+
 	- `zones` - List of objects - A list of zones that are attached to the worker pool.
 
 	  Nested scheme for `zones`:
