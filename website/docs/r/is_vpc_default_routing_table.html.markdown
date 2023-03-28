@@ -2,12 +2,21 @@
 
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : vpc-routing-tables"
+page_title: "IBM : vpc_default_routing_table"
 description: |-
-  Manages IBM IS VPC routing tables.
+  Manages IBM IS VPC default routing table.
 ---
 
 # ibm_is_vpc_default_routing_table
+
+Provides a resource to manage a default routing table of a VPC. Manage the default routing table created alongwith the vpc creation with this resource. Provides a networking security group resource that controls access to the public and private interfaces of a virtual server instance. To create routes for the routing table, use the `routes` parameter. 
+
+~> **NOTE:** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `ibm_is_vpc_default_routing_table` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
+
+Every VPC has a default routing table that can be managed but not destroyed. When Terraform first adopts a default routing table, it **immediately removes all defined routes**. It then proceeds to create any route specified in the configuration. This step is required so that only the routes specified in the configuration exist in the default routing table. This resource treats its inline rules as absolute; only the routes defined inline are created, and any additions/removals external to this resource will result in diff shown. 
+
+For more information, about VPC, see [getting started with Virtual Private Cloud](https://cloud.ibm.com/docs/vpc?topic=vpc-getting-started). For more information, see [about routing tables and routes](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes&interface=ui).
+
 Create, update, or delete an VPC routing tables. For more information, about VPC routes, see [routing tables for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc (List)routing-tables-for-vpc).
 
 **Note:** 
