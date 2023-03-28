@@ -119,11 +119,6 @@ func resourceIBMTransitGatewayConnectionActionCreate(d *schema.ResourceData, met
 }
 
 func resourceIBMTransitGatewayConnectionActionRead(d *schema.ResourceData, meta interface{}) error {
-
-	client, err := transitgatewayClient(meta)
-	if err != nil {
-		return err
-	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return err
@@ -132,19 +127,7 @@ func resourceIBMTransitGatewayConnectionActionRead(d *schema.ResourceData, meta 
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
-	getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
-	getTransitGatewayConnectionOptions.SetID(ID)
-	instance, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
-	}
-
-	d.Set(tgConnectionId, *instance.ID)
+	d.Set(tgConnectionId, ID)
 	d.Set(tgGatewayId, gatewayId)
 
 	return nil
