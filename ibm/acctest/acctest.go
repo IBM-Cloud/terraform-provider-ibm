@@ -320,7 +320,7 @@ func init() {
 	}
 
 	SecretGroupID = os.Getenv("IBM_INGRESS_INSTANCE_SECRET_GROUP_ID")
-	if InstanceCRN == "" {
+	if SecretGroupID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_INGRESS_INSTANCE_SECRET_GROUP_ID for testing ibm_container_ingress_instance resource. Some tests for that resource will fail if this is not set correctly")
 	}
 

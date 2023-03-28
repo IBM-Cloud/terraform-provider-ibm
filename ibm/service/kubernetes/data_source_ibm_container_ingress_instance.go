@@ -17,7 +17,7 @@ func DataSourceIBMContainerIngressInstance() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"instance_crn": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "Instance CRN id",
 			},
 			"cluster": {
@@ -30,7 +30,7 @@ func DataSourceIBMContainerIngressInstance() *schema.Resource {
 			},
 			"instance_name": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "Instance registration name",
 			},
 			"secret_group_id": {

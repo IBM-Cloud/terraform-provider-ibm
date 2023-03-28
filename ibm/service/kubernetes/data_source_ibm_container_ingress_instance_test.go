@@ -5,30 +5,35 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMContainerIngressInstanceDatasourceBasic(t *testing.T) {
-	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerNLBDNSDataSourceConfig(name),
+				Config: testAccCheckIBMContainerIngressInstanceDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_container_ingress_instance.instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_container_ingress_instance.test_ds_instance", "instance_crn"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMContainerIngressInstanceDataSourceConfig(name string) string {
-	return testAccCheckIBMContainerVpcClusterBasic(name) + `
-	data "ibm_container_ingress_instance" "instance" {
-	    cluster = ibm_container_vpc_cluster.cluster.id
+func testAccCheckIBMContainerIngressInstanceDataSourceConfig() string {
+	return fmt.Sprintf(`
+	resource "ibm_container_ingress_instance" "test_acc_instance" {
+		instance_crn    = "%s"
+		secret_group_id = "%s"
+		is_default = "%t"
+		cluster  = "%s"
 	}
-`
+
+	data "ibm_container_ingress_instance" "test_ds_instance" {
+	  instance_name = ibm_container_ingress_instance.test_acc_instance.instance_name
+	  cluster = "%s"
+	}`, acc.InstanceCRN, acc.SecretGroupID, true, acc.ClusterName, acc.ClusterName)
 }

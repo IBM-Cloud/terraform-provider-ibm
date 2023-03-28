@@ -40,6 +40,7 @@ func ResourceIBMContainerIngressInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cluster ID",
+				ForceNew:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
 					"ibm_container_ingress_instance",
 					"cluster"),
