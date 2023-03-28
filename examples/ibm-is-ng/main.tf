@@ -1239,3 +1239,11 @@ data "ibm_is_share" "is_share" {
 
 data "ibm_is_shares" "is_shares" {
 }
+
+// default routing table
+resource "ibm_is_vpc_default_routing_table" "example" {
+  default_routing_table         = ibm_is_vpc.example.default_routing_table
+  route_direct_link_ingress     = true
+  route_transit_gateway_ingress = false
+  route_vpc_zone_ingress        = false
+}
