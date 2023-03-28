@@ -31,13 +31,19 @@ func ResourceIBMTransitGatewayConnectionAction() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					// Allow reusing the resource block to approve a new connection
+					if diff.HasChange(tgConnectionId) {
+						return nil
+					}
 					if diff.HasChange(tgConnectionAction) {
-						if diff.HasChange(tgGatewayId) || diff.HasChange(tgConnectionId) {
-							return nil
-						}
 						o, n := diff.GetChange(tgConnectionAction)
 						oldAction := o.(string)
 						newAction := n.(string)
+						if oldAction == "" {
+							// oldAction is empty when performing an action on a connection for the first time
+							// We are only concerned with checking if the action changes for existing action/connection resource
+							return nil
+						}
 						return fmt.Errorf("The action for the transit gateway connection has already been performed and cannot be changed from %s to %s", oldAction, newAction)
 					}
 					return nil
