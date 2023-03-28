@@ -38,11 +38,18 @@ resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
 resource "ibm_is_vpc_default_routing_table" "example" {
-  vpc                           = ibm_is_vpc.example.id
+  default_routing_table         = ibm_is_vpc.example.default_routing_table
   name                          = "example-vpc-routing-table"
   route_direct_link_ingress     = true
   route_transit_gateway_ingress = false
   route_vpc_zone_ingress        = false
+  route {
+      zone          = "us-south-1"
+      name          = "custom-route-2"
+      destination   = "192.168.4.0/24"
+      action        = "deliver"
+      next_hop      = "10.0.0.4"
+  }
 }
 
 ```
@@ -56,8 +63,16 @@ Review the argument references that you can specify for your resource.
 - `route_internet_ingress` - (Optional, Bool) If set to **true**, this routing table will be used to route traffic that originates from the internet. For this to succeed, the VPC must not already have a routing table with this property set to **true**.
 - `route_transit_gateway_ingress` - (Optional, Bool) If set to **true**, the routing table is used to route traffic that originates from Transit Gateway to the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
 - `route_vpc_zone_ingress` - (Optional, Bool) If set to true, the routing table is used to route traffic that originates from subnets in other zones in the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
-- `vpc` - (Required, Forces new resource, String) The VPC ID. 
+- `route` - (Optional, List) The routes for the routing table.
 
+    Nested scheme for `routes`:
+    - `action` - (Optional, String) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
+    - `destination` - (Required, Forces new resource, String) The destination of the route. 
+    - `name` - (Optional, String) The user-defined name of the route. If unspecified, the name will be a hyphenated list of randomly selected words. You need to provide unique name within the VPC routing table the route resides in.
+    - `next_hop` - (Required, Forces new resource, String) The next hop of the route. It accepts IP address or a VPN connection ID. For `action` other than `deliver`, you must specify `0.0.0.0`. 
+    - `routing_table` - (Required, String) The routing table ID.
+    - `vpc` - (Required, Forces new resource, String) The VPC ID.
+    - `zone` - (Required, Forces new resource, String)  Name of the zone. 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
