@@ -98,6 +98,14 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The lifecycle state of the cluster.",
 			},
+			"infrastructure_topology": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"single-replica", "highly-available"}),
+				Description:  "String value for single node cluster option. Available options: single-replica, highly-available (default: highly-available)",
+			},
 			"kube_version": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -338,6 +346,11 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 		createClusterOptions.OperatingSystem = &operating_system
 	}
 
+	if v, ok := d.GetOk("infrastructure_topology"); ok {
+		infrastructure_topology := v.(string)
+		createClusterOptions.InfrastructureTopology = &infrastructure_topology
+	}
+
 	if res, ok := d.GetOk("zones"); ok {
 		zones := res.(*schema.Set).List()
 		for _, e := range zones {
@@ -504,6 +517,9 @@ func resourceIBMSatelliteClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("name", *cluster.Name)
 	d.Set("crn", *cluster.Crn)
 	d.Set("kube_version", *cluster.MasterKubeVersion)
+	if cluster.InfrastructureTopology != nil {
+		d.Set("infrastructure_topology", *cluster.InfrastructureTopology)
+	}
 	d.Set("state", *cluster.State)
 	if cluster.Lifecycle != nil {
 		d.Set("master_status", *cluster.Lifecycle.MasterStatus)
