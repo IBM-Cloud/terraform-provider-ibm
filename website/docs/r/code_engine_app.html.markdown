@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_app
 
-Provides a resource for code_engine_app. This allows code_engine_app to be created, updated and deleted. 
+Provides a resource for code_engine_app. This allows code_engine_app to be created, updated and deleted.
 
 ## Example Usage
 
@@ -25,6 +25,13 @@ resource "ibm_code_engine_app" "code_engine_app_instance" {
   }
 }
 ```
+
+## Timeouts
+
+code_engine_app provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 10 minutes) Used for creating a code_engine_app.
+* `update` - (Default 10 minutes) Used for updating a code_engine_app.
 
 ## Argument Reference
 
