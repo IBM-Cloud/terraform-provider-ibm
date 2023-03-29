@@ -78,6 +78,7 @@ var DedicatedHostGroupID string
 var InstanceDiskProfileName string
 var DedicatedHostGroupFamily string
 var DedicatedHostGroupClass string
+var ShareProfileName string
 var VolumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
@@ -637,6 +638,12 @@ func init() {
 		//InstanceProfileName = "bc1-2x8" // for classic infrastructure
 		InstanceDiskProfileName = "bx2d-16x64" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-16x64'")
+	}
+
+	ShareProfileName = os.Getenv("IS_SHARE_PROFILE")
+	if ShareProfileName == "" {
+		ShareProfileName = "tier-3iops" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
 	}
 
 	VolumeProfileName = os.Getenv("IS_VOLUME_PROFILE")

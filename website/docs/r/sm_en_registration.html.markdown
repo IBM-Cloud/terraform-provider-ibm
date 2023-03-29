@@ -95,15 +95,19 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_en_registration` resource by using `region` and `instance_id`. A CRN that uniquely identifies an IBM Cloud resource.
-For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
+You can import the `ibm_sm_en_registration` resource by using `region` and `instance_id`. Note that after the import, the value of the property `event_notifications_source_name`
+is `null` in the Terraform state file. Since this is a required property, you need to provide a value for it in
+the corresponding configuration block in your Terraform configuration file. If you don't know the actual name of the event notification source, 
+you can put any value. The value is ignored when Terraform updates the resource, because the Secrets Manager API does not modify
+the source name after the registration resource is created.
+For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager).
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_en_registration.sm_en_registration <region>/<instance_id>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_en_registration.sm_en_registration us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175
 ```
