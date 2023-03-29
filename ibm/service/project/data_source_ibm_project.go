@@ -29,13 +29,13 @@ func DataSourceIbmProject() *schema.Resource {
 			"exclude_configs": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:	 false,
+				Default:     false,
 				Description: "Only return with the active configuration, no drafts.",
 			},
 			"complete": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:	 false,
+				Default:     false,
 				Description: "The flag to determine if full metadata should be returned.",
 			},
 			"name": &schema.Schema{
@@ -280,7 +280,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	configs := []map[string]interface{}{}
 	if getProjectResponse.Configs != nil {
-		for _, modelItem := range getProjectResponse.Configs { 
+		for _, modelItem := range getProjectResponse.Configs {
 			modelMap, err := dataSourceIbmProjectProjectConfigToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)

@@ -35,4 +35,3 @@ func testAccCheckIbmEventNotificationDataSourceConfigBasic() string {
 		}
 	`)
 }
-

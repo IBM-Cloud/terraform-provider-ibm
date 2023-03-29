@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/damianovesperini/platform-services-go-sdk/projectv1"
@@ -19,24 +20,24 @@ import (
 
 func ResourceIbmProject() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmProjectCreate,
-		ReadContext:     resourceIbmProjectRead,
-		UpdateContext:   resourceIbmProjectUpdate,
-		DeleteContext:   resourceIbmProjectDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmProjectCreate,
+		ReadContext:   resourceIbmProjectRead,
+		UpdateContext: resourceIbmProjectUpdate,
+		DeleteContext: resourceIbmProjectDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project", "name"),
-				Description: "The project name.",
+				Description:  "The project name.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project", "description"),
-				Description: "A project's descriptive text.",
+				Description:  "A project's descriptive text.",
 			},
 			"configs": &schema.Schema{
 				Type:        schema.TypeList,
@@ -107,18 +108,18 @@ func ResourceIbmProject() *schema.Resource {
 				},
 			},
 			"resource_group": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "Default",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "Default",
 				ValidateFunc: validate.InvokeValidator("ibm_project", "resource_group"),
-				Description: "Group name of the customized collection of resources.",
+				Description:  "Group name of the customized collection of resources.",
 			},
 			"location": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "us-south",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "us-south",
 				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
-				Description: "Data center locations for resource deployment.",
+				Description:  "Data center locations for resource deployment.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -309,12 +310,6 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("resource_group", getProjectOptions.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
-	}
-	if err = d.Set("location", getProjectOptions.Location); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
-	}
 	if err = d.Set("name", getProjectResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -325,13 +320,15 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 	}
 	if !core.IsNil(getProjectResponse.Configs) {
 		configs := []map[string]interface{}{}
-		for _, configsItem := range getProjectResponse.Configs {
-			configsItemMap, err := resourceIbmProjectProjectConfigInputToMap(&configsItem)
-			if err != nil {
-				return diag.FromErr(err)
+		/*
+			for _, configsItem := range getProjectResponse.Configs {
+				configsItemMap, err := resourceIbmProjectProjectConfigInputToMap(&configsItem)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				configs = append(configs, configsItemMap)
 			}
-			configs = append(configs, configsItemMap)
-		}
+		*/
 		if err = d.Set("configs", configs); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
 		}
@@ -365,36 +362,6 @@ func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, m
 	updateProjectOptions.SetID(d.Id())
 
 	hasChange := false
-
-	if d.HasChange("name") {
-		updateProjectOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
-	if d.HasChange("description") {
-		updateProjectOptions.SetDescription(d.Get("description").(string))
-		hasChange = true
-	}
-	if d.HasChange("configs") {
-		var configs []projectv1.ProjectConfigInput
-		for _, v := range d.Get("configs").([]interface{}) {
-			value := v.(map[string]interface{})
-			configsItem, err := resourceIbmProjectMapToProjectConfigInput(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			configs = append(configs, *configsItem)
-		}
-		updateProjectOptions.SetConfigs(configs)
-		hasChange = true
-	}
-	if d.HasChange("resource_group") {
-		updateProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
-		hasChange = true
-	}
-	if d.HasChange("location") {
-		updateProjectOptions.SetLocation(d.Get("location").(string))
-		hasChange = true
-	}
 
 	if hasChange {
 		_, response, err := projectClient.UpdateProjectWithContext(context, updateProjectOptions)

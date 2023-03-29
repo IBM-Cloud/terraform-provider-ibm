@@ -110,6 +110,5 @@ func dataSourceIbmEventNotificationRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting topic_count: %s", err))
 	}
 
-
 	return nil
 }
