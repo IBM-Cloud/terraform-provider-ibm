@@ -52,7 +52,7 @@ Review the argument reference that you can specify for your resource.
 * `strategy_type` - (Required, String) The strategy to use for building the image.
   * Constraints: The default value is `dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 * `timeout` - (Optional, Integer) The maximum amount of time, in seconds, that can pass before the build must succeed or fail.
-  * Constraints: The maximum value is `3600`. The minimum value is `1`.
+  * Constraints: The default value is `600`. The maximum value is `3600`. The minimum value is `1`.
 
 ## Attribute Reference
 

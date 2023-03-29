@@ -54,7 +54,7 @@ In addition to all argument references listed, you can access the following attr
 * `resource_type` - (String) The type of the project.
   * Constraints: Allowable values are: `project_v2`.
 * `status` - (String) The current state of the project. For example, if the project is created and ready to get used, it will return active.
-  * Constraints: Possible values are: `active`, `inactive`, `pending_removal`, `hard_deleting`, `hard_deletion_failed`, `hard_deleted`, `deleting`, `deletion_failed`, `soft_deleted`, `preparing`, `creating`, `creation_failed`.
+  * Constraints: Allowable values are: `active`, `inactive`, `pending_removal`, `hard_deleting`, `hard_deletion_failed`, `hard_deleted`, `deleting`, `deletion_failed`, `soft_deleted`, `preparing`, `creating`, `creation_failed`.
 
 ## Import
 
