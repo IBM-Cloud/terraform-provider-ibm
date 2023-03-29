@@ -94,8 +94,8 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the code_engine_app.
 * `app_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
-* `created_at` - (String) The date when the resource was created.
-* `endpoint` - (String) Optional URL to invoke app. Depending on visibility this is accessible publicly ot in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.
+* `created_at` - (String) The timestamp when the resource was created.
+* `endpoint` - (String) Optional URL to invoke app. Depending on visibility this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.
 * `endpoint_internal` - (String) URL to app that is only visible within the project.
 * `entity_tag` - (String) The version of the app instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.

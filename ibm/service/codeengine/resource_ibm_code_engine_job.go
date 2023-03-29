@@ -201,7 +201,7 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date when the resource was created.",
+				Description: "The timestamp when the resource was created.",
 			},
 			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,

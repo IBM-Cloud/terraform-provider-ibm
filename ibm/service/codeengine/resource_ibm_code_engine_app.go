@@ -230,12 +230,12 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date when the resource was created.",
+				Description: "The timestamp when the resource was created.",
 			},
 			"endpoint": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Optional URL to invoke app. Depending on visibility this is accessible publicly ot in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
+				Description: "Optional URL to invoke app. Depending on visibility this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
 			},
 			"endpoint_internal": &schema.Schema{
 				Type:        schema.TypeString,

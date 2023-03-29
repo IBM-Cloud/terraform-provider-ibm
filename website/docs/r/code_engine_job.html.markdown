@@ -17,7 +17,7 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
   project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
   name            = "my-job"
   image_reference = "icr.io/codeengine/helloworld"
-  
+
   run_env_variables {
     type  = "literal"
     name  = "name"
@@ -91,7 +91,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the code_engine_job.
 * `job_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
-* `created_at` - (String) The date when the resource was created.
+* `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the job instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new job,  a URL is created identifying the location of the instance.

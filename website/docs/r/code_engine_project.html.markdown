@@ -45,7 +45,7 @@ In addition to all argument references listed, you can access the following attr
 * `project_id` - (String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `account_id` - (String) An alphanumeric value identifying the account ID.
-* `created_at` - (String) The date when the project was created.
+* `created_at` - (String) The timestamp when the project was created.
 * `crn` - (String) The CRN of the project.
 * `href` - (String) When you provision a new resource, a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
