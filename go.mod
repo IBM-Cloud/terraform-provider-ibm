@@ -35,6 +35,7 @@ require (
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.1.0
+	github.com/damianovesperini/platform-services-go-sdk v1.0.9
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/errors v0.20.3 // indirect
 	github.com/go-openapi/strfmt v0.21.3
@@ -48,7 +49,7 @@ require (
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
-	go.mongodb.org/mongo-driver v1.11.2 // indirect
+	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	golang.org/x/crypto v0.5.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.25.0
