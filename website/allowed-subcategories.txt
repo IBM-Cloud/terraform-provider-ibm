@@ -28,7 +28,7 @@ Key Management Service
 Kubernetes Service
 Object Storage
 Power Systems
-Projects
+Projects API Specification
 Push Notifications
 Resource management
 Satellite
