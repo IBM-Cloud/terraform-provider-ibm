@@ -35,7 +35,6 @@ func testAccCheckIBMDLExportRouteFiltersDataSourceConfig(gatewayname string) str
 	return fmt.Sprintf(`
 	data "ibm_dl_ports" "ds_dlports" {
 	}
-
 	resource ibm_dl_gateway test_dl_gateway {
 			bgp_asn =  64999
 			global = true
@@ -43,12 +42,12 @@ func testAccCheckIBMDLExportRouteFiltersDataSourceConfig(gatewayname string) str
 			name = "%s"
 			speed_mbps = 1000
 			type =  "connect"
-			port = "dc7fdcf4-7d0e-461f-ba48-b67c174034be"
+			port = data.ibm_dl_ports.ds_dlports.ports[0].port_id
 		    export_route_filters {
 				action = "deny"
-				prefix = "190.167.10.0/12"
-				ge =15
-				le = 25
+				prefix = "10.10.9.0/24"
+				ge =25
+				le = 27
 			}				
 	}
 	data "ibm_dl_export_route_filters" "test_dl_export_route_filters" {

@@ -43,12 +43,12 @@ func testAccCheckIBMDLImportRouteFilterDataSourceConfig(gatewayname string) stri
 			name = "%s"
 			speed_mbps = 1000
 			type =  "connect"
-			port = "dc7fdcf4-7d0e-461f-ba48-b67c174034be"
+			port = data.ibm_dl_ports.ds_dlports.ports[0].port_id
 		    import_route_filters {
 				action = "deny"
-				prefix = "190.167.10.0/12"
-				ge =15
-				le = 25
+				prefix = "10.10.9.0/24"
+				ge =25
+				le = 26
 			}				
 	}
 	data "ibm_dl_import_route_filters" "test_dl_import_route_filters" {

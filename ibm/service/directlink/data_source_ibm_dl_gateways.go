@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2021, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package directlink
@@ -80,11 +80,13 @@ func DataSourceIBMDLGateways() *schema.Resource {
 						dlDefault_export_route_filter: {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
 						},
 						dlDefault_import_route_filter: {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
 						},
 						dlAuthenticationKey: {

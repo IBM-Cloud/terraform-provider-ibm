@@ -71,6 +71,7 @@ func ResourceIBMDLGateway() *schema.Resource {
 						dlBefore: {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Identifier of the next route filter to be considered",
 						},
 						dlCreatedAt: {
@@ -122,6 +123,7 @@ func ResourceIBMDLGateway() *schema.Resource {
 						dlBefore: {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Identifier of the next route filter to be considered",
 						},
 						dlCreatedAt: {
@@ -155,12 +157,14 @@ func ResourceIBMDLGateway() *schema.Resource {
 			dlDefault_export_route_filter: {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlDefault_export_route_filter),
 				Description:  "The default directional route filter action that applies to routes that do not match any directional route filters",
 			},
 			dlDefault_import_route_filter: {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlDefault_import_route_filter),
 				Description:  "The default directional route filter action that applies to routes that do not match any directional route filters",
 			},

@@ -113,7 +113,7 @@ func testAccCheckIBMDLGatewayConfig(gatewayname, custname, carriername string) s
 
 func testAccCheckIBMDLConnectGatewayConfig(gatewayname string, exprefix string, imprefix string) string {
 	return fmt.Sprintf(`
-	data "ibm_dl_ports" "test_ds_dl_ports" {
+	data "ibm_dl_ports" "ds_dlports" {
 	}
 	  resource "ibm_dl_gateway" "test_dl_connect" {
 		bgp_asn =  64999
@@ -122,7 +122,7 @@ func testAccCheckIBMDLConnectGatewayConfig(gatewayname string, exprefix string, 
         name = "%s"
         speed_mbps = 1000
 		type =  "connect"
-		port =  "dc7fdcf4-7d0e-461f-ba48-b67c174034be"
+		port =  data.ibm_dl_ports.ds_dlports.ports[0].port_id
 		export_route_filters {
 			action = "deny"
 			prefix = "%s"

@@ -114,7 +114,6 @@ Review the argument reference that you can specify for your resource.
   - `ge` - (Optional, Integer) The minimum matching length of the prefix-set
   - `le` - (Optional, Integer) The maximum matching length of the prefix-set
 - `import_route_filters` - (Optional, List) List of Import Route Filter configuration information.
-
    Nested scheme for `import_route_filter`:
    - `action` - (Required, String) Determines whether the  routes that match the prefix-set will be permit or deny
    - `prefix` - (Required, String) IP prefix representing an address and mask length of the prefix-set
@@ -146,9 +145,10 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 
-- `as_prepends` - (List) List of AS Prepend configuration information
 
-  Nested scheme for `as_prepend`:
+
+  
+- `as_prepends` - (List) List of AS Prepend configuration informationNested scheme for
   - `created_at`- (String) The date and time AS Prepend was created.
   - `id` - (String) The unique identifier for this AS Prepend.
   - `updated_at`- (String) The date and time AS Prepend was updated.
