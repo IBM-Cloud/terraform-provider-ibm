@@ -38,8 +38,7 @@ resource "ibm_sm_public_certificate" "sm_public_certificate_instance" {
   secret_group_id = var.sm_public_certificate_secret_group_id
   rotation {
     auto_rotate = true
-    interval = 1
-    unit = "day"
+    rotate_keys = false
   }
 }
 
@@ -68,7 +67,6 @@ resource "ibm_sm_iam_credentials_secret"  "sm_iam_credentials_secret_instance" {
   secret_group_id = var.sm_iam_credentials_secret_secret_group_id
   ttl = var.sm_iam_credentials_secret_ttl
   access_groups = var.sm_iam_credentials_secret_access_groups
-  service_id = var.sm_iam_credentials_secret_service_id
   rotation {
     auto_rotate = true
     interval = 1

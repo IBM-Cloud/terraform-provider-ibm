@@ -205,7 +205,7 @@ func isWaitForPIInstanceActionStatus(ctx context.Context, client *st.IBMPIInstan
 		Refresh:    isPIActionRefreshFunc(client, id, targetStatus, targetHealthStatus),
 		Delay:      30 * time.Second,
 		MinTimeout: 2 * time.Minute,
-		Timeout:    15 * time.Minute,
+		Timeout:    timeout,
 	}
 
 	return stateConf.WaitForStateContext(ctx)
