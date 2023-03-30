@@ -45,7 +45,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "image_reference"),
-				Description:  "The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.",
+				Description:  "The name of the image that is used for this app. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
@@ -230,12 +230,12 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date when the resource was created.",
+				Description: "The timestamp when the resource was created.",
 			},
 			"endpoint": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Optional URL to invoke app. Depending on visibility this is accessible publicly ot in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
+				Description: "Optional URL to invoke app. Depending on visibility this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
 			},
 			"endpoint_internal": &schema.Schema{
 				Type:        schema.TypeString,
