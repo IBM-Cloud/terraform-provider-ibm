@@ -1148,7 +1148,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(dlLinkStatus, *instance.LinkStatus)
 	}
 	if instance.LinkStatusUpdatedAt != nil {
-		d.Set(dlLinkStatus, instance.LinkStatusUpdatedAt.String())
+		d.Set(dlLinkStatusUpdatedAt, instance.LinkStatusUpdatedAt.String())
 	}
 	if instance.CreatedAt != nil {
 		d.Set(dlCreatedAt, instance.CreatedAt.String())
