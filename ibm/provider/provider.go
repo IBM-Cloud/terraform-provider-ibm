@@ -18,7 +18,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/certificatemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/classicinfrastructure"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudant"
@@ -256,8 +255,6 @@ func Provider() *schema.Provider {
 			"ibm_function_rule":                     functions.DataSourceIBMFunctionRule(),
 			"ibm_function_trigger":                  functions.DataSourceIBMFunctionTrigger(),
 			"ibm_function_namespace":                functions.DataSourceIBMFunctionNamespace(),
-			"ibm_certificate_manager_certificates":  certificatemanager.DataIBMCertificateManagerCertificates(),
-			"ibm_certificate_manager_certificate":   certificatemanager.DataIBMCertificateManagerCertificate(),
 			"ibm_cis":                               cis.DataSourceIBMCISInstance(),
 			"ibm_cis_dns_records":                   cis.DataSourceIBMCISDNSRecords(),
 			"ibm_cis_certificates":                  cis.DataSourceIBMCISCertificates(),
@@ -827,8 +824,6 @@ func Provider() *schema.Provider {
 			"ibm_function_namespace":                    functions.ResourceIBMFunctionNamespace(),
 			"ibm_cis":                                   cis.ResourceIBMCISInstance(),
 			"ibm_database":                              database.ResourceIBMDatabaseInstance(),
-			"ibm_certificate_manager_import":            certificatemanager.ResourceIBMCertificateManagerImport(),
-			"ibm_certificate_manager_order":             certificatemanager.ResourceIBMCertificateManagerOrder(),
 			"ibm_cis_domain":                            cis.ResourceIBMCISDomain(),
 			"ibm_cis_domain_settings":                   cis.ResourceIBMCISSettings(),
 			"ibm_cis_firewall":                          cis.ResourceIBMCISFirewallRecord(),
