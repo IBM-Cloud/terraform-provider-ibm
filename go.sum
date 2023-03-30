@@ -90,8 +90,8 @@ github.com/IBM/keyprotect-go-client v0.9.0 h1:UwbyEHcaGlmLNK7PW0qo9VlxneN+0/2zoG
 github.com/IBM/keyprotect-go-client v0.9.0/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
 github.com/IBM/networking-go-sdk v0.36.0 h1:ADntTsRM8DMZOxS9TYGTAL6i0zw9V2L7OeLFd9Czntk=
 github.com/IBM/networking-go-sdk v0.36.0/go.mod h1:tDJtlySQC/txyejU9KeQ27Amc6xKH0MwHFE/B2+Sn5w=
-github.com/IBM/platform-services-go-sdk v0.32.1 h1:BJW0DowS5Yy5JYMOUKk4ZlNELNLR/uUI1DZ3tXUP5pA=
-github.com/IBM/platform-services-go-sdk v0.32.1/go.mod h1:oFW/DQyAXGBcGytB+DtKjE3yNdEGM2bmw5SDOjrRwTw=
+github.com/IBM/platform-services-go-sdk v0.33.0 h1:CkIJt3HAeqxYPxAmoE5Pd3gofLSGJqcd3MyXY9owvNU=
+github.com/IBM/platform-services-go-sdk v0.33.0/go.mod h1:oFW/DQyAXGBcGytB+DtKjE3yNdEGM2bmw5SDOjrRwTw=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
 github.com/IBM/scc-go-sdk/v3 v3.1.6 h1:wg7yujuJJ1O1pcGrIn8ITq6i6GeXb7GRBPNq6kLrkMU=
@@ -100,14 +100,10 @@ github.com/IBM/scc-go-sdk/v4 v4.0.2 h1:8BHMRobCFurZwKaUhxWi8CdAA9+CvyzmlBOmo7KmX
 github.com/IBM/scc-go-sdk/v4 v4.0.2/go.mod h1:ufqf/kBtRn3Pq/pFXF6zQGHXV2P2EzPsntw1Sw19clE=
 github.com/IBM/schematics-go-sdk v0.2.1 h1:byATysGD+Z1k/wdtNqQmKALcAPjgSLuSyzcabh1jRAw=
 github.com/IBM/schematics-go-sdk v0.2.1/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
-github.com/IBM/vpc-beta-go-sdk v0.1.0 h1:+kdF+Y/0KY189HhpkqDrue9o0LluAr7rlOU5Zhu7hck=
-github.com/IBM/vpc-beta-go-sdk v0.1.0/go.mod h1:TGfLgJVmgQy6XvXc4lya8Vxvw7fvk83nqs5hdP+/VGo=
-github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230305091308-c49f01893314 h1:OeaVcMvEYYIAl9A/86A3be8DXUKEzd5jSEa3z1pgh94=
-github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230305091308-c49f01893314/go.mod h1:QyDSznC6gJEXIGaj+JPxoEVtyXfkaxzId87mxcEb+vM=
 github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230316070833-1e1d44fe67be h1:fSMzsH48lTFPWFi4ulS0DYa6uK/l2oz5JiJEbFhwdjc=
 github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230316070833-1e1d44fe67be/go.mod h1:qv+tQg8Z3Vb11DQYxDjEGeROHDtTLQxUWuOIrIdWg6E=
-github.com/IBM/vpc-go-sdk v0.32.0 h1:LDuU8xkeBISvLc6/artN7aQ1YsdKvDWRXalfsPHUBu4=
-github.com/IBM/vpc-go-sdk v0.32.0/go.mod h1:jYjS3EySPkC7DuOg33gMHtm8DcIf75Tc+Gxo3zmMBTQ=
+github.com/IBM/vpc-beta-go-sdk v0.1.0 h1:+kdF+Y/0KY189HhpkqDrue9o0LluAr7rlOU5Zhu7hck=
+github.com/IBM/vpc-beta-go-sdk v0.1.0/go.mod h1:TGfLgJVmgQy6XvXc4lya8Vxvw7fvk83nqs5hdP+/VGo=
 github.com/IBM/vpc-go-sdk v0.33.0 h1:HU0yEQmMGQoODlFJIAiQAOp2vE4i2PUvnjdcd8/9Kyw=
 github.com/IBM/vpc-go-sdk v0.33.0/go.mod h1:Ozn0YBCs284Qvy+CNAmoLhh2eD48NnobiAyfgVd8wmA=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
@@ -212,7 +208,6 @@ github.com/frankban/quicktest v1.11.3 h1:8sXhOn0uLys67V8EsXLc6eszDs8VXWxL3iRvebP
 github.com/frankban/quicktest v1.11.3/go.mod h1:wRf/ReqHper53s+kmmSZizM8NamnL3IM0I9ntUbOk+k=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
-github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
 github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
@@ -687,6 +682,7 @@ github.com/onsi/gomega v1.17.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAl
 github.com/onsi/gomega v1.18.0/go.mod h1:0q+aL8jAiMXy9hbwj2mr5GziHiwhAIQpFmmtT5hitRs=
 github.com/onsi/gomega v1.18.1/go.mod h1:0q+aL8jAiMXy9hbwj2mr5GziHiwhAIQpFmmtT5hitRs=
 github.com/onsi/gomega v1.19.0/go.mod h1:LY+I3pBVzYsTBU1AnDwOSxaYi9WoWiqgwooUqq9yPro=
+github.com/onsi/gomega v1.20.0/go.mod h1:DtrZpjmvpn2mPm4YWQa0/ALMDj9v4YxLgojwPeREyVo=
 github.com/onsi/gomega v1.20.1/go.mod h1:DtrZpjmvpn2mPm4YWQa0/ALMDj9v4YxLgojwPeREyVo=
 github.com/onsi/gomega v1.21.1/go.mod h1:iYAIXgPSaDHak0LCMA+AWBpIKBr8WZicMxnE8luStNc=
 github.com/onsi/gomega v1.27.1 h1:rfztXRbg6nv/5f+Raen9RcGoSecHIFgBBLQK3Wdj754=
@@ -795,7 +791,6 @@ go.mongodb.org/mongo-driver v1.7.0/go.mod h1:Q4oFMbo1+MSNqICAdYMlC/zSTrwCogR4R8N
 go.mongodb.org/mongo-driver v1.7.3/go.mod h1:NqaYOwnXWr5Pm7AOpO5QFxKJ503nbMse/R79oO62zWg=
 go.mongodb.org/mongo-driver v1.7.5/go.mod h1:VXEWRZ6URJIkUq2SCAyapmhH0ZLRBP+FT4xhp5Zvxng=
 go.mongodb.org/mongo-driver v1.10.0/go.mod h1:wsihk0Kdgv8Kqu1Anit4sfK+22vSFbUrAVEYRhCXrA8=
-go.mongodb.org/mongo-driver v1.10.1/go.mod h1:z4XpeoU6w+9Vht+jAFyLgVrD+jGSQQe0+CBWFHNiHt8=
 go.mongodb.org/mongo-driver v1.11.2 h1:+1v2rDQUWNcGW7/7E0Jvdz51V38XXxJfhzbV17aNHCw=
 go.mongodb.org/mongo-driver v1.11.2/go.mod h1:s7p5vEtfbeR1gYi6pnj3c3/urpbLv2T5Sfd6Rp2HBB8=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
@@ -1003,7 +998,6 @@ golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20220818161305-2296e01440c6/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0 h1:MVltZSvRTcU2ljQOhs94SXPftV6DCNnZViHeQps87pQ=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

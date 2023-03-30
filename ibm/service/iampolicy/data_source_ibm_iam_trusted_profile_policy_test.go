@@ -244,7 +244,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyDataSourceTimeBasedCustom(name string
 		profile_id = ibm_iam_trusted_profile.profileID.id
 		roles  = ["Viewer"]
 		resources {
-			service = "kms"
+			service_group_id = "IAM"
 		}
 		rule_conditions {
 			key = "{{environment.attributes.day_of_week}}"

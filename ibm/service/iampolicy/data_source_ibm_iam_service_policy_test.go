@@ -247,7 +247,7 @@ func testAccCheckIBMIAMServicePolicyDataSourceTimeBasedCustom(name string) strin
 		iam_service_id = ibm_iam_service_id.serviceID.id
 		roles  = ["Viewer"]
 		resources {
-			service = "kms"
+			service_group_id = "IAM"
 		}
 		rule_conditions {
 			key = "{{environment.attributes.day_of_week}}"

@@ -1385,6 +1385,7 @@ func GetV2PolicyCustomAttributes(r iampolicymanagementv1.V2PolicyResource) []iam
 		case "serviceType":
 		case "serviceName":
 		case "serviceInstance":
+		case "service_group_id":
 		default:
 			attributes = append(attributes, a)
 		}
@@ -1463,6 +1464,7 @@ func FlattenV2PolicyResource(resource iampolicymanagementv1.V2PolicyResource) []
 		"resource":             GetV2PolicyResourceAttribute("resource", resource),
 		"resource_group_id":    GetV2PolicyResourceAttribute("resourceGroupId", resource),
 		"service_type":         GetV2PolicyResourceAttribute("serviceType", resource),
+		"service_group_id":     GetV2PolicyResourceAttribute("service_group_id", resource),
 	}
 	customAttributes := GetV2PolicyCustomAttributes(resource)
 
@@ -3461,35 +3463,51 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2Policy, d *sc
 		return []string{}, err
 	}
 
-	var serviceToQuery string
-	var resourceType string
+	var (
+		serviceName    string
+		resourceType   string
+		serviceGroupID string
+	)
 
 	for _, a := range resourceAttributes {
 		if *a.Key == "serviceName" &&
 			(*a.Operator == "stringMatch" ||
 				*a.Operator == "stringEquals") {
-			serviceToQuery = a.Value.(string)
+			serviceName = a.Value.(string)
 		}
 		if *a.Key == "resourceType" &&
 			(*a.Operator == "stringMatch" ||
 				*a.Operator == "stringEquals") {
 			resourceType = a.Value.(string)
 		}
+		if *a.Key == "service_group_id" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			serviceGroupID = a.Value.(string)
+		}
+	}
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
 	}
 
 	var isAccountManagementPolicy bool
 	if accountManagement, ok := d.GetOk("account_management"); ok {
 		isAccountManagementPolicy = accountManagement.(bool)
 	}
-	if serviceToQuery == "" && // no specific service specified
+	if serviceName == "" && // no specific service specified
 		!isAccountManagementPolicy && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
 
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -3514,6 +3532,7 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 
 	var serviceName string
 	var resourceType string
+	var serviceGroupID string
 	resourceAttributes := []iampolicymanagementv1.ResourceAttribute{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -3526,6 +3545,18 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("service_group_id"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}
@@ -3615,6 +3646,9 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			if name == "serviceName" {
 				serviceName = value
 			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
@@ -3659,17 +3693,20 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 		return iampolicymanagementv1.CreatePolicyOptions{}, err
 	}
 
-	serviceToQuery := serviceName
-
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" { // service_group_id and service is mutually exclusive
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
-
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -3690,6 +3727,7 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 
 	var serviceName string
 	var resourceType string
+	var serviceGroupID string
 	resourceAttributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -3702,6 +3740,18 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
 						Key:      core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("service_group_id"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}
@@ -3791,6 +3841,9 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 			if name == "serviceName" {
 				serviceName = value
 			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
 			at := iampolicymanagementv1.V2PolicyResourceAttribute{
 				Key:      &name,
 				Value:    &value,
@@ -3835,17 +3888,23 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 		return iampolicymanagementv1.CreateV2PolicyOptions{}, err
 	}
 
-	serviceToQuery := serviceName
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
 
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
 
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)

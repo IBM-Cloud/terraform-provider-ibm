@@ -243,7 +243,7 @@ func testAccCheckIBMIAMAccessGroupPolicyDataSourceTimeBasedCustom(name string) s
 		access_group_id = ibm_iam_access_group.accgrp.id
 		roles  = ["Viewer"]
 		resources {
-			service = "kms"
+			service_group_id = "IAM"
 		}
 		rule_conditions {
 			key = "{{environment.attributes.day_of_week}}"

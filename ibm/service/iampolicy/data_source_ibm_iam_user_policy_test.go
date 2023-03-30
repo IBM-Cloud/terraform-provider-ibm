@@ -215,9 +215,9 @@ func testAccCheckIBMIAMUserPolicyDataSourceTimeBasedCustom() string {
 
 	resource "ibm_iam_user_policy" "policy" {
 		ibm_id = "%s"
-		roles  = ["Viewer"]
+		roles  = ["Service ID creator", "User API key creator", "Viewer"]
 		resources {
-			service = "kms"
+			service_group_id = "IAM"
 		}
 		rule_conditions {
 			key = "{{environment.attributes.day_of_week}}"
