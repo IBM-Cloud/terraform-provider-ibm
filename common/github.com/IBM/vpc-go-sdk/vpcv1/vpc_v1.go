@@ -37,7 +37,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2023-03-21
+// API Version: 2023-03-28
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -644,9 +644,8 @@ func (vpc *VpcV1) GetVPCDefaultRoutingTableWithContext(ctx context.Context, getV
 }
 
 // GetVPCDefaultSecurityGroup : Retrieve a VPC's default security group
-// This request retrieves the default security group for the VPC specified by the identifier in the URL. Resources that
-// optionally allow a security group to be specified upon creation will be attached to this security group if a security
-// group is not specified.
+// This request retrieves the default security group for the VPC specified by the identifier in the URL. Resources
+// created in this VPC that allow a security group to be optionally specified will use this security group by default.
 func (vpc *VpcV1) GetVPCDefaultSecurityGroup(getVPCDefaultSecurityGroupOptions *GetVPCDefaultSecurityGroupOptions) (result *DefaultSecurityGroup, response *core.DetailedResponse, err error) {
 	return vpc.GetVPCDefaultSecurityGroupWithContext(context.Background(), getVPCDefaultSecurityGroupOptions)
 }
@@ -18598,6 +18597,9 @@ func (vpc *VpcV1) CreateLoadBalancerWithContext(ctx context.Context, createLoadB
 	if createLoadBalancerOptions.Datapath != nil {
 		body["datapath"] = createLoadBalancerOptions.Datapath
 	}
+	if createLoadBalancerOptions.Dns != nil {
+		body["dns"] = createLoadBalancerOptions.Dns
+	}
 	if createLoadBalancerOptions.Listeners != nil {
 		body["listeners"] = createLoadBalancerOptions.Listeners
 	}
@@ -27840,6 +27842,8 @@ type CreateLoadBalancerOptions struct {
 	// The datapath logging configuration for this load balancer.
 	Datapath *LoadBalancerLoggingDatapathPrototype `json:"datapath,omitempty"`
 
+	Dns *LoadBalancerDnsPrototype `json:"dns,omitempty"`
+
 	// The listeners of this load balancer.
 	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
 
@@ -27903,6 +27907,12 @@ func (_options *CreateLoadBalancerOptions) SetSubnets(subnets []SubnetIdentityIn
 // SetDatapath : Allow user to set Datapath
 func (_options *CreateLoadBalancerOptions) SetDatapath(datapath *LoadBalancerLoggingDatapathPrototype) *CreateLoadBalancerOptions {
 	_options.Datapath = datapath
+	return _options
+}
+
+// SetDns : Allow user to set Dns
+func (_options *CreateLoadBalancerOptions) SetDns(dns *LoadBalancerDnsPrototype) *CreateLoadBalancerOptions {
+	_options.Dns = dns
 	return _options
 }
 
@@ -29515,6 +29525,92 @@ func (options *CreateVPNServerRouteOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
+// DnsInstanceIdentity : Identifies a DNS instance by a unique property.
+// Models which "extend" this model:
+// - DnsInstanceIdentityByCRN
+type DnsInstanceIdentity struct {
+	// The CRN for this DNS instance.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*DnsInstanceIdentity) isaDnsInstanceIdentity() bool {
+	return true
+}
+
+type DnsInstanceIdentityIntf interface {
+	isaDnsInstanceIdentity() bool
+}
+
+// UnmarshalDnsInstanceIdentity unmarshals an instance of DnsInstanceIdentity from the specified map of raw messages.
+func UnmarshalDnsInstanceIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsInstanceIdentity)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DnsInstanceReference : DnsInstanceReference struct
+type DnsInstanceReference struct {
+	// The CRN for this DNS instance.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// UnmarshalDnsInstanceReference unmarshals an instance of DnsInstanceReference from the specified map of raw messages.
+func UnmarshalDnsInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsInstanceReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DnsZoneIdentity : Identifies a DNS zone by a unique property.
+// Models which "extend" this model:
+// - DnsZoneIdentityByID
+type DnsZoneIdentity struct {
+	ID *string `json:"id,omitempty"`
+}
+
+func (*DnsZoneIdentity) isaDnsZoneIdentity() bool {
+	return true
+}
+
+type DnsZoneIdentityIntf interface {
+	isaDnsZoneIdentity() bool
+}
+
+// UnmarshalDnsZoneIdentity unmarshals an instance of DnsZoneIdentity from the specified map of raw messages.
+func UnmarshalDnsZoneIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsZoneIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DnsZoneReference : DnsZoneReference struct
+type DnsZoneReference struct {
+	ID *string `json:"id" validate:"required"`
+}
+
+// UnmarshalDnsZoneReference unmarshals an instance of DnsZoneReference from the specified map of raw messages.
+func UnmarshalDnsZoneReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsZoneReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // DedicatedHost : DedicatedHost struct
 type DedicatedHost struct {
 	// The amount of memory in gibibytes that is currently available for instances.
@@ -30425,6 +30521,8 @@ type DedicatedHostProfile struct {
 	VcpuArchitecture *DedicatedHostProfileVcpuArchitecture `json:"vcpu_architecture" validate:"required"`
 
 	VcpuCount DedicatedHostProfileVcpuIntf `json:"vcpu_count" validate:"required"`
+
+	VcpuManufacturer *DedicatedHostProfileVcpuManufacturer `json:"vcpu_manufacturer" validate:"required"`
 }
 
 // Constants associated with the DedicatedHostProfile.Family property.
@@ -30479,6 +30577,10 @@ func UnmarshalDedicatedHostProfile(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalModel(m, "vcpu_count", &obj.VcpuCount, UnmarshalDedicatedHostProfileVcpu)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vcpu_manufacturer", &obj.VcpuManufacturer, UnmarshalDedicatedHostProfileVcpuManufacturer)
 	if err != nil {
 		return
 	}
@@ -31070,6 +31172,36 @@ const (
 // UnmarshalDedicatedHostProfileVcpuArchitecture unmarshals an instance of DedicatedHostProfileVcpuArchitecture from the specified map of raw messages.
 func UnmarshalDedicatedHostProfileVcpuArchitecture(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DedicatedHostProfileVcpuArchitecture)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostProfileVcpuManufacturer : DedicatedHostProfileVcpuManufacturer struct
+type DedicatedHostProfileVcpuManufacturer struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The VCPU manufacturer for a dedicated host with this profile.
+	Value *string `json:"value" validate:"required"`
+}
+
+// Constants associated with the DedicatedHostProfileVcpuManufacturer.Type property.
+// The type for this profile field.
+const (
+	DedicatedHostProfileVcpuManufacturerTypeFixedConst = "fixed"
+)
+
+// UnmarshalDedicatedHostProfileVcpuManufacturer unmarshals an instance of DedicatedHostProfileVcpuManufacturer from the specified map of raw messages.
+func UnmarshalDedicatedHostProfileVcpuManufacturer(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostProfileVcpuManufacturer)
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		return
@@ -42501,6 +42633,8 @@ type InstanceProfile struct {
 	// The globally unique name for this virtual server instance profile.
 	Name *string `json:"name" validate:"required"`
 
+	NetworkInterfaceCount InstanceProfileNetworkInterfaceCountIntf `json:"network_interface_count" validate:"required"`
+
 	OsArchitecture *InstanceProfileOsArchitecture `json:"os_architecture" validate:"required"`
 
 	PortSpeed InstanceProfilePortSpeedIntf `json:"port_speed" validate:"required"`
@@ -42510,6 +42644,8 @@ type InstanceProfile struct {
 	VcpuArchitecture *InstanceProfileVcpuArchitecture `json:"vcpu_architecture" validate:"required"`
 
 	VcpuCount InstanceProfileVcpuIntf `json:"vcpu_count" validate:"required"`
+
+	VcpuManufacturer *InstanceProfileVcpuManufacturer `json:"vcpu_manufacturer" validate:"required"`
 }
 
 // UnmarshalInstanceProfile unmarshals an instance of InstanceProfile from the specified map of raw messages.
@@ -42555,6 +42691,10 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "network_interface_count", &obj.NetworkInterfaceCount, UnmarshalInstanceProfileNetworkInterfaceCount)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "os_architecture", &obj.OsArchitecture, UnmarshalInstanceProfileOsArchitecture)
 	if err != nil {
 		return
@@ -42572,6 +42712,10 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "vcpu_count", &obj.VcpuCount, UnmarshalInstanceProfileVcpu)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vcpu_manufacturer", &obj.VcpuManufacturer, UnmarshalInstanceProfileVcpuManufacturer)
 	if err != nil {
 		return
 	}
@@ -43250,6 +43394,54 @@ func UnmarshalInstanceProfileMemory(m map[string]json.RawMessage, result interfa
 	return
 }
 
+// InstanceProfileNetworkInterfaceCount : InstanceProfileNetworkInterfaceCount struct
+// Models which "extend" this model:
+// - InstanceProfileNetworkInterfaceCountRange
+// - InstanceProfileNetworkInterfaceCountDependent
+type InstanceProfileNetworkInterfaceCount struct {
+	// The maximum value for this profile field.
+	Max *int64 `json:"max,omitempty"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min,omitempty"`
+
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+}
+
+// Constants associated with the InstanceProfileNetworkInterfaceCount.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileNetworkInterfaceCountTypeRangeConst = "range"
+)
+
+func (*InstanceProfileNetworkInterfaceCount) isaInstanceProfileNetworkInterfaceCount() bool {
+	return true
+}
+
+type InstanceProfileNetworkInterfaceCountIntf interface {
+	isaInstanceProfileNetworkInterfaceCount() bool
+}
+
+// UnmarshalInstanceProfileNetworkInterfaceCount unmarshals an instance of InstanceProfileNetworkInterfaceCount from the specified map of raw messages.
+func UnmarshalInstanceProfileNetworkInterfaceCount(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileNetworkInterfaceCount)
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceProfileOsArchitecture : InstanceProfileOsArchitecture struct
 type InstanceProfileOsArchitecture struct {
 	// The default OS architecture for an instance with this profile.
@@ -43451,6 +43643,43 @@ const (
 // UnmarshalInstanceProfileVcpuArchitecture unmarshals an instance of InstanceProfileVcpuArchitecture from the specified map of raw messages.
 func UnmarshalInstanceProfileVcpuArchitecture(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileVcpuArchitecture)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceProfileVcpuManufacturer : InstanceProfileVcpuManufacturer struct
+type InstanceProfileVcpuManufacturer struct {
+	// The default VCPU manufacturer for an instance with this profile.
+	Default *string `json:"default,omitempty"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The VCPU manufacturer for an instance with this profile.
+	Value *string `json:"value" validate:"required"`
+}
+
+// Constants associated with the InstanceProfileVcpuManufacturer.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileVcpuManufacturerTypeFixedConst = "fixed"
+)
+
+// UnmarshalInstanceProfileVcpuManufacturer unmarshals an instance of InstanceProfileVcpuManufacturer from the specified map of raw messages.
+func UnmarshalInstanceProfileVcpuManufacturer(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileVcpuManufacturer)
 	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
 	if err != nil {
 		return
@@ -44471,6 +44700,9 @@ type InstanceVcpu struct {
 
 	// The number of VCPUs assigned.
 	Count *int64 `json:"count" validate:"required"`
+
+	// The VCPU manufacturer.
+	Manufacturer *string `json:"manufacturer" validate:"required"`
 }
 
 // UnmarshalInstanceVcpu unmarshals an instance of InstanceVcpu from the specified map of raw messages.
@@ -44481,6 +44713,10 @@ func UnmarshalInstanceVcpu(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "count", &obj.Count)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "manufacturer", &obj.Manufacturer)
 	if err != nil {
 		return
 	}
@@ -48444,6 +48680,12 @@ type LoadBalancer struct {
 	// The load balancer's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The DNS configuration for this load balancer.
+	//
+	// If absent, DNS `A` records for this load balancer's `hostname` property will be added to
+	// the public DNS zone `lb.appdomain.cloud`.
+	Dns *LoadBalancerDns `json:"dns,omitempty"`
+
 	// Fully qualified domain name assigned to this load balancer.
 	Hostname *string `json:"hostname" validate:"required"`
 
@@ -48582,6 +48824,10 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "dns", &obj.Dns, UnmarshalLoadBalancerDns)
 	if err != nil {
 		return
 	}
@@ -48754,6 +49000,101 @@ type LoadBalancerCollectionNext struct {
 func UnmarshalLoadBalancerCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerDns : The DNS configuration for this load balancer.
+//
+// If absent, DNS `A` records for this load balancer's `hostname` property will be added to the public DNS zone
+// `lb.appdomain.cloud`.
+type LoadBalancerDns struct {
+	// The DNS instance associated with this load balancer.
+	Instance *DnsInstanceReference `json:"instance" validate:"required"`
+
+	// The DNS zone associated with this load balancer.
+	Zone *DnsZoneReference `json:"zone" validate:"required"`
+}
+
+// UnmarshalLoadBalancerDns unmarshals an instance of LoadBalancerDns from the specified map of raw messages.
+func UnmarshalLoadBalancerDns(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerDns)
+	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalDnsInstanceReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalDnsZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerDnsPatch : LoadBalancerDnsPatch struct
+type LoadBalancerDnsPatch struct {
+	// The DNS instance to associate with this load balancer.
+	//
+	// The specified instance may be in a different region or account, subject to IAM
+	// policies.
+	Instance DnsInstanceIdentityIntf `json:"instance,omitempty"`
+
+	// The DNS zone to associate with this load balancer.
+	//
+	// The specified zone may be in a different region or account, subject to IAM policies.
+	Zone DnsZoneIdentityIntf `json:"zone,omitempty"`
+}
+
+// UnmarshalLoadBalancerDnsPatch unmarshals an instance of LoadBalancerDnsPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerDnsPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerDnsPatch)
+	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalDnsInstanceIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalDnsZoneIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerDnsPrototype : LoadBalancerDnsPrototype struct
+type LoadBalancerDnsPrototype struct {
+	// The DNS instance to associate with this load balancer.
+	//
+	// The specified instance may be in a different region or account, subject to IAM
+	// policies.
+	Instance DnsInstanceIdentityIntf `json:"instance" validate:"required"`
+
+	// The DNS zone to associate with this load balancer.
+	//
+	// The specified zone may be in a different region or account, subject to IAM policies.
+	Zone DnsZoneIdentityIntf `json:"zone" validate:"required"`
+}
+
+// NewLoadBalancerDnsPrototype : Instantiate LoadBalancerDnsPrototype (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerDnsPrototype(instance DnsInstanceIdentityIntf, zone DnsZoneIdentityIntf) (_model *LoadBalancerDnsPrototype, err error) {
+	_model = &LoadBalancerDnsPrototype{
+		Instance: instance,
+		Zone:     zone,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalLoadBalancerDnsPrototype unmarshals an instance of LoadBalancerDnsPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerDnsPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerDnsPrototype)
+	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalDnsInstanceIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalDnsZoneIdentity)
 	if err != nil {
 		return
 	}
@@ -50436,6 +50777,8 @@ func UnmarshalLoadBalancerLoggingPrototype(m map[string]json.RawMessage, result 
 
 // LoadBalancerPatch : LoadBalancerPatch struct
 type LoadBalancerPatch struct {
+	Dns *LoadBalancerDnsPatch `json:"dns,omitempty"`
+
 	// The logging configuration to use for this load balancer.
 	//
 	// To activate logging, the load balancer profile must support the specified logging type.
@@ -50457,6 +50800,10 @@ type LoadBalancerPatch struct {
 // UnmarshalLoadBalancerPatch unmarshals an instance of LoadBalancerPatch from the specified map of raw messages.
 func UnmarshalLoadBalancerPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerPatch)
+	err = core.UnmarshalModel(m, "dns", &obj.Dns, UnmarshalLoadBalancerDnsPatch)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLoggingPatch)
 	if err != nil {
 		return
@@ -61822,6 +62169,9 @@ type Vcpu struct {
 
 	// The number of VCPUs assigned.
 	Count *int64 `json:"count" validate:"required"`
+
+	// The VCPU manufacturer.
+	Manufacturer *string `json:"manufacturer" validate:"required"`
 }
 
 // UnmarshalVcpu unmarshals an instance of Vcpu from the specified map of raw messages.
@@ -61832,6 +62182,10 @@ func UnmarshalVcpu(m map[string]json.RawMessage, result interface{}) (err error)
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "count", &obj.Count)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "manufacturer", &obj.Manufacturer)
 	if err != nil {
 		return
 	}
@@ -61862,7 +62216,9 @@ type VPC struct {
 	// The default routing table to use for subnets created in this VPC.
 	DefaultRoutingTable *RoutingTableReference `json:"default_routing_table" validate:"required"`
 
-	// The default security group to use for network interfaces created in this VPC.
+	// The default security group for this VPC. Resources created in this VPC that allow
+	// a security group to be optionally specified will use this security group by
+	// default.
 	DefaultSecurityGroup *SecurityGroupReference `json:"default_security_group" validate:"required"`
 
 	// The URL for this VPC.
@@ -68392,6 +68748,67 @@ func UnmarshalCertificateInstanceIdentityByCRN(m map[string]json.RawMessage, res
 	return
 }
 
+// DnsInstanceIdentityByCRN : DnsInstanceIdentityByCRN struct
+// This model "extends" DnsInstanceIdentity
+type DnsInstanceIdentityByCRN struct {
+	// The CRN for this DNS instance.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewDnsInstanceIdentityByCRN : Instantiate DnsInstanceIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewDnsInstanceIdentityByCRN(crn string) (_model *DnsInstanceIdentityByCRN, err error) {
+	_model = &DnsInstanceIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*DnsInstanceIdentityByCRN) isaDnsInstanceIdentity() bool {
+	return true
+}
+
+// UnmarshalDnsInstanceIdentityByCRN unmarshals an instance of DnsInstanceIdentityByCRN from the specified map of raw messages.
+func UnmarshalDnsInstanceIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsInstanceIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DnsZoneIdentityByID : DnsZoneIdentityByID struct
+// This model "extends" DnsZoneIdentity
+type DnsZoneIdentityByID struct {
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewDnsZoneIdentityByID : Instantiate DnsZoneIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewDnsZoneIdentityByID(id string) (_model *DnsZoneIdentityByID, err error) {
+	_model = &DnsZoneIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*DnsZoneIdentityByID) isaDnsZoneIdentity() bool {
+	return true
+}
+
+// UnmarshalDnsZoneIdentityByID unmarshals an instance of DnsZoneIdentityByID from the specified map of raw messages.
+func UnmarshalDnsZoneIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsZoneIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // DedicatedHostGroupIdentityByCRN : DedicatedHostGroupIdentityByCRN struct
 // This model "extends" DedicatedHostGroupIdentity
 type DedicatedHostGroupIdentityByCRN struct {
@@ -72856,6 +73273,76 @@ func UnmarshalInstanceProfileMemoryRange(m map[string]json.RawMessage, result in
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceProfileNetworkInterfaceCountDependent : The number of network interfaces supported on an instance with this profile is dependent on its configuration.
+// This model "extends" InstanceProfileNetworkInterfaceCount
+type InstanceProfileNetworkInterfaceCountDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the InstanceProfileNetworkInterfaceCountDependent.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileNetworkInterfaceCountDependentTypeDependentConst = "dependent"
+)
+
+func (*InstanceProfileNetworkInterfaceCountDependent) isaInstanceProfileNetworkInterfaceCount() bool {
+	return true
+}
+
+// UnmarshalInstanceProfileNetworkInterfaceCountDependent unmarshals an instance of InstanceProfileNetworkInterfaceCountDependent from the specified map of raw messages.
+func UnmarshalInstanceProfileNetworkInterfaceCountDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileNetworkInterfaceCountDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceProfileNetworkInterfaceCountRange : The number of network interfaces supported on an instance with this profile.
+// This model "extends" InstanceProfileNetworkInterfaceCount
+type InstanceProfileNetworkInterfaceCountRange struct {
+	// The maximum value for this profile field.
+	Max *int64 `json:"max,omitempty"`
+
+	// The minimum value for this profile field.
+	Min *int64 `json:"min,omitempty"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the InstanceProfileNetworkInterfaceCountRange.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileNetworkInterfaceCountRangeTypeRangeConst = "range"
+)
+
+func (*InstanceProfileNetworkInterfaceCountRange) isaInstanceProfileNetworkInterfaceCount() bool {
+	return true
+}
+
+// UnmarshalInstanceProfileNetworkInterfaceCountRange unmarshals an instance of InstanceProfileNetworkInterfaceCountRange from the specified map of raw messages.
+func UnmarshalInstanceProfileNetworkInterfaceCountRange(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileNetworkInterfaceCountRange)
+	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
 	if err != nil {
 		return
 	}
