@@ -1305,6 +1305,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
+		session.projectClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
