@@ -65,3 +65,4 @@ In addition to all argument references listed, you can access the following attr
 * `version` - (Integer) The version of the profile.
   * Constraints: The minimum value is `1`.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_profile is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).
