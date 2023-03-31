@@ -18,25 +18,25 @@ import (
 	"github.com/damianovesperini/platform-services-go-sdk/projectv1"
 )
 
-func ResourceIbmProject() *schema.Resource {
+func ResourceIbmProjectInstance() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmProjectCreate,
-		ReadContext:   resourceIbmProjectRead,
-		UpdateContext: resourceIbmProjectUpdate,
-		DeleteContext: resourceIbmProjectDelete,
+		CreateContext: resourceIbmProjectInstanceCreate,
+		ReadContext:   resourceIbmProjectInstanceRead,
+		UpdateContext: resourceIbmProjectInstanceUpdate,
+		DeleteContext: resourceIbmProjectInstanceDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "name"),
 				Description:  "The project name.",
 			},
 			"description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project", "description"),
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "description"),
 				Description:  "A project's descriptive text.",
 			},
 			"configs": &schema.Schema{
@@ -64,7 +64,7 @@ func ResourceIbmProject() *schema.Resource {
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A project configuration description.",
+							Description: "The project configuration description.",
 						},
 						"locator_id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -88,7 +88,7 @@ func ResourceIbmProject() *schema.Resource {
 						"setting": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "An optional setting object That is passed to the cart API.",
+							Description: "An optional setting object that's passed to the cart API.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -111,14 +111,14 @@ func ResourceIbmProject() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "Default",
-				ValidateFunc: validate.InvokeValidator("ibm_project", "resource_group"),
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "resource_group"),
 				Description:  "Group name of the customized collection of resources.",
 			},
 			"location": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "us-south",
-				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "location"),
 				Description:  "Data center locations for resource deployment.",
 			},
 			"crn": &schema.Schema{
@@ -129,7 +129,7 @@ func ResourceIbmProject() *schema.Resource {
 			"metadata": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Metadata of the project.",
+				Description: "The metadata of the project.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"crn": &schema.Schema{
@@ -145,7 +145,7 @@ func ResourceIbmProject() *schema.Resource {
 						"cumulative_needs_attention_view": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The cumulative list of needs attention items of a project.",
+							Description: "The cumulative list of needs attention items for a project.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"event": &schema.Schema{
@@ -174,17 +174,17 @@ func ResourceIbmProject() *schema.Resource {
 						"cumulative_needs_attention_view_err": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "True to indicate the fetch of needs attention items that failed.",
+							Description: "True indicates that the fetch of the needs attention items failed.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The location of where the project was created.",
+							Description: "The location where the project was created.",
 						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The resource group of where the project was created.",
+							Description: "The resource group where the project was created.",
 						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
@@ -203,7 +203,7 @@ func ResourceIbmProject() *schema.Resource {
 	}
 }
 
-func ResourceIbmProjectValidator() *validate.ResourceValidator {
+func ResourceIbmProjectInstanceValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -244,11 +244,11 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_project", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_project_instance", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmProjectInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -261,10 +261,10 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 		createProjectOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("configs"); ok {
-		var configs []projectv1.ProjectConfigInput
+		var configs []projectv1.ProjectConfigPrototype
 		for _, v := range d.Get("configs").([]interface{}) {
 			value := v.(map[string]interface{})
-			configsItem, err := resourceIbmProjectMapToProjectConfigInput(value)
+			configsItem, err := resourceIbmProjectInstanceMapToProjectConfigPrototype(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -279,18 +279,18 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 		createProjectOptions.SetLocation(d.Get("location").(string))
 	}
 
-	getProjectResponse, response, err := projectClient.CreateProjectWithContext(context, createProjectOptions)
+	project, response, err := projectClient.CreateProjectWithContext(context, createProjectOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateProjectWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateProjectWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*getProjectResponse.ID)
+	d.SetId(*project.ID)
 
-	return resourceIbmProjectRead(context, d, meta)
+	return resourceIbmProjectInstanceRead(context, d, meta)
 }
 
-func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -300,7 +300,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 
 	getProjectOptions.SetID(d.Id())
 
-	getProjectResponse, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
+	project, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -310,36 +310,13 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("name", getProjectResponse.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-	if !core.IsNil(getProjectResponse.Description) {
-		if err = d.Set("description", getProjectResponse.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
-		}
-	}
-	if !core.IsNil(getProjectResponse.Configs) {
-		configs := []map[string]interface{}{}
-		/*
-			for _, configsItem := range getProjectResponse.Configs {
-				configsItemMap, err := resourceIbmProjectProjectConfigInputToMap(&configsItem)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				configs = append(configs, configsItemMap)
-			}
-		*/
-		if err = d.Set("configs", configs); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
-		}
-	}
-	if !core.IsNil(getProjectResponse.Crn) {
-		if err = d.Set("crn", getProjectResponse.Crn); err != nil {
+	if !core.IsNil(project.Crn) {
+		if err = d.Set("crn", project.Crn); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
 	}
-	if !core.IsNil(getProjectResponse.Metadata) {
-		metadataMap, err := resourceIbmProjectProjectMetadataToMap(getProjectResponse.Metadata)
+	if !core.IsNil(project.Metadata) {
+		metadataMap, err := resourceIbmProjectInstanceProjectMetadataToMap(project.Metadata)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -351,7 +328,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmProjectInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -371,10 +348,10 @@ func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return resourceIbmProjectRead(context, d, meta)
+	return resourceIbmProjectInstanceRead(context, d, meta)
 }
 
-func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmProjectInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -395,8 +372,8 @@ func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceIbmProjectMapToProjectConfigInput(modelMap map[string]interface{}) (*projectv1.ProjectConfigInput, error) {
-	model := &projectv1.ProjectConfigInput{}
+func resourceIbmProjectInstanceMapToProjectConfigPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototype, error) {
+	model := &projectv1.ProjectConfigPrototype{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
@@ -413,9 +390,9 @@ func resourceIbmProjectMapToProjectConfigInput(modelMap map[string]interface{}) 
 	}
 	model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	if modelMap["input"] != nil {
-		input := []projectv1.InputVariableInput{}
+		input := []projectv1.ProjectConfigInputVariable{}
 		for _, inputItem := range modelMap["input"].([]interface{}) {
-			inputItemModel, err := resourceIbmProjectMapToInputVariableInput(inputItem.(map[string]interface{}))
+			inputItemModel, err := resourceIbmProjectInstanceMapToProjectConfigInputVariable(inputItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -424,9 +401,9 @@ func resourceIbmProjectMapToProjectConfigInput(modelMap map[string]interface{}) 
 		model.Input = input
 	}
 	if modelMap["setting"] != nil {
-		setting := []projectv1.ConfigSettingItems{}
+		setting := []projectv1.ProjectConfigSettingCollection{}
 		for _, settingItem := range modelMap["setting"].([]interface{}) {
-			settingItemModel, err := resourceIbmProjectMapToConfigSettingItems(settingItem.(map[string]interface{}))
+			settingItemModel, err := resourceIbmProjectInstanceMapToProjectConfigSettingCollection(settingItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -437,20 +414,20 @@ func resourceIbmProjectMapToProjectConfigInput(modelMap map[string]interface{}) 
 	return model, nil
 }
 
-func resourceIbmProjectMapToInputVariableInput(modelMap map[string]interface{}) (*projectv1.InputVariableInput, error) {
-	model := &projectv1.InputVariableInput{}
+func resourceIbmProjectInstanceMapToProjectConfigInputVariable(modelMap map[string]interface{}) (*projectv1.ProjectConfigInputVariable, error) {
+	model := &projectv1.ProjectConfigInputVariable{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	return model, nil
 }
 
-func resourceIbmProjectMapToConfigSettingItems(modelMap map[string]interface{}) (*projectv1.ConfigSettingItems, error) {
-	model := &projectv1.ConfigSettingItems{}
+func resourceIbmProjectInstanceMapToProjectConfigSettingCollection(modelMap map[string]interface{}) (*projectv1.ProjectConfigSettingCollection, error) {
+	model := &projectv1.ProjectConfigSettingCollection{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	model.Value = core.StringPtr(modelMap["value"].(string))
 	return model, nil
 }
 
-func resourceIbmProjectProjectConfigInputToMap(model *projectv1.ProjectConfigInput) (map[string]interface{}, error) {
+func resourceIbmProjectInstanceProjectConfigPrototypeToMap(model *projectv1.ProjectConfigPrototype) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID
@@ -466,7 +443,7 @@ func resourceIbmProjectProjectConfigInputToMap(model *projectv1.ProjectConfigInp
 	if model.Input != nil {
 		input := []map[string]interface{}{}
 		for _, inputItem := range model.Input {
-			inputItemMap, err := resourceIbmProjectInputVariableInputToMap(&inputItem)
+			inputItemMap, err := resourceIbmProjectInstanceProjectConfigInputVariableToMap(&inputItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -477,7 +454,7 @@ func resourceIbmProjectProjectConfigInputToMap(model *projectv1.ProjectConfigInp
 	if model.Setting != nil {
 		setting := []map[string]interface{}{}
 		for _, settingItem := range model.Setting {
-			settingItemMap, err := resourceIbmProjectConfigSettingItemsToMap(&settingItem)
+			settingItemMap, err := resourceIbmProjectInstanceProjectConfigSettingCollectionToMap(&settingItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -488,20 +465,20 @@ func resourceIbmProjectProjectConfigInputToMap(model *projectv1.ProjectConfigInp
 	return modelMap, nil
 }
 
-func resourceIbmProjectInputVariableInputToMap(model *projectv1.InputVariableInput) (map[string]interface{}, error) {
+func resourceIbmProjectInstanceProjectConfigInputVariableToMap(model *projectv1.ProjectConfigInputVariable) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	return modelMap, nil
 }
 
-func resourceIbmProjectConfigSettingItemsToMap(model *projectv1.ConfigSettingItems) (map[string]interface{}, error) {
+func resourceIbmProjectInstanceProjectConfigSettingCollectionToMap(model *projectv1.ProjectConfigSettingCollection) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	modelMap["value"] = model.Value
 	return modelMap, nil
 }
 
-func resourceIbmProjectProjectMetadataToMap(model *projectv1.ProjectMetadata) (map[string]interface{}, error) {
+func resourceIbmProjectInstanceProjectMetadataToMap(model *projectv1.ProjectMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Crn != nil {
 		modelMap["crn"] = model.Crn
@@ -512,7 +489,7 @@ func resourceIbmProjectProjectMetadataToMap(model *projectv1.ProjectMetadata) (m
 	if model.CumulativeNeedsAttentionView != nil {
 		cumulativeNeedsAttentionView := []map[string]interface{}{}
 		for _, cumulativeNeedsAttentionViewItem := range model.CumulativeNeedsAttentionView {
-			cumulativeNeedsAttentionViewItemMap, err := resourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
+			cumulativeNeedsAttentionViewItemMap, err := resourceIbmProjectInstanceCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -538,7 +515,7 @@ func resourceIbmProjectProjectMetadataToMap(model *projectv1.ProjectMetadata) (m
 	return modelMap, nil
 }
 
-func resourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.CumulativeNeedsAttention) (map[string]interface{}, error) {
+func resourceIbmProjectInstanceCumulativeNeedsAttentionToMap(model *projectv1.CumulativeNeedsAttention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Event != nil {
 		modelMap["event"] = model.Event
