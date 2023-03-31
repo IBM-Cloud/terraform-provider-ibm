@@ -3,7 +3,6 @@
 
 package directlink_test
 
-/*
 import (
 	"errors"
 	"fmt"
@@ -23,9 +22,6 @@ import (
 func TestAccIBMDLGatewayAction_basic(t *testing.T) {
 	//var instance string
 	gatewayname := fmt.Sprintf("provider-gateway-name12-%d", acctest.RandIntRange(10, 100))
-	//custAccID := "3f455c4c574447adbc14bda52f80e62f" // bbsdldv1 account
-	//node := "data.ibm_dl_gateway.test_ibm_dl_gateway1"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -46,7 +42,7 @@ func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
 		alias = "packet_fabric"
-		ibmcloud_api_key      = "__BDfQHiKvN5Dsnsni4YerMqoPUgOIbso0f645JXn4R1"
+		ibmcloud_api_key      = "API key"
 		region                = "us-south"
 		ibmcloud_timeout      = 300
 	  }
@@ -54,9 +50,9 @@ func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
 		provider = ibm.packet_fabric
         bgp_asn =  64999
         name = "%s"
-        customer_account_id = "3f455c4c574447adbc14bda52f80e62f"
+        customer_account_id = "Cus account"
         speed_mbps = 1000
-        port = "3aa86cea-454d-4586-8247-222a36f7d1fe"
+        port = "port"
         vlan = 25
     }
 	resource "ibm_dl_gateway_action" "test_dl_gateway_action" {
@@ -69,32 +65,31 @@ func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
 	  `, gatewayname)
 }
 
-/*
-	func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
-		sess, err := meta.(conns.ClientSession).DirectlinkV1API()
-		return sess, err
+func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
+	sess, err := meta.(conns.ClientSession).DirectlinkV1API()
+	return sess, err
+}
+
+func testAccCheckIBMDLGatewayDestroy(s *terraform.State) error {
+	directLink, err := directlinkClient(acc.TestAccProvider.Meta())
+	if err != nil {
+		return err
 	}
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_dl_gateway" {
+			log.Printf("Destroy called ...%s", rs.Primary.ID)
+			getOptions := &directlinkv1.GetGatewayOptions{
+				ID: &rs.Primary.ID,
+			}
+			_, _, err = directLink.GetGateway(getOptions)
 
-	func testAccCheckIBMDLGatewayDestroy(s *terraform.State) error {
-		directLink, err := directlinkClient(acc.TestAccProvider.Meta())
-		if err != nil {
-			return err
-		}
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "ibm_dl_gateway" {
-				log.Printf("Destroy called ...%s", rs.Primary.ID)
-				getOptions := &directlinkv1.GetGatewayOptions{
-					ID: &rs.Primary.ID,
-				}
-				_, _, err = directLink.GetGateway(getOptions)
-
-				if err == nil {
-					return fmt.Errorf("gateway still exists: %s", rs.Primary.ID)
-				}
+			if err == nil {
+				return fmt.Errorf("gateway still exists: %s", rs.Primary.ID)
 			}
 		}
-		return nil
 	}
+	return nil
+}
 
 func testAccCheckIBMDLProviderGatewayActionExists(n string, instance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -142,4 +137,3 @@ func testAccCheckIBMDLProviderGatewayActionDestroy(s *terraform.State) error {
 	}
 	return nil
 }
-*/
