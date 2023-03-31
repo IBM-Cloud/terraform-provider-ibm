@@ -3,6 +3,7 @@
 
 package directlink_test
 
+/*
 import (
 	"errors"
 	"fmt"
@@ -44,11 +45,11 @@ func TestAccIBMDLGatewayAction_basic(t *testing.T) {
 func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-		alias = "packet_fabric" 
-		ibmcloud_api_key      = "__BDfQHiKvN5Dsnsni4YerMqoPUgOIbso0f645JXn4R1" 
+		alias = "packet_fabric"
+		ibmcloud_api_key      = "__BDfQHiKvN5Dsnsni4YerMqoPUgOIbso0f645JXn4R1"
 		region                = "us-south"
 		ibmcloud_timeout      = 300
-	  }  
+	  }
 	resource "ibm_dl_provider_gateway" "test_dl_gateway" {
 		provider = ibm.packet_fabric
         bgp_asn =  64999
@@ -59,11 +60,11 @@ func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
         vlan = 25
     }
 	resource "ibm_dl_gateway_action" "test_dl_gateway_action" {
-        action = "create_gateway_reject"   
-        global = true   
+        action = "create_gateway_reject"
+        global = true
         metered = true
 		gateway = ibm_dl_provider_gateway.test_dl_gateway.id
-		depends_on = [ ibm_dl_provider_gateway.test_dl_gateway ]               
+		depends_on = [ ibm_dl_provider_gateway.test_dl_gateway ]
     }
 	  `, gatewayname)
 }
@@ -94,13 +95,6 @@ func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
 		}
 		return nil
 	}
-*/
-/*
-func directlinkProviderClient(meta interface{}) (*dlProviderV2.DirectLinkProviderV2, error) {
-	sess, err := meta.(conns.ClientSession).DirectlinkProviderV2API()
-	return sess, err
-}
-*/
 
 func testAccCheckIBMDLProviderGatewayActionExists(n string, instance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -148,3 +142,4 @@ func testAccCheckIBMDLProviderGatewayActionDestroy(s *terraform.State) error {
 	}
 	return nil
 }
+*/

@@ -30,7 +30,7 @@ resource ibm_dl_provider_gateway "test_dl_gateway" {
 	name = var.gname
 	speed_mbps = 1000 
 	port = data.ibm_dl_provider_ports.test_ds_dl_ports.ports[0].port_id
-	customer_account_id = "3b1bd7fa2bc3406ea70ba4ade8aa3f1b"			  		                  
+	customer_account_id = "Some customer account"			  		                  
 }
 resource "time_sleep" "wait_dl_connection" {
   create_duration = "1m"
@@ -61,7 +61,7 @@ resource "ibm_dl_gateway_action" "test_dl_gateway_action" {
   	        ge =25
   	        le = 29
 	 }	
-	 resource_group = "63da3b5efb7b4239adb32018974237b5"	             
+	 resource_group = data.ibm_dl_gateway.test_ibm_dl_gateway.resource_group	             
 }
 ```
 ---
@@ -81,7 +81,7 @@ resource "ibm_dl_provider_gateway" "test_dl_gateway" {
 	name = var.gname
 	speed_mbps = 1000 
 	port = data.ibm_dl_provider_ports.test_ds_dl_ports.ports[0].port_id
-	customer_account_id = "3b1bd7fa2bc3406ea70ba4ade8aa3f1b"			  		                  
+	customer_account_id = "Some customer account"			  		                  
 }
 resource "time_sleep" "wait_dl_connection" {
 	create_duration = "1m"
@@ -111,7 +111,7 @@ resource ibm_dl_provider_gateway "test_dl_gateway" {
 	name = var.gname
 	speed_mbps = 1000 
 	port = data.ibm_dl_provider_ports.test_ds_dl_ports.ports[0].port_id
-	customer_account_id = "3b1bd7fa2bc3406ea70ba4ade8aa3f1b"			  		                  
+	customer_account_id = "Some customer account"		  		                  
 }
 data "ibm_dl_gateway" "test_ibm_dl_gateway" {
 	name = var.gname
@@ -154,7 +154,7 @@ Review the argument reference that you can specify for your resource.
 - `connection_mode` - (Optional, String) Type of network connection that you want to bind to your direct link. Allowed values are `direct` and `transit`. Applicable only for create_gateway_approve requests.
 - `global`- (Required,Bool) Required-Gateway with global routing as **true** can connect networks outside your associated region.Applicable only for create_gateway_approve requests.
 - `metered`- (Required, Bool) Metered billing option. If set **true** gateway usage is billed per GB. Otherwise, flat rate is charged for the gateway. Applicable only for create_gateway_approve requests.
-- `resource_group` - (Required, Forces new resource, String) The resource group. If unspecified, the account's default resource group is used.Applicable only for create_gateway_approve requests.
+- `resource_group` - (Required, Forces new resource, String) The resource group id. If unspecified, the account's default resource group is used.Applicable only for create_gateway_approve requests.
 - `default_export_route_filter` - (Optional,String) The default directional route filter action  that applies to routes that do not match any directional route filters. Applicable only for create_gateway_approve requests.
 - `default_import_route_filter` - (Optional,String) The default directional route filter action  that applies to routes that do not match any directional route filters. Applicable only for create_gateway_approve requests.
 
@@ -216,6 +216,6 @@ terraform Destroy : because  ibm_dl_gateway_action depends on ibm_dl_provider_ga
  Destroy the ibm_dl_provider_gateway 
  Ex: terraform destroy  -target="ibm_dl_provider_gateway.test_dl_gateway" -target="data.ibm_dl_provider_ports.test_ds_dl_ports"
  Destroy the ibm_dl_gateway_action
- Ex:terraform destroy  -target="ibm_dl_gateway_action.test_dl_gateway_action"
+ Ex:terraform destroy  -target="ibm_dl_gateway_action.test_dl_gateway_action" 
 ```
 ---
