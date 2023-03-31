@@ -18,7 +18,6 @@ import (
 func DataSourceIBMSccAccountLocation() *schema.Resource {
 	return &schema.Resource{
 		ReadContext:        dataSourceIbmSccAccountLocationRead,
-		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_account_location is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"location_id": {
 				Type:        schema.TypeString,
