@@ -15,7 +15,7 @@ require (
 	github.com/IBM/continuous-delivery-go-sdk v1.0.4
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.7
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.10.2
+	github.com/IBM/go-sdk-core/v5 v5.12.1
 	github.com/IBM/ibm-cos-sdk-go v1.9.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -28,7 +28,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk v1.0.49
-	github.com/IBM/vpc-go-sdk v0.32.0
+	github.com/IBM/vpc-go-sdk v0.35.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
@@ -175,5 +175,4 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk
 replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230202132733-fd8f31729d57

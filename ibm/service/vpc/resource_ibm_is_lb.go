@@ -398,10 +398,10 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		dnsInstance, _ := dnsMap["instance_crn"].(string)
 		zone, _ := dnsMap["zone_id"].(string)
 		dns := &vpcv1.LoadBalancerDnsPrototype{
-			Instance: &vpcv1.DnsInstanceReference{
+			Instance: &vpcv1.DnsInstanceIdentity{
 				CRN: &dnsInstance,
 			},
-			Zone: &vpcv1.DnsZoneReference{
+			Zone: &vpcv1.DnsZoneIdentity{
 				ID: &zone,
 			},
 		}
@@ -725,13 +725,13 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		}
 		if d.HasChange("dns.0.instance_crn") {
 			dnsInstanceCrn := d.Get("dns.0.instance_crn").(string)
-			dnsPatchModel.Instance = &vpcv1.DnsInstanceReference{
+			dnsPatchModel.Instance = &vpcv1.DnsInstanceIdentity{
 				CRN: &dnsInstanceCrn,
 			}
 		}
 		if d.HasChange("dns.0.zone_id") {
 			dnsZoneId := d.Get("dns.0.zone_id").(string)
-			dnsPatchModel.Zone = &vpcv1.DnsZoneReference{
+			dnsPatchModel.Zone = &vpcv1.DnsZoneIdentity{
 				ID: &dnsZoneId,
 			}
 		}
