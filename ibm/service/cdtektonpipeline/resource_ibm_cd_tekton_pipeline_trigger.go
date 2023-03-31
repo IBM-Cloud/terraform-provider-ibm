@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -175,10 +176,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				},
 			},
 			"events": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:             schema.TypeList,
+				Optional:         true,
+				DiffSuppressFunc: flex.SuppressTriggerEvents,
+				Description:      "Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.",
+				Elem:             &schema.Schema{Type: schema.TypeString},
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -360,6 +362,7 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 		for i, v := range eventsInterface {
 			events[i] = fmt.Sprint(v)
 		}
+		sort.Strings(events)
 		createTektonPipelineTriggerOptions.SetEvents(events)
 	}
 
@@ -593,6 +596,7 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		for _, eventsItem := range d.Get("events").([]interface{}) {
 			events = append(events, eventsItem.(string))
 		}
+		sort.Strings(events)
 		patchVals.Events = events
 		hasChange = true
 	}
