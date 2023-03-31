@@ -42,7 +42,7 @@ func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
 		alias = "packet_fabric"
-		ibmcloud_api_key      = "API key"
+		ibmcloud      = "ibmdl"
 		region                = "us-south"
 		ibmcloud_timeout      = 300
 	  }
@@ -56,6 +56,7 @@ func testAccCheckIBMDLGatewayActionConfig(gatewayname string) string {
         vlan = 25
     }
 	resource "ibm_dl_gateway_action" "test_dl_gateway_action" {
+		provider = ibm.ibmdl
         action = "create_gateway_reject"
         global = true
         metered = true
