@@ -1104,6 +1104,7 @@ func Provider() *schema.Provider {
 			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
 			"ibm_dl_route_report":       directlink.ResourceIBMDLGatewayRouteReport(),
+			"ibm_dl_gateway_action":     directlink.ResourceIBMDLGatewayAction(),
 
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
@@ -1315,6 +1316,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
 				"ibm_dl_virtual_connection":       directlink.ResourceIBMDLGatewayVCValidator(),
 				"ibm_dl_gateway":                  directlink.ResourceIBMDLGatewayValidator(),
+				"ibm_dl_gateway_action":           directlink.ResourceIBMDLGatewayActionValidator(),
 				"ibm_dl_provider_gateway":         directlink.ResourceIBMDLProviderGatewayValidator(),
 				"ibm_database":                    database.ResourceIBMICDValidator(),
 				"ibm_function_package":            functions.ResourceIBMFuncPackageValidator(),
