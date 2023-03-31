@@ -55,6 +55,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
     include_subdomains = false
     max_age            = 0
     nosniff            = false
+    preload            = false
   }
   mobile_redirect {
     status           = "on"
@@ -116,6 +117,8 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
     include_subdomains = false
     max_age            = 0
     nosniff            = false
+    preload            = false
+
   }
   mobile_redirect {
     status           = "on"
@@ -178,6 +181,7 @@ Review the argument references that you can specify for your resource.
 - `security_header.include_subdomains`- (Bool) Required-Supported values are **true** and **false**.
 - `security_header.max_age`- (Required, Integer) Maximum age of the security header.
 - `security_header.nosniff`- (Bool) Required-No sniff.
+- `security_header.preload`- (Required, Bool) Whether or not to permit browsers to preload security_header config.
 - `ssl` - (Optional, String) Allowed values: `off`, `flexible`, `full`, `strict`, `origin_pull`.
 - `tls_client_auth` - (Optional, String) Supported values are `off` and `on`.
 - `true_client_ip_header` - (Optional, String) Supported values are `off` and `on`.
