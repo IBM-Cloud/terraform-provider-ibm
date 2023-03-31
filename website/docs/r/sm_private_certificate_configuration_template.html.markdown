@@ -25,6 +25,10 @@ resource "ibm_sm_private_certificate_configuration_template" "certificate_templa
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+  * Constraints: Allowable values are: `private`, `public`.
 * `allow_any_name` - (Optional, Boolean) Determines whether to allow clients to request a private certificate that matches any common name.
 * `allow_bare_domains` - (Optional, Boolean) Determines whether to allow clients to request private certificates that match the value of the actual domains on the final certificate.For example, if you specify `example.com` in the `allowed_domains` field, you grant clients the ability to request a certificate that contains the name `example.com` as one of the DNS values on the final certificate.**Important:** In some scenarios, allowing bare domains can be considered a security risk.
 * `allow_glob_domains` - (Optional, Boolean) Determines whether to allow glob patterns, for example, `ftp*.example.com`, in the names that are specified in the `allowed_domains` field.If set to `true`, clients are allowed to request private certificates with names that match the glob patterns.
@@ -153,11 +157,11 @@ You can import the `ibm_sm_private_certificate_configuration_template` resource 
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_private_certificate_configuration_template.sm_private_certificate_configuration_template <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_private_certificate_configuration_template.sm_private_certificate_configuration_template us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my_template
 ```

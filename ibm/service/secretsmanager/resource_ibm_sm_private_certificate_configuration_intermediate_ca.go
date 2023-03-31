@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,12 +19,12 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
 )
 
-func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
+func ResourceIbmSmPrivateCertificateConfigurationIntermediateCA() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmSmPrivateCertificateConfigurationRootCACreate,
-		ReadContext:   resourceIbmSmPrivateCertificateConfigurationRootCARead,
-		UpdateContext: resourceIbmSmPrivateCertificateConfigurationRootCAUpdate,
-		DeleteContext: resourceIbmSmPrivateCertificateConfigurationRootCADelete,
+		CreateContext: resourceIbmSmPrivateCertificateConfigurationIntermediateCACreate,
+		ReadContext:   resourceIbmSmPrivateCertificateConfigurationIntermediateCARead,
+		UpdateContext: resourceIbmSmPrivateCertificateConfigurationIntermediateCAUpdate,
+		DeleteContext: resourceIbmSmPrivateCertificateConfigurationIntermediateCADelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -38,28 +39,47 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 				ForceNew:    true,
 				Description: "A human-readable unique name to assign to your configuration.To protect your privacy, do not use personal data, such as your name or location, as an name for your secret.",
 			},
+			"secret_type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.",
+			},
 			"max_ttl": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The maximum time-to-live (TTL) for certificates that are created by this CA.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).Minimum value is one hour (`1h`). Maximum value is 100 years (`876000h`).",
 			},
+			"max_ttl_seconds": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The maximum time-to-live (TTL) for certificates that are created by this CA.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).Minimum value is one hour (`1h`). Maximum value is 100 years (`876000h`).",
+			},
 			"crl_expiry": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
+				Description: "The time until the certificate revocation list (CRL) expires.The value can be supplied as a string representation of a duration in hours, such as `48h`. The default is 72 hours. In the API response, this value is returned in seconds (integer).**Note:** The CRL is rotated automatically before it expires.",
+			},
+			"crl_expiry_seconds": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
 				Description: "The time until the certificate revocation list (CRL) expires.The value can be supplied as a string representation of a duration in hours, such as `48h`. The default is 72 hours. In the API response, this value is returned in seconds (integer).**Note:** The CRL is rotated automatically before it expires.",
 			},
 			"crl_disable": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				Description: "Disables or enables certificate revocation list (CRL) building.If CRL building is disabled, a signed but zero-length CRL is returned when downloading the CRL. If CRL building is enabled, it will rebuild the CRL.",
 			},
 			"crl_distribution_points_encoded": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				Description: "Determines whether to encode the certificate revocation list (CRL) distribution points in the certificates that are issued by this certificate authority.",
 			},
 			"issuing_certificates_urls_encoded": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				Description: "Determines whether to encode the URL of the issuing certificate in the certificates that are issued by this certificate authority.",
 			},
@@ -96,12 +116,6 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 				Description: "The custom Object Identifier (OID) or UTF8-string Subject Alternative Names to define for the CA certificate.The alternative names must match the values that are specified in the `allowed_other_sans` field in the associated certificate template. The format is the same as OpenSSL: `<oid>:<type>:<value>` where the current valid type is `UTF8`.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"ttl": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).",
-			},
 			"format": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -112,8 +126,8 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			"private_key_format": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "der",
 				ForceNew:    true,
+				Default:     "der",
 				Description: "The format of the generated private key.",
 			},
 			"key_type": &schema.Schema{
@@ -130,26 +144,12 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 				ForceNew:    true,
 				Description: "The number of bits to use to generate the private key.Allowable values for RSA keys are: `2048` and `4096`. Allowable values for EC keys are: `224`, `256`, `384`, and `521`. The default for RSA keys is `2048`. The default for EC keys is `256`.",
 			},
-			"max_path_length": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The maximum path length to encode in the generated certificate. `-1` means no limit.If the signing certificate has a maximum path length set, the path length is set to one less than that of the signing certificate. A limit of `0` means a literal path length of zero.",
-			},
 			"exclude_cn_from_sans": &schema.Schema{
 				Type:        schema.TypeBool,
+				Default:     false,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Controls whether the common name is excluded from Subject Alternative Names (SANs).If the common name set to `true`, it is not included in DNS or Email SANs if they apply. This field can be useful if the common name is a human-readable identifier, instead of a hostname or an email address.",
-			},
-			"permitted_dns_domains": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The allowed DNS domains or subdomains for the certificates that are to be signed and issued by this CA certificate.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"ou": &schema.Schema{
 				Type:        schema.TypeList,
@@ -210,39 +210,21 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			"serial_number": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.",
 			},
-			"secret_type": &schema.Schema{
+			"signing_method": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.",
+				Required:    true,
+				ForceNew:    true,
+				Description: "The signing method to use with this certificate authority to generate private certificates.You can choose between internal or externally signed options. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-intermediate-certificate-authorities).",
 			},
-			"created_by": &schema.Schema{
+			"issuer": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier that is associated with the entity that created the secret.",
-			},
-			"created_at": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date when a resource was created. The date format follows RFC 3339.",
-			},
-			"updated_at": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date when a resource was recently modified. The date format follows RFC 3339.",
-			},
-			"max_ttl_seconds": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum time-to-live (TTL) for certificates that are created by this CA in seconds.",
-			},
-			"crl_expiry_seconds": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The time until the certificate revocation list (CRL) expires, in seconds.",
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The distinguished name that identifies the entity that signed and issued the certificate.",
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
@@ -304,11 +286,36 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 					},
 				},
 			},
+			// parameters for signing intermediate actions (internal)
+			"ttl": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days.",
+			},
+			"max_path_length": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "        The maximum path length to encode in the generated certificate. `-1` means no limit.",
+			},
+			"permitted_dns_domains": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "        The allowed DNS domains or subdomains for the certificates that are to be signed and issued by this CA certificate.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"use_csr_values": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Determines whether to use values from a certificate signing request (CSR) to complete a `private_cert_configuration_action_sign_csr` action.",
+			},
 		},
 	}
 }
 
-func resourceIbmSmPrivateCertificateConfigurationRootCACreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmPrivateCertificateConfigurationIntermediateCACreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -320,7 +327,7 @@ func resourceIbmSmPrivateCertificateConfigurationRootCACreate(context context.Co
 
 	createConfigurationOptions := &secretsmanagerv2.CreateConfigurationOptions{}
 
-	configurationPrototypeModel, err := resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototype(d)
+	configurationPrototypeModel, err := resourceIbmSmPrivateCertificateConfigurationIntermediateCAMapToConfigurationPrototype(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -331,20 +338,45 @@ func resourceIbmSmPrivateCertificateConfigurationRootCACreate(context context.Co
 		log.Printf("[DEBUG] CreateConfigurationWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateConfigurationWithContext failed %s\n%s", err, response))
 	}
+	configuration := configurationIntf.(*secretsmanagerv2.PrivateCertificateConfigurationIntermediateCA)
 
-	configuration := configurationIntf.(*secretsmanagerv2.PrivateCertificateConfigurationRootCA)
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *configuration.Name))
 
-	return resourceIbmSmPrivateCertificateConfigurationRootCARead(context, d, meta)
+	// signing the CSR
+	if signingMethod, ok := d.GetOk("signing_method"); ok && signingMethod.(string) == "internal" {
+		if _, ok := d.GetOk("issuer"); ok {
+			createConfigurationActionOptions := &secretsmanagerv2.CreateConfigurationActionOptions{}
+
+			createConfigurationActionOptions.SetName(d.Get("issuer").(string))
+			configurationActionPrototypeModel, err := resourceIbmSmConfigurationActionPrivateCertificateSignIntermediateCAMapToConfigurationActionPrototype(d)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			createConfigurationActionOptions.SetConfigActionPrototype(configurationActionPrototypeModel)
+
+			_, responseAction, errAction := secretsManagerClient.CreateConfigurationActionWithContext(context, createConfigurationActionOptions)
+			if errAction != nil {
+				log.Printf("[DEBUG] CreateConfigurationActionWithContext failed %s\n%s", errAction, responseAction)
+				return diag.FromErr(fmt.Errorf("CreateConfigurationActionWithContext failed %s\n%s", errAction, responseAction))
+			}
+		} else {
+			return diag.FromErr(fmt.Errorf("`issuer` parameter is missing"))
+		}
+	}
+
+	return resourceIbmSmPrivateCertificateConfigurationIntermediateCARead(context, d, meta)
 }
 
-func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmPrivateCertificateConfigurationIntermediateCARead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import an intermediate CA use the format `<region>/<instance_id>/<name>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
@@ -363,8 +395,7 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 		log.Printf("[DEBUG] GetConfigurationWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetConfigurationWithContext failed %s\n%s", err, response))
 	}
-
-	configuration := configurationIntf.(*secretsmanagerv2.PrivateCertificateConfigurationRootCA)
+	configuration := configurationIntf.(*secretsmanagerv2.PrivateCertificateConfigurationIntermediateCA)
 
 	if err = d.Set("instance_id", instanceId); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
@@ -375,23 +406,33 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	if err = d.Set("name", configuration.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
+	if err = d.Set("config_type", configuration.ConfigType); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting config_type: %s", err))
+	}
 	if err = d.Set("secret_type", configuration.SecretType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
-	}
-	if err = d.Set("created_by", configuration.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(configuration.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("updated_at", flex.DateTimeToString(configuration.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("max_ttl_seconds", flex.IntValue(configuration.MaxTtlSeconds)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting max_ttl_seconds: %s", err))
 	}
+	if d.Get("max_ttl") == nil || d.Get("max_ttl") == "" {
+		if err = d.Set("max_ttl", strconv.FormatInt(*configuration.MaxTtlSeconds, 10)+"s"); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+	}
 	if err = d.Set("crl_expiry_seconds", flex.IntValue(configuration.CrlExpirySeconds)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crl_expiry_seconds: %s", err))
+	}
+	if d.Get("crl_expiry") == nil || d.Get("crl_expiry") == "" {
+		if err = d.Set("crl_expiry", strconv.FormatInt(*configuration.CrlExpirySeconds, 10)+"s"); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+	}
+	if err = d.Set("signing_method", configuration.SigningMethod); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting signing_method: %s", err))
+	}
+	if err = d.Set("issuer", configuration.Issuer); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting issuer: %s", err))
 	}
 	if err = d.Set("crl_disable", configuration.CrlDisable); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crl_disable: %s", err))
@@ -421,9 +462,6 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 			return diag.FromErr(fmt.Errorf("Error setting other_sans: %s", err))
 		}
 	}
-	if err = d.Set("ttl", configuration.TTL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ttl: %s", err))
-	}
 	if err = d.Set("format", configuration.Format); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting format: %s", err))
 	}
@@ -436,16 +474,8 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	if err = d.Set("key_bits", flex.IntValue(configuration.KeyBits)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting key_bits: %s", err))
 	}
-	if err = d.Set("max_path_length", flex.IntValue(configuration.MaxPathLength)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting max_path_length: %s", err))
-	}
 	if err = d.Set("exclude_cn_from_sans", configuration.ExcludeCnFromSans); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting exclude_cn_from_sans: %s", err))
-	}
-	if configuration.PermittedDnsDomains != nil {
-		if err = d.Set("permitted_dns_domains", configuration.PermittedDnsDomains); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting permitted_dns_domains: %s", err))
-		}
 	}
 	if configuration.Ou != nil {
 		if err = d.Set("ou", configuration.Ou); err != nil {
@@ -492,7 +522,7 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if configuration.Data != nil {
-		dataMap, err := resourceIbmSmPrivateCertificateConfigurationRootCAPrivateCertificateCADataToMap(configuration.Data)
+		dataMap, err := resourceIbmSmPrivateCertificateConfigurationIntermediateCAPrivateCertificateCADataToMap(configuration.Data)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -504,7 +534,7 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	return nil
 }
 
-func resourceIbmSmPrivateCertificateConfigurationRootCAUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmPrivateCertificateConfigurationIntermediateCAUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -519,27 +549,32 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAUpdate(context context.Co
 	updateConfigurationOptions := &secretsmanagerv2.UpdateConfigurationOptions{}
 
 	updateConfigurationOptions.SetName(configName)
+	updateConfigurationOptions.SetXSmAcceptConfigurationType("private_cert_configuration_intermediate_ca")
 
 	hasChange := false
 
-	patchVals := &secretsmanagerv2.PrivateCertificateConfigurationRootCAPatch{}
+	patchVals := &secretsmanagerv2.ConfigurationPatch{}
 
 	if d.HasChange("max_ttl") {
 		patchVals.MaxTTL = core.StringPtr(d.Get("max_ttl").(string))
 		hasChange = true
 	}
+
 	if d.HasChange("crl_expiry") {
 		patchVals.CrlExpiry = core.StringPtr(d.Get("crl_expiry").(string))
 		hasChange = true
 	}
+
 	if d.HasChange("crl_disable") {
 		patchVals.CrlDisable = core.BoolPtr(d.Get("crl_disable").(bool))
 		hasChange = true
 	}
+
 	if d.HasChange("crl_distribution_points_encoded") {
 		patchVals.CrlDistributionPointsEncoded = core.BoolPtr(d.Get("crl_distribution_points_encoded").(bool))
 		hasChange = true
 	}
+
 	if d.HasChange("issuing_certificates_urls_encoded") {
 		patchVals.IssuingCertificatesUrlsEncoded = core.BoolPtr(d.Get("issuing_certificates_urls_encoded").(bool))
 		hasChange = true
@@ -554,10 +589,10 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAUpdate(context context.Co
 		}
 	}
 
-	return resourceIbmSmPrivateCertificateConfigurationRootCARead(context, d, meta)
+	return resourceIbmSmPrivateCertificateConfigurationIntermediateCARead(context, d, meta)
 }
 
-func resourceIbmSmPrivateCertificateConfigurationRootCADelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmSmPrivateCertificateConfigurationIntermediateCADelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -584,15 +619,28 @@ func resourceIbmSmPrivateCertificateConfigurationRootCADelete(context context.Co
 	return nil
 }
 
-func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototype(d *schema.ResourceData) (secretsmanagerv2.ConfigurationPrototypeIntf, error) {
-	model := &secretsmanagerv2.PrivateCertificateConfigurationRootCAPrototype{
-		ConfigType: core.StringPtr("private_cert_configuration_root_ca"),
-	}
+func resourceIbmSmPrivateCertificateConfigurationIntermediateCAMapToConfigurationPrototype(d *schema.ResourceData) (secretsmanagerv2.ConfigurationPrototypeIntf, error) {
+	model := &secretsmanagerv2.PrivateCertificateConfigurationIntermediateCAPrototype{}
+
+	model.ConfigType = core.StringPtr("private_cert_configuration_intermediate_ca")
+
 	if _, ok := d.GetOk("name"); ok {
 		model.Name = core.StringPtr(d.Get("name").(string))
 	}
+	if _, ok := d.GetOk("issuer"); ok {
+		model.Issuer = core.StringPtr(d.Get("issuer").(string))
+	}
+	if _, ok := d.GetOk("common_name"); ok {
+		model.CommonName = core.StringPtr(d.Get("common_name").(string))
+	}
+	if _, ok := d.GetOk("signing_method"); ok {
+		model.SigningMethod = core.StringPtr(d.Get("signing_method").(string))
+	}
 	if _, ok := d.GetOk("max_ttl"); ok {
 		model.MaxTTL = core.StringPtr(d.Get("max_ttl").(string))
+	}
+	if _, ok := d.GetOk("issuer"); ok {
+		model.Issuer = core.StringPtr(d.Get("issuer").(string))
 	}
 	if _, ok := d.GetOk("crl_expiry"); ok {
 		model.CrlExpiry = core.StringPtr(d.Get("crl_expiry").(string))
@@ -606,16 +654,12 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 	if _, ok := d.GetOk("issuing_certificates_urls_encoded"); ok {
 		model.IssuingCertificatesUrlsEncoded = core.BoolPtr(d.Get("issuing_certificates_urls_encoded").(bool))
 	}
-	if _, ok := d.GetOk("common_name"); ok {
-		model.CommonName = core.StringPtr(d.Get("common_name").(string))
-	}
 	if _, ok := d.GetOk("alt_names"); ok {
-		altNames := d.Get("alt_names").([]interface{})
-		altNamesParsed := make([]string, len(altNames))
-		for i, v := range altNames {
-			altNamesParsed[i] = fmt.Sprint(v)
+		altNames := []string{}
+		for _, altNamesItem := range d.Get("alt_names").([]interface{}) {
+			altNames = append(altNames, altNamesItem.(string))
 		}
-		model.AltNames = altNamesParsed
+		model.AltNames = altNames
 	}
 	if _, ok := d.GetOk("ip_sans"); ok {
 		model.IpSans = core.StringPtr(d.Get("ip_sans").(string))
@@ -624,15 +668,11 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 		model.UriSans = core.StringPtr(d.Get("uri_sans").(string))
 	}
 	if _, ok := d.GetOk("other_sans"); ok {
-		otherSans := d.Get("other_sans").([]interface{})
-		otherSansParsed := make([]string, len(otherSans))
-		for i, v := range otherSans {
-			otherSansParsed[i] = fmt.Sprint(v)
+		otherSans := []string{}
+		for _, otherSansItem := range d.Get("other_sans").([]interface{}) {
+			otherSans = append(otherSans, otherSansItem.(string))
 		}
-		model.OtherSans = otherSansParsed
-	}
-	if _, ok := d.GetOk("ttl"); ok {
-		model.TTL = core.StringPtr(d.Get("ttl").(string))
+		model.OtherSans = otherSans
 	}
 	if _, ok := d.GetOk("format"); ok {
 		model.Format = core.StringPtr(d.Get("format").(string))
@@ -644,89 +684,70 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 		model.KeyType = core.StringPtr(d.Get("key_type").(string))
 	}
 	if _, ok := d.GetOk("key_bits"); ok {
-		model.KeyBits = core.Int64Ptr(d.Get("key_bits").(int64))
-	}
-	if _, ok := d.GetOk("max_path_length"); ok {
-		model.MaxPathLength = core.Int64Ptr(d.Get("max_path_length").(int64))
+		model.KeyBits = core.Int64Ptr(int64(d.Get("key_bits").(int)))
 	}
 	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
 		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))
 	}
-	if _, ok := d.GetOk("permitted_dns_domains"); ok {
-		permittedDnsDomains := d.Get("permitted_dns_domains").([]interface{})
-		permittedDnsDomainsParsed := make([]string, len(permittedDnsDomains))
-		for i, v := range permittedDnsDomains {
-			permittedDnsDomainsParsed[i] = fmt.Sprint(v)
-		}
-		model.PermittedDnsDomains = permittedDnsDomainsParsed
-	}
 	if _, ok := d.GetOk("ou"); ok {
-		ou := d.Get("ou").([]interface{})
-		ouParsed := make([]string, len(ou))
-		for i, v := range ou {
-			ouParsed[i] = fmt.Sprint(v)
+		ou := []string{}
+		for _, ouItem := range d.Get("ou").([]interface{}) {
+			ou = append(ou, ouItem.(string))
 		}
-		model.Ou = ouParsed
+		model.Ou = ou
 	}
 	if _, ok := d.GetOk("organization"); ok {
-		organization := d.Get("organization").([]interface{})
-		organizationParsed := make([]string, len(organization))
-		for i, v := range organization {
-			organizationParsed[i] = fmt.Sprint(v)
+		organization := []string{}
+		for _, organizationItem := range d.Get("organization").([]interface{}) {
+			organization = append(organization, organizationItem.(string))
 		}
-		model.Organization = organizationParsed
+		model.Organization = organization
 	}
 	if _, ok := d.GetOk("country"); ok {
-		country := d.Get("country").([]interface{})
-		countryParsed := make([]string, len(country))
-		for i, v := range country {
-			countryParsed[i] = fmt.Sprint(v)
+		country := []string{}
+		for _, countryItem := range d.Get("country").([]interface{}) {
+			country = append(country, countryItem.(string))
 		}
-		model.Country = countryParsed
+		model.Country = country
 	}
 	if _, ok := d.GetOk("locality"); ok {
-		locality := d.Get("locality").([]interface{})
-		localityParsed := make([]string, len(locality))
-		for i, v := range locality {
-			localityParsed[i] = fmt.Sprint(v)
+		locality := []string{}
+		for _, localityItem := range d.Get("locality").([]interface{}) {
+			locality = append(locality, localityItem.(string))
 		}
-		model.Locality = localityParsed
+		model.Locality = locality
 	}
 	if _, ok := d.GetOk("province"); ok {
-		province := d.Get("province").([]interface{})
-		provinceParsed := make([]string, len(province))
-		for i, v := range province {
-			provinceParsed[i] = fmt.Sprint(v)
+		province := []string{}
+		for _, provinceItem := range d.Get("province").([]interface{}) {
+			province = append(province, provinceItem.(string))
 		}
-		model.Province = provinceParsed
+		model.Province = province
 	}
 	if _, ok := d.GetOk("street_address"); ok {
-		streetAddress := d.Get("street_address").([]interface{})
-		streetAddressParsed := make([]string, len(streetAddress))
-		for i, v := range streetAddress {
-			streetAddressParsed[i] = fmt.Sprint(v)
+		streetAddress := []string{}
+		for _, streetAddressItem := range d.Get("street_address").([]interface{}) {
+			streetAddress = append(streetAddress, streetAddressItem.(string))
 		}
-		model.StreetAddress = streetAddressParsed
+		model.StreetAddress = streetAddress
 	}
 	if _, ok := d.GetOk("postal_code"); ok {
-		postalCode := d.Get("postal_code").([]interface{})
-		postalCodeParsed := make([]string, len(postalCode))
-		for i, v := range postalCode {
-			postalCodeParsed[i] = fmt.Sprint(v)
+		postalCode := []string{}
+		for _, postalCodeItem := range d.Get("postal_code").([]interface{}) {
+			postalCode = append(postalCode, postalCodeItem.(string))
 		}
-		model.PostalCode = postalCodeParsed
+		model.PostalCode = postalCode
 	}
 	if _, ok := d.GetOk("serial_number"); ok {
 		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
-
 	return model, nil
+	// TODO all other config attributes
 }
 
-func resourceIbmSmPrivateCertificateConfigurationRootCAPrivateCertificateCADataToMap(modelIntf secretsmanagerv2.PrivateCertificateCADataIntf) (map[string]interface{}, error) {
+func resourceIbmSmPrivateCertificateConfigurationIntermediateCAPrivateCertificateCADataToMap(modelIntf secretsmanagerv2.PrivateCertificateCADataIntf) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	model := modelIntf.(*secretsmanagerv2.PrivateCertificateCAData)
-
 	if model.Csr != nil {
 		modelMap["csr"] = model.Csr
 	}
@@ -749,4 +770,109 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAPrivateCertificateCADataT
 		modelMap["ca_chain"] = model.CaChain
 	}
 	return modelMap, nil
+}
+
+func resourceIbmSmConfigurationActionPrivateCertificateSignIntermediateCAMapToConfigurationActionPrototype(d *schema.ResourceData) (secretsmanagerv2.ConfigurationActionPrototypeIntf, error) {
+	model := &secretsmanagerv2.PrivateCertificateConfigurationActionSignIntermediatePrototype{}
+
+	model.ActionType = core.StringPtr("private_cert_configuration_action_sign_intermediate")
+	if _, ok := d.GetOk("name"); ok {
+		model.IntermediateCertificateAuthority = core.StringPtr(d.Get("name").(string))
+	}
+	if _, ok := d.GetOk("common_name"); ok {
+		model.CommonName = core.StringPtr(d.Get("common_name").(string))
+	}
+	if _, ok := d.GetOk("alt_names"); ok {
+		altNames := []string{}
+		for _, altNamesItem := range d.Get("alt_names").([]interface{}) {
+			altNames = append(altNames, altNamesItem.(string))
+		}
+		model.AltNames = altNames
+	}
+	if _, ok := d.GetOk("ip_sans"); ok {
+		model.IpSans = core.StringPtr(d.Get("ip_sans").(string))
+	}
+	if _, ok := d.GetOk("uri_sans"); ok {
+		model.UriSans = core.StringPtr(d.Get("uri_sans").(string))
+	}
+	if _, ok := d.GetOk("other_sans"); ok {
+		otherSans := []string{}
+		for _, otherSansItem := range d.Get("other_sans").([]interface{}) {
+			otherSans = append(otherSans, otherSansItem.(string))
+		}
+		model.OtherSans = otherSans
+	}
+	if _, ok := d.GetOk("ttl"); ok {
+		model.TTL = core.StringPtr(d.Get("ttl").(string))
+	}
+	if _, ok := d.GetOk("max_path_length"); ok {
+		model.MaxPathLength = core.Int64Ptr(d.Get("max_path_length").(int64))
+	}
+	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
+		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))
+	}
+	if _, ok := d.GetOk("permitted_dns_domains"); ok {
+		permittedDnsDomains := []string{}
+		for _, permittedDnsDomainsItem := range d.Get("permitted_dns_domains").([]interface{}) {
+			permittedDnsDomains = append(permittedDnsDomains, permittedDnsDomainsItem.(string))
+		}
+		model.PermittedDnsDomains = permittedDnsDomains
+	}
+	if _, ok := d.GetOk("use_csr_values"); ok {
+		model.UseCsrValues = core.BoolPtr(d.Get("use_csr_values").(bool))
+	}
+	if _, ok := d.GetOk("ou"); ok {
+		ou := []string{}
+		for _, ouItem := range d.Get("ou").([]interface{}) {
+			ou = append(ou, ouItem.(string))
+		}
+		model.Ou = ou
+	}
+	if _, ok := d.GetOk("organization"); ok {
+		organization := []string{}
+		for _, organizationItem := range d.Get("organization").([]interface{}) {
+			organization = append(organization, organizationItem.(string))
+		}
+		model.Organization = organization
+	}
+	if _, ok := d.GetOk("country"); ok {
+		country := []string{}
+		for _, countryItem := range d.Get("country").([]interface{}) {
+			country = append(country, countryItem.(string))
+		}
+		model.Country = country
+	}
+	if _, ok := d.GetOk("locality"); ok {
+		locality := []string{}
+		for _, localityItem := range d.Get("locality").([]interface{}) {
+			locality = append(locality, localityItem.(string))
+		}
+		model.Locality = locality
+	}
+	if _, ok := d.GetOk("province"); ok {
+		province := []string{}
+		for _, provinceItem := range d.Get("province").([]interface{}) {
+			province = append(province, provinceItem.(string))
+		}
+		model.Province = province
+	}
+	if _, ok := d.GetOk("street_address"); ok {
+		streetAddress := []string{}
+		for _, streetAddressItem := range d.Get("street_address").([]interface{}) {
+			streetAddress = append(streetAddress, streetAddressItem.(string))
+		}
+		model.StreetAddress = streetAddress
+	}
+	if _, ok := d.GetOk("postal_code"); ok {
+		postalCode := []string{}
+		for _, postalCodeItem := range d.Get("postal_code").([]interface{}) {
+			postalCode = append(postalCode, postalCodeItem.(string))
+		}
+		model.PostalCode = postalCode
+	}
+	if _, ok := d.GetOk("serial_number"); ok {
+		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
+	}
+
+	return model, nil
 }

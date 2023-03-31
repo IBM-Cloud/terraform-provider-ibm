@@ -1208,3 +1208,46 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
+resource "ibm_is_vpc" "vpc" {
+  name = "my-vpc"
+}
+resource "ibm_is_share" "share" {
+  zone = "us-south-1"
+  size = 30000
+  name = "my-share"
+  profile = "tier-3iops"
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share" "sharereplica" {
+  zone = "us-south-2"
+  name = "my-share-replica"
+  profile = "tier-3iops"
+  replication_cron_spec = "0 */5 * * *"
+  source_share = ibm_is_share.share.id
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share_target" "is_share_target" {
+  share = ibm_is_share.is_share.id
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target"
+}
+
+data "ibm_is_share_target" "is_share_target" {
+  share        = ibm_is_share.is_share.id
+  share_target = ibm_is_share_target.is_share_target.share_target
+}
+
+data "ibm_is_share_targets" "is_share_targets" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_share" "is_share" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_shares" "is_shares" {
+}

@@ -55,6 +55,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -83,13 +84,13 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "A human-readable unique name to assign to your configuration.To protect your privacy, do not use personal data, such as your name or location, as an name for your secret.",
+				Description: "The name of the certificate authority configuration.",
 			},
 			"dns": &schema.Schema{
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "A human-readable unique name to assign to your configuration.To protect your privacy, do not use personal data, such as your name or location, as an name for your secret.",
+				Description: "The name of the DNS provider configuration.",
 			},
 			"bundle_certs": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -112,18 +113,6 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 							Computed:    true,
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
-						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
-						},
-						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
-						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
@@ -136,6 +125,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -416,6 +406,9 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
@@ -528,7 +521,8 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 	if secret.AltNames != nil {
-		if err = d.Set("alt_names", secret.AltNames); err != nil {
+		altNames := secret.AltNames[1:]
+		if err = d.Set("alt_names", altNames); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
 		}
 	}
@@ -697,7 +691,7 @@ func resourceIbmSmPublicCertificateMapToSecretPrototype(d *schema.ResourceData) 
 		model.BundleCerts = core.BoolPtr(d.Get("bundle_certs").(bool))
 	}
 	if _, ok := d.GetOk("rotation"); ok {
-		RotationModel, err := resourceIbmSmPublicCertificateMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
+		RotationModel, err := resourceIbmSmPublicCertificateMapToPublicCertificateRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -747,12 +741,6 @@ func resourceIbmSmPublicCertificateMapToPublicCertificateRotationPolicy(modelMap
 	model := &secretsmanagerv2.PublicCertificateRotationPolicy{}
 	if modelMap["auto_rotate"] != nil {
 		model.AutoRotate = core.BoolPtr(modelMap["auto_rotate"].(bool))
-	}
-	if modelMap["interval"] != nil {
-		model.Interval = core.Int64Ptr(int64(modelMap["interval"].(int)))
-	}
-	if modelMap["unit"] != nil && modelMap["unit"].(string) != "" {
-		model.Unit = core.StringPtr(modelMap["unit"].(string))
 	}
 	if modelMap["rotate_keys"] != nil {
 		model.RotateKeys = core.BoolPtr(modelMap["rotate_keys"].(bool))

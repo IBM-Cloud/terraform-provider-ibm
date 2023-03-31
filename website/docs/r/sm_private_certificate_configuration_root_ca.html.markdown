@@ -1,25 +1,24 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_private_certificate_configuration_intermediate_ca"
+page_title: "IBM : ibm_sm_private_certificate_configuration_root_ca"
 description: |-
-  Manages PrivateCertificateConfigurationIntermediateCA.
+  Manages PrivateCertificateConfigurationRootCA.
 subcategory: "Secrets Manager"
 ---
 
-# ibm_sm_private_certificate_configuration_intermediate_ca
+# ibm_sm_private_certificate_configuration_root_ca
 
-Provides a resource for PrivateCertificateConfigurationIntermediateCA. This allows PrivateCertificateConfigurationIntermediateCA to be created, updated and deleted.
+Provides a resource for PrivateCertificateConfigurationRootCA. This allows PrivateCertificateConfigurationRootCA to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_sm_private_certificate_configuration_intermediate_ca" "intermediate_CA" {
-  instance_id    = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
-  name           = "my_intermediate_ca"
-  common_name    = "ibm.com"
-  signing_method = "internal"
-  issuer         = "my_root_ca"
-  max_ttl        = "8760h"
+resource "ibm_sm_private_certificate_configuration_root_ca" "private_certificate_root_CA" {
+  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  region        = "us-south"
+  name          = "my_root_ca"
+  common_name   = "ibm.com"
+  max_ttl       = "8760h"
 }
 ```
 
@@ -27,6 +26,10 @@ resource "ibm_sm_private_certificate_configuration_intermediate_ca" "intermediat
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
 * `alt_names` - (Optional, Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
     * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 * `common_name` - (Required, Forces new resource, String) The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.
@@ -41,22 +44,23 @@ Review the argument reference that you can specify for your resource.
     * Constraints: Allowable values are: `pem`, `pem_bundle`.
 * `ip_sans` - (Optional, Forces new resource, String) The IP Subject Alternative Names to define for the CA certificate, in a comma-delimited list.
     * Constraints: The maximum length is `2048` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
-* `issuer` - (Optional, Forces new resource, String) The distinguished name that identifies the entity that signed and issued the certificate.
-    * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 * `issuing_certificates_urls_encoded` - (Optional, Boolean) Determines whether to encode the URL of the issuing certificate in the certificates that are issued by this certificate authority.
 * `key_bits` - (Optional, Forces new resource, Integer) The number of bits to use to generate the private key.Allowable values for RSA keys are: `2048` and `4096`. Allowable values for EC keys are: `224`, `256`, `384`, and `521`. The default for RSA keys is `2048`. The default for EC keys is `256`.
 * `key_type` - (Optional, Forces new resource, String) The type of private key to generate.
     * Constraints: Allowable values are: `rsa`, `ec`.
 * `locality` - (Optional, Forces new resource, List) The Locality (L) values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
+* `max_path_length` - (Optional, Forces new resource, Integer) The maximum path length to encode in the generated certificate. `-1` means no limit.If the signing certificate has a maximum path length set, the path length is set to one less than that of the signing certificate. A limit of `0` means a literal path length of zero.
 * `max_ttl` - (Required, String) The maximum time-to-live (TTL) for certificates that are created by this CA.
-* `name` - (Required, String) A human-readable unique name to assign to your configuration.
+* `name` - (Required, String) A human-readable unique name to assign to the root CA configuration.
 * `organization` - (Optional, Forces new resource, List) The Organization (O) values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `other_sans` - (Optional, Forces new resource, List) The custom Object Identifier (OID) or UTF8-string Subject Alternative Names to define for the CA certificate.The alternative names must match the values that are specified in the `allowed_other_sans` field in the associated certificate template. The format is the same as OpenSSL: `<oid>:<type>:<value>` where the current valid type is `UTF8`.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `100` items. The minimum length is `0` items.
 * `ou` - (Optional, Forces new resource, List) The Organizational Unit (OU) values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
+* `permitted_dns_domains` - (Optional, Forces new resource, List) The allowed DNS domains or subdomains for the certificates that are to be signed and issued by this CA certificate.
+    * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `100` items. The minimum length is `0` items.
 * `postal_code` - (Optional, Forces new resource, List) The postal code values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `private_key_format` - (Optional, Forces new resource, String) The format of the generated private key.
@@ -65,10 +69,10 @@ Review the argument reference that you can specify for your resource.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `serial_number` - (Optional, Forces new resource, String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
     * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
-* `signing_method` - (Required, Forces new resource, String) The signing method to use with this certificate authority to generate private certificates.You can choose between internal or externally signed options. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-intermediate-certificate-authorities).
-  * Constraints: Allowable values are: `internal`, `external`.
 * `street_address` - (Optional, Forces new resource, List) The street address values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
+* `ttl` - (Optional, String) The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).
+  * Constraints: The maximum length is `10` characters. The minimum length is `2` characters. The value must match regular expression `/^[0-9]+[s,m,h,d]{0,1}$/`.
 * `uri_sans` - (Optional, Forces new resource, String) The URI Subject Alternative Names to define for the CA certificate, in a comma-delimited list.
     * Constraints: The maximum length is `2048` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 
@@ -76,7 +80,9 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the PrivateCertificateConfigurationIntermediateCA.
+* `id` - The unique identifier of the PrivateCertificateConfigurationRootCA.
+* `config_type` - (String) The configuration type.
+    * Constraints: Allowable values are: `public_cert_configuration_ca_lets_encrypt`, `public_cert_configuration_dns_classic_infrastructure`, `public_cert_configuration_dns_cloud_internet_services`, `iam_credentials_configuration`, `private_cert_configuration_root_ca`, `private_cert_configuration_intermediate_ca`, `private_cert_configuration_template`.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
   * Constraints: The maximum length is `128` characters. The minimum length is `4` characters.
@@ -155,15 +161,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_private_certificate_configuration_intermediate_ca` resource by using `region`, `instance_id`, and `name`.
+You can import the `ibm_sm_private_certificate_configuration_root_ca` resource by using `region`, `instance_id`, and `name`.
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
-$ terraform import ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca <region>/<instance_id>/<name>
+```bash
+$ terraform import ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca <region>/<instance_id>/<name>
 ```
 
 # Example
-```
-$ terraform import ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my_intermediate_ca
+```bash
+$ terraform import ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my_root_ca
 ```
