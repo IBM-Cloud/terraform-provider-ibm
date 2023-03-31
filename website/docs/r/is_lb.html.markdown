@@ -69,8 +69,6 @@ The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-
-  ~> **Note**
   
 - `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the load balancer.
 

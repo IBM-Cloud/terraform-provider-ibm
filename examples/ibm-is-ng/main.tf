@@ -93,7 +93,6 @@ resource "ibm_is_lb" "example" {
   dns   {
     instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
     zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
-    name = "my-pdns-updated-zone"
   }
 }
 

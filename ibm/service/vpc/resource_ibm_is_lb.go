@@ -721,9 +721,6 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		}
 		dnsPatchModel := &vpcv1.LoadBalancerDnsPatch{}
 		if d.HasChange("dns.0.instance_crn") {
-
-		}
-		if d.HasChange("dns.0.instance_crn") {
 			dnsInstanceCrn := d.Get("dns.0.instance_crn").(string)
 			dnsPatchModel.Instance = &vpcv1.DnsInstanceIdentity{
 				CRN: &dnsInstanceCrn,

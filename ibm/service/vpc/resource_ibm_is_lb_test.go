@@ -157,8 +157,8 @@ func TestAccIBMISLB_DNS(t *testing.T) {
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name1),
-					resource.TestCheckResourceAttr(
-						"ibm_is_lb.testacc_LB", "dns", ""),
+					resource.TestCheckNoResourceAttr(
+						"ibm_is_lb.testacc_LB", "dns.#"),
 				),
 			},
 		},
