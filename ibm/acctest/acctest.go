@@ -30,6 +30,7 @@ var CosName string
 var Ibmid1 string
 var Ibmid2 string
 var IAMUser string
+var IAMAccountId string
 var Datacenter string
 var MachineType string
 var trustedMachineType string
@@ -287,6 +288,11 @@ func init() {
 	IAMUser = os.Getenv("IBM_IAMUSER")
 	if IAMUser == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing ibm_iam_trusted_profile resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	Datacenter = os.Getenv("IBM_DATACENTER")
