@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/damianovesperini/platform-services-go-sdk/projectv1"
@@ -20,6 +19,7 @@ import (
 
 func ResourceIbmProjectInstance() *schema.Resource {
 	return &schema.Resource{
+<<<<<<< HEAD
 		CreateContext: resourceIbmProjectInstanceCreate,
 		ReadContext:   resourceIbmProjectInstanceRead,
 		UpdateContext: resourceIbmProjectInstanceUpdate,
@@ -38,6 +38,26 @@ func ResourceIbmProjectInstance() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "description"),
 				Description:  "A project's descriptive text.",
+=======
+		CreateContext:   resourceIbmProjectInstanceCreate,
+		ReadContext:     resourceIbmProjectInstanceRead,
+		UpdateContext:   resourceIbmProjectInstanceUpdate,
+		DeleteContext:   resourceIbmProjectInstanceDelete,
+		Importer: &schema.ResourceImporter{},
+
+		Schema: map[string]*schema.Schema{
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "name"),
+				Description: "The project name.",
+			},
+			"description": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "description"),
+				Description: "A project's descriptive text.",
+>>>>>>> f8b60b97 (fix: regenerated code)
 			},
 			"configs": &schema.Schema{
 				Type:        schema.TypeList,
@@ -108,6 +128,7 @@ func ResourceIbmProjectInstance() *schema.Resource {
 				},
 			},
 			"resource_group": &schema.Schema{
+<<<<<<< HEAD
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "Default",
@@ -120,6 +141,20 @@ func ResourceIbmProjectInstance() *schema.Resource {
 				Default:      "us-south",
 				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "location"),
 				Description:  "Data center locations for resource deployment.",
+=======
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "Default",
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "resource_group"),
+				Description: "Group name of the customized collection of resources.",
+			},
+			"location": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "us-south",
+				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "location"),
+				Description: "Data center locations for resource deployment.",
+>>>>>>> f8b60b97 (fix: regenerated code)
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -174,7 +209,11 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						"cumulative_needs_attention_view_err": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+<<<<<<< HEAD
 							Description: "True indicates that the fetch of the needs attention items failed.",
+=======
+							Description: "\\"True\\" indicates that the fetch of the needs attention items failed.",
+>>>>>>> f8b60b97 (fix: regenerated code)
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -310,6 +349,36 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
+<<<<<<< HEAD
+=======
+	if err = d.Set("resource_group", getProjectOptions.ResourceGroup); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+	}
+	if err = d.Set("location", getProjectOptions.Location); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
+	}
+	if err = d.Set("name", project.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if !core.IsNil(project.Description) {
+		if err = d.Set("description", project.Description); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		}
+	}
+	if !core.IsNil(project.Configs) {
+		configs := []map[string]interface{}{}
+		for _, configsItem := range project.Configs {
+			configsItemMap, err := resourceIbmProjectInstanceProjectConfigPrototypeToMap(&configsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			configs = append(configs, configsItemMap)
+		}
+		if err = d.Set("configs", configs); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
+		}
+	}
+>>>>>>> f8b60b97 (fix: regenerated code)
 	if !core.IsNil(project.Crn) {
 		if err = d.Set("crn", project.Crn); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
@@ -339,6 +408,36 @@ func resourceIbmProjectInstanceUpdate(context context.Context, d *schema.Resourc
 	updateProjectOptions.SetID(d.Id())
 
 	hasChange := false
+
+	if d.HasChange("name") {
+		updateProjectOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
+	if d.HasChange("description") {
+		updateProjectOptions.SetDescription(d.Get("description").(string))
+		hasChange = true
+	}
+	if d.HasChange("configs") {
+		var configs []projectv1.ProjectConfigPrototype
+		for _, v := range d.Get("configs").([]interface{}) {
+			value := v.(map[string]interface{})
+			configsItem, err := resourceIbmProjectInstanceMapToProjectConfigPrototype(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			configs = append(configs, *configsItem)
+		}
+		updateProjectOptions.SetConfigs(configs)
+		hasChange = true
+	}
+	if d.HasChange("resource_group") {
+		updateProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
+		hasChange = true
+	}
+	if d.HasChange("location") {
+		updateProjectOptions.SetLocation(d.Get("location").(string))
+		hasChange = true
+	}
 
 	if hasChange {
 		_, response, err := projectClient.UpdateProjectWithContext(context, updateProjectOptions)

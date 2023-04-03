@@ -29,13 +29,13 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 			"exclude_configs": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Default:	 false,
 				Description: "Only return with the active configuration, no drafts.",
 			},
 			"complete": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Default:	 false,
 				Description: "The flag to determine if full metadata should be returned.",
 			},
 			"name": &schema.Schema{
@@ -213,7 +213,11 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 						"cumulative_needs_attention_view_err": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
+<<<<<<< HEAD
 							Description: "True indicates that the fetch of the needs attention items failed.",
+=======
+							Description: "\\"True\\" indicates that the fetch of the needs attention items failed.",
+>>>>>>> f8b60b97 (fix: regenerated code)
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -280,7 +284,11 @@ func dataSourceIbmProjectEventNotificationRead(context context.Context, d *schem
 
 	configs := []map[string]interface{}{}
 	if project.Configs != nil {
+<<<<<<< HEAD
 		for _, modelItem := range project.Configs {
+=======
+		for _, modelItem := range project.Configs { 
+>>>>>>> f8b60b97 (fix: regenerated code)
 			modelMap, err := dataSourceIbmProjectEventNotificationProjectConfigToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
