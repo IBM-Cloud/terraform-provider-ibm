@@ -103,11 +103,11 @@ You can import the `ibm_sm_iam_credentials_configuration` resource by using `reg
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my-secret-engine-config
 ```

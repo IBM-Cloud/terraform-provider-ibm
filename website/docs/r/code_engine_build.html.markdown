@@ -14,18 +14,12 @@ Provides a resource for code_engine_build. This allows code_engine_build to be c
 
 ```hcl
 resource "ibm_code_engine_build" "code_engine_build_instance" {
-  name = "my-build"
-  output_image = "private.de.icr.io/icr_namespace/image-name"
+  project_id    = ibm_code_engine_project.code_engine_project_instance.project_id
+  name          = "my-build"
+  output_image  = "private.de.icr.io/icr_namespace/image-name"
   output_secret = "ce-auto-icr-private-eu-de"
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
-  source_context_dir = "some/subfolder"
-  source_revision = "main"
-  source_type = "git"
-  source_url = "https://github.com/IBM/CodeEngine"
-  strategy_size = "medium"
-  strategy_spec_file = "Dockerfile"
+  source_url    = "https://github.com/IBM/CodeEngine"
   strategy_type = "dockerfile"
-  timeout = 600
 }
 ```
 
@@ -58,7 +52,7 @@ Review the argument reference that you can specify for your resource.
 * `strategy_type` - (Required, String) The strategy to use for building the image.
   * Constraints: The default value is `dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 * `timeout` - (Optional, Integer) The maximum amount of time, in seconds, that can pass before the build must succeed or fail.
-  * Constraints: The maximum value is `3600`. The minimum value is `1`.
+  * Constraints: The default value is `600`. The maximum value is `3600`. The minimum value is `1`.
 
 ## Attribute Reference
 
@@ -67,7 +61,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the code_engine_build.
 * `build_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
-* `created_at` - (String) The date when the resource was created.
+* `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the build instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new build,  a URL is created identifying the location of the instance.

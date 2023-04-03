@@ -136,6 +136,11 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id = "%s"
   kube_version    = "%s"
   wait_till         = "OneWorkerNodeReady"
+  taints {
+	key    = "key1"
+	value  = "value1"
+	effect = "NoSchedule"
+  }
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
@@ -148,6 +153,11 @@ resource "ibm_container_worker_pool" "test_pool" {
   labels = {
     "test"  = "test-pool"
     "test1" = "test-pool1"
+  }
+  taints {
+	key    = "key1"
+	value  = "value1"
+	effect = "NoSchedule"
   }
 }`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion, workerPoolName, acc.MachineType)
 }

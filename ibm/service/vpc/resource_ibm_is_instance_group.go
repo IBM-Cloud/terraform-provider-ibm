@@ -413,6 +413,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("name", *instanceGroup.Name)
 	d.Set("instance_template", *instanceGroup.InstanceTemplate.ID)
 	d.Set("instances", *instanceGroup.MembershipCount)
+	d.Set("instance_count", *instanceGroup.MembershipCount)
 	d.Set("resource_group", *instanceGroup.ResourceGroup.ID)
 	if instanceGroup.ApplicationPort != nil {
 		d.Set("application_port", *instanceGroup.ApplicationPort)
