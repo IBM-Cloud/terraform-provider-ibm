@@ -32,7 +32,7 @@ Review the argument reference that you can specify for your resource.
 * `description` - (Optional, String) Description of the vault.
   * Constraints: The maximum length is `200` characters. The minimum length is `0` characters. The value must match regular expression `/(.|\\n)*/`.
 * `name` - (Required, String) A human-readable name to assign to your vault. To protect your privacy, do not use personal data, such as your name or location.
-  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9#@!$% '_-]*$/`.
+  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9#@!$%'_-][A-Za-z0-9#@!$% '_-]*$/`.
 
 ## Attribute Reference
 
@@ -48,7 +48,7 @@ In addition to all argument references listed, you can access the following attr
 * `updated_by` - (String) ID of the user that last updated the vault.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9#@!$% '_-]*$/`.
 
-* `version` - Version of the vault.
+* `etag` - ETag identifier for hpcs_vault.
 
 ## Import
 

@@ -132,20 +132,21 @@ func ResourceIBMCmValidation() *schema.Resource {
 				Computed:    true,
 				Description: "Last operation (e.g. submit_deployment, generate_installer, install_offering.",
 			},
-			"target": &schema.Schema{
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Description: "Validation target information (e.g. cluster_id, region, namespace, etc).  Values will vary by Content type.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
+			// "target": &schema.Schema{
+			// 	Type:        schema.TypeMap,
+			// 	Computed:    true,
+			// 	Description: "Validation target information (e.g. cluster_id, region, namespace, etc).  Values will vary by Content type.",
+			// 	Elem:        &schema.Schema{Type: schema.TypeString},
+			// },
 			"message": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Any message needing to be conveyed as part of the validation job.",
 			},
 			"x_auth_refresh_token": &schema.Schema{
+				Deprecated:  "This argument is deprecated because it is now retrieved automatically.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				Description: "Authentication token used to submit validation job.",
 			},
@@ -194,6 +195,10 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		version = offering.Kinds[0].Versions[0]
 	}
 
+	mk := fmt.Sprintf("%s.%s", *version.CatalogID, *version.OfferingID)
+	conns.IbmMutexKV.Lock(mk)
+	defer conns.IbmMutexKV.Unlock(mk)
+
 	valid := "valid"
 	if version.Validation.State == &valid && d.Get("revalidate_if_validated") != true {
 		// version already validated and do not wish to revalidate
@@ -233,9 +238,12 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		}
 		validateInstallOptions.SetSchematics(&schematicsModel)
 	}
-	if _, ok := d.GetOk("x_auth_refresh_token"); ok {
-		validateInstallOptions.SetXAuthRefreshToken(d.Get("x_auth_refresh_token").(string))
+
+	bxSession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	validateInstallOptions.SetXAuthRefreshToken(bxSession.Config.IAMRefreshToken)
 
 	response, err := catalogManagementClient.ValidateInstallWithContext(context, validateInstallOptions)
 	if err != nil {
@@ -247,7 +255,7 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 
 	validationStatusOptions := &catalogmanagementv1.GetValidationStatusOptions{}
 	validationStatusOptions.SetVersionLocID(*validateInstallOptions.VersionLocID)
-	validationStatusOptions.SetXAuthRefreshToken(d.Get("x_auth_refresh_token").(string))
+	validationStatusOptions.SetXAuthRefreshToken(bxSession.Config.IAMRefreshToken)
 	result, response, err := catalogManagementClient.GetValidationStatusWithContext(context, validationStatusOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetValidationStatusWithContext failed %s\n%s", err, response)

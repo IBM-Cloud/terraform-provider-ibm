@@ -833,20 +833,14 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				"[ERROR] Error updating the labels: %s", err)
 		}
 	}
-	if d.HasChange("taints") {
-		taintParam := expandWorkerPoolTaints(d, meta, clusterID, "default")
 
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
-		if err != nil {
-			return err
+	if d.HasChange("taints") {
+		var taints []interface{}
+		if taintRes, ok := d.GetOk("taints"); ok {
+			taints = taintRes.(*schema.Set).List()
 		}
-		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-		if err != nil {
+		if err := updateWorkerpoolTaints(d, meta, clusterID, "default", taints); err != nil {
 			return err
-		}
-		err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
 		}
 	}
 
@@ -864,6 +858,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				"[ERROR] Error updating the worker_count %d: %s", count, err)
 		}
 	}
+
 	if d.HasChange("zones") && !d.IsNewResource() {
 		oldList, newList := d.GetChange("zones")
 		if oldList == nil {
