@@ -120,7 +120,7 @@ import (
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
-	"github.com/damianovesperini/platform-services-go-sdk/projectv1"
+	project "github.com/damianovesperini/platform-services-go-sdk/projectv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -1529,7 +1529,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the service client.
+	if fileMap != nil && c.Visibility != "public-and-private" {
+        projectEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PROJECT_API_ENDPOINT", c.Region, project.DefaultServiceURL)
+    }
+    if c.Visibility == "private" || c.Visibility == "public-and-private" {
+        session.projectClientErr = fmt.Errorf("Project Service API does not support private endpoints")
+    }
 	projectClientOptions := &projectv1.ProjectV1Options{
+	    URL:           EnvFallBack([]string{"IBMCLOUD_PROJECT_API_ENDPOINT"}, projectEndpoint),
 		Authenticator: authenticator,
 	}
 
@@ -1544,9 +1551,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.projectClientErr = fmt.Errorf("Error occurred while configuring Projects API Specification service: %q", err)
-	}
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		session.projectClientErr = fmt.Errorf("Projects Service API does not support private endpoints")
 	}
 
 	// Construct an "options" struct for creating the service client.

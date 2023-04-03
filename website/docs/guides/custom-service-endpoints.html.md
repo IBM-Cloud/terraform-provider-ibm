@@ -64,6 +64,7 @@ provider "ibm" {
 |Identity and Access Management|IBMCLOUD_IAM_API_ENDPOINT|
 |Cloud Databases|IBMCLOUD_ICD_API_ENDPOINT|
 |Virtual Private Cloud (VPC)|IBMCLOUD_IS_NG_API_ENDPOINT|
+|Project|IBMCLOUD_PROJECT_API_ENDPOINT|
 |Key Management Services|IBMCLOUD_KP_API_ENDPOINT|
 |Cloud Foundry|IBMCLOUD_MCCP_API_ENDPOINT|
 |Push Notifications|IBMCLOUD_PUSH_API_ENDPOINT|
