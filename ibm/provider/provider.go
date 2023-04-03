@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -785,6 +786,10 @@ func Provider() *schema.Provider {
 
 			// Added for Code Engine
 			"ibm_code_engine_project": codeengine.DataSourceIbmCodeEngineProject(),
+
+			// // Added for Project
+			"ibm_project":            project.DataSourceIbmProject(),
+			"ibm_event_notification": project.DataSourceIbmEventNotification(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1245,6 +1250,9 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
+
+			// // Added for Project
+			"ibm_project": project.ResourceIbmProject(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1476,6 +1484,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
 				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
+
+				// // Added for Project
+				"ibm_project": project.ResourceIbmProjectValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
