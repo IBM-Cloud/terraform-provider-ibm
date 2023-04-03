@@ -1530,13 +1530,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the service client.
 	if fileMap != nil && c.Visibility != "public-and-private" {
-        projectEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PROJECT_API_ENDPOINT", c.Region, project.DefaultServiceURL)
-    }
-    if c.Visibility == "private" || c.Visibility == "public-and-private" {
-        session.projectClientErr = fmt.Errorf("Project Service API does not support private endpoints")
-    }
+		projectEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PROJECT_API_ENDPOINT", c.Region, project.DefaultServiceURL)
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		session.projectClientErr = fmt.Errorf("Project Service API does not support private endpoints")
+	}
 	projectClientOptions := &projectv1.ProjectV1Options{
-	    URL:           EnvFallBack([]string{"IBMCLOUD_PROJECT_API_ENDPOINT"}, projectEndpoint),
+		URL:           EnvFallBack([]string{"IBMCLOUD_PROJECT_API_ENDPOINT"}, projectEndpoint),
 		Authenticator: authenticator,
 	}
 
