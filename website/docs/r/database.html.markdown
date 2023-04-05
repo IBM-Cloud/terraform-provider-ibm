@@ -67,45 +67,6 @@ output "ICD Etcd database connection string" {
 
 ```
 
-### **Deprecated** Sample database instance by using `node_` attributes
-Please Note this has been deprecated: Please use the `group` attribute instead
-An example to configure and deploy database by using `node_` attributes instead of `memory_`.
-
-```terraform
-data "ibm_resource_group" "group" {
-  name = "<your_group>"
-}
-
-resource "ibm_database" "<your_database>" {
-  name              = "<your_database_name>"
-  plan              = "standard"
-  location          = "eu-gb"
-  service           = "databases-for-etcd"
-  resource_group_id = data.ibm_resource_group.group.id
-  tags              = ["tag1", "tag2"]
-
-  adminpassword                = "password12"
-  node_count                = 3
-  node_memory_allocation_mb = 1024
-  node_disk_allocation_mb   = 20480
-  users {
-    name      = "user123"
-    password  = "password12"
-    type      = "database"
-  }
-
-  allowlist {
-    address     = "172.168.1.1/32"
-    description = "desc"
-  }
-}
-
-output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
-}
-
-```
-
 ### Sample database instance by using `group` attributes
 An example to configure and deploy database by using `group` attributes.
 
@@ -626,15 +587,6 @@ Review the argument reference that you can specify for your resource.
       - Nested scheme for `cpu`:
         - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
-- `members_memory_allocation_mb` **Deprecated** - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
-- `members_disk_allocation_mb` **Deprecated** - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
-- `members_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment.
-- `node_count` **Deprecated** - (Optional, Integer) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/databases-for-postgresql?topic=cloud-databases-provisioning#provisioning-parameters
-- `node_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment per node.
-- `node_disk_allocation_mb` **Deprecated**  - (Optional, Integer) The disk size of the database per node. As above.
-- `node_memory_allocation_mb` **Deprecated** - (Optional,Integer) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/databases-for-postgresql?topic=cloud-databases-provisioning#provisioning-parameters
-
-  ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb`. `group` conflicts with `node_` and `members_` arguments. Either members, node, or group arguments have to be provided.
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for cassandra (`databases-for-cassandra`) and mongodb(`databases-for-mongodb`)
 * `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
