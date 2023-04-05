@@ -499,7 +499,7 @@ func testAccCheckIBMPIActiveInstanceConfigUpdate(name, instanceHealthStatus, pro
 		pi_health_status     = "%[5]s"
 		pi_volume_ids        = [ibm_pi_volume.power_volume.volume_id]
 		pi_network {
-		  network_id = data.ibm_pi_network.power_networks.id
+			network_id = data.ibm_pi_network.power_networks.id
 		}
 	}
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory)
@@ -539,10 +539,10 @@ func testAccCheckIBMPIStoppedInstanceConfigUpdate(name, instanceHealthStatus, pr
 		}
 	}
 	resource "ibm_pi_instance_action" "example" {
-		pi_cloud_instance_id	= "%[1]s"
-		pi_instance_id			= ibm_pi_instance.power_instance.instance_id
-		pi_action				= "%[8]s"
-		pi_health_status 		= "%[5]s"
+  		pi_cloud_instance_id = "%[1]s"
+  		pi_instance_id       = ibm_pi_instance.power_instance.instance_id
+  		pi_action            = "%[8]s"
+  		pi_health_status     = "%[5]s"
 	}
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory, action)
 }
