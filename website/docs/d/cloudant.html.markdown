@@ -38,7 +38,9 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `capacity` (Number) A number of blocks of throughput units. For more information, about throughput capacity, see [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter.
+* `capacity` (Number) A number of blocks of throughput units.
+
+Capacity changes are reflected immediately, but are applied asynchronously over time by the service. Large capacity jumps are not fully available for some time after modification, but typically complete within 12 hours. For more information, about throughput capacity, see [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter.
 * `cors_config` (List of Object) Configuration for CORS.
 
   Nested scheme for `cors_config`:
