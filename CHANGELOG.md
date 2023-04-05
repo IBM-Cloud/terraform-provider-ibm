@@ -1,3 +1,64 @@
+# 1.52.0(Apr 05, 2023)
+Features
+* Support for Transist Gateway
+    - **Resources**
+        - ibm_tg_connection_action
+* Support for Code Engine
+    - **Resources**
+        - ibm_code_engine_project
+        - ibm_code_engine_app
+        - ibm_code_engine_build
+        - ibm_code_engine_config_map
+        - ibm_code_engine_job
+    - **DataSources**
+        - ibm_code_engine_project
+* Beta support for VPC File Share
+    - **Resources**
+        - ibm_is_share
+        - ibm_is_share_replica_operations
+        - ibm_is_share_target
+    - **DataSources**
+        - ibm_is_share
+        - ibm_is_shares
+        - ibm_is_source_share
+        - ibm_is_share_profile
+        - ibm_is_share_profiles
+        - ibm_is_share_target
+        - ibm_is_share_targets
+
+Enhancements
+* Support Idle Connection Timeout for VPC instance and loadbalancer listener ([4399](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4399))
+* Support Object Lock feature for COS ([4418](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4418))
+* Catalog Management enhancements ([4415](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4415))
+* removed the resource: ibm_is_security_group_network_interface_attachment ([4416](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4416))
+* enhancement(tpm): support for bare metal secure boot and tpm ([4343](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4343))
+* feat(IAM Policy Management): add support for v2/policies API ([4381](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4381))
+* Update UKO plugin to use the UKO 4.7 version of the sdk ([4409](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4409))
+
+
+Bugfixes
+* document the CBR custom service endpoint ([4344](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4344))
+* Fix to allow memory and processor updates to server instances in either shutdown or active state ([4383](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4383))
+* Error trying to read ibm_satellite_endpoint resource ([4057](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4057))
+* CD Artifactory parameter description update ([4405](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4405))
+* Secrets Manager fixes ([4402](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4402))
+* PowerVS start and possibly stop actions failing when resource already in the desired state ([4400](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4400))
+* Update pi_network documentation to provide information about default DNS configurations ([4404](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4404))
+* Use resource timeout instead of hardcoded value in instance action ([4417](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4417))
+* ibm_cos_bucket object versioning block type should be object ([4069](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4069))
+* Link from documentation pointing at 404 ([3615](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3615))
+* set instance_count in instance group read ([4421](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4421))
+* fix(tekton): worker ID fix and nextBuildNumber ([4425](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4425))
+* refactor how we set and update the taints on worker pools ([4419](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4419))
+* fix: check state for ibm_tg_connection_action correctly ([4446](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4446))
+* Code engine docs changes and example update ([4448](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4448))
+* Fix regex used for validating a secret group name,Update resource_ibm_sm_secret_group.go ([4451](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4451))
+* refactor(cloudant): handle capacity change duration more gracefully ([4414](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4414))
+* Added code, tests, and documentation for certificate_root ([4457](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4457))
+* Fix #4452: Add 1.3 version of terraform to schematics workspace resource ([4453](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4453))
+* fix(tekton): sorting issue for events ([4462](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4462))
+* Update platform-services-go-sdk to v0.34.0 and CM fixes ([4474](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4474))
+
 # 1.52.0-beta0(Mar 27, 2023)
 Features
 * Support for Transist Gateway

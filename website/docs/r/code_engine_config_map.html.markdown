@@ -14,8 +14,8 @@ Provides a resource for code_engine_config_map. This allows code_engine_config_m
 
 ```hcl
 resource "ibm_code_engine_config_map" "code_engine_config_map_instance" {
-  name = "my-config-map"
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+  name       = "my-config-map"
 }
 ```
 
@@ -36,7 +36,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the code_engine_config_map.
 * `config_map_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
-* `created_at` - (String) The date when the resource was created.
+* `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the config map instance, which is used to achieve optimistic locking.
 * `href` - (String) When you provision a new config map,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
