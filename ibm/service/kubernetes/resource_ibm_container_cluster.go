@@ -127,20 +127,22 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"worker_num": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      0,
-				Description:  "Number of worker nodes",
-				ValidateFunc: validate.ValidateWorkerNum,
-				Deprecated:   "This field is deprecated",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Default:          0,
+				Description:      "Number of worker nodes",
+				ValidateFunc:     validate.ValidateWorkerNum,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Deprecated:       "This field is deprecated",
 			},
 
 			"default_pool_size": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      1,
-				Description:  "The size of the default worker pool",
-				ValidateFunc: validate.ValidateWorkerNum,
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Default:          1,
+				Description:      "The size of the default worker pool",
+				DiffSuppressFunc: flex.ApplyOnce,
+				ValidateFunc:     validate.ValidateWorkerNum,
 			},
 
 			"labels": {
@@ -151,9 +153,10 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				Description: "list of labels to the default worker pool",
 			},
 			"taints": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "WorkerPool Taints",
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Description:      "WorkerPool Taints",
+				DiffSuppressFunc: flex.ApplyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -204,11 +207,12 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"disk_encryption": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     true,
-				Description: "disc encryption done, if set to true.",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Default:          true,
+				Description:      "disc encryption done, if set to true.",
 			},
 
 			"kube_version": {
@@ -250,18 +254,20 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"machine_type": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "Machine type",
+				Type:             schema.TypeString,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Optional:         true,
+				Description:      "Machine type",
 			},
 
 			"hardware": {
-				Type:         schema.TypeString,
-				ForceNew:     true,
-				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{hardwareShared, hardwareDedicated}),
-				Description:  "Hardware type",
+				Type:             schema.TypeString,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Required:         true,
+				ValidateFunc:     validate.ValidateAllowedStringValues([]string{hardwareShared, hardwareDedicated}),
+				Description:      "Hardware type",
 			},
 
 			"billing": {
@@ -271,37 +277,21 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"public_vlan_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  nil,
-				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if o == "" {
-						return false
-					}
-					if o != "" && n == "" {
-						return true
-					}
-					return false
-				},
-				Description: "Public VLAN ID",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         false,
+				Default:          nil,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Public VLAN ID",
 			},
 
 			"private_vlan_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  nil,
-				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if o == "" {
-						return false
-					}
-					if o != "" && n == "" {
-						return true
-					}
-					return false
-				},
-				Description: "Private VLAN ID",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         false,
+				Default:          nil,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Private VLAN ID",
 			},
 
 			"entitlement": {
@@ -312,11 +302,12 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"operating_system": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The operating system of the workers in the default worker pool.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Computed:         true,
+				Description:      "The operating system of the workers in the default worker pool.",
 			},
 
 			"wait_for_worker_update": {

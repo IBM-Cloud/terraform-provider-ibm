@@ -53,10 +53,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"flavor": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Cluster nodes flavour",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Cluster nodes flavour",
 			},
 
 			"name": {
@@ -67,10 +68,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"vpc_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The vpc id where the cluster is",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The vpc id where the cluster is",
 			},
 
 			"kms_config": {
@@ -101,21 +103,24 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"zones": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				Description: "Zone info",
+				Type:             schema.TypeSet,
+				Required:         true,
+				Description:      "Zone info",
+				DiffSuppressFunc: flex.ApplyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Zone for the worker pool in a multizone cluster",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "Zone for the worker pool in a multizone cluster",
+							DiffSuppressFunc: flex.ApplyOnce,
 						},
 
 						"subnet_id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The VPC subnet to assign the cluster",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The VPC subnet to assign the cluster",
+							DiffSuppressFunc: flex.ApplyOnce,
 						},
 					},
 				},
@@ -184,10 +189,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"worker_count": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "Number of worker nodes in the cluster",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Default:          1,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Number of worker nodes in the cluster",
 			},
 
 			"worker_labels": {
@@ -199,19 +205,21 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"operating_system": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The operating system of the workers in the default worker pool.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         false,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The operating system of the workers in the default worker pool.",
 			},
 
 			"secondary_storage": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The secondary storage option for the default worker pool.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The secondary storage option for the default worker pool.",
 			},
 
 			"taints": {
@@ -416,10 +424,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"host_pool_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The ID of the cluster's associated host pool",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The ID of the cluster's associated host pool",
 			},
 
 			flex.ResourceName: {
