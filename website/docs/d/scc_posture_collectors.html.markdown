@@ -83,3 +83,4 @@ Nested scheme for **previous**:
 
 * `total_count` - (Integer) The total number of items in the list. This will have value as 0 when no collectors are available and below values will not be populated in that case.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_collectors is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).
