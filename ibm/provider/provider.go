@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
@@ -42,6 +40,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
@@ -53,6 +52,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Provider returns a *schema.Provider.
@@ -785,6 +785,9 @@ func Provider() *schema.Provider {
 
 			// Added for Code Engine
 			"ibm_code_engine_project": codeengine.DataSourceIbmCodeEngineProject(),
+
+			// Added for Project
+			"ibm_project_event_notification": project.DataSourceIbmProjectEventNotification(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1245,6 +1248,9 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
+
+			// Added for Project
+			"ibm_project_instance": project.ResourceIbmProjectInstance(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1476,6 +1482,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
 				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
+
+				// Added for Project
+				"ibm_project_instance": project.ResourceIbmProjectInstanceValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
