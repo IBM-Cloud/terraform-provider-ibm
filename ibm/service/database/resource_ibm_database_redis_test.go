@@ -36,6 +36,8 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
@@ -50,6 +52,8 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2304"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 				),
 			},
@@ -61,6 +65,8 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
 				),
 			},
 			{
@@ -163,6 +169,15 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 1024
+			}
+			 disk {
+				allocation_mb = 1024
+			}
+		}
 		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
@@ -190,6 +205,15 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 1152
+			}
+			 disk {
+				allocation_mb = 2048
+			}
+		}
 		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
@@ -216,6 +240,15 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 1024
+			}
+			 disk {
+				allocation_mb = 2048
+			}
+		}
 	  }
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }

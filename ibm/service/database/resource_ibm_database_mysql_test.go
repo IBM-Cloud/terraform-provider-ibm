@@ -35,8 +35,8 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "9216"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "184320"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -90,10 +90,10 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 		group {
 			group_id = "member"
 			memory {
-				allocation_mb = 3072
+				allocation_mb = 1024
 			}
 			disk {
-				allocation_mb = 61440
+				allocation_mb = 20480
 			}
 		}
 		tags                         = ["one:two"]
@@ -130,13 +130,13 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 		group {
 			group_id = "member"
 			memory {
-				allocation_mb = 6144
+				allocation_mb = 2048
 			}
 			disk {
-				allocation_mb = 92160
+				allocation_mb = 30720
 			}
 			cpu {
-				allocation_count = 12
+				allocation_count = 4
 			}
 		}
 		service_endpoints            = "public-and-private"
