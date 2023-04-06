@@ -226,10 +226,6 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 		defPool = lbPool
 	}
 
-	var idleConnectionTimeout int64
-	if idleconnectiontimeout, ok := d.GetOk(isLBListenerIdleConnectionTimeout); ok {
-		idleConnectionTimeout = int64(idleconnectiontimeout.(int))
-	}
 	if crn, ok := d.GetOk(isLBListenerCertificateInstance); ok {
 		certificateCRN = crn.(string)
 	}
@@ -262,7 +258,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	conns.IbmMutexKV.Lock(isLBKey)
 	defer conns.IbmMutexKV.Unlock(isLBKey)
 
-	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, portMin, portMax, connLimit, httpStatusCode, idleConnectionTimeout)
+	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, portMin, portMax, connLimit, httpStatusCode)
 	if err != nil {
 		return err
 	}
@@ -270,7 +266,7 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	return resourceIBMISLBListenerRead(d, meta)
 }
 
-func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode, idleConnectionTimeout int64) error {
+func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -322,10 +318,10 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 			}
 		}
 	}
-	if strings.EqualFold(*lb.Profile.Family, "application") {
+	if idleconnectiontimeout, ok := d.GetOk(isLBListenerIdleConnectionTimeout); ok {
+		idleConnectionTimeout := int64(idleconnectiontimeout.(int))
 		options.IdleConnectionTimeout = &idleConnectionTimeout
 	}
-
 	if app, ok := d.GetOk(isLBListenerAcceptProxyProtocol); ok {
 		acceptProxyProtocol := app.(bool)
 		options.AcceptProxyProtocol = &acceptProxyProtocol
@@ -480,11 +476,12 @@ func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID 
 		d.Set(isLBListenerConnectionLimit, *lbListener.ConnectionLimit)
 	}
 	d.Set(isLBListenerStatus, *lbListener.ProvisioningStatus)
-	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
-		ID: &lbID,
-	}
+
 	if lbListener.IdleConnectionTimeout != nil {
 		d.Set(isLBListenerIdleConnectionTimeout, *lbListener.IdleConnectionTimeout)
+	}
+	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &lbID,
 	}
 	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
 	if err != nil {
