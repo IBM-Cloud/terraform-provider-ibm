@@ -32,7 +32,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the code_engine_project.
 * `account_id` - (String) An alphanumeric value identifying the account ID.
 
-* `created_at` - (String) The date when the project was created.
+* `created_at` - (String) The timestamp when the project was created.
 
 * `crn` - (String) The CRN of the project.
 

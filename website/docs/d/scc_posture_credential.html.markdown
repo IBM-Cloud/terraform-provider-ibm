@@ -101,3 +101,4 @@ Nested scheme for **display_fields**:
 
 * `updated_by` - (Required, String) ID of the user who modified the credentials.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_credential is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

@@ -4016,7 +4016,7 @@ func resourceIBMCmOfferingMapToRenderType(modelMap map[string]interface{}) (*cat
 		model.GroupingIndex = core.Int64Ptr(int64(modelMap["grouping_index"].(int)))
 	}
 	if modelMap["config_constraints"] != nil {
-		model.ConfigConstraints = modelMap["config_constraints"]
+		model.ConfigConstraints = modelMap["config_constraints"].(map[string]interface{})
 	}
 	if modelMap["associations"] != nil && len(modelMap["associations"].([]interface{})) > 0 {
 		AssociationsModel, err := resourceIBMCmOfferingMapToRenderTypeAssociations(modelMap["associations"].([]interface{})[0].(map[string]interface{}))
@@ -4271,7 +4271,7 @@ func resourceIBMCmOfferingMapToSolutionInfo(modelMap map[string]interface{}) (*c
 		model.CostEstimate = CostEstimateModel
 	}
 	if modelMap["dependencies"] != nil {
-		dependencies := []catalogmanagementv1.Dependency{}
+		dependencies := []catalogmanagementv1.OfferingReference{}
 		for _, dependenciesItem := range modelMap["dependencies"].([]interface{}) {
 			dependenciesItemModel, err := resourceIBMCmOfferingMapToDependency(dependenciesItem.(map[string]interface{}))
 			if err != nil {
@@ -4429,7 +4429,7 @@ func resourceIBMCmOfferingMapToCostBreakdown(modelMap map[string]interface{}) (*
 		model.TotalHourlyCost = core.StringPtr(modelMap["total_hourly_cost"].(string))
 	}
 	if modelMap["total_monthly_cost"] != nil && modelMap["total_monthly_cost"].(string) != "" {
-		model.TotalMonthlyCOst = core.StringPtr(modelMap["total_monthly_cost"].(string))
+		model.TotalMonthlyCost = core.StringPtr(modelMap["total_monthly_cost"].(string))
 	}
 	if modelMap["resources"] != nil {
 		resources := []catalogmanagementv1.CostResource{}
@@ -4516,8 +4516,8 @@ func resourceIBMCmOfferingMapToCostSummary(modelMap map[string]interface{}) (*ca
 	return model, nil
 }
 
-func resourceIBMCmOfferingMapToDependency(modelMap map[string]interface{}) (*catalogmanagementv1.Dependency, error) {
-	model := &catalogmanagementv1.Dependency{}
+func resourceIBMCmOfferingMapToDependency(modelMap map[string]interface{}) (*catalogmanagementv1.OfferingReference, error) {
+	model := &catalogmanagementv1.OfferingReference{}
 	if modelMap["catalog_id"] != nil && modelMap["catalog_id"].(string) != "" {
 		model.CatalogID = core.StringPtr(modelMap["catalog_id"].(string))
 	}
@@ -5237,7 +5237,7 @@ func resourceIBMCmOfferingRenderTypeToMap(model *catalogmanagementv1.RenderType)
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
 	}
 	if model.ConfigConstraints != nil {
-		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints.(map[string]interface{}))
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints)
 	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmOfferingRenderTypeAssociationsToMap(model.Associations)
@@ -5637,8 +5637,8 @@ func resourceIBMCmOfferingCostBreakdownToMap(model *catalogmanagementv1.CostBrea
 	if model.TotalHourlyCost != nil {
 		modelMap["total_hourly_cost"] = model.TotalHourlyCost
 	}
-	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_cost"] = model.TotalMonthlyCOst
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -5725,7 +5725,7 @@ func resourceIBMCmOfferingCostSummaryToMap(model *catalogmanagementv1.CostSummar
 	return modelMap, nil
 }
 
-func resourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.Dependency) (map[string]interface{}, error) {
+func resourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.OfferingReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CatalogID != nil {
 		modelMap["catalog_id"] = model.CatalogID

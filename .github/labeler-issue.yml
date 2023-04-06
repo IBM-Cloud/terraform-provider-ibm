@@ -46,17 +46,19 @@ service/Classic Infrastructure:
   - '((\*|-) ?`?|(data|resource) "?)(ibm_compute|ibm_cdn|ibm_firewall|ibm_lb|ibm_lbaas|ibm_network|ibm_storage|ibm_security|ibm_subnet|ibm_hardware|ibm_ipsec)'
 service/Cloud Databases:
   - '((\*|-) ?`?|(data|resource) "?)ibm_(cloudant|database)'
-service/Cloud Foundary:
+service/Cloud Foundry:
   - '((\*|-) ?`?|(data|resource) "?)(ibm_account|ibm_org|ibm_space|ibm_service|ibm_app_domain_private|ibm_app_domain_shared|ibm_app_route)'
 service/CBR:
   - '((\*|-) ?`?|(data|resource) "?)ibm_cbr'
 service/Container Registry:
   - '((\*|-) ?`?|(data|resource) "?)ibm_cr_'
+service/Code Engine:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_code_engine_'
 service/DNS Services:
   - '((\*|-) ?`?|(data|resource) "?)ibm_dns_'
 service/Direct Link Gateway:
   - '((\*|-) ?`?|(data|resource) "?)ibm_dl_'
-service/Enterprise Managent:
+service/Enterprise Management:
   - '((\*|-) ?`?|(data|resource) "?)ibm_enterprise'
 service/Event Notificateion:
   - '((\*|-) ?`?|(data|resource) "?)ibm_en_'
@@ -93,7 +95,7 @@ service/Satellite:
 service/Schematics:
   - '((\*|-) ?`?|(data|resource) "?)ibm_schematics_'
 service/Secrets Manager:
-  - '((\*|-) ?`?|(data|resource) "?)ibm_secrets_manager_'
+  - '((\*|-) ?`?|(data|resource) "?)ibm_(secrets_manager_|sm_)'
 service/SCC:
   - '((\*|-) ?`?|(data|resource) "?)ibm_scc_'
 service/Transit Gateway:
