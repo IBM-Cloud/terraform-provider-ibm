@@ -60,7 +60,7 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 
 ```
 # Enabling Object Lock configuration on an existing bucket
-To enable  Object Lock configuration on an existing bucket , create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_object_lock_configuration.bucket_crn` and `ibm_cos_bucket_object_lock_configuration.bucket_location` as shown in the example.
+To enable  Object Lock configuration on an existing bucket, create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_object_lock_configuration.bucket_crn` and `ibm_cos_bucket_object_lock_configuration.bucket_location` as shown in the example.
 
 ## Example usage
 

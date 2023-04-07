@@ -98,7 +98,7 @@ resource "ibm_cos_bucket" "smart-us-south" {
 
 # ibm_cos_object_lock_configuration
 
-Retrive an IBM Cloud Object Storage bucket with Object Lock enabled and Object Lock configuration set on the bucket.It allows Object Lock configuration to be updated or deleted.But it does not allow to disable Object Lock as objectloock cannot be disabled once enabled on a bucket.
+Retrive an IBM Cloud Object Storage bucket with Object Lock enabled and Object Lock configuration set on the bucket. It allows Object Lock configuration to be updated or deleted. But it does not allow to disable as Object Lock cannot be disabled once enabled on a bucket.
 
 
 ## Argument reference
