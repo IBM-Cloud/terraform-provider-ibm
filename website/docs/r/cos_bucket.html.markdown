@@ -400,7 +400,7 @@ resource "ibm_cos_bucket" "cos_bucket_onerate" {
 ```
 # ibm_cos_object_lock_configuration
 
-COS Object Lock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legalhold for an object.
+COS Object Lock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legal hold for an object.
 
 ## Example usage
 

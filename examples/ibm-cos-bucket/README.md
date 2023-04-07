@@ -355,7 +355,7 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
 ```
 ## COS Object Lock
 
-COS Object Lock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legalhold for an object.
+COS Object Lock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legal hold for an object.
 
 ## Example usage
 The following example creates an instance of IBM Cloud Object Storage.Then creates bucket with Object Lock enabled and then set Object Lock configuration on the bucket.

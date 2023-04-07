@@ -8,7 +8,7 @@ description:
 ---
 
 # ibm_cos_bucket_object_lock_configuration
-Provides an  Object Lock configuration resource. This resource is used to configure a default retention period for objects placed in the specified bucket. To enable Object Lock for a new bucket see [ibm_cos_bucket](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cos_bucket).
+Provides an  Object Lock configuration resource. This resource is used to configure a default retention period for objects placed in the specified bucket. To enable Object Lock for a new bucket see [ibm_cos_bucket](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cos_bucket). To configure legal hold and retention period on an object please refer [ibm_cos_bucket_object](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cm_object).
 
 
 
@@ -19,10 +19,6 @@ To configure Object Lock on a bucket, you must enable object versioning on bucke
 
 ## Example usage
 The following example demonstrates creating a bucket with object lock enabled with default retention.
-
-**Note:**
-To configure Object Lock legalhold and retention on an object please refer [ibm_cos_bucket_object](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.52.0/docs/resources/cos_bucket_object).
-
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
