@@ -1,7 +1,7 @@
 ---
 subcategory: "Kubernetes Service"
 layout: "ibm"
-page_title: "IBM: container_ingress_instance"
+page_title: "IBM: ibm_container_ingress_instance"
 description: |-
   Registers an IBM Cloud Secrets Manager instance with your cluster
 ---
