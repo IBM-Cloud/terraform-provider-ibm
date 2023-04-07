@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_container_ingress_instance
-List registered IBM Cloud Secrets Manager instances for your cluster.
+Get details about a registered IBM Cloud Secrets Manager instance for your cluster.
 
 
 ## Example usage
