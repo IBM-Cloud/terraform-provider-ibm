@@ -353,12 +353,12 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
 }
 
 ```
-## COS Objectlock
+## COS Object Lock
 
-COS objectlock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legalhold for an object.
+COS Object Lock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legalhold for an object.
 
 ## Example usage
-The following example creates an instance of IBM Cloud Object Storage.Then creates bucket with objectlock enabled and then set objectlock configuration on the bucket.
+The following example creates an instance of IBM Cloud Object Storage.Then creates bucket with Object Lock enabled and then set Object Lock configuration on the bucket.
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
@@ -442,7 +442,7 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 | permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
 | enable | Specifies Versioning status either **enable or suspended** for an objects in the bucket. | `bool` | no
 | hard_quota | sets a maximum amount of storage (in bytes) available for a bucket. | `int` | no
-| object_lock | enables objectlock on a bucket. | `bool` | no
+| object_lock | enables Object Lock on a bucket. | `bool` | no
 | bucket\_crn | The CRN of the source COS bucket. | `string` | yes |
 | bucket\_location | The location of the source COS bucket. | `string` | yes |
 | destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `String` | yes
@@ -451,11 +451,11 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 | rule_id | The rule id. | `String` | no
 | priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `String` | no
 | prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `String` | no
-| bucket_crn | The CRN of the COS bucket on which objectlock is enabled or should be enabled. | `String` | yes
+| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `String` | yes
 | bucket_location | Location of the COS bucket. | `String` | yes
 | endpoint_type | Endpoint types of the COS bucket. | `String` | no
-| object_lock_enabled | Enable objectlock on an existing COS bucket. | `String` | yes
-| mode | Retention mode for the objectlock configuration. | `String` | yes
+| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `String` | yes
+| mode | Retention mode for the Object Lock configuration. | `String` | yes
 | years | Retention period in terms of years after which the object can be deleted. | `int` | no
 | days | Retention period in terms of days after which the object can be deleted. | `int` | no
 {: caption="inputs"}

@@ -54,10 +54,10 @@ resource "ibm_cos_bucket_object" "file" {
   etag            = filemd5("${path.module}/object.json")
 }
 ```
-# Objectlock
+# Object Lock
 
 **Note:**
-Objectlock must be enabled on the bucket to configure `object_lock_mode` , `object_lock_retain_until_date` , `object_lock_legal_hold_status` on the object.
+Object Lock must be enabled on the bucket to configure `object_lock_mode` , `object_lock_retain_until_date` , `object_lock_legal_hold_status` on the object.
 
 ## Example usage
 
