@@ -5,7 +5,6 @@ package cos_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -14,13 +13,12 @@ import (
 )
 
 func TestAccIBMCOSBucketDataSource_basic(t *testing.T) {
-	name := strings.Split(acc.BucketCRN, ":bucket:")[1]
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIBMCOSBucketDataSourceConfig_basic_read(name, acc.CosCRN, acc.RegionName),
+				Config: testAccIBMCOSBucketDataSourceConfig_basic_read(acc.BucketName, acc.CosCRN, acc.RegionName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket.testacc", "bucket_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket.testacc", "storage_class"),
