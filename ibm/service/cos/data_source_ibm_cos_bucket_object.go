@@ -168,7 +168,7 @@ func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceDat
 	if out.ObjectLockRetainUntilDate != nil {
 		d.Set("object_lock_retain_until_date", out.ObjectLockRetainUntilDate.Format(time.RFC1123))
 	}
-	if out.ObjectLockMode != nil {
+	if out.ObjectLockLegalHoldStatus != nil {
 		d.Set("object_lock_legal_hold_status", out.ObjectLockLegalHoldStatus)
 	}
 
