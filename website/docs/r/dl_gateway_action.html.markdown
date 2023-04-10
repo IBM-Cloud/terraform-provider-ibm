@@ -3,7 +3,7 @@ subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateway_action"
 description: |-
-  Manages IBM Direct Link Gateway.
+  Manages IBM Direct Link Gateway Action.
 ---
 
 # ibm_dl_gateway_action

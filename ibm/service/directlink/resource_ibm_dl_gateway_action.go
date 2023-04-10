@@ -245,13 +245,11 @@ func ResourceIBMDLGatewayAction() *schema.Resource {
 			dlBfdStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Gateway BFD status",
 			},
 			dlBfdStatusUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Date and time BFD status was updated",
 			},
 			dlBgpAsn: {
@@ -390,7 +388,6 @@ func ResourceIBMDLGatewayAction() *schema.Resource {
 			dlBgpStatusUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Date and time BGP status was updated",
 			},
 			dlChangeRequest: {
@@ -421,7 +418,6 @@ func ResourceIBMDLGatewayAction() *schema.Resource {
 			dlLinkStatusUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Date and time Link status was updated",
 			},
 			dlLocationDisplayName: {
