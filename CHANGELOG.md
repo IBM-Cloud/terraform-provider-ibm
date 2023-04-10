@@ -1,3 +1,6 @@
+# 1.52.1(Apr 10, 2023)
+Bugfixes
+* After an upgrade to the 1.52.0 provider it is not possible to use the data on ibm_cos_bucket without providing an object_lock_configuration ([4487](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4487))
 # 1.52.0(Apr 05, 2023)
 Features
 * Support for Transist Gateway
