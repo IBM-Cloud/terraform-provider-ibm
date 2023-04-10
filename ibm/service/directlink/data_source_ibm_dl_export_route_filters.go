@@ -27,7 +27,7 @@ func DataSourceIBMDLExportRouteFilters() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						dlExportRouteFilter: {
+						dlExportRouteFilterId: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The Export Route Filter identifier",
@@ -91,7 +91,7 @@ func dataSourceIBMDLExportRouteFiltersRead(d *schema.ResourceData, meta interfac
 	for _, instance := range exportRouteFilterList.ExportRouteFilters {
 		routeFilter := map[string]interface{}{}
 		if instance.ID != nil {
-			routeFilter[dlExportRouteFilter] = *instance.ID
+			routeFilter[dlExportRouteFilterId] = *instance.ID
 		}
 		if instance.Action != nil {
 			routeFilter[dlAction] = *instance.Action

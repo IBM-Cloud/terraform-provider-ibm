@@ -33,7 +33,7 @@ In addition to the argument reference list, you can access the following attribu
 
    Nested scheme for `import_route_filters`:
   - `created_at` - (String) The date and time resource is created.
-  - `import_route_filter_id` - (String) The unique identifier of Import Route Filter.
+  - `im_filter_id` - (String) The unique identifier of Import Route Filter.
   - `action` - (String) Whether to permit or deny the prefix filter.
   - `before` - (String) Identifier of prefix filter that handles the ordering and follow semantics. When a filter reference another filter in it's before field, then the filter making the reference is applied before the referenced filter. For example: if filter A references filter B in its before field, A is applied before B.
   - `ge` - (Int) The minimum matching length of the prefix-set.

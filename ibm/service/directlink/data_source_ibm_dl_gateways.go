@@ -79,13 +79,11 @@ func DataSourceIBMDLGateways() *schema.Resource {
 						},
 						dlDefault_export_route_filter: {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
 						},
 						dlDefault_import_route_filter: {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
 						},

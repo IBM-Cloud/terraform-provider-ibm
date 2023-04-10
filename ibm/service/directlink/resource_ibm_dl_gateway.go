@@ -57,7 +57,7 @@ func ResourceIBMDLGateway() *schema.Resource {
 				Description: "List Export Route Filters for a Direct Link gateway",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						dlExportRouteFilter: {
+						dlExportRouteFilterId: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Export route Filter identifier",
@@ -109,7 +109,7 @@ func ResourceIBMDLGateway() *schema.Resource {
 				Description: "List Import Route Filters for a Direct Link gateway",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						dlImportRouteFilter: {
+						dlImportRouteFilterId: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Import route Filter identifier",
@@ -460,7 +460,6 @@ func ResourceIBMDLGateway() *schema.Resource {
 				Computed:    true,
 				Description: "IBM BGP ASN",
 			},
-
 			dlBgpStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -469,7 +468,6 @@ func ResourceIBMDLGateway() *schema.Resource {
 			dlBgpStatusUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Date and time BGP status was updated",
 			},
 			dlChangeRequest: {
@@ -500,7 +498,6 @@ func ResourceIBMDLGateway() *schema.Resource {
 			dlLinkStatusUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "Date and time Link status was updated",
 			},
 			dlLocationDisplayName: {
@@ -982,7 +979,7 @@ func resourceIBMdlGatewayExportRouteFiltersRead(d *schema.ResourceData, meta int
 	for _, instance := range exportRouteFilterList.ExportRouteFilters {
 		routeFilter := map[string]interface{}{}
 		if instance.ID != nil {
-			routeFilter[dlExportRouteFilter] = *instance.ID
+			routeFilter[dlExportRouteFilterId] = *instance.ID
 		}
 		if instance.Action != nil {
 			routeFilter[dlAction] = *instance.Action
@@ -1028,7 +1025,7 @@ func resourceIBMdlGatewayImportRouteFiltersRead(d *schema.ResourceData, meta int
 	for _, instance := range importRouteFilterList.ImportRouteFilters {
 		routeFilter := map[string]interface{}{}
 		if instance.ID != nil {
-			routeFilter[dlImportRouteFilter] = *instance.ID
+			routeFilter[dlImportRouteFilterId] = *instance.ID
 		}
 		if instance.Action != nil {
 			routeFilter[dlAction] = *instance.Action
@@ -1443,8 +1440,8 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 		replaceGatewayExportRouteFiltersOptionsModel.IfMatch = core.StringPtr(etag)
 		replaceGatewayExportRouteFiltersOptionsModel.Headers = map[string]string{"If-Match": etag}
 
-		/* after updating the export route filter , waiting  for
-		   gatewat to move to provisioned state
+		/* after updating the Asprepends , waiting  for
+		   gateway to move to provisioned state
 		*/
 		_, err = isWaitForDirectLinkAvailable(directLink, ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {

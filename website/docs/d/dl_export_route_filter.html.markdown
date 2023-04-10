@@ -17,7 +17,7 @@ Import the details of an existing IBM Cloud Infrastructure Direct Link Gateway a
 ```terraform
 data "dl_export_route_filter" "test_dl_export_route_filter" {
     gateway = ibm_dl_gateway.test_dl_gateway.id
-    id =  ibm_dl_gateway.test_dl_gateway.export_route_filters[0].export_route_filter_id
+    ex_filter_id =  ibm_dl_gateway.test_dl_gateway.export_route_filters[0].ex_filter_id
 }
 ```
 ---
@@ -25,7 +25,7 @@ data "dl_export_route_filter" "test_dl_export_route_filter" {
 Review the argument reference that you can specify for your resource. 
 
 - `gateway`- (Required, String) Direct Link Gateway ID.
--  `id` - (Required, String) Export Route Filter ID
+-  `ex_filter_id` - (Required, String) Export Route Filter ID
 
 
 ## Attribute reference

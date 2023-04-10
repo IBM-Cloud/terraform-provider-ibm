@@ -91,10 +91,8 @@ const (
 	dlBefore                       = "before"
 	dlGe                           = "ge"
 	dlLe                           = "le"
-	dlExportRouteFilter            = "export_route_filter_id"
-	dlImportRouteFilter            = "import_route_filter_id"
-	dlExportRouteFilterId          = "id"
-	dlImportRouteFilterId          = "id"
+	dlExportRouteFilterId          = "ex_filter_id"
+	dlImportRouteFilterId          = "im_filter_id"
 	dlDefault_export_route_filter  = "default_export_route_filter"
 	dlDefault_import_route_filter  = "default_import_route_filter"
 )
