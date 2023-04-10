@@ -30,6 +30,7 @@ Review the argument reference that you can specify for your data source.
 * `deployment_id` - (Required, String) Deployment ID.
 * `user_id` - (Required, String) User ID.
 * `user_type` - (Required, String) User type.
+* `certificate_root` - (Optional, String) Optional certificate root path to prepend certificate names. Certificates would be stored in this directory for use by other commands.
 
 ## Attribute Reference
 

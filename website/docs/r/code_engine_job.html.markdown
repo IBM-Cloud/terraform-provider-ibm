@@ -14,33 +14,15 @@ Provides a resource for code_engine_job. This allows code_engine_job to be creat
 
 ```hcl
 resource "ibm_code_engine_job" "code_engine_job_instance" {
+  project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
+  name            = "my-job"
   image_reference = "icr.io/codeengine/helloworld"
-  image_secret = "my-secret"
-  name = "my-job"
-  project_id = ibm_code_engine_project.code_engine_project_instance.id
-  run_as_user = 1001
+
   run_env_variables {
-    key = "MY_VARIABLE"
-    name = "SOME"
-    prefix = "PREFIX_"
-    reference = "my-secret"
-    type = "literal"
-    value = "VALUE"
+    type  = "literal"
+    name  = "name"
+    value = "value"
   }
-  run_mode = "task"
-  run_service_account = "default"
-  run_volume_mounts {
-    mount_path = "/app"
-    name = "codeengine-mount-b69u90"
-    reference = "my-secret"
-    type = "secret"
-  }
-  scale_array_spec = "1-5,7-8,10"
-  scale_cpu_limit = "1"
-  scale_ephemeral_storage_limit = "4G"
-  scale_max_execution_time = 7200
-  scale_memory_limit = "4G"
-  scale_retry_limit = 3
 }
 ```
 
@@ -92,15 +74,17 @@ Nested scheme for **run_volume_mounts**:
 	* `type` - (Required, String) Specify the type of the volume mount. Allowed types are: 'config_map', 'secret'.
 	  * Constraints: The default value is `secret`. Allowable values are: `config_map`, `secret`. The value must match regular expression `/^(config_map|secret)$/`.
 * `scale_array_spec` - (Optional, String) Define a custom set of array indices as comma-separated list containing single values and hyphen-separated ranges like `5,12-14,23,27`. Each instance can pick up its array index via environment variable `JOB_INDEX`. The number of unique array indices specified here determines the number of job instances to run.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?(?:,(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?)*$/`.
+  * Constraints:  The default value is `0`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?(?:,(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?)*$/`.
 * `scale_cpu_limit` - (Optional, String) Optional amount of CPU set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).
   * Constraints: The default value is `1`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_ephemeral_storage_limit` - (Optional, String) Optional amount of ephemeral storage to set for the instance of the job. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).
   * Constraints: The default value is `400M`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_max_execution_time` - (Optional, Integer) The maximum execution time in seconds for runs of the job. This property can only be specified if `run_mode` is `task`.
+  * Constraints: The default value is `7200`.
 * `scale_memory_limit` - (Optional, String) Optional amount of memory set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).
   * Constraints: The default value is `4G`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_retry_limit` - (Optional, Integer) The number of times to rerun an instance of the job before the job is marked as failed. This property can only be specified if `run_mode` is `task`.
+  * Constraints: The default value is `3`.
 
 ## Attribute Reference
 
@@ -109,7 +93,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the code_engine_job.
 * `job_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
-* `created_at` - (String) The date when the resource was created.
+* `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the job instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new job,  a URL is created identifying the location of the instance.
