@@ -76,7 +76,7 @@ func dataSourceIBMDLImportRouteFilterRead(d *schema.ResourceData, meta interface
 	getGatewayImportRouteFilterOptionsModel := &directlinkv1.GetGatewayImportRouteFilterOptions{GatewayID: &gatewayId, ID: &importRouteFilterId}
 	importRouteFilter, response, err := directLink.GetGatewayImportRouteFilter(getGatewayImportRouteFilterOptionsModel)
 	if err != nil {
-		log.Println("[WARN] Error  while listing Direct Link Import Route Filter", response, err)
+		log.Println("[ERROR] Error  while listing Direct Link Import Route Filter", response, err)
 		return err
 	}
 	if importRouteFilter == nil {

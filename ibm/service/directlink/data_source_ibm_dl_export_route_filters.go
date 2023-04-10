@@ -84,7 +84,7 @@ func dataSourceIBMDLExportRouteFiltersRead(d *schema.ResourceData, meta interfac
 	listGatewayExportRouteFiltersOptionsModel := &directlinkv1.ListGatewayExportRouteFiltersOptions{GatewayID: &gatewayId}
 	exportRouteFilterList, response, err := directLink.ListGatewayExportRouteFilters(listGatewayExportRouteFiltersOptionsModel)
 	if err != nil {
-		log.Println("[WARN] Error listing Direct Link Export Route Filters", response, err)
+		log.Println("[ERROR] Error listing Direct Link Export Route Filters", response, err)
 		return err
 	}
 	exportRouteFilters := make([]map[string]interface{}, 0)
