@@ -26,6 +26,7 @@ var CisResourceGroup string
 var CloudShellAccountID string
 var CosCRN string
 var BucketCRN string
+var BucketName string
 var CosName string
 var Ibmid1 string
 var Ibmid2 string
@@ -350,6 +351,11 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	BucketName = os.Getenv("IBM_COS_BUCKET_NAME")
+	if BucketName == "" {
+		BucketName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_BUCKET_NAME with a VALID BUCKET Name for testing ibm_cos_bucket* resources")
 	}
 
 	CosName = os.Getenv("IBM_COS_NAME")
