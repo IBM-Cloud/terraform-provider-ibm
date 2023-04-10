@@ -55,6 +55,7 @@ func ResourceIBMDLGatewayAction() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    false,
+				Sensitive:   true,
 				Description: "BGP MD5 authentication key",
 			},
 			dlExportRouteFilters: {
