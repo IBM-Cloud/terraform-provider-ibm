@@ -417,7 +417,8 @@ func ResourceIBMCISSettings() *schema.Resource {
 						cisDomainSettingsSecurityHeaderPreload: {
 							Type:        schema.TypeBool,
 							Description: "security header preload",
-							Required:    true,
+							Optional:    true,
+							Default:     false,
 						},
 					},
 				},
