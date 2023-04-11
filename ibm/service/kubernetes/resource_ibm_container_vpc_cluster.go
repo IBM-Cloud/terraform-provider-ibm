@@ -55,7 +55,6 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"flavor": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         false,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Cluster nodes flavour",
 			},
@@ -68,11 +67,10 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"vpc_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         false,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "The vpc id where the cluster is",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The vpc id where the cluster is",
 			},
 
 			"kms_config": {
@@ -207,7 +205,6 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"operating_system": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         false,
 				Computed:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "The operating system of the workers in the default worker pool.",
@@ -217,31 +214,34 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
-				ForceNew:         false,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "The secondary storage option for the default worker pool.",
 			},
 
 			"taints": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "WorkerPool Taints",
+				Type:             schema.TypeSet,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "WorkerPool Taints",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Key for taint",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "Key for taint",
 						},
 						"value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Value for taint.",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "Value for taint.",
 						},
 						"effect": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
 							ValidateFunc: validate.InvokeValidator(
 								"ibm_container_vpc_cluster",
 								"effect"),
@@ -426,7 +426,6 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"host_pool_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         false,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "The ID of the cluster's associated host pool",
 			},

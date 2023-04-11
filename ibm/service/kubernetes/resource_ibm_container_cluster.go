@@ -209,7 +209,6 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			"disk_encryption": {
 				Type:             schema.TypeBool,
 				Optional:         true,
-				ForceNew:         false,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Default:          true,
 				Description:      "disc encryption done, if set to true.",
@@ -255,7 +254,6 @@ func ResourceIBMContainerCluster() *schema.Resource {
 
 			"machine_type": {
 				Type:             schema.TypeString,
-				ForceNew:         false,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Optional:         true,
 				Description:      "Machine type",
@@ -263,7 +261,6 @@ func ResourceIBMContainerCluster() *schema.Resource {
 
 			"hardware": {
 				Type:             schema.TypeString,
-				ForceNew:         false,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Required:         true,
 				ValidateFunc:     validate.ValidateAllowedStringValues([]string{hardwareShared, hardwareDedicated}),
@@ -279,7 +276,6 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			"public_vlan_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         false,
 				Default:          nil,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Public VLAN ID",
@@ -288,7 +284,6 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			"private_vlan_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         false,
 				Default:          nil,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Private VLAN ID",
@@ -304,7 +299,6 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			"operating_system": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         false,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Computed:         true,
 				Description:      "The operating system of the workers in the default worker pool.",
