@@ -1,6 +1,6 @@
 #####################################################
 # Cloudant Instance
-# Copyright 2021 IBM
+# Copyright 2023 IBM
 #####################################################
 resource "ibm_cloudant" "cloudant_instance" {
   count = var.provision ? 1 : 0

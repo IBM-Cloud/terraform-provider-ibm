@@ -1,12 +1,13 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamaccessgroup_test
 
 import (
 	"fmt"
-	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"testing"
+
+	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"

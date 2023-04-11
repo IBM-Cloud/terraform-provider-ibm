@@ -1,14 +1,15 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package transitgateway_test
 
 import (
 	"fmt"
+	"testing"
+
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"testing"
 )
 
 func TestAccIBMTransitGatewayConnectionPrefixFilterDataSource_basic(t *testing.T) {
