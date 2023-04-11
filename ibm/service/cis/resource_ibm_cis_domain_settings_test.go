@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMCisSettings_Basic(t *testing.T) {
@@ -153,6 +153,7 @@ func testAccCheckCisSettingsConfigBasic4(id string, CisDomainStatic string) stri
 		  include_subdomains = true
 		  max_age            = 100
 		  nosniff            = false
+		  preload			 = false
 		}
 		mobile_redirect {
 		  status           = "off"

@@ -458,6 +458,27 @@ func TestAccIBMIAMUserPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) 
 	})
 }
 
+func TestAccIBMIAMUSerPolicy_With_ServiceGroupID(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.0.value", "IAM"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -969,6 +990,21 @@ func testAccCheckIBMIAMUserPolicyTimeBasedWithResourceAttributes() string {
 			rule_operator = "and"
 		  pattern = "time-based-conditions:once"
 			description = "IAM User Policy Once Time-Based Conditions with Resource Attributes Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+
+			roles           = ["Service ID creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
 		}
 	`, acc.IAMUser)
 }

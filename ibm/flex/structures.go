@@ -1385,6 +1385,7 @@ func GetV2PolicyCustomAttributes(r iampolicymanagementv1.V2PolicyResource) []iam
 		case "serviceType":
 		case "serviceName":
 		case "serviceInstance":
+		case "service_group_id":
 		default:
 			attributes = append(attributes, a)
 		}
@@ -1463,6 +1464,7 @@ func FlattenV2PolicyResource(resource iampolicymanagementv1.V2PolicyResource) []
 		"resource":             GetV2PolicyResourceAttribute("resource", resource),
 		"resource_group_id":    GetV2PolicyResourceAttribute("resourceGroupId", resource),
 		"service_type":         GetV2PolicyResourceAttribute("serviceType", resource),
+		"service_group_id":     GetV2PolicyResourceAttribute("service_group_id", resource),
 	}
 	customAttributes := GetV2PolicyCustomAttributes(resource)
 
@@ -2586,6 +2588,131 @@ func ResourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func ResourceSharesValidate(diff *schema.ResourceDiff) error {
+	err := ResourceSharesValidateHelper(diff, "size", "profile", "iops")
+	if err != nil {
+		return err
+	}
+	if _, ok := diff.GetOk("replica_share"); ok {
+		err := ResourceSharesValidateHelper(diff, "replica_share.0.size", "replica_share.0.profile", "replica_share.0.iops")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func ResourceSharesValidateHelper(diff *schema.ResourceDiff, sizeStr, profileStr, iopsStr string) error {
+
+	profile := ""
+	var size, iops int
+
+	if iopsIntf, ok := diff.GetOk(iopsStr); ok {
+		iops = iopsIntf.(int)
+	}
+	if profileIntf, ok := diff.GetOk(profileStr); ok {
+		profile = profileIntf.(string)
+	}
+	if diff.HasChange(sizeStr) && !diff.HasChange(profileStr) {
+		oldSize, newSize := diff.GetChange(sizeStr)
+		if newSize.(int) < oldSize.(int) {
+			return fmt.Errorf("The new share size '%d' must be greater than the current share size '%d'", newSize.(int), oldSize.(int))
+		}
+	}
+
+	if sizeIntf, ok := diff.GetOk(sizeStr); ok {
+		size = sizeIntf.(int)
+		if profile == "tier-5iops" && size > 9600 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 9600)
+		} else if profile == "tier-10iops" && size > 4800 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 4800)
+		} else if profile == "custom-iops" && size > 16000 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 16000)
+		}
+	}
+
+	if profile != "custom-iops" {
+		if iops != 0 && diff.NewValueKnown(iopsStr) && diff.HasChange(iopsStr) {
+			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")
+		}
+	} else {
+		if iops == 0 {
+			return nil
+		}
+		if size >= 10 && size <= 39 {
+			min := 100
+			max := 1000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 40 && size <= 79 {
+			min := 100
+			max := 2000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 80 && size <= 99 {
+			min := 100
+			max := 4000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 100 && size <= 499 {
+			min := 100
+			max := 6000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 500 && size <= 999 {
+			min := 100
+			max := 10000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 1000 && size <= 1999 {
+			min := 100
+			max := 20000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 2000 && size <= 3999 {
+			min := 200
+			max := 40000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 4000 && size <= 7999 {
+			min := 300
+			max := 40000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 8000 && size <= 9999 {
+			min := 500
+			max := 48000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 10000 && size <= 16000 {
+			min := 1000
+			max := 48000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+	}
+
+	return nil
+}
+
 func ResourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 
 	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
@@ -3336,35 +3463,51 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2Policy, d *sc
 		return []string{}, err
 	}
 
-	var serviceToQuery string
-	var resourceType string
+	var (
+		serviceName    string
+		resourceType   string
+		serviceGroupID string
+	)
 
 	for _, a := range resourceAttributes {
 		if *a.Key == "serviceName" &&
 			(*a.Operator == "stringMatch" ||
 				*a.Operator == "stringEquals") {
-			serviceToQuery = a.Value.(string)
+			serviceName = a.Value.(string)
 		}
 		if *a.Key == "resourceType" &&
 			(*a.Operator == "stringMatch" ||
 				*a.Operator == "stringEquals") {
 			resourceType = a.Value.(string)
 		}
+		if *a.Key == "service_group_id" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			serviceGroupID = a.Value.(string)
+		}
+	}
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
 	}
 
 	var isAccountManagementPolicy bool
 	if accountManagement, ok := d.GetOk("account_management"); ok {
 		isAccountManagementPolicy = accountManagement.(bool)
 	}
-	if serviceToQuery == "" && // no specific service specified
+	if serviceName == "" && // no specific service specified
 		!isAccountManagementPolicy && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
 
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -3389,6 +3532,7 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 
 	var serviceName string
 	var resourceType string
+	var serviceGroupID string
 	resourceAttributes := []iampolicymanagementv1.ResourceAttribute{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -3401,6 +3545,18 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("service_group_id"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}
@@ -3490,6 +3646,9 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			if name == "serviceName" {
 				serviceName = value
 			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
@@ -3534,17 +3693,20 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 		return iampolicymanagementv1.CreatePolicyOptions{}, err
 	}
 
-	serviceToQuery := serviceName
-
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" { // service_group_id and service is mutually exclusive
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
-
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -3565,6 +3727,7 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 
 	var serviceName string
 	var resourceType string
+	var serviceGroupID string
 	resourceAttributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -3577,6 +3740,18 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
 						Key:      core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("service_group_id"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}
@@ -3666,6 +3841,9 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 			if name == "serviceName" {
 				serviceName = value
 			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
 			at := iampolicymanagementv1.V2PolicyResourceAttribute{
 				Key:      &name,
 				Value:    &value,
@@ -3710,17 +3888,23 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 		return iampolicymanagementv1.CreateV2PolicyOptions{}, err
 	}
 
-	serviceToQuery := serviceName
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
 
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
 
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)

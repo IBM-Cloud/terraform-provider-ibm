@@ -59,7 +59,7 @@ func ResourceIbmCodeEngineProject() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date when the project was created.",
+				Description: "The timestamp when the project was created.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
