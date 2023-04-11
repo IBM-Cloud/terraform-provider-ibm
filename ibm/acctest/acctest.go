@@ -61,6 +61,8 @@ var err error
 var placementGroupName string
 var CertCRN string
 var UpdatedCertCRN string
+var InstanceCRN string
+var SecretGroupID string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
@@ -311,6 +313,16 @@ func init() {
 	if UpdatedCertCRN == "" {
 		UpdatedCertCRN = "crn:v1:bluemix:public:cloudcerts:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:certificate:1bf3d0c2b7764402dde25744218e6cba"
 		fmt.Println("[WARN] Set the environment variable IBM_UPDATE_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
+	}
+
+	InstanceCRN = os.Getenv("IBM_INGRESS_INSTANCE_CRN")
+	if InstanceCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_INGRESS_INSTANCE_CRN for testing ibm_container_ingress_instance resource. Some tests for that resource will fail if this is not set correctly")
+	}
+
+	SecretGroupID = os.Getenv("IBM_INGRESS_INSTANCE_SECRET_GROUP_ID")
+	if SecretGroupID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_INGRESS_INSTANCE_SECRET_GROUP_ID for testing ibm_container_ingress_instance resource. Some tests for that resource will fail if this is not set correctly")
 	}
 
 	CsRegion = os.Getenv("IBM_CONTAINER_REGION")
