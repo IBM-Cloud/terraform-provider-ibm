@@ -460,7 +460,8 @@ resource "ibm_database" "edb" {
 ```
 
 ### Sample Elasticsearch Enterprise instance
-```
+
+```terraform
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
 	}
