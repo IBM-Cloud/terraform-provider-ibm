@@ -13,7 +13,7 @@ Provides an  Object Lock configuration resource. This resource is used to config
 
 
 **Note:**
-To configure Object Lock on a bucket, you must enable object versioning on bucket by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
+To configure Object Lock on a bucket, you must  first enable object versioning on bucket by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
 
 ---
 
@@ -113,7 +113,7 @@ Review the argument references that you can specify for your resource.
   
   Nested scheme for `object_lock_configuration`:
   - `object_lock_enabled`- (String) Indicates whether this bucket has an Object Lock configuration enabled. Defaults to Enabled. Valid values: Enabled.
-  - `object_lock_rule`- (List) Object Lock rule has following arguement:
+  - `object_lock_rule`- (List) Object Lock rule has following argument:
   
   Nested scheme for `object_lock_rule`:
   - `default_retention`- (Required) Configuration block for specifying the default Object Lock retention settings for new objects placed in the specified bucket

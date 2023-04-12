@@ -9,7 +9,7 @@ description: |-
 
 # ibm_cos_bucket
 
-Retrive an IBM Cloud Object Storage bucket. It also allows object storage buckets to be updated and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Object Storage buckets and have access to the Resource Group the Cloud Object Storage bucket will be associated with. See https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-iam for more details on setting IAM and Access Group rights to manage COS buckets.
+Retrieves an IBM Cloud Object Storage bucket. It also allows object storage buckets to be updated and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Object Storage buckets and have access to the Resource Group the Cloud Object Storage bucket will be associated with. See https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-iam for more details on setting IAM and Access Group rights to manage COS buckets.
 
 ## Example usage
 
@@ -36,10 +36,14 @@ output "bucket_private_endpoint" {
 }
 ```
 
-# cos satellite bucket
+# COS Satellite bucket
 
-Retrive a cos satellite bucket. See the architecture https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite for more details. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. Cos satellite does not support all features see the section **What features are currently supported?** in https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite.
-IBM Satellite documentation https://cloud.ibm.com/docs/satellite?topic=satellite-getting-started . We are supporting object versioning and expiration features as of now. Firewall is not supported yet.
+Retrieves a COS Satellite bucket. See https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite for more details on Object Storage for Satellite. 
+We are using existing COS instance to create bucket so there is no need to create any COS instance via terraform
+
+**Note:**
+Object Storage for Satellite does not support all features, please refer to the documentation section [What features are currently supported?](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite#about-cos-satellite-supported) for a full list of supported features.
+`Object Versioning`, `Object Expiration`, `Object Tagging` are supported, `Firewall` is not yet supported.
 
 ## Example usage
 
@@ -57,7 +61,7 @@ data "ibm_cos_bucket" "cos-bucket-sat" {
 
 # ibm_cos_bucket_replication_rule
 
-Retrieves information of replication configuration on an existing bucket. .  For more information, about configuration options, see [Replicating objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-replication-overview). 
+Retrieves information of replication configuration on an existing bucket. For more information about configuration options, see [Replicating objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-replication-overview). 
 
 To configure a replication policy on a bucket, you must enable object versioning on both source and destination buckets by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
 
@@ -98,8 +102,23 @@ resource "ibm_cos_bucket" "smart-us-south" {
 
 # ibm_cos_object_lock_configuration
 
-Retrive an IBM Cloud Object Storage bucket with Object Lock enabled and Object Lock configuration set on the bucket. It allows Object Lock configuration to be updated or deleted. But it does not allow to disable as Object Lock cannot be disabled once enabled on a bucket.
+Retrieves an IBM Cloud Object Storage bucket Object Lock configuration set on the bucket. Allows Object Lock configuration to be updated or deleted. Object Lock cannot be disabled once enabled on a bucket..
 
+## Example usage
+
+```terraform
+data "ibm_resource_group" "cos_group" {
+  name = "cos-resource-group"
+}
+
+data "ibm_cos_bucket" "object_lock_bucket" {
+  bucket_name          = "bucket-name"
+  resource_instance_id = data.ibm_resource_instance.cos_instance.id
+  bucket_type          = "region_location"
+  bucket_region        = "bucket-region"
+}
+
+```
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
