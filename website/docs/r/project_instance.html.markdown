@@ -13,23 +13,23 @@ Provides a resource for Project definition. This allows Project definition to be
 ## Example Usage
 
 ```hcl
-resource "ibm_project_instance" "project_instance_instance" {
+resource "ibm_project" "project_instance" {
   configs {
-		id = "id"
-		name = "name"
-		labels = [ "labels" ]
-		description = "description"
-		locator_id = "locator_id"
+		id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
+		name = "static-website-dev"
+		labels = [ "env:dev", "billing:internal" ]
+		description = "Website - development"
+		locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
 		input {
-			name = "name"
+			name = "app_repo_name"
 		}
 		setting {
-			name = "name"
-			value = "value"
+			name = "app_repo_name"
+			value = "static-website-dev-app-repo"
 		}
   }
-  description = "A microservice to deploy on top of ACME infrastructure."
-  name = "acme-microservice"
+  description = "Sample static website test using the IBM catalog deployable architecture"
+  name = "My static website"
 }
 ```
 

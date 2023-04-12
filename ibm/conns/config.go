@@ -75,7 +75,7 @@ import (
 	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
-	"github.com/IBM/project-go-sdk/projectv1"
+	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
@@ -302,7 +302,7 @@ type ClientSession interface {
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
 	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 	CodeEngineV2() (*codeengine.CodeEngineV2, error)
-	ProjectV1() (*projectv1.ProjectV1, error)
+	ProjectV1() (*project.ProjectV1, error)
 }
 
 type clientSession struct {
@@ -628,7 +628,7 @@ type clientSession struct {
 	codeEngineClientErr error
 
 	// Project options
-	projectClient    *projectv1.ProjectV1
+	projectClient    *project.ProjectV1
 	projectClientErr error
 }
 
@@ -1206,7 +1206,7 @@ func (session clientSession) CodeEngineV2() (*codeengine.CodeEngineV2, error) {
 }
 
 // Projects API Specification
-func (session clientSession) ProjectV1() (*projectv1.ProjectV1, error) {
+func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
@@ -1305,6 +1305,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
+		session.projectClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1527,13 +1528,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
+	projectEndpoint := project.DefaultServiceURL
 	// Construct an "options" struct for creating the service client.
-	projectClientOptions := &projectv1.ProjectV1Options{
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		projectEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PROJECT_API_ENDPOINT", c.Region, project.DefaultServiceURL)
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		session.projectClientErr = fmt.Errorf("Project Service API does not support private endpoints")
+	}
+	// Construct an "options" struct for creating the service client.
+	projectClientOptions := &project.ProjectV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_PROJECT_API_ENDPOINT"}, projectEndpoint),
 		Authenticator: authenticator,
 	}
 
 	// Construct the service client.
-	session.projectClient, err = projectv1.NewProjectV1(projectClientOptions)
+	session.projectClient, err = project.NewProjectV1(projectClientOptions)
 	if err == nil {
 		// Enable retries for API calls
 		session.projectClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
