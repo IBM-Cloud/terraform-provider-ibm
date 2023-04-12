@@ -473,7 +473,7 @@ resource "ibm_database" "edb" {
 		plan                         = "enterprise"
 		location                     = "eu-gb"
 		adminpassword                = "password12"
-    version                      = "7.17"
+		version                      = "7.17"
 		group {
 			group_id = "member"
 			members {
