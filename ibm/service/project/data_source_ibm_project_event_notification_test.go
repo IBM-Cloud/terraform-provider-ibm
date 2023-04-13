@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIbmProjectEventNotificationDataSourceBasic(t *testing.T) {
-	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	projectName := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -33,10 +33,10 @@ func TestAccIbmProjectEventNotificationDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
-	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	projectDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	projectResourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	projectLocation := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	projectName := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
+	projectDescription := fmt.Sprintf("tfdescription%d", acctest.RandIntRange(10, 100))
+	projectResourceGroup := fmt.Sprintf("tfresourcegroup%d", acctest.RandIntRange(10, 100))
+	projectLocation := fmt.Sprintf("tflocation%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -67,15 +67,15 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_project_instance" "project_instance_instance" {
+resource "ibm_project_instance" "project_instance_instance" {
 			name = "%s"
 		}
-
 		data "ibm_project_event_notification" "project_event_notification_instance" {
-			id = projectIdLink
+			id = ibm_project_instance.project_instance_instance.id
 			exclude_configs = true
 			complete = true
 		}
+
 	`, projectName)
 }
 
