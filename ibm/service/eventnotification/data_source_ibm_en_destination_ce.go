@@ -15,9 +15,9 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
+func DataSourceIBMEnCodeEngineDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnPagerDutyeDestinationRead,
+		ReadContext: dataSourceIBMEnCodeEngineDestinationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -43,7 +43,7 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type push_chrome.",
+				Description: "Destination type Webhook.",
 			},
 			"config": {
 				Type:        schema.TypeList,
@@ -56,15 +56,31 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"api_key": {
+									"url": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The api key for chrome app authorization",
+										Description: "URL of webhook.",
 									},
-									"routing_key": {
+									"verb": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The website url",
+										Description: "HTTP method of webhook.",
+									},
+									"custom_headers": {
+										Type:        schema.TypeMap,
+										Computed:    true,
+										Description: "Custom headers (Key-Value pair) for webhook call.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"sensitive_headers": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "List of sensitive headers from custom headers.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 									},
 								},
 							},
@@ -94,7 +110,7 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnCodeEngineDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -127,7 +143,7 @@ func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enPagerDutyDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enCodeEngineDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -151,20 +167,20 @@ func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema
 	return nil
 }
 
-func enPagerDutyDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enCodeEngineDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enPagerDutyDestinationConfigToMap(result)
+	finalMap := enCodeEngineDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enPagerDutyDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enCodeEngineDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enPagerDutyDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enCodeEngineDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -172,16 +188,22 @@ func enPagerDutyDestinationConfigToMap(configItem en.DestinationConfig) (configM
 	return configMap
 }
 
-func enPagerDutyDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
+func enCodeEngineDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
 	params := paramsItem.(*en.DestinationConfigOneOf)
 
-	if params.APIKey != nil {
-		paramsMap["api_key"] = params.APIKey
+	if params.URL != nil {
+		paramsMap["url"] = params.URL
 	}
-	if params.RoutingKey != nil {
-		paramsMap["routing_key"] = params.RoutingKey
+	if params.Verb != nil {
+		paramsMap["verb"] = params.Verb
+	}
+	if params.CustomHeaders != nil {
+		paramsMap["custom_headers"] = params.CustomHeaders
+	}
+	if params.SensitiveHeaders != nil {
+		paramsMap["sensitive_headers"] = params.SensitiveHeaders
 	}
 
 	return paramsMap
