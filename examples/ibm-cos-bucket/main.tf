@@ -362,7 +362,7 @@ resource "ibm_cos_bucket" "cos_bucket_onerate" {
   storage_class         = var.onerate_storage_class
   }
   
-#COS objectlock
+#COS Object Lock
 
 resource "ibm_resource_instance" "cos_instance2" {
   name              = "cos-instance"
