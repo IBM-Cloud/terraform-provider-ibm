@@ -47,7 +47,7 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 	var conf projectv1.Project
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("Default")
 	location := fmt.Sprintf("us-south")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
