@@ -17,8 +17,8 @@ import (
 
 func DataSourceIBMSccPostureScansSummary() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureScansSummaryRead,
-
+		ReadContext:        dataSourceIBMSccPostureScansSummaryRead,
+		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_posture_scan_summary is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"scan_id": {
 				Type:        schema.TypeString,

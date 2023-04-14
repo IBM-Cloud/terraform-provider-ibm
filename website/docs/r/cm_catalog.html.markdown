@@ -27,6 +27,7 @@ resource "ibm_cm_catalog" "cm_catalog" {
 Review the argument reference that you can specify for your resource.
 
 * `catalog_icon_url` - (Optional, String) URL for an icon associated with this catalog.
+* `catalog_banner_url` - (Optional, String) URL for a banner image for this catalog.
 * `disabled` - (Optional, Boolean) Denotes whether a catalog is disabled.
 * `kind` - (Optional, String) Kind of catalog. Supported kinds are offering and vpe.
 * `label` - (Optional, String) Display Name in the requested language.
@@ -40,6 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the ibm_cm_catalog.
 * `catalog_icon_url` - (String) The url of the catalog icon.
+* `catalog_banner_url` - (String) The url of the catalog banner.
 * `created` - (String) The date-time this catalog was created.
 * `crn` - (String) CRN associated with the catalog.
 * `disabled` - (Boolean) Denotes whether a catalog is disabled.
