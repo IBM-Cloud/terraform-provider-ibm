@@ -61,6 +61,7 @@ In addition to all argument reference list, you can access the following attribu
       - `resource_group_id` - (String) The ID of the resource group.
       - `resource_instance_id`- (String) The ID of resource instance of the policy definition.
       - `service_type`- (String) The service type of the policy definition.
+      - `service_group_id` (String) The service group id of the policy definition.
       - `attributes` (Map)  A set of resource attributes in the format `name=value,name=value`.
 
   - `resource_tags`- (List of objects) A nested block describes the access management tags in the policy.

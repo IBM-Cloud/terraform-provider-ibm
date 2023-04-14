@@ -319,35 +319,14 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 
 		log.Printf("[INFO] Ignoring body of COS bucket (%s) object (%s) with Content-Type %q", bucketName, objectKey, contentType)
 	}
-
-	getObjectRetentionInput := new(s3.GetObjectRetentionInput)
-	getObjectRetentionInput.Bucket = aws.String(bucketName)
-	getObjectRetentionInput.Key = aws.String(objectKey)
-	response, err := s3Client.GetObjectRetention(getObjectRetentionInput)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("Failed to get objectlock retention for the object (%s) : %w", objectKey, err))
+	if out.ObjectLockMode != nil {
+		d.Set("object_lock_mode", out.ObjectLockMode)
 	}
-	if response.Retention != nil {
-		objectretentionptr := response.Retention
-
-		d.Set("object_lock_mode", *objectretentionptr.Mode)
-		retainuntildatestring := objectDatetoString(objectretentionptr.RetainUntilDate)
-		d.Set("object_lock_retain_until_date", retainuntildatestring)
-
+	if out.ObjectLockRetainUntilDate != nil {
+		d.Set("object_lock_retain_until_date", out.ObjectLockRetainUntilDate.Format(time.RFC1123))
 	}
-	getObjectLegalHoldInput := new(s3.GetObjectLegalHoldInput)
-	getObjectLegalHoldInput.Bucket = aws.String(bucketName)
-	getObjectLegalHoldInput.Key = aws.String(objectKey)
-	response1, err := s3Client.GetObjectLegalHold(getObjectLegalHoldInput)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("Failed to get objectlock legalhold for the object (%s) : %w", objectKey, err))
-
-	}
-	if response1.LegalHold != nil {
-		objectlegalholdptr := response1.LegalHold
-
-		d.Set("object_lock_legal_hold_status", *objectlegalholdptr.Status)
-
+	if out.ObjectLockLegalHoldStatus != nil {
+		d.Set("object_lock_legal_hold_status", out.ObjectLockLegalHoldStatus)
 	}
 	d.Set("key", objectKey)
 	d.Set("version_id", out.VersionId)

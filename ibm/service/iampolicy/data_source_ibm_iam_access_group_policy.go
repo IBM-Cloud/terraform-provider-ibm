@@ -94,6 +94,11 @@ func DataSourceIBMIAMAccessGroupPolicy() *schema.Resource {
 										Computed:    true,
 										Description: "Service type of the policy definition",
 									},
+									"service_group_id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Service group id of the policy definition",
+									},
 									"attributes": {
 										Type:        schema.TypeMap,
 										Computed:    true,
