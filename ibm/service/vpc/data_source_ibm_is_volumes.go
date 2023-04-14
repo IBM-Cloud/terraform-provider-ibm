@@ -722,7 +722,7 @@ func dataSourceVolumeCollectionVolumesEncryptionKeyToMap(encryptionKeyItem vpcv1
 	return encryptionKeyMap
 }
 
-func dataSourceVolumeCollectionVolumesOperatingSystemToMap(operatingSystemItem vpcv1.OperatingSystemReference) (operatingSystemMap map[string]interface{}) {
+func dataSourceVolumeCollectionVolumesOperatingSystemToMap(operatingSystemItem vpcv1.OperatingSystem) (operatingSystemMap map[string]interface{}) {
 	operatingSystemMap = map[string]interface{}{}
 
 	if operatingSystemItem.Href != nil {
