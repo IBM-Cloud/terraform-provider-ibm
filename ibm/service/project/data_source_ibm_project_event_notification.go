@@ -21,7 +21,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 		ReadContext: dataSourceIbmProjectEventNotificationRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project, which uniquely identifies it.",
@@ -250,7 +250,7 @@ func dataSourceIbmProjectEventNotificationRead(context context.Context, d *schem
 
 	getProjectOptions := &projectv1.GetProjectOptions{}
 
-	getProjectOptions.SetID(d.Get("id").(string))
+	getProjectOptions.SetID(d.Get("project_id").(string))
 	if _, ok := d.GetOk("exclude_configs"); ok {
 		getProjectOptions.SetExcludeConfigs(d.Get("exclude_configs").(bool))
 	}

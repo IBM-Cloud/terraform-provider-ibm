@@ -23,8 +23,7 @@ func TestAccIbmProjectEventNotificationDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
 				),
 			},
@@ -45,8 +44,7 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName, projectDescription, projectResourceGroup, projectLocation),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "exclude_configs"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "complete"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
@@ -72,7 +70,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectName st
 		}
 
 		data "ibm_project_event_notification" "project_event_notification_instance" {
-			id = ibm_project_instance.project_instance_instance.id
+			project_id = ibm_project_instance.project_instance_instance.id
 			exclude_configs = true
 			complete = true
 		}
@@ -103,7 +101,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 		}
 
 		data "ibm_project_event_notification" "project_event_notification_instance" {
-			id = ibm_project_instance.project_instance_instance.id
+			project_id = ibm_project_instance.project_instance_instance.id
 			exclude_configs = true
 			complete = true
 		}
