@@ -85,8 +85,8 @@ github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1 h1:T5UwRKKd+B
 github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta h1:P1fdIfKsD9xvJQ5MHIEztPS9yfNf9x+VDTamaYcmqcs=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
-github.com/IBM/keyprotect-go-client v0.9.0 h1:UwbyEHcaGlmLNK7PW0qo9VlxneN+0/2zoGBubHzbtro=
-github.com/IBM/keyprotect-go-client v0.9.0/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
+github.com/IBM/keyprotect-go-client v0.10.0 h1:UdVOwJfyVNmL4O3Aw2eGluiEr5FpV5h8EaNVJKCtLvY=
+github.com/IBM/keyprotect-go-client v0.10.0/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
 github.com/IBM/networking-go-sdk v0.40.0 h1:NdHTG0YXtN2D/B62BRgy6iJRFLdiJtSFCdTzAZB5m5k=
 github.com/IBM/networking-go-sdk v0.40.0/go.mod h1:lTUZwtUkMANMnrLHFIgRhHrkBfwASY/Iho1fabaPHxo=
 github.com/IBM/platform-services-go-sdk v0.34.0 h1:ozGdyWdBByNS8sw07FP4qx2r1qUc59D0BoN3rMTgtIk=
