@@ -66,6 +66,7 @@ In addition to the argument reference list, you can access the following attribu
 	- `vlan_spanning_required`-  (String) The VLAN spanning required for multi-zone clusters.
 	- `options` - (String) The add-on options
 	- `parameters_json` -  (Optional,String) Add-On parameters to pass in a JSON string format.
+	- `managed_addons` -  (List(String)) Used to keep track of the add-on names when `manage_all_addons` is set to `false`.
 
 - `id` - (String) The ID of an add-ons.
 - `resource_group_id` - (String) The ID of the cluster resource group in which the `addons` is installed.

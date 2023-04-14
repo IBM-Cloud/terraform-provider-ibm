@@ -57,6 +57,12 @@ func ResourceIBMContainerAddOns() *schema.Resource {
 				Default:     true,
 				Description: "To manage all add-ons installed in the cluster using terraform by importing it into the state file",
 			},
+			"managed_addons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Used to keep track of the add-on names",
+			},
 			"addons": {
 				Type:     schema.TypeSet,
 				Required: true,
@@ -265,7 +271,8 @@ func getAddonTemplateOptions(addOn map[string]interface{}, d *schema.ResourceDat
 
 func expandAddOns(d *schema.ResourceData, meta interface{}, cluster string, targetEnv v1.ClusterTargetHeader, existingAddons []v1.AddOn) (addOns v1.ConfigureAddOns, err error) {
 	addOnSet := d.Get("addons").(*schema.Set).List()
-
+	manageAllAddons := d.Get("manage_all_addons").(bool)
+	var addOnName []string
 	if existingAddons == nil || len(existingAddons) < 1 {
 		for _, aoSet := range addOnSet {
 			ao, _ := aoSet.(map[string]interface{})
@@ -281,6 +288,10 @@ func expandAddOns(d *schema.ResourceData, meta interface{}, cluster string, targ
 			}
 			if addonOptions != "" {
 				addOn.Options = addonOptions
+			}
+
+			if !manageAllAddons {
+				addOnName = append(addOnName, ao["name"].(string))
 			}
 
 			addOns.AddonsList = append(addOns.AddonsList, addOn)
@@ -364,7 +375,14 @@ func expandAddOns(d *schema.ResourceData, meta interface{}, cluster string, targ
 				}
 				addOns.AddonsList = append(addOns.AddonsList, addOn)
 			}
+			if !manageAllAddons {
+				addOnName = append(addOnName, ao["name"].(string))
+			}
 		}
+	}
+
+	if !manageAllAddons {
+		d.Set("managed_addons", flex.FlattenStringList(addOnName))
 	}
 
 	return addOns, nil
@@ -432,14 +450,11 @@ func resourceIBMContainerAddOnsRead(d *schema.ResourceData, meta interface{}) er
 }
 
 func flattenAddOn(d *schema.ResourceData, result []v1.AddOn) (resp *schema.Set, err error) {
-
-	add_On := d.Get("addons").(*schema.Set).List()
-
+	managed_addons := d.Get("managed_addons").([]interface{})
 	addOns := []interface{}{}
-	for _, aoSet := range add_On {
-		ao, _ := aoSet.(map[string]interface{})
+	for _, aoSet := range managed_addons {
 		for _, addOn := range result {
-			if ao["name"] == addOn.Name {
+			if aoSet.(string) == addOn.Name {
 				record := map[string]interface{}{}
 				record["name"] = addOn.Name
 				record["version"] = addOn.Version
@@ -512,6 +527,15 @@ func flattenAddOns(result []v1.AddOn) (resp *schema.Set, err error) {
 	return schema.NewSet(resourceIBMContainerAddonsHash, addOns), nil
 }
 func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) error {
+	manageAllAddons := d.Get("manage_all_addons").(bool)
+	var addOnName []string
+	if !manageAllAddons {
+		managed_addons := d.Get("managed_addons").([]interface{})
+		for _, v := range managed_addons {
+			addOnName = append(addOnName, v.(string))
+		}
+	}
+
 	csClient, err := meta.(conns.ClientSession).ContainerAPI()
 	if err != nil {
 		return err
@@ -600,6 +624,9 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 					addOnParam.Version = newAddon["version"].(string)
 				}
 				addOnParams.AddonsList = append(addOnParams.AddonsList, addOnParam)
+				if !manageAllAddons {
+					addOnName = append(addOnName, newAddon["name"].(string))
+				}
 
 			}
 			addOnParams.Enable = true
@@ -619,6 +646,10 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 					addOnParam.Version = oldAddOn["version"].(string)
 				}
 				addOnParams.AddonsList = append(addOnParams.AddonsList, addOnParam)
+				if !manageAllAddons {
+					addOnName = removeAddOnName(addOnName, oldAddOn["name"].(string))
+				}
+
 			}
 			addOnParams.Enable = false
 			_, err = addOnAPI.ConfigureAddons(cluster, &addOnParams, targetEnv)
@@ -630,6 +661,10 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error waiting for Addon to reach normal during update (%s) : %s", d.Id(), err)
 		}
+	}
+
+	if !manageAllAddons {
+		d.Set("managed_addons", flex.FlattenStringList(addOnName))
 	}
 
 	return resourceIBMContainerAddOnsRead(d, meta)
@@ -756,4 +791,13 @@ func updateAddOnOptions(jsonInput *map[string]interface{}, yamlDefault *map[stri
 		(*yamlDefault)["data"].(map[string]interface{})[i] = v.(string)
 	}
 
+}
+
+func removeAddOnName(l []string, item string) []string {
+	for i, other := range l {
+		if other == item {
+			return append(l[:i], l[i+1:]...)
+		}
+	}
+	return nil
 }
