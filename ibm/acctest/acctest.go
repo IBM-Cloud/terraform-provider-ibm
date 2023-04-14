@@ -26,6 +26,7 @@ var CisResourceGroup string
 var CloudShellAccountID string
 var CosCRN string
 var BucketCRN string
+var BucketName string
 var CosName string
 var Ibmid1 string
 var Ibmid2 string
@@ -60,6 +61,8 @@ var err error
 var placementGroupName string
 var CertCRN string
 var UpdatedCertCRN string
+var InstanceCRN string
+var SecretGroupID string
 var RegionName string
 var ISZoneName string
 var ISZoneName2 string
@@ -316,6 +319,16 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_UPDATE_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
 	}
 
+	InstanceCRN = os.Getenv("IBM_INGRESS_INSTANCE_CRN")
+	if InstanceCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_INGRESS_INSTANCE_CRN for testing ibm_container_ingress_instance resource. Some tests for that resource will fail if this is not set correctly")
+	}
+
+	SecretGroupID = os.Getenv("IBM_INGRESS_INSTANCE_SECRET_GROUP_ID")
+	if SecretGroupID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_INGRESS_INSTANCE_SECRET_GROUP_ID for testing ibm_container_ingress_instance resource. Some tests for that resource will fail if this is not set correctly")
+	}
+
 	CsRegion = os.Getenv("IBM_CONTAINER_REGION")
 	if CsRegion == "" {
 		CsRegion = "eu-de"
@@ -354,6 +367,11 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	BucketName = os.Getenv("IBM_COS_BUCKET_NAME")
+	if BucketName == "" {
+		BucketName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_BUCKET_NAME with a VALID BUCKET Name for testing ibm_cos_bucket* resources")
 	}
 
 	CosName = os.Getenv("IBM_COS_NAME")

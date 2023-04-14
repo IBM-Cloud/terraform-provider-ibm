@@ -90,7 +90,6 @@ import (
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
-	"github.com/IBM-Cloud/bluemix-go/api/certificatemanager"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -236,7 +235,6 @@ type ClientSession interface {
 	PushServiceV1() (*pushservicev1.PushServiceV1, error)
 	EventNotificationsApiV1() (*eventnotificationsv1.EventNotificationsV1, error)
 	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
-	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	KeyProtectAPI() (*kp.Client, error)
 	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
@@ -329,9 +327,6 @@ type clientSession struct {
 
 	containerRegistryClientErr error
 	containerRegistryClient    *containerregistryv1.ContainerRegistryV1
-
-	certManagementErr error
-	certManagementAPI certificatemanager.CertificateManagerServiceAPI
 
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
@@ -772,11 +767,6 @@ func (sess clientSession) ResourceControllerAPIV2() (controllerv2.ResourceContro
 // SoftLayerSession providers SoftLayer Session
 func (sess clientSession) SoftLayerSession() *slsession.Session {
 	return sess.session.SoftLayerSession
-}
-
-// CertManagementAPI provides Certificate  management APIs ...
-func (sess clientSession) CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error) {
-	return sess.certManagementAPI, sess.certManagementErr
 }
 
 // apigatewayAPI provides API Gateway APIs
@@ -1242,7 +1232,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
-		session.certManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
 		session.vpcbetaErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
@@ -2035,12 +2024,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = fmt.Errorf("[ERROR] Error occured while configuring user management service: %q", err)
 	}
 	session.userManagementAPI = userManagementAPI
-
-	certManagementAPI, err := certificatemanager.New(sess.BluemixSession)
-	if err != nil {
-		session.certManagementErr = fmt.Errorf("[ERROR] Error occured while configuring Certificate manager service: %q", err)
-	}
-	session.certManagementAPI = certManagementAPI
 
 	namespaceFunction, err := functions.New(sess.BluemixSession)
 	if err != nil {

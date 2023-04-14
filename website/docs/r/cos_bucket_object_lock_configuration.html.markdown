@@ -8,12 +8,12 @@ description:
 ---
 
 # ibm_cos_bucket_object_lock_configuration
-Provides an  Object Lock configuration resource. This resource is used to configure a default retention period for objects placed in the specified bucket. To enable objectlock for a new bucket see [ibm_cos_bucket](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cos_bucket).
+Provides an  Object Lock configuration resource. This resource is used to configure a default retention period for objects placed in the specified bucket. To enable Object Lock for a new bucket see [ibm_cos_bucket](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cos_bucket). To configure legal hold and retention period on an object please refer [ibm_cos_bucket_object](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cm_object).
 
 
 
 **Note:**
-To configure ObjectLock on a bucket, you must enable object versioning on bucket by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
+To configure Object Lock on a bucket, you must  first enable object versioning on bucket by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
 
 ---
 
@@ -59,13 +59,13 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 }
 
 ```
-# Enabling Objectlockconfguration on an existing bucket
-To enable objectlock configuration on an existing bucket , create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_object_lock_configuration.bucket_crn` and `ibm_cos_bucket_object_lock_configuration.bucket_location` as shown in the example.
+# Enabling Object Lock configuration on an existing bucket
+To enable  Object Lock configuration on an existing bucket, create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_object_lock_configuration.bucket_crn` and `ibm_cos_bucket_object_lock_configuration.bucket_location` as shown in the example.
 
 ## Example usage
 
 ```terraform
-// To only enable objectlock configuration on an existing bucket
+// To only enable Object Lock configuration on an existing bucket
 
 resource "ibm_cos_bucket" "cos_bucket" {
   bucket_name          = "a-standard-bucket"
@@ -113,7 +113,7 @@ Review the argument references that you can specify for your resource.
   
   Nested scheme for `object_lock_configuration`:
   - `object_lock_enabled`- (String) Indicates whether this bucket has an Object Lock configuration enabled. Defaults to Enabled. Valid values: Enabled.
-  - `object_lock_rule`- (List) Objectlockrule has following arguement:
+  - `object_lock_rule`- (List) Object Lock rule has following argument:
   
   Nested scheme for `object_lock_rule`:
   - `default_retention`- (Required) Configuration block for specifying the default Object Lock retention settings for new objects placed in the specified bucket
