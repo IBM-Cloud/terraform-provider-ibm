@@ -445,6 +445,35 @@ func TestAccIBMIAMServicePolicy_With_Update_To_Time_Based_Conditions(t *testing.
 	})
 }
 
+func TestAccIBMIAMServicePolicy_With_ServiceGroupID(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.0.value", "IAM"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMServiceUpdatePolicyWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -981,6 +1010,66 @@ func testAccCheckIBMIAMServicePolicyTimeBasedOnce(name string) string {
 			rule_operator = "and"
 		  pattern = "time-based-conditions:once"
 			description = "IAM Service Profile Policy Once Time-Based Conditions Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+			resource "ibm_iam_service_id" "serviceID"  {
+				name = "%s"
+			}
+			resource "ibm_iam_service_policy" "policy" {
+				iam_service_id     = ibm_iam_service_id.serviceID.id
+				roles           = ["Service ID creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeGreaterThanOrEquals"
+				value = ["2022-10-01T12:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeLessThanOrEquals"
+				value = ["2022-10-31T12:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  	pattern = "time-based-conditions:once"
+			description = "IAM Service Profile Policy with service_group_id"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMServiceUpdatePolicyWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+			resource "ibm_iam_service_id" "serviceID"  {
+				name = "%s"
+			}
+			resource "ibm_iam_service_policy" "policy" {
+				iam_service_id     = ibm_iam_service_id.serviceID.id
+				roles           = ["Service ID creator", "User API key creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeGreaterThanOrEquals"
+				value = ["2022-10-01T12:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeLessThanOrEquals"
+				value = ["2022-10-31T12:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  	pattern = "time-based-conditions:once"
+			description = "IAM Service Profile Policy with service_group_id"
 		}
 	`, name)
 }
