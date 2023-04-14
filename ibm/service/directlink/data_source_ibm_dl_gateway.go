@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2021, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package directlink
@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 const (
@@ -120,6 +121,16 @@ func DataSourceIBMDLGateway() *schema.Resource {
 					},
 				},
 			},
+			dlDefault_export_route_filter: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
+			},
+			dlDefault_import_route_filter: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The default directional route filter action that applies to routes that do not match any directional route filters",
+			},
 			dlAuthenticationKey: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -174,6 +185,12 @@ func DataSourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Gateway BGP status",
+			},
+			dlBgpStatusUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Date and time BGP status was updated",
 			},
 			dlMacSecConfig: {
 				Type:        schema.TypeList,
@@ -283,6 +300,12 @@ func DataSourceIBMDLGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Gateway link status",
+			},
+			dlLinkStatusUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Date and time Link status was updated",
 			},
 			dlLocationDisplayName: {
 				Type:        schema.TypeString,
@@ -451,6 +474,9 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 			if instance.BgpStatus != nil {
 				d.Set(dlBgpStatus, *instance.BgpStatus)
 			}
+			if instance.BgpStatusUpdatedAt != nil {
+				d.Set(dlBgpStatusUpdatedAt, instance.BgpStatusUpdatedAt.String())
+			}
 			if instance.LocationName != nil {
 				d.Set(dlLocationName, *instance.LocationName)
 			}
@@ -469,8 +495,17 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 			if instance.LinkStatus != nil {
 				d.Set(dlLinkStatus, *instance.LinkStatus)
 			}
+			if instance.LinkStatusUpdatedAt != nil {
+				d.Set(dlLinkStatusUpdatedAt, instance.LinkStatusUpdatedAt.String())
+			}
 			if instance.CreatedAt != nil {
 				d.Set(dlCreatedAt, instance.CreatedAt.String())
+			}
+			if instance.DefaultExportRouteFilter != nil {
+				d.Set(dlDefault_export_route_filter, *instance.DefaultExportRouteFilter)
+			}
+			if instance.DefaultImportRouteFilter != nil {
+				d.Set(dlDefault_import_route_filter, *instance.DefaultImportRouteFilter)
 			}
 
 			//Show the BFD Config parameters if set

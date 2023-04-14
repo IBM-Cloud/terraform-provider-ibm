@@ -14,15 +14,15 @@ require (
 	github.com/IBM/code-engine-go-sdk v0.0.0-20221209153711-82472bae75eb
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/continuous-delivery-go-sdk v1.1.0
-	github.com/IBM/event-notifications-go-admin-sdk v0.1.7
+	github.com/IBM/event-notifications-go-admin-sdk v0.2.1
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.13.0
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
-	github.com/IBM/keyprotect-go-client v0.9.0
-	github.com/IBM/networking-go-sdk v0.36.0
+	github.com/IBM/keyprotect-go-client v0.10.0
+	github.com/IBM/networking-go-sdk v0.40.0
 	github.com/IBM/platform-services-go-sdk v0.34.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
@@ -178,4 +178,4 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230316070833-1e1d44fe67be
+replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230404201829-49a38f9b9a6e
