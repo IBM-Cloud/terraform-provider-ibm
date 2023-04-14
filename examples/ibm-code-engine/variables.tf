@@ -61,6 +61,23 @@ variable "code_engine_config_map_data" {
   default     = { "key" = "inner" }
 }
 
+// Resource arguments for code_engine_secret
+variable "code_engine_secret_name" {
+  description = "The name of the secret. Use a name that is unique within the project."
+  type        = string
+  default     = "my-secret"
+}
+variable "code_engine_secret_format" {
+  description = "The format of the secret. Use a name that is unique within the project."
+  type        = string
+  default     = "generic"
+}
+variable "code_engine_secret_data" {
+  description = "The key-value pair for the secret. Values must be specified in `KEY=VALUE` format. Each `KEY` field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each `VALUE` field can consists of any character and must not be exceed a max length of 1048576 characters."
+  type        = map(string)
+  default     = { "key" = "inner" }
+}
+
 // Resource arguments for code_engine_job
 variable "code_engine_job_image_reference" {
   description = "The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`."
