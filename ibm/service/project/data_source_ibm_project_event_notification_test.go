@@ -87,7 +87,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
-				locator_id = "locator_id"
+				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.307060b5-cba0-43ec-b89e-37366051403e-global"
 				input {
 					name = "name"
 				}
