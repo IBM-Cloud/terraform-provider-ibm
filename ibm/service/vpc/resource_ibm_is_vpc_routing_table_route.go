@@ -68,7 +68,6 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 			rNextHop: {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "If action is deliver, the next hop that packets will be delivered to. For other action values, its address will be 0.0.0.0.",
 			},
 			rAction: {
@@ -156,6 +155,13 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				Computed:    true,
 				Description: "Routing table route Lifecycle State",
 			},
+			"priority": {
+				Type:         schema.TypeInt,
+				Computed:     true,
+				Optional:     true,
+				Description:  "The route's priority. Smaller values have higher priority.",
+				ValidateFunc: validate.InvokeValidator("ibm_is_vpc_routing_table_route", "priority"),
+			},
 			rtOrigin: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -188,6 +194,13 @@ func ResourceIBMISVPCRoutingTableRouteValidator() *validate.ResourceValidator {
 			Required:                   false,
 			AllowedValues:              actionAllowedValues})
 
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "priority",
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "4"})
 	ibmVPCRoutingTableRouteValidator := validate.ResourceValidator{ResourceName: "ibm_is_vpc_routing_table_route", Schema: validateSchema}
 	return &ibmVPCRoutingTableRouteValidator
 }
@@ -233,6 +246,12 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 	if name, ok := d.GetOk(rName); ok {
 		routeName := name.(string)
 		createVpcRoutingTableRouteOptions.SetName(routeName)
+	}
+
+	// Using GetOkExists to detet 0 as the possible values.
+	if priority, ok := d.GetOkExists("priority"); ok {
+		routePriority := priority.(int)
+		createVpcRoutingTableRouteOptions.SetPriority(int64(routePriority))
 	}
 
 	route, response, err := sess.CreateVPCRoutingTableRoute(createVpcRoutingTableRouteOptions)
@@ -295,6 +314,7 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 
 		d.Set("creator", creator)
 	}
+	d.Set("priority", route.Priority)
 	return nil
 }
 
@@ -305,20 +325,45 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 	}
 
 	idSet := strings.Split(d.Id(), "/")
-	if d.HasChange(rName) {
-		routePatch := make(map[string]interface{})
-		updateVpcRoutingTableRouteOptions := sess.NewUpdateVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2], routePatch)
+	hasChange := false
+	routePatch := make(map[string]interface{})
+	updateVpcRoutingTableRouteOptions := sess.NewUpdateVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2], routePatch)
 
-		// Construct an instance of the RoutePatch model
-		routePatchModel := new(vpcv1.RoutePatch)
+	// Construct an instance of the RoutePatch model
+	routePatchModel := new(vpcv1.RoutePatch)
+	if d.HasChange(rName) {
 		name := d.Get(rName).(string)
 		routePatchModel.Name = &name
-		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
+		hasChange = true
+	}
+	if d.HasChange("priority") {
+		rp := d.Get("priority").(int)
+		routePriority := int64(rp)
+		routePatchModel.Priority = &routePriority
+		hasChange = true
+	}
 
+	if d.HasChange(rNextHop) {
+		if add, ok := d.GetOk(rNextHop); ok {
+			item := add.(string)
+			if net.ParseIP(item) == nil {
+				routePatchModel.NextHop = &vpcv1.RouteNextHopPatch{
+					ID: core.StringPtr(item),
+				}
+				hasChange = true
+			} else {
+				routePatchModel.NextHop = &vpcv1.RouteNextHopPatch{
+					Address: core.StringPtr(item),
+				}
+				hasChange = true
+			}
+		}
+	}
+	if hasChange {
+		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
 		if patchErr != nil {
 			return fmt.Errorf("[ERROR] Error calling asPatch for VPC Routing Table Route Patch: %s", patchErr)
 		}
-
 		updateVpcRoutingTableRouteOptions.RoutePatch = routePatchModelAsPatch
 		_, response, err := sess.UpdateVPCRoutingTableRoute(updateVpcRoutingTableRouteOptions)
 		if err != nil {
@@ -326,7 +371,6 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 			return err
 		}
 	}
-
 	return resourceIBMISVPCRoutingTableRouteRead(d, meta)
 }
 
