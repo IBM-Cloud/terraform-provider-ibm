@@ -88,6 +88,8 @@ var DedicatedHostGroupFamily string
 var DedicatedHostGroupClass string
 var ShareProfileName string
 var VolumeProfileName string
+var VSIUnattachedBootVolumeID string
+var VSIDataVolumeID string
 var ISRouteDestination string
 var ISRouteNextHop string
 var WorkspaceID string
@@ -703,6 +705,16 @@ func init() {
 	if VolumeProfileName == "" {
 		VolumeProfileName = "general-purpose"
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
+	}
+	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
+	if VSIUnattachedBootVolumeID == "" {
+		VSIUnattachedBootVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
+		fmt.Println("[INFO] Set the environment variable IS_UNATTACHED_BOOT_VOLUME_NAME for testing ibm_is_image else it is set to default value 'r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e'")
+	}
+	VSIDataVolumeID = os.Getenv("IS_VSI_DATA_VOLUME_ID")
+	if VSIDataVolumeID == "" {
+		VSIDataVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
+		fmt.Println("[INFO] Set the environment variable IS_VSI_DATA_VOLUME_ID for testing ibm_is_image else it is set to default value 'r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e'")
 	}
 
 	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
