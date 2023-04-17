@@ -18,7 +18,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_code_engine_project" "code_engine_project_instance" {
-  name = "<your_project_name>"
+  name              = "my-project"
   resource_group_id = data.ibm_resource_group.group.id
 }
 ```
@@ -45,7 +45,7 @@ In addition to all argument references listed, you can access the following attr
 * `project_id` - (String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `account_id` - (String) An alphanumeric value identifying the account ID.
-* `created_at` - (String) The date when the project was created.
+* `created_at` - (String) The timestamp when the project was created.
 * `crn` - (String) The CRN of the project.
 * `href` - (String) When you provision a new resource, a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -54,7 +54,7 @@ In addition to all argument references listed, you can access the following attr
 * `resource_type` - (String) The type of the project.
   * Constraints: Allowable values are: `project_v2`.
 * `status` - (String) The current state of the project. For example, if the project is created and ready to get used, it will return active.
-  * Constraints: Possible values are: `active`, `inactive`, `pending_removal`, `hard_deleting`, `hard_deletion_failed`, `hard_deleted`, `deleting`, `deletion_failed`, `soft_deleted`, `preparing`, `creating`, `creation_failed`.
+  * Constraints: Allowable values are: `active`, `inactive`, `pending_removal`, `hard_deleting`, `hard_deletion_failed`, `hard_deleted`, `deleting`, `deletion_failed`, `soft_deleted`, `preparing`, `creating`, `creation_failed`.
 
 ## Import
 

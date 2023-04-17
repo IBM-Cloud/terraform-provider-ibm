@@ -71,7 +71,7 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,
-				ValidateFunc: validate.InvokeValidator("ibm_is_route", isVPNGatewayName),
+				ValidateFunc: validate.InvokeValidator("ibm_is_vpn_gateway", isVPNGatewayName),
 				Description:  "VPN Gateway instance name",
 			},
 

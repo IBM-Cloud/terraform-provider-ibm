@@ -80,6 +80,7 @@ import (
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -89,7 +90,6 @@ import (
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
-	"github.com/IBM-Cloud/bluemix-go/api/certificatemanager"
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -235,10 +235,10 @@ type ClientSession interface {
 	PushServiceV1() (*pushservicev1.PushServiceV1, error)
 	EventNotificationsApiV1() (*eventnotificationsv1.EventNotificationsV1, error)
 	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
-	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	KeyProtectAPI() (*kp.Client, error)
 	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
+	VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
@@ -328,9 +328,6 @@ type clientSession struct {
 	containerRegistryClientErr error
 	containerRegistryClient    *containerregistryv1.ContainerRegistryV1
 
-	certManagementErr error
-	certManagementAPI certificatemanager.CertificateManagerServiceAPI
-
 	cfConfigErr  error
 	cfServiceAPI mccpv2.MccpServiceAPI
 
@@ -405,8 +402,10 @@ type clientSession struct {
 	appConfigurationClient    *appconfigurationv1.AppConfigurationV1
 	appConfigurationClientErr error
 
-	vpcErr error
-	vpcAPI *vpc.VpcV1
+	vpcErr     error
+	vpcAPI     *vpc.VpcV1
+	vpcbetaErr error
+	vpcBetaAPI *vpcbeta.VpcbetaV1
 
 	directlinkAPI *dl.DirectLinkV1
 	directlinkErr error
@@ -770,11 +769,6 @@ func (sess clientSession) SoftLayerSession() *slsession.Session {
 	return sess.session.SoftLayerSession
 }
 
-// CertManagementAPI provides Certificate  management APIs ...
-func (sess clientSession) CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error) {
-	return sess.certManagementAPI, sess.certManagementErr
-}
-
 // apigatewayAPI provides API Gateway APIs
 func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, error) {
 	return sess.apigatewayAPI, sess.apigatewayErr
@@ -826,6 +820,10 @@ func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 
 func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
+}
+
+func (sess clientSession) VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error) {
+	return sess.vpcBetaAPI, sess.vpcbetaErr
 }
 
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
@@ -1234,8 +1232,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
-		session.certManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
+		session.vpcbetaErr = errEmptyBluemixCredentials
 		session.apigatewayErr = errEmptyBluemixCredentials
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
@@ -1762,6 +1760,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.vpcAPI = vpcclient
 
+	vpcbetaoptions := &vpcbeta.VpcbetaV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
+		Authenticator: authenticator,
+	}
+	vpcbetaclient, err := vpcbeta.NewVpcbetaV1(vpcbetaoptions)
+	if err != nil {
+		session.vpcbetaErr = fmt.Errorf("[ERROR] Error occured while configuring vpc beta service: %q", err)
+	}
+	if vpcbetaclient != nil && vpcbetaclient.Service != nil {
+		vpcbetaclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		vpcbetaclient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	session.vpcBetaAPI = vpcbetaclient
+
 	// PUSH NOTIFICATIONS Service
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
 	if c.Visibility == "private" {
@@ -2010,12 +2024,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = fmt.Errorf("[ERROR] Error occured while configuring user management service: %q", err)
 	}
 	session.userManagementAPI = userManagementAPI
-
-	certManagementAPI, err := certificatemanager.New(sess.BluemixSession)
-	if err != nil {
-		session.certManagementErr = fmt.Errorf("[ERROR] Error occured while configuring Certificate manager service: %q", err)
-	}
-	session.certManagementAPI = certManagementAPI
 
 	namespaceFunction, err := functions.New(sess.BluemixSession)
 	if err != nil {

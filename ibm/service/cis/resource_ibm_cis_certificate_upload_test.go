@@ -18,6 +18,7 @@ import (
 )
 
 func TestAccIBMCisCertificateUpload_Basic(t *testing.T) {
+	t.Skip()
 	var cert string
 
 	name := "ibm_cis_certificate_upload." + "test"
@@ -52,6 +53,7 @@ func TestAccIBMCisCertificateUpload_Basic(t *testing.T) {
 }
 
 func TestAccIBMCisCertificateUpload_import(t *testing.T) {
+	t.Skip()
 	name := "ibm_cis_certificate_upload.test"
 	certMgrInstanceName := fmt.Sprintf("testacc-cert-manager-%s",
 		acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))

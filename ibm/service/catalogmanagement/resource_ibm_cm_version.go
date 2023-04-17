@@ -2842,7 +2842,7 @@ func resourceIBMCmVersionRenderTypeToMap(model *catalogmanagementv1.RenderType) 
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
 	}
 	if model.ConfigConstraints != nil {
-		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints.(map[string]interface{}))
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints)
 	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmVersionRenderTypeAssociationsToMap(model.Associations)
@@ -3253,8 +3253,8 @@ func resourceIBMCmVersionCostBreakdownToMap(model *catalogmanagementv1.CostBreak
 	if model.TotalHourlyCost != nil {
 		modelMap["total_hourly_cost"] = model.TotalHourlyCost
 	}
-	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_cost"] = model.TotalMonthlyCOst
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -3341,7 +3341,7 @@ func resourceIBMCmVersionCostSummaryToMap(model *catalogmanagementv1.CostSummary
 	return modelMap, nil
 }
 
-func resourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.Dependency) (map[string]interface{}, error) {
+func resourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.OfferingReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CatalogID != nil {
 		modelMap["catalog_id"] = model.CatalogID

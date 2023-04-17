@@ -44,7 +44,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: Allowable values are: `af_south_1`, `ap_east_1`, `ap_northeast_1`, `ap_northeast_2`, `ap_south_1`, `ap_southeast_1`, `ap_southeast_2`, `aws_cn_global`, `aws_global`, `aws_iso_global`, `aws_iso_b_global`, `aws_us_gov_global`, `ca_central_1`, `cn_north_1`, `cn_northwest_1`, `eu_central_1`, `eu_west_1`, `eu_west_2`, `eu_west_3`, `me_south_1`, `sa_east_1`, `us_east_1`, `us_east_2`, `us_gov_east_1`, `us_gov_west_1`, `us_iso_east_1`, `us_isob_east_1`, `us_west_1`, `us_west_2`.
 
 * `aws_secret_access_key` - (String) The secret access key used for connecting to this instance of AWS KMS.
-  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-_\/]*$/`.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
 
 * `azure_environment` - (String) Azure environment, usually 'Azure'.
   * Constraints: Allowable values are: `azure`, `azure_china`, `azure_germany`, `azure_us_government`.
@@ -62,7 +62,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]+$/`.
 
 * `azure_service_principal_password` - (String) Azure service principal password.
-  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]+$/`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
 
 * `azure_subscription_id` - (String) Subscription ID in Azure.
   * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]+$/`.
@@ -77,6 +77,21 @@ In addition to all argument references listed, you can access the following attr
 
 * `description` - (String) Description of the keystore.
   * Constraints: The maximum length is `200` characters. The minimum length is `0` characters. The value must match regular expression `/(.|\\n)*/`.
+
+* `google_credentials` - (String) The value of the JSON key represented in the Base64 format.
+  * Constraints: The maximum length is `524288` characters. The minimum length is `1` character. The value must match regular expression `/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/`.
+
+* `google_key_ring` - (String) A key ring organizes keys in a specific Google Cloud location and allows you to manage access control on groups of keys.
+  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
+
+* `google_location` - (String) Location represents the geographical region where a Cloud KMS resource is stored and can be accessed. A key's location impacts the performance of applications using the key.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
+
+* `google_private_key_id` - (String) The private key id associated with this keystore.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-_]*$/`.
+
+* `google_project_id` - (String) The project id associated with this keystore.
+  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-_]*$/`.
 
 * `groups` - (List) List of groups that this keystore belongs to.
   * Constraints: The list items must match regular expression `/^[A-Za-z0-9][A-Za-z0-9-_ ]+$/`. The maximum length is `128` items. The minimum length is `1` item.
@@ -102,11 +117,14 @@ In addition to all argument references listed, you can access the following attr
 * `ibm_variant` - (String) Possible IBM Cloud KMS variants.
   * Constraints: Allowable values are: `hpcs`, `internal`, `key_protect`.
 
+* `location` - (String) Geographic location of the keystore, if available.
+  * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9 ._-]*$/`.
+
 * `name` - (String) Name of the target keystore. It can be changed in the future.
-  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9 .-_]*$/`.
+  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9 ._-]*$/`.
 
 * `type` - (String) Type of keystore.
-  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`.
+  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`, `google_kms`.
 
 * `updated_at` - (String) Date and time when the target keystore was last updated.
 
@@ -120,5 +138,5 @@ Nested scheme for **vault**:
 	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `name` - (String) Name of the referenced vault.
-	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9#@!$% '_-]*$/`.
+	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9#@!$%'_-][A-Za-z0-9#@!$% '_-]*$/`.
 
