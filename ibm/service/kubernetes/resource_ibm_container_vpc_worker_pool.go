@@ -242,9 +242,9 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 	if ioc, ok := d.GetOk("import_on_create"); ok && ioc.(bool) {
 		if cluster, ok := d.GetOk("cluster"); ok {
 			clusterID := cluster.(string)
-			log.Printf("Importing wp from cluster %s", clusterID)
-			//read to get ID for default and d.Set!
+			log.Printf("Importing workerpool from cluster %s", clusterID)
 
+			//read to get ID for default and d.Set!
 			wpClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 			if err != nil {
 				return err
