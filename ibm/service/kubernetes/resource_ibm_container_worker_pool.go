@@ -189,6 +189,13 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
 			},
+
+			"import_on_create": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Import a workerpool from a cluster",
+			},
 		},
 	}
 }
@@ -223,6 +230,25 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 	}
 
 	clusterNameorID := d.Get("cluster").(string)
+
+	if ioc, ok := d.GetOk("import_on_create"); ok && ioc.(bool) {
+
+		workerPoolsAPI := csClient.WorkerPools()
+		targetEnv, err := getWorkerPoolTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+
+		res, err := workerPoolsAPI.GetWorkerPool(clusterNameorID, "default", targetEnv)
+		if err != nil {
+			return err
+		}
+
+		d.SetId(fmt.Sprintf("%s/%s", clusterNameorID, res.ID))
+
+		return resourceIBMContainerWorkerPoolRead(d, meta)
+
+	}
 
 	workerPoolConfig := v1.WorkerPoolConfig{
 		Name:        d.Get("worker_pool_name").(string),

@@ -204,6 +204,13 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Account ID of kms instance holder - if not provided, defaults to the account in use",
 				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
+
+			"import_on_create": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Import a workerpool from a cluster",
+			},
 		},
 	}
 }
@@ -231,6 +238,33 @@ func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
+
+	if ioc, ok := d.GetOk("import_on_create"); ok && ioc.(bool) {
+		if cluster, ok := d.GetOk("cluster"); ok {
+			clusterID := cluster.(string)
+			log.Printf("Importing wp from cluster %s", clusterID)
+			//read to get ID for default and d.Set!
+
+			wpClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+			if err != nil {
+				return err
+			}
+			targetEnv, err := getVpcClusterTargetHeader(d, meta)
+			if err != nil {
+				return err
+			}
+
+			wp, err := wpClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
+			if err != nil {
+				return err
+			}
+
+			d.SetId(fmt.Sprintf("%s/%s", clusterID, wp.ID))
+
+			return resourceIBMContainerVpcWorkerPoolRead(d, meta)
+
+		}
+	}
 
 	wpClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
