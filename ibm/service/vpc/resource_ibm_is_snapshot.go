@@ -420,6 +420,9 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
 	d.Set(isSnapshotSize, *snapshot.Size)
 	d.Set(isSnapshotEncryption, *snapshot.Encryption)
+	if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
+		d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN)
+	}
 	d.Set(isSnapshotLCState, *snapshot.LifecycleState)
 	d.Set(isSnapshotResourceType, *snapshot.ResourceType)
 	d.Set(isSnapshotBootable, *snapshot.Bootable)
