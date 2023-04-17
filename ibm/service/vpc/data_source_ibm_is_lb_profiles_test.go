@@ -33,6 +33,25 @@ func TestAccIBMISLBProfilesDatasource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLBProfilesDatasource_filter(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testDSCheckIBMISLBProfilesFilterConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.name", "network-fixed"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.family", "Network"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.route_mode_supported", "true"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.udp_supported"),
+				),
+			},
+		},
+	})
+}
 func testDSCheckIBMISLBProfilesConfig(vpcname, subnetname, zone, cidr, name string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -50,4 +69,10 @@ resource "ibm_is_lb" "testacc_lb" {
 }
 data "ibm_is_lb_profiles" "test_profiles" {
 } `, vpcname, subnetname, zone, cidr, name)
+}
+func testDSCheckIBMISLBProfilesFilterConfig() string {
+	return fmt.Sprintf(`
+	data "ibm_is_lb_profiles" "test_profiles" {
+		name = "network-fixed"
+	} `)
 }
