@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	isLbsProfiles = "lb_profiles"
+	isLbsProfiles    = "lb_profiles"
+	isLbsProfileName = "name"
 )
 
 func DataSourceIBMISLbProfiles() *schema.Resource {
