@@ -16,12 +16,12 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func ResourceIBMEnFCMDestination() *schema.Resource {
+func ResourceIBMEnServiceNowDestination() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnFCMDestinationCreate,
-		ReadContext:   resourceIBMEnFCMDestinationRead,
-		UpdateContext: resourceIBMEnFCMDestinationUpdate,
-		DeleteContext: resourceIBMEnFCMDestinationDelete,
+		CreateContext: resourceIBMEnServiceNowDestinationCreate,
+		ReadContext:   resourceIBMEnServiceNowDestinationRead,
+		UpdateContext: resourceIBMEnServiceNowDestinationUpdate,
+		DeleteContext: resourceIBMEnServiceNowDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -39,7 +39,7 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The type of Destination push_android.",
+				Description: "The type of Destination type push_chrome.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -59,25 +59,34 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"pre_prod": {
-										Type:        schema.TypeBool,
+									"client_id": {
+										Type:        schema.TypeString,
+										Sensitive:   true,
 										Optional:    true,
-										Description: "The flag to enable destination as pre-prod or prod",
+										Description: "ClientID for the ServiceNow account oauth",
 									},
-									"project_id": {
+									"client_secret": {
 										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The FCM project_id.",
+										Sensitive:   true,
+										Optional:    true,
+										Description: "ClientSecret for the ServiceNow account oauth",
 									},
-									"private_key": {
+									"username": {
 										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The FCM private_key.",
+										Optional:    true,
+										Description: "Username for ServiceNow account REST API",
 									},
-									"client_email": {
+									"password": {
 										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The FCM client_email.",
+										Sensitive:   true,
+										Optional:    true,
+										Description: "Password for ServiceNow account REST API.",
+									},
+									"instance_name": {
+										Type:        schema.TypeString,
+										Sensitive:   true,
+										Optional:    true,
+										Description: "Instance name for ServiceNow account.",
 									},
 								},
 							},
@@ -110,7 +119,7 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 	}
 }
 
-func resourceIBMEnFCMDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnServiceNowDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -120,14 +129,14 @@ func resourceIBMEnFCMDestinationCreate(context context.Context, d *schema.Resour
 
 	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetName(d.Get("name").(string))
-	options.SetType(d.Get("type").(string))
 
+	options.SetType(d.Get("type").(string))
 	destinationtype := d.Get("type").(string)
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("config"); ok {
-		config := FCMdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+		config := ServiceNowdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 		options.SetConfig(&config)
 	}
 
@@ -138,10 +147,10 @@ func resourceIBMEnFCMDestinationCreate(context context.Context, d *schema.Resour
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnFCMDestinationRead(context, d, meta)
+	return resourceIBMEnServiceNowDestinationRead(context, d, meta)
 }
 
-func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnServiceNowDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -187,7 +196,7 @@ func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.Resource
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enFCMDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enServiceNowDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -203,13 +212,12 @@ func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.Resource
 
 	if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
-
 	}
 
 	return nil
 }
 
-func resourceIBMEnFCMDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnServiceNowDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -231,9 +239,10 @@ func resourceIBMEnFCMDestinationUpdate(context context.Context, d *schema.Resour
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
+
 		destinationtype := d.Get("type").(string)
 		if _, ok := d.GetOk("config"); ok {
-			config := FCMdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+			config := ServiceNowdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 			options.SetConfig(&config)
 		}
 		_, response, err := enClient.UpdateDestinationWithContext(context, options)
@@ -241,13 +250,13 @@ func resourceIBMEnFCMDestinationUpdate(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("UpdateDestinationWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnFCMDestinationRead(context, d, meta)
+		return resourceIBMEnServiceNowDestinationRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnFCMDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnServiceNowDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -277,23 +286,26 @@ func resourceIBMEnFCMDestinationDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
-	params := new(en.DestinationConfigOneOf)
-
-	if configParams["pre_prod"] != nil {
-		params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
+func ServiceNowdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
+	params := new(en.DestinationConfigOneOfServiceNowDestinationConfig)
+	if configParams["client_id"] != nil {
+		params.ClientID = core.StringPtr(configParams["client_id"].(string))
 	}
 
-	if configParams["project_id"] != nil {
-		params.ProjectID = core.StringPtr(configParams["project_id"].(string))
+	if configParams["client_secret"] != nil {
+		params.ClientSecret = core.StringPtr(configParams["client_secret"].(string))
 	}
 
-	if configParams["private_key"] != nil {
-		params.PrivateKey = core.StringPtr(configParams["private_key"].(string))
+	if configParams["username"] != nil {
+		params.Username = core.StringPtr(configParams["username"].(string))
 	}
 
-	if configParams["client_email"] != nil {
-		params.ClientEmail = core.StringPtr(configParams["client_email"].(string))
+	if configParams["password"] != nil {
+		params.Password = core.StringPtr(configParams["password"].(string))
+	}
+
+	if configParams["instance_name"] != nil {
+		params.InstanceName = core.StringPtr(configParams["instance_name"].(string))
 	}
 
 	destinationConfig := new(en.DestinationConfig)

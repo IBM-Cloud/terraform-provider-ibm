@@ -18,7 +18,7 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnFCMDestinationAllArgs(t *testing.T) {
+func TestAccIBMEnCodeEngineAllArgs(t *testing.T) {
 	var config en.Destination
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -29,27 +29,27 @@ func TestAccIBMEnFCMDestinationAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnFCMDestinationDestroy,
+		CheckDestroy: testAccCheckIBMEnCodeEngineDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnFCMDestinationConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnFCMDestinationExists("ibm_en_destination_android.en_destination_resource_fcm", config),
-					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "description", description),
+					testAccCheckIBMEnCodeEngineDestinationExists("ibm_en_destination_ce.en_destination_resource_1", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "type", "ibmce"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnFCMDestinationConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "type", "push_android"),
-					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "type", "ibmce"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_destination_android.en_destination_resource_1",
+				ResourceName:      "ibm_en_destination_ce.en_destination_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -57,7 +57,7 @@ func TestAccIBMEnFCMDestinationAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnFCMDestinationConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, name, description string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "en_destination_resource" {
 		name     = "%s"
@@ -66,24 +66,22 @@ func testAccCheckIBMEnFCMDestinationConfig(instanceName, name, description strin
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination_android" "en_destination_resource_fcm" {
+	resource "ibm_en_destination_ce" "en_destination_resource_1" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
-		type        = "push_android"
+		type        = "ibmce"
 		description = "%s"
 		config {
 			params {
-				project_id = "FCM_sender_id_value"
-				private_key  = "FCM_Server_key_value"
-				client_email = "testuser123@gmail.com"
-				pre_prod = false
+				verb = "POST"
+				url  = "https://test.codetestcodeengine.com"
 			}
 		}
 	}
 	`, instanceName, name, description)
 }
 
-func testAccCheckIBMEnFCMDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
+func testAccCheckIBMEnCodeEngineDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -116,13 +114,13 @@ func testAccCheckIBMEnFCMDestinationExists(n string, obj en.Destination) resourc
 	}
 }
 
-func testAccCheckIBMEnFCMDestinationDestroy(s *terraform.State) error {
+func testAccCheckIBMEnCodeEngineDestinationDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_destination_resource_fcm" {
+		if rs.Type != "en_destination_resource_1" {
 			continue
 		}
 
