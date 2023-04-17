@@ -272,8 +272,8 @@ func testAccCheckisVirtualEndpointGatewayConfigFullySpecified(vpcname1, subnetna
 	resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
 		name = "%[5]s"
 		target {
-		  name          = "ibm-dns-server2"
-		  resource_type = "provider_infrastructure_service"
+			name          = "ibm-dns-server2"
+			resource_type = "provider_infrastructure_service"
 		}
 		vpc = ibm_is_vpc.testacc_vpc.id
 		ips {
@@ -314,4 +314,55 @@ func testAccCheckisVirtualEndpointGatewayConfigBasicSecurityGroups(vpcname1, sub
 		resource_group = data.ibm_resource_group.test_acc.id
 		security_groups = [ibm_is_security_group.testacc_security_group.id]
 	}`, vpcname1, subnetname1, acc.ISZoneName, acc.ISCIDR, sgname1, name1)
+}
+
+// for service endpoints
+func testAccCheckisVirtualEndpointGatewayConfigServiceEndpoints(vpcname1, subnetname1, name1 string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default=true
+    }
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%[1]s"
+		resource_group = data.ibm_resource_group.test_acc.id
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%[2]s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%[3]s"
+		ipv4_cidr_block = "%[4]s"
+		resource_group = data.ibm_resource_group.test_acc.id
+	}
+	resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+		name = "%[5]s"
+		target {
+		  name          = "ibm-ntp-server"
+		  resource_type = "provider_infrastructure_service"
+		}
+		vpc = ibm_is_vpc.testacc_vpc.id
+		resource_group = data.ibm_resource_group.test_acc.id
+	}`, vpcname1, subnetname1, acc.ISZoneName, acc.ISCIDR, name1)
+}
+
+func TestAccIBMISVirtualEndpointGateway_ServiceEndpoints(t *testing.T) {
+	var endpointGateway string
+	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname1 := fmt.Sprintf("tfvpngw-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpngw-createname-%d", acctest.RandIntRange(10, 100))
+	name := "ibm_is_virtual_endpoint_gateway.endpoint_gateway"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckisVirtualEndpointGatewayConfigServiceEndpoints(vpcname1, subnetname1, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
+					resource.TestCheckResourceAttr(name, "name", name1),
+					resource.TestCheckResourceAttrSet(
+						name, "service_endpoints.#"),
+				),
+			},
+		},
+	})
 }
