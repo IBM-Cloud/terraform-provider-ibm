@@ -255,10 +255,6 @@ func resourceIbmCodeEngineSecretUpdate(context context.Context, d *schema.Resour
 
 	hasChange := false
 
-	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id"))
-	}
 	if d.HasChange("format") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "format"))
