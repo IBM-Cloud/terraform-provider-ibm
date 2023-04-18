@@ -64,6 +64,7 @@ func ResourceIBMISVPCDefaultNetworkACL() *schema.Resource {
 
 			isNetworkACLName: {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "Network ACL name",
 			},
