@@ -55,6 +55,7 @@ func ResourceIBMISVPCDefaultSecurityGroup() *schema.Resource {
 
 			isSecurityGroupName: {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "Security group name",
 			},
@@ -243,14 +244,17 @@ func resourceIBMISVPCDefaultSecurityGroupCreate(d *schema.ResourceData, meta int
 	}
 	d.SetId(*sg.ID)
 
-	err = cleanExistingDefaultSecurityGroupRules(d, sess, sg)
-	if err != nil {
-		return err
+	if _, ok := d.GetOk(isSecurityGroupRules); ok {
+		err = cleanExistingDefaultSecurityGroupRules(d, sess, sg)
+		if err != nil {
+			return err
+		}
+		err = addNewDefaultSecurityGroupRules(d, sess, sg)
+		if err != nil {
+			return err
+		}
 	}
-	err = addNewDefaultSecurityGroupRules(d, sess, sg)
-	if err != nil {
-		return err
-	}
+
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isSecurityGroupTags); ok || v != "" {
 		oldList, newList := d.GetChange(isSecurityGroupTags)
@@ -268,21 +272,58 @@ func resourceIBMISVPCDefaultSecurityGroupCreate(d *schema.ResourceData, meta int
 				"Error on create of Security Group (%s) access tags: %s", d.Id(), err)
 		}
 	}
-	return resourceIBMISSecurityGroupRead(d, meta)
+	return resourceIBMISVPCDefaultSecurityGroupUpdate(d, meta)
 }
 
 func cleanExistingDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, sg *vpcv1.SecurityGroup) error {
 	id := d.Id()
 
 	for _, ruleIntf := range sg.Rules {
-		rule := ruleIntf.(*vpcv1.SecurityGroupRule)
-		removeSgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
-			SecurityGroupID: &id,
-			ID:              rule.ID,
-		}
-		res, err := sess.DeleteSecurityGroupRule(removeSgRuleOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error while removing default security group rule %s/%s", res, err)
+		switch rule := ruleIntf.(type) {
+		case *vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll:
+			{
+				removeSgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
+					SecurityGroupID: &id,
+					ID:              rule.ID,
+				}
+				res, err := sess.DeleteSecurityGroupRule(removeSgRuleOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while removing default security group rule %s/%s", res, err)
+				}
+			}
+		case *vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp:
+			{
+				removeSgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
+					SecurityGroupID: &id,
+					ID:              rule.ID,
+				}
+				res, err := sess.DeleteSecurityGroupRule(removeSgRuleOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while removing default security group rule %s/%s", res, err)
+				}
+			}
+		case *vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp:
+			{
+				removeSgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
+					SecurityGroupID: &id,
+					ID:              rule.ID,
+				}
+				res, err := sess.DeleteSecurityGroupRule(removeSgRuleOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while removing default security group rule %s/%s", res, err)
+				}
+			}
+		case *vpcv1.SecurityGroupRule:
+			{
+				removeSgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
+					SecurityGroupID: &id,
+					ID:              rule.ID,
+				}
+				res, err := sess.DeleteSecurityGroupRule(removeSgRuleOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while removing default security group rule %s/%s", res, err)
+				}
+			}
 		}
 	}
 	return nil
