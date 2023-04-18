@@ -74,6 +74,7 @@ github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc
 github.com/IBM/go-sdk-core/v5 v5.9.2/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
+github.com/IBM/go-sdk-core/v5 v5.12.1/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
 github.com/IBM/go-sdk-core/v5 v5.13.0 h1:foXLa2LfTSr3kgldpizaSDXH3gS/HB3YKj1BK8ywrE4=
 github.com/IBM/go-sdk-core/v5 v5.13.0/go.mod h1:pVkN7IGmsSdmR1ZCU4E/cLcCclqRKMYgg7ya+O2Mk6g=
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
@@ -99,12 +100,10 @@ github.com/IBM/scc-go-sdk/v4 v4.0.2 h1:8BHMRobCFurZwKaUhxWi8CdAA9+CvyzmlBOmo7KmX
 github.com/IBM/scc-go-sdk/v4 v4.0.2/go.mod h1:ufqf/kBtRn3Pq/pFXF6zQGHXV2P2EzPsntw1Sw19clE=
 github.com/IBM/schematics-go-sdk v0.2.1 h1:byATysGD+Z1k/wdtNqQmKALcAPjgSLuSyzcabh1jRAw=
 github.com/IBM/schematics-go-sdk v0.2.1/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
-github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230404201829-49a38f9b9a6e h1:FaEVX404uS7J+veC3SghJPKl5bsL4lDxwxRelZ262Ws=
-github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230404201829-49a38f9b9a6e/go.mod h1:qv+tQg8Z3Vb11DQYxDjEGeROHDtTLQxUWuOIrIdWg6E=
+github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230316070833-1e1d44fe67be h1:fSMzsH48lTFPWFi4ulS0DYa6uK/l2oz5JiJEbFhwdjc=
+github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230316070833-1e1d44fe67be/go.mod h1:qv+tQg8Z3Vb11DQYxDjEGeROHDtTLQxUWuOIrIdWg6E=
 github.com/IBM/vpc-beta-go-sdk v0.1.0 h1:+kdF+Y/0KY189HhpkqDrue9o0LluAr7rlOU5Zhu7hck=
 github.com/IBM/vpc-beta-go-sdk v0.1.0/go.mod h1:TGfLgJVmgQy6XvXc4lya8Vxvw7fvk83nqs5hdP+/VGo=
-github.com/IBM/vpc-go-sdk v0.35.0 h1:Qc0OV2WIQLGwxuvPKusJdgeXiMwyHQITvSof+v125D8=
-github.com/IBM/vpc-go-sdk v0.35.0/go.mod h1:Ozn0YBCs284Qvy+CNAmoLhh2eD48NnobiAyfgVd8wmA=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
