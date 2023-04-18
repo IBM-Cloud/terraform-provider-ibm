@@ -88,6 +88,8 @@ var DedicatedHostGroupFamily string
 var DedicatedHostGroupClass string
 var ShareProfileName string
 var VolumeProfileName string
+var VSIUnattachedBootVolumeID string
+var VSIDataVolumeID string
 var ISRouteDestination string
 var ISRouteNextHop string
 var WorkspaceID string
@@ -240,6 +242,7 @@ var CdBitbucketRepoUrl string
 var CdGithubConsolidatedRepoUrl string
 var CdGitlabRepoUrl string
 var CdHostedGitRepoUrl string
+var CdEventNotificationsInstanceName string
 
 // VPN Server
 var ISCertificateCrn string
@@ -702,6 +705,16 @@ func init() {
 	if VolumeProfileName == "" {
 		VolumeProfileName = "general-purpose"
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
+	}
+	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
+	if VSIUnattachedBootVolumeID == "" {
+		VSIUnattachedBootVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
+		fmt.Println("[INFO] Set the environment variable IS_UNATTACHED_BOOT_VOLUME_NAME for testing ibm_is_image else it is set to default value 'r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e'")
+	}
+	VSIDataVolumeID = os.Getenv("IS_VSI_DATA_VOLUME_ID")
+	if VSIDataVolumeID == "" {
+		VSIDataVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
+		fmt.Println("[INFO] Set the environment variable IS_VSI_DATA_VOLUME_ID for testing ibm_is_image else it is set to default value 'r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e'")
 	}
 
 	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
@@ -1325,6 +1338,11 @@ func init() {
 	CdHostedGitRepoUrl = os.Getenv("IBM_CD_HOSTED_GIT_REPO_URL")
 	if CdHostedGitRepoUrl == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_HOSTED_GIT_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdEventNotificationsInstanceName = os.Getenv("IBM_CD_EVENTNOTIFICATIONS_INSTANCE_NAME")
+	if CdEventNotificationsInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_EVENTNOTIFICATIONS_INSTANCE_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")
