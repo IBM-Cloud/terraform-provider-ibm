@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -457,7 +458,32 @@ func resourceIBMISPublicGatewayDelete(d *schema.ResourceData, meta interface{}) 
 	}
 	response, err = sess.DeletePublicGateway(deletePublicGatewayOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Public Gateway : %s\n%s", err, response)
+		if response.StatusCode == 409 && strings.Contains(strings.ToLower(err.Error()), strings.ToLower("The Public Gateway is in use by subnet")) {
+			listSubnetsOptions := &vpcv1.ListSubnetsOptions{}
+			subnets, _, _ := sess.ListSubnets(listSubnetsOptions)
+			for _, s := range subnets.Subnets {
+				if s.PublicGateway != nil && id == *s.PublicGateway.ID {
+					unsetSubnetPublicGatewayOptions := &vpcv1.UnsetSubnetPublicGatewayOptions{
+						ID: s.ID,
+					}
+					res, errSub := sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
+					if res.StatusCode == 204 {
+						_, err = isWaitForSubnetPublicGatewayUnset(sess, *s.ID, d.Timeout(schema.TimeoutDelete))
+						if err != nil {
+							return err
+						}
+						response, err = sess.DeletePublicGateway(deletePublicGatewayOptions)
+						if err != nil {
+							return fmt.Errorf("[ERROR] Error Deleting Public Gateway : %s\n%s", err, response)
+						}
+					} else {
+						return fmt.Errorf("[ERROR] Error Unsetting Public Gateway : %s\n%s", errSub, res)
+					}
+				}
+			}
+		} else {
+			return fmt.Errorf("[ERROR] Error Deleting Public Gateway : error is %s\n%s", err, response)
+		}
 	}
 	_, err = isWaitForPublicGatewayDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -516,4 +542,37 @@ func resourceIBMISPublicGatewayExists(d *schema.ResourceData, meta interface{}) 
 		return false, fmt.Errorf("[ERROR] Error getting Public Gateway: %s\n%s", err, response)
 	}
 	return true, nil
+}
+
+func isWaitForSubnetPublicGatewayUnset(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for public gateway (%s) to be unset.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", "wait"},
+		Target:     []string{"done", ""},
+		Refresh:    isSubnetPublicGatewayUnsetRefreshFunc(subnetC, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isSubnetPublicGatewayUnsetRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	log.Printf("Waiting for public gateway (%s) to be unset.", id)
+	return func() (interface{}, string, error) {
+		getSubnetPublicGatewayOptions := &vpcv1.GetSubnetPublicGatewayOptions{
+			ID: &id,
+		}
+		subnetPublicGateway, response, err := subnetC.GetSubnetPublicGateway(getSubnetPublicGatewayOptions)
+		if err != nil {
+			if response.StatusCode == 404 {
+				return subnetPublicGateway, "done", nil
+			}
+			return subnetPublicGateway, "", fmt.Errorf("[ERROR] Error getting Subnet PublicGateway : %s\n%s", err, response)
+		}
+
+		return subnetPublicGateway, "wait", nil
+	}
 }
