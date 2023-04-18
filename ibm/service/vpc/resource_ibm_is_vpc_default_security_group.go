@@ -276,8 +276,11 @@ func resourceIBMISVPCDefaultSecurityGroupCreate(d *schema.ResourceData, meta int
 
 func cleanExistingDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, sg *vpcv1.SecurityGroup) error {
 	id := d.Id()
+	log.Printf("[INFO] UJJK inside cleanup")
 
 	for _, ruleIntf := range sg.Rules {
+
+		log.Printf("[INFO] UJJK removiing rule %v", ruleIntf)
 		switch rule := ruleIntf.(type) {
 		case *vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll:
 			{
@@ -329,10 +332,12 @@ func cleanExistingDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.
 }
 func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, sg *vpcv1.SecurityGroup) error {
 	id := d.Id()
+	log.Printf("[INFO] UJJK inside add")
 
 	if rulesIntf, ok := d.GetOk(isSecurityGroupRules); ok {
 		rules := rulesIntf.(*schema.Set).List()
 		for _, rule := range rules {
+			log.Printf("[INFO] UJJK adding new rule %v", rule)
 			rulex := rule.(map[string]interface{})
 			direction := rulex[isSecurityGroupRuleDirection].(string)
 			direction = strings.ToLower(direction)
@@ -383,10 +388,12 @@ func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, 
 				SecurityGroupRulePrototype: sgTemplate,
 			}
 
+			log.Printf("[INFO] UJJK created sg create options %v", options)
 			_, response, err := sess.CreateSecurityGroupRule(options)
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error while creating Security Group Rule %s\n%s", err, response)
 			}
+			log.Printf("[INFO] UJJK  rule created %v", response)
 		}
 
 	}
@@ -548,13 +555,13 @@ func resourceIBMISVPCDefaultSecurityGroupRead(d *schema.ResourceData, meta inter
 }
 
 func resourceIBMISVPCDefaultSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[INFO] UJJK inside update block")
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
 	id := d.Id()
 	name := ""
-	hasChanged := false
 
 	if d.HasChange(isSecurityGroupTags) {
 		oldList, newList := d.GetChange(isSecurityGroupTags)
@@ -572,14 +579,38 @@ func resourceIBMISVPCDefaultSecurityGroupUpdate(d *schema.ResourceData, meta int
 				"Error on update of Security Group (%s) access tags: %s", d.Id(), err)
 		}
 	}
+
+	log.Printf("[INFO] UJJK no change in sg rules")
+
+	if d.HasChange(isSecurityGroupRules) {
+		log.Printf("[INFO] UJJK ther eis a change in sg rules")
+		sgId := d.Id()
+		log.Printf("[INFO] UJJK trying to get sg ")
+
+		getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+			ID: &sgId,
+		}
+
+		log.Printf("[INFO] UJJK getting sg")
+		sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error while getting default Security Group of the vpc %s\n%s", err, response)
+		}
+		log.Printf("[INFO] UJJK sg got %v", sg)
+
+		log.Printf("[INFO] UJJK starting cleanup ")
+		err = cleanExistingDefaultSecurityGroupRules(d, sess, sg)
+		if err != nil {
+			return err
+		}
+		log.Printf("[INFO] UJJK now adding")
+		err = addNewDefaultSecurityGroupRules(d, sess, sg)
+		if err != nil {
+			return err
+		}
+	}
 	if d.HasChange(isSecurityGroupName) {
 		name = d.Get(isSecurityGroupName).(string)
-		hasChanged = true
-	} else {
-		return resourceIBMISSecurityGroupRead(d, meta)
-	}
-
-	if hasChanged {
 		updateSecurityGroupOptions := &vpcv1.UpdateSecurityGroupOptions{
 			ID: &id,
 		}
@@ -596,27 +627,7 @@ func resourceIBMISVPCDefaultSecurityGroupUpdate(d *schema.ResourceData, meta int
 			return fmt.Errorf("[ERROR] Error Updating Security Group : %s\n%s", err, response)
 		}
 	}
-
-	if d.HasChange(isSecurityGroupRules) {
-		sgId := d.Id()
-		getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
-			ID: &sgId,
-		}
-
-		sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error while getting default Security Group of the vpc %s\n%s", err, response)
-		}
-		err = cleanExistingDefaultSecurityGroupRules(d, sess, sg)
-		if err != nil {
-			return err
-		}
-		err = addNewDefaultSecurityGroupRules(d, sess, sg)
-		if err != nil {
-			return err
-		}
-	}
-	return resourceIBMISSecurityGroupRead(d, meta)
+	return resourceIBMISVPCDefaultSecurityGroupRead(d, meta)
 }
 
 func resourceIBMISVPCDefaultSecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
