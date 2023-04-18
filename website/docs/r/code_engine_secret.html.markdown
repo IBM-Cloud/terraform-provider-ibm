@@ -29,7 +29,13 @@ resource "ibm_code_engine_secret" "code_engine_secret_instance" {
 
 Review the argument reference that you can specify for your resource.
 
-* `data` - (Optional, Map) The key-value pair for the config map. Values must be specified in `KEY=VALUE` format. Each `KEY` field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each `VALUE` field can consists of any character and must not be exceed a max length of 1048576 characters.
+* `data` - (Optional, Map) The key-value pair for the secret. Values must be specified in `KEY=VALUE` format. Each `KEY` field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each `VALUE` field can consists of any character and must not be exceed a max length of 1048576 characters. Depending on the `format`, certain `KEY=VALUE` are mandatory. For format `ssh_auth` you must provide the fields `ssh_key` and `known_hosts`. For format registry
+  * Constraints: Depending on the `format`, certain key-value pairs are mandatory:
+    * For format `generic` there are no constraints.
+    * For format `ssh_auth` you must provide the fields `ssh_key` and `known_hosts`.
+    * For format `basic_auth` you must provide the fields `username` and `password`.
+    * For format `tls` you must provide the fields `tls_cert` and `tls_key`.
+    * For format `registry` you must provide the fields `username`,  `password`, `server` and `email`.
 * `format` - (Required, Forces new resource, String) Specify the format of the secret.
   * Constraints: Allowable values are: `generic`, `ssh_auth`, `basic_auth`, `tls`, `registry`. The value must match regular expression `/^(generic|ssh_auth|basic_auth|tls|registry)$/`.
 * `name` - (Required, String) The name of the secret.
