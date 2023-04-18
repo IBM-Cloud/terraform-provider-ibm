@@ -15,9 +15,9 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
+func DataSourceIBMEnServiceNowDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnPagerDutyeDestinationRead,
+		ReadContext: dataSourceIBMEnServiceNowDestinationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -56,15 +56,30 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"api_key": {
+									"client_id": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The api key for chrome app authorization",
+										Description: "ClientID for the ServiceNow account oauth",
 									},
-									"routing_key": {
+									"client_secret": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The website url",
+										Description: "ClientSecret for the ServiceNow account oauth",
+									},
+									"username": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Username for ServiceNow account REST API",
+									},
+									"password": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Password for ServiceNow account REST API.",
+									},
+									"instance_name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Instance name for ServiceNow account.",
 									},
 								},
 							},
@@ -94,7 +109,7 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnServiceNowDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -127,7 +142,7 @@ func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enPagerDutyDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enServiceNowDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -151,20 +166,20 @@ func dataSourceIBMEnPagerDutyeDestinationRead(context context.Context, d *schema
 	return nil
 }
 
-func enPagerDutyDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enServiceNowDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enPagerDutyDestinationConfigToMap(result)
+	finalMap := enServiceNowDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enPagerDutyDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enServiceNowDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enPagerDutyDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enServiceNowDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -172,16 +187,28 @@ func enPagerDutyDestinationConfigToMap(configItem en.DestinationConfig) (configM
 	return configMap
 }
 
-func enPagerDutyDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
+func enServiceNowDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
 	params := paramsItem.(*en.DestinationConfigOneOf)
 
-	if params.APIKey != nil {
-		paramsMap["api_key"] = params.APIKey
+	if params.ClientID != nil {
+		paramsMap["client_id"] = params.ClientID
 	}
-	if params.RoutingKey != nil {
-		paramsMap["routing_key"] = params.RoutingKey
+	if params.ClientSecret != nil {
+		paramsMap["client_secret"] = params.ClientSecret
+	}
+
+	if params.Username != nil {
+		paramsMap["username"] = params.Username
+	}
+
+	if params.Password != nil {
+		paramsMap["password"] = params.Password
+	}
+
+	if params.InstanceName != nil {
+		paramsMap["instance_name"] = params.InstanceName
 	}
 
 	return paramsMap

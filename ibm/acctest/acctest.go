@@ -31,6 +31,7 @@ var CosName string
 var Ibmid1 string
 var Ibmid2 string
 var IAMUser string
+var IAMAccountId string
 var Datacenter string
 var MachineType string
 var trustedMachineType string
@@ -76,6 +77,10 @@ var InstanceProfileName string
 var InstanceProfileNameUpdate string
 var IsBareMetalServerProfileName string
 var IsBareMetalServerImage string
+var DNSInstanceCRN string
+var DNSZoneID string
+var DNSInstanceCRN1 string
+var DNSZoneID1 string
 var DedicatedHostProfileName string
 var DedicatedHostGroupID string
 var InstanceDiskProfileName string
@@ -290,6 +295,11 @@ func init() {
 	IAMUser = os.Getenv("IBM_IAMUSER")
 	if IAMUser == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing ibm_iam_trusted_profile resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	Datacenter = os.Getenv("IBM_DATACENTER")
@@ -621,6 +631,30 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
 	}
 
+	DNSInstanceCRN = os.Getenv("IS_DNS_INSTANCE_CRN")
+	if DNSInstanceCRN == "" {
+		DNSInstanceCRN = "crn:v1:bluemix:public:dns-svcs:global:a/7f75c7b025e54bc5635f754b2f888665:fa78ce08-a161-4703-98e5-35ed2bfe0e7c::" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_INSTANCE_CRN for testing ibm_is_lb resource else it is set to default value 'crn:v1:staging:public:dns-svcs:global:a/efe5afc483594adaa8325e2b4d1290df:82df2e3c-53a5-43c6-89ce-dcf78be18668::'")
+	}
+
+	DNSInstanceCRN1 = os.Getenv("IS_DNS_INSTANCE_CRN1")
+	if DNSInstanceCRN1 == "" {
+		DNSInstanceCRN1 = "crn:v1:bluemix:public:dns-svcs:global:a/7f75c7b025e54bc5635f754b2f888665:fa78ce08-a161-4703-98e5-35ed2bfe0e7c::" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_INSTANCE_CRN1 for testing ibm_is_lb resource else it is set to default value 'crn:v1:staging:public:dns-svcs:global:a/efe5afc483594adaa8325e2b4d1290df:599ae4aa-c554-4a88-8bb2-b199b9a3c046::'")
+	}
+
+	DNSZoneID = os.Getenv("IS_DNS_ZONE_ID")
+	if DNSZoneID == "" {
+		DNSZoneID = "9519a5f8-8827-426b-8623-22226affcb7e" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_ZONE_ID for testing ibm_is_lb resource else it is set to default value 'dd501d1d-490b-4bb4-a05d-a31954a1c59e'")
+	}
+
+	DNSZoneID1 = os.Getenv("IS_DNS_ZONE_ID_1")
+	if DNSZoneID1 == "" {
+		DNSZoneID1 = "c4cdfb45-c21e-4ae3-88da-c9f64ad91d22" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_DNS_ZONE_ID_1 for testing ibm_is_lb resource else it is set to default value 'b1def78d-51b3-4ea5-a746-1b64c992fcab'")
+	}
+
 	DedicatedHostName = os.Getenv("IS_DEDICATED_HOST_NAME")
 	if DedicatedHostName == "" {
 		DedicatedHostName = "tf-dhost-01" // for next gen infrastructure
@@ -670,16 +704,10 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
 	}
 
-	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")
-	if ISRouteDestination == "" {
-		ISRouteDestination = "192.168.4.0/24"
-		fmt.Println("[INFO] Set the environment variable SL_ROUTE_DESTINATION for testing ibm_is_vpc_route else it is set to default value '192.168.4.0/24'")
-	}
-
 	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
 	if ISRouteNextHop == "" {
 		ISRouteNextHop = "10.240.0.0"
-		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
+		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP else it is set to default value '10.0.0.4'")
 	}
 
 	IcdDbRegion = os.Getenv("ICD_DB_REGION")

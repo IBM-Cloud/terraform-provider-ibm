@@ -1,28 +1,30 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_pagerduty'
+page_title: 'IBM : ibm_en_destination_ce'
 description: |-
-  Manages Event Notification Pagerduty destinations.
+  Manages Event Notification Code Engine destinations.
 ---
 
-# ibm_en_destination_pagerduty
+# ibm_en_destination_ce
 
-Create, update, or delete a pagerduty destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a Code Engine destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination_pagerduty" "pagerduty_en_destination" {
+resource "ibm_en_destination_ce" "codeengine_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Pagerduty Destination"
-  type          = "pagerduty"
-  description   = "Destination pagerduty for event notification"
+  name          = "Code engine Destination"
+  description   = "Code Engine destination for event notification"
   config {
     params {
-      api_key     = "user token for assigned group"
-      routing_key = "integration key for pagerduty"
-      
+      verb = "POST"
+      url  = "https://test.codetestcodeengine.com"
+      custom_headers = {
+        "authorization" = "authorization"
+      }
+      sensitive_headers = ["authorization"]
     }
   }
 }
@@ -38,7 +40,7 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) pagerduty.
+- `type` - (Required, String) ibmce.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -48,13 +50,16 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `api_key` - (Required, string) The apikey required to validate user for the assigned group.
-  - `routing_key` - (Required, string) The integration key required to route the events to pagerduty.
+  - `custom_headers` - (Optional, Map) Custom headers (Key-Value pair) for webhook call.
+  - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
+  - `url` - (Optional, String) URL of code engine project.
+  - `verb` - (Optional, String) HTTP method of code engine . Allowable values are: `GET`, `POST`.
+
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `pagerduty_en_destination`.
+- `id` - (String) The unique identifier of the `codeengine_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -63,7 +68,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination_pagerduty` resource by using `id`.
+You can import the `ibm_en_destination_ce` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -78,5 +83,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination_pagerduty.pagerduty_en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_ce.codeengine_en_destination <instance_guid>/<destination_id>
 ```

@@ -753,6 +753,10 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_pagerduty": eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.DataSourceIBMEnIntegration(),
 			"ibm_en_integrations":           eventnotification.DataSourceIBMEnIntegrations(),
+			"ibm_en_destination_sn":         eventnotification.DataSourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":         eventnotification.DataSourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":        eventnotification.DataSourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -998,7 +1002,6 @@ func Provider() *schema.Provider {
 			"ibm_is_vpc":                                    vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                     vpc.ResourceIBMISVpcAddressPrefix(),
 			"ibm_is_vpc_default_network_acl":                vpc.ResourceIBMISVPCDefaultNetworkACL(),
-			"ibm_is_vpc_route":                              vpc.ResourceIBMISVpcRoute(),
 			"ibm_is_vpc_routing_table":                      vpc.ResourceIBMISVPCRoutingTable(),
 			"ibm_is_vpc_routing_table_route":                vpc.ResourceIBMISVPCRoutingTableRoute(),
 			"ibm_is_vpn_server":                             vpc.ResourceIBMIsVPNServer(),
@@ -1211,6 +1214,10 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_pagerduty":  eventnotification.ResourceIBMEnPagerDutyDestination(),
 			"ibm_en_subscription_pagerduty": eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.ResourceIBMEnIntegration(),
+			"ibm_en_destination_sn":         eventnotification.ResourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":         eventnotification.ResourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":        eventnotification.ResourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1377,7 +1384,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_subnet_reserved_ip":                vpc.ResourceIBMISSubnetReservedIPValidator(),
 				"ibm_is_volume":                            vpc.ResourceIBMISVolumeValidator(),
 				"ibm_is_address_prefix":                    vpc.ResourceIBMISAddressPrefixValidator(),
-				"ibm_is_route":                             vpc.ResourceIBMISRouteValidator(),
 				"ibm_is_vpc":                               vpc.ResourceIBMISVPCValidator(),
 				"ibm_is_vpc_default_network_acl":           vpc.ResourceIBMISVPCDefaultNetworkACLValidator(),
 				"ibm_is_vpc_routing_table":                 vpc.ResourceIBMISVPCRoutingTableValidator(),
