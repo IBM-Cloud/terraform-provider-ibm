@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -54,8 +54,7 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						"trigger_scan": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     "disabled",
-							Description: "Set to `enabled` to indicate that a DevSecOps pipeline task should trigger a Security and Compliance Center run of a Validation scan. Note, each scan may incur charges. When enabled, other parameters become relevant that are needed to trigger that scan; `api_key`, `scope`, `profile`.",
+							Description: "Set to `enabled` to indicate that a DevSecOps pipeline task should trigger a Security and Compliance Center run of a Hybrid cloud validation scan. Note, each scan may incur charges. When enabled, other parameters become relevant that are needed to trigger that scan; `api_key`, `scope`, `profile`.",
 						},
 						"api_key": &schema.Schema{
 							Type:             schema.TypeString,
@@ -73,6 +72,33 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The name of a Security and Compliance Center profile. Usually, use the predefined profile \"IBM Cloud Security Best Practices v1.0.0\", which contains the DevSecOps toolchain goals. Or use a user-authored customized profile that has been configured to contain those goals. When the `trigger_scan` parameter is set to `enabled`, then the Validation scan will use the controls and goals in the configured profile. If configured with a profile that does not check the DevSecOps toolchain goals, it might incorrectly indicate that the toolchain status is passed even though some of the DevSecOps scans had actually failed. This parameter is only relevant when the `trigger_scan` parameter is `enabled`.",
+						},
+						"use_profile_attachment": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Set to `enabled` to enable use profile with attachment, so that the scripts in the pipeline can interact with the Security and Compliance Center service. When enabled, other parameters become relevant; `scc_api_key`, `profile_name`, `profile_version`, `attachment_id`.",
+						},
+						"scc_api_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "The IBM Cloud API key used to access the Security and Compliance Center service, for the use profile with attachment setting. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
+						},
+						"profile_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of a Security and Compliance Center profile. Usually, use the predefined profile \"IBM Cloud Security Best Practices\", which contains the DevSecOps Toolchain rules. Or use a user-authored customized profile that has been configured to contain those rules. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+						},
+						"profile_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The version of a Security and Compliance Center profile, in SemVer format, like '0.0.0'. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+						},
+						"attachment_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An attachment ID. An attachment is configured under a profile to define how a scan will be run. To find the attachment ID, in the browser, edit the attachment and the attachment ID is at the end of the URL. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
 						},
 						"evidence_repo_url": &schema.Schema{
 							Type:        schema.TypeString,
