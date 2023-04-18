@@ -112,7 +112,6 @@ func ResourceIBMISVPCDefaultSecurityGroup() *schema.Resource {
 
 						isSecurityGroupRuleIPVersion: {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "IP version: ipv4",
 						},
@@ -331,9 +330,8 @@ func cleanExistingDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.
 func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, sg *vpcv1.SecurityGroup) error {
 	id := d.Id()
 
-	var rules []interface{}
 	if rulesIntf, ok := d.GetOk(isSecurityGroupRules); ok {
-		rules = rulesIntf.([]interface{})
+		rules := rulesIntf.(*schema.Set).List()
 		for _, rule := range rules {
 			rulex := rule.(map[string]interface{})
 			direction := rulex[isSecurityGroupRuleDirection].(string)
@@ -598,6 +596,26 @@ func resourceIBMISVPCDefaultSecurityGroupUpdate(d *schema.ResourceData, meta int
 			return fmt.Errorf("[ERROR] Error Updating Security Group : %s\n%s", err, response)
 		}
 	}
+
+	if d.HasChange(isSecurityGroupRules) {
+		sgId := d.Id()
+		getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+			ID: &sgId,
+		}
+
+		sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error while getting default Security Group of the vpc %s\n%s", err, response)
+		}
+		err = cleanExistingDefaultSecurityGroupRules(d, sess, sg)
+		if err != nil {
+			return err
+		}
+		err = addNewDefaultSecurityGroupRules(d, sess, sg)
+		if err != nil {
+			return err
+		}
+	}
 	return resourceIBMISSecurityGroupRead(d, meta)
 }
 
@@ -702,11 +720,11 @@ func isVPCDefaultSgRefreshFunc(client *vpcv1.VpcV1, sgId string, groups []vpcv1.
 func securityGroupRuleHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-", m[isSecurityGroupRuleProtocol].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", m[isSecurityGroupRuleDirection].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", m[isSecurityGroupRuleRemote].(string)))
 	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRuleCode].(int)))
 	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRulePortMin].(int)))
 	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRulePortMax].(int)))
-	buf.WriteString(fmt.Sprintf("%s-", m[isSecurityGroupRuleProtocol].(string)))
 	return conns.String(buf.String())
 }
