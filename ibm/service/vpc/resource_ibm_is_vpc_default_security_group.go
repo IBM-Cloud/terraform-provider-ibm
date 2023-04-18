@@ -399,7 +399,7 @@ func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, 
 		}
 
 	}
-	parsed, sgTemplate, _, err := parseIBMISSecurityGroupRuleDictionary(d, "create", sess)
+	parsed, sgTemplate, _, err := parseIBMISDefaultSecurityGroupRuleDictionary(d, "create", sess)
 	if err != nil {
 		return err
 	}
@@ -740,4 +740,156 @@ func securityGroupRuleHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRulePortMin].(int)))
 	buf.WriteString(fmt.Sprintf("%d-", m[isSecurityGroupRulePortMax].(int)))
 	return conns.String(buf.String())
+}
+
+func parseIBMISDefaultSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, sess *vpcv1.VpcV1) (*parsedIBMISSecurityGroupRuleDictionary, *vpcv1.SecurityGroupRulePrototype, *vpcv1.UpdateSecurityGroupRuleOptions, error) {
+	parsed := &parsedIBMISSecurityGroupRuleDictionary{}
+	sgTemplate := &vpcv1.SecurityGroupRulePrototype{}
+	sgTemplateUpdate := &vpcv1.UpdateSecurityGroupRuleOptions{}
+	var err error
+	parsed.icmpType = -1
+	parsed.icmpCode = -1
+	parsed.portMin = -1
+	parsed.portMax = -1
+
+	parsed.secgrpID, parsed.ruleID, err = parseISTerraformID(d.Id())
+	if err != nil {
+		parsed.secgrpID = d.Get(isSecurityGroupID).(string)
+	} else {
+		sgTemplateUpdate.SecurityGroupID = &parsed.secgrpID
+		sgTemplateUpdate.ID = &parsed.ruleID
+	}
+
+	securityGroupRulePatchModel := &vpcv1.SecurityGroupRulePatch{}
+
+	parsed.direction = d.Get(isSecurityGroupRuleDirection).(string)
+	sgTemplate.Direction = &parsed.direction
+	securityGroupRulePatchModel.Direction = &parsed.direction
+
+	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
+		parsed.ipversion = version.(string)
+		sgTemplate.IPVersion = &parsed.ipversion
+		securityGroupRulePatchModel.IPVersion = &parsed.ipversion
+	} else {
+		parsed.ipversion = "IPv4"
+		sgTemplate.IPVersion = &parsed.ipversion
+		securityGroupRulePatchModel.IPVersion = &parsed.ipversion
+	}
+
+	parsed.remote = ""
+	if pr, ok := d.GetOk(isSecurityGroupRuleRemote); ok {
+		parsed.remote = pr.(string)
+	}
+	parsed.remoteAddress = ""
+	parsed.remoteCIDR = ""
+	parsed.remoteSecGrpID = ""
+	err = nil
+	if parsed.remote != "" {
+		parsed.remoteAddress, parsed.remoteCIDR, parsed.remoteSecGrpID, err = inferRemoteSecurityGroup(parsed.remote)
+		remoteTemplate := &vpcv1.SecurityGroupRuleRemotePrototype{}
+		remoteTemplateUpdate := &vpcv1.SecurityGroupRuleRemotePatch{}
+		if parsed.remoteAddress != "" {
+			remoteTemplate.Address = &parsed.remoteAddress
+			remoteTemplateUpdate.Address = &parsed.remoteAddress
+		} else if parsed.remoteCIDR != "" {
+			remoteTemplate.CIDRBlock = &parsed.remoteCIDR
+			remoteTemplateUpdate.CIDRBlock = &parsed.remoteCIDR
+		} else if parsed.remoteSecGrpID != "" {
+			remoteTemplate.ID = &parsed.remoteSecGrpID
+			remoteTemplateUpdate.ID = &parsed.remoteSecGrpID
+
+			// check if remote is actually a SG identifier
+			getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+				ID: &parsed.remoteSecGrpID,
+			}
+			sg, res, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+			if err != nil || sg == nil {
+				if res != nil && res.StatusCode == 404 {
+					return nil, nil, nil, err
+				}
+				return nil, nil, nil, fmt.Errorf("Error getting Security Group in remote (%s): %s\n%s", parsed.remoteSecGrpID, err, res)
+			}
+		}
+		sgTemplate.Remote = remoteTemplate
+		securityGroupRulePatchModel.Remote = remoteTemplateUpdate
+	}
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	parsed.protocol = "all"
+
+	if icmpInterface, ok := d.GetOk("icmp"); ok {
+		if icmpInterface.([]interface{})[0] != nil {
+			haveType := false
+			icmp := icmpInterface.([]interface{})[0].(map[string]interface{})
+			if value, ok := icmp["type"]; ok {
+				parsed.icmpType = int64(value.(int))
+				haveType = true
+			}
+			if value, ok := icmp["code"]; ok {
+				if !haveType {
+					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
+				}
+				parsed.icmpCode = int64(value.(int))
+			}
+		}
+		parsed.protocol = "icmp"
+		if icmpInterface.([]interface{})[0] == nil {
+			parsed.icmpType = 0
+			parsed.icmpCode = 0
+		} else {
+			sgTemplate.Type = &parsed.icmpType
+			sgTemplate.Code = &parsed.icmpCode
+		}
+		sgTemplate.Protocol = &parsed.protocol
+		securityGroupRulePatchModel.Type = &parsed.icmpType
+		securityGroupRulePatchModel.Code = &parsed.icmpCode
+	}
+	for _, prot := range []string{"tcp", "udp"} {
+		if tcpInterface, ok := d.GetOk(prot); ok {
+			if tcpInterface.([]interface{})[0] != nil {
+				haveMin := false
+				haveMax := false
+				ports := tcpInterface.([]interface{})[0].(map[string]interface{})
+				if value, ok := ports["port_min"]; ok {
+					parsed.portMin = int64(value.(int))
+					haveMin = true
+				}
+				if value, ok := ports["port_max"]; ok {
+					parsed.portMax = int64(value.(int))
+					haveMax = true
+				}
+
+				// If only min or max is set, ensure that both min and max are set to the same value
+				if haveMin && !haveMax {
+					parsed.portMax = parsed.portMin
+				}
+				if haveMax && !haveMin {
+					parsed.portMin = parsed.portMax
+				}
+			}
+			parsed.protocol = prot
+			sgTemplate.Protocol = &parsed.protocol
+			if tcpInterface.([]interface{})[0] == nil {
+				parsed.portMax = 65535
+				parsed.portMin = 1
+			}
+			sgTemplate.PortMax = &parsed.portMax
+			sgTemplate.PortMin = &parsed.portMin
+			securityGroupRulePatchModel.PortMax = &parsed.portMax
+			securityGroupRulePatchModel.PortMin = &parsed.portMin
+		}
+	}
+	if parsed.protocol == "all" {
+		sgTemplate.Protocol = &parsed.protocol
+	}
+	securityGroupRulePatch, err := securityGroupRulePatchModel.AsPatch()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupRulePatch: %s", err)
+	}
+	sgTemplateUpdate.SecurityGroupRulePatch = securityGroupRulePatch
+	//	log.Printf("[DEBUG] parse tag=%s\n\t%v  \n\t%v  \n\t%v  \n\t%v  \n\t%v \n\t%v \n\t%v \n\t%v  \n\t%v  \n\t%v  \n\t%v  \n\t%v ",
+	//		tag, parsed.secgrpID, parsed.ruleID, parsed.direction, parsed.ipversion, parsed.protocol, parsed.remoteAddress,
+	//		parsed.remoteCIDR, parsed.remoteSecGrpID, parsed.icmpType, parsed.icmpCode, parsed.portMin, parsed.portMax)
+	return parsed, sgTemplate, sgTemplateUpdate, nil
 }
