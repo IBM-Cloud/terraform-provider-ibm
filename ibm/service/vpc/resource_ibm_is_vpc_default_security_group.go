@@ -354,7 +354,7 @@ func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, 
 			portmax64 := int64(portmax)
 
 			protocol := rulex[isSecurityGroupRuleProtocol].(string)
-			protocol = strings.ToLower(direction)
+			protocol = strings.ToLower(protocol)
 
 			isSecurityGroupRuleKey := "security_group_rule_key_" + id
 			conns.IbmMutexKV.Lock(isSecurityGroupRuleKey)
@@ -374,11 +374,13 @@ func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, 
 					remoteTemplate.ID = &remote
 				}
 			}
-			sgTemplate.Type = &ruletype64
 			if direction != "" {
 				sgTemplate.Direction = &direction
 			}
-			sgTemplate.Code = &code64
+			if protocol == "icmp" {
+				sgTemplate.Type = &ruletype64
+				sgTemplate.Code = &code64
+			}
 			sgTemplate.PortMin = &portmin64
 			sgTemplate.PortMax = &portmax64
 			sgTemplate.Protocol = &protocol
