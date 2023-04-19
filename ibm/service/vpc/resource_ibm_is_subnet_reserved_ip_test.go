@@ -47,6 +47,51 @@ func TestAccIBMISSubnetReservedIPResource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISSubnetReservedIPResource_targetCrn(t *testing.T) {
+	var reservedIPID string
+	vpcName := fmt.Sprintf("tfresip-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tfresip-subnet-%d", acctest.RandIntRange(10, 100))
+	reservedIPName := fmt.Sprintf("tfresip-reservedip-%d", acctest.RandIntRange(10, 100))
+	reservedIPName2 := fmt.Sprintf("tfresip-reservedip-%d", acctest.RandIntRange(10, 100))
+	egateway := fmt.Sprintf("tfresip-egateway-%d", acctest.RandIntRange(10, 100))
+
+	terraformTag := "ibm_is_subnet_reserved_ip.resIP1"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckisSubnetReservedIPDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Tests create
+				Config: testAccCheckISSubnetReservedIPConfigTargetCrn(vpcName, subnetName, reservedIPName, egateway),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckISSubnetReservedIPExists(terraformTag, &reservedIPID),
+					resource.TestCheckResourceAttr(terraformTag, "name", reservedIPName),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target_crn"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_virtual_endpoint_gateway.example", "target.#"),
+				),
+			},
+			{
+				// Tests Update
+				Config: testAccCheckISSubnetReservedIPConfigTargetCrn(vpcName, subnetName, reservedIPName2, egateway),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckISSubnetReservedIPExists(terraformTag, &reservedIPID),
+					resource.TestCheckResourceAttr(terraformTag, "name", reservedIPName2),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target_crn"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_virtual_endpoint_gateway.example", "target.#"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISSubnetReservedIPResource_address(t *testing.T) {
 	var reservedIPID string
 	vpcName := fmt.Sprintf("tfresip-vpc-%d", acctest.RandIntRange(10, 100))
@@ -153,6 +198,35 @@ func testAccCheckISSubnetReservedIPConfigBasic(vpcName, subnetName, resIPName st
 		target = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
 	  }
 	`, vpcName, subnetName, resIPName)
+}
+func testAccCheckISSubnetReservedIPConfigTargetCrn(vpcName, subnetName, resIPName, egateway string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_vpc" "vpc1" {
+		name = "%s"
+	  }
+
+	  resource "ibm_is_subnet" "subnet1" {
+		name                     = "%s"
+		vpc                      = ibm_is_vpc.vpc1.id
+		zone                     = "us-south-1"
+		total_ipv4_address_count = 256
+	  }
+
+	  resource "ibm_is_virtual_endpoint_gateway" "example" {
+		name = "%s"
+		target {
+		  name          = "ibm-ntp-server"
+		  resource_type = "provider_infrastructure_service"
+		}
+		vpc = ibm_is_vpc.vpc1.id
+	  }
+
+	  resource "ibm_is_subnet_reserved_ip" "resIP1" {
+		subnet = ibm_is_subnet.subnet1.id
+		name = "%s"
+		target = ibm_is_virtual_endpoint_gateway.example.id
+	  }
+	`, vpcName, subnetName, egateway, resIPName)
 }
 func testAccCheckISSubnetReservedIPConfigAddress(vpcName, subnetName, resIPName string) string {
 	return fmt.Sprintf(`

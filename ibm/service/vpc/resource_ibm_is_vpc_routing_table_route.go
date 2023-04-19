@@ -109,19 +109,18 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"crn": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The VPN gateway's CRN.",
 						},
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"more_info": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Link to documentation about deleted resources.",
 									},
 								},
@@ -129,22 +128,22 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The VPN gateway's canonical URL.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The unique identifier for this VPN gateway.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The user-defined name for this VPN gateway.",
 						},
 						"resource_type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The resource type.",
 						},
 					},
@@ -311,9 +310,8 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 			return err
 		}
 		creator = append(creator, mm)
-
-		d.Set("creator", creator)
 	}
+	d.Set("creator", creator)
 	d.Set("priority", route.Priority)
 	return nil
 }

@@ -10,6 +10,14 @@ resource "ibm_code_engine_config_map" "code_engine_config_map_instance" {
   data       = var.code_engine_config_map_data
 }
 
+// Provision code_engine_secret resource instance
+resource "ibm_code_engine_secret" "code_engine_secret_instance" {
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+  name       = var.code_engine_secret_name
+  format     = var.code_engine_secret_format
+  data       = var.code_engine_secret_data
+}
+
 // Provision code_engine_app resource instance
 resource "ibm_code_engine_app" "code_engine_app_instance" {
   project_id      = ibm_code_engine_project.code_engine_project_instance.project_id
