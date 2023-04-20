@@ -2,7 +2,7 @@ package secretsmanager
 
 import (
 	"fmt"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"strconv"

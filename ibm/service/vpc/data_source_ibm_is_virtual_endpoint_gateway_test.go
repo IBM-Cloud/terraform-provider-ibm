@@ -41,3 +41,35 @@ func testAccCheckIBMISVirtualEndpointGatewayDataSourceConfig(vpcname1, subnetnam
         name = ibm_is_virtual_endpoint_gateway.endpoint_gateway.name
 	}`)
 }
+
+// service endpoints
+func TestAccIBMISVirtualEndpointGatewayDataSource_service_endpoints(t *testing.T) {
+	resName := "data.ibm_is_virtual_endpoint_gateway.data_test"
+	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname1 := fmt.Sprintf("tfvpngw-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpngw-createname-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckisVirtualEndpointGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVirtualEndpointGatewayDataSourceServiceEndpointsConfig(vpcname1, subnetname1, name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						resName, "name", name1),
+					resource.TestCheckResourceAttrSet(
+						resName, "service_endpoints.#"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISVirtualEndpointGatewayDataSourceServiceEndpointsConfig(vpcname1, subnetname1, name1 string) string {
+	// status filter defaults to empty
+	return testAccCheckisVirtualEndpointGatewayConfigServiceEndpoints(vpcname1, subnetname1, name1) + fmt.Sprintf(`
+	data "ibm_is_virtual_endpoint_gateway" "data_test" {
+        name = ibm_is_virtual_endpoint_gateway.endpoint_gateway.name
+	}`)
+}

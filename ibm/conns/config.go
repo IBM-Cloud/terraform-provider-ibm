@@ -117,8 +117,8 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv1"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv1"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 // RetryAPIDelay - retry api delay
