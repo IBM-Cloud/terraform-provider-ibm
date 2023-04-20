@@ -1,31 +1,28 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_ce'
+page_title: 'IBM : ibm_en_destination_cos'
 description: |-
-  Manages Event Notification Code Engine destinations.
+  Manages Event Notification IBM Cloud Object Storage destinations.
 ---
 
-# ibm_en_destination_ce
+# ibm_en_destination_cos
 
-Create, update, or delete a Code Engine destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a IBM Cloud Object Storage destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination_ce" "codeengine_en_destination" {
+resource "ibm_en_destination_cos" "cos_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Code engine Destination"
-  type          = "ibmce"
-  description   = "Code Engine destination for event notification"
+  name          = "COS Test Destination"
+  type          = "ibmcos"
+  description   = "IBM Cloud Object Storage Destination for event notification"
   config {
     params {
-      verb = "POST"
-      url  = "https://test.codetestcodeengine.com"
-      custom_headers = {
-        "authorization" = "authorization"
-      }
-      sensitive_headers = ["authorization"]
+      bucket_name     = "cos-test-bucket"
+      instance_id     = "1f7avhy78-3ehu-4d02-b123-8297333e0748399"
+      endpoint        = "https://s3.us-east.cloud-object-storage.appdomain.cloud"
     }
   }
 }
@@ -41,7 +38,7 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) ibmce.
+- `type` - (Required, String) ibmcos.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -51,16 +48,15 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `custom_headers` - (Optional, Map) Custom headers (Key-Value pair) for webhook call.
-  - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
-  - `url` - (Optional, String) URL of code engine project.
-  - `verb` - (Optional, String) HTTP method of code engine . Allowable values are: `GET`, `POST`.
+  - `bucket_name` - (Required, string) The bucket name in IBM cloud object storage instance.
+  - `instance_id` - (Required, string) The instance id for IBM Cloud object storage instance.
+  - `endpoint`   - (Required, string) The endpoint for bucket region.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `codeengine_en_destination`.
+- `id` - (String) The unique identifier of the `cos_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -69,7 +65,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination_ce` resource by using `id`.
+You can import the `ibm_en_destination_cos` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -84,5 +80,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination_ce.codeengine_en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_cos.cos_en_destination <instance_guid>/<destination_id>
 ```

@@ -6,7 +6,7 @@ description: |-
   Manages Event Notifications Firefox subscription.
 ---
 
-# ibm_en_subscription_android
+# ibm_en_subscription_firefox
 
 Create, update, or delete a Firefox subscription by using IBM Cloud™ Event Notifications.
 
@@ -15,8 +15,8 @@ Create, update, or delete a Firefox subscription by using IBM Cloud™ Event Not
 ```terraform
 resource "ibm_en_subscription_firefox" "firefox_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name             = "Android Subscription"
-  description      = "Android Subscription for Notification"
+  name             = "Firefox Subscription"
+  description      = "Firefox destination Subscription for Notification"
   destination_id   = ibm_en_destination_firefox.firefx_destination.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
 }
