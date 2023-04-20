@@ -59,4 +59,4 @@ Nested scheme for **profiles**:
 	* `updated_at` - (String) The time that the profile was most recently modified in UTC.
 	* `version` - (Integer) The version of the profile.
 	  * Constraints: The minimum value is `1`.
-
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_profiles is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

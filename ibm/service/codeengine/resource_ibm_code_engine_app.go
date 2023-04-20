@@ -45,7 +45,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "image_reference"),
-				Description:  "The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.",
+				Description:  "The name of the image that is used for this app. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
@@ -83,7 +83,6 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"run_as_user": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     0,
 				Description: "Optional user ID (UID) to run the app (e.g., `1001`).",
 			},
 			"run_commands": &schema.Schema{
@@ -230,12 +229,12 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date when the resource was created.",
+				Description: "The timestamp when the resource was created.",
 			},
 			"endpoint": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Optional URL to invoke app. Depending on visibility this is accessible publicly ot in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
+				Description: "Optional URL to invoke app. Depending on visibility this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
 			},
 			"endpoint_internal": &schema.Schema{
 				Type:        schema.TypeString,
@@ -515,7 +514,7 @@ func waitForIbmCodeEngineAppCreate(d *schema.ResourceData, meta interface{}) (in
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"deploying"},
-		Target:  []string{"ready"},
+		Target:  []string{"ready", "failed", "warning"},
 		Refresh: func() (interface{}, string, error) {
 			stateObj, response, err := codeEngineClient.GetApp(getAppOptions)
 			if err != nil {
@@ -524,15 +523,15 @@ func waitForIbmCodeEngineAppCreate(d *schema.ResourceData, meta interface{}) (in
 				}
 				return nil, "", err
 			}
-			failStates := map[string]bool{"failed": true, "warning": true}
+			failStates := map[string]bool{"failure": true, "failed": true}
 			if failStates[*stateObj.Status] {
 				return stateObj, *stateObj.Status, fmt.Errorf("The instance %s failed: %s\n%s", "getAppOptions", err, response)
 			}
 			return stateObj, *stateObj.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      20 * time.Second,
-		MinTimeout: 20 * time.Second,
+		Delay:      60 * time.Second,
+		MinTimeout: 60 * time.Second,
 	}
 
 	return stateConf.WaitForState()

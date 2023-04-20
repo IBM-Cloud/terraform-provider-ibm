@@ -42,13 +42,13 @@ data "ibm_cos_bucket_object" "object" {
 }
 ```
 
-## COS objectlock
+## COS Object Lock
 
 **Note:**
 
- COS bucket must have objectlock enabled.
+ COS bucket must have Object Lock enabled.
 
-ibm_cos_bucket_object objectlock:
+ibm_cos_bucket_object Object Lock:
 
 ```hcl
 resource "ibm_cos_bucket_object" "object" {

@@ -13,8 +13,6 @@ Provides a resource for ibm_cm_validation. This allows ibm_cm_validation to be c
 ## Example Usage
 
 ```hcl
-data "ibm_iam_auth_token" "tokendata" {}
-
 resource "ibm_cm_validation" "cm_version_validation" {
   version_locator = ibm_cm_version.my_cm_version_tf.version_locator
   revalidate_if_validated = false

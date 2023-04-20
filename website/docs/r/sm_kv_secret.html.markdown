@@ -34,7 +34,7 @@ Review the argument reference that you can specify for your resource.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
   * Constraints: Allowable values are: `private`, `public`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
-* `data` - (Optional, Forces new resource, Map) The payload data of a key-value secret.
+* `data` - (Optional, Map) The payload data of a key-value secret. You can manually rotate the secret by modifying this argument. Modifying the payload creates a new version of the secret.
   * Constraints: The minimum length is `1` item.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.

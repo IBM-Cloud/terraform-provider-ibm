@@ -29,6 +29,11 @@ data "ibm_is_lb_profiles" "example" {
 
 ```
 
+## Argument reference
+Review the argument references that you can specify for your data source. 
+ 
+- `name` - (Optional, String) The name of the load balancer profile. This will fetch only one profile if it exists with the `name` and profile can be accessed using `data.ibm_is_lb_profiles.profile.lb_profiles.0`
+
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
 

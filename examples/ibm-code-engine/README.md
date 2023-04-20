@@ -9,6 +9,7 @@ These types of resources are supported:
 * code_engine_build
 * code_engine_config_map
 * code_engine_job
+* code_engine_secret
 
 ## Usage
 
@@ -89,6 +90,17 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
 
 ```
 
+code_engine_secret resource:
+
+```hcl
+resource "code_engine_secret" "code_engine_secret_instance" {
+  project_id = var.code_engine_secret_project_id
+  format     = var.code_engine_secret_format
+  name       = var.code_engine_secret_name
+  data       = var.code_engine_secret_data
+}
+```
+
 ## CodeEngineV2 Data sources
 
 code_engine_project data source:
@@ -105,7 +117,6 @@ data "code_engine_project" "code_engine_project_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | project_id | The ID of the project. | `string` | true |
-| image_reference | The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`. | `string` | true |
 | name | The name of the resource. | `string` | true |
 | image_port | Optional port the app listens on. While the app will always be exposed via port `443` for end users, this port is used to connect to the port that is exposed by the container image. | `number` | false |
 | image_secret | Optional name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the app will be created but cannot reach the ready status, until this property is provided, too. | `string` | false |
@@ -158,6 +169,7 @@ data "code_engine_project" "code_engine_project_instance" {
 | resource_group_id | Optional ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used. | `string` | false |
 | project_id | The ID of the project. | `string` | true |
 | data | Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each value field can consists of any character and must not be exceed a max length of 1048576 characters. | `map(string)` | false |
+| format | Specify the format of the secret. | `string` | true |
 
 ## Outputs
 
@@ -168,3 +180,4 @@ data "code_engine_project" "code_engine_project_instance" {
 | code_engine_build | code_engine_build object |
 | code_engine_config_map | code_engine_config_map object |
 | code_engine_job | code_engine_job object |
+| code_engine_secret | code_engine_secret object |

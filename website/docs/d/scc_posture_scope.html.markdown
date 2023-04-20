@@ -259,3 +259,4 @@ Nested scheme for **tld_credentail**:
 
 * `uuid` - (Optional, String) Stores the value of scope_uuid .Will be displayed only when value exists.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_scope is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

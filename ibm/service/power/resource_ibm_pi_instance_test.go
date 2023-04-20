@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -48,7 +49,7 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 		pi_instance_name      = "%[2]s"
 		pi_proc_type          = "shared"
 		pi_image_id           = data.ibm_pi_image.power_image.id
-		pi_key_pair_name      = ibm_pi_key.key.key_id
+		pi_key_pair_name      = ibm_pi_key.key.name
 		pi_sys_type           = "s922"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
@@ -409,4 +410,177 @@ func testAccIBMPIInstanceMixedStorage(name string) string {
 		pi_instance_id       = ibm_pi_instance.instance.instance_id
 	}
 	`, acc.Pi_cloud_instance_id, name)
+}
+
+func TestAccIBMPIInstanceUpdateActiveState(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIActiveInstanceConfigUpdate(name, helpers.PIInstanceHealthOk, "0.25", "2"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "status", "ACTIVE"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIActiveInstanceConfigUpdate(name, helpers.PIInstanceHealthOk, "0.5", "4"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceStatus(instanceRes, "ACTIVE"),
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMPIInstanceUpdateStoppedState(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIStoppedInstanceConfigUpdate(name, helpers.PIInstanceHealthOk, "0.25", "2", "stop"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIStoppedInstanceConfigUpdate(name, helpers.PIInstanceHealthOk, "0.5", "4", "stop"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceStatus(instanceRes, "SHUTOFF"),
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIActiveInstanceConfigUpdate(name, instanceHealthStatus, proc, memory string) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_image_name        = "%[3]s"
+		pi_cloud_instance_id = "%[1]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_volume_size       = 20
+		pi_volume_name       = "%[2]s"
+		pi_volume_shareable  = true
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_cloud_instance_id = "%[1]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_memory            = "%[7]s"
+		pi_processors        = "%[6]s"
+		pi_instance_name     = "%[2]s"
+		pi_proc_type         = "shared"
+		pi_image_id          = data.ibm_pi_image.power_image.id
+		pi_sys_type          = "s922"
+		pi_cloud_instance_id = "%[1]s"
+		pi_storage_pool      = data.ibm_pi_image.power_image.storage_pool
+		pi_pin_policy        = "none"
+		pi_health_status     = "%[5]s"
+		pi_volume_ids        = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory)
+}
+
+func testAccCheckIBMPIStoppedInstanceConfigUpdate(name, instanceHealthStatus, proc, memory, action string) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_image_name        = "%[3]s"
+		pi_cloud_instance_id = "%[1]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_volume_size       = 20
+		pi_volume_name       = "%[2]s"
+		pi_volume_shareable  = true
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_cloud_instance_id = "%[1]s"
+	}	  
+	resource "ibm_pi_instance" "power_instance" {
+		pi_memory             = "%[7]s"
+		pi_processors         = "%[6]s"
+		pi_instance_name      = "%[2]s"
+		pi_proc_type          = "shared"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_sys_type           = "s922"
+		pi_cloud_instance_id  = "%[1]s"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool		
+		pi_pin_policy         = "none"
+		pi_health_status      = "%[5]s"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	resource "ibm_pi_instance_action" "example" {
+  		pi_cloud_instance_id = "%[1]s"
+  		pi_instance_id       = ibm_pi_instance.power_instance.instance_id
+  		pi_action            = "%[8]s"
+  		pi_health_status     = "%[5]s"
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory, action)
+}
+
+func testAccCheckIBMPIInstanceStatus(n, status string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+		if rs.Primary.ID == "" {
+			return errors.New("No Record ID is set")
+		}
+
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
+		if err != nil {
+			return err
+		}
+
+		cloudInstanceID, instanceID, err := splitID(rs.Primary.ID)
+		if err == nil {
+			return err
+		}
+		client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
+
+		instance, err := client.Get(instanceID)
+		if err != nil {
+			return err
+		}
+
+		for {
+			if instance.Status != &status {
+				time.Sleep(2 * time.Minute)
+			} else {
+				break
+			}
+		}
+
+		return nil
+	}
 }

@@ -40,6 +40,7 @@ const (
 	isVirtualEndpointGatewayVpcID              = "vpc"
 	isVirtualEndpointGatewayTags               = "tags"
 	isVirtualEndpointGatewaySecurityGroups     = "security_groups"
+	isVirtualEndpointGatewayServiceEndpoints   = "service_endpoints"
 	isVirtualEndpointGatewayAccessTags         = "access_tags"
 )
 
@@ -101,6 +102,14 @@ func ResourceIBMISEndpointGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Endpoint gateway created date and time",
+			},
+			isVirtualEndpointGatewayServiceEndpoints: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "The fully qualified domain names for the target service. A fully qualified domain name for the target service",
 			},
 			isVirtualEndpointGatewayHealthState: {
 				Type:        schema.TypeString,
@@ -482,6 +491,9 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	d.Set(isVirtualEndpointGatewayResourceGroupID, endpointGateway.ResourceGroup.ID)
 	d.Set(isVirtualEndpointGatewayTarget,
 		flattenEndpointGatewayTarget(endpointGateway.Target.(*vpcv1.EndpointGatewayTarget)))
+	if len(endpointGateway.ServiceEndpoints) > 0 {
+		d.Set(isVirtualEndpointGatewayServiceEndpoints, endpointGateway.ServiceEndpoints)
+	}
 	d.Set(isVirtualEndpointGatewayVpcID, endpointGateway.VPC.ID)
 	if endpointGateway.SecurityGroups != nil {
 		d.Set(isVirtualEndpointGatewaySecurityGroups, flattenDataSourceSecurityGroups(endpointGateway.SecurityGroups))

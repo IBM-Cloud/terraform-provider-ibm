@@ -41,7 +41,7 @@ Review the argument reference that you can specify for your resource.
 * `name` - (Required, String) The human-readable name of your secret.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
 * `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
-* `payload` - (Required, Forces new resource, String) The arbitrary secret's data payload.
+* `payload` - (Required, String) The arbitrary secret's data payload. You can manually rotate the secret by modifying this argument. Modifying the payload creates a new version of the secret.
   * Constraints: The maximum length is `100000` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
