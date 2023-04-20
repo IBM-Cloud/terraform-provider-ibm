@@ -44,7 +44,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-vpc"
   image   = "a7a0626c-f97e-4180-afbe-0331ec62f32a"
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.example.id

@@ -75,6 +75,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `creator` - (Optional, List) If present, the resource that created the route. Routes with this property present cannot bedirectly deleted. All routes with an `origin` of `learned` or `service` will have thisproperty set, and future `origin` values may also have this property set.
+
   Nested scheme for **creator**:
     - `crn` - (Optional, String) The VPN gateway's CRN.
       - Constraints: The maximum length is `512` characters. The minimum length is `9` characters.

@@ -72,13 +72,15 @@ Review the attribute references that you can access after you retrieve your data
   - `memory` - (Integer) The amount of memory, truncated to whole gibibytes
   - `name` - (String) The name of the bare metal server.
   - `network_interfaces` - (List) A nested block describing the additional network interface of this instance.
-    Nested scheme for `network_interfaces`:
+
+      Nested scheme for `network_interfaces`:
       - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
       - `href` - (String) The href of the network interface.
       - `id` - (String) The id of the network interface.
       - `name` - (String) The name of the network interface.
       - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
-        Nested scheme for `primary_ip`:
+
+          Nested scheme for `primary_ip`:
           - `address` - (String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
           - `href`- (String) The URL for this reserved IP
           - `reserved_ip`- (String) The unique identifier for this reserved IP
@@ -88,13 +90,15 @@ Review the attribute references that you can access after you retrieve your data
       - `security_groups` -  (Array) List of security groups.
       - `subnet` -  (String) ID of the subnet.
   - `primary_network_interface` - (List) A nested block describing the primary network interface of this bare metal server.
-    Nested scheme for `primary_network_interface`:
+
+      Nested scheme for `primary_network_interface`:
       - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
       - `href` - (String) The href of the network interface.
       - `id` - (String) The id of the network interface.
       - `name` - (String) The name of the network interface.
       - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
-        Nested scheme for `primary_ip`:
+
+          Nested scheme for `primary_ip`:
           - `address` - (String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
           - `href`- (String) The URL for this reserved IP
           - `reserved_ip`- (String) The unique identifier for this reserved IP
@@ -106,7 +110,17 @@ Review the attribute references that you can access after you retrieve your data
   - `profile` - (String) The name for this bare metal server profile
   - `resource_group` - (String) resource group id of the bare metal server.
   - `resource_type` - (String) The type of resource referenced
-  - `status` - (String) The status of the bare metal server [ **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, **stopping** ]
+  - `status` - (String) The status of the bare metal server.
+
+      ->**Supported Status:** 
+        </br>&#x2022; failed 
+        </br>&#x2022; pending
+        </br>&#x2022; restarting
+        </br>&#x2022; running
+        </br>&#x2022; starting
+        </br>&#x2022; stopped
+        </br>&#x2022; stopping
+
   - `status_reasons` - (List) Array of reasons for the current status (if any).  
     Nested scheme for `status_reasons`:
       - `code` - (String) The status reason code

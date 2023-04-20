@@ -23,10 +23,6 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "example" {
-  name = "example-vpc"
-}
-
 data "ibm_is_vpcs" "example" {
 }
 
@@ -41,6 +37,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
 - `vpcs` (List) List of all the VPCs.
+
   Nested scheme for `vpcs`:
     - `access_tags`  - (List) Access management tags associated for the volume.
     - `available_ipv4_address_count`- (Integer) The number of IPv4 addresses in the subnet that are available for you to be used.
