@@ -148,6 +148,16 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		  type = 30
 		}
 	  }
+
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp_code_any" {
+		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_icmp]
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		icmp {
+		  type = 30
+		}
+	  }
 	  
 	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
 		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_icmp]
