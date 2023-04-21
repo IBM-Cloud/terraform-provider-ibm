@@ -16,7 +16,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/certificatemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/classicinfrastructure"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudant"
@@ -256,8 +255,6 @@ func Provider() *schema.Provider {
 			"ibm_function_rule":                     functions.DataSourceIBMFunctionRule(),
 			"ibm_function_trigger":                  functions.DataSourceIBMFunctionTrigger(),
 			"ibm_function_namespace":                functions.DataSourceIBMFunctionNamespace(),
-			"ibm_certificate_manager_certificates":  certificatemanager.DataIBMCertificateManagerCertificates(),
-			"ibm_certificate_manager_certificate":   certificatemanager.DataIBMCertificateManagerCertificate(),
 			"ibm_cis":                               cis.DataSourceIBMCISInstance(),
 			"ibm_cis_dns_records":                   cis.DataSourceIBMCISDNSRecords(),
 			"ibm_cis_certificates":                  cis.DataSourceIBMCISCertificates(),
@@ -305,6 +302,7 @@ func Provider() *schema.Provider {
 			"ibm_container_addons":                  kubernetes.DataSourceIBMContainerAddOns(),
 			"ibm_container_alb":                     kubernetes.DataSourceIBMContainerALB(),
 			"ibm_container_alb_cert":                kubernetes.DataSourceIBMContainerALBCert(),
+			"ibm_container_ingress_instance":        kubernetes.DataSourceIBMContainerIngressInstance(),
 			"ibm_container_bind_service":            kubernetes.DataSourceIBMContainerBindService(),
 			"ibm_container_cluster":                 kubernetes.DataSourceIBMContainerCluster(),
 			"ibm_container_cluster_config":          kubernetes.DataSourceIBMContainerClusterConfig(),
@@ -443,6 +441,7 @@ func Provider() *schema.Provider {
 			"ibm_is_lb_pools":                        vpc.DataSourceIBMISLBPools(),
 			"ibm_is_lb_pool_member":                  vpc.DataSourceIBMIBLBPoolMember(),
 			"ibm_is_lb_pool_members":                 vpc.DataSourceIBMISLBPoolMembers(),
+			"ibm_is_lb_profile":                      vpc.DataSourceIBMISLbProfile(),
 			"ibm_is_lb_profiles":                     vpc.DataSourceIBMISLbProfiles(),
 			"ibm_is_lbs":                             vpc.DataSourceIBMISLBS(),
 			"ibm_is_public_gateway":                  vpc.DataSourceIBMISPublicGateway(),
@@ -611,17 +610,21 @@ func Provider() *schema.Provider {
 
 			// // Added for Direct Link
 
-			"ibm_dl_gateways":          directlink.DataSourceIBMDLGateways(),
-			"ibm_dl_offering_speeds":   directlink.DataSourceIBMDLOfferingSpeeds(),
-			"ibm_dl_port":              directlink.DataSourceIBMDirectLinkPort(),
-			"ibm_dl_ports":             directlink.DataSourceIBMDirectLinkPorts(),
-			"ibm_dl_gateway":           directlink.DataSourceIBMDLGateway(),
-			"ibm_dl_locations":         directlink.DataSourceIBMDLLocations(),
-			"ibm_dl_routers":           directlink.DataSourceIBMDLRouters(),
-			"ibm_dl_provider_ports":    directlink.DataSourceIBMDirectLinkProviderPorts(),
-			"ibm_dl_provider_gateways": directlink.DataSourceIBMDirectLinkProviderGateways(),
-			"ibm_dl_route_reports":     directlink.DataSourceIBMDLRouteReports(),
-			"ibm_dl_route_report":      directlink.DataSourceIBMDLRouteReport(),
+			"ibm_dl_gateways":             directlink.DataSourceIBMDLGateways(),
+			"ibm_dl_offering_speeds":      directlink.DataSourceIBMDLOfferingSpeeds(),
+			"ibm_dl_port":                 directlink.DataSourceIBMDirectLinkPort(),
+			"ibm_dl_ports":                directlink.DataSourceIBMDirectLinkPorts(),
+			"ibm_dl_gateway":              directlink.DataSourceIBMDLGateway(),
+			"ibm_dl_locations":            directlink.DataSourceIBMDLLocations(),
+			"ibm_dl_routers":              directlink.DataSourceIBMDLRouters(),
+			"ibm_dl_provider_ports":       directlink.DataSourceIBMDirectLinkProviderPorts(),
+			"ibm_dl_provider_gateways":    directlink.DataSourceIBMDirectLinkProviderGateways(),
+			"ibm_dl_route_reports":        directlink.DataSourceIBMDLRouteReports(),
+			"ibm_dl_route_report":         directlink.DataSourceIBMDLRouteReport(),
+			"ibm_dl_export_route_filters": directlink.DataSourceIBMDLExportRouteFilters(),
+			"ibm_dl_export_route_filter":  directlink.DataSourceIBMDLExportRouteFilter(),
+			"ibm_dl_import_route_filters": directlink.DataSourceIBMDLImportRouteFilters(),
+			"ibm_dl_import_route_filter":  directlink.DataSourceIBMDLImportRouteFilter(),
 
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                   transitgateway.DataSourceIBMTransitGateway(),
@@ -751,6 +754,10 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_pagerduty": eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.DataSourceIBMEnIntegration(),
 			"ibm_en_integrations":           eventnotification.DataSourceIBMEnIntegrations(),
+			"ibm_en_destination_sn":         eventnotification.DataSourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":         eventnotification.DataSourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":        eventnotification.DataSourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -775,6 +782,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
 			"ibm_cd_toolchain_tool_jira":               cdtoolchain.DataSourceIBMCdToolchainToolJira(),
+			"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.DataSourceIBMCdToolchainToolEventnotifications(),
 
 			// Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMCdTektonPipelineDefinition(),
@@ -830,8 +838,6 @@ func Provider() *schema.Provider {
 			"ibm_function_namespace":                    functions.ResourceIBMFunctionNamespace(),
 			"ibm_cis":                                   cis.ResourceIBMCISInstance(),
 			"ibm_database":                              database.ResourceIBMDatabaseInstance(),
-			"ibm_certificate_manager_import":            certificatemanager.ResourceIBMCertificateManagerImport(),
-			"ibm_certificate_manager_order":             certificatemanager.ResourceIBMCertificateManagerOrder(),
 			"ibm_cis_domain":                            cis.ResourceIBMCISDomain(),
 			"ibm_cis_domain_settings":                   cis.ResourceIBMCISSettings(),
 			"ibm_cis_firewall":                          cis.ResourceIBMCISFirewallRecord(),
@@ -887,6 +893,7 @@ func Provider() *schema.Provider {
 			"ibm_container_vpc_worker":                  kubernetes.ResourceIBMContainerVpcWorker(),
 			"ibm_container_vpc_cluster":                 kubernetes.ResourceIBMContainerVpcCluster(),
 			"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCert(),
+			"ibm_container_ingress_instance":            kubernetes.ResourceIBMContainerIngressInstance(),
 			"ibm_container_cluster":                     kubernetes.ResourceIBMContainerCluster(),
 			"ibm_container_cluster_feature":             kubernetes.ResourceIBMContainerClusterFeature(),
 			"ibm_container_bind_service":                kubernetes.ResourceIBMContainerBindService(),
@@ -999,7 +1006,6 @@ func Provider() *schema.Provider {
 			"ibm_is_vpn_gateway_connection":                 vpc.ResourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpc":                                    vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                     vpc.ResourceIBMISVpcAddressPrefix(),
-			"ibm_is_vpc_route":                              vpc.ResourceIBMISVpcRoute(),
 			"ibm_is_vpc_routing_table":                      vpc.ResourceIBMISVPCRoutingTable(),
 			"ibm_is_vpc_routing_table_route":                vpc.ResourceIBMISVPCRoutingTableRoute(),
 			"ibm_is_vpn_server":                             vpc.ResourceIBMIsVPNServer(),
@@ -1103,6 +1109,8 @@ func Provider() *schema.Provider {
 			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
 			"ibm_dl_route_report":       directlink.ResourceIBMDLGatewayRouteReport(),
+			"ibm_dl_gateway_action":     directlink.ResourceIBMDLGatewayAction(),
+
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnection(),
@@ -1210,6 +1218,10 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_pagerduty":  eventnotification.ResourceIBMEnPagerDutyDestination(),
 			"ibm_en_subscription_pagerduty": eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.ResourceIBMEnIntegration(),
+			"ibm_en_destination_sn":         eventnotification.ResourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":         eventnotification.ResourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":        eventnotification.ResourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1234,6 +1246,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
 			"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJira(),
+			"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.ResourceIBMCdToolchainToolEventnotifications(),
 
 			// // Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinition(),
@@ -1248,8 +1261,9 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
-
-			// Added for Project
+      "ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
+      
+      // Added for Project
 			"ibm_project_instance": project.ResourceIbmProjectInstance(),
 		},
 
@@ -1317,6 +1331,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_dl_virtual_connection":       directlink.ResourceIBMDLGatewayVCValidator(),
 				"ibm_dl_gateway":                  directlink.ResourceIBMDLGatewayValidator(),
 				"ibm_dl_provider_gateway":         directlink.ResourceIBMDLProviderGatewayValidator(),
+				"ibm_dl_gateway_action":           directlink.ResourceIBMDLGatewayActionValidator(),
 				"ibm_database":                    database.ResourceIBMICDValidator(),
 				"ibm_function_package":            functions.ResourceIBMFuncPackageValidator(),
 				"ibm_function_action":             functions.ResourceIBMFuncActionValidator(),
@@ -1378,7 +1393,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_subnet_reserved_ip":                vpc.ResourceIBMISSubnetReservedIPValidator(),
 				"ibm_is_volume":                            vpc.ResourceIBMISVolumeValidator(),
 				"ibm_is_address_prefix":                    vpc.ResourceIBMISAddressPrefixValidator(),
-				"ibm_is_route":                             vpc.ResourceIBMISRouteValidator(),
 				"ibm_is_vpc":                               vpc.ResourceIBMISVPCValidator(),
 				"ibm_is_vpc_routing_table":                 vpc.ResourceIBMISVPCRoutingTableValidator(),
 				"ibm_is_vpc_routing_table_route":           vpc.ResourceIBMISVPCRoutingTableRouteValidator(),
@@ -1441,6 +1455,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),
 				"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabsValidator(),
 				"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJiraValidator(),
+				"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.ResourceIBMCdToolchainToolEventnotificationsValidator(),
 
 				// // Added for Tekton Pipeline
 				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinitionValidator(),
@@ -1456,6 +1471,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_worker_pool_zone_attachment": kubernetes.ResourceIBMContainerWorkerPoolZoneAttachmentValidator(),
 				"ibm_container_bind_service":                kubernetes.ResourceIBMContainerBindServiceValidator(),
 				"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCertValidator(),
+				"ibm_container_ingress_instance":            kubernetes.ResourceIBMContainerIngressInstanceValidator(),
 				"ibm_container_cluster_feature":             kubernetes.ResourceIBMContainerClusterFeatureValidator(),
 
 				"ibm_iam_access_group_dynamic_rule": iamaccessgroup.ResourceIBMIAMDynamicRuleValidator(),
@@ -1482,8 +1498,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
 				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
-
-				// Added for Project
+        "ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
+        
+        // Added for Project
 				"ibm_project_instance": project.ResourceIbmProjectInstanceValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
@@ -1550,6 +1567,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_vpc_cluster_worker":      kubernetes.DataSourceIBMContainerVPCClusterWorkerValidator(),
 				"ibm_container_vpc_cluster":             kubernetes.DataSourceIBMContainerVPCClusterValidator(),
 				"ibm_container_alb_cert":                kubernetes.DataSourceIBMContainerALBCertValidator(),
+				"ibm_container_ingress_instance":        kubernetes.DataSourceIBMContainerIngressInstanceValidator(),
 				"ibm_iam_access_group":                  iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
 
 				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIAMServiceIDValidator(),

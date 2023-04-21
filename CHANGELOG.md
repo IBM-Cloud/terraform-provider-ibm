@@ -1,3 +1,80 @@
+# 1.53.0-beta0(Apr 20, 2023)
+Deprecation
+* Added V1 deprecation message for SCC Posture resources and datasources ([4459](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4459))
+* Added V1 deprecation message for secret manager datasources ([4523](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4523))
+
+Removed
+* The IBM Cloud Certificate Manager service ([4449](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4449))
+* Remove resource - is_vpc_route ([4496](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4496))
+
+Features
+* Support Direct Link Gateway
+    - **Resources**
+        - ibm_dl_gateway_action
+    - **datasources**
+        - ibm_dl_export_route_filters
+		- ibm_dl_export_route_filter
+		- ibm_dl_import_route_filters
+		- ibm_dl_import_route_filter
+    
+* Support Kubernetes
+    - **Resources**
+        - ibm_container_ingress_instance
+    - **datasources**
+        - ibm_container_ingress_instance
+
+* Support Event Notification
+    - **Resources**
+        - ibm_en_destination_sn
+		- ibm_en_subscription_sn
+		- ibm_en_destination_ce
+		- ibm_en_subscription_ce
+    - **datasources**
+        - ibm_en_destination_sn
+		- ibm_en_subscription_sn
+		- ibm_en_destination_ce
+		- ibm_en_subscription_ce
+* Support Continous Delivery
+    - **Resources**
+        - ibm_cd_toolchain_tool_eventnotifications
+    - **datasources**
+        - ibm_cd_toolchain_tool_eventnotifications
+* Support VPC
+    - **datasources**
+        - ibm_is_lb_profile
+* Support Code Engine
+    - **Resources**
+        - ibm_code_engine_secret
+    - **datasources**
+        - ibm_code_engine_secret
+
+Enhancements
+* Update sm_iam_credentials_secret.html.markdown doc ([4468](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4459))
+* Adding new resources to support BGP Route Filters in direct link gateway ([4294](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4294))
+* Support optional service_group_id param support to policies and roles API ([4455](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4455))
+* Add sample Elasticsearch enterprise instance for Docs ([4497](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4497))
+* Adding some changes to the object lock documentation ([4486](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4486))
+* Support new attributes for secrets manager configuration datasource ([4449](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4449))
+* Test cases for IBM PI Instance Update Flow ([4477](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4477))
+* Support priority argument for VPC route resource and datasource ([4435](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4435))
+* Private DNS support for load balancers ([4463](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4463))
+* VSI from existing boot volume ([4433](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4433))
+* Support service_endpoints for VPC Virtual Endpoint Gateway resource and datasource ([4514](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4514))
+* Support optional attributes and attributes for CD toolchain security compliance resource and datasource ([4525](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4525))
+* Support encryption_key attribute in VPC snapshot resource and datasource ([4519](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4519))
+* Support network_interface_count attribute for VPC Instance profile datasources ([4527](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4527))
+
+Bugfixes
+* VPC load balancer listener idle connection timeout fix ([4482](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4482))
+* KMS Instance Policies not setting key_create_import_access values correctly ([4340](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4340))
+* Moving an attached public gateway to another resource group fails during apply ([4503](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4503))
+* don't throw exception for list TP datsource when there is no TP in the account ([4473](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4473))
+* fix(image) : added length check for volume attachments ([4512](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4512))
+* support for target crn attribute for VPC subnet reserved resource and datasource ([4513](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4513))
+* Support name argument to filter VPC load balancer resource ([4516](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4516))
+* fix changes shown on creator attribute for VPC Routing table resource ([4518](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4518))
+* ibm_is_bare_metal_server: change to security groups does not trigger change ([4504](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4504))
+* [ibm_sm_arbitrary_secret] Allow updating of existing certificate ([4465](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4465))
 # 1.52.0(Apr 05, 2023)
 Features
 * Support for Transist Gateway

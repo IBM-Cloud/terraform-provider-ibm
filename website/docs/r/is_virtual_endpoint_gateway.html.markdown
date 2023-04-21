@@ -133,6 +133,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `lifecycle_state` - (String) The lifecycle state of the endpoint gateway.
 - `resource_type` - (String) The endpoint gateway resource type.
+- `service_endpoints`- (Array of Strings) The fully qualified domain names for the target service. A fully qualified domain name for the target service
 
 ## Import
 The `ibm_is_virtual_endpoint_gateway` resource can be imported by using virtual endpoint gateway ID.

@@ -458,6 +458,53 @@ resource "ibm_database" "edb" {
   }
 }
 ```
+
+### Sample Elasticsearch Enterprise instance
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "es" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "es-enterprise"
+  service                      = "databases-for-elasticsearch"
+  plan                         = "enterprise"
+  location                     = "eu-gb"
+  adminpassword                = "password12"
+  version                      = "7.17"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    memory {
+      allocation_mb = 1024
+    }
+    disk {
+      allocation_mb = 5120
+    }
+    cpu {
+      allocation_count = 3
+    }
+  }
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  allowlist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
 ### Updating configuration for postgres database
 
 ```terraform

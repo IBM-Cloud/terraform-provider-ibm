@@ -3,7 +3,6 @@ API Gateway
 App ID Management
 App Configuration
 Catalog Management
-Certificate Manager
 Classic infrastructure
 Cloud Database
 Cloud Foundry
