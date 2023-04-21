@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_metrics_router_target"
 description: |-
   Manages metrics_router_target.
-subcategory: "Metrics Router"
+subcategory: "Metrics Routing API Version 3"
 ---
 
 # ibm_metrics_router_target
@@ -25,28 +25,22 @@ resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 Review the argument reference that you can specify for your resource.
 
 * `destination_crn` - (Required, String) The CRN of a destination service instance or resource.
-  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-._:\/]+$/`.
 * `name` - (Required, String) The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names.
-  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 \\-._:]+$/`.
 * `region` - (Optional, String) Include this optional field if you want to create a target in a different region other than the one you are connected.
-  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-._:]+$/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the metrics_router_target.
-* `api_version` - (Integer) The API version of the target.
 * `created_at` - (String) The timestamp of the target creation time.
 * `crn` - (String) The crn of the target resource.
 * `target_type` - (String) The type of the target.
   * Constraints: Allowable values are: `sysdig_monitor`.
 * `updated_at` - (String) The timestamp of the target last updated time.
-* `write_status` - (List) The status of the write attempt to the target with the provided destination info.
-Nested scheme for **write_status**:
-	* `last_failure` - (String) The timestamp of the failure.
-	* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
-	* `status` - (String) The status such as failed or success.
 
 ## Provider Configuration
 

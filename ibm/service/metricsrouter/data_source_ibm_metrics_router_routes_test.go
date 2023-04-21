@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter_test
@@ -20,7 +20,7 @@ func TestAccIBMMetricsRouterRoutesDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMMetricsRouterRoutesDataSourceConfigBasic(routeName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_metrics_router_routes.metrics_router_routes_instance", "id"),
@@ -28,7 +28,7 @@ func TestAccIBMMetricsRouterRoutesDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_metrics_router_routes.metrics_router_routes_instance", "routes.0.name", routeName),
 					resource.TestCheckResourceAttr("data.ibm_metrics_router_routes.metrics_router_routes_instance", "routes.0.rules.0.inclusion_filters.0.operand", "location"),
 					resource.TestCheckResourceAttr("data.ibm_metrics_router_routes.metrics_router_routes_instance", "routes.0.rules.0.inclusion_filters.0.operator", "is"),
-					resource.TestCheckResourceAttr("data.ibm_metrics_router_routes.metrics_router_routes_instance", "routes.0.rules.0.inclusion_filters.0.value.0", "value"),
+					resource.TestCheckResourceAttr("data.ibm_metrics_router_routes.metrics_router_routes_instance", "routes.0.rules.0.inclusion_filters.0.values.0", "us-south"),
 				),
 			},
 		},
@@ -45,11 +45,14 @@ func testAccCheckIBMMetricsRouterRoutesDataSourceConfigBasic(routeName string) s
 		resource "ibm_metrics_router_route" "metrics_router_route_instance" {
 			name = "%s"
 			rules {
-				target_ids = [ ibm_metrics_router_target.metrics_router_target_instance.id ]
+				action = "send"
+				targets {
+					id = ibm_metrics_router_target.metrics_router_target_instance.id
+				}
 				inclusion_filters {
 					operand = "location"
 					operator = "is"
-					value = [ "value" ]
+					values = [ "us-south" ]
 				}
 			}
 		}

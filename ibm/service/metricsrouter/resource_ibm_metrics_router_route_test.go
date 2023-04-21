@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter_test
@@ -21,33 +21,33 @@ func TestAccIBMMetricsRouterRouteBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	filterValue := "value"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	updatedFilterValue := "value"
+	updatedFilterValue := "value1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMMetricsRouterRouteDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMMetricsRouterRouteConfigBasic(name, filterValue),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMMetricsRouterRouteExists("ibm_metrics_router_route.metrics_router_route_instance", conf),
 					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.operand", "location"),
 					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.operator", "is"),
-					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.value.0", filterValue),
+					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.values.0", filterValue),
 				),
 			},
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMMetricsRouterRouteConfigBasic(nameUpdate, updatedFilterValue),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.operand", "location"),
 					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.operator", "is"),
-					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.value.0", updatedFilterValue),
+					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.values.0", updatedFilterValue),
 				),
 			},
-			{
+			resource.TestStep{
 				ResourceName:      "ibm_metrics_router_route.metrics_router_route_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -60,17 +60,20 @@ func testAccCheckIBMMetricsRouterRouteConfigBasic(name, filter_value string) str
 	return fmt.Sprintf(`
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
-			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 		}
 
 		resource "ibm_metrics_router_route" "metrics_router_route_instance" {
 			name = "%s"
 			rules {
-				target_ids = [ ibm_metrics_router_target.metrics_router_target_instance.id ]
+				action = "send"
+				targets {
+					id = ibm_metrics_router_target.metrics_router_target_instance.id
+				}
 				inclusion_filters {
 					operand = "location"
 					operator = "is"
-					value = [ "%s" ]
+					values = [ "%s" ]
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter
@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
 )
 
@@ -26,22 +26,19 @@ func ResourceIBMMetricsRouterSettings() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"metadata_region_primary": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_metrics_router_settings", "metadata_region_primary"),
-				Description:  "To store all your meta data in a single region.",
-			},
-			"private_api_endpoint_only": &schema.Schema{
-				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "If you set this true then you cannot access api through public network.",
-			},
 			"default_targets": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The target ID List. In the event that no routing rule causes the metrics to be sent to a target, these targets will receive the metrics.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "A list of default target references.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The target uuid for a pre-defined metrics router target.",
+						},
+					},
+				},
 			},
 			"permitted_target_regions": &schema.Schema{
 				Type:        schema.TypeList,
@@ -49,10 +46,22 @@ func ResourceIBMMetricsRouterSettings() *schema.Resource {
 				Description: "If present then only these regions may be used to define a target.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"api_version": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The lowest API version of targets or routes that customer might have under his or her account.",
+			"primary_metadata_region": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_metrics_router_settings", "primary_metadata_region"),
+				Description:  "To store all your meta data in a single region.",
+			},
+			"backup_metadata_region": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_metrics_router_settings", "backup_metadata_region"),
+				Description:  "To backup all your meta data in a different region.",
+			},
+			"private_api_endpoint_only": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If you set this true then you cannot access api through public network.",
 			},
 		},
 	}
@@ -62,11 +71,20 @@ func ResourceIBMMetricsRouterSettingsValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "metadata_region_primary",
+			Identifier:                 "primary_metadata_region",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9 -_]`,
+			Optional:                   true,
+			Regexp:                     `^[a-zA-Z0-9 \-_]+$`,
+			MinValueLength:             3,
+			MaxValueLength:             256,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "backup_metadata_region",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[a-zA-Z0-9 \-_]+$`,
 			MinValueLength:             3,
 			MaxValueLength:             256,
 		},
@@ -82,24 +100,41 @@ func resourceIBMMetricsRouterSettingsCreate(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	replaceSettingsOptions := &metricsrouterv3.ReplaceSettingsOptions{}
+	updateSettingsOptions := &metricsrouterv3.UpdateSettingsOptions{}
 
-	replaceSettingsOptions.SetMetadataRegionPrimary(d.Get("metadata_region_primary").(string))
-	replaceSettingsOptions.SetPrivateAPIEndpointOnly(d.Get("private_api_endpoint_only").(bool))
 	if _, ok := d.GetOk("default_targets"); ok {
-		replaceSettingsOptions.SetDefaultTargets(resourceInterfaceToStringArray(d.Get("default_targets").([]interface{})))
+		var defaultTargets []metricsrouterv3.TargetIdentity
+		for _, e := range d.Get("default_targets").([]interface{}) {
+			value := e.(map[string]interface{})
+			defaultTargetsItem, err := resourceIBMMetricsRouterSettingsMapToTargetIdentity(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			defaultTargets = append(defaultTargets, *defaultTargetsItem)
+		}
+		updateSettingsOptions.SetDefaultTargets(defaultTargets)
 	}
+
 	if _, ok := d.GetOk("permitted_target_regions"); ok {
-		replaceSettingsOptions.SetPermittedTargetRegions(resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{})))
+		updateSettingsOptions.SetPermittedTargetRegions(resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{})))
+	}
+	if _, ok := d.GetOk("primary_metadata_region"); ok {
+		updateSettingsOptions.SetPrimaryMetadataRegion(d.Get("primary_metadata_region").(string))
+	}
+	if _, ok := d.GetOk("backup_metadata_region"); ok {
+		updateSettingsOptions.SetBackupMetadataRegion(d.Get("backup_metadata_region").(string))
+	}
+	if _, ok := d.GetOk("private_api_endpoint_only"); ok {
+		updateSettingsOptions.SetPrivateAPIEndpointOnly(d.Get("private_api_endpoint_only").(bool))
 	}
 
-	settings, response, err := metricsRouterClient.ReplaceSettingsWithContext(context, replaceSettingsOptions)
+	setting, response, err := metricsRouterClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ReplaceSettingsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ReplaceSettingsWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] UpdateSettingsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("UpdateSettingsWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*settings.MetadataRegionPrimary)
+	d.SetId(*setting.PrimaryMetadataRegion)
 
 	return resourceIBMMetricsRouterSettingsRead(context, d, meta)
 }
@@ -112,7 +147,7 @@ func resourceIBMMetricsRouterSettingsRead(context context.Context, d *schema.Res
 
 	getSettingsOptions := &metricsrouterv3.GetSettingsOptions{}
 
-	settings, response, err := metricsRouterClient.GetSettingsWithContext(context, getSettingsOptions)
+	setting, response, err := metricsRouterClient.GetSettingsWithContext(context, getSettingsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -122,39 +157,38 @@ func resourceIBMMetricsRouterSettingsRead(context context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("GetSettingsWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("metadata_region_primary", settings.MetadataRegionPrimary); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting metadata_region_primary: %s", err))
-	}
-	if err = d.Set("private_api_endpoint_only", settings.PrivateAPIEndpointOnly); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting private_api_endpoint_only: %s", err))
-	}
-	if settings.DefaultTargets != nil {
-		if err = d.Set("default_targets", settings.DefaultTargets); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting default_targets: %s", err))
+	defaultTargets := []map[string]interface{}{}
+	if setting.DefaultTargets != nil {
+		for _, defaultTargetsItem := range setting.DefaultTargets {
+			tId := &metricsrouterv3.TargetIdentity{
+				ID: defaultTargetsItem.ID,
+			}
+			defaultTargetsItemMap, err := resourceIBMMetricsRouterSettingsTargetIdentityToMap(tId)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			defaultTargets = append(defaultTargets, defaultTargetsItemMap)
 		}
 	}
-	if settings.PermittedTargetRegions != nil {
-		if err = d.Set("permitted_target_regions", settings.PermittedTargetRegions); err != nil {
+	if err = d.Set("default_targets", defaultTargets); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting default_targets: %s", err))
+	}
+	if setting.PermittedTargetRegions != nil {
+		if err = d.Set("permitted_target_regions", setting.PermittedTargetRegions); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting permitted_target_regions: %s", err))
 		}
 	}
-	if err = d.Set("api_version", flex.IntValue(settings.APIVersion)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
+	if err = d.Set("primary_metadata_region", setting.PrimaryMetadataRegion); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting primary_metadata_region: %s", err))
+	}
+	if err = d.Set("backup_metadata_region", setting.BackupMetadataRegion); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting backup_metadata_region: %s", err))
+	}
+	if err = d.Set("private_api_endpoint_only", setting.PrivateAPIEndpointOnly); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting private_api_endpoint_only: %s", err))
 	}
 
 	return nil
-}
-
-func resourceInterfaceToStringArray(resources []interface{}) (result []string) {
-	result = make([]string, 0)
-	for _, item := range resources {
-		if item != nil {
-			result = append(result, item.(string))
-		} else {
-			result = append(result, "")
-		}
-	}
-	return result
 }
 
 func resourceIBMMetricsRouterSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -163,31 +197,49 @@ func resourceIBMMetricsRouterSettingsUpdate(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	replaceSettingsOptions := &metricsrouterv3.ReplaceSettingsOptions{}
+	updateSettingsOptions := &metricsrouterv3.UpdateSettingsOptions{}
+
+	updateSettingsOptions.SetPrimaryMetadataRegion(d.Id())
 
 	hasChange := false
-	newMetaDataRegionPrimary := d.Get("metadata_region_primary").(string)
-	replaceSettingsOptions.SetMetadataRegionPrimary(newMetaDataRegionPrimary)
-	replaceSettingsOptions.SetPrivateAPIEndpointOnly(d.Get("private_api_endpoint_only").(bool))
 
-	hasChange = hasChange || d.HasChange("metadata_region_primary") || d.HasChange("private_api_endpoint_only") || d.HasChange("api_version") || d.HasChange("permitted_target_regions") || d.HasChange("default_targets")
-
-	if d.HasChange("metadata_region_primary") {
-		d.SetId(newMetaDataRegionPrimary)
+	if d.HasChange("default_targets") {
+		if _, ok := d.GetOk("default_targets"); ok {
+			var defaultTargets []metricsrouterv3.TargetIdentity
+			for _, e := range d.Get("default_targets").([]interface{}) {
+				value := e.(map[string]interface{})
+				defaultTargetsItem, err := resourceIBMMetricsRouterSettingsMapToTargetIdentity(value)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				defaultTargets = append(defaultTargets, *defaultTargetsItem)
+			}
+			updateSettingsOptions.SetDefaultTargets(defaultTargets)
+		}
+		hasChange = true
+	}
+	if _, ok := d.GetOk("permitted_target_regions"); ok {
+		updateSettingsOptions.SetPermittedTargetRegions(resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{})))
+	}
+	if d.HasChange("primary_metadata_region") {
+		updateSettingsOptions.SetPrimaryMetadataRegion(d.Get("primary_metadata_region").(string))
+		hasChange = true
+	}
+	if d.HasChange("backup_metadata_region") {
+		updateSettingsOptions.SetBackupMetadataRegion(d.Get("backup_metadata_region").(string))
+		hasChange = true
+	}
+	if d.HasChange("private_api_endpoint_only") {
+		updateSettingsOptions.SetPrivateAPIEndpointOnly(d.Get("private_api_endpoint_only").(bool))
+		hasChange = true
 	}
 
-	replaceSettingsOptions.DefaultTargets = resourceInterfaceToStringArray(d.Get("default_targets").([]interface{}))
-
-	replaceSettingsOptions.PermittedTargetRegions = resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{}))
-
 	if hasChange {
-		setting, response, err := metricsRouterClient.ReplaceSettingsWithContext(context, replaceSettingsOptions)
+		_, response, err := metricsRouterClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ReplaceSettingsWithContext failed %s\n%s", err, response)
-			log.Printf("[DEBUG] ReplaceSettingsWithContext failed %v\n", replaceSettingsOptions)
-			return diag.FromErr(fmt.Errorf("ReplaceSettingsWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateSettingsWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateSettingsWithContext failed %s\n%s", err, response))
 		}
-		d.SetId(*setting.MetadataRegionPrimary)
 	}
 
 	return resourceIBMMetricsRouterSettingsRead(context, d, meta)
@@ -200,26 +252,69 @@ func resourceIBMMetricsRouterSettingsDelete(context context.Context, d *schema.R
 	}
 
 	// Retrieve old settings and put them for required fields.  Remove all other fields
-	settings, getResponse, err := metricsRouterClient.GetSettingsWithContext(context, &metricsrouterv3.GetSettingsOptions{})
+	settings, response, err := metricsRouterClient.GetSettingsWithContext(context, &metricsrouterv3.GetSettingsOptions{})
 	if err != nil {
-		log.Printf("[DEBUG] PutSettingsWithContext with GetSettingsWithContext failed %s\n%s", err, getResponse)
-		return diag.FromErr(fmt.Errorf("GetSettingsWithContext failed %s\n%s", err, getResponse))
+		log.Printf("[DEBUG] UpdateSettingsWithContext with GetSettingsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("with GetSettingsWithContext failed %s\n%s", err, response))
 	}
 
-	replaceSettingsOptions := &metricsrouterv3.ReplaceSettingsOptions{}
+	updateSettingsOptions := &metricsrouterv3.UpdateSettingsOptions{}
 
-	replaceSettingsOptions.MetadataRegionPrimary = settings.MetadataRegionPrimary
-	replaceSettingsOptions.PrivateAPIEndpointOnly = settings.PrivateAPIEndpointOnly
-	replaceSettingsOptions.PermittedTargetRegions = []string{}
-	replaceSettingsOptions.DefaultTargets = []string{}
+	updateSettingsOptions.PrimaryMetadataRegion = settings.PrimaryMetadataRegion
+	updateSettingsOptions.BackupMetadataRegion = settings.BackupMetadataRegion
+	updateSettingsOptions.PrivateAPIEndpointOnly = settings.PrivateAPIEndpointOnly
+	updateSettingsOptions.PermittedTargetRegions = []string{}
+	updateSettingsOptions.DefaultTargets = []metricsrouterv3.TargetIdentity{}
 
-	_, response, err := metricsRouterClient.ReplaceSettingsWithContext(context, replaceSettingsOptions)
+	_, res, err := metricsRouterClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ReplaceSettingsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ReplaceSettingsWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] UpdateSettingsWithContext failed %s\n%s", err, res)
+		return diag.FromErr(fmt.Errorf("UpdateSettingsWithContext failed %s\n%s", err, res))
 	}
 
 	d.SetId("")
 
 	return nil
+}
+
+func resourceIBMMetricsRouterSettingsMapToTargetIdentity(modelMap map[string]interface{}) (*metricsrouterv3.TargetIdentity, error) {
+	model := &metricsrouterv3.TargetIdentity{}
+	model.ID = core.StringPtr(modelMap["id"].(string))
+	return model, nil
+}
+
+func resourceIBMMetricsRouterSettingsMapToTargetRefernce(modelMap map[string]interface{}) (*metricsrouterv3.TargetReference, error) {
+	model := &metricsrouterv3.TargetReference{}
+	model.ID = core.StringPtr(modelMap["id"].(string))
+	model.CRN = core.StringPtr(modelMap["crn"].(string))
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	model.TargetType = core.StringPtr(modelMap["target_type"].(string))
+	return model, nil
+}
+
+func resourceIBMMetricsRouterSettingsTargetReferanceToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	modelMap["crn"] = model.CRN
+	modelMap["name"] = model.Name
+	modelMap["target_type"] = model.TargetType
+	return modelMap, nil
+}
+
+func resourceIBMMetricsRouterSettingsTargetIdentityToMap(model *metricsrouterv3.TargetIdentity) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	return modelMap, nil
+}
+
+func resourceInterfaceToStringArray(resources []interface{}) (result []string) {
+	result = make([]string, 0)
+	for _, item := range resources {
+		if item != nil {
+			result = append(result, item.(string))
+		} else {
+			result = append(result, "")
+		}
+	}
+	return result
 }

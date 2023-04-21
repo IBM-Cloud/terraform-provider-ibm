@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter
@@ -47,23 +47,44 @@ func DataSourceIBMMetricsRouterRoutes() *schema.Resource {
 							Computed:    true,
 							Description: "The crn of the route resource.",
 						},
-						"version": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The version of the route.",
-						},
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"target_ids": &schema.Schema{
+									"action": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The action if the inclusion_filters matches, default is `send` action.",
+									},
+									"targets": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "The target ID List. All the metrics will be sent to all targets listed in the rule. You can include targets from other regions.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The target uuid for a pre-defined metrics router target.",
+												},
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN of a pre-defined metrics-router target.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of a pre-defined metrics-router target.",
+												},
+												"target_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The type of the target.",
+												},
+											},
 										},
 									},
 									"inclusion_filters": &schema.Schema{
@@ -82,10 +103,10 @@ func DataSourceIBMMetricsRouterRoutes() *schema.Resource {
 													Computed:    true,
 													Description: "The operation to be performed between operand and the provided values. 'is' to be used with one value and 'in' can support upto 20 values in the array.",
 												},
-												"value": &schema.Schema{
+												"values": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "The provided values of the in operand to be compared with.",
+													Description: "The provided string values of the operand to be compared with.",
 													Elem: &schema.Schema{
 														Type: schema.TypeString,
 													},
@@ -106,16 +127,6 @@ func DataSourceIBMMetricsRouterRoutes() *schema.Resource {
 							Computed:    true,
 							Description: "The timestamp of the route last updated time.",
 						},
-						"api_version": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The API version of the route.",
-						},
-						"message": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "An optional message containing information about the route.",
-						},
 					},
 				},
 			},
@@ -131,7 +142,7 @@ func dataSourceIBMMetricsRouterRoutesRead(context context.Context, d *schema.Res
 
 	listRoutesOptions := &metricsrouterv3.ListRoutesOptions{}
 
-	routeList, response, err := metricsRouterClient.ListRoutesWithContext(context, listRoutesOptions)
+	routeCollection, response, err := metricsRouterClient.ListRoutesWithContext(context, listRoutesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListRoutesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListRoutesWithContext failed %s\n%s", err, response))
@@ -145,18 +156,18 @@ func dataSourceIBMMetricsRouterRoutesRead(context context.Context, d *schema.Res
 	if v, ok := d.GetOk("name"); ok {
 		name = v.(string)
 		suppliedFilter = true
-		for _, data := range routeList.Routes {
+		for _, data := range routeCollection.Routes {
 			if *data.Name == name {
 				matchRoutes = append(matchRoutes, data)
 			}
 		}
 	} else {
-		matchRoutes = routeList.Routes
+		matchRoutes = routeCollection.Routes
 	}
-	routeList.Routes = matchRoutes
+	routeCollection.Routes = matchRoutes
 
 	if suppliedFilter {
-		if len(routeList.Routes) == 0 {
+		if len(routeCollection.Routes) == 0 {
 			return diag.FromErr(fmt.Errorf("no Routes found with name %s", name))
 		}
 		d.SetId(name)
@@ -165,8 +176,8 @@ func dataSourceIBMMetricsRouterRoutesRead(context context.Context, d *schema.Res
 	}
 
 	routes := []map[string]interface{}{}
-	if routeList.Routes != nil {
-		for _, modelItem := range routeList.Routes {
+	if routeCollection.Routes != nil {
+		for _, modelItem := range routeCollection.Routes {
 			modelMap, err := dataSourceIBMMetricsRouterRoutesRouteToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -197,9 +208,6 @@ func dataSourceIBMMetricsRouterRoutesRouteToMap(model *metricsrouterv3.Route) (m
 	if model.CRN != nil {
 		modelMap["crn"] = *model.CRN
 	}
-	if model.Version != nil {
-		modelMap["version"] = *model.Version
-	}
 	if model.Rules != nil {
 		rules := []map[string]interface{}{}
 		for _, rulesItem := range model.Rules {
@@ -217,19 +225,24 @@ func dataSourceIBMMetricsRouterRoutesRouteToMap(model *metricsrouterv3.Route) (m
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
-	if model.APIVersion != nil {
-		modelMap["api_version"] = *model.APIVersion
-	}
-	if model.Message != nil {
-		modelMap["message"] = *model.Message
-	}
 	return modelMap, nil
 }
 
 func dataSourceIBMMetricsRouterRoutesRuleToMap(model *metricsrouterv3.Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.TargetIds != nil {
-		modelMap["target_ids"] = model.TargetIds
+	if model.Action != nil {
+		modelMap["action"] = *model.Action
+	}
+	if model.Targets != nil {
+		targets := []map[string]interface{}{}
+		for _, targetsItem := range model.Targets {
+			targetsItemMap, err := dataSourceIBMMetricsRouterRoutesTargetReferenceToMap(&targetsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			targets = append(targets, targetsItemMap)
+		}
+		modelMap["targets"] = targets
 	}
 	if model.InclusionFilters != nil {
 		inclusionFilters := []map[string]interface{}{}
@@ -245,6 +258,23 @@ func dataSourceIBMMetricsRouterRoutesRuleToMap(model *metricsrouterv3.Rule) (map
 	return modelMap, nil
 }
 
+func dataSourceIBMMetricsRouterRoutesTargetReferenceToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.TargetType != nil {
+		modelMap["target_type"] = *model.TargetType
+	}
+	return modelMap, nil
+}
+
 func dataSourceIBMMetricsRouterRoutesInclusionFilterToMap(model *metricsrouterv3.InclusionFilter) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Operand != nil {
@@ -253,8 +283,8 @@ func dataSourceIBMMetricsRouterRoutesInclusionFilterToMap(model *metricsrouterv3
 	if model.Operator != nil {
 		modelMap["operator"] = *model.Operator
 	}
-	if model.Value != nil {
-		modelMap["value"] = model.Value
+	if model.Values != nil {
+		modelMap["values"] = model.Values
 	}
 	return modelMap, nil
 }

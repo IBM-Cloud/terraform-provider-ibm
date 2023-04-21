@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_metrics_router_route"
 description: |-
   Manages metrics_router_route.
-subcategory: "Metrics Router"
+subcategory: "Metrics Routing API Version 3"
 ---
 
 # ibm_metrics_router_route
@@ -16,11 +16,14 @@ Provides a resource for metrics_router_route. This allows metrics_router_route t
 resource "ibm_metrics_router_route" "metrics_router_route_instance" {
   name = "my-route"
   rules {
-		target_ids = [ ibm_metrics_router_target.metrics_router_target_instance.id ]
+		action = "send"
+		targets {
+			id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		}
 		inclusion_filters {
 			operand = "location"
 			operator = "is"
-			value = [ "value" ]
+			values = [ "us-south" ]
 		}
   }
 }
@@ -31,33 +34,35 @@ resource "ibm_metrics_router_route" "metrics_router_route_instance" {
 Review the argument reference that you can specify for your resource.
 
 * `name` - (Required, String) The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names.
-  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 \\-._:]+$/`.
 * `rules` - (Required, List) Routing rules that will be evaluated in their order of the array.
   * Constraints: The maximum length is `4` items. The minimum length is `0` items.
 Nested scheme for **rules**:
-	* `inclusion_filters` - (Required, List) A list of conditions to be satisfied for routing events to pre-defined target.
+	* `action` - (Optional, String) The action if the inclusion_filters matches, default is `send` action.
+	  * Constraints: Allowable values are: `send`, `drop`.
+	* `inclusion_filters` - (Required, List) A list of conditions to be satisfied for routing metrics to pre-defined target.
 	  * Constraints: The maximum length is `7` items. The minimum length is `0` items.
 	Nested scheme for **inclusion_filters**:
 		* `operand` - (Required, String) Part of CRN that can be compared with values.
 		  * Constraints: Allowable values are: `location`, `service_name`, `service_instance`, `resource_type`, `resource`.
 		* `operator` - (Required, String) The operation to be performed between operand and the provided values. 'is' to be used with one value and 'in' can support upto 20 values in the array.
 		  * Constraints: Allowable values are: `is`, `in`.
-		* `value` - (Required, List) The provided values of the operand to be compared with. With 'is' operator, a single string is also supported with minLength 2 and maxLength 100.
+		* `values` - (Required, List) The provided string values of the operand to be compared with.
 		  * Constraints: The maximum length is `20` items. The minimum length is `1` item.
-	* `target_ids` - (Required, List) The target ID List. All the events will be sent to all targets listed in the rule. You can include targets from other regions.
-	  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -._:]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+	* `targets` - (Required, List) A collection of targets with ID in the request.
+	  * Constraints: The maximum length is `3` items. The minimum length is `0` items.
+	Nested scheme for **targets**:
+		* `id` - (Required, String) The target uuid for a pre-defined metrics router target.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-._:]+$/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the metrics_router_route.
-* `api_version` - (Integer) The API version of the route.
 * `created_at` - (String) The timestamp of the route creation time.
 * `crn` - (String) The crn of the route resource.
-* `message` - (String) An optional message containing information about the route.
 * `updated_at` - (String) The timestamp of the route last updated time.
-* `version` - (Integer) The version of the route.
 
 ## Provider Configuration
 

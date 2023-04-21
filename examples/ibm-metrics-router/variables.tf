@@ -28,25 +28,25 @@ variable "metrics_router_route_name" {
 }
 
 // Resource arguments for metrics_router_settings
-variable "metrics_router_settings_metadata_region_primary" {
+variable "metrics_router_settings_permitted_target_regions" {
+  description = "If present then only these regions may be used to define a target."
+  type        = list(string)
+  default     = [ "us-south" ]
+}
+variable "metrics_router_settings_primary_metadata_region" {
   description = "To store all your meta data in a single region."
   type        = string
   default     = "us-south"
+}
+variable "metrics_router_settings_backup_metadata_region" {
+  description = "To backup all your meta data in a different region."
+  type        = string
+  default     = "us-east"
 }
 variable "metrics_router_settings_private_api_endpoint_only" {
   description = "If you set this true then you cannot access api through public network."
   type        = bool
   default     = false
-}
-variable "metrics_router_settings_default_targets" {
-  description = "The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event."
-  type        = list(string)
-  default     = [ "c3af557f-fb0e-4476-85c3-0889e7fe7bc4" ]
-}
-variable "metrics_router_settings_permitted_target_regions" {
-  description = "If present then only these regions may be used to define a target."
-  type        = list(string)
-  default     = [ "us-south" ]
 }
 
 // Data source arguments for metrics_router_targets

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_metrics_router_targets"
 description: |-
   Get information about metrics_router_targets
-subcategory: "Metrics Router"
+subcategory: "Metrics Routing API Version 3"
 ---
 
 # ibm_metrics_router_targets
@@ -32,20 +32,14 @@ In addition to all argument references listed, you can access the following attr
 * `targets` - (List) A list of target resources.
   * Constraints: The maximum length is `32` items. The minimum length is `0` items.
 Nested scheme for **targets**:
-	* `api_version` - (Integer) The API version of the target.
 	* `created_at` - (String) The timestamp of the target creation time.
 	* `crn` - (String) The crn of the target resource.
 	* `destination_crn` - (String) The CRN of the destination service instance or resource.
-	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-._:\/]+$/`.
 	* `id` - (String) The UUID of the target resource.
 	* `name` - (String) The name of the target resource.
-	* `region` - (String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
+	* `region` - (String) Include this optional field if you used it to create a target in a different region other than the one you are connected.
 	* `target_type` - (String) The type of the target.
 	  * Constraints: Allowable values are: `sysdig_monitor`.
 	* `updated_at` - (String) The timestamp of the target last updated time.
-	* `write_status` - (List) The status of the write attempt to the target with the provided destination info.
-	Nested scheme for **write_status**:
-		* `last_failure` - (String) The timestamp of the failure.
-		* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
-		* `status` - (String) The status such as failed or success.
 

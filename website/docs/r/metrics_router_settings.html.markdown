@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_metrics_router_settings"
 description: |-
   Manages metrics_router_settings.
-subcategory: "Metrics Router"
+subcategory: "Metrics Routing API Version 3"
 ---
 
 # ibm_metrics_router_settings
@@ -14,9 +14,12 @@ Provides a resource for metrics_router_settings. This allows metrics_router_sett
 
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
-  default_targets = [ ibm_metrics_router_target.metrics_router_target_instance.id ]
-  metadata_region_primary = "us-south"
+  backup_metadata_region = "us-east"
+  default_targets {
+		id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+  }
   permitted_target_regions = us-south
+  primary_metadata_region = "us-south"
   private_api_endpoint_only = false
 }
 ```
@@ -25,20 +28,24 @@ resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
 
 Review the argument reference that you can specify for your resource.
 
-* `default_targets` - (Optional, List) The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event.
-  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -]/`. The maximum length is `2` items. The minimum length is `0` items.
-* `metadata_region_primary` - (Required, String) To store all your meta data in a single region.
-  * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -_]/`.
+* `backup_metadata_region` - (Optional, String) To backup all your meta data in a different region.
+  * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`.
+* `default_targets` - (Optional, List) A list of default target references.
+  * Constraints: The maximum length is `2` items. The minimum length is `0` items.
+Nested scheme for **default_targets**:
+	* `id` - (Required, String) The target uuid for a pre-defined metrics router target.
+	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-._:]+$/`.
 * `permitted_target_regions` - (Optional, List) If present then only these regions may be used to define a target.
-  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -_]/`. The maximum length is `16` items. The minimum length is `0` items.
-* `private_api_endpoint_only` - (Required, Boolean) If you set this true then you cannot access api through public network.
+  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`. The maximum length is `16` items. The minimum length is `0` items.
+* `primary_metadata_region` - (Optional, String) To store all your meta data in a single region.
+  * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`.
+* `private_api_endpoint_only` - (Optional, Boolean) If you set this true then you cannot access api through public network.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the metrics_router_settings.
-* `api_version` - (Integer) The lowest API version of targets or routes that customer might have under his or her account.
 
 ## Provider Configuration
 
@@ -92,11 +99,11 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_metrics_router_settings` resource by using `metadata_region_primary`. To store all your meta data in a single region.
+You can import the `ibm_metrics_router_settings` resource by using `primary_metadata_region`. To store all your meta data in a single region.
 
 # Syntax
 ```
-$ terraform import ibm_metrics_router_settings.metrics_router_settings <metadata_region_primary>
+$ terraform import ibm_metrics_router_settings.metrics_router_settings <primary_metadata_region>
 ```
 
 # Example

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter
@@ -55,30 +55,6 @@ func ResourceIBMMetricsRouterTarget() *schema.Resource {
 				Computed:    true,
 				Description: "The type of the target.",
 			},
-			"write_status": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The status of the write attempt to the target with the provided destination info.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"status": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The status such as failed or success.",
-						},
-						"last_failure": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The timestamp of the failure.",
-						},
-						"reason_for_last_failure": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Detailed description of the cause of the failure.",
-						},
-					},
-				},
-			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -88,11 +64,6 @@ func ResourceIBMMetricsRouterTarget() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp of the target last updated time.",
-			},
-			"api_version": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The API version of the target.",
 			},
 		},
 	}
@@ -106,7 +77,7 @@ func ResourceIBMMetricsRouterTargetValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9 -._:]+$`,
+			Regexp:                     `^[a-zA-Z0-9 \-._:]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             1000,
 		},
@@ -115,7 +86,7 @@ func ResourceIBMMetricsRouterTargetValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9 -._:\/]+$`,
+			Regexp:                     `^[a-zA-Z0-9 \-._:\/]+$`,
 			MinValueLength:             3,
 			MaxValueLength:             1000,
 		},
@@ -124,7 +95,7 @@ func ResourceIBMMetricsRouterTargetValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 -._:]+$`,
+			Regexp:                     `^[a-zA-Z0-9 \-._:]+$`,
 			MinValueLength:             3,
 			MaxValueLength:             1000,
 		},
@@ -199,21 +170,11 @@ func resourceIBMMetricsRouterTargetRead(context context.Context, d *schema.Resou
 	if err = d.Set("target_type", target.TargetType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting target_type: %s", err))
 	}
-	writeStatusMap, err := resourceIBMMetricsRouterTargetWriteStatusToMap(target.WriteStatus)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("write_status", []map[string]interface{}{writeStatusMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting write_status: %s", err))
-	}
 	if err = d.Set("created_at", flex.DateTimeToString(target.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(target.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-	}
-	if err = d.Set("api_version", flex.IntValue(target.APIVersion)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
 	}
 
 	return nil
@@ -225,23 +186,23 @@ func resourceIBMMetricsRouterTargetUpdate(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	replaceTargetOptions := &metricsrouterv3.ReplaceTargetOptions{}
+	updateTargetOptions := &metricsrouterv3.UpdateTargetOptions{}
 
-	replaceTargetOptions.SetID(d.Id())
+	updateTargetOptions.SetID(d.Id())
 
 	hasChange := false
 
 	if d.HasChange("name") || d.HasChange("destination_crn") || d.HasChange("region") {
-		replaceTargetOptions.SetName(d.Get("name").(string))
-		replaceTargetOptions.SetDestinationCRN(d.Get("destination_crn").(string))
+		updateTargetOptions.SetName(d.Get("name").(string))
+		updateTargetOptions.SetDestinationCRN(d.Get("destination_crn").(string))
 		hasChange = true
 	}
 
 	if hasChange {
-		_, response, err := metricsRouterClient.ReplaceTargetWithContext(context, replaceTargetOptions)
+		_, response, err := metricsRouterClient.UpdateTargetWithContext(context, updateTargetOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ReplaceTargetWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ReplaceTargetWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateTargetWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateTargetWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -258,7 +219,7 @@ func resourceIBMMetricsRouterTargetDelete(context context.Context, d *schema.Res
 
 	deleteTargetOptions.SetID(d.Id())
 
-	_, response, err := metricsRouterClient.DeleteTargetWithContext(context, deleteTargetOptions)
+	response, err := metricsRouterClient.DeleteTargetWithContext(context, deleteTargetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteTargetWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteTargetWithContext failed %s\n%s", err, response))
@@ -267,16 +228,4 @@ func resourceIBMMetricsRouterTargetDelete(context context.Context, d *schema.Res
 	d.SetId("")
 
 	return nil
-}
-
-func resourceIBMMetricsRouterTargetWriteStatusToMap(model *metricsrouterv3.WriteStatus) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["status"] = model.Status
-	if model.LastFailure != nil {
-		modelMap["last_failure"] = model.LastFailure.String()
-	}
-	if model.ReasonForLastFailure != nil {
-		modelMap["reason_for_last_failure"] = model.ReasonForLastFailure
-	}
-	return modelMap, nil
 }

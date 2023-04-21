@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter_test
@@ -43,7 +43,7 @@ func TestAccIBMMetricsRouterTargetsDataSourceAllArgs(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMMetricsRouterTargetsDataSourceConfig(targetName, targetDestinationCRN, targetRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_metrics_router_targets.metrics_router_targets_instance", "id"),
@@ -57,7 +57,6 @@ func TestAccIBMMetricsRouterTargetsDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_metrics_router_targets.metrics_router_targets_instance", "targets.0.region", targetRegion),
 					resource.TestCheckResourceAttrSet("data.ibm_metrics_router_targets.metrics_router_targets_instance", "targets.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_metrics_router_targets.metrics_router_targets_instance", "targets.0.updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_metrics_router_targets.metrics_router_targets_instance", "targets.0.api_version"),
 				),
 			},
 		},

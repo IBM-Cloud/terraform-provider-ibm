@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter_test
@@ -22,28 +22,29 @@ func TestAccIBMMetricsRouterTargetBasic(t *testing.T) {
 	destinationCRN := "crn:v1:bluemix:public:sysdig-monitor:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 	nameUpdate := fmt.Sprintf("updated_tf_name_%d", acctest.RandIntRange(10, 100))
 	destinationCRNUpdate := "crn:v1:bluemix:public:sysdig-monitor:us-south:a/11111111111111111111111111111111:33333333-3333-3333-3333-333333333333::"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMMetricsRouterTargetDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMMetricsRouterTargetConfigBasic(name, destinationCRN),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMMetricsRouterTargetExists("ibm_metrics_router_target.metrics_router_target", conf),
-					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target", "name", name),
-					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target", "destination_crn", destinationCRN),
+					testAccCheckIBMMetricsRouterTargetExists("ibm_metrics_router_target.metrics_router_target_instance", conf),
+					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "destination_crn", destinationCRN),
 				),
 			},
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMMetricsRouterTargetConfigBasic(nameUpdate, destinationCRNUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target", "destination_crn", destinationCRNUpdate),
+					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "destination_crn", destinationCRNUpdate),
 				),
 			},
-			{
-				ResourceName:      "ibm_metrics_router_target.metrics_router_target",
+			resource.TestStep{
+				ResourceName:      "ibm_metrics_router_target.metrics_router_target_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -58,14 +59,13 @@ func TestAccIBMMetricsRouterTargetAllArgs(t *testing.T) {
 	region := "us-south"
 	nameUpdate := fmt.Sprintf("updated_tf_name_%d", acctest.RandIntRange(10, 100))
 	destinationCRNUpdate := "crn:v1:bluemix:public:sysdig-monitor:us-south:a/11111111111111111111111111111111:33333333-3333-3333-3333-333333333333::"
-	regionUpdate := "us-east"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMMetricsRouterTargetDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMMetricsRouterTargetConfig(name, destinationCRN, region),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMMetricsRouterTargetExists("ibm_metrics_router_target.metrics_router_target_instance", conf),
@@ -74,12 +74,11 @@ func TestAccIBMMetricsRouterTargetAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "region", region),
 				),
 			},
-			{
-				Config: testAccCheckIBMMetricsRouterTargetConfig(nameUpdate, destinationCRNUpdate, regionUpdate),
+			resource.TestStep{
+				Config: testAccCheckIBMMetricsRouterTargetConfig(nameUpdate, destinationCRNUpdate, region),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "destination_crn", destinationCRNUpdate),
-					resource.TestCheckResourceAttr("ibm_metrics_router_target.metrics_router_target_instance", "region", regionUpdate),
 				),
 			},
 		},
@@ -89,7 +88,7 @@ func TestAccIBMMetricsRouterTargetAllArgs(t *testing.T) {
 func testAccCheckIBMMetricsRouterTargetConfigBasic(name string, destinationCRN string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_metrics_router_target" "metrics_router_target" {
+		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "%s"
 			destination_crn = "%s"
 		}

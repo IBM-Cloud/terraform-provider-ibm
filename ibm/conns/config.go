@@ -1682,11 +1682,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 		metricsRouterClientURL = metricsrouterv3.DefaultServiceURL
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		metricsRouterClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_METRICS_ROUTER_API_ENDPOINT", c.Region, metricsRouterClientURL)
+		metricsRouterClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_METRICS_ROUTING_API_ENDPOINT", c.Region, metricsRouterClientURL)
 	}
 	metricsRouterClientOptions := &metricsrouterv3.MetricsRouterV3Options{
 		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_METRICS_ROUTER_API_ENDPOINT"}, metricsRouterClientURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_METRICS_ROUTING_API_ENDPOINT"}, metricsRouterClientURL),
 	}
 
 	// Construct the service client.
