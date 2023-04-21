@@ -1261,9 +1261,9 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
-      "ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
-      
-      // Added for Project
+			"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
+
+			// Added for Project
 			"ibm_project_instance": project.ResourceIbmProjectInstance(),
 		},
 
@@ -1498,9 +1498,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
 				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
-        "ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
-        
-        // Added for Project
+				"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
+
+				// Added for Project
 				"ibm_project_instance": project.ResourceIbmProjectInstanceValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{

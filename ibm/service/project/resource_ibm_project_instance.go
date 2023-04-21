@@ -7,8 +7,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -279,7 +281,48 @@ func resourceIbmProjectInstanceCreate(context context.Context, d *schema.Resourc
 
 	d.SetId(*project.ID)
 
+	_, err = waitForProjectInstanceCreate(d, meta)
+	fmt.Printf("dopo la wait della create ")
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create project instance (%s) to be succeeded: %s", d.Id(), err))
+	}
+
 	return resourceIbmProjectInstanceRead(context, d, meta)
+}
+
+func waitForProjectInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	projectClient, err := meta.(conns.ClientSession).ProjectV1()
+	if err != nil {
+		return false, err
+	}
+	instanceID := d.Id()
+	getProjectOptions := &projectv1.GetProjectOptions{}
+	getProjectOptions.SetID(instanceID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"not_exists"},
+		Target:  []string{"exists"},
+		Refresh: func() (interface{}, string, error) {
+			_, resp, err := projectClient.GetProject(getProjectOptions)
+			if err == nil {
+				if resp != nil && resp.StatusCode == 200 {
+					fmt.Printf("la risorsa esiste ")
+					return resp, "exists", nil
+				} else {
+					fmt.Printf("la risorsa non esiste, proseguo il ciclo ")
+					return resp, "not_exists", nil
+				}
+			} else {
+				fmt.Printf("c'e' stato un errore ")
+				return nil, "", fmt.Errorf("[ERROR] Get the project instance %s failed with resp code: %d, err: %v", d.Id(), resp.StatusCode, err)
+			}
+		},
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      2 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -359,9 +402,50 @@ func resourceIbmProjectInstanceDelete(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("DeleteProjectWithContext failed %s\n%s", err, response))
 	}
 
+	_, err = waitForProjectInstanceDelete(d, meta)
+	fmt.Printf("dopo la wait della delete ")
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for delete project instance (%s) to be succeeded: %s", d.Id(), err))
+	}
+
 	d.SetId("")
 
 	return nil
+}
+
+func waitForProjectInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	projectClient, err := meta.(conns.ClientSession).ProjectV1()
+	if err != nil {
+		return false, err
+	}
+	instanceID := d.Id()
+	getProjectOptions := &projectv1.GetProjectOptions{}
+	getProjectOptions.SetID(instanceID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"exists"},
+		Target:  []string{"not_exists"},
+		Refresh: func() (interface{}, string, error) {
+			_, resp, err := projectClient.GetProject(getProjectOptions)
+			if err != nil {
+				if resp != nil && resp.StatusCode == 404 {
+					fmt.Printf("la risorsa non esiste piu' ")
+					return resp, "not_exists", nil
+				} else {
+					fmt.Printf("la risorsa ancora esiste, proseguo il ciclo ")
+					return resp, "exists", nil
+				}
+			} else {
+				fmt.Printf("la risorsa ancora esiste, proseguo il ciclo ")
+				return resp, "exists", nil
+			}
+		},
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      2 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectInstanceMapToProjectConfigPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototype, error) {
