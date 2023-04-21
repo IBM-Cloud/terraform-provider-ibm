@@ -282,7 +282,7 @@ func resourceIbmProjectInstanceCreate(context context.Context, d *schema.Resourc
 	d.SetId(*project.ID)
 
 	_, err = waitForProjectInstanceCreate(d, meta)
-	fmt.Printf("dopo la wait della create ")
+	fmt.Println("dopo la wait della create ")
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create project instance (%s) to be succeeded: %s", d.Id(), err))
 	}
