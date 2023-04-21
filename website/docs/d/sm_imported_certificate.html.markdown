@@ -80,7 +80,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 
 * `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 
 * `private_key` - (String) (Optional) The PEM-encoded private key to associate with the certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters.

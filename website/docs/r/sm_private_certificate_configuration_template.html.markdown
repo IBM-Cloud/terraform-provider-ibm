@@ -18,6 +18,7 @@ resource "ibm_sm_private_certificate_configuration_template" "certificate_templa
   region                = "us-south"
   name                  = "my_template"
   certificate_authority = "my_intermediate_ca"
+  allowed_domains       = ["example.com"]
 }
 ```
 

@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20230330100610-b58456b0d67e
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037
 	github.com/IBM-Cloud/power-go-client v1.2.2
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -59,6 +59,7 @@ require (
 require (
 	github.com/IBM/go-sdk-core/v3 v3.2.4
 	github.com/pkg/errors v0.9.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -166,7 +167,6 @@ require (
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect

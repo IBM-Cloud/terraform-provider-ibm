@@ -34,8 +34,8 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1 h1:5cVMU5MglJjwzoBsDOk3yuH6T/1EeDZyYbQDowL4nW8=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20230120122421-afb48116b8f1/go.mod h1:cO5KCpiop9eP/pM/5W07TprYUkv/kHtajW1FiZgE59k=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20230330100610-b58456b0d67e h1:F1IY9ihqHFp2ppwbHAE9rokZaBm/SxQvo03WGqzSLzc=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20230330100610-b58456b0d67e/go.mod h1:cO5KCpiop9eP/pM/5W07TprYUkv/kHtajW1FiZgE59k=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037 h1:C1gOsj2A5ouRUXrmKHebXjs4FXRE8ApMUC3GBUpd9Co=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
