@@ -213,10 +213,6 @@ func dataSourceIBMIamTrustedProfileListRead(context context.Context, d *schema.R
 			break
 		}
 	}
-	if len(allrecs) == 0 {
-		return diag.FromErr(fmt.Errorf("[ERROR] No profiles found [%s]", accountID))
-
-	}
 
 	d.SetId(dataSourceIBMIamTrustedProfileListID(d))
 

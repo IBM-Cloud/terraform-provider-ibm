@@ -5,8 +5,10 @@ package catalogmanagement
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -147,11 +149,11 @@ func DataSourceIBMCmVersion() *schema.Resource {
 							Computed:    true,
 							Description: "Value type (string, boolean, int).",
 						},
-						// "default_value": &schema.Schema{
-						// 	Type:        schema.TypeMap,
-						// 	Computed:    true,
-						// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-						// },
+						"default_value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default value as a JSON encoded string.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+						},
 						"display_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -328,29 +330,132 @@ func DataSourceIBMCmVersion() *schema.Resource {
 			},
 			"metadata": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Generic data to be included with content being onboarded. Required for virtual server image for VPC.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"source_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Version source URL.",
+						},
+						"working_directory": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Working directory of source files.",
+						},
+						"example_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Working directory of source files.",
+						},
+						"start_deploy_time": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The time validation started.",
+						},
+						"end_deploy_time": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The time validation ended.",
+						},
+						"est_deploy_time": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Computed:    true,
+							Description: "The estimated time validation takes.",
+						},
+						"usage": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Usage text for the version.",
+						},
+						"usage_template": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Usage text for the version.",
+						},
+						"modules": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Terraform modules.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of the module.",
+									},
+									"source": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Source of the module.",
+									},
+									"offering_reference": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Terraform modules.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the offering module.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "ID of the offering module.",
+												},
+												"kind": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Kind of the offeringmodule.",
+												},
+												"version": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Version of the offering module.",
+												},
+												"flavor": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Flavor of the module.",
+												},
+												"flavors": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Flavors of the module.",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+												"catalog_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Catalog ID of the module reference.",
+												},
+												"metadata": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Metadata of the module.",
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 						"version_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Version name.",
 						},
 						"terraform_version": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Terraform version.",
 						},
 						"validated_terraform_version": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Version name.",
 						},
 						"vsi_vpc": &schema.Schema{
@@ -361,49 +466,48 @@ func DataSourceIBMCmVersion() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"operating_system": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Operating system included in this image. Required for virtual server image for VPC.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"dedicated_host_only": &schema.Schema{
 													Type:        schema.TypeBool,
-													Optional:    true,
+													Computed:    true,
 													Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups. Required for virtual server image for VPC.",
 												},
 												"vendor": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Vendor of the operating system. Required for virtual server image for VPC.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Globally unique name for this operating system Required for virtual server image for VPC.",
 												},
 												"href": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "URL for this operating system. Required for virtual server image for VPC.",
 												},
 												"display_name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Unique, display-friendly name for the operating system. Required for virtual server image for VPC.",
 												},
 												"family": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Software family for this operating system. Required for virtual server image for VPC.",
 												},
 												"version": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Major release version of this operating system. Required for virtual server image for VPC.",
 												},
 												"architecture": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Operating system architecture. Required for virtual server image for VPC.",
 												},
 											},
@@ -411,14 +515,13 @@ func DataSourceIBMCmVersion() *schema.Resource {
 									},
 									"file": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Details for the stored image file. Required for virtual server image for VPC.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"size": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Size of the stored image file rounded up to the next gigabyte. Required for virtual server image for VPC.",
 												},
 											},
@@ -426,28 +529,28 @@ func DataSourceIBMCmVersion() *schema.Resource {
 									},
 									"minimum_provisioned_size": &schema.Schema{
 										Type:        schema.TypeInt,
-										Optional:    true,
+										Computed:    true,
 										Description: "Minimum size (in gigabytes) of a volume onto which this image may be provisioned. Required for virtual server image for VPC.",
 									},
 									"images": &schema.Schema{
 										Type:        schema.TypeList,
-										Optional:    true,
+										Computed:    true,
 										Description: "Image operating system. Required for virtual server image for VPC.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Programmatic ID of virtual server image. Required for virtual server image for VPC.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Programmatic name of virtual server image. Required for virtual server image for VPC.",
 												},
 												"region": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Region the virtual server image is available in. Required for virtual server image for VPC.",
 												},
 											},
@@ -458,49 +561,48 @@ func DataSourceIBMCmVersion() *schema.Resource {
 						},
 						"operating_system": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "Operating system included in this image. Required for virtual server image for VPC.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"dedicated_host_only": &schema.Schema{
 										Type:        schema.TypeBool,
-										Optional:    true,
+										Computed:    true,
 										Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups. Required for virtual server image for VPC.",
 									},
 									"vendor": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Vendor of the operating system. Required for virtual server image for VPC.",
 									},
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Globally unique name for this operating system Required for virtual server image for VPC.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "URL for this operating system. Required for virtual server image for VPC.",
 									},
 									"display_name": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Unique, display-friendly name for the operating system. Required for virtual server image for VPC.",
 									},
 									"family": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Software family for this operating system. Required for virtual server image for VPC.",
 									},
 									"version": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Major release version of this operating system. Required for virtual server image for VPC.",
 									},
 									"architecture": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Operating system architecture. Required for virtual server image for VPC.",
 									},
 								},
@@ -508,14 +610,13 @@ func DataSourceIBMCmVersion() *schema.Resource {
 						},
 						"file": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "Details for the stored image file. Required for virtual server image for VPC.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"size": &schema.Schema{
 										Type:        schema.TypeInt,
-										Optional:    true,
+										Computed:    true,
 										Description: "Size of the stored image file rounded up to the next gigabyte. Required for virtual server image for VPC.",
 									},
 								},
@@ -523,28 +624,28 @@ func DataSourceIBMCmVersion() *schema.Resource {
 						},
 						"minimum_provisioned_size": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Minimum size (in gigabytes) of a volume onto which this image may be provisioned. Required for virtual server image for VPC.",
 						},
 						"images": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "Image operating system. Required for virtual server image for VPC.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Programmatic ID of virtual server image. Required for virtual server image for VPC.",
 									},
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Programmatic name of virtual server image. Required for virtual server image for VPC.",
 									},
 									"region": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Region the virtual server image is available in. Required for virtual server image for VPC.",
 									},
 								},
@@ -1847,6 +1948,12 @@ func dataSourceIBMCmVersionConfigurationToMap(model *catalogmanagementv1.Configu
 		modelMap["type"] = *model.Type
 	}
 	if model.DefaultValue != nil {
+		defaultValueJson, err := json.Marshal(model.DefaultValue)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
+		}
+		defaultValueString, _ := strconv.Unquote(string(defaultValueJson))
+		modelMap["default_value"] = defaultValueString
 	}
 	if model.DisplayName != nil {
 		modelMap["display_name"] = *model.DisplayName
@@ -1892,12 +1999,9 @@ func dataSourceIBMCmVersionRenderTypeToMap(model *catalogmanagementv1.RenderType
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = *model.GroupingIndex
 	}
-	// if model.ConfigConstraints != nil {
-	// 	configConstraintsMap := make(map[string]interface{}, len(model.ConfigConstraints))
-	// 	for k, v := range model.ConfigConstraints {
-	// 	}
-	// 	modelMap["config_constraints"] = flex.Flatten(configConstraintsMap)
-	// }
+	if model.ConfigConstraints != nil {
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints)
+	}
 	if model.Associations != nil {
 		associationsMap, err := dataSourceIBMCmVersionRenderTypeAssociationsToMap(model.Associations)
 		if err != nil {
@@ -2353,8 +2457,8 @@ func dataSourceIBMCmVersionCostBreakdownToMap(model *catalogmanagementv1.CostBre
 	if model.TotalHourlyCost != nil {
 		modelMap["total_hourly_cost"] = *model.TotalHourlyCost
 	}
-	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_c_ost"] = *model.TotalMonthlyCOst
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_c_ost"] = *model.TotalMonthlyCost
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -2461,7 +2565,7 @@ func dataSourceIBMCmVersionCostSummaryToMap(model *catalogmanagementv1.CostSumma
 	return modelMap, nil
 }
 
-func dataSourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.Dependency) (map[string]interface{}, error) {
+func dataSourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.OfferingReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CatalogID != nil {
 		modelMap["catalog_id"] = *model.CatalogID

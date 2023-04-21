@@ -56,6 +56,7 @@ func testAccCheckIBMEnFCMDestinationDataSourceConfigBasic(instanceName, name, de
 			params {
 				sender_id = "fcm sender id"
 				server_key  = "fcm server key"
+				client_email = "testuser123@gmail.com"
 				pre_prod = false
 			}
 		}

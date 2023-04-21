@@ -86,6 +86,11 @@ func DataSourceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "Encryption type of the snapshot",
 			},
+			isSnapshotEncryptionKey: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A reference to the root key used to wrap the data encryption key for the source volume.",
+			},
 			isSnapshotHref: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -108,7 +113,13 @@ func DataSourceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "The size of the snapshot",
 			},
-
+			isSnapshotClones: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Zones for creating the snapshot clone",
+			},
 			isSnapshotCapturedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -233,6 +244,9 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 				d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
 				d.Set(isSnapshotSize, *snapshot.Size)
 				d.Set(isSnapshotEncryption, *snapshot.Encryption)
+				if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
+					d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN)
+				}
 				d.Set(isSnapshotLCState, *snapshot.LifecycleState)
 				d.Set(isSnapshotResourceType, *snapshot.ResourceType)
 				d.Set(isSnapshotBootable, *snapshot.Bootable)
@@ -253,6 +267,18 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 				if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 					d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
 				}
+
+				var clones []string
+				clones = make([]string, 0)
+				if snapshot.Clones != nil {
+					for _, clone := range snapshot.Clones {
+						if clone.Zone != nil && clone.Zone.Name != nil {
+							clones = append(clones, *clone.Zone.Name)
+						}
+					}
+				}
+				d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
+
 				backupPolicyPlanList := []map[string]interface{}{}
 				if snapshot.BackupPolicyPlan != nil {
 					backupPolicyPlan := map[string]interface{}{}
@@ -319,6 +345,17 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 			d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
 		}
+		var clones []string
+		clones = make([]string, 0)
+		if snapshot.Clones != nil {
+			for _, clone := range snapshot.Clones {
+				if clone.Zone != nil && clone.Zone.Name != nil {
+					clones = append(clones, *clone.Zone.Name)
+				}
+			}
+		}
+		d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
+
 		backupPolicyPlanList := []map[string]interface{}{}
 		if snapshot.BackupPolicyPlan != nil {
 			backupPolicyPlan := map[string]interface{}{}

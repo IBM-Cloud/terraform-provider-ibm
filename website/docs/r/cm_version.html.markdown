@@ -70,6 +70,32 @@ resource "ibm_cm_version" "cm_version" {
 Review the argument reference that you can specify for your resource.
 
 * `catalog_id` - (Required, Forces new resource, String) Catalog identifier.
+* `configuration` - (Optional, List) List of version configuration values.
+Nested scheme for **configuration**:
+	* `custom_config` - (Optional, List) Render type.
+	Nested scheme for **custom_config**:
+		* `associations` - (Optional, List) List of parameters that are associated with this configuration.
+		Nested scheme for **associations**:
+			* `parameters` - (Optional, List) Parameters for this association.
+			Nested scheme for **parameters**:
+				* `name` - (Optional, String) Name of this parameter.
+				* `options_refresh` - (Optional, Boolean) Refresh options.
+		* `config_constraints` - (Optional, Map) Map of constraint parameters that will be passed to the custom widget.
+		* `grouping` - (Optional, String) Determines where this configuration type is rendered (3 sections today - Target, Resource, and Deployment).
+		* `grouping_index` - (Optional, Integer) Determines the order that this configuration item shows in that particular grouping.
+		* `original_grouping` - (Optional, String) Original grouping type for this configuration (3 types - Target, Resource, and Deployment).
+		* `type` - (Optional, String) ID of the widget type.
+	* `default_value` - (Optional, Map) The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.
+	* `description` - (Optional, String) Key description.
+	* `display_name` - (Optional, String) Display name for configuration type.
+	* `hidden` - (Optional, Boolean) Hide values.
+	* `key` - (Optional, String) Configuration key.
+	* `options` - (Optional, List) List of options of type.
+	* `required` - (Optional, Boolean) Is key required to install.
+	* `type` - (Optional, String) Value type (string, boolean, int).
+	* `type_metadata` - (Optional, String) The original type, as found in the source being onboarded.
+	* `value_constraint` - (Optional, String) Constraint associated with value, e.g., for string type - regx:[a-z].
+* `deprecate` - (Optional, Boolean) Specify if this version should be deprecated.
 * `flavor` - (Optional, Forces new resource, List) Version Flavor Information.  Only supported for Product kind Solution.
 Nested scheme for **flavor**:
 	* `index` - (Optional, Integer) Order that this flavor should appear when listed for a single version.
@@ -77,7 +103,24 @@ Nested scheme for **flavor**:
 	* `label_i18n` - (Optional, Map) A map of translated strings, by language code.
 	* `name` - (Optional, String) Programmatic name for this flavor.
 * `format_kind` - (Optional, Forces new resource, String) Format of content being onboarded. Example: vsi-image. Required for virtual server image for VPC.
+* `iam_permissions` - (Optional, List) List of IAM permissions that are required to consume this version.
+Nested scheme for **iam_permissions**:
+	* `resources` - (Optional, List) Resources for this permission.
+	Nested scheme for **resources**:
+		* `description` - (Optional, String) Resource description.
+		* `name` - (Optional, String) Resource name.
+		* `role_crns` - (Optional, List) Role CRNs for this permission.
+	* `role_crns` - (Optional, List) Role CRNs for this permission.
+	* `service_name` - (Optional, String) Service name.
 * `include_config` - (Optional, Forces new resource, Boolean) Add all possible configuration values to this version when importing.
+* `install` - (Optional, List) Script information.
+Nested scheme for **install**:
+	* `delete_script` - (Optional, String) Optional script that if run will remove the installed version.
+	* `instructions` - (Optional, String) Instruction on step and by whom (role) that are needed to take place to prepare the target for installing this version.
+	* `instructions_i18n` - (Optional, Map) A map of translated strings, by language code.
+	* `scope` - (Optional, String) Optional value indicating if this script is scoped to a namespace or the entire cluster.
+	* `script` - (Optional, String) Optional script that needs to be run post any pre-condition script.
+	* `script_permission` - (Optional, String) Optional iam permissions that are required on the target cluster to run this script.
 * `install_kind` - (Optional, Forces new resource, String) Install type. Example: instance. Required for virtual server image for VPC.
 * `is_vsi` - (Optional, Forces new resource, Boolean) Indicates that the current terraform template is used to install a virtual server image.
 * `label` - (Optional, Forces new resource, String) Display name of version. Required for virtual server image for VPC.
@@ -102,14 +145,63 @@ Nested scheme for **metadata**:
 		* `name` - (Optional, String) Globally unique name for this operating system Required for virtual server image for VPC.
 		* `vendor` - (Optional, String) Vendor of the operating system. Required for virtual server image for VPC.
 		* `version` - (Optional, String) Major release version of this operating system. Required for virtual server image for VPC.
+* `licenses` - (Optional, List) List of licenses the product was built with.
+Nested scheme for **licenses**:
+	* `description` - (Optional, String) License description.
+	* `id` - (Optional, String) License ID.
+	* `name` - (Optional, String) license name.
+	* `type` - (Optional, String) type of license e.g., Apache xxx.
+	* `url` - (Optional, String) URL for the license text.
 * `name` - (Optional, Forces new resource, String) Name of version. Required for virtual server image for VPC.
 * `offering_id` - (Required, Forces new resource, String) Offering identification.
+* `pre_install` - (Optional, List) Optional pre-install instructions.
+Nested scheme for **pre_install**:
+	* `delete_script` - (Optional, String) Optional script that if run will remove the installed version.
+	* `instructions` - (Optional, String) Instruction on step and by whom (role) that are needed to take place to prepare the target for installing this version.
+	* `instructions_i18n` - (Optional, Map) A map of translated strings, by language code.
+	* `scope` - (Optional, String) Optional value indicating if this script is scoped to a namespace or the entire cluster.
+	* `script` - (Optional, String) Optional script that needs to be run post any pre-condition script.
+	* `script_permission` - (Optional, String) Optional iam permissions that are required on the target cluster to run this script.
 * `product_kind` - (Optional, Forces new resource, String) Optional product kind for the software being onboarded.  Valid values are software, module, or solution.  Default value is software.
 * `sha` - (Optional, Forces new resource, String) SHA256 fingerprint of the image file. Required for virtual server image for VPC.
+* `solution_info` - (Optional, List) Version Solution Information.  Only supported for Product kind Solution.
+Nested scheme for **solution_info**:
+	* `architecture_diagrams` - (Optional, List) Architecture diagrams for this solution.
+	Nested scheme for **architecture_diagrams**:
+		* `description` - (Optional, String) Description of this diagram.
+		* `description_i18n` - (Optional, Map) A map of translated strings, by language code.
+		* `diagram` - (Optional, List) Offering Media information.
+		Nested scheme for **diagram**:
+			* `api_url` - (Optional, String) CM API specific URL of the specified media item.
+			* `caption` - (Optional, String) Caption for this media item.
+			* `caption_i18n` - (Optional, Map) A map of translated strings, by language code.
+			* `thumbnail_url` - (Optional, String) Thumbnail URL for this media item.
+			* `type` - (Optional, String) Type of this media item.
+			* `url` - (Optional, String) URL of the specified media item.
+			* `url_proxy` - (Optional, List) Offering URL proxy information.
+			Nested scheme for **url_proxy**:
+				* `sha` - (Optional, String) SHA256 fingerprint of image.
+				* `url` - (Optional, String) URL of the specified media item being proxied.
+	* `dependencies` - (Optional, List) Dependencies for this solution.
+	Nested scheme for **dependencies**:
+		* `catalog_id` - (Optional, String) Optional - If not specified, assumes the Public Catalog.
+		* `flavors` - (Optional, List) Optional - List of dependent flavors in the specified range.
+		* `id` - (Optional, String) Optional - Offering ID - not required if name is set.
+		* `name` - (Optional, String) Optional - Programmatic Offering name.
+		* `version` - (Optional, String) Required - Semver value or range.
+	* `features` - (Optional, List) Features - titles only.
+	Nested scheme for **features**:
+		* `description` - (Optional, String) Feature description.
+		* `description_i18n` - (Optional, Map) A map of translated strings, by language code.
+		* `title` - (Optional, String) Heading.
+		* `title_i18n` - (Optional, Map) A map of translated strings, by language code.
 * `tags` - (Optional, Forces new resource, List) Tags array.
 * `target_kinds` - (Optional, Forces new resource, List) Deployment target of the content being onboarded. Current valid values are iks, roks, vcenter, power-iaas, terraform, and vpc-x86. Required for virtual server image for VPC.
 * `target_version` - (Optional, Forces new resource, String) The semver value for this new version, if not found in the zip url package content.
+* `terraform_version` - (Optional, String) Provide a terraform version for this offering version to use..
+* `usage` - (Optional, String) Usage text for the version.
 * `working_directory` - (Optional, Forces new resource, String) Optional - The sub-folder within the specified tgz file that contains the software being onboarded.
+* `x_auth_token` - (Optional, Forces new resource, String) The token to access the tgz in the repo.
 * `zipurl` - (Optional, Forces new resource, String) URL path to zip location.  If not specified, must provide content in the body of this call.
 
 ## Attribute Reference
@@ -191,6 +283,25 @@ Nested scheme for **licenses**:
 * `metadata` - (Forces new resource, List) Generic data to be included with content being onboarded. Required for virtual server image for VPC.
 Nested scheme for **metadata**:
 	* `source_url` - (String) Source URL for the version.
+	* `working_directory` - (String) Working directory of source files.
+	* `example_name` - (String) Name of example directory that contains source files in existing examples directory.
+	* `start_deploy_time` - (String) The time validation starts.
+	* `end_deploy_time` - (String) The time validation ends.
+	* `est_deploy_time` - (String) The estimated time validation takes.
+	* `usage` - (String) Usage text for the version.
+	* `usage_template` - (String) Usage text for the version.
+	Nested scheme for **modules**:
+		* `name` - (String) Name of the module.
+		* `source` - (String) Source of the module.
+		Nested scheme for **offering_reference**:
+			* `name` (String) Name of the offering.
+			* `id` (String) ID of the offering.
+			* `kind` (String) Kind of the offering.
+			* `version` (String) Version of the offering.
+			* `flavor` (String) Flavor of the offering.
+			* `flavors` (List) Flavors of the offering.
+			* `catalog_id` (String) Catalog ID of the offering.
+			* `metadata` (String) Metadata of the offering.
 	* `terraform_version` - (String) Version's terraform version.
 	* `validated_terraform_version` - (String) Version's validated terraform version.
 	* `version_name` - (String) Name of the version.

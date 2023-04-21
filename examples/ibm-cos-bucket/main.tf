@@ -362,3 +362,37 @@ resource "ibm_cos_bucket" "cos_bucket_onerate" {
   storage_class         = var.onerate_storage_class
   }
   
+#COS Object Lock
+
+resource "ibm_resource_instance" "cos_instance2" {
+  name              = "cos-instance"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_cos_bucket" "bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance2.id
+  region_location  = var.regional_loc
+  storage_class          = var.standard_storage_class
+  object_versioning {
+    enable  = true
+  }
+  object_lock = true
+}
+
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
+ bucket_crn      = ibm_cos_bucket.bucket.crn
+ bucket_location = var.regional_loc
+ object_lock_configuration{
+   object_lock_enabled = "Enabled"
+   object_lock_rule{
+     default_retention{
+        mode = "COMPLIANCE"
+        days = 6
+      }
+    }
+  }
+}

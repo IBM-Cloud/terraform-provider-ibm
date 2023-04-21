@@ -95,3 +95,4 @@ In addition to all argument references listed, you can access the following attr
 
 * `use_private_endpoint` - (Required, Boolean) Whether the collector should use a public or private endpoint. This value is generated based on is_public field value during collector creation. If is_public is set to true, this value will be false.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_collector is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

@@ -59,20 +59,25 @@ func ResourceIBMEnFCMDestination() *schema.Resource {
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"sender_id": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The Sender_id value for FCM project.",
-									},
-									"server_key": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The Server_key value for FCM project.",
-									},
 									"pre_prod": {
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "The flag to enable destination as pre-prod or prod",
+									},
+									"project_id": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The FCM project_id.",
+									},
+									"private_key": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The FCM private_key.",
+									},
+									"client_email": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The FCM client_email.",
 									},
 								},
 							},
@@ -275,16 +280,20 @@ func resourceIBMEnFCMDestinationDelete(context context.Context, d *schema.Resour
 func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
 	params := new(en.DestinationConfigOneOf)
 
-	if configParams["sender_id"] != nil {
-		params.SenderID = core.StringPtr(configParams["sender_id"].(string))
-	}
-
-	if configParams["server_key"] != nil {
-		params.ServerKey = core.StringPtr(configParams["server_key"].(string))
-	}
-
 	if configParams["pre_prod"] != nil {
 		params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
+	}
+
+	if configParams["project_id"] != nil {
+		params.ProjectID = core.StringPtr(configParams["project_id"].(string))
+	}
+
+	if configParams["private_key"] != nil {
+		params.PrivateKey = core.StringPtr(configParams["private_key"].(string))
+	}
+
+	if configParams["client_email"] != nil {
+		params.ClientEmail = core.StringPtr(configParams["client_email"].(string))
 	}
 
 	destinationConfig := new(en.DestinationConfig)

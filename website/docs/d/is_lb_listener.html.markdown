@@ -68,6 +68,8 @@ In addition to all argument references listed, you can access the following attr
 		- `id` - (String) The unique identifier for this load balancer listener.
 	- `uri` - (String) The redirect relative target URI.
 
+- `idle_connection_timeout` - (Integer) The idle connection timeout of the listener in seconds. This property will be present for load balancers in the `application` family. Default value is `50`.
+
 - `policies` - (List) The policies for this listener.
 Nested scheme for `policies`:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
