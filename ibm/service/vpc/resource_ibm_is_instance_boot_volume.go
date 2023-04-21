@@ -19,6 +19,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	isInstanceBootVolumeDelete = "delete"
+)
+
 func ResourceIBMISInstanceBootVolume() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMISInstanceBootVolumeCreate,
@@ -83,6 +87,12 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 			isVolumeEncryptionKey: {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Description: "Volume encryption key info",
+			},
+
+			isInstanceBootVolumeDelete: {
+				Type:        schema.TypeBool,
+				Optional:    true,
 				Description: "Volume encryption key info",
 			},
 
@@ -677,60 +687,25 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMISInstanceBootVolumeDelete(d *schema.ResourceData, meta interface{}) error {
-	// id := d.Id()
-	d.SetId("")
-	// err := instancebootvolDelete(d, meta, id)
-	// if err != nil {
-	// 	return err
-	// }
-	return nil
-}
-
-func instancebootvolDelete(d *schema.ResourceData, meta interface{}, id string) error {
-	sess, err := vpcClient(meta)
-	if err != nil {
-		return err
-	}
-
-	getvoloptions := &vpcv1.GetVolumeOptions{
-		ID: &id,
-	}
-	volDetails, response, err := sess.GetVolume(getvoloptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return nil
+	id := d.Id()
+	// check if force delete is true
+	if d.Get(isInstanceBootVolumeDelete).(bool) {
+		sess, err := vpcClient(meta)
+		if err != nil {
+			return err
 		}
-		return fmt.Errorf("[ERROR] Error getting Instance boot volume (%s): %s\n%s", id, err, response)
-	}
 
-	if volDetails.VolumeAttachments != nil {
-		for _, volAtt := range volDetails.VolumeAttachments {
-			deleteVolumeAttachment := &vpcv1.DeleteInstanceVolumeAttachmentOptions{
-				InstanceID: volAtt.Instance.ID,
-				ID:         volAtt.ID,
-			}
-			_, err := sess.DeleteInstanceVolumeAttachment(deleteVolumeAttachment)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error while removing volume attachment %q for instance %s: %q", *volAtt.ID, *volAtt.Instance.ID, err)
-			}
-			_, err = isWaitForInstanceVolumeDetached(sess, d, d.Id(), *volAtt.ID)
-			if err != nil {
-				return err
-			}
-
+		options := &vpcv1.DeleteVolumeOptions{
+			ID: &id,
 		}
-	}
-
-	options := &vpcv1.DeleteVolumeOptions{
-		ID: &id,
-	}
-	response, err = sess.DeleteVolume(options)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting Instance boot volume : %s\n%s", err, response)
-	}
-	_, err = isWaitForInstanceBootVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return err
+		response, err := sess.DeleteVolume(options)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error deleting Volume : %s\n%s", err, response)
+		}
+		_, err = isWaitForInstanceBootVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			return err
+		}
 	}
 	d.SetId("")
 	return nil
@@ -742,7 +717,7 @@ func isWaitForInstanceBootVolumeDeleted(vol *vpcv1.VpcV1, id string, timeout tim
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isVolumeDeleting},
 		Target:     []string{"done", ""},
-		Refresh:    isVolumeDeleteRefreshFunc(vol, id),
+		Refresh:    isInstanceBootVolumeDeleteRefreshFunc(vol, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
