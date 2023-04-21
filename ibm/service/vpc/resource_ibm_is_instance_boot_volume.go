@@ -432,6 +432,18 @@ func instancebootvolGet(d *schema.ResourceData, meta interface{}, id string) err
 }
 
 func resourceIBMISInstanceBootVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
+	err := instancebootvolUpdate(d, meta)
+	if err != nil {
+		return err
+	}
+	return resourceIBMISInstanceBootVolumeRead(d, meta)
+}
+
+func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
 
 	id := d.Id()
 	name := ""
@@ -445,19 +457,6 @@ func resourceIBMISInstanceBootVolumeUpdate(d *schema.ResourceData, meta interfac
 	if d.HasChange(isVolumeName) {
 		name = d.Get(isVolumeName).(string)
 		hasNameChanged = true
-	}
-
-	err := instancebootvolUpdate(d, meta, id, name, hasNameChanged, delete)
-	if err != nil {
-		return err
-	}
-	return resourceIBMISInstanceBootVolumeRead(d, meta)
-}
-
-func instancebootvolUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNameChanged, delete bool) error {
-	sess, err := vpcClient(meta)
-	if err != nil {
-		return err
 	}
 	var capacity int64
 	if delete {
