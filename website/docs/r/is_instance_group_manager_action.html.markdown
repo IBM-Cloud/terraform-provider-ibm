@@ -111,11 +111,11 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the instance group action. 
 
    -> **Supported Status** 
-   &#x2022; active Action is ready to be run. 
-   </br>&#x2022; completed Action completed successfully. 
-   </br>&#x2022; failed Action could not be completed successfully. 
-   </br>&#x2022; incompatible Action parameters are not compatible with the group or manager. 
-   </br>&#x2022; omitted Action not applied when the action's manager is disabled.
+   &#x2022; **active** Action is ready to be run. 
+   </br>&#x2022; **completed** Action completed successfully. 
+   </br>&#x2022; **failed** Action could not be completed successfully. 
+   </br>&#x2022; **incompatible** Action parameters are not compatible with the group or manager. 
+   </br>&#x2022; **omitted** Action not applied when the action's manager is disabled.
 
 - `target_manager_name` - (String) The name of the instance group manager of type autoscale.
 - `updated_at` - (Timestamp) The date and time that the instance group manager action was modified.
