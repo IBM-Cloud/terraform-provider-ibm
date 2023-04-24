@@ -115,7 +115,7 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the bare metal server.
 
   -> **Supported Status** 
-    </br>&#x2022; failed
+    &#x2022; failed
     </br>&#x2022; pending
     </br>&#x2022; restarting
     </br>&#x2022; running

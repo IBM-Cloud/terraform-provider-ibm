@@ -63,8 +63,8 @@ In addition to the argument reference list, you can access the following attribu
 	- `security_groups` - (Array) Collection of security groups
 	- `status` - (String) The status of the network interface. 
 	
-		->**Supported Statuses** 
-			</br>&#x2022; available 
+		->**Supported Status** 
+			&#x2022; available 
 			</br>&#x2022; deleting
 			</br>&#x2022; failed
 			</br>&#x2022; pending
