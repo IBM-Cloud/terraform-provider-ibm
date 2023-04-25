@@ -5,8 +5,10 @@ package catalogmanagement
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -380,11 +382,11 @@ func DataSourceIBMCmOffering() *schema.Resource {
 													Computed:    true,
 													Description: "Value type (string, boolean, int).",
 												},
-												// "default_value": &schema.Schema{
-												// 	Type:        schema.TypeMap,
-												// 	Computed:    true,
-												// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-												// },
+												"default_value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The default value as a JSON encoded string.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+												},
 												"display_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -583,7 +585,7 @@ func DataSourceIBMCmOffering() *schema.Resource {
 													Description: "The time validation ended.",
 												},
 												"est_deploy_time": &schema.Schema{
-													Type:        schema.TypeString,
+													Type:        schema.TypeFloat,
 													Computed:    true,
 													Description: "The estimated time validation takes.",
 												},
@@ -1967,21 +1969,11 @@ func DataSourceIBMCmOffering() *schema.Resource {
 				Computed:    true,
 				Description: "Denotes sharing including access list availability of an Offering is enabled.",
 			},
-			"publish_to_access_list": &schema.Schema{
+			"share_with_access_list": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "A list of account IDs to add to this offering's access list.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"publish_to_ibm": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether you would like to publish this offering to IBM or not.",
-			},
-			"publish_to_public": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether you would like to publish this offering to the public catalog or not.",
 			},
 			"permit_request_ibm_public_publish": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -2531,6 +2523,22 @@ func dataSourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData
 
 	if err = d.Set("offering_support_url", offering.OfferingSupportURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting offering_support_url: %s", err))
+	}
+
+	tags := []string{}
+	if offering.Tags != nil {
+		tags = offering.Tags
+	}
+	if err = d.Set("tags", tags); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+	}
+
+	keywords := []string{}
+	if offering.Keywords != nil {
+		keywords = offering.Keywords
+	}
+	if err = d.Set("keywords", keywords); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting keywords: %s", err))
 	}
 
 	rating := []map[string]interface{}{}
@@ -3145,6 +3153,12 @@ func dataSourceIBMCmOfferingConfigurationToMap(model *catalogmanagementv1.Config
 		modelMap["type"] = *model.Type
 	}
 	if model.DefaultValue != nil {
+		defaultValueJson, err := json.Marshal(model.DefaultValue)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
+		}
+		defaultValueString, _ := strconv.Unquote(string(defaultValueJson))
+		modelMap["default_value"] = defaultValueString
 	}
 	if model.DisplayName != nil {
 		modelMap["display_name"] = *model.DisplayName
@@ -3190,12 +3204,9 @@ func dataSourceIBMCmOfferingRenderTypeToMap(model *catalogmanagementv1.RenderTyp
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = *model.GroupingIndex
 	}
-	// if model.ConfigConstraints != nil {
-	// 	configConstraintsMap := make(map[string]interface{}, len(model.ConfigConstraints))
-	// 	for k, v := range model.ConfigConstraints {
-	// 	}
-	// 	modelMap["config_constraints"] = flex.Flatten(configConstraintsMap)
-	// }
+	if model.ConfigConstraints != nil {
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints)
+	}
 	if model.Associations != nil {
 		associationsMap, err := dataSourceIBMCmOfferingRenderTypeAssociationsToMap(model.Associations)
 		if err != nil {
@@ -3626,8 +3637,8 @@ func dataSourceIBMCmOfferingCostBreakdownToMap(model *catalogmanagementv1.CostBr
 	if model.TotalHourlyCost != nil {
 		modelMap["total_hourly_cost"] = *model.TotalHourlyCost
 	}
-	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_c_ost"] = *model.TotalMonthlyCOst
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_c_ost"] = *model.TotalMonthlyCost
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -3734,7 +3745,7 @@ func dataSourceIBMCmOfferingCostSummaryToMap(model *catalogmanagementv1.CostSumm
 	return modelMap, nil
 }
 
-func dataSourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.Dependency) (map[string]interface{}, error) {
+func dataSourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.OfferingReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CatalogID != nil {
 		modelMap["catalog_id"] = *model.CatalogID

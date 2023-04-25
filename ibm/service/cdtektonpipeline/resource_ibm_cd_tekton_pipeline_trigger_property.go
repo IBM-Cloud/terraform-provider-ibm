@@ -15,6 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
@@ -158,10 +159,10 @@ func resourceIBMCdTektonPipelineTriggerPropertyCreate(context context.Context, d
 		createTektonPipelineTriggerPropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("enum"); ok {
-		enumInterface := d.Get("enum").([]interface{})
-		enum := make([]string, len(enumInterface))
-		for i, v := range enumInterface {
-			enum[i] = fmt.Sprint(v)
+		var enum []string
+		for _, v := range d.Get("enum").([]interface{}) {
+			enumItem := v.(string)
+			enum = append(enum, enumItem)
 		}
 		createTektonPipelineTriggerPropertiesOptions.SetEnum(enum)
 	}
@@ -219,19 +220,25 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 	if err = d.Set("type", triggerProperty.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
-	if err = d.Set("value", triggerProperty.Value); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+	if !core.IsNil(triggerProperty.Value) {
+		if err = d.Set("value", triggerProperty.Value); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+		}
 	}
-	if triggerProperty.Enum != nil {
+	if !core.IsNil(triggerProperty.Enum) {
 		if err = d.Set("enum", triggerProperty.Enum); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
 		}
 	}
-	if err = d.Set("path", triggerProperty.Path); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
+	if !core.IsNil(triggerProperty.Path) {
+		if err = d.Set("path", triggerProperty.Path); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
+		}
 	}
-	if err = d.Set("href", triggerProperty.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	if !core.IsNil(triggerProperty.Href) {
+		if err = d.Set("href", triggerProperty.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
 	}
 
 	return nil
@@ -283,10 +290,10 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 		}
 	} else if d.Get("type").(string) == "single_select" {
 		if d.HasChange("enum") || d.HasChange("value") {
-			enumInterface := d.Get("enum").([]interface{})
-			enum := make([]string, len(enumInterface))
-			for i, v := range enumInterface {
-				enum[i] = fmt.Sprint(v)
+			var enum []string
+			for _, v := range d.Get("enum").([]interface{}) {
+				enumItem := v.(string)
+				enum = append(enum, enumItem)
 			}
 			replaceTektonPipelineTriggerPropertyOptions.SetEnum(enum)
 			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))

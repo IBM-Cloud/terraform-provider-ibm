@@ -16,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
@@ -356,6 +356,9 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a root CA use the format `<region>/<instance_id>/<name>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]

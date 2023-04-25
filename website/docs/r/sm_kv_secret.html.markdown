@@ -34,7 +34,7 @@ Review the argument reference that you can specify for your resource.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
   * Constraints: Allowable values are: `private`, `public`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
-* `data` - (Optional, Forces new resource, Map) The payload data of a key-value secret.
+* `data` - (Optional, Map) The payload data of a key-value secret. You can manually rotate the secret by modifying this argument. Modifying the payload creates a new version of the secret.
   * Constraints: The minimum length is `1` item.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
@@ -124,11 +124,11 @@ You can import the `ibm_sm_kv_secret` resource by using `region`, `instance_id`,
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_kv_secret.sm_kv_secret <region>/<instance_id>/<secret_id>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_kv_secret.sm_kv_secret us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/b49ad24d-81d4-5ebc-b9b9-b0937d1c84d5
 ```

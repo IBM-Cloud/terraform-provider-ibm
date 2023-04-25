@@ -115,6 +115,11 @@ func DataSourceSnapshots() *schema.Resource {
 							Computed:    true,
 							Description: "Encryption type of the snapshot",
 						},
+						isSnapshotEncryptionKey: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A reference to the root key used to wrap the data encryption key for the source volume.",
+						},
 						isSnapshotHref: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -293,6 +298,9 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			isSnapshotLCState:      *snapshot.LifecycleState,
 			isSnapshotResourceType: *snapshot.ResourceType,
 			isSnapshotBootable:     *snapshot.Bootable,
+		}
+		if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
+			l[isSnapshotEncryptionKey] = *snapshot.EncryptionKey.CRN
 		}
 		if snapshot.CapturedAt != nil {
 			l[isSnapshotCapturedAt] = (*snapshot.CapturedAt).String()

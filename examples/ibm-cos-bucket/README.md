@@ -195,9 +195,9 @@ data "ibm_cos_bucket" "standard-ams03" {
 
 <!-- COS SATELLITE PROJECT -->
 
-## COS SATELLITE
+## COS Satellite
 
-The following example creates a bucket and add object versioning and expiration features on COS satellite location. As of now we are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. We don't have any resource group in satellite.We can not use storage_class with Satellite location id.
+The following example creates a bucket and adds object versioning and expiration features on COS Satellite location. As of now we are using existing COS instance to create bucket, so no need to create any COS instance via terraform. We do not have any resource group in Satellite. We can not use storage_class with Satellite location id.
 
 * [IBM Satellite](https://cloud.ibm.com/docs/satellite?topic=satellite-getting-started)
 * [IBM COS Satellite](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite)
@@ -232,17 +232,18 @@ resource "ibm_cos_bucket" "cos_bucket" {
 }
 ```
 
-## COS REPLICATION
+## COS Replication
 
 Replication allows users to define rules for automatic, asynchronous copying of objects from a source bucket to a destination bucket in the same or different location.
 
 **Note:**
 
- you must have `writer` or `manager` platform roles on source bucket and sufficient platform roles to create new [IAM policies](https://cloud.ibm.com/docs/account?topic=account-iamoverview#iamoverview) that allow the source bucket to write to the destination bucket.
- Add depends_on on ibm_iam_authorization_policy.policy in template to make sure replication only enabled once iam  authorization policy set.
+You must have writer or manager platform roles on source bucket and sufficient platform roles to create new [IAM policies](https://cloud.ibm.com/docs/account?topic=account-iamoverview#iamoverview) that allow the source bucket to write to the destination bucket.
+
+Add depends_on on ibm_iam_authorization_policy.policy in template to make sure replication is only enabled once iam authorization policy is set.
 
 ## Example usage
-The following example creates an instance of IBM Cloud Object Storage. Then, multiple buckets are created and configured replication policy.
+The following example creates an instance of IBM Cloud Object Storage. Then, multiple buckets are created and configured with replication policy.
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
@@ -353,12 +354,12 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
 }
 
 ```
-## COS Objectlock
+## COS Object Lock
 
-COS objectlock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legalhold for an object.
+Object Lock preserves electronic records and maintains data integrity by ensuring that individual object versions are stored in a WORM (Write-Once-Read-Many), non-erasable and non-rewritable manner. This policy is enforced until a specified date or the removal of any legal holds.
 
 ## Example usage
-The following example creates an instance of IBM Cloud Object Storage.Then creates bucket with objectlock enabled and then set objectlock configuration on the bucket.
+The following example creates an instance of IBM Cloud Object Storage, creates a bucket with Object Lock enabled, and then sets Object Lock configuration on the bucket.
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
@@ -442,7 +443,7 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 | permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
 | enable | Specifies Versioning status either **enable or suspended** for an objects in the bucket. | `bool` | no
 | hard_quota | sets a maximum amount of storage (in bytes) available for a bucket. | `int` | no
-| object_lock | enables objectlock on a bucket. | `bool` | no
+| object_lock | enables Object Lock on a bucket. | `bool` | no
 | bucket\_crn | The CRN of the source COS bucket. | `string` | yes |
 | bucket\_location | The location of the source COS bucket. | `string` | yes |
 | destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `String` | yes
@@ -451,11 +452,11 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 | rule_id | The rule id. | `String` | no
 | priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `String` | no
 | prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `String` | no
-| bucket_crn | The CRN of the COS bucket on which objectlock is enabled or should be enabled. | `String` | yes
+| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `String` | yes
 | bucket_location | Location of the COS bucket. | `String` | yes
 | endpoint_type | Endpoint types of the COS bucket. | `String` | no
-| object_lock_enabled | Enable objectlock on an existing COS bucket. | `String` | yes
-| mode | Retention mode for the objectlock configuration. | `String` | yes
+| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `String` | yes
+| mode | Retention mode for the Object Lock configuration. | `String` | yes
 | years | Retention period in terms of years after which the object can be deleted. | `int` | no
 | days | Retention period in terms of days after which the object can be deleted. | `int` | no
 {: caption="inputs"}
