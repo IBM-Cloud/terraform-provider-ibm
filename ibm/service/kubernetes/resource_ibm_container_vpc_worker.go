@@ -21,6 +21,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	softwaredefinedstorage "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes/utils/softwaredefinedstorage"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 
 	v1 "k8s.io/api/core/v1"
@@ -44,6 +45,11 @@ var replaceInProgress bool = false
 // Variable to identify the first run
 var initRun int = 1
 
+const (
+	ptx = "PTX"
+	odf = "ODF"
+)
+
 func ResourceIBMContainerVpcWorker() *schema.Resource {
 
 	return &schema.Resource{
@@ -65,6 +71,47 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				Description: "Cluster name",
 			},
 
+			"sds": {
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Name of Software Defined Storage",
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					var sdsList []string = []string{odf, ptx}
+					value := v.(string)
+					set := make(map[string]bool)
+					var err error
+					for _, v := range sdsList {
+						set[v] = true
+					}
+					if !set[strings.ToUpper(value)] {
+						err = fmt.Errorf("[ERROR] Software Defined Storage not found! The current supported values are ODF and PTX!")
+						errors = append(errors, err)
+					}
+					return
+				},
+				DiffSuppressFunc: flex.ApplyOnce,
+				RequiredWith:     []string{"kube_config_path"},
+			},
+
+			"sds_timeout": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Default:          "15m",
+				Description:      "Timeout for checking sds deployment/status",
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					value := v.(string)
+					var err error
+					_, err = time.ParseDuration(value)
+					if err != nil {
+						errors = append(errors, fmt.Errorf("[ERROR] Error parsing sds_timeout: %s", err))
+					}
+					return
+				},
+			},
+
 			"replace_worker": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -84,7 +131,7 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
-				RequiredWith:     []string{"check_ptx_status"},
+				RequiredWith:     []string{"check_ptx_status", "sds"},
 				Description:      "Path of downloaded cluster config",
 			},
 
@@ -143,12 +190,21 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	cluster_config, cc_ok := d.GetOk("kube_config_path")
 	check_ptx_status := d.Get("check_ptx_status").(bool)
 	clusterNameorID := d.Get("cluster_name").(string)
+	sds := d.Get("sds").(string)
+	sds_timeout, err := time.ParseDuration(d.Get("sds_timeout").(string))
+	var t softwaredefinedstorage.Sds
 
-	if check_ptx_status {
+	// Check for Sds solution
+	if sds == "ODF" {
+		t = softwaredefinedstorage.NewSdsOdf()
+	} else {
+		t = softwaredefinedstorage.NewSdsNoop()
+	}
+
+	if check_ptx_status || len(sds) != 0 {
 		//Validate & Check kubeconfig
-
 		if !cc_ok {
-			return fmt.Errorf("[ERROR] kube_config_path argument must be specified if check_ptx_status is true")
+			return fmt.Errorf("[ERROR] kube_config_path argument must be specified if check_ptx_status is true or sds is set")
 		} else {
 			//1. Load the cluster config
 			config, err := clientcmd.BuildConfigFromFlags("", cluster_config.(string))
@@ -161,10 +217,15 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 				return fmt.Errorf("[ERROR] Invalid kubeconfig,, failed to create clientset: %s", err)
 			}
 			//3. List pods from kube-system namespace
-			_, err = clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
+			_, err = clientset.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
 			if err != nil {
 				return fmt.Errorf("[ERROR] Invalid kubeconfig, failed to list resource: %s", err)
 			}
+			//4. Set globals
+			softwaredefinedstorage.SetGlobals(&softwaredefinedstorage.ClusterConfig{
+				RestConfig: config,
+				ClientSet:  clientset,
+			}, sds_timeout)
 		}
 		log.Printf("Kubeconfig is valid")
 	}
@@ -179,7 +240,7 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	}()
 
 	//Continue only if the previous resource status is success
-	err := waitForPreviousResource(workerID)
+	err = waitForPreviousResource(workerID)
 	if err != nil {
 		return err
 	}
@@ -198,6 +259,11 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	worker, err := wkClient.Workers().Get(clusterNameorID, workerID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting container vpc worker node: %s", err)
+	}
+
+	err = t.PreWorkerReplace(worker)
+	if err != nil {
+		return err
 	}
 
 	cls, err := wkClient.Clusters().GetCluster(clusterNameorID, targetEnv)
@@ -220,7 +286,7 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	workersCount := len(workers)
 
 	// check if change is present in MAJOR.MINOR version or in PATCH version
-	if check_ptx_status || (worker.KubeVersion.Actual != worker.KubeVersion.Target) {
+	if check_ptx_status || (worker.KubeVersion.Actual != worker.KubeVersion.Target) || len(sds) != 0 {
 		_, err = wkClient.Workers().ReplaceWokerNode(cls.ID, worker.ID, targetEnv)
 		// As API returns http response 204 NO CONTENT, error raised will be exempted.
 		if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
@@ -264,6 +330,11 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 			d.Set("ip", _network.IpAddress)
 			break
 		}
+	}
+
+	err = t.PostWorkerReplace(worker)
+	if err != nil {
+		return err
 	}
 
 	if check_ptx_status {
@@ -635,3 +706,11 @@ func vpcClusterVpcWorkersVersionRefreshFunc(client v2.Workers, workerID, cluster
 		return worker, versionUpdating, nil
 	}
 }
+
+/* NOTE -
+#######
+
+We will be removing the PTX functionality here and adding it to the kubernetes/utils folder to provide a more generic file structure for future software defined storage solutions
+
+########
+*/
