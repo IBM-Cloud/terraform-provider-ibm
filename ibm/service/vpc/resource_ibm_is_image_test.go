@@ -6,6 +6,7 @@ package vpc_test
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -34,6 +35,25 @@ func TestAccIBMISImage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_image.isExampleImage", "name", name),
 				),
+			},
+		},
+	})
+}
+func TestAccIBMISImage_error(t *testing.T) {
+	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMISImageError(name),
+				ExpectError: regexp.MustCompile("is not attached to a virtual server instance"),
+			},
+			{
+				Config:      testAccCheckIBMISImageError2(name),
+				ExpectError: regexp.MustCompile("is not boot volume"),
 			},
 		},
 	})
@@ -182,6 +202,26 @@ func testAccCheckIBMISImageConfig1(vpcname, subnetname, sshname, publicKey, inst
 				create = "45m"
 			}
 		  }`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, name)
+}
+func testAccCheckIBMISImageError(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImageFromVolume" {
+			name = "%s"
+			source_volume = "%s"
+			timeouts {
+				create = "45m"
+			}
+		}`, name, acc.VSIUnattachedBootVolumeID)
+}
+func testAccCheckIBMISImageError2(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "isExampleImageFromVolume" {
+			name = "%s"
+			source_volume = "%s"
+			timeouts {
+				create = "45m"
+			}
+		}`, name, acc.VSIDataVolumeID)
 }
 
 func testAccCheckIBMISImageEncryptedConfig(name string) string {

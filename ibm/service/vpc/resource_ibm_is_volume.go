@@ -272,6 +272,57 @@ func ResourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "The maximum bandwidth (in megabits per second) for the volume",
 			},
+
+			isVolumesOperatingSystem: &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The operating system associated with this volume. If absent, this volume was notcreated from an image, or the image did not include an operating system.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isVolumeArchitecture: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The operating system architecture.",
+						},
+						isVolumeDHOnly: &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups.",
+						},
+						isVolumeDisplayName: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A unique, display-friendly name for the operating system.",
+						},
+						isVolumeOSFamily: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The software family for this operating system.",
+						},
+
+						isVolumesOperatingSystemHref: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this operating system.",
+						},
+						isVolumesOperatingSystemName: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this operating system.",
+						},
+						isVolumeOSVendor: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The vendor of the operating system.",
+						},
+						isVolumeOSVersion: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The major release version of this operating system.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -575,6 +626,12 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(flex.ResourceGroupName, vol.ResourceGroup.Name)
 		d.Set(isVolumeResourceGroup, *vol.ResourceGroup.ID)
 	}
+	operatingSystemList := []map[string]interface{}{}
+	if vol.OperatingSystem != nil {
+		operatingSystemMap := dataSourceVolumeCollectionVolumesOperatingSystemToMap(*vol.OperatingSystem)
+		operatingSystemList = append(operatingSystemList, operatingSystemMap)
+	}
+	d.Set(isVolumesOperatingSystem, operatingSystemList)
 	return nil
 }
 

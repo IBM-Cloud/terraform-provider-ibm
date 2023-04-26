@@ -43,6 +43,14 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Endpoint gateway created date and time",
 			},
+			isVirtualEndpointGatewayServiceEndpoints: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "The fully qualified domain names for the target service. A fully qualified domain name for the target service",
+			},
 			isVirtualEndpointGatewayHealthState: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -165,6 +173,9 @@ func dataSourceIBMISEndpointGatewayRead(
 	d.Set(isVirtualEndpointGatewayTarget, flattenEndpointGatewayTarget(
 		result.Target.(*vpcv1.EndpointGatewayTarget)))
 	d.Set(isVirtualEndpointGatewayVpcID, result.VPC.ID)
+	if len(result.ServiceEndpoints) > 0 {
+		d.Set(isVirtualEndpointGatewayServiceEndpoints, result.ServiceEndpoints)
+	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *result.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(

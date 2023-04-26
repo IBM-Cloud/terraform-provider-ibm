@@ -36,3 +36,4 @@ In addition to all argument references listed, you can access the following attr
 
 * `status` - (String) Returns the current status of a task.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_scope_correlation is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

@@ -638,12 +638,12 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 
 	}
-
-	taintParam := expandWorkerPoolTaints(d, meta, cls.ID, "default")
-
-	err = csClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
+	var taints []interface{}
+	if taintRes, ok := d.GetOk("taints"); ok {
+		taints = taintRes.(*schema.Set).List()
+	}
+	if err := updateWorkerpoolTaints(d, meta, clusterID, "default", taints); err != nil {
+		return err
 	}
 
 	return resourceIBMContainerVpcClusterRead(d, meta)

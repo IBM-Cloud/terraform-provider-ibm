@@ -6,7 +6,7 @@ description: |-
   Get information about secrets manager secret
 ---
 
-# ibm_secrets_manager_secret
+# ibm_secrets_manager_secret (Deprecated)
 Retrieve information about the secrets manager secret data sources.  For more information, about getting started with secrets manager, see [about secrets manager](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-getting-started).
 
 ## Example usage
@@ -31,7 +31,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `access_groups` - (String) The access groups that define the capabilities of the service ID and API key that are generated for an `iam_credentials` secret. **Tip** To find the ID of an access group, go to **Manage > Access (IAM) > Access groups** in the IBM Cloud console. Select the access group to inspect, and click **Details** to view its ID.
-- `api_key` - (String) The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.
+- `api_key` - (String) The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.
 - `crn` - (String) The Cloud Resource Name (CRN) that uniquely identifies your secrets manager resource.
 - `creation_date` - (String) The date the secret was created. The date format follows `RFC 3339`.
 - `created_by` - (String) The unique identifier for the entity that created the secret.

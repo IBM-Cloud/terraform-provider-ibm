@@ -9,13 +9,13 @@ import (
 	"log"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 func TestAccIBMDLGateway_basic(t *testing.T) {
@@ -54,6 +54,10 @@ func TestAccIBMDLGateway_basic(t *testing.T) {
 func TestAccIBMDLGatewayConnect_basic(t *testing.T) {
 	var instance string
 	connectgatewayname := fmt.Sprintf("gateway-connect-%d", acctest.RandIntRange(10, 100))
+	exprefix := "10.0.0.0/16"
+	exupdatedPrefix := "10.0.0.0/17"
+	imprefix := "10.0.0.0/16"
+	imupdatedPrefix := "10.0.0.0/17"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -63,11 +67,22 @@ func TestAccIBMDLGatewayConnect_basic(t *testing.T) {
 
 			{
 				//dl connect  test case
-				Config: testAccCheckIBMDLConnectGatewayConfig(connectgatewayname),
+				Config: testAccCheckIBMDLConnectGatewayConfig(connectgatewayname, exprefix, imprefix),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDLGatewayExists("ibm_dl_gateway.test_dl_connect", instance),
 					resource.TestCheckResourceAttr("ibm_dl_gateway.test_dl_connect", "name", connectgatewayname),
-					// resource.TestCheckResourceAttrSet("ibm_dl_gateway.test_dl_connect", "as_prepends.#"),
+					resource.TestCheckResourceAttr("data.ibm_dl_export_route_filter.test_dl_export_route_filter", "prefix", exprefix),
+					resource.TestCheckResourceAttr("data.ibm_dl_import_route_filter.test_dl_import_route_filter", "prefix", imprefix),
+					//resource.TestCheckResourceAttrSet("ibm_dl_gateway.test_dl_connect", "as_prepends.#"),
+				),
+			},
+			{
+				//Update test case
+				Config: testAccCheckIBMDLConnectGatewayConfig(connectgatewayname, exupdatedPrefix, imupdatedPrefix),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMDLGatewayExists("ibm_dl_gateway.test_dl_connect", instance),
+					resource.TestCheckResourceAttr("data.ibm_dl_export_route_filter.test_dl_export_route_filter", "prefix", exupdatedPrefix),
+					resource.TestCheckResourceAttr("data.ibm_dl_import_route_filter.test_dl_import_route_filter", "prefix", imupdatedPrefix),
 				),
 			},
 		},
@@ -96,9 +111,9 @@ func testAccCheckIBMDLGatewayConfig(gatewayname, custname, carriername string) s
 	  `, gatewayname, custname, carriername)
 }
 
-func testAccCheckIBMDLConnectGatewayConfig(gatewayname string) string {
+func testAccCheckIBMDLConnectGatewayConfig(gatewayname string, exprefix string, imprefix string) string {
 	return fmt.Sprintf(`
-	data "ibm_dl_ports" "test_ds_dl_ports" {
+	data "ibm_dl_ports" "ds_dlports" {
 	}
 	  resource "ibm_dl_gateway" "test_dl_connect" {
 		bgp_asn =  64999
@@ -107,10 +122,37 @@ func testAccCheckIBMDLConnectGatewayConfig(gatewayname string) string {
         name = "%s"
         speed_mbps = 1000
 		type =  "connect"
-		port =  data.ibm_dl_ports.test_ds_dl_ports.ports[0].port_id
+		port =  data.ibm_dl_ports.ds_dlports.ports[0].port_id
+		export_route_filters {
+			action = "deny"
+			prefix = "%s"
+			ge =17
+			le = 28
+		}
+		import_route_filters {
+			action = "deny"
+			prefix = "%s"
+			ge =17
+			le = 28
+		}
 	}
-	  `, gatewayname)
+	data "ibm_dl_export_route_filters" "test_dl_export_route_filters" {
+		gateway = ibm_dl_gateway.test_dl_connect.id
+    }
+	data "ibm_dl_export_route_filter" "test_dl_export_route_filter" {
+		gateway = ibm_dl_gateway.test_dl_connect.id
+		id = data.ibm_dl_export_route_filters.test_dl_export_route_filters.export_route_filters[0].export_route_filter_id
+    }
+	data "ibm_dl_import_route_filters" "test_dl_import_route_filters" {
+		gateway = ibm_dl_gateway.test_dl_connect.id
+    }
+	data "ibm_dl_import_route_filter" "test_dl_import_route_filter" {
+		gateway = ibm_dl_gateway.test_dl_connect.id
+		id = data.ibm_dl_import_route_filters.test_dl_import_route_filters.import_route_filters[0].import_route_filter_id
+    }
+	  `, gatewayname, exprefix, imprefix)
 }
+
 func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
 	sess, err := meta.(conns.ClientSession).DirectlinkV1API()
 	return sess, err

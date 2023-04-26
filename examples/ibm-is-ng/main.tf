@@ -10,15 +10,6 @@ resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
 	is_default  = true
 }
 
-resource "ibm_is_vpc_route" "route1" {
-  name        = "route1"
-  vpc         = ibm_is_vpc.vpc1.id
-  zone        = var.zone1
-  destination = "192.168.4.0/24"
-  next_hop    = "10.240.0.4"
-  depends_on  = [ibm_is_subnet.subnet1]
-}
-
 resource "ibm_is_subnet" "subnet1" {
   name            = "subnet1"
   vpc             = ibm_is_vpc.vpc1.id
@@ -83,6 +74,17 @@ resource "ibm_is_instance_template" "instancetemplate2" {
 // datasource for instance template
 data "ibm_is_instance_template" "instancetemplates" {
 	identifier = ibm_is_instance_template.instancetemplate2.id
+}
+
+// Load balancer with private DNS
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.subnet1.id]
+  profile = "network-fixed"
+  dns   {
+    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
+    zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  }
 }
 
 resource "ibm_is_lb" "lb2" {
@@ -580,10 +582,11 @@ resource "ibm_is_instance" "instance4" {
   keys      = [ibm_is_ssh_key.sshkey.id]
 }
 
-// creating a snapshot from boot volume
+// creating a snapshot from boot volume with clone
 resource "ibm_is_snapshot" "b_snapshot" {
   name          = "my-snapshot-boot"
   source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
+  clones        = [var.zone1]
   tags          = ["tags1"]
 }
 
@@ -601,6 +604,17 @@ data "ibm_is_snapshot" "ds_snapshot" {
 
 // data source for snapshots
 data "ibm_is_snapshots" "ds_snapshots" {
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clones" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clone" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+  zone     = var.zone1
 }
 
 // restoring a boot volume from snapshot in a new instance
@@ -1096,6 +1110,22 @@ resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   }
   name = "my-backup-policy-plan-1"
 }
+resource "ibm_is_backup_policy_plan" "is_backup_policy_plan_clone" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  cron_spec        = "30 09 * * *"
+  active           = false
+  attach_user_tags = ["tag2"]
+  copy_user_tags = true
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = "20"
+  }
+  name = "my-backup-policy-plan-1"
+  clone_policy {
+    zones 			= ["us-south-1", "us-south-2"]
+    max_snapshots 	= 3
+  }
+}
 
 data "ibm_is_backup_policies" "is_backup_policies" {
 }
@@ -1167,4 +1197,47 @@ data "ibm_is_vpn_server_clients" "is_vpn_server_clients" {
 data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
+}
+resource "ibm_is_vpc" "vpc" {
+  name = "my-vpc"
+}
+resource "ibm_is_share" "share" {
+  zone = "us-south-1"
+  size = 30000
+  name = "my-share"
+  profile = "tier-3iops"
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share" "sharereplica" {
+  zone = "us-south-2"
+  name = "my-share-replica"
+  profile = "tier-3iops"
+  replication_cron_spec = "0 */5 * * *"
+  source_share = ibm_is_share.share.id
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share_target" "is_share_target" {
+  share = ibm_is_share.is_share.id
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target"
+}
+
+data "ibm_is_share_target" "is_share_target" {
+  share        = ibm_is_share.is_share.id
+  share_target = ibm_is_share_target.is_share_target.share_target
+}
+
+data "ibm_is_share_targets" "is_share_targets" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_share" "is_share" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_shares" "is_shares" {
 }

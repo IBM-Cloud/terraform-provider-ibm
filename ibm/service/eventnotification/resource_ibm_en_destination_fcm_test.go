@@ -73,8 +73,10 @@ func testAccCheckIBMEnFCMDestinationConfig(instanceName, name, description strin
 		description = "%s"
 		config {
 			params {
-				sender_id = "FCM_sender_id_value"
-				server_key  = "FCM_Server_key_value"
+				project_id = "FCM_sender_id_value"
+				private_key  = "FCM_Server_key_value"
+				client_email = "testuser123@gmail.com"
+				pre_prod = false
 			}
 		}
 	}
