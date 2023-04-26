@@ -27,6 +27,10 @@ func ResourceIbmProjectInstance() *schema.Resource {
 		UpdateContext: resourceIbmProjectInstanceUpdate,
 		DeleteContext: resourceIbmProjectInstanceDelete,
 		Importer:      &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(1 * time.Minute),
+			Delete: schema.DefaultTimeout(1 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -132,38 +136,38 @@ func ResourceIbmProjectInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"crn": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "A date/time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date-time format as specified by RFC 3339.",
 						},
 						"cumulative_needs_attention_view": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "The cumulative list of needs attention items for a project.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"event": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The event name.",
 									},
 									"event_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The unique ID of a project.",
 									},
 									"config_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The unique ID of a project.",
 									},
 									"config_version": &schema.Schema{
 										Type:        schema.TypeInt,
-										Optional:    true,
+										Computed:    true,
 										Description: "The version number of the configuration.",
 									},
 								},
@@ -171,27 +175,27 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						},
 						"cumulative_needs_attention_view_err": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "True indicates that the fetch of the needs attention items failed.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The location where the project was created.",
 						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The resource group where the project was created.",
 						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The project status value.",
 						},
 						"event_notifications_crn": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The CRN of the event notifications instance if one is connected to this project.",
 						},
 					},
@@ -282,7 +286,6 @@ func resourceIbmProjectInstanceCreate(context context.Context, d *schema.Resourc
 	d.SetId(*project.ID)
 
 	_, err = waitForProjectInstanceCreate(d, meta)
-	fmt.Println("dopo la wait della create ")
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create project instance (%s) to be succeeded: %s", d.Id(), err))
 	}
@@ -306,18 +309,15 @@ func waitForProjectInstanceCreate(d *schema.ResourceData, meta interface{}) (int
 			_, resp, err := projectClient.GetProject(getProjectOptions)
 			if err == nil {
 				if resp != nil && resp.StatusCode == 200 {
-					fmt.Printf("la risorsa esiste ")
 					return resp, "exists", nil
 				} else {
-					fmt.Printf("la risorsa non esiste, proseguo il ciclo ")
 					return resp, "not_exists", nil
 				}
 			} else {
-				fmt.Printf("c'e' stato un errore ")
 				return nil, "", fmt.Errorf("[ERROR] Get the project instance %s failed with resp code: %d, err: %v", d.Id(), resp.StatusCode, err)
 			}
 		},
-		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      2 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -350,14 +350,15 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
 	}
+	metadataMap := make(map[string]interface{})
 	if !core.IsNil(project.Metadata) {
-		metadataMap, err := resourceIbmProjectInstanceProjectMetadataToMap(project.Metadata)
+		metadataMap, err = resourceIbmProjectInstanceProjectMetadataToMap(project.Metadata)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
-		}
+	}
+	if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
 	}
 
 	return nil
@@ -403,7 +404,6 @@ func resourceIbmProjectInstanceDelete(context context.Context, d *schema.Resourc
 	}
 
 	_, err = waitForProjectInstanceDelete(d, meta)
-	fmt.Printf("dopo la wait della delete ")
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for delete project instance (%s) to be succeeded: %s", d.Id(), err))
 	}
@@ -429,18 +429,15 @@ func waitForProjectInstanceDelete(d *schema.ResourceData, meta interface{}) (int
 			_, resp, err := projectClient.GetProject(getProjectOptions)
 			if err != nil {
 				if resp != nil && resp.StatusCode == 404 {
-					fmt.Printf("la risorsa non esiste piu' ")
 					return resp, "not_exists", nil
 				} else {
-					fmt.Printf("la risorsa ancora esiste, proseguo il ciclo ")
 					return resp, "exists", nil
 				}
 			} else {
-				fmt.Printf("la risorsa ancora esiste, proseguo il ciclo ")
 				return resp, "exists", nil
 			}
 		},
-		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      2 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}

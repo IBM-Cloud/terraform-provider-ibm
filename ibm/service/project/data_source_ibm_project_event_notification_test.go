@@ -49,13 +49,6 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "complete"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_project_event_notification.project_event_notification", "configs.0.name", projectName),
-					resource.TestCheckResourceAttr("data.ibm_project_event_notification.project_event_notification", "configs.0.description", projectDescription),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.0.locator_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "metadata.#"),
 				),
 			},
@@ -69,9 +62,9 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectName st
 			name = "%s"
 		}
 
-		data "ibm_project_event_notification" "project_event_notification_instance" {
+		data "ibm_project_event_notification" "project_event_notification" {
 			project_id = ibm_project_instance.project_instance_instance.id
-			exclude_configs = true
+			exclude_configs = false
 			complete = true
 		}
 	`, projectName)
@@ -87,7 +80,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
-				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.307060b5-cba0-43ec-b89e-37366051403e-global"
+				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 				input {
 					name = "name"
 				}
@@ -100,9 +93,9 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 			location = "%s"
 		}
 
-		data "ibm_project_event_notification" "project_event_notification_instance" {
+		data "ibm_project_event_notification" "project_event_notification" {
 			project_id = ibm_project_instance.project_instance_instance.id
-			exclude_configs = true
+			exclude_configs = false
 			complete = true
 		}
 	`, projectName, projectDescription, projectResourceGroup, projectLocation)

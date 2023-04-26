@@ -19,7 +19,7 @@ import (
 func TestAccIbmProjectInstanceBasic(t *testing.T) {
 	var conf projectv1.Project
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_update_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -90,7 +90,7 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 func testAccCheckIbmProjectInstanceConfigBasic(name string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_project_instance" "project_instance_instance" {
+		resource "ibm_project_instance" "project_instance" {
 			name = "%s"
 		}
 	`, name)
@@ -99,7 +99,7 @@ func testAccCheckIbmProjectInstanceConfigBasic(name string) string {
 func testAccCheckIbmProjectInstanceConfig(name string, description string, resourceGroup string, location string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_project_instance" "project_instance_instance" {
+		resource "ibm_project_instance" "project_instance" {
 			name = "%s"
 			description = "%s"
 			configs {
@@ -107,7 +107,7 @@ func testAccCheckIbmProjectInstanceConfig(name string, description string, resou
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
-				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.307060b5-cba0-43ec-b89e-37366051403e-global"
+				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 				input {
 					name = "name"
 				}
