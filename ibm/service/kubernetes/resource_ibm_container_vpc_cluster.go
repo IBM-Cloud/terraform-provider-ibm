@@ -642,7 +642,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	if taintRes, ok := d.GetOk("taints"); ok {
 		taints = taintRes.(*schema.Set).List()
 	}
-	if err := updateWorkerpoolTaints(d, meta, clusterID, "default", taints); err != nil {
+	if err := updateWorkerpoolTaints(d, meta, cls.ID, "default", taints); err != nil {
 		return err
 	}
 

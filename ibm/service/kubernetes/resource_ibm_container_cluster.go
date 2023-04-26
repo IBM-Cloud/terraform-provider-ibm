@@ -759,7 +759,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		if taintRes, ok := d.GetOk("taints"); ok {
 			taints = taintRes.(*schema.Set).List()
 		}
-		if err := updateWorkerpoolTaints(d, meta, clusterID, poolName, taints); err != nil {
+		if err := updateWorkerpoolTaints(d, meta, cls.ID, poolName, taints); err != nil {
 			return err
 		}
 	} else {
