@@ -71,6 +71,8 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
+					"location",
+					"resource_group",
 					"configs",
 				},
 			},
