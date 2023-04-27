@@ -260,7 +260,7 @@ Review the argument references that you can specify for your resource.
 - `region` - (Deprecated, Forces new resource, string) The region where the cluster is provisioned. If the region is not specified it will be defaulted to provider region(IC_REGION/IBMCLOUD_REGION). To get the list of supported regions please access this [link](https://containers.bluemix.net/v1/regions) and use the alias.
 - `wait_time_minutes` - (Deprecated, integer) The duration, expressed in minutes, to wait for the cluster to become available before declaring it as created. It is also the same amount of time waited for no active transactions before proceeding with an update or deletion. The default value is `90`.
 - `workers` - (Deprecated) The worker nodes that you want to add to the cluster. **Note** Conflicts with `worker_num`. Nested `workers` blocks have the following structure:
-- `worker_num`- (Deprecated, Optional, Integer) The number of worker nodes in your cluster. This attribute creates a worker node that is not associated with a worker pool. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource. **Note**: Conflicts with `workers`.
+- `worker_num`- (Deprecated, Optional, Integer) The number of worker nodes in your cluster. This attribute creates a worker node that is not associated with a worker pool. **Note**: Conflicts with `workers`.
 
   Nested scheme for `workers`:
   - `action` - valid actions are add, reboot and reload.
