@@ -399,23 +399,23 @@ func addNewDefaultSecurityGroupRules(d *schema.ResourceData, sess *vpcv1.VpcV1, 
 		}
 
 	}
-	parsed, sgTemplate, _, err := parseIBMISDefaultSecurityGroupRuleDictionary(d, "create", sess)
-	if err != nil {
-		return err
-	}
-	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
-	conns.IbmMutexKV.Lock(isSecurityGroupRuleKey)
-	defer conns.IbmMutexKV.Unlock(isSecurityGroupRuleKey)
+	// parsed, sgTemplate, _, err := parseIBMISDefaultSecurityGroupRuleDictionary(d, "create", sess)
+	// if err != nil {
+	// 	return err
+	// }
+	// isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
+	// conns.IbmMutexKV.Lock(isSecurityGroupRuleKey)
+	// defer conns.IbmMutexKV.Unlock(isSecurityGroupRuleKey)
 
-	options := &vpcv1.CreateSecurityGroupRuleOptions{
-		SecurityGroupID:            &parsed.secgrpID,
-		SecurityGroupRulePrototype: sgTemplate,
-	}
+	// options := &vpcv1.CreateSecurityGroupRuleOptions{
+	// 	SecurityGroupID:            &parsed.secgrpID,
+	// 	SecurityGroupRulePrototype: sgTemplate,
+	// }
 
-	_, response, err := sess.CreateSecurityGroupRule(options)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating Security Group Rule %s\n%s", err, response)
-	}
+	// _, response, err := sess.CreateSecurityGroupRule(options)
+	// if err != nil {
+	// 	return fmt.Errorf("[ERROR] Error while creating Security Group Rule %s\n%s", err, response)
+	// }
 
 	return nil
 }
