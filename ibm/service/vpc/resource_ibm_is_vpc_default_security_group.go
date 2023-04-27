@@ -754,7 +754,7 @@ func parseIBMISDefaultSecurityGroupRuleDictionary(d *schema.ResourceData, tag st
 
 	parsed.secgrpID, parsed.ruleID, err = parseISTerraformID(d.Id())
 	if err != nil {
-		parsed.secgrpID = d.Get(isSecurityGroupID).(string)
+		parsed.secgrpID = d.Get(isVPCDefaultSecurityGroup).(string)
 	} else {
 		sgTemplateUpdate.SecurityGroupID = &parsed.secgrpID
 		sgTemplateUpdate.ID = &parsed.ruleID

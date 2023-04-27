@@ -36,8 +36,15 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_vpc_default_security_group" "example" {
-  name = "example-security-group"
-  vpc  = ibm_is_vpc.example.id
+	default_security_group = ibm_is_vpc.testacc_vpc.default_security_group
+	name = "example-vpc-default-sg"
+
+	rules {
+		direction = "inbound"
+		port_max = 120
+		port_min = 120
+		protocol = "tcp"
+	}
 }
 ```
 
@@ -52,6 +59,8 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+
+- `default_security_group` - (Required, String) The security group id from the `ibm_is_vpc` resource(`ibm_is_vpc.testacc_vpc.default_security_group`).
 - `name` - (Optional, String) The security group name.
 - `rules` - (Optional, List of Objects) A nested block describes the rules of this security group. Nested `rules` blocks have the following structure.
 
@@ -65,7 +74,6 @@ Review the argument references that you can specify for your resource.
   - `remote` - (Optional, String) Security group id, an IP address, a `CIDR` block, or a single security group identifier.
   - `type` - (Optional, String) The `ICMP` traffic type to allow.
 - `tags`- (Optional, List of Strings) The tags associated with an instance.
-- `vpc` - (Required, Forces new resource, String) The VPC ID.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -73,6 +81,8 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN of the security group.
 - `id` - (String) The ID of the security group.
 - `resource_group` - (String) The resource group ID where the security group resides.
+- `vpc` - (String) The VPC ID.
+
 
 ## Import
 The `ibm_is_vpc_default_security_group` resource can be imported by using security group ID. 
