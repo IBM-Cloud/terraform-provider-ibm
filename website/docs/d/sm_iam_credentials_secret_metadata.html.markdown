@@ -63,7 +63,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 
 * `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 

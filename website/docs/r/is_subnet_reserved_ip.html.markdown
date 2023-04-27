@@ -109,6 +109,7 @@ In addition to all argument reference list, you can access the following attribu
 - `reserved_ip` - (String) The reserved IP.
 - `resource_type` - (String) The resource type.
 - `target` - (String) The ID for the target for the reserved IP.
+- `target_crn` - (String) The crn of the target for the reserved IP.
 
 ## Import
 The `ibm_is_subnet_reserved_ip` and `ibm_is_subnet` resource can be imported by using subnet ID and reserved IP ID separated by **/**.

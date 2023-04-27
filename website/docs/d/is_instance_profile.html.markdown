@@ -127,6 +127,12 @@ In addition to the argument reference list, you can access the following attribu
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `network_interface_count` - (List)
+
+  Nested scheme for `network_interface_count`:
+  - `max` - (Integer) The maximum number of vNICs supported by an instance using this profile.
+  - `min` - (Integer) The minimum number of vNICs supported by an instance using this profile.
+  - `type` - (String) The type for this profile field, Ex: range or dependent.
 - `port_speed` - (List) Nested `port_speed` blocks have the following structure:
 
   Nested scheme for `port_speed`:
