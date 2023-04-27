@@ -144,7 +144,6 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 			"taints": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Computed:    true,
 				Description: "WorkerPool Taints",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
