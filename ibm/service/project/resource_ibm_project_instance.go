@@ -351,6 +351,11 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
 	}
+	if !core.IsNil(project.Name) {
+		if err = d.Set("name", project.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+	}
 	metadataMap := make(map[string]interface{})
 	if !core.IsNil(project.Metadata) {
 		metadataMap, err = resourceIbmProjectInstanceProjectMetadataToMap(project.Metadata)
