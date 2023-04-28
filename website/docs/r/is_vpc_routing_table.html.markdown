@@ -67,7 +67,6 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `accept_routes_from_resource_type` - (List) The resource type filter specifying the resources that may create routes in this routing table. Ex: `vpn_server`, `vpn_gateway`
 - `href` - (String) The routing table URL.
 - `id` - (String) The unique identifier of the routing table. The ID is composed of `<vpc_id>/<vpc_routing_table_id>`.
 - `is_default` - (String)  Indicates the default routing table for this VPC.
