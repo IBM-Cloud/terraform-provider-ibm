@@ -269,6 +269,8 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 				Config: testAccCheckIBMVpcContainerWorkerPoolEnvvarUpdate(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "worker_count", "2"),
+					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "taints.#", "0"),
 				),
 			},
@@ -364,7 +366,7 @@ func testAccCheckIBMVpcContainerWorkerPoolEnvvarUpdate(name string) string {
 	  worker_pool_name  = "%[1]s"
 	  flavor            = "bx2.4x16"
 	  vpc_id            = "%[2]s"
-	  worker_count      = 1
+	  worker_count      = 2
 	  zones {
 		subnet_id = "%[3]s"
 		name      = "us-south-1"

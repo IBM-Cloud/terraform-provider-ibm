@@ -59,6 +59,7 @@ func TestAccIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-wp-%d", acctest.RandIntRange(10, 100))
 	testChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "id"),
+		resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "autoscale_enabled", "false"),
 	}
 	if acc.CrkID != "" {
 		testChecks = append(testChecks,
