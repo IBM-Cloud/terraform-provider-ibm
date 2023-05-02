@@ -14,7 +14,7 @@ Provides a resource for PrivateCertificateConfigurationIntermediateCA. This allo
 
 ```hcl
 resource "ibm_sm_private_certificate_configuration_intermediate_ca" "intermediate_CA" {
-  instance_id    = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id    = ibm_resource_instance.sm_instance.guid
   name           = "my_intermediate_ca"
   common_name    = "ibm.com"
   signing_method = "internal"
