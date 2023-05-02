@@ -3,7 +3,7 @@ provider "ibm" {
 }
 
 // Provision project_instance resource instance
-resource "ibm_project_instance" "project_instance_instance" {
+resource "ibm_project_instance" "project_instance" {
   name = var.project_instance_name
   description = var.project_instance_description
   configs {
