@@ -723,47 +723,29 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	var poolName string
-	var poolContains bool
 
-	if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-		poolName = defaultWorkerPool
-		poolContains = true
-	} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
-		poolName = computeWorkerPool
-		poolContains = true
-	}
-	if poolContains {
-		labels := make(map[string]string)
-		if l, ok := d.GetOk("labels"); ok {
-			for k, v := range l.(map[string]interface{}) {
-				labels[k] = v.(string)
-			}
-		}
-		err = workerPoolsAPI.UpdateLabelsWorkerPool(cls.ID, poolName, labels, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the labels %s", err)
-		}
-
-		_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
-		}
-	} else {
+	if len(workerPools) == 0 || !workerPoolContains(workerPools, defaultWorkerPool) {
 		return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
+	}
+
+	labels := make(map[string]string)
+	if l, ok := d.GetOk("labels"); ok {
+		for k, v := range l.(map[string]interface{}) {
+			labels[k] = v.(string)
+		}
+	}
+	err = workerPoolsAPI.UpdateLabelsWorkerPool(cls.ID, defaultWorkerPool, labels, targetEnv)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error updating the labels %s", err)
 	}
 
 	//taints
-	if poolContains {
-		var taints []interface{}
-		if taintRes, ok := d.GetOk("taints"); ok {
-			taints = taintRes.(*schema.Set).List()
-		}
-		if err := updateWorkerpoolTaints(d, meta, cls.ID, poolName, taints); err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
+	var taints []interface{}
+	if taintRes, ok := d.GetOk("taints"); ok {
+		taints = taintRes.(*schema.Set).List()
+	}
+	if err := updateWorkerpoolTaints(d, meta, cls.ID, defaultWorkerPool, taints); err != nil {
+		return err
 	}
 
 	//force_delete_storage
