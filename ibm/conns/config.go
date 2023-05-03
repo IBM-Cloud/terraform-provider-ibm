@@ -1544,10 +1544,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.projectClientErr = fmt.Errorf("Error occurred while configuring Projects API Specification service: %q", err)
 	}
 
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		session.pushServiceClientErr = fmt.Errorf("Projects Service API does not support private endpoints")
-	}
-
 	// Construct an "options" struct for creating the service client.
 	ukoClientOptions := &ukov4.UkoV4Options{
 		Authenticator: authenticator,

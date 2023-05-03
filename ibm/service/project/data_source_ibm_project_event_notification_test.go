@@ -76,7 +76,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 			name = "%s"
 			description = "%s"
 			configs {
-				id = "id"
+				id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
