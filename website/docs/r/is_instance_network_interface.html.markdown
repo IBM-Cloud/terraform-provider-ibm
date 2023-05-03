@@ -47,7 +47,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = "a7a0626c-f97e-4180-afbe-0331ec62f32a"
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -91,12 +91,11 @@ The following arguments are supported:
 - `subnet` - (Required, Forces new resource, String) The unique identifier of the associated subnet.
   
 
-~> **Note**
-  - Only 1 floating IP can be attached to a VSI at any given time. Floating IP can be de-attached from one network interface and attached to a different network interface, but be sure to remove the floating_ip field from the previous network interface resource before adding it to a new resource. 
-~> **Note**
-  - `floating_ip` cannot be used in conjunction with the `target` argument of `ibm_is_floating_ip` resource and might cause cyclic dependency/unexpected issues if used used both ways.
-~> **Note**
-  - Using `ibm_is_security_group_target` to attach security groups to the network interface along with `security_groups` field in this resource could cause undesired behavior. Use either one of them to associate network interface to a security group.
+~> **Note**  Only 1 floating IP can be attached to a VSI at any given time. Floating IP can be de-attached from one network interface and attached to a different network interface, but be sure to remove the floating_ip field from the previous network interface resource before adding it to a new resource. 
+
+~> **Note**  `floating_ip` cannot be used in conjunction with the `target` argument of `ibm_is_floating_ip` resource and might cause cyclic dependency/unexpected issues if used used both ways.
+
+~> **Note**  Using `ibm_is_security_group_target` to attach security groups to the network interface along with `security_groups` field in this resource could cause undesired behavior. Use either one of them to associate network interface to a security group.
 
 ## Attribute reference
 
@@ -125,7 +124,7 @@ You can import the `ibm_is_instance_network_interface` resource by using `id`.
 The `id` property can be formed from `instance_ID`, and `network_interface_ID` in the following format:
 
 ```
-<instance>/<network_interface>
+instance/network_interface
 ```
 - `instance`: A string. The instance identifier.
 - `network_interface`: A string. The network interface identifier.
