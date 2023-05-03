@@ -1246,8 +1246,7 @@ data "ibm_is_shares" "is_shares" {
 // vsi boot volume
 
 resource "ibm_is_instance_boot_volume" "vol1" {
-  volume  = ibm_is_instance.boot_volume.0.volume_id
+  volume_id  = ibm_is_instance.boot_volume.0.volume_id
   name    = "vol1"
   profile = "10iops-tier"
-  zone    = var.zone1
 }
