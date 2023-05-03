@@ -61,7 +61,6 @@ Review the argument references that you can specify for your resource.
 
 - `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume
 - `delete_all_snapshots` - (Optional, Bool) Deletes all snapshots created from this volume.
-- `encryption_key` - (Optional, Forces new resource, String) The key to use for encrypting this volume.
 - `iops` - (Optional, Integer) The total input/ output operations per second (IOPS) for your storage. This value is required for `custom` storage profiles only.
 
   ~> **NOTE:** `iops` value can be upgraded and downgraged if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
@@ -85,8 +84,7 @@ Review the argument references that you can specify for your resource.
 - `profile` - (Required, String) The profile to use for this volume.
 
   ~> **NOTE:**  tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
-- `resource_group` - (Optional, Forces new resource, String) The resource group ID for this volume.
-- `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+
 - `source_snapshot` - The ID of snapshot from which to clone the volume.
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `zone` - (Required, Forces new resource, String) The location of the volume.
@@ -110,7 +108,8 @@ In addition to all argument reference list, you can access the following attribu
   - `message` - (String) An explanation of the status reason.
   - `more_info` - (String) Link to documentation about this status reason
 - `crn` - (String) The CRN for the volume.
-
+- `encryption_key` - (String) The key to use for encrypting this volume.
+- `resource_group` - (String) The resource group ID for this volume.
 ## Import
 The `ibm_is_instance_boot_volume` resource can be imported by using volume ID.
 

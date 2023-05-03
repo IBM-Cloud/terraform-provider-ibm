@@ -294,16 +294,7 @@ func ResourceIBMISInstanceBootVolumeValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
 			MinValue:                   "10",
-			MaxValue:                   "16000"})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 isVolumeSourceSnapshot,
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[-0-9a-z_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             64})
+			MaxValue:                   "250"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isVolumeIops,
