@@ -12,7 +12,7 @@ Provides a resource to manage a boot volume of a VPC virtual server instance. Ma
 
 ~> **NOTE:** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `ibm_is_instance_boot_volume` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
 
-Every Virtual server instance has a boot volume that can be managed but not destroyed. When Terraform first adopts a instance_boot_volume, 
+Every Virtual server instance has a boot volume that needs to be managed but not destroyed. When Terraform first adopts a instance_boot_volume, 
 
 For more information, about VPC, see [getting started with Virtual Private Cloud](https://cloud.ibm.com/docs/vpc?topic=vpc-getting-started). For more information, about updating default security group, see [updating a VPC's default security group rules](https://cloud.ibm.com/docs/vpc?topic=vpc-updating-the-default-security-group&interface=ui).
 
