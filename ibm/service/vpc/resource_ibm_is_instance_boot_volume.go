@@ -508,6 +508,9 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		options.VolumePatch = volumeNamePatch
 		_, _, err = sess.UpdateVolume(options)
+		if err != nil {
+			return err
+		}
 		_, err = isWaitForInstanceBootVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return err
