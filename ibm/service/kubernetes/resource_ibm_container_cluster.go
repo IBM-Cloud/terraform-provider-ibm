@@ -748,13 +748,6 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	//force_delete_storage
-	var forceDeleteStorage bool
-	if v, ok := d.GetOk("force_delete_storage"); ok {
-		forceDeleteStorage = v.(bool)
-	}
-	d.Set("force_delete_storage", forceDeleteStorage)
-
 	return resourceIBMContainerClusterRead(d, meta)
 }
 

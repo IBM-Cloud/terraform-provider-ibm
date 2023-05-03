@@ -241,37 +241,33 @@ func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 	clusterNameorID := d.Get("cluster").(string)
-	if ioc, ok := d.GetOk("import_on_create"); ok && ioc.(bool) {
-			log.Printf("Importing workerpool from cluster %s", clusterID)
-
-			//read to get ID for default and d.Set!
-			wpClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-			if err != nil {
-				return err
-			}
-			targetEnv, err := getVpcClusterTargetHeader(d, meta)
-			if err != nil {
-				return err
-			}
-
-			wp, err := wpClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
-			if err != nil {
-				return err
-			}
-
-			d.SetId(fmt.Sprintf("%s/%s", clusterID, wp.ID))
-
-			return resourceIBMContainerVpcWorkerPoolRead(d, meta)
-
-		}
-	}
 
 	wpClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
 
-	clusterNameorID := d.Get("cluster").(string)
+	if ioc, ok := d.GetOk("import_on_create"); ok && ioc.(bool) {
+		log.Printf("Importing workerpool from cluster %s", clusterNameorID)
+
+		//read to get ID for default and d.Set!
+
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+
+		wp, err := wpClient.WorkerPools().GetWorkerPool(clusterNameorID, "default", targetEnv)
+		if err != nil {
+			return err
+		}
+
+		d.SetId(fmt.Sprintf("%s/%s", clusterNameorID, wp.ID))
+
+		return resourceIBMContainerVpcWorkerPoolRead(d, meta)
+
+	}
+
 	var zonei []interface{}
 
 	zone := []v2.Zone{}
