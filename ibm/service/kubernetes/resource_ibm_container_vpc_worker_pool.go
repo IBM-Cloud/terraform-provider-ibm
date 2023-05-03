@@ -210,7 +210,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "Import a workerpool from a cluster",
+				Description:      "Import an existing WorkerPool from the cluster, instead of creating a new",
 			},
 		},
 	}
