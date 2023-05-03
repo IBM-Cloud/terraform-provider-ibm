@@ -3,7 +3,7 @@ provider "ibm" {
 }
 
 // Provision project_instance resource instance
-resource "ibm_project" "project_instance" {
+resource "ibm_project_instance" "project_instance" {
   name = "My static website"
   description = "Sample static website test using the IBM catalog deployable architecture"
   configs {
