@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_project_event_notification"
 description: |-
   Get information about Project definition
-subcategory: "Projects API Specification"
+subcategory: "Project"
 ---
 
 # ibm_project_event_notification
