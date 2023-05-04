@@ -108,7 +108,15 @@ In addition to all argument reference list, you can access the following attribu
 - `name` - (String) The user defined name for the instance group manager action. Names must be unique within the instance group manager.
 - `next_run_at` - (Timestamp) The date and time the scheduled action will next run. If empty the system is currently calculating the next run time.
 - `resource_type` - (String) The resource type.
-- `status` - (String) The status of the instance group action. **active** Action is ready to be run. **completed** Action completed successfully. **failed** Action could not be completed successfully. **incompatible** Action parameters are not compatible with the group or manager. **omitted** Action not applied when the action's manager is disabled.
+- `status` - (String) The status of the instance group action. 
+
+   -> **Supported Status** 
+   &#x2022; **active** Action is ready to be run. 
+   </br>&#x2022; **completed** Action completed successfully. 
+   </br>&#x2022; **failed** Action could not be completed successfully. 
+   </br>&#x2022; **incompatible** Action parameters are not compatible with the group or manager. 
+   </br>&#x2022; **omitted** Action not applied when the action's manager is disabled.
+
 - `target_manager_name` - (String) The name of the instance group manager of type autoscale.
 - `updated_at` - (Timestamp) The date and time that the instance group manager action was modified.
 

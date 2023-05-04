@@ -14,7 +14,7 @@ Provides a resource for PublicCertificateConfigurationCALetsEncrypt. This allows
 
 ```hcl
 resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name          = "lets-encrypt-config"
   lets_encrypt_environment = "production"

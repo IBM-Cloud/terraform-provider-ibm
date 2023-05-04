@@ -46,7 +46,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
   metadata_service_enabled  = false
 
   boot_volume {
@@ -189,7 +189,7 @@ resource "ibm_is_security_group_rule" "example3" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet          = ibm_is_subnet.example.id
@@ -472,8 +472,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
-    -> **Allowed vNIC per profile.** 
-    **&#x2022;** 2-16 vCPUs: Up to 5 vNICs </br> **&#x2022;** 17-48 vCPUs: Up to 10 vNICs </br> **&#x2022;** 49+ vCPUs: Up to 15 vNICs
+    -> **Allowed vNIC per profile.** Follow the vNIC count as per the instance profile's `network_interface_count`. For details see  [`is_instance_profile`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profile) or [`is_instance_profiles`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profiles).
 
   Nested scheme for `network_interfaces`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.

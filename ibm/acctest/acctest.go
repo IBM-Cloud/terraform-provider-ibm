@@ -138,6 +138,10 @@ var KmsInstanceID string
 var CrkID string
 var KmsAccountID string
 
+// for snapshot encryption
+var IsKMSInstanceId string
+var IsKMSKeyName string
+
 // For Power Colo
 
 var Pi_image string
@@ -614,6 +618,18 @@ func init() {
 		//InstanceProfileName = "bc1-2x8" // for classic infrastructure
 		InstanceProfileName = "cx2-2x4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
+	}
+
+	IsKMSInstanceId = os.Getenv("SL_KMS_INSTANCE_ID")
+	if IsKMSInstanceId == "" {
+		IsKMSInstanceId = "30222bb5-1c6d-3834-8d78-ae6348cf8z61" // kms instance id
+		fmt.Println("[INFO] Set the environment variable SL_KMS_INSTANCE_ID for testing ibm_kms_key resource else it is set to default value '30222bb5-1c6d-3834-8d78-ae6348cf8z61'")
+	}
+
+	IsKMSKeyName = os.Getenv("SL_KMS_KEY_NAME")
+	if IsKMSKeyName == "" {
+		IsKMSKeyName = "tfp-test-key" // kms instance key name
+		fmt.Println("[INFO] Set the environment variable SL_KMS_KEY_NAME for testing ibm_kms_key resource else it is set to default value 'tfp-test-key'")
 	}
 
 	InstanceProfileNameUpdate = os.Getenv("SL_INSTANCE_PROFILE_UPDATE")

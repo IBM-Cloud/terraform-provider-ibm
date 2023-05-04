@@ -14,7 +14,7 @@ Provides a resource for PrivateCertificateConfigurationRootCA. This allows Priva
 
 ```hcl
 resource "ibm_sm_private_certificate_configuration_root_ca" "private_certificate_root_CA" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name          = "my_root_ca"
   common_name   = "ibm.com"
