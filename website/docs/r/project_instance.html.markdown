@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_project_instance"
 description: |-
   Manages Project definition.
-subcategory: "Projects API Specification"
+subcategory: "Project"
 ---
 
 # ibm_project_instance
