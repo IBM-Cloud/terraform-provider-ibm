@@ -14,7 +14,7 @@ Provides a resource for UsernamePasswordSecret. This allows UsernamePasswordSecr
 
 ```hcl
 resource "ibm_sm_username_password_secret" "sm_username_password_secret" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
@@ -25,7 +25,7 @@ resource "ibm_sm_username_password_secret" "sm_username_password_secret" {
 		interval = 1
 		unit = "day"
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
   name = "username_password-secret-example"
   username = "username-example"
   password = "password-example"
