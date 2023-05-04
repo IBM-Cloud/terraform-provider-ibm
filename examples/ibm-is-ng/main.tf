@@ -10,15 +10,6 @@ resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
 	is_default  = true
 }
 
-resource "ibm_is_vpc_route" "route1" {
-  name        = "route1"
-  vpc         = ibm_is_vpc.vpc1.id
-  zone        = var.zone1
-  destination = "192.168.4.0/24"
-  next_hop    = "10.240.0.4"
-  depends_on  = [ibm_is_subnet.subnet1]
-}
-
 resource "ibm_is_subnet" "subnet1" {
   name            = "subnet1"
   vpc             = ibm_is_vpc.vpc1.id
@@ -83,6 +74,17 @@ resource "ibm_is_instance_template" "instancetemplate2" {
 // datasource for instance template
 data "ibm_is_instance_template" "instancetemplates" {
 	identifier = ibm_is_instance_template.instancetemplate2.id
+}
+
+// Load balancer with private DNS
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.subnet1.id]
+  profile = "network-fixed"
+  dns   {
+    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
+    zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  }
 }
 
 resource "ibm_is_lb" "lb2" {

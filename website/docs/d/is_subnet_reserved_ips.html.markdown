@@ -49,5 +49,6 @@ In addition to the argument reference list, you can access the following attribu
   - `owner` -  (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
   - `resource_type` -  (String) The resource type.
   - `target` - (String) The ID of the target for the reserved IP.
+  - `target_crn` - (String) The crn of the target for the reserved IP.
 - `total_count` -  (String) The total number of resources across all pages.
 

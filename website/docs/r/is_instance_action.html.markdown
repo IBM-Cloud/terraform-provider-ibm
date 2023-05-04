@@ -47,7 +47,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   boot_volume {
     encryption = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
@@ -98,7 +98,9 @@ Review the argument references that you can specify for your resource.
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `status` - (String) The status of the instance. The supported status are **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, or **stopping**.
+- `status` - (String) The status of the instance. 
+
+  -> **Supported Action**  </br>&#x2022; failed </br>&#x2022; pending </br>&#x2022; restarting </br>&#x2022; running </br>&#x2022; starting </br>&#x2022; stopped </br>&#x2022; stopping
 - `status_reasons` - (List) Array of reasons for the current status (if any).
 
   Nested `status_reasons`:

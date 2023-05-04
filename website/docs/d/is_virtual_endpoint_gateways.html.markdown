@@ -62,3 +62,4 @@ In addition to the argument reference list, you can access the following attribu
     - `resource_type` - (String) The endpoint gateway target resource type.
   - `vpc` - (String) The VPC ID.
   - `security_groups` (List) - The security groups to use for this endpoint gateway.
+  - `service_endpoints`- (Array of Strings) The fully qualified domain names for the target service. A fully qualified domain name for the target service

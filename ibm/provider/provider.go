@@ -441,6 +441,7 @@ func Provider() *schema.Provider {
 			"ibm_is_lb_pools":                        vpc.DataSourceIBMISLBPools(),
 			"ibm_is_lb_pool_member":                  vpc.DataSourceIBMIBLBPoolMember(),
 			"ibm_is_lb_pool_members":                 vpc.DataSourceIBMISLBPoolMembers(),
+			"ibm_is_lb_profile":                      vpc.DataSourceIBMISLbProfile(),
 			"ibm_is_lb_profiles":                     vpc.DataSourceIBMISLbProfiles(),
 			"ibm_is_lbs":                             vpc.DataSourceIBMISLBS(),
 			"ibm_is_public_gateway":                  vpc.DataSourceIBMISPublicGateway(),
@@ -753,6 +754,10 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_pagerduty": eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.DataSourceIBMEnIntegration(),
 			"ibm_en_integrations":           eventnotification.DataSourceIBMEnIntegrations(),
+			"ibm_en_destination_sn":         eventnotification.DataSourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":         eventnotification.DataSourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":        eventnotification.DataSourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -777,6 +782,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
 			"ibm_cd_toolchain_tool_jira":               cdtoolchain.DataSourceIBMCdToolchainToolJira(),
+			"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.DataSourceIBMCdToolchainToolEventnotifications(),
 
 			// Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMCdTektonPipelineDefinition(),
@@ -998,7 +1004,6 @@ func Provider() *schema.Provider {
 			"ibm_is_vpc":                                    vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                     vpc.ResourceIBMISVpcAddressPrefix(),
 			"ibm_is_vpc_default_routing_table":              vpc.ResourceIBMISVPCDefaultRoutingTable(),
-			"ibm_is_vpc_route":                              vpc.ResourceIBMISVpcRoute(),
 			"ibm_is_vpc_routing_table":                      vpc.ResourceIBMISVPCRoutingTable(),
 			"ibm_is_vpc_routing_table_route":                vpc.ResourceIBMISVPCRoutingTableRoute(),
 			"ibm_is_vpn_server":                             vpc.ResourceIBMIsVPNServer(),
@@ -1211,6 +1216,10 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_pagerduty":  eventnotification.ResourceIBMEnPagerDutyDestination(),
 			"ibm_en_subscription_pagerduty": eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_integration":            eventnotification.ResourceIBMEnIntegration(),
+			"ibm_en_destination_sn":         eventnotification.ResourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":        eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":         eventnotification.ResourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":        eventnotification.ResourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1235,6 +1244,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
 			"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJira(),
+			"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.ResourceIBMCdToolchainToolEventnotifications(),
 
 			// // Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinition(),
@@ -1249,6 +1259,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
+			"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1377,7 +1388,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_subnet_reserved_ip":                vpc.ResourceIBMISSubnetReservedIPValidator(),
 				"ibm_is_volume":                            vpc.ResourceIBMISVolumeValidator(),
 				"ibm_is_address_prefix":                    vpc.ResourceIBMISAddressPrefixValidator(),
-				"ibm_is_route":                             vpc.ResourceIBMISRouteValidator(),
 				"ibm_is_vpc":                               vpc.ResourceIBMISVPCValidator(),
 				"ibm_is_vpc_default_routing_table":         vpc.ResourceIBMISVPCDefaultRoutingTableValidator(),
 				"ibm_is_vpc_routing_table":                 vpc.ResourceIBMISVPCRoutingTableValidator(),
@@ -1441,6 +1451,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),
 				"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabsValidator(),
 				"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJiraValidator(),
+				"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.ResourceIBMCdToolchainToolEventnotificationsValidator(),
 
 				// // Added for Tekton Pipeline
 				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinitionValidator(),
@@ -1483,6 +1494,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
 				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
+				"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

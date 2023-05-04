@@ -112,7 +112,17 @@ In addition to all argument reference list, you can access the following attribu
 - `profile` - (String) The name for this bare metal server profile
 - `resource_group` - (String) resource group id of the bare metal server.
 - `resource_type` - (String) The type of resource referenced
-- `status` - (String) The status of the bare metal server [ **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, **stopping** ]
+- `status` - (String) The status of the bare metal server.
+
+  -> **Supported Status** 
+    &#x2022; failed
+    </br>&#x2022; pending
+    </br>&#x2022; restarting
+    </br>&#x2022; running
+    </br>&#x2022; starting
+    </br>&#x2022; stopped
+    </br>&#x2022; stopping
+    
 - `status_reasons` - (List) Array of reasons for the current status (if any).
   Nested scheme for `status_reasons`:
     - `code` - (String) The status reason code

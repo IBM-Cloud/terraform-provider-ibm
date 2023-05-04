@@ -44,6 +44,8 @@ func TestAccIBMIBMIsVPCRoutingTableRouteDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route_name", "lifecycle_state"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route", "priority"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route_name", "priority"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route", "next_hop.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route_name", "next_hop.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table_route.ibm_is_vpc_routing_table_route", "zone.#"),
@@ -73,7 +75,7 @@ func testAccCheckIBMIBMIsVPCRoutingTableRouteDataSourceConfigBasic(vpcname, rtna
 			name 			= "%s"
 			destination 	= "192.168.4.0/24"
 			action 			= "deliver"
-			next_hop 		= "0.0.0.0"
+			next_hop 		= "192.168.4.1"
 		  }
 		data "ibm_is_vpc_routing_table_route" "ibm_is_vpc_routing_table_route" {
 			vpc 			= ibm_is_vpc.test_route_vpc.id

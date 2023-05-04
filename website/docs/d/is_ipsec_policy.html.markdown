@@ -41,10 +41,12 @@ data "ibm_is_ipsec_policy" "example" {
 Review the argument reference that you can specify for your data source.
 
 - `ipsec_policy` - (Optional, String) The IPsec policy identifier.
-    ~> **NOTE** : One of `ipsec_policy` or  `name` is required
+
+    ~> **NOTE** One of `ipsec_policy` or  `name` is required
 
 - `name` - (Optional, String) The name of the ipsec policy
-    ~> **NOTE** : One of `ipsec_policy` or  `name` is required
+
+    ~> **NOTE** One of `ipsec_policy` or  `name` is required
 
 ## Attribute Reference
 
@@ -53,10 +55,12 @@ In addition to all argument references listed, you can access the following attr
 - `id` - The unique identifier of the IPsecPolicy.
 - `authentication_algorithm` - (String) The authentication algorithm.
 - `connections` - (List) The VPN gateway connections that use this IPsec policy.
+
   Nested scheme for **connections**:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
-	  Nested scheme for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
+  
+      Nested scheme for **deleted**:
+      - `more_info` - (String) Link to documentation about deleted resources.
 	- `href` - (String) The VPN connection's canonical URL.
 	- `id` - (String) The unique identifier for this VPN gateway connection.
 	- `name` - (String) The user-defined name for this VPN connection.
@@ -69,6 +73,7 @@ In addition to all argument references listed, you can access the following attr
 - `name` - (String) The user-defined name for this IPsec policy.
 - `pfs` - (String) Perfect Forward Secrecy.
 - `resource_group` - (List) The resource group object, for this IPsec policy.
+
   Nested scheme for **resource_group**:
 	- `href` - (String) The URL for this resource group.
 	- `id` - (String) The unique identifier for this resource group.
