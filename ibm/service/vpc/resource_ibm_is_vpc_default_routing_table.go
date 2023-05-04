@@ -34,8 +34,8 @@ func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			rtVpcID: {
 				Type:        schema.TypeString,
-				Computed:    true,
 				ForceNew:    true,
+				Required:    true,
 				Description: "The VPC identifier.",
 			},
 			"accept_routes_from_resource_type": {
@@ -165,44 +165,13 @@ func resourceIBMISVPCDefaultRoutingTableCreate(d *schema.ResourceData, meta inte
 	}
 
 	vpcID := d.Get(rtVpcID).(string)
-	rtName := d.Get(rtName).(string)
-	// acptresourcetype
-
-	createVpcRoutingTableOptions := sess.NewCreateVPCRoutingTableOptions(vpcID)
-	createVpcRoutingTableOptions.SetName(rtName)
-	if _, ok := d.GetOk(rtRouteDirectLinkIngress); ok {
-		routeDirectLinkIngress := d.Get(rtRouteDirectLinkIngress).(bool)
-		createVpcRoutingTableOptions.RouteDirectLinkIngress = &routeDirectLinkIngress
+	getVpcRoutingTableOptions := &vpcv1.GetVPCDefaultRoutingTableOptions{
+		ID: &vpcID,
 	}
 
-	if acceptRoutesFrom, ok := d.GetOk("accept_routes_from_resource_type"); ok {
-		var aroutes []vpcv1.ResourceFilter
-		acptRoutes := acceptRoutesFrom.(*schema.Set)
-		for _, val := range acptRoutes.List() {
-			value := val.(string)
-			resourceFilter := vpcv1.ResourceFilter{
-				ResourceType: &value,
-			}
-			aroutes = append(aroutes, resourceFilter)
-		}
-		createVpcRoutingTableOptions.AcceptRoutesFrom = aroutes
-	}
-
-	if _, ok := d.GetOk(rtRouteInternetIngress); ok {
-		rtRouteInternetIngress := d.Get(rtRouteInternetIngress).(bool)
-		createVpcRoutingTableOptions.RouteInternetIngress = &rtRouteInternetIngress
-	}
-	if _, ok := d.GetOk(rtRouteTransitGatewayIngress); ok {
-		routeTransitGatewayIngress := d.Get(rtRouteTransitGatewayIngress).(bool)
-		createVpcRoutingTableOptions.RouteTransitGatewayIngress = &routeTransitGatewayIngress
-	}
-	if _, ok := d.GetOk(rtRouteVPCZoneIngress); ok {
-		routeVPCZoneIngress := d.Get(rtRouteVPCZoneIngress).(bool)
-		createVpcRoutingTableOptions.RouteVPCZoneIngress = &routeVPCZoneIngress
-	}
-	routeTable, response, err := sess.CreateVPCRoutingTable(createVpcRoutingTableOptions)
+	routeTable, response, err := sess.GetVPCDefaultRoutingTable(getVpcRoutingTableOptions)
 	if err != nil {
-		log.Printf("[DEBUG] Create VPC Routing table err %s\n%s", err, response)
+		log.Printf("[DEBUG] Create VPC Default Routing table err %s\n%s", err, response)
 		return err
 	}
 
