@@ -48,7 +48,7 @@ require (
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
-	go.mongodb.org/mongo-driver v1.11.2 // indirect
+	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	golang.org/x/crypto v0.5.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.25.0
@@ -63,6 +63,7 @@ require (
 )
 
 require (
+	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
