@@ -3,11 +3,27 @@ terraform {
     kubernetes = {
       version = "2.18.1"
     }
+    ibm = {
+      source = "IBM-Cloud/ibm"
+      version = ">= 1.12.0"
+    }
   }
 }
 
+provider "ibm" {
+  region             = var.region
+  ibmcloud_api_key = var.ibmcloud_api_key
+}
+
+
+data "ibm_container_cluster_config" "cluster_vpc" {
+  cluster_name_id = var.cluster
+}
+
 provider "kubernetes" {
-config_path = var.kube_config_path
+  host                   = data.ibm_container_cluster_config.cluster_vpc.host
+  token                  = data.ibm_container_cluster_config.cluster_vpc.token
+  cluster_ca_certificate = data.ibm_container_cluster_config.cluster_vpc.ca_certificate
 }
 
 
@@ -31,7 +47,7 @@ resource "kubernetes_manifest" "ocscluster_ocscluster_auto" {
       "ignoreNoobaa" = var.ignoreNoobaa,
       "numOfOsd" = var.numOfOsd,
       "ocsUpgrade" = var.ocsUpgrade,
-      "osdDevicePaths" = var.osdDevicePaths,
+      "osdDevicePaths" = var.osdDevicePaths==null ? null : split(",", var.osdDevicePaths),
       "osdSize" = var.osdSize,
       "osdStorageClassName" = var.osdStorageClassName,
       "workerNodes" = var.workerNodes==null ? null : split(",", var.workerNodes)
