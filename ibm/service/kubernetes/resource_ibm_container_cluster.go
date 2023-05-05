@@ -136,11 +136,12 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"labels": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "list of labels to the default worker pool",
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Description:      "list of labels to the default worker pool",
 			},
 			"taints": {
 				Type:             schema.TypeSet,
