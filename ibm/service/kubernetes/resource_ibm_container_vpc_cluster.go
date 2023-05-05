@@ -191,7 +191,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Optional:         true,
 				Default:          1,
 				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "Number of worker nodes in the cluster",
+				Description:      "Number of worker nodes in the default worker pool",
 			},
 
 			"worker_labels": {
