@@ -21,22 +21,16 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 		ReadContext: dataSourceIbmProjectEventNotificationRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The ID of the project, which uniquely identifies it.",
+				Description: "The unique identifier.",
 			},
 			"exclude_configs": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Only return with the active configuration, no drafts.",
-			},
-			"complete": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "The flag to determine if full metadata should be returned.",
+				Description: "When set to true, exclude_configs returns only active configurations. Draft configurations are not returned.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -62,7 +56,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The unique ID of a project.",
+							Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -85,7 +79,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 						"locator_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The location ID of a project configuration manual property.",
+							Description: "A dotted value of catalogID.versionID.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -107,6 +101,11 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The variable type.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
 									},
 									"required": &schema.Schema{
 										Type:        schema.TypeBool,
@@ -133,12 +132,9 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 										Description: "A short explanation of the output value.",
 									},
 									"value": &schema.Schema{
-										Type:        schema.TypeList,
+										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The output value.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+										Description: "Can be any value - a string, number, boolean, array, or object.",
 									},
 								},
 							},
@@ -146,7 +142,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 						"setting": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "An optional setting object that's passed to the cart API.",
+							Description: "Schematics environment variables to use to deploy the configuration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -157,7 +153,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The value of a the configuration setting.",
+										Description: "The value of the configuration setting.",
 									},
 								},
 							},
@@ -179,7 +175,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A date/time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date-time format as specified by RFC 3339.",
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 						},
 						"cumulative_needs_attention_view": &schema.Schema{
 							Type:        schema.TypeList,
@@ -218,12 +214,12 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The location where the project was created.",
+							Description: "The IBM Cloud location where a resource is deployed.",
 						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The resource group where the project was created.",
+							Description: "The resource group where the project's data and tools are created.",
 						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
@@ -250,12 +246,9 @@ func dataSourceIbmProjectEventNotificationRead(context context.Context, d *schem
 
 	getProjectOptions := &projectv1.GetProjectOptions{}
 
-	getProjectOptions.SetID(d.Get("project_id").(string))
+	getProjectOptions.SetID(d.Get("id").(string))
 	if _, ok := d.GetOk("exclude_configs"); ok {
 		getProjectOptions.SetExcludeConfigs(d.Get("exclude_configs").(bool))
-	}
-	if _, ok := d.GetOk("complete"); ok {
-		getProjectOptions.SetComplete(d.Get("complete").(bool))
 	}
 
 	project, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
@@ -370,6 +363,9 @@ func dataSourceIbmProjectEventNotificationInputVariableToMap(model *projectv1.In
 	}
 	if model.Type != nil {
 		modelMap["type"] = model.Type
+	}
+	if model.Value != nil {
+		modelMap["value"] = model.Value
 	}
 	if model.Required != nil {
 		modelMap["required"] = model.Required

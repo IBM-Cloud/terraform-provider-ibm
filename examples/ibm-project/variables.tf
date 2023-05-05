@@ -4,6 +4,16 @@ variable "ibmcloud_api_key" {
 }
 
 // Resource arguments for project_instance
+variable "project_instance_resource_group" {
+  description = "The resource group where the project's data and tools are created."
+  type        = string
+  default     = "resource_group"
+}
+variable "project_instance_location" {
+  description = "The location where the project's data and tools are created."
+  type        = string
+  default     = "location"
+}
 variable "project_instance_name" {
   description = "The project name."
   type        = string
@@ -14,30 +24,15 @@ variable "project_instance_description" {
   type        = string
   default     = "A microservice to deploy on top of ACME infrastructure."
 }
-variable "project_instance_resource_group" {
-  description = "Group name of the customized collection of resources."
-  type        = string
-  default     = "resource_group"
-}
-variable "project_instance_location" {
-  description = "Data center locations for resource deployment."
-  type        = string
-  default     = "location"
-}
 
 // Data source arguments for project_event_notification
 variable "project_event_notification_id" {
-  description = "The ID of the project, which uniquely identifies it."
+  description = "The unique identifier."
   type        = string
   default     = "id"
 }
 variable "project_event_notification_exclude_configs" {
-  description = "Only return with the active configuration, no drafts."
-  type        = bool
-  default     = false
-}
-variable "project_event_notification_complete" {
-  description = "The flag to determine if full metadata should be returned."
+  description = "When set to true, exclude_configs returns only active configurations. Draft configurations are not returned."
   type        = bool
   default     = false
 }

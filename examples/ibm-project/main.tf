@@ -3,25 +3,26 @@ provider "ibm" {
 }
 
 // Provision project_instance resource instance
-resource "ibm_project_instance" "project_instance" {
-  name = "My static website"
-  description = "Sample static website test using the IBM catalog deployable architecture"
+resource "ibm_project_instance" "project_instance_instance" {
+  resource_group = var.project_instance_resource_group
+  location = var.project_instance_location
+  name = var.project_instance_name
+  description = var.project_instance_description
   configs {
-    id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
-    name = "static-website-dev"
-    labels = [ "env:dev", "billing:internal" ]
-    description = "Website - development"
-    locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
+    id = "id"
+    name = "name"
+    labels = [ "labels" ]
+    description = "description"
+    locator_id = "locator_id"
     input {
-      name = "app_repo_name"
+      name = "name"
+      value = "anything as a string"
     }
     setting {
-      name = "app_repo_name"
-      value = "static-website-dev-app-repo"
+      name = "name"
+      value = "value"
     }
   }
-  resource_group = "Default"
-  location = "us-south"
 }
 
 // Data source is not linked to a resource instance
@@ -31,6 +32,5 @@ resource "ibm_project_instance" "project_instance" {
 data "ibm_project_event_notification" "project_event_notification_instance" {
   id = var.project_event_notification_id
   exclude_configs = var.project_event_notification_exclude_configs
-  complete = var.project_event_notification_complete
 }
 */
