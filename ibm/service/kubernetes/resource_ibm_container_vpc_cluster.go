@@ -223,7 +223,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:             schema.TypeSet,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "WorkerPool Taints",
+				Description:      "Taints for the default worker pool",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
