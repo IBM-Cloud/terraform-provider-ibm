@@ -428,7 +428,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "The ID of the cluster's associated host pool",
+				Description:      "The ID of the default worker pool's associated host pool",
 			},
 
 			flex.ResourceName: {
