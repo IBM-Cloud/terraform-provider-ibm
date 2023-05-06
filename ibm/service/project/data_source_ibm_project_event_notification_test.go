@@ -75,7 +75,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectResourc
 		}
 
 		data "ibm_project_event_notification" "project_event_notification_instance" {
-			id = ibm_project_config.project_config_instance.projectConfig_id
+			id = ibm_project_instance.project_instance_instance.id
 			exclude_configs = true
 		}
 	`, projectResourceGroup, projectLocation, projectName)
@@ -89,11 +89,11 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectResourceGrou
 			name = "%s"
 			description = "%s"
 			configs {
-				id = "id"
+				id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
-				locator_id = "locator_id"
+				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 				input {
 					name = "name"
 					value = "anything as a string"
@@ -106,7 +106,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectResourceGrou
 		}
 
 		data "ibm_project_event_notification" "project_event_notification_instance" {
-			id = ibm_project_config.project_config_instance.projectConfig_id
+			id = ibm_project_instance.project_instance_instance.id
 			exclude_configs = true
 		}
 	`, projectResourceGroup, projectLocation, projectName, projectDescription)
