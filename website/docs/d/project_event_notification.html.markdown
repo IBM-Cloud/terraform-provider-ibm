@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_project_event_notification"
 description: |-
   Get information about Project definition
-subcategory: "Projects API"
+subcategory: "Project"
 ---
 
 # ibm_project_event_notification
@@ -14,7 +14,7 @@ Provides a read-only data source for Project definition. You can then reference 
 
 ```hcl
 data "ibm_project_event_notification" "project_event_notification" {
-	id = ibm_project_config.project_config_instance.projectConfig_id
+	id = "072b70cb-4db7-4c5c-bf1b-8d93d422537d"
 }
 ```
 
