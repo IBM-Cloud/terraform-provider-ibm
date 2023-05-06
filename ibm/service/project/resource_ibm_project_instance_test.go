@@ -19,10 +19,10 @@ import (
 func TestAccIbmProjectInstanceBasic(t *testing.T) {
 	var conf projectv1.Project
 	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	location := fmt.Sprintf("us-south")
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	locationUpdate := fmt.Sprintf("us-east")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -54,11 +54,11 @@ func TestAccIbmProjectInstanceBasic(t *testing.T) {
 func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 	var conf projectv1.Project
 	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	location := fmt.Sprintf("us-south")
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	locationUpdate := fmt.Sprintf("us-east")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 

@@ -15,7 +15,7 @@ import (
 
 func TestAccIbmProjectEventNotificationDataSourceBasic(t *testing.T) {
 	projectResourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	projectLocation := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	projectLocation := fmt.Sprintf("us-south")
 	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -36,7 +36,7 @@ func TestAccIbmProjectEventNotificationDataSourceBasic(t *testing.T) {
 
 func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 	projectResourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	projectLocation := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	projectLocation := fmt.Sprintf("us-south")
 	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	projectDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
