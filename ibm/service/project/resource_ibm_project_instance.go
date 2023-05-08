@@ -308,12 +308,6 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("resource_group", getProjectOptions.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
-	}
-	if err = d.Set("location", getProjectOptions.Location); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
-	}
 	if err = d.Set("name", project.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -324,13 +318,6 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 	}
 	if !core.IsNil(project.Configs) {
 		configs := []map[string]interface{}{}
-		for _, configsItem := range project.Configs {
-			configsItemMap, err := resourceIbmProjectInstanceProjectConfigPrototypeToMap(&configsItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			configs = append(configs, configsItemMap)
-		}
 		if err = d.Set("configs", configs); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
 		}
@@ -365,9 +352,7 @@ func resourceIbmProjectInstanceUpdate(context context.Context, d *schema.Resourc
 
 	hasChange := false
 
-	if d.HasChange("resource_group") || d.HasChange("location") || d.HasChange("name") {
-		updateProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
-		updateProjectOptions.SetLocation(d.Get("location").(string))
+	if d.HasChange("name") {
 		updateProjectOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
@@ -385,7 +370,6 @@ func resourceIbmProjectInstanceUpdate(context context.Context, d *schema.Resourc
 			}
 			configs = append(configs, *configsItem)
 		}
-		updateProjectOptions.SetConfigs(configs)
 		hasChange = true
 	}
 
@@ -580,9 +564,6 @@ func resourceIbmProjectInstanceCumulativeNeedsAttentionToMap(model *projectv1.Cu
 	}
 	if model.ConfigID != nil {
 		modelMap["config_id"] = model.ConfigID
-	}
-	if model.ConfigVersion != nil {
-		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
 	}
 	return modelMap, nil
 }
