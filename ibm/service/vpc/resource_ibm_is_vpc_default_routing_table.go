@@ -109,6 +109,76 @@ func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether this is the default routing table for this VPC",
 			},
+			rtRoutes: &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "The routes for this routing table.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						rDeleted: &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									rMoreInfo: &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						rtHref: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this route.",
+						},
+						rId: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this route.",
+						},
+						rName: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rAction: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rNextHop: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rZone: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rPriority: &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rDestination: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+					},
+				},
+			},
 			rtSubnets: {
 				Type:     schema.TypeList,
 				Computed: true,
