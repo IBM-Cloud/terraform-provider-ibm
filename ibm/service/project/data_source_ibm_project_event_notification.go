@@ -203,7 +203,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 						"cumulative_needs_attention_view_err": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "\\"True\\" indicates that the fetch of the needs attention items failed.",
+							Description: "True indicates that the fetch of the needs attention items failed.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -264,7 +264,7 @@ func dataSourceIbmProjectEventNotificationRead(context context.Context, d *schem
 
 	configs := []map[string]interface{}{}
 	if project.Configs != nil {
-		for _, modelItem := range project.Configs { 
+		for _, modelItem := range project.Configs {
 			modelMap, err := dataSourceIbmProjectEventNotificationProjectConfigToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)

@@ -19,36 +19,36 @@ import (
 
 func ResourceIbmProjectInstance() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmProjectInstanceCreate,
-		ReadContext:     resourceIbmProjectInstanceRead,
-		UpdateContext:   resourceIbmProjectInstanceUpdate,
-		DeleteContext:   resourceIbmProjectInstanceDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmProjectInstanceCreate,
+		ReadContext:   resourceIbmProjectInstanceRead,
+		UpdateContext: resourceIbmProjectInstanceUpdate,
+		DeleteContext: resourceIbmProjectInstanceDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"resource_group": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "resource_group"),
-				Description: "The resource group where the project's data and tools are created.",
+				Description:  "The resource group where the project's data and tools are created.",
 			},
 			"location": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "location"),
-				Description: "The location where the project's data and tools are created.",
+				Description:  "The location where the project's data and tools are created.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "name"),
-				Description: "The project name.",
+				Description:  "The project name.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "description"),
-				Description: "A project's descriptive text.",
+				Description:  "A project's descriptive text.",
 			},
 			"configs": &schema.Schema{
 				Type:        schema.TypeList,
@@ -176,7 +176,7 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						"cumulative_needs_attention_view_err": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "\\"True\\" indicates that the fetch of the needs attention items failed.",
+							Description: "True indicates that the fetch of the needs attention items failed.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -213,7 +213,7 @@ func ResourceIbmProjectInstanceValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^$|^(?!\s)(?!.*\s$)[^'"`<>{}\x00-\x1F]*$`,
+			Regexp:                     `^$|^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]*$`,
 			MinValueLength:             0,
 			MaxValueLength:             40,
 		},
@@ -231,7 +231,7 @@ func ResourceIbmProjectInstanceValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^(?!\s)(?!.*\s$)[^'"`<>{}\x00-\x1F]+$`,
+			Regexp:                     `^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             64,
 		},
