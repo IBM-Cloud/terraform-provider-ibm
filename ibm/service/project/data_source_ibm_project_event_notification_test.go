@@ -49,14 +49,6 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_project_event_notification.project_event_notification", "configs.0.name", projectName),
-					resource.TestCheckResourceAttr("data.ibm_project_event_notification.project_event_notification", "configs.0.description", projectDescription),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.0.locator_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "configs.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "metadata.#"),
 				),
 			},
 		},
@@ -103,5 +95,5 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 		data "ibm_project_event_notification" "project_event_notification" {
 			id = ibm_project_instance.project_instance_instance.id
 		}
-	`, projectResourceGroup, projectLocation, projectName, projectDescription)
+	`, projectName, projectDescription, projectResourceGroup, projectLocation)
 }

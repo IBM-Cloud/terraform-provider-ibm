@@ -64,7 +64,7 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmProjectInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProjectInstanceConfig(resourceGroup, location, name, description),
+				Config: testAccCheckIbmProjectInstanceConfig(name, description, resourceGroup, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmProjectInstanceExists("ibm_project_instance.project_instance", conf),
 					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "resource_group", resourceGroup),
@@ -74,7 +74,7 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmProjectInstanceConfig(resourceGroup, location, nameUpdate, descriptionUpdate),
+				Config: testAccCheckIbmProjectInstanceConfig(nameUpdate, descriptionUpdate, resourceGroup, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "resource_group", resourceGroup),
 					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "location", location),
@@ -107,7 +107,7 @@ func testAccCheckIbmProjectInstanceConfigBasic(resourceGroup string, location st
 	`, resourceGroup, location, name)
 }
 
-func testAccCheckIbmProjectInstanceConfig(resourceGroup string, location string, name string, description string) string {
+func testAccCheckIbmProjectInstanceConfig(name string, description string, resourceGroup string, location string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_project_instance" "project_instance" {
@@ -130,7 +130,7 @@ func testAccCheckIbmProjectInstanceConfig(resourceGroup string, location string,
                 }
             }
 		}
-	`, resourceGroup, location, name, description)
+	`, name, description, resourceGroup, location)
 }
 
 func testAccCheckIbmProjectInstanceExists(n string, obj projectv1.Project) resource.TestCheckFunc {
