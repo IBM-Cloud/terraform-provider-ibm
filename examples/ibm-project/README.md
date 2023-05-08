@@ -25,11 +25,11 @@ project_instance resource:
 
 ```hcl
 resource "project_instance" "project_instance_instance" {
-  resource_group = var.project_instance_resource_group
-  location = var.project_instance_location
   name = var.project_instance_name
   description = var.project_instance_description
   configs = var.project_instance_configs
+  resource_group = var.project_instance_resource_group
+  location = var.project_instance_location
 }
 ```
 
@@ -39,7 +39,7 @@ project_event_notification data source:
 
 ```hcl
 data "project_event_notification" "project_event_notification_instance" {
-  id = ibm_project_instance.project_instance_instance.id
+  id = var.project_event_notification_id
 }
 ```
 
@@ -68,11 +68,11 @@ data "project_event_notification" "project_event_notification_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| resource_group | The resource group where the project's data and tools are created. | `string` | true |
-| location | The location where the project's data and tools are created. | `string` | true |
 | name | The project name. | `string` | true |
 | description | A project's descriptive text. | `string` | false |
 | configs | The project configurations. | `list()` | false |
+| resource_group | The resource group where the project's data and tools are created. | `string` | true |
+| location | The location where the project's data and tools are created. | `string` | true |
 | id | The unique project ID. | `string` | true |
 
 ## Outputs

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_project_instance"
 description: |-
   Manages Project definition.
-subcategory: "Projects API"
+subcategory: "Project"
 ---
 
 # ibm_project_instance
@@ -13,25 +13,24 @@ Provides a resource for Project definition. This allows Project definition to be
 ## Example Usage
 
 ```hcl
-resource "ibm_project_instance" "project_instance_instance" {
+resource "ibm_project" "project_instance" {
   configs {
-		id = "id"
-		name = "name"
-		labels = [ "labels" ]
-		description = "description"
-		locator_id = "locator_id"
+		id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
+		name = "static-website-dev"
+		labels = [ "env:dev", "billing:internal" ]
+		description = "Website - development"
+		locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
 		input {
-			name = "name"
-			value = "anything as a string"
+			name = "app_repo_name"
 		}
 		setting {
-			name = "name"
-			value = "value"
+			name = "app_repo_name"
+			value = "static-website-dev-app-repo"
 		}
   }
-  description = "A microservice to deploy on top of ACME infrastructure."
+  description = "Sample static website test using the IBM catalog deployable architecture"
+  name = "My static website"
   location = "us-south"
-  name = "acme-microservice"
   resource_group = "Default"
 }
 ```
@@ -107,56 +106,6 @@ Nested scheme for **metadata**:
 	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
 	* `state` - (String) The project status value.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(CREATING|CREATING_FAILED|UPDATING|UPDATING_FAILED|READY)$/`.
-
-## Provider Configuration
-
-The IBM Cloud provider offers a flexible means of providing credentials for authentication. The following methods are supported, in this order, and explained below:
-
-- Static credentials
-- Environment variables
-
-To find which credentials are required for this resource, see the service table [here](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-
-### Static credentials
-
-You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_classic_username`, and `iaas_classic_api_key` arguments in the IBM Cloud provider block.
-
-Usage:
-```
-provider "ibm" {
-    ibmcloud_api_key = ""
-    iaas_classic_username = ""
-    iaas_classic_api_key = ""
-}
-```
-
-### Environment variables
-
-You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
-
-```
-provider "ibm" {}
-```
-
-Usage:
-```
-export IC_API_KEY="ibmcloud_api_key"
-export IAAS_CLASSIC_USERNAME="iaas_classic_username"
-export IAAS_CLASSIC_API_KEY="iaas_classic_api_key"
-terraform plan
-```
-
-Note:
-
-1. Create or find your `ibmcloud_api_key` and `iaas_classic_api_key` [here](https://cloud.ibm.com/iam/apikeys).
-  - Select `My IBM Cloud API Keys` option from view dropdown for `ibmcloud_api_key`
-  - Select `Classic Infrastructure API Keys` option from view dropdown for `iaas_classic_api_key`
-2. For iaas_classic_username
-  - Go to [Users](https://cloud.ibm.com/iam/users)
-  - Click on user.
-  - Find user name in the `VPN password` section under `User Details` tab
-
-For more informaton, see [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#authentication).
 
 ## Import
 

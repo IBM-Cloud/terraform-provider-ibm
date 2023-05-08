@@ -7,8 +7,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -24,31 +26,22 @@ func ResourceIbmProjectInstance() *schema.Resource {
 		UpdateContext: resourceIbmProjectInstanceUpdate,
 		DeleteContext: resourceIbmProjectInstanceDelete,
 		Importer:      &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(1 * time.Minute),
+			Delete: schema.DefaultTimeout(1 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
-			"resource_group": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "resource_group"),
-				Description:  "The resource group where the project's data and tools are created.",
-			},
-			"location": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "location"),
-				Description:  "The location where the project's data and tools are created.",
-			},
 			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "name"),
-				Description:  "The project name.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The project name.",
 			},
 			"description": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_instance", "description"),
-				Description:  "A project's descriptive text.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A project's descriptive text.",
 			},
 			"configs": &schema.Schema{
 				Type:        schema.TypeList,
@@ -122,6 +115,16 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						},
 					},
 				},
+			},
+			"resource_group": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The resource group where the project's data and tools are created.",
+			},
+			"location": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The location where the project's data and tools are created.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -209,40 +212,36 @@ func ResourceIbmProjectInstanceValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "resource_group",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^$|^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]*$`,
-			MinValueLength:             0,
-			MaxValueLength:             40,
+			Identifier:     "name",
+			Type:           validate.TypeString,
+			Required:       true,
+			Regexp:         `^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]+$`,
+			MinValueLength: 1,
+			MaxValueLength: 64,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^$|^(us-south|us-east|eu-gb|eu-de)$`,
-			MinValueLength:             0,
-			MaxValueLength:             12,
+			Identifier:     "description",
+			Type:           validate.TypeString,
+			Optional:       true,
+			Regexp:         `^$|^(?!\s).*\S$`,
+			MinValueLength: 0,
+			MaxValueLength: 1024,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "name",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             64,
+			Identifier:     "resource_group",
+			Type:           validate.TypeString,
+			Required:       true,
+			Regexp:         `^$|^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]*$`,
+			MinValueLength: 0,
+			MaxValueLength: 40,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "description",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^$|^(?!\s).*\S$`,
-			MinValueLength:             0,
-			MaxValueLength:             1024,
+			Identifier:     "location",
+			Type:           validate.TypeString,
+			Required:       true,
+			Regexp:         `^$|^(us-south|us-east|eu-gb|eu-de)$`,
+			MinValueLength: 0,
+			MaxValueLength: 12,
 		},
 	)
 
@@ -258,8 +257,6 @@ func resourceIbmProjectInstanceCreate(context context.Context, d *schema.Resourc
 
 	createProjectOptions := &projectv1.CreateProjectOptions{}
 
-	createProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
-	createProjectOptions.SetLocation(d.Get("location").(string))
 	createProjectOptions.SetName(d.Get("name").(string))
 	if _, ok := d.GetOk("description"); ok {
 		createProjectOptions.SetDescription(d.Get("description").(string))
@@ -276,6 +273,12 @@ func resourceIbmProjectInstanceCreate(context context.Context, d *schema.Resourc
 		}
 		createProjectOptions.SetConfigs(configs)
 	}
+	if _, ok := d.GetOk("resource_group"); ok {
+		createProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
+	}
+	if _, ok := d.GetOk("location"); ok {
+		createProjectOptions.SetLocation(d.Get("location").(string))
+	}
 
 	project, response, err := projectClient.CreateProjectWithContext(context, createProjectOptions)
 	if err != nil {
@@ -285,7 +288,44 @@ func resourceIbmProjectInstanceCreate(context context.Context, d *schema.Resourc
 
 	d.SetId(*project.ID)
 
+	_, err = waitForProjectInstanceCreate(d, meta)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create project instance (%s) to be succeeded: %s", d.Id(), err))
+	}
+
 	return resourceIbmProjectInstanceRead(context, d, meta)
+}
+
+func waitForProjectInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	projectClient, err := meta.(conns.ClientSession).ProjectV1()
+	if err != nil {
+		return false, err
+	}
+	instanceID := d.Id()
+	getProjectOptions := &projectv1.GetProjectOptions{}
+	getProjectOptions.SetID(instanceID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"not_exists"},
+		Target:  []string{"exists"},
+		Refresh: func() (interface{}, string, error) {
+			_, resp, err := projectClient.GetProject(getProjectOptions)
+			if err == nil {
+				if resp != nil && resp.StatusCode == 200 {
+					return resp, "exists", nil
+				} else {
+					return resp, "not_exists", nil
+				}
+			} else {
+				return nil, "", fmt.Errorf("[ERROR] Get the project instance %s failed with resp code: %d, err: %v", d.Id(), resp.StatusCode, err)
+			}
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      2 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -308,6 +348,11 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
+	if !core.IsNil(project.Crn) {
+		if err = d.Set("crn", project.Crn); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		}
+	}
 	if err = d.Set("name", project.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -320,11 +365,6 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 		configs := []map[string]interface{}{}
 		if err = d.Set("configs", configs); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
-		}
-	}
-	if !core.IsNil(project.Crn) {
-		if err = d.Set("crn", project.Crn); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
 	}
 	if !core.IsNil(project.Metadata) {
@@ -400,9 +440,46 @@ func resourceIbmProjectInstanceDelete(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("DeleteProjectWithContext failed %s\n%s", err, response))
 	}
 
+	_, err = waitForProjectInstanceDelete(d, meta)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for delete project instance (%s) to be succeeded: %s", d.Id(), err))
+	}
+
 	d.SetId("")
 
 	return nil
+}
+
+func waitForProjectInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	projectClient, err := meta.(conns.ClientSession).ProjectV1()
+	if err != nil {
+		return false, err
+	}
+	instanceID := d.Id()
+	getProjectOptions := &projectv1.GetProjectOptions{}
+	getProjectOptions.SetID(instanceID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"exists"},
+		Target:  []string{"not_exists"},
+		Refresh: func() (interface{}, string, error) {
+			_, resp, err := projectClient.GetProject(getProjectOptions)
+			if err != nil {
+				if resp != nil && resp.StatusCode == 404 {
+					return resp, "not_exists", nil
+				} else {
+					return resp, "exists", nil
+				}
+			} else {
+				return resp, "exists", nil
+			}
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      2 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectInstanceMapToProjectConfigPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototype, error) {
