@@ -49,6 +49,7 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "metadata.#"),
 				),
 			},
 		},
