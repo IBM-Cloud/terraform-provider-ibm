@@ -212,12 +212,12 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"not_before": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 						"not_after": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 					},
