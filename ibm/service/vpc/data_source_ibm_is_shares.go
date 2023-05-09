@@ -486,9 +486,9 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcbetav1
 	if sharesItem.SourceShare != nil {
 		sharesMap["source_share"] = dataSourceShareFlattenSourceShare(*sharesItem.SourceShare)
 	}
-	if sharesItem.Targets != nil {
+	if sharesItem.MountTargets != nil {
 		targetsList := []map[string]interface{}{}
-		for _, targetsItem := range sharesItem.Targets {
+		for _, targetsItem := range sharesItem.MountTargets {
 			targetsList = append(targetsList, dataSourceShareCollectionSharesTargetsToMap(targetsItem))
 		}
 		sharesMap["share_targets"] = targetsList
