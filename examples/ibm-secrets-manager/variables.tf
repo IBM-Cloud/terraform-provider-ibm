@@ -505,6 +505,30 @@ variable "sm_private_certificate_configuration_template_basic_constraints_valid_
   default     = true
 }
 
+// Resource arguments for sm_private_certificate_configuration_action_sign_csr
+variable "sm_private_certificate_configuration_action_sign_csr_name" {
+  description = "The name that uniquely identifies a configuration."
+  type        = string
+  default     = "my_root_ca"
+}
+variable "sm_private_certificate_configuration_action_sign_csr_csr" {
+  description = "The certificate signing request."
+  type        = string
+  default     = "csr"
+}
+
+// Resource arguments for sm_private_certificate_configuration_action_set_signed
+variable "sm_private_certificate_configuration_action_set_signed_name" {
+  description = "The name that uniquely identifies a configuration."
+  type        = string
+  default     = "my_intermediate_ca"
+}
+variable "sm_private_certificate_configuration_action_set_signed_certificate" {
+  description = "The PEM-encoded certificate."
+  type        = string
+  default     = "certificate"
+}
+
 // Resource arguments for sm_public_certificate_configuration_ca_lets_encrypt
 variable "sm_public_certificate_configuration_ca_lets_encrypt_name" {
   description = "A human-readable unique name to assign to your configuration."
