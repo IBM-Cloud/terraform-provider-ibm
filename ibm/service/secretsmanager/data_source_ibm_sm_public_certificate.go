@@ -362,6 +362,11 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting downloaded: %s", err))
 	}
 
+	if publicCertificate.Labels != nil {
+		if err = d.Set("labels", publicCertificate.Labels); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
+		}
+	}
 	if err = d.Set("locks_total", flex.IntValue(publicCertificate.LocksTotal)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
 	}
@@ -396,6 +401,12 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 
 	if err = d.Set("signing_algorithm", publicCertificate.SigningAlgorithm); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
+	}
+
+	if publicCertificate.AltNames != nil {
+		if err = d.Set("alt_names", publicCertificate.AltNames); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
+		}
 	}
 
 	if err = d.Set("common_name", publicCertificate.CommonName); err != nil {
