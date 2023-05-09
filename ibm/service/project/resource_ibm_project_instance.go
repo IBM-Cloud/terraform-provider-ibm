@@ -139,38 +139,38 @@ func ResourceIbmProjectInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"crn": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 						},
 						"cumulative_needs_attention_view": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "The cumulative list of needs attention items for a project.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"event": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The event name.",
 									},
 									"event_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The unique ID of a project.",
 									},
 									"config_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The unique ID of a project.",
 									},
 									"config_version": &schema.Schema{
 										Type:        schema.TypeInt,
-										Optional:    true,
+										Computed:    true,
 										Description: "The version number of the configuration.",
 									},
 								},
@@ -178,27 +178,27 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						},
 						"cumulative_needs_attention_view_err": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "True indicates that the fetch of the needs attention items failed.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The IBM Cloud location where a resource is deployed.",
 						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The resource group where the project's data and tools are created.",
 						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The project status value.",
 						},
 						"event_notifications_crn": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The CRN of the event notifications instance if one is connected to this project.",
 						},
 					},
