@@ -24,7 +24,7 @@ Run `terraform destroy` when you don't need these resources.
 project_instance resource:
 
 ```hcl
-resource "project_instance" "project_instance_instance" {
+resource "project_instance" "project_instance" {
   name = var.project_instance_name
   description = var.project_instance_description
   configs = var.project_instance_configs

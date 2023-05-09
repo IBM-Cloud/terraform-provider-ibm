@@ -116,7 +116,6 @@ func testAccCheckIbmProjectInstanceConfig(name string, description string, resou
 			resource_group = "%s"
             location = "%s"
             configs {
-                id = "id"
                 name = "name"
                 labels = [ "labels" ]
                 description = "description"

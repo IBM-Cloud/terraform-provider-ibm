@@ -58,25 +58,24 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectResourceGroup string, projectLocation string, projectName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_project_instance" "project_instance_instance" {
+		resource "ibm_project_instance" "project_instance" {
 			resource_group = "%s"
 			location = "%s"
 			name = "%s"
 		}
 
 		data "ibm_project_event_notification" "project_event_notification" {
-			id = ibm_project_instance.project_instance_instance.id
+			id = ibm_project_instance.project_instance.id
 		}
 	`, projectResourceGroup, projectLocation, projectName)
 }
 
 func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string, projectDescription string, projectResourceGroup string, projectLocation string) string {
 	return fmt.Sprintf(`
-		resource "ibm_project_instance" "project_instance_instance" {
+		resource "ibm_project_instance" "project_instance" {
 			name = "%s"
 			description = "%s"
 			configs {
-				id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
@@ -94,7 +93,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 		}
 
 		data "ibm_project_event_notification" "project_event_notification" {
-			id = ibm_project_instance.project_instance_instance.id
+			id = ibm_project_instance.project_instance.id
 		}
 	`, projectName, projectDescription, projectResourceGroup, projectLocation)
 }

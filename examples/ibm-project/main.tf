@@ -7,7 +7,6 @@ resource "ibm_project_instance" "project_instance" {
   name = "My static website"
   description = "Sample static website test using the IBM catalog deployable architecture"
   configs {
-    id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
     name = "static-website-dev"
     labels = [ "env:dev", "billing:internal" ]
     description = "Website - development"
