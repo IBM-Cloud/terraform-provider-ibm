@@ -57,6 +57,7 @@ func testAccCheckIbmSmUsernamePasswordSecretConfigBasic() string {
               username = "username"
     		  password = "password"
 			  name = "username_password-datasource-terraform-test"
+  			  expiration_date = "2033-05-30T21:00:00Z"
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

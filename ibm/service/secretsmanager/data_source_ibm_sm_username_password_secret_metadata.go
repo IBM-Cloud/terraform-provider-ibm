@@ -182,7 +182,7 @@ func dataSourceIbmSmUsernamePasswordSecretMetadataRead(context context.Context, 
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(usernamePasswordSecretMetadata.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(usernamePasswordSecretMetadata.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -236,7 +236,7 @@ func dataSourceIbmSmUsernamePasswordSecretMetadataRead(context context.Context, 
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(usernamePasswordSecretMetadata.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(usernamePasswordSecretMetadata.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -256,11 +256,11 @@ func dataSourceIbmSmUsernamePasswordSecretMetadataRead(context context.Context, 
 		return diag.FromErr(fmt.Errorf("Error setting rotation %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(usernamePasswordSecretMetadata.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(usernamePasswordSecretMetadata.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(usernamePasswordSecretMetadata.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(usernamePasswordSecretMetadata.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/pkg/errors"
 	"log"
 	"strings"
 	"time"
@@ -46,7 +47,6 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			"expiration_date": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The date a secret is expired. The date format follows RFC 3339.",
 			},
 			"labels": &schema.Schema{
@@ -290,7 +290,7 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -328,7 +328,7 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -341,10 +341,10 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	if err = d.Set("rotation", []map[string]interface{}{rotationMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rotation: %s", err))
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(secret.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(secret.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 	if err = d.Set("username", secret.Username); err != nil {
@@ -406,6 +406,21 @@ func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schem
 		}
 		patchVals.Rotation = RotationModel
 		hasChange = true
+	}
+
+	if d.HasChange("expiration_date") {
+		if _, ok := d.GetOk("expiration_date"); ok {
+			layout := time.RFC3339
+			parseToTime, err := time.Parse(layout, d.Get("expiration_date").(string))
+			if err != nil {
+				return diag.FromErr(errors.New(`Failed to get "expiration_date". Error: ` + err.Error()))
+			}
+			parseToDateTime := strfmt.DateTime(parseToTime)
+			patchVals.ExpirationDate = &parseToDateTime
+			hasChange = true
+		} else {
+			return diag.FromErr(errors.New(`The "expiration_date" field cannot be removed. To disable expiration set expiration date to a far future date'`))
+		}
 	}
 
 	if hasChange {

@@ -356,7 +356,7 @@ func dataSourceIbmSmPrivateCertificateConfigurationIntermediateCARead(context co
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(privateCertificateConfigurationIntermediateCA.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(privateCertificateConfigurationIntermediateCA.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 

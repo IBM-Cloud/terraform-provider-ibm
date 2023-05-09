@@ -317,11 +317,11 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(privateCertificateConfigurationRootCA.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(privateCertificateConfigurationRootCA.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(privateCertificateConfigurationRootCA.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(privateCertificateConfigurationRootCA.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -442,7 +442,7 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(privateCertificateConfigurationRootCA.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(privateCertificateConfigurationRootCA.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 
