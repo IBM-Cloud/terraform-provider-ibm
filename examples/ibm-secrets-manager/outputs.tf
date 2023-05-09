@@ -84,6 +84,20 @@ output "ibm_sm_private_certificate_configuration_template" {
   value       = ibm_sm_private_certificate_configuration_template.sm_private_certificate_configuration_template_instance
   description = "sm_private_certificate_configuration_template resource instance"
 }
+// This allows sm_private_certificate_configuration_action_sign_csr data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_private_certificate_configuration_action_sign_csr" {
+  value       = ibm_sm_private_certificate_configuration_action_sign_csr.sm_private_certificate_configuration_action_sign_csr_instance
+  description = "sm_private_certificate_configuration_action_sign_csr resource instance"
+  sensitive   = true
+}
+// This allows sm_private_certificate_configuration_action_set_signed data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_private_certificate_configuration_action_set_signed" {
+  value       = ibm_sm_private_certificate_configuration_action_set_signed.sm_private_certificate_configuration_action_set_signed_instance
+  description = "sm_private_certificate_configuration_action_set_signed resource instance"
+  sensitive   = true
+}
 // This allows sm_public_certificate_configuration_ca_lets_encrypt data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
 output "ibm_sm_public_certificate_configuration_ca_lets_encrypt" {
