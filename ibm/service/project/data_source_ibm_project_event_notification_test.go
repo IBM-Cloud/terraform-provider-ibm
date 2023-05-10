@@ -25,7 +25,7 @@ func TestAccIbmProjectEventNotificationDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectResourceGroup, projectLocation, projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
 				),
 			},
@@ -46,7 +46,7 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName, projectDescription, projectResourceGroup, projectLocation),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "metadata.#"),
@@ -65,7 +65,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectResourc
 		}
 
 		data "ibm_project_event_notification" "project_event_notification" {
-			id = ibm_project_instance.project_instance.id
+			project_id = ibm_project_instance.project_instance.id
 		}
 	`, projectResourceGroup, projectLocation, projectName)
 }
@@ -93,7 +93,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 		}
 
 		data "ibm_project_event_notification" "project_event_notification" {
-			id = ibm_project_instance.project_instance.id
+			project_id = ibm_project_instance.project_instance.id
 		}
 	`, projectName, projectDescription, projectResourceGroup, projectLocation)
 }

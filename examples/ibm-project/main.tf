@@ -28,6 +28,6 @@ resource "ibm_project_instance" "project_instance" {
 /*
 // Create project_event_notification data source
 data "ibm_project_event_notification" "project_event_notification_instance" {
-  id = var.project_event_notification_id
+  project_id = var.project_event_notification_id
 }
 */

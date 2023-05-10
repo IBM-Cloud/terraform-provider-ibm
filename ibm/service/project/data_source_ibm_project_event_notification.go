@@ -21,7 +21,7 @@ func DataSourceIbmProjectEventNotification() *schema.Resource {
 		ReadContext: dataSourceIbmProjectEventNotificationRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The unique project ID.",
@@ -240,7 +240,7 @@ func dataSourceIbmProjectEventNotificationRead(context context.Context, d *schem
 
 	getProjectOptions := &projectv1.GetProjectOptions{}
 
-	getProjectOptions.SetID(d.Get("id").(string))
+	getProjectOptions.SetID(d.Get("project_id").(string))
 
 	project, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
 	if err != nil {
@@ -294,7 +294,7 @@ func dataSourceIbmProjectEventNotificationRead(context context.Context, d *schem
 func dataSourceIbmProjectEventNotificationProjectConfigToMap(model *projectv1.ProjectConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["project_id"] = model.ID
 	}
 	if model.Name != nil {
 		modelMap["name"] = model.Name

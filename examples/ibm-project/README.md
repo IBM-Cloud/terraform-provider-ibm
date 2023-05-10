@@ -73,7 +73,7 @@ data "project_event_notification" "project_event_notification_instance" {
 | configs | The project configurations. | `list()` | false |
 | resource_group | The resource group where the project's data and tools are created. | `string` | true |
 | location | The location where the project's data and tools are created. | `string` | true |
-| id | The unique project ID. | `string` | true |
+| project_id | The unique project ID. | `string` | true |
 
 ## Outputs
 
