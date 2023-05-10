@@ -112,6 +112,12 @@ func DataSourceIBMContainerWorkerPool() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the resource group.",
 			},
+
+			"autoscale_enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Autoscaling is enabled on the workerpool",
+			},
 		},
 	}
 }
@@ -174,5 +180,6 @@ func dataSourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface
 		d.Set("disk_encryption", false)
 	}
 	d.Set("resource_group_id", targetEnv.ResourceGroup)
+	d.Set("autoscale_enabled", workerPool.AutoscaleEnabled)
 	return nil
 }
