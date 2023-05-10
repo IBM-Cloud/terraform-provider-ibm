@@ -25,6 +25,8 @@ func TestAccIBMContainerWorkerPoolDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_container_worker_pool.testacc_ds_worker_pool", "id"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_worker_pool.testacc_ds_worker_pool", "autoscale_enabled", "false"),
 				),
 			},
 		},
