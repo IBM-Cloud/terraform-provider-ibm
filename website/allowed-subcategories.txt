@@ -27,6 +27,7 @@ Key Management Service
 Kubernetes Service
 Object Storage
 Power Systems
+Project
 Push Notifications
 Resource management
 Satellite
