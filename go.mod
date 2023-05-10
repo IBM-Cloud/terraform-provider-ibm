@@ -16,7 +16,7 @@ require (
 	github.com/IBM/continuous-delivery-go-sdk v1.1.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.1
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.13.0
+	github.com/IBM/go-sdk-core/v5 v5.13.1
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -30,7 +30,7 @@ require (
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
 	github.com/IBM/vpc-beta-go-sdk v0.1.0
-	github.com/IBM/vpc-go-sdk v0.35.0
+	github.com/IBM/vpc-go-sdk v0.37.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
@@ -58,12 +58,12 @@ require (
 
 require (
 	github.com/IBM/go-sdk-core/v3 v3.2.4
+	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -178,5 +178,3 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk

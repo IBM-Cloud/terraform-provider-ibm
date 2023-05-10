@@ -345,7 +345,7 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 
 	if tgt, ok := d.GetOk(isFloatingIPTarget); ok {
 		target = tgt.(string)
-		floatingIPPrototype.Target = &vpcv1.FloatingIPByTargetNetworkInterfaceIdentity{
+		floatingIPPrototype.Target = &vpcv1.FloatingIPTargetPrototypeNetworkInterfaceIdentity{
 			ID: &target,
 		}
 	}

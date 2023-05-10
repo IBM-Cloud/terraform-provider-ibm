@@ -197,16 +197,16 @@ func ResourceIBMIsImageExportCreate(context context.Context, d *schema.ResourceD
 	createImageExportJobOptions := &vpcv1.CreateImageExportJobOptions{}
 
 	createImageExportJobOptions.SetImageID(d.Get("image").(string))
-	storageBucket := d.Get("storage_bucket").([]interface{})[0].(map[string]interface{})
-	storage_bucket_name := storageBucket["name"].(string)
-	storage_bucket_crn := storageBucket["crn"].(string)
-	torageBucket := &vpcv1.CloudObjectStorageBucketIdentity{}
+	storageBucketMap := d.Get("storage_bucket").([]interface{})[0].(map[string]interface{})
+	storage_bucket_name := storageBucketMap["name"].(string)
+	storage_bucket_crn := storageBucketMap["crn"].(string)
+	storageBucket := &vpcv1.CloudObjectStorageBucketIdentity{}
 	if storage_bucket_crn != "" {
-		torageBucket.CRN = &storage_bucket_crn
+		storageBucket.CRN = &storage_bucket_crn
 	} else {
-		torageBucket.Name = &storage_bucket_name
+		storageBucket.Name = &storage_bucket_name
 	}
-	createImageExportJobOptions.SetStorageBucket(torageBucket)
+	createImageExportJobOptions.SetStorageBucket(storageBucket)
 	if format, ok := d.GetOk("format"); ok {
 		createImageExportJobOptions.SetFormat(format.(string))
 	}
