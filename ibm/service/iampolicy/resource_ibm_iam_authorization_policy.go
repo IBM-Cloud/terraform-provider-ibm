@@ -6,6 +6,7 @@ package iampolicy
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -13,6 +14,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -411,6 +413,22 @@ func resourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interfac
 	}
 
 	authorizationPolicy, resp, err := iampapClient.GetPolicy(getPolicyOptions)
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		authorizationPolicy, resp, err = iampapClient.GetPolicy(getPolicyOptions)
+		if err != nil || authorizationPolicy == nil {
+			if resp != nil && resp.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if conns.IsResourceTimeoutError(err) {
+		authorizationPolicy, resp, err = iampapClient.GetPolicy(getPolicyOptions)
+	}
 	if err != nil || resp == nil {
 		return fmt.Errorf("[ERROR] Error retrieving authorizationPolicy: %s %s", err, resp)
 	}
