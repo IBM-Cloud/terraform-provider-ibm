@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_cf'
+page_title: 'IBM : ibm_en_destination_cos'
 description: |-
-  Get information about a IBM CLoud Functions destination
+  Get information about a IBM CLoud Object Storage destination
 ---
 
-# ibm_en_destination_cf
+# ibm_en_destination_cos
 
-Provides a read-only data source for Cloud Functions destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for IBM Cloud Object Storage destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_destination_cf" "cf_en_destination" {
+data "ibm_en_destination_cos" "cos_en_destination" {
   instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
-  destination_id = ibm_en_destination_cf.cf_destination.destination_id
+  destination_id = ibm_en_destination_cos.cos_destination.destination_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `cf_en_destination`.
+- `id` - The unique identifier of the `cos_en_destination`.
 
 - `name` - (String) Destination name.
 
@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Destination type ibmcf.
+- `type` - (String) Destination type ibmcos.
 
 - `config` - (List) Payload describing a destination configuration.
   Nested scheme for **config**:
@@ -50,8 +50,11 @@ In addition to all argument references listed, you can access the following attr
 
   Nested scheme for **params**:
 
-  - `url` - (String) URL of IBM Cloud Functions Trigger EndPoint.
+  - `bucket_name` - (Required, string) The bucket name in IBM cloud object storage instance.
 
-  - `api_key` - (String) APIKey with access of IBM Cloud Functions IAM Namespace
+  - `instance_id` - (Required, string) The instance id for IBM Cloud object storage instance.
+
+  - `endpoint`   - (Required, string) The endpoint for bucket region.
+
 
 - `updated_at` - (String) Last updated time.

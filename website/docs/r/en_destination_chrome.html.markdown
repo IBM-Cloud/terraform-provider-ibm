@@ -3,7 +3,7 @@ subcategory: 'Event Notifications'
 layout: 'ibm'
 page_title: 'IBM : ibm_en_destination_chrome'
 description: |-
-  Manages Event Notification Webhook destinations.
+  Manages Event Notification Chrome destinations.
 ---
 
 # ibm_en_destination_chrome
