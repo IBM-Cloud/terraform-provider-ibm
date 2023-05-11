@@ -15,6 +15,7 @@ Import the details of an existing IBM Cloud infrastructure snapshot's clone coll
 ```terraform
 
 data "ibm_is_snapshot_clones" "ds_snapshotclones" {
+  snapshot = "6284-8230x-1234-33ae"
 }
 
 ```

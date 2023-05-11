@@ -119,9 +119,7 @@ Review the argument references that you can specify for your resource.
   - `port_min`- (Required, Integer) The UDP port range that includes minimum bound. Valid values are from 1 to 65535.
   - `port_max`- (Required, Integer) The UDP port range that includes maximum bound. Valid values are from 1 to 65535.
 
-~> **Note:** 
-
-If any of the `icmp` , `tcp`, or `udp` is not specified it creates a rule with protocol `ALL`.
+~> **Note:** If any of the `icmp` , `tcp`, or `udp` is not specified it creates a rule with protocol `ALL`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
