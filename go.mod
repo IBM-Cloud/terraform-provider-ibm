@@ -16,7 +16,7 @@ require (
 	github.com/IBM/continuous-delivery-go-sdk v1.1.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.1
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.13.0
+	github.com/IBM/go-sdk-core/v5 v5.13.1
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -58,12 +58,12 @@ require (
 
 require (
 	github.com/IBM/go-sdk-core/v3 v3.2.4
+	github.com/IBM/project-go-sdk v0.0.10
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect

@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/project-go-sdk/projectv1"
@@ -53,7 +52,7 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The unique ID of a project.",
+							Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -74,12 +73,12 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						"locator_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The location ID of a project configuration manual property.",
+							Description: "A dotted value of catalogID.versionID.",
 						},
 						"input": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The inputs of a Schematics template property.",
+							Description: "The input values to use to deploy the configuration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -87,13 +86,18 @@ func ResourceIbmProjectInstance() *schema.Resource {
 										Required:    true,
 										Description: "The variable name.",
 									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
 								},
 							},
 						},
 						"setting": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "An optional setting object that's passed to the cart API.",
+							Description: "Schematics environment variables to use to deploy the configuration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -104,7 +108,7 @@ func ResourceIbmProjectInstance() *schema.Resource {
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "The value of a the configuration setting.",
+										Description: "The value of the configuration setting.",
 									},
 								},
 							},
@@ -114,15 +118,13 @@ func ResourceIbmProjectInstance() *schema.Resource {
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "Default",
-				Description: "Group name of the customized collection of resources.",
+				Required:    true,
+				Description: "The resource group where the project's data and tools are created.",
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "us-south",
-				Description: "Data center locations for resource deployment.",
+				Required:    true,
+				Description: "The location where the project's data and tools are created.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -143,7 +145,7 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A date/time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date-time format as specified by RFC 3339.",
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 						},
 						"cumulative_needs_attention_view": &schema.Schema{
 							Type:        schema.TypeList,
@@ -182,12 +184,12 @@ func ResourceIbmProjectInstance() *schema.Resource {
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The location where the project was created.",
+							Description: "The IBM Cloud location where a resource is deployed.",
 						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The resource group where the project was created.",
+							Description: "The resource group where the project's data and tools are created.",
 						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
@@ -213,7 +215,7 @@ func ResourceIbmProjectInstanceValidator() *validate.ResourceValidator {
 			Identifier:     "name",
 			Type:           validate.TypeString,
 			Required:       true,
-			Regexp:         `^(?!\s).+\S$`,
+			Regexp:         `^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]+$`,
 			MinValueLength: 1,
 			MaxValueLength: 64,
 		},
@@ -228,15 +230,15 @@ func ResourceIbmProjectInstanceValidator() *validate.ResourceValidator {
 		validate.ValidateSchema{
 			Identifier:     "resource_group",
 			Type:           validate.TypeString,
-			Optional:       true,
-			Regexp:         `^$|^(?!\s).*\S$`,
+			Required:       true,
+			Regexp:         `^$|^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]*$`,
 			MinValueLength: 0,
 			MaxValueLength: 40,
 		},
 		validate.ValidateSchema{
 			Identifier:     "location",
 			Type:           validate.TypeString,
-			Optional:       true,
+			Required:       true,
 			Regexp:         `^$|^(us-south|us-east|eu-gb|eu-de)$`,
 			MinValueLength: 0,
 			MaxValueLength: 12,
@@ -351,20 +353,28 @@ func resourceIbmProjectInstanceRead(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
 	}
-	if !core.IsNil(project.Name) {
-		if err = d.Set("name", project.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	if err = d.Set("name", project.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if !core.IsNil(project.Description) {
+		if err = d.Set("description", project.Description); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 		}
 	}
-	metadataMap := make(map[string]interface{})
+	if !core.IsNil(project.Configs) {
+		configs := []map[string]interface{}{}
+		if err = d.Set("configs", configs); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
+		}
+	}
 	if !core.IsNil(project.Metadata) {
-		metadataMap, err = resourceIbmProjectInstanceProjectMetadataToMap(project.Metadata)
+		metadataMap, err := resourceIbmProjectInstanceProjectMetadataToMap(project.Metadata)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-	}
-	if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
+		if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
+		}
 	}
 
 	return nil
@@ -381,6 +391,27 @@ func resourceIbmProjectInstanceUpdate(context context.Context, d *schema.Resourc
 	updateProjectOptions.SetID(d.Id())
 
 	hasChange := false
+
+	if d.HasChange("name") {
+		updateProjectOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
+	if d.HasChange("description") {
+		updateProjectOptions.SetDescription(d.Get("description").(string))
+		hasChange = true
+	}
+	if d.HasChange("configs") {
+		var configs []projectv1.ProjectConfigPrototype
+		for _, v := range d.Get("configs").([]interface{}) {
+			value := v.(map[string]interface{})
+			configsItem, err := resourceIbmProjectInstanceMapToProjectConfigPrototype(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			configs = append(configs, *configsItem)
+		}
+		hasChange = true
+	}
 
 	if hasChange {
 		_, response, err := projectClient.UpdateProjectWithContext(context, updateProjectOptions)
@@ -496,6 +527,9 @@ func resourceIbmProjectInstanceMapToProjectConfigPrototype(modelMap map[string]i
 func resourceIbmProjectInstanceMapToProjectConfigInputVariable(modelMap map[string]interface{}) (*projectv1.ProjectConfigInputVariable, error) {
 	model := &projectv1.ProjectConfigInputVariable{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["value"] != nil {
+		model.Value = modelMap["value"].(string)
+	}
 	return model, nil
 }
 
@@ -547,6 +581,9 @@ func resourceIbmProjectInstanceProjectConfigPrototypeToMap(model *projectv1.Proj
 func resourceIbmProjectInstanceProjectConfigInputVariableToMap(model *projectv1.ProjectConfigInputVariable) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
+	if model.Value != nil {
+		modelMap["value"] = model.Value
+	}
 	return modelMap, nil
 }
 
@@ -604,9 +641,6 @@ func resourceIbmProjectInstanceCumulativeNeedsAttentionToMap(model *projectv1.Cu
 	}
 	if model.ConfigID != nil {
 		modelMap["config_id"] = model.ConfigID
-	}
-	if model.ConfigVersion != nil {
-		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
 	}
 	return modelMap, nil
 }
