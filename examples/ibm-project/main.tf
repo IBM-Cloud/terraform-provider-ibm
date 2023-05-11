@@ -7,7 +7,6 @@ resource "ibm_project_instance" "project_instance" {
   name = "My static website"
   description = "Sample static website test using the IBM catalog deployable architecture"
   configs {
-    id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
     name = "static-website-dev"
     labels = [ "env:dev", "billing:internal" ]
     description = "Website - development"
@@ -29,8 +28,6 @@ resource "ibm_project_instance" "project_instance" {
 /*
 // Create project_event_notification data source
 data "ibm_project_event_notification" "project_event_notification_instance" {
-  id = var.project_event_notification_id
-  exclude_configs = var.project_event_notification_exclude_configs
-  complete = var.project_event_notification_complete
+  project_id = var.project_event_notification_id
 }
 */
