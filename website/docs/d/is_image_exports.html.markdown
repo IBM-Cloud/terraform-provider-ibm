@@ -23,7 +23,9 @@ resource "ibm_is_image" "example" {
 resource "ibm_is_image_export_job" "example" {
   image          = ibm_is_image.example.id
   name           = "my-image-export"
-  storage_bucket = "bucket-27200-lwx4cfvcue"
+  storage_bucket {
+    name = "bucket-27200-lwx4cfvcue"
+  }
 }
 data "ibm_is_image_export_jobs" "example" {
   image = ibm_is_image_export_job.example.id

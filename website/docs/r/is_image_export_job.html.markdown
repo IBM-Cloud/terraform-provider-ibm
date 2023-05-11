@@ -23,10 +23,21 @@ resource "ibm_is_image" "example" {
   encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
   encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
 }
+// Create export job with storage bucket name
 resource "ibm_is_image_export_job" "example" {
   image               = ibm_is_image.example.id
   name                = "my-image-export"
-  storage_bucket_name = "bucket-27200-lwx4cfvcue"
+  storage_bucket {
+    name = "bucket-27200-lwx4cfvcue"
+  }
+}
+// Create export job with storage bucket CRN
+resource "ibm_is_image_export_job" "example" {
+  image               = ibm_is_image.example.id
+  name                = "my-image-export"
+  storage_bucket {
+    crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/XXXXeaXXXX5XXXX0f0XXXX92ff85XXXX:aaXXXXX1-07XX-42XX-b8d0-aXXXXXX243:bucket:dallas-bucket"
+  }
 }
 ```
 

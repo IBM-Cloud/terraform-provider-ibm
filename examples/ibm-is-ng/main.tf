@@ -1201,7 +1201,9 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 resource "ibm_is_image_export_job" "example" {
   image = ibm_is_image.image1.id
   name = "my-image-export"
-  storage_bucket_name = "bucket-27200-lwx4cfvcue"
+  storage_bucket {
+    name = "bucket-27200-lwx4cfvcue"
+  }
 }
 
 data "ibm_is_image_export_jobs" "example" {
