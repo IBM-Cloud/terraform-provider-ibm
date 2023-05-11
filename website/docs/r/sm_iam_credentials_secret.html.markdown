@@ -14,7 +14,7 @@ Provides a resource for IAMCredentialsSecret. This allows IAMCredentialsSecret t
 
 ```hcl
 resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   access_groups = ["AccessGroupId-45884031-54be-4dd7-86ff-112511e92699"]
@@ -26,7 +26,7 @@ resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
 		interval = 1
 		unit = "day"
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
   service_id = "ServiceId-bb4ccc31-bd31-493a-bb58-52ec399800be"
   ttl = "1800"
 }

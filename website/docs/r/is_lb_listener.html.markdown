@@ -181,11 +181,12 @@ Review the argument references that you can specify for your resource.
 
 - `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, `https` and `udp`. Network load balancer supports only `tcp` and `udp` protocol.
 - `default_pool` - (Optional, String) The load balancer pool unique identifier.
-    ~> **NOTE**
-    - The specified pool must -
-      - Belong to this load balancer
-      - Have the  same protocol as this listener, or have a compatible protocol. At present, the compatible protocols are http and https.
-      - Not already be the default_pool for another listener 
+
+    ~> **The specified pool must**
+      </br>&#x2022; Belong to this load balancer
+      </br>&#x2022; Have the  same protocol as this listener, or have a compatible protocol. At present, the compatible protocols are http and https.
+      </br>&#x2022; Not already be the default_pool for another listener 
+
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 
   !> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
