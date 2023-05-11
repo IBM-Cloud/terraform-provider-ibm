@@ -601,13 +601,13 @@ func init() {
 
 	IsCosBucketName = os.Getenv("IS_COS_BUCKET_NAME")
 	if IsCosBucketName == "" {
-		IsCosBucketName = "vpcui-dev-us-south"
+		IsCosBucketName = "test-bucket"
 		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_NAME for testing ibm_is_image_export_job else it is set to default value 'bucket-27200-lwx4cfvcue'")
 	}
 
 	IsCosBucketCRN = os.Getenv("IS_COS_BUCKET_CRN")
 	if IsCosBucketCRN == "" {
-		IsCosBucketCRN = "crn:v1:staging:public:cloud-object-storage:global:a/efe5afc483594adaa8325e2b4d1290df:f24c3b20-a6c1-4e4d-bafe-0953ef729023:bucket:vpcui-dev-us-south"
+		IsCosBucketCRN = "crn:v1:bluemix:public:cloud-object-storage:global:a/XXXXXXXX:XXXXX-XXXX-XXXX-XXXX-XXXX:bucket:test-bucket"
 		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_CRN for testing ibm_is_image_export_job else it is set to default value 'bucket-27200-lwx4cfvcue'")
 	}
 
