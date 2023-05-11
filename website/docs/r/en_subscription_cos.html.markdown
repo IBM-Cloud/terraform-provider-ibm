@@ -1,27 +1,24 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_slack'
+page_title: 'IBM : ibm_en_subscription_cos'
 description: |-
-  Manages Event Notifications subscription.
+  Manages Event Notifications IBM Cloud Object storage destination subscription.
 ---
 
-# ibm_en_subscription_slack
+# ibm_en_subscription_cos
 
-Create, update, or delete a slack subscription by using IBM Cloud™ Event Notifications.
+Create, update, or delete a COS subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription_slack" "slack_subscription" {
+resource "ibm_en_subscription_cos" "cos_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name             = "My Slack subscription"
-  description      = "The Slack subscription for slack destination in Event Notifications"
-  destination_id   = ibm_en_destination_slack.destination1.destination_id
+  name             = "IBM COS Subscription"
+  description      = "IBM Cloud Object Storage destination subscription for Event Notification"
+  destination_id   = ibm_en_destination_cos.cos_destination.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
-  attributes {
-    "attachment_color" = "#FF0000"
-  }
 }
 ```
 
@@ -39,16 +36,12 @@ Review the argument reference that you can specify for your resource.
 
 - `topic_id` - (Required, String) Topic ID.
 
-- `attributes` - (Optional, List) Subscription attributes.
-  Nested scheme for **attributes**:
-
-  - `attachment_color` - (Optional, String) The color code for slack attachment.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `slack_subscription`.
+- `id` - (String) The unique identifier of the `cos_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -56,7 +49,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription_slack` resource by using `id`.
+You can import the `ibm_en_subscription_cos` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -69,5 +62,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_slack.slack_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_cos.cos_subscription <instance_guid>/<subscription_id>
 ```
