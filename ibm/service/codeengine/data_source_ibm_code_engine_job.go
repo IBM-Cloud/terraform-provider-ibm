@@ -246,15 +246,13 @@ func dataSourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
-
 	if err = d.Set("run_as_user", flex.IntValue(job.RunAsUser)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting run_as_user: %s", err))
 	}
 
-
 	runEnvVariables := []map[string]interface{}{}
 	if job.RunEnvVariables != nil {
-		for _, modelItem := range job.RunEnvVariables { 
+		for _, modelItem := range job.RunEnvVariables {
 			modelMap, err := dataSourceIbmCodeEngineJobEnvVarToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -276,7 +274,7 @@ func dataSourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceD
 
 	runVolumeMounts := []map[string]interface{}{}
 	if job.RunVolumeMounts != nil {
-		for _, modelItem := range job.RunVolumeMounts { 
+		for _, modelItem := range job.RunVolumeMounts {
 			modelMap, err := dataSourceIbmCodeEngineJobVolumeMountToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
