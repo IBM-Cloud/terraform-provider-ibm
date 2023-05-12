@@ -81,7 +81,7 @@ func testAccCheckIBMMetricsRouterSettingsConfigBasic(permitted_target_regions, p
 	return fmt.Sprintf(`
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
-			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 		}
 
 		resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
@@ -101,7 +101,7 @@ func testAccCheckIBMMetricsRouterSettingsConfig(permitted_target_regions, primar
 
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
-			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 		}
 
 		resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
