@@ -796,7 +796,12 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
 
 			// Added for Code Engine
-			"ibm_code_engine_project": codeengine.DataSourceIbmCodeEngineProject(),
+			"ibm_code_engine_app":        codeengine.DataSourceIbmCodeEngineApp(),
+			"ibm_code_engine_build":      codeengine.DataSourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map": codeengine.DataSourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_job":        codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":    codeengine.DataSourceIbmCodeEngineProject(),
+			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
 
 			// Added for Project
 			"ibm_project_event_notification": project.DataSourceIbmProjectEventNotification(),
