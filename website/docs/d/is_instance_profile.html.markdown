@@ -65,30 +65,30 @@ In addition to the argument reference list, you can access the following attribu
   Nested scheme for `disks`:
   - `quantity` - (List) Nested `quantity` blocks have the following structure:
    
-    Nested scheme for `quantity`:
-    - `default` - (String) The default value for this profile field.
-    - `max` - (String) The maximum value for this profile field.
-    - `min` - (String) The minimum value for this profile field.
-    - `step` - (String) The increment step value for this profile field.
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+      Nested scheme for `quantity`:
+      - `default` - (String) The default value for this profile field.
+      - `max` - (String) The maximum value for this profile field.
+      - `min` - (String) The minimum value for this profile field.
+      - `step` - (String) The increment step value for this profile field.
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
+      - `values` - (String) The permitted values for this profile field.
   - `size` - (List) Nested `size` blocks have the following structure:
 
-    Nested scheme for `size`
-    - `default` - (String) The default value for this profile field.
-    - `max` - (String) The maximum value for this profile field.
-    - `min` - (String) The minimum value for this profile field.
-    - `step` - (String) The increment step value for this profile field.
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+      Nested scheme for `size`
+      - `default` - (String) The default value for this profile field.
+      - `max` - (String) The maximum value for this profile field.
+      - `min` - (String) The minimum value for this profile field.
+      - `step` - (String) The increment step value for this profile field.
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
+      - `values` - (String) The permitted values for this profile field.
   - `supported_interface_types` - (List) Nested `supported_interface_types` blocks have the following structure:
 
-    Nested scheme for `supported_interface_types`:
-    - `default` - (String) The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-    - `type` - (String) The type for this profile field.
-    - `values` - (String) The supported disk interfaces used for attaching the disk.
+      Nested scheme for `supported_interface_types`:
+      - `default` - (String) The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+      - `type` - (String) The type for this profile field.
+      - `values` - (String) The supported disk interfaces used for attaching the disk.
 - `family` - (String) The family of the virtual server instance profile.
 - `gpu_count` - (List) Nested `gpu_count` blocks have the following structure:
   Nested scheme for `gpu_count`:

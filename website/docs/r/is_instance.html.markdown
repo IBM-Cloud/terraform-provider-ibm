@@ -46,7 +46,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
   metadata_service_enabled  = false
 
   boot_volume {
@@ -189,7 +189,7 @@ resource "ibm_is_security_group_rule" "example3" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet          = ibm_is_subnet.example.id

@@ -28,6 +28,7 @@ Kubernetes Service
 Metrics Router
 Object Storage
 Power Systems
+Project
 Push Notifications
 Resource management
 Satellite

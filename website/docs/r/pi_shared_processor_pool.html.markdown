@@ -49,7 +49,7 @@ ibm_pi_shared_processor_pool provides the following [timeouts](https://www.terra
 Review the argument references that you can specify for your resource. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_shared_processor_pool_host_group` - (Required, String) Host group of the shared processor pool. Valid values are 's922' and 'e980'.
+- `pi_shared_processor_pool_host_group` - (Required, String) Host group of the shared processor pool. Valid values are 's922', 'e980' and 's1022'.
 - `pi_shared_processor_pool_name` - (Required, String) The name of the shared processor pool.
 - `pi_shared_processor_pool_reserved_cores` - (Required, Integer) The amount of reserved cores for the shared processor pool.
 - `pi_shared_processor_pool_placement_group_id` - (Optional, String) The ID of the placement group the shared processor pool is created in.

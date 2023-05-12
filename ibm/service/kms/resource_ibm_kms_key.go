@@ -83,7 +83,6 @@ func ResourceIBMKmskey() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
-				ForceNew:     true,
 			},
 			"standard_key": {
 				Type:        schema.TypeBool,

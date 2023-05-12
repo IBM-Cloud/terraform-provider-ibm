@@ -14,7 +14,7 @@ Provides a resource for IAMCredentialsConfiguration. This allows IAMCredentialsC
 
 ```hcl
 resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration_instance" {
-	instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+	instance_id   = ibm_resource_instance.sm_instance.guid
 	region        = "us-south"
 	name = "my-example-engine-config"
 	api_key = "my-api-key"
