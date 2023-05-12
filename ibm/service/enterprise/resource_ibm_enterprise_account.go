@@ -39,6 +39,7 @@ func ResourceIBMEnterpriseAccount() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				Description:  "The name of the account. This field must have 3 - 60 characters.",
 				ForceNew:     true,
 				ValidateFunc: validate.ValidateAllowedEnterpriseNameValue(),
@@ -46,6 +47,7 @@ func ResourceIBMEnterpriseAccount() *schema.Resource {
 			"owner_iam_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The IAM ID of the account owner, such as `IBMid-0123ABC`. The IAM ID must already exist.",
 				ForceNew:    true,
 			},
@@ -301,7 +303,20 @@ func resourceIbmEnterpriseAccountUpdate(context context.Context, d *schema.Resou
 
 func resourceIbmEnterpriseAccountDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	d.SetId("")
+	enterpriseManagementClient, err := meta.(conns.ClientSession).EnterpriseManagementV1()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	deleteAccountOptions := &enterprisemanagementv1.DeleteAccountOptions{}
+
+	deleteAccountOptions.SetAccountID(d.Id())
+
+	response, err := enterpriseManagementClient.DeleteAccountWithContext(context, deleteAccountOptions)
+	if err != nil {
+		log.Printf("[DEBUG] DeleteAccountWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteAccountWithContext failed %s\n%s", err, response))
+	}
 
 	return nil
 }

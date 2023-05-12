@@ -9,7 +9,7 @@ description: |-
 
 # ibm_enterprise_account
 
-Create and update an `enterprise_account` resource. Delete operation is not supported. For more information, about enterprise account, refer to [setting up accounts to an enterprise](https://cloud.ibm.com/docs/account?topic=account-enterprise-add).
+Create and update and delete `enterprise_account` resource. For more information, about enterprise account, refer to [setting up accounts to an enterprise](https://cloud.ibm.com/docs/account?topic=account-enterprise-add).
 
 ## Example usage
 

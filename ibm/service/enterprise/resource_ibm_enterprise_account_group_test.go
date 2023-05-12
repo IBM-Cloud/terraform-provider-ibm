@@ -5,6 +5,7 @@ package enterprise_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -26,8 +27,9 @@ func TestAccIbmEnterpriseAccountGroupBasic(t *testing.T) {
 	//primaryContactIamIDUpdate := fmt.Sprintf("primary_contact_iam_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMEnterpriseAccountGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIbmEnterpriseAccountGroupConfigBasic(name),
@@ -92,4 +94,37 @@ func testAccCheckIbmEnterpriseAccountGroupExists(n string, obj enterprisemanagem
 		obj = *accountGroup
 		return nil
 	}
+}
+
+func testAccCheckIBMEnterpriseAccountGroupDestroy(s *terraform.State) error {
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_enterprise_account" {
+			continue
+		}
+
+		enterpriseManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EnterpriseManagementV1()
+		if err != nil {
+			return err
+		}
+
+		getAccountGroupOptions := &enterprisemanagementv1.GetAccountGroupOptions{}
+
+		getAccountGroupOptions.SetAccountGroupID(rs.Primary.ID)
+
+		instance, r, err := enterpriseManagementClient.GetAccountGroup(getAccountGroupOptions)
+
+		if err == nil {
+			if *instance.State == "active" {
+				return fmt.Errorf("IBM Enterprise Account still exists: %s", rs.Primary.ID)
+			}
+		} else {
+			if !strings.Contains(err.Error(), "404") {
+				return fmt.Errorf("[ERROR] Error checking if Account (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, r)
+			}
+		}
+
+	}
+
+	return nil
 }
