@@ -1,3 +1,40 @@
+# 1.54.0-beta0(May 13, 2023)
+
+Features
+* Support Project
+    - **Resources**
+        - ibm_project_instance
+    - **Datasources**
+        - ibm_project_event_notification
+
+* Support Event Notification
+    - **Resources**
+        - ibm_en_destination_cos
+        - ibm_en_subscription_cos
+    - **Datasources**
+        - ibm_en_destination_cos
+        - ibm_en_subscription_cos
+* Support Code Engine
+    - **Datasources**
+        - ibm_code_engine_app
+        - ibm_code_engine_build
+        - ibm_code_engine_config_map
+        - ibm_code_engine_job
+        - ibm_code_engine_job
+
+Enhancements
+* suppress resize for autoscaled workerpools for autoscale enabled cluster ([4533](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4533))
+* Feature(Image Export Jobs): Support for image export jobs ([4566](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4566))
+* feat(Enterprise):added support for destroy method ([4565](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4565))
+* ODF Terraform Documentation Updated ([4549](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4549))
+
+BugFixes
+* disable creating new resource when endpoint type changes ([4554](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4554))
+* retry added for read authorization policy ([4554](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4413))
+* Update example for ibm_is_vpc_routing_table ([4564](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4564))
+* IBM Cloud Object destination resources and data sources and docs update ([4534](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4534)) 
+
+
 # 1.53.0(May 04, 2023)
 Deprecation
 * Added V1 deprecation message for SCC Posture resources and datasources ([4459](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4459))
