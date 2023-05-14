@@ -30,7 +30,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_vpc_routing_table" "example" {
   vpc                           = ibm_is_vpc.example.id
   name                          = "example-routing-table"
-  route_direct_link_ingress     = true
+  route_direct_link_ingress     = false
   route_transit_gateway_ingress = false
   route_vpc_zone_ingress        = false
 }
