@@ -58,12 +58,12 @@ require (
 
 require (
 	github.com/IBM/go-sdk-core/v3 v3.2.4
+	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -154,6 +154,7 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.11.0 // indirect
+	// github.ibm.com/ibmcloud/networking-go-sdk v1.1.2 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sys v0.6.0 // indirect
@@ -178,3 +179,5 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
+
+// replace github.ibm.com/ibmcloud/networking-go-sdk => /Users/malark/work/src/github.ibm.com/ibmcloud/networking-go-sdk
