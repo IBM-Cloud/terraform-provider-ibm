@@ -7,10 +7,10 @@ description: |-
   Manages IBM volume.
 ---
 
-# ibm_is_instance_boot_volume
+# ibm_is_instance_boot_volume_manager
 Provides a resource to manage a boot volume of a VPC virtual server instance. Manage the boot volume of a VPC virtual server instance created alongwith the instance creation with this resource.
 
-~> **NOTE:** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `ibm_is_instance_boot_volume` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
+~> **NOTE:** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `ibm_is_instance_boot_volume_manager` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
 
 Every Virtual server instance has a boot volume that needs to be managed but not destroyed. When Terraform first adopts a instance_boot_volume, 
 
@@ -31,7 +31,7 @@ provider "ibm" {
 The following example creates a volume with 10 IOPs tier.
 
 ```terraform
-resource "ibm_is_instance_boot_volume" "example" {
+resource "ibm_is_instance_boot_volume_manager" "example" {
   name    = "example-volume"
   profile = "10iops-tier"
   zone    = "us-south-1"
@@ -39,7 +39,7 @@ resource "ibm_is_instance_boot_volume" "example" {
 ```
 
 ## Timeouts
-The `ibm_is_instance_boot_volume` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+The `ibm_is_instance_boot_volume_manager` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 10 minutes) Used for creating instance.
 - **delete** - (Default 10 minutes) Used for deleting instance.
@@ -111,10 +111,10 @@ In addition to all argument reference list, you can access the following attribu
 - `encryption_key` - (String) The key to use for encrypting this volume.
 - `resource_group` - (String) The resource group ID for this volume.
 ## Import
-The `ibm_is_instance_boot_volume` resource can be imported by using volume ID.
+The `ibm_is_instance_boot_volume_manager` resource can be imported by using volume ID.
 
 **Example**
 
 ```
-$ terraform import ibm_is_instance_boot_volume.example d7bec597-4726-451f-8a63-e62e6f19c32c
+$ terraform import ibm_is_instance_boot_volume_manager.example d7bec597-4726-451f-8a63-e62e6f19c32c
 ```

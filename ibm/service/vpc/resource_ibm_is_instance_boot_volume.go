@@ -59,14 +59,14 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume", isVolumeName),
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeName),
 				Description:  "Volume name",
 			},
 			isVolumeName: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume", isVolumeName),
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeName),
 				Description:  "Volume name",
 			},
 
@@ -74,7 +74,7 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume", isVolumeProfileName),
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeProfileName),
 				Description:  "Volume profile name",
 			},
 
@@ -106,7 +106,7 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume", isVolumeCapacity),
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeCapacity),
 				Description:  "Volume capacity value",
 			},
 			isVolumeSourceSnapshot: {
@@ -123,7 +123,7 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume", isVolumeIops),
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", isVolumeIops),
 				Description:  "IOPS value for the Volume",
 			},
 			isVolumeCrn: {
@@ -202,7 +202,7 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume", "tags")},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", "tags")},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "UserTags for the volume instance",
 			},
@@ -210,7 +210,7 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume", "accesstag")},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_boot_volume_manager", "accesstag")},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Access management tags for the volume instance",
 			},
@@ -312,7 +312,7 @@ func ResourceIBMISInstanceBootVolumeValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmISVolumeResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_boot_volume", Schema: validateSchema}
+	ibmISVolumeResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_boot_volume_manager", Schema: validateSchema}
 	return &ibmISVolumeResourceValidator
 }
 
