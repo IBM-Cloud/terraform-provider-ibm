@@ -446,7 +446,8 @@ func (vpc *VpcV1) GetVPCWithContext(ctx context.Context, getVPCOptions *GetVPCOp
 }
 
 // UpdateVPC : Update a VPC
-// This request updates a VPC's name.
+// This request updates a VPC with the information provided in a VPC patch object. The patch object is structured in the
+// same way as a retrieved VPC and needs to contain only the information to be updated.
 func (vpc *VpcV1) UpdateVPC(updateVPCOptions *UpdateVPCOptions) (result *VPC, response *core.DetailedResponse, err error) {
 	return vpc.UpdateVPCWithContext(context.Background(), updateVPCOptions)
 }
@@ -3658,9 +3659,9 @@ func (vpc *VpcV1) ListImageExportJobsWithContext(ctx context.Context, listImageE
 
 // CreateImageExportJob : Create an image export job
 // This request creates and queues a new export job for the image specified in the URL using the image export job
-// prototype object. The image must be owned by the account and be in the `available`, `deprecated`, `obsolete`, or
-// `unusable` state. The prototype object is structured in the same way as a retrieved image export job, and contains
-// the information necessary to create and queue the new image export job.
+// prototype object. The image must be owned by the account and be in the `available`, `deprecated`, or `unusable`
+// state. The prototype object is structured in the same way as a retrieved image export job, and contains the
+// information necessary to create and queue the new image export job.
 func (vpc *VpcV1) CreateImageExportJob(createImageExportJobOptions *CreateImageExportJobOptions) (result *ImageExportJob, response *core.DetailedResponse, err error) {
 	return vpc.CreateImageExportJobWithContext(context.Background(), createImageExportJobOptions)
 }
@@ -39501,6 +39502,9 @@ type ImageCollection struct {
 	// A link to the next page of resources. This property is present for all pages
 	// except the last page.
 	Next *ImageCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
 }
 
 // UnmarshalImageCollection unmarshals an instance of ImageCollection from the specified map of raw messages.
@@ -39519,6 +39523,10 @@ func UnmarshalImageCollection(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalImageCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
@@ -46529,13 +46537,13 @@ type ListBareMetalServersOptions struct {
 	// Filters the collection to resources with the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified identifier.
+	// Filters the collection to resources with `vpc.id` matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified CRN.
+	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources in the VPC with the exact specified name.
+	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
 	// Filters the collection to bare metal servers on the subnet with the specified identifier.
@@ -47016,13 +47024,13 @@ type ListFlowLogCollectorsOptions struct {
 	// Filters the collection to resources with the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified identifier.
+	// Filters the collection to resources with `vpc.id` matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified CRN.
+	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources in the VPC with the exact specified name.
+	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
 	// Filters the collection to flow log collectors that target the specified resource.
@@ -47745,13 +47753,13 @@ type ListInstancesOptions struct {
 	// Filters the collection to resources with the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified identifier.
+	// Filters the collection to resources with `vpc.id` matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified CRN.
+	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources in the VPC with the exact specified name.
+	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
 	// Filters the collection to instances on the dedicated host with the specified identifier.
@@ -48564,13 +48572,13 @@ type ListSecurityGroupsOptions struct {
 	// Filters the collection to resources in the resource group with the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified identifier.
+	// Filters the collection to resources with `vpc.id` matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources in the VPC with the specified CRN.
+	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources in the VPC with the exact specified name.
+	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -55430,6 +55438,9 @@ type OperatingSystemCollection struct {
 
 	// Collection of operating systems.
 	OperatingSystems []OperatingSystem `json:"operating_systems" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
 }
 
 // UnmarshalOperatingSystemCollection unmarshals an instance of OperatingSystemCollection from the specified map of raw messages.
@@ -55448,6 +55459,10 @@ func UnmarshalOperatingSystemCollection(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalModel(m, "operating_systems", &obj.OperatingSystems, UnmarshalOperatingSystem)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
 	if err != nil {
 		return
 	}
@@ -64711,10 +64726,10 @@ func UnmarshalVPNGatewayConnectionStaticRouteModeTunnel(m map[string]json.RawMes
 
 // VPNGatewayMember : VPNGatewayMember struct
 type VPNGatewayMember struct {
-	// The private IP address assigned to the VPN gateway member.
+	// The reserved IP address assigned to the VPN gateway member.
 	//
 	// This property will be present only when the VPN gateway status is `available`.
-	PrivateIP *IP `json:"private_ip,omitempty"`
+	PrivateIP *ReservedIPReference `json:"private_ip" validate:"required"`
 
 	// The public IP address assigned to the VPN gateway member.
 	PublicIP *IP `json:"public_ip" validate:"required"`
@@ -64745,7 +64760,7 @@ const (
 // UnmarshalVPNGatewayMember unmarshals an instance of VPNGatewayMember from the specified map of raw messages.
 func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayMember)
-	err = core.UnmarshalModel(m, "private_ip", &obj.PrivateIP, UnmarshalIP)
+	err = core.UnmarshalModel(m, "private_ip", &obj.PrivateIP, UnmarshalReservedIPReference)
 	if err != nil {
 		return
 	}
