@@ -75,6 +75,7 @@ import (
 	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
@@ -117,8 +118,8 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv1"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv1"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 // RetryAPIDelay - retry api delay
@@ -299,6 +300,7 @@ type ClientSession interface {
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
 	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 	CodeEngineV2() (*codeengine.CodeEngineV2, error)
+	ProjectV1() (*project.ProjectV1, error)
 }
 
 type clientSession struct {
@@ -619,6 +621,10 @@ type clientSession struct {
 	// Code Engine options
 	codeEngineClient    *codeengine.CodeEngineV2
 	codeEngineClientErr error
+
+	// Project options
+	projectClient    *project.ProjectV1
+	projectClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1189,6 +1195,11 @@ func (session clientSession) CodeEngineV2() (*codeengine.CodeEngineV2, error) {
 	return session.codeEngineClient, session.codeEngineClientErr
 }
 
+// Projects API Specification
+func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
+	return session.projectClient, session.projectClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1283,6 +1294,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
+		session.projectClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1503,6 +1515,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	projectEndpoint := project.DefaultServiceURL
+	// Construct an "options" struct for creating the service client.
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		projectEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PROJECT_API_ENDPOINT", c.Region, project.DefaultServiceURL)
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		session.projectClientErr = fmt.Errorf("Project Service API does not support private endpoints")
+	}
+	// Construct an "options" struct for creating the service client.
+	projectClientOptions := &project.ProjectV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_PROJECT_API_ENDPOINT"}, projectEndpoint),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.projectClient, err = project.NewProjectV1(projectClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.projectClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.projectClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.projectClientErr = fmt.Errorf("Error occurred while configuring Projects API Specification service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the service client.

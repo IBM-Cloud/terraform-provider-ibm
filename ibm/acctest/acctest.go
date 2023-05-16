@@ -88,6 +88,8 @@ var DedicatedHostGroupFamily string
 var DedicatedHostGroupClass string
 var ShareProfileName string
 var VolumeProfileName string
+var VSIUnattachedBootVolumeID string
+var VSIDataVolumeID string
 var ISRouteDestination string
 var ISRouteNextHop string
 var WorkspaceID string
@@ -136,6 +138,10 @@ var KmsInstanceID string
 var CrkID string
 var KmsAccountID string
 
+// for snapshot encryption
+var IsKMSInstanceId string
+var IsKMSKeyName string
+
 // For Power Colo
 
 var Pi_image string
@@ -177,6 +183,8 @@ var IsImage string
 var IsImageEncryptedDataKey string
 var IsImageEncryptionKey string
 var IsWinImage string
+var IsCosBucketName string
+var IsCosBucketCRN string
 var Image_cos_url string
 var Image_cos_url_encrypted string
 var Image_operating_system string
@@ -240,6 +248,7 @@ var CdBitbucketRepoUrl string
 var CdGithubConsolidatedRepoUrl string
 var CdGitlabRepoUrl string
 var CdHostedGitRepoUrl string
+var CdEventNotificationsInstanceName string
 
 // VPN Server
 var ISCertificateCrn string
@@ -590,6 +599,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
 	}
 
+	IsCosBucketName = os.Getenv("IS_COS_BUCKET_NAME")
+	if IsCosBucketName == "" {
+		IsCosBucketName = "test-bucket"
+		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_NAME for testing ibm_is_image_export_job else it is set to default value 'bucket-27200-lwx4cfvcue'")
+	}
+
+	IsCosBucketCRN = os.Getenv("IS_COS_BUCKET_CRN")
+	if IsCosBucketCRN == "" {
+		IsCosBucketCRN = "crn:v1:bluemix:public:cloud-object-storage:global:a/XXXXXXXX:XXXXX-XXXX-XXXX-XXXX-XXXX:bucket:test-bucket"
+		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_CRN for testing ibm_is_image_export_job else it is set to default value 'bucket-27200-lwx4cfvcue'")
+	}
+
 	InstanceName = os.Getenv("IS_INSTANCE_NAME")
 	if InstanceName == "" {
 		InstanceName = "placement-check-ins" // for next gen infrastructure
@@ -611,6 +632,18 @@ func init() {
 		//InstanceProfileName = "bc1-2x8" // for classic infrastructure
 		InstanceProfileName = "cx2-2x4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
+	}
+
+	IsKMSInstanceId = os.Getenv("SL_KMS_INSTANCE_ID")
+	if IsKMSInstanceId == "" {
+		IsKMSInstanceId = "30222bb5-1c6d-3834-8d78-ae6348cf8z61" // kms instance id
+		fmt.Println("[INFO] Set the environment variable SL_KMS_INSTANCE_ID for testing ibm_kms_key resource else it is set to default value '30222bb5-1c6d-3834-8d78-ae6348cf8z61'")
+	}
+
+	IsKMSKeyName = os.Getenv("SL_KMS_KEY_NAME")
+	if IsKMSKeyName == "" {
+		IsKMSKeyName = "tfp-test-key" // kms instance key name
+		fmt.Println("[INFO] Set the environment variable SL_KMS_KEY_NAME for testing ibm_kms_key resource else it is set to default value 'tfp-test-key'")
 	}
 
 	InstanceProfileNameUpdate = os.Getenv("SL_INSTANCE_PROFILE_UPDATE")
@@ -702,6 +735,16 @@ func init() {
 	if VolumeProfileName == "" {
 		VolumeProfileName = "general-purpose"
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
+	}
+	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
+	if VSIUnattachedBootVolumeID == "" {
+		VSIUnattachedBootVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
+		fmt.Println("[INFO] Set the environment variable IS_UNATTACHED_BOOT_VOLUME_NAME for testing ibm_is_image else it is set to default value 'r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e'")
+	}
+	VSIDataVolumeID = os.Getenv("IS_VSI_DATA_VOLUME_ID")
+	if VSIDataVolumeID == "" {
+		VSIDataVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
+		fmt.Println("[INFO] Set the environment variable IS_VSI_DATA_VOLUME_ID for testing ibm_is_image else it is set to default value 'r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e'")
 	}
 
 	ISRouteNextHop = os.Getenv("SL_ROUTE_NEXTHOP")
@@ -1325,6 +1368,11 @@ func init() {
 	CdHostedGitRepoUrl = os.Getenv("IBM_CD_HOSTED_GIT_REPO_URL")
 	if CdHostedGitRepoUrl == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_HOSTED_GIT_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdEventNotificationsInstanceName = os.Getenv("IBM_CD_EVENTNOTIFICATIONS_INSTANCE_NAME")
+	if CdEventNotificationsInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_EVENTNOTIFICATIONS_INSTANCE_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")

@@ -14,7 +14,7 @@ Provides a read-only data source for sm_secrets. You can then reference the fiel
 
 ```hcl
 data "ibm_sm_secrets" "secrets" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
 }
 ```
@@ -94,7 +94,7 @@ Nested scheme for **secrets**:
 	* `locks_total` - (Integer) The number of locks of the secret.
 	  * Constraints: The maximum value is `1000`. The minimum value is `0`.
 	* `name` - (String) The human-readable name of your secret.
-	  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 	* `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 	* `private_key_included` - (Boolean) Indicates whether the certificate was imported with an associated private key.
 	* `reuse_api_key` - (Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. The value is always `true` for IAM credentials secrets managed by Terraform.

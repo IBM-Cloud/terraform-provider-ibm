@@ -14,7 +14,7 @@ Provides a read-only data source for secret group collection. You can then refer
 
 ```hcl
 data "ibm_sm_secret_groups" "secret_groups" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
 }
 ```

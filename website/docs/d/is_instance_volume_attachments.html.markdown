@@ -45,7 +45,14 @@ In addition to all argument reference list, you can access the following attribu
   - `device`-  (String) A unique identifier for the device which is exposed to the instance operating system.
   - `href` - (String) The URL for this volume attachment.
   - `name`-  (String) The user-defined name for this volume attachment.
-  - `status` - (String) The status of this volume attachment. Supported values are **attached**, **attaching**, **deleting**, **detaching**.
+  - `status` - (String) The status of this volume attachment. 
+  
+      -> **Supported Status** 
+        &#x2022; attached</br>
+        &#x2022; attaching</br>
+        &#x2022; deleting</br>
+        &#x2022; detaching
+
   - `type` - (String) The type of volume attachment. Supported values are **boot**, **data**.
   - `volume_attachment_id` - (String) The unique identifier for this volume attachment.
   - `volume` - (List) The attached volume.

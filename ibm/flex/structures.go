@@ -4203,3 +4203,19 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 	err = json.Unmarshal(data, &newMap) // Convert to a map
 	return
 }
+
+// This function takes two lists and returns the difference between the two lists
+// Listdifference([1,2] [2,3]) = [1]
+func Listdifference(a, b []string) []string {
+	mb := map[string]bool{}
+	for _, x := range b {
+		mb[x] = true
+	}
+	ab := []string{}
+	for _, x := range a {
+		if _, ok := mb[x]; !ok {
+			ab = append(ab, x)
+		}
+	}
+	return ab
+}

@@ -14,7 +14,7 @@ Provides a resource for NotificationsRegistrationPrototype. This allows Notifica
 
 ```hcl
 resource "ibm_sm_en_registration" "sm_en_registration" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   event_notifications_instance_crn = "crn:v1:bluemix:public:event-notifications:us-south:a/22018f3c34ff4ff193698d15ca316946:578ad1a4-2fd8-4e66-95d5-79a842ba91f8::"
   event_notifications_source_description = "Optional description of this source in an Event Notifications instance."

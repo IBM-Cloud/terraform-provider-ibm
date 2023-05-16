@@ -203,7 +203,9 @@ In addition to all argument reference list, you can access the following attribu
     - `vlan` -  (Integer) Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface. [ conflicts with `allowed_vlans`]
 
 - `resource_type` - (String) The type of resource.
-- `status` - (String) The status of the bare metal server :[ **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, **stopping** ]
+- `status` - (String) The status of the bare metal server.
+
+  -> **Supported Status** &#x2022; failed </br>&#x2022; pending </br>&#x2022; restarting </br>&#x2022; running </br>&#x2022; starting </br>&#x2022; stopped </br>&#x2022; stopping
 - `status_reasons` - (List) Array of reasons for the current status (if any).
 
   Nested `status_reasons`:

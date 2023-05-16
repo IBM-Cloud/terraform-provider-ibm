@@ -83,7 +83,6 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"run_as_user": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     0,
 				Description: "Optional user ID (UID) to run the app (e.g., `1001`).",
 			},
 			"run_commands": &schema.Schema{
@@ -96,7 +95,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"run_env_variables": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Optional references to config maps, secrets or a literal values that are exposed as environment variables within the running application.",
+				Description: "Optional references to config maps, secrets or literal values that are exposed as environment variables within the running application.",
 				MinItems:    0,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -515,7 +514,7 @@ func waitForIbmCodeEngineAppCreate(d *schema.ResourceData, meta interface{}) (in
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"deploying"},
-		Target:  []string{"ready"},
+		Target:  []string{"ready", "failed", "warning"},
 		Refresh: func() (interface{}, string, error) {
 			stateObj, response, err := codeEngineClient.GetApp(getAppOptions)
 			if err != nil {
@@ -524,15 +523,15 @@ func waitForIbmCodeEngineAppCreate(d *schema.ResourceData, meta interface{}) (in
 				}
 				return nil, "", err
 			}
-			failStates := map[string]bool{"failed": true, "warning": true}
+			failStates := map[string]bool{"failure": true, "failed": true}
 			if failStates[*stateObj.Status] {
 				return stateObj, *stateObj.Status, fmt.Errorf("The instance %s failed: %s\n%s", "getAppOptions", err, response)
 			}
 			return stateObj, *stateObj.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      20 * time.Second,
-		MinTimeout: 20 * time.Second,
+		Delay:      60 * time.Second,
+		MinTimeout: 60 * time.Second,
 	}
 
 	return stateConf.WaitForState()
