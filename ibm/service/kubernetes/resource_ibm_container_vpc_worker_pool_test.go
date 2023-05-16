@@ -470,6 +470,30 @@ func TestAccIBMContainerVpcClusterWorkerPoolImportOnCreateEnvvar(t *testing.T) {
 						"ibm_container_vpc_worker_pool.test_pool", "worker_pool_name", "default"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "worker_count", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMOpcContainerWorkerPoolImportOnCreateClusterUpdate(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "worker_pool_name", "default"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "worker_count", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMOpcContainerWorkerPoolImportOnCreateWPUpdate(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "worker_pool_name", "default"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "worker_count", "3"),
 				),
 			},
 		},
@@ -498,6 +522,72 @@ func testAccCheckIBMOpcContainerWorkerPoolImportOnCreate(name string) string {
 		vpc_id            = "%[2]s"
 		flavor            = "bx2.4x16"
 		worker_count      = 1
+		worker_pool_name  = "default"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		import_on_create  = "true"
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
+}
+
+func testAccCheckIBMOpcContainerWorkerPoolImportOnCreateClusterUpdate(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 3
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		wait_till = "normal"
+		worker_labels = {
+			"test"  = "test-pool"
+		}
+	}
+
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+		cluster           = ibm_container_vpc_cluster.cluster.id
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		worker_pool_name  = "default"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		import_on_create  = "true"
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
+}
+
+func testAccCheckIBMOpcContainerWorkerPoolImportOnCreateWPUpdate(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		wait_till = "normal"
+		worker_labels = {
+			"test"  = "test-pool"
+		}
+	}
+
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+		cluster           = ibm_container_vpc_cluster.cluster.id
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 3
 		worker_pool_name  = "default"
 		zones {
 			subnet_id = "%[4]s"
