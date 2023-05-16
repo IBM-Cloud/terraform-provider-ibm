@@ -14,7 +14,7 @@ Provides a read-only data source for a KV secret. You can then reference the fie
 
 ```hcl
 data "ibm_sm_kv_secret" "kv_secret" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }

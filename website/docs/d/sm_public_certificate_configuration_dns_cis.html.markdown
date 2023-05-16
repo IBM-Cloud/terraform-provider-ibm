@@ -14,7 +14,7 @@ Provides a read-only data source for a Cloud Internet Services DNS configuration
 
 ```hcl
 data "ibm_sm_public_certificate_configuration_dns_cis" "sm_public_certificate_configuration_dns_cis" {
-    instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+    instance_id   = ibm_resource_instance.sm_instance.guid
     region        = "us-south"
     name          = "configuration-name"
 }

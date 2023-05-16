@@ -57,10 +57,11 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 			},
 
 			"size_per_zone": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validate.ValidateSizePerZone,
-				Description:  "Number of nodes per zone",
+				Type:             schema.TypeInt,
+				Required:         true,
+				ValidateFunc:     validate.ValidateSizePerZone,
+				Description:      "Number of nodes per zone",
+				DiffSuppressFunc: SuppressResizeForAutoscaledWorkerpool,
 			},
 
 			"entitlement": {
@@ -184,6 +185,7 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
+
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -195,6 +197,12 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Import a workerpool from a cluster",
+			},
+
+			"autoscale_enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Autoscaling is enabled on the workerpool",
 			},
 		},
 	}
@@ -358,6 +366,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	} else {
 		d.Set("disk_encryption", false)
 	}
+	d.Set("autoscale_enabled", workerPool.AutoscaleEnabled)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err

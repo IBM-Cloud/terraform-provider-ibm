@@ -14,7 +14,7 @@ Provides a resource for SecretGroup. This allows SecretGroup to be created, upda
 
 ```hcl
 resource "ibm_sm_secret_group" "sm_secret_group"{
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name          = "group-name"
   description = "Extended description for this group."

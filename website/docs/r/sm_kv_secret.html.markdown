@@ -14,13 +14,13 @@ Provides a resource for KVSecret. This allows KVSecret to be created, updated an
 
 ```hcl
 resource "ibm_sm_kv_secret" "sm_kv_secret"{
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   custom_metadata = {"key":"value"}
   data = {"key":"value"}
   description = "Extended description for this secret."
   labels = ["my-label"]
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
   name = "kv-secret-example"
 }
 ```

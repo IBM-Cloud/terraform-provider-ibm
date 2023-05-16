@@ -14,7 +14,7 @@ Provides a resource for PrivateCertificate. This allows PrivateCertificate to be
 
 ```hcl
 resource "ibm_sm_private_certificate" "sm_private_certificate"{
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   certificate_template = resource.ibm_sm_private_certificate_configuration_template.my_template.name
@@ -27,7 +27,7 @@ resource "ibm_sm_private_certificate" "sm_private_certificate"{
 		interval = 1
 		unit = "day"
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
 }
 ```
 

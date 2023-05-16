@@ -15,6 +15,8 @@ Provides a read-only data source for IAM Credentials configuration properties. Y
 
 ```hcl
 data "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration" {
+    instance_id   = ibm_resource_instance.sm_instance.guid
+    region        = "us-south"
 	name = "configuration-name"
 }
 ```

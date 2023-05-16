@@ -95,7 +95,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 			"run_env_variables": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Optional references to config maps, secrets or a literal values that are exposed as environment variables within the running application.",
+				Description: "Optional references to config maps, secrets or literal values that are exposed as environment variables within the running application.",
 				MinItems:    0,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

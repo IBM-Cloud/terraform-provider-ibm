@@ -123,6 +123,11 @@ func DataSourceIBMContainerVpcClusterWorkerPool() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"autoscale_enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Autoscaling is enabled on the workerpool",
+			},
 		},
 	}
 }
@@ -190,6 +195,8 @@ func dataSourceIBMContainerVpcClusterWorkerPoolRead(d *schema.ResourceData, meta
 	if workerPool.SecondaryStorageOption != nil {
 		d.Set("secondary_storage", flex.FlattenVpcWorkerPoolSecondaryDisk(*workerPool.SecondaryStorageOption))
 	}
+
+	d.Set("autoscale_enabled", workerPool.AutoscaleEnabled)
 
 	d.SetId(workerPool.ID)
 	return nil

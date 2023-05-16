@@ -14,7 +14,7 @@ Provides a resource for PublicCertificate. This allows PublicCertificate to be c
 
 ```hcl
 resource "ibm_sm_public_certificate" "sm_public_certificate" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   custom_metadata = {"key":"value"}
@@ -27,7 +27,7 @@ resource "ibm_sm_public_certificate" "sm_public_certificate" {
 		auto_rotate = true
 		rotate_keys = false
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
 }
 ```
 

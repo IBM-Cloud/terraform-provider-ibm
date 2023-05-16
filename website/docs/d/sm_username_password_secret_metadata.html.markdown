@@ -14,7 +14,7 @@ Provides a read-only data source for UsernamePasswordSecretMetadata. You can the
 
 ```hcl
 data "ibm_sm_username_password_secret_metadata" "username_password_secret_metadata" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }

@@ -107,10 +107,10 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `target`:
   - `crn` - (Optional, Forces new resource, String) The CRN for this provider cloud service, or the CRN for the user's instance of a provider cloud service.
 
-    **NOTE:** If `crn` is not specified, `name` must be specified. 
+     -> **NOTE:** If `crn` is not specified, `name` must be specified. 
   - `name` - (Optional, Forces new resource, String) The endpoint gateway target name.
 
-    **NOTE:** If `name` is not specified, `crn` must be specified. 
+      -> **NOTE:** If `name` is not specified, `crn` must be specified. 
   - `resource_type` - (Required, String) The endpoint gateway target resource type. The possible values are `provider_cloud_service`, `provider_infrastructure_service`.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 

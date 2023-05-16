@@ -14,13 +14,13 @@ Provides a resource for ImportedCertificate. This allows ImportedCertificate to 
 
 ```hcl
 resource "ibm_sm_imported_certificate" "sm_imported_certificate" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
   labels = ["my-label"]
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
   certificate: "-----BEGIN CERTIFICATE-----\nMIIE3jCCBGSgAwIBAgIUZfTbf3adn87l5J2Q2Aw+6Vk/qhowCgYIKoZIzj0EAwIw\n-----END CERTIFICATE-----"
 }
 ```

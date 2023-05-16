@@ -14,14 +14,14 @@ Provides a resource for ArbitrarySecret. This allows ArbitrarySecret to be creat
 
 ```hcl
 resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
   expiration_date = "2022-04-12T23:20:50.520Z"
   labels = ["my-label"]
   payload = "secret-credentials"
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
 }
 ```
 

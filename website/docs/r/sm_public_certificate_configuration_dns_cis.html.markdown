@@ -14,7 +14,7 @@ Provides a resource for PublicCertificateConfigurationDNSCloudInternetServices. 
 
 ```hcl
 resource "ibm_sm_public_certificate_configuration_dns_cis" "sm_public_certificate_configuration_dns_cis_instance" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name          = "my_DNS_CIS_config"
   cloud_internet_services_apikey = var.sm_cis_apikey
