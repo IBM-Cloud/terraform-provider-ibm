@@ -208,7 +208,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 			log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
-		for _, targetsItem := range shareTargetCollection.Targets {
+		for _, targetsItem := range shareTargetCollection.MountTargets {
 			if *targetsItem.Name == share_target_name {
 				shareTarget = &targetsItem
 				break
