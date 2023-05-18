@@ -18,12 +18,6 @@ variable "region" {
   
 }
 
-variable "kube_config_path" {
-  type = string
-  description = "The Cluster config with absolute path"
-}
-
-
 variable "odfVersion" {
 
     type = string
@@ -103,7 +97,7 @@ variable "hpcsEncryption" {
 
     type = string
     default = "false"
-    description = "Set to true if HPCS Encryption need to enable"
+    description = "Set to true to enable HPCS Encryption"
   
 }
 
