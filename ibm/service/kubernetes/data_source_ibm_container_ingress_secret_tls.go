@@ -53,74 +53,30 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Computed:    true,
 				Description: "Persistence of secret",
 			},
-			"tls_secret": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "TLS secret",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cert_crn": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Certificate CRN",
-						},
-						"domain_name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Domain name",
-						},
-						"expires_on": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Certificate expires on date",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of Secret Manager secret",
-						},
-						"last_updated_timestamp": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Timestamp secret was last updated",
-						},
-					},
-				},
-			},
-			"opaque_secret_fields": {
-				Type:        schema.TypeSet,
+			"cert_crn": {
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Fields of the secret",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Field name",
-						},
-						"crn": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Field crn",
-						},
-						"expires_on": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Field expires on date",
-						},
-						"secret_type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of Secret Manager secret",
-						},
-						"last_updated_timestamp": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Timestamp secret was last updated",
-						},
-					},
-				},
+				Description: "Certificate CRN",
+			},
+			"domain_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Domain name",
+			},
+			"expires_on": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate expires on date",
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of Secret Manager secret",
+			},
+			"last_updated_timestamp": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Timestamp secret was last updated",
 			},
 		},
 	}
