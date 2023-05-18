@@ -3224,6 +3224,23 @@ func FlattenNlbConfigs(nlbData []containerv2.NlbVPCListConfig) []map[string]inte
 	return nlbConfigList
 }
 
+func FlattenOpaqueSecret(fields containerv2.Fields) []map[string]interface{} {
+	flattenedOpaqueSecret := make([]map[string]interface{}, 0)
+
+	for _, field := range fields {
+		opaqueSecretField := map[string]interface{}{
+			"name":                   field.Name,
+			"crn":                    field.CRN,
+			"expires_on":             field.ExpiresOn,
+			"type":                   field.SecretType,
+			"last_updated_timestamp": field.LastUpdatedTimestamp,
+		}
+		flattenedOpaqueSecret = append(flattenedOpaqueSecret, opaqueSecretField)
+	}
+
+	return flattenedOpaqueSecret
+}
+
 // flattenHostLabels ..
 func FlattenHostLabels(hostLabels []interface{}) map[string]string {
 	labels := make(map[string]string)

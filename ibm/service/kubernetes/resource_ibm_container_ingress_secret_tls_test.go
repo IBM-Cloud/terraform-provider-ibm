@@ -17,7 +17,6 @@ import (
 )
 
 func TestAccIBMContainerIngressSecret_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("tf-container-ingress-cluster-%d", acctest.RandIntRange(10, 100))
 	secretName := fmt.Sprintf("tf-container-ingress-secret-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -26,29 +25,43 @@ func TestAccIBMContainerIngressSecret_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerIngressSecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerIngressSecretBasic(clusterName, secretName),
+				Config: testAccCheckIBMContainerIngressSecretTLSBasic(secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret.secret", "secret_name", secretName),
+						"ibm_container_ingress_secret_tls.secret", "cluster", acc.ClusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret.secret", "secret_namespace", "ibm-cert-store"),
+						"ibm_container_ingress_secret_tls.secret", "secret_name", secretName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret.secret", "cert_crn", acc.CertCRN),
+						"ibm_container_ingress_secret_tls.secret", "secret_namespace", "ibm-cert-store"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "cert_crn", acc.CertCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "persistence", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "type", "TLS"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "user_managed", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "status", "created"),
 				),
 			},
 			{
-				Config: testAccCheckIBMContainerIngressSecretUpdate(clusterName, secretName),
+				Config: testAccCheckIBMContainerIngressSecretTLSUpdate(secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret.secret", "secret_name", secretName),
+						"ibm_container_ingress_secret_tls.secret", "secret_name", secretName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret.secret", "secret_namespace", "ibm-cert-store"),
+						"ibm_container_ingress_secret_tls.secret", "secret_namespace", "ibm-cert-store"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret.secret", "cert_crn", acc.UpdatedCertCRN),
+						"ibm_container_ingress_secret_tls.secret", "cert_crn", acc.UpdatedCertCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "user_managed", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "status", "created"),
 				),
 			},
 			{
-				ResourceName:            "ibm_container_ingress_secret.secret",
+				ResourceName:            "ibm_container_ingress_secret_tls.secret",
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"region", "issuer_name"},
@@ -87,48 +100,23 @@ func testAccCheckIBMContainerIngressSecretDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMContainerIngressSecretBasic(clusterName, secretName string) string {
+func testAccCheckIBMContainerIngressSecretTLSBasic(secretName string) string {
 	return fmt.Sprintf(`
-resource "ibm_container_cluster" "testacc_cluster" {
-  name              = "%s"
-  datacenter        = "%s"
-  default_pool_size = 1
-  machine_type      = "%s"
-  hardware          = "shared"
-  public_vlan_id    = "%s"
-  private_vlan_id   = "%s"
-  wait_till       = "MasterNodeReady"
-}
-
-resource "ibm_container_ingress_secret" "secret" {
+resource "ibm_container_ingress_secret_tls" "secret" {
+  cluster  = "%s"
   secret_name = "%s"
-  secret_namespace = "ibm-cert-store"
-  cluster_id  = ibm_container_cluster.testacc_cluster.id
-  tls_secret = {
-	cert_crn    = "%s"
-  }
-}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, secretName, acc.CertCRN)
+  secret_namespace = "%s"
+  cert_crn    = "%s"
+  persistence = "%t"
+}`, acc.ClusterName, secretName, "ibm-cert-store", acc.CertCRN, true)
 }
 
-func testAccCheckIBMContainerIngressSecretUpdate(clusterName, secretName string) string {
+func testAccCheckIBMContainerIngressSecretTLSUpdate(secretName string) string {
 	return fmt.Sprintf(`
-resource "ibm_container_cluster" "testacc_cluster" {
-  name              = "%s"
-  datacenter        = "%s"
-  default_pool_size = 1
-  machine_type      = "%s"
-  hardware          = "shared"
-  public_vlan_id    = "%s"
-  private_vlan_id   = "%s"
-  wait_till       = "MasterNodeReady"
-}
-
-resource "ibm_container_ingress_secret" "secret" {
+resource "ibm_container_ingress_secret_tls" "secret" {
+  cluster_id  = "%s"
   secret_name = "%s"
-  secret_namespace = "ibm-cert-store"
-  cluster_id  = ibm_container_cluster.testacc_cluster.id
-  tls_secret = {
-	cert_crn    = "%s"
-  }
-}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, secretName, acc.UpdatedCertCRN)
+  secret_namespace = "%s"
+  cert_crn    = "%s"
+}`, acc.ClusterName, secretName, "ibm-cert-store", acc.UpdatedCertCRN)
 }

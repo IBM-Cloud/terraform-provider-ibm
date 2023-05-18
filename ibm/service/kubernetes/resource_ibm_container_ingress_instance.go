@@ -208,18 +208,28 @@ func resourceIBMContainerIngressInstanceUpdate(d *schema.ResourceData, meta inte
 		Name:    instanceName,
 	}
 
-	if v, ok := d.GetOk("is_default"); ok {
-		params.IsDefault = v.(bool)
+	hasChange := false
+
+	if d.HasChange("is_default") {
+		if v, ok := d.GetOk("is_default"); ok {
+			params.IsDefault = v.(bool)
+		}
+		hasChange = true
 	}
 
-	if v, ok := d.GetOk("secret_group_id"); ok {
-		params.SecretGroupID = v.(string)
+	if d.HasChange("secret_group_id") {
+		if v, ok := d.GetOk("secret_group_id"); ok {
+			params.SecretGroupID = v.(string)
+		}
+		hasChange = true
 	}
 
-	ingressAPI := ingressClient.Ingresses()
-	err = ingressAPI.UpdateIngressInstance(params)
-	if err != nil {
-		return err
+	if hasChange {
+		ingressAPI := ingressClient.Ingresses()
+		err = ingressAPI.UpdateIngressInstance(params)
+		if err != nil {
+			return err
+		}
 	}
 
 	return resourceIBMContainerIngressInstanceRead(d, meta)

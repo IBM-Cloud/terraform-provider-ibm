@@ -7,17 +7,18 @@ import (
 	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceIBMContainerIngressSecret() *schema.Resource {
+func DataSourceIBMContainerIngressSecretOpaque() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMContainerIngressSecretRead,
+		Read: dataSourceIBMContainerIngressSecretOpaqueRead,
 		Schema: map[string]*schema.Schema{
 			"cluster": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "Cluster ID",
 				ValidateFunc: validate.InvokeValidator(
 					"ibm_container_ingress_secret",
@@ -25,100 +26,64 @@ func DataSourceIBMContainerIngressSecret() *schema.Resource {
 			},
 			"secret_name": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "Secret name",
 			},
 			"secret_namespace": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "Secret namespace",
 			},
 			"secret_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Type TLS or opaque",
+				Description: "Opaque secret type",
 			},
-			"tls_secret": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "TLS secret",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cert_crn": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Certificate CRN",
-						},
-						"persistence": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Persistence of secret",
-						},
-						"domain_name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Domain name",
-						},
-						"expires_on": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Certificate expires on date",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Secret Status",
-						},
-						"user_managed": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "If the secret was created by the user",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of Secret Manager secret",
-						},
-
-						"last_updated_timestamp": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Timestamp secret was last updated",
-						},
-					},
-				},
+			"persistence": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Persistence of secret",
+			},
+			"user_managed": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "If the secret was created by the user",
 			},
 			"fields": {
 				Type:        schema.TypeSet,
 				Computed:    true,
-				Description: "Fields of the secret",
+				Description: "Fields of an opaque secret",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Field name",
-						},
 						"crn": {
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Field crn",
+							Computed:    true,
+							Description: "Secret CRN corresponding to the field",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Field name",
+						},
+						"prefix": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Prefix field name with Secrets Manager secret name",
 						},
 						"expires_on": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Field expires on date",
 						},
-						"secret_type": {
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Field secret type",
+							Description: "Secrets manager secret type",
 						},
 						"last_updated_timestamp": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Field expires on date",
+							Description: "Field last updated timestamp",
 						},
 					},
 				},
@@ -142,7 +107,7 @@ func DataSourceIBMContainerIngressSecretValidator() *validate.ResourceValidator 
 	return &iBMContainerIngressSecretValidator
 }
 
-func dataSourceIBMContainerIngressSecretRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta interface{}) error {
 	ingressClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -162,20 +127,9 @@ func dataSourceIBMContainerIngressSecretRead(d *schema.ResourceData, meta interf
 	d.Set("secret_name", ingressSecretConfig.Name)
 	d.Set("secret_namespace", ingressSecretConfig.Namespace)
 	d.Set("secret_type", ingressSecretConfig.SecretType)
-
-	if ingressSecretConfig.Type == "TLS" && ingressSecretConfig.CRN != "" {
-		tlsSecret := make(map[string]interface{})
-		tlsSecret["cert_crn"] = ingressSecretConfig.CRN
-		tlsSecret["persistence"] = ingressSecretConfig.Persistence
-		tlsSecret["domain"] = ingressSecretConfig.Domain
-		tlsSecret["expires_on"] = ingressSecretConfig.ExpiresOn
-		tlsSecret["status"] = ingressSecretConfig.Status
-		tlsSecret["user_managed"] = ingressSecretConfig.UserManaged
-		tlsSecret["type"] = ingressSecretConfig.ExpiresOn
-		tlsSecret["last_updated_timestamp"] = ingressSecretConfig.ExpiresOn
-
-		d.Set("tls_secret", []map[string]interface{}{tlsSecret})
-	}
+	d.Set("persistence", ingressSecretConfig.Persistence)
+	d.Set("user_managed", ingressSecretConfig.UserManaged)
+	d.Set("fields", flex.FlattenOpaqueSecret(ingressSecretConfig.Fields))
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", clusterID, name, namespace))
 

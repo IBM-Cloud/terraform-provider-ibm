@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -15,18 +16,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceIBMContainerIngressSecret() *schema.Resource {
+func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMContainerIngressSecretCreate,
-		Read:     resourceIBMContainerIngressSecretRead,
-		Update:   resourceIBMContainerIngressSecretUpdate,
-		Delete:   resourceIBMContainerIngressSecretDelete,
-		Exists:   resourceIBMContainerIngressSecretExists,
+		Create:   resourceIBMContainerIngressSecretOpaqueCreate,
+		Read:     resourceIBMContainerIngressSecretOpaqueRead,
+		Update:   resourceIBMContainerIngressSecretOpaqueUpdate,
+		Delete:   resourceIBMContainerIngressSecretOpaqueDelete,
+		Exists:   resourceIBMContainerIngressSecretOpaqueExists,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -47,68 +48,27 @@ func ResourceIBMContainerIngressSecret() *schema.Resource {
 			},
 			"secret_namespace": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Required:    true,
 				Description: "Secret namespace",
+				ForceNew:    true,
 			},
 			"secret_type": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Type TLS or opaque",
+				Computed:    true,
+				Description: "Opaque secret type",
 			},
-			"tls_secret": {
-				Type:        schema.TypeSet,
+			"persistence": {
+				Type:        schema.TypeBool,
 				Optional:    true,
-				MaxItems:    1,
-				Description: "TLS secret",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cert_crn": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Certificate CRN",
-						},
-						"persistence": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Persistence of secret",
-						},
-						"domain_name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Domain name",
-						},
-						"expires_on": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Certificate expires on date",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Secret Status",
-						},
-						"user_managed": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "If the secret was created by the user",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of Secret Manager secret",
-						},
-
-						"last_updated_timestamp": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Timestamp secret was last updated",
-						},
-					},
-				},
+				Default:     false,
+				Description: "Persistence of secret",
 			},
-			"opaque_secret_fields": {
+			"user_managed": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "If the secret was created by the user",
+			},
+			"fields": {
 				Type:        schema.TypeSet,
 				Computed:    true,
 				Description: "Fields of an opaque secret",
@@ -134,7 +94,7 @@ func ResourceIBMContainerIngressSecret() *schema.Resource {
 							Computed:    true,
 							Description: "Field expires on date",
 						},
-						"secret_type": {
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Secrets manager secret type",
@@ -151,7 +111,7 @@ func ResourceIBMContainerIngressSecret() *schema.Resource {
 	}
 }
 
-func ResourceIBMContainerIngressSecretValidator() *validate.ResourceValidator {
+func ResourceIBMContainerIngressSecretOpaqueValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -166,7 +126,7 @@ func ResourceIBMContainerIngressSecretValidator() *validate.ResourceValidator {
 	return &iBMContainerIngressInstanceValidator
 }
 
-func resourceIBMContainerIngressSecretCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerIngressSecretOpaqueCreate(d *schema.ResourceData, meta interface{}) error {
 	ingressClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -175,7 +135,7 @@ func resourceIBMContainerIngressSecretCreate(d *schema.ResourceData, meta interf
 	cluster := d.Get("cluster").(string)
 	secretName := d.Get("secret_name").(string)
 	secretNamespace := d.Get("secret_namespace").(string)
-	secretType := d.Get("secret_type").(string)
+	secretType := "opaque"
 
 	params := v2.SecretCreateConfig{
 		Cluster:   cluster,
@@ -184,18 +144,31 @@ func resourceIBMContainerIngressSecretCreate(d *schema.ResourceData, meta interf
 		Type:      secretType,
 	}
 
-	if tlsSecret, ok := d.GetOk("tls_secret"); ok {
-		tlsSecretList := tlsSecret.(*schema.Set).List()
+	if opaque_secret_fields, ok := d.GetOk("opaque_secret_fields"); ok {
+		opaqueFieldsList := opaque_secret_fields.(*schema.Set).List()
 
-		tlsSecretMap := tlsSecretList[0].(map[string]interface{})
+		fieldsToAdd := []containerv2.FieldAdd{}
+		for _, opaqueField := range opaqueFieldsList {
+			var fieldToAdd containerv2.FieldAdd
 
-		if certCRN, ok := tlsSecretMap["cert_crn"]; ok {
-			params.CRN = certCRN.(string)
+			opaqueFieldMap := opaqueField.(map[string]interface{})
+
+			if name, ok := opaqueFieldMap["name"]; ok {
+				fieldToAdd.Name = name.(string)
+			}
+
+			if crn, ok := opaqueFieldMap["crn"]; ok {
+				fieldToAdd.CRN = crn.(string)
+			}
+
+			if prefix, ok := opaqueFieldMap["prefix"]; ok {
+				fieldToAdd.AppendPrefix = prefix.(bool)
+			}
+
+			fieldsToAdd = append(fieldsToAdd, fieldToAdd)
 		}
 
-		if persistence, ok := tlsSecretMap["persistence"]; ok {
-			params.Persistence = persistence.(bool)
-		}
+		params.FieldsToAdd = fieldsToAdd
 	}
 
 	ingressAPI := ingressClient.Ingresses()
@@ -204,12 +177,12 @@ func resourceIBMContainerIngressSecretCreate(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, response.Name, response.Namespace))
+	d.SetId(fmt.Sprintf("%s/%s/%s", response.Cluster, response.Name, response.Namespace))
 
-	return resourceIBMContainerIngressSecretRead(d, meta)
+	return resourceIBMContainerIngressSecretOpaqueRead(d, meta)
 }
 
-func resourceIBMContainerIngressSecretRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta interface{}) error {
 	ingressClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -232,25 +205,17 @@ func resourceIBMContainerIngressSecretRead(d *schema.ResourceData, meta interfac
 	d.Set("cluster", ingressSecretConfig.Cluster)
 	d.Set("secret_name", ingressSecretConfig.Name)
 	d.Set("secret_namespace", ingressSecretConfig.Namespace)
-	d.Set("secret_type", ingressSecretConfig.SecretType)
+	d.Set("secret_type", ingressSecretConfig.Type)
+	d.Set("persistence", ingressSecretConfig.Persistence)
+	d.Set("user_managed", ingressSecretConfig.UserManaged)
 
-	if ingressSecretConfig.Type == "TLS" && ingressSecretConfig.CRN != "" {
-		tlsSecret := make(map[string]interface{})
-		tlsSecret["cert_crn"] = ingressSecretConfig.CRN
-		tlsSecret["persistence"] = ingressSecretConfig.Persistence
-		tlsSecret["domain"] = ingressSecretConfig.Domain
-		tlsSecret["expires_on"] = ingressSecretConfig.ExpiresOn
-		tlsSecret["status"] = ingressSecretConfig.Status
-		tlsSecret["user_managed"] = ingressSecretConfig.UserManaged
-		tlsSecret["type"] = ingressSecretConfig.ExpiresOn
-		tlsSecret["last_updated_timestamp"] = ingressSecretConfig.ExpiresOn
-		d.Set("tls_secret", []map[string]interface{}{tlsSecret})
+	if len(ingressSecretConfig.Fields) > 0 {
+		d.Set("fields", flex.FlattenOpaqueSecret(ingressSecretConfig.Fields))
 	}
-
 	return nil
 }
 
-func resourceIBMContainerIngressSecretDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerIngressSecretOpaqueDelete(d *schema.ResourceData, meta interface{}) error {
 	ingressClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -281,7 +246,7 @@ func resourceIBMContainerIngressSecretDelete(d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceIBMContainerIngressSecretUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta interface{}) error {
 	ingressClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -300,30 +265,71 @@ func resourceIBMContainerIngressSecretUpdate(d *schema.ResourceData, meta interf
 		Namespace: secretNamespace,
 	}
 
-	if d.HasChange("tls_secret") {
-		tlsSecretList := d.Get("tls_secret").(*schema.Set).List()
-		if len(tlsSecretList) != 1 {
-			return fmt.Errorf("[ERROR] Only one TLS ingress secret accepted")
+	if d.HasChange("opaque_secret_fields") {
+		oldList, newList := d.GetChange("opaque_secret_fields")
+
+		if oldList == nil {
+			oldList = new(schema.Set)
+		}
+		if newList == nil {
+			newList = new(schema.Set)
+		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
+
+		remove := os.Difference(ns).List()
+		add := ns.Difference(os).List()
+
+		if len(remove) > 0 {
+			var fieldsToRemove []containerv2.FieldRemove
+			for _, removeField := range remove {
+				removeFieldMap := removeField.(map[string]interface{})
+				var fieldToRemove containerv2.FieldRemove
+
+				if name, ok := removeFieldMap["name"]; ok {
+					fieldToRemove.Name = name.(string)
+				}
+
+				fieldsToRemove = append(fieldsToRemove, fieldToRemove)
+			}
+			params.FieldsToRemove = fieldsToRemove
 		}
 
-		tlsSecretMap := tlsSecretList[0].(map[string]interface{})
+		if len(add) > 0 {
+			var fieldsToAdd []containerv2.FieldAdd
+			for _, addField := range add {
+				var fieldToAdd containerv2.FieldAdd
 
-		if certCRN, ok := tlsSecretMap["cert_crn"]; ok {
-			params.CRN = certCRN.(string)
+				addFieldMap := addField.(map[string]interface{})
+
+				if name, ok := addFieldMap["name"]; ok {
+					fieldToAdd.Name = name.(string)
+				}
+
+				if crn, ok := addFieldMap["crn"]; ok {
+					fieldToAdd.CRN = crn.(string)
+				}
+
+				if prefix, ok := addFieldMap["prefix"]; ok {
+					fieldToAdd.AppendPrefix = prefix.(bool)
+				}
+
+				fieldsToAdd = append(fieldsToAdd, fieldToAdd)
+			}
+			params.FieldsToAdd = fieldsToAdd
+		}
+		ingressAPI := ingressClient.Ingresses()
+
+		_, err := ingressAPI.UpdateIngressSecret(params)
+		if err != nil {
+			return err
 		}
 	}
 
-	ingressAPI := ingressClient.Ingresses()
-	response, err := ingressAPI.UpdateIngressSecret(params)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, response.Name, response.Namespace))
-	return resourceIBMContainerIngressSecretRead(d, meta)
+	return resourceIBMContainerIngressSecretOpaqueRead(d, meta)
 }
 
-func resourceIBMContainerIngressSecretExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceIBMContainerIngressSecretOpaqueExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	ingressClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return false, err
