@@ -3,31 +3,56 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
-// Resource arguments for project_instance
-variable "project_instance_name" {
+// Resource arguments for project
+variable "project_resource_group" {
+  description = "The resource group where the project's data and tools are created."
+  type        = string
+  default     = "Default"
+}
+variable "project_location" {
+  description = "The location where the project's data and tools are created."
+  type        = string
+  default     = "us-south"
+}
+variable "project_name" {
   description = "The project name."
   type        = string
   default     = "acme-microservice"
 }
-variable "project_instance_description" {
+variable "project_description" {
   description = "A project's descriptive text."
   type        = string
   default     = "A microservice to deploy on top of ACME infrastructure."
 }
-variable "project_instance_resource_group" {
-  description = "Group name of the customized collection of resources."
-  type        = string
-  default     = "resource_group"
-}
-variable "project_instance_location" {
-  description = "Data center locations for resource deployment."
-  type        = string
-  default     = "location"
+variable "project_destroy_on_delete" {
+  description = "The policy that indicates whether the resources are destroyed or not when a project is deleted."
+  type        = bool
+  default     = true
 }
 
-// Data source arguments for project_event_notification
-variable "project_event_notification_id" {
+// Resource arguments for project_config
+variable "project_config_project_id" {
   description = "The unique project ID."
   type        = string
   default     = "project_id"
+}
+variable "project_config_name" {
+  description = "The configuration name."
+  type        = string
+  default     = "env-stage"
+}
+variable "project_config_locator_id" {
+  description = "A dotted value of catalogID.versionID."
+  type        = string
+  default     = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.018edf04-e772-4ca2-9785-03e8e03bef72-global"
+}
+variable "project_config_labels" {
+  description = "A collection of configuration labels."
+  type        = list(string)
+  default     = ["env:stage","governance:test","build:0"]
+}
+variable "project_config_description" {
+  description = "The project configuration description."
+  type        = string
+  default     = "Stage environment configuration, which includes services common to all the environment regions. There must be a blueprint configuring all the services common to the stage regions. It is a terraform_template type of configuration that points to a Github repo hosting the terraform modules that can be deployed by a Schematics Workspace."
 }
