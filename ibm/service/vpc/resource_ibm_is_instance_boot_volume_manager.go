@@ -20,16 +20,16 @@ import (
 )
 
 const (
-	isInstanceBootVolumeDelete = "delete"
+	isInstanceBootVolumeManagerDelete = "delete"
 )
 
-func ResourceIBMISInstanceBootVolume() *schema.Resource {
+func ResourceIBMISInstanceBootVolumeManager() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISInstanceBootVolumeCreate,
-		Read:     resourceIBMISInstanceBootVolumeRead,
-		Update:   resourceIBMISInstanceBootVolumeUpdate,
-		Delete:   resourceIBMISInstanceBootVolumeDelete,
-		Exists:   resourceIBMISInstanceBootVolumeExists,
+		Create:   resourceIBMISInstanceBootVolumeManagerCreate,
+		Read:     resourceIBMISInstanceBootVolumeManagerRead,
+		Update:   resourceIBMISInstanceBootVolumeManagerUpdate,
+		Delete:   resourceIBMISInstanceBootVolumeManagerDelete,
+		Exists:   resourceIBMISInstanceBootVolumeManagerExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -90,7 +90,7 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 				Description: "Volume encryption key info",
 			},
 
-			isInstanceBootVolumeDelete: {
+			isInstanceBootVolumeManagerDelete: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Volume encryption key info",
@@ -254,7 +254,7 @@ func ResourceIBMISInstanceBootVolume() *schema.Resource {
 	}
 }
 
-func ResourceIBMISInstanceBootVolumeValidator() *validate.ResourceValidator {
+func ResourceIBMISInstanceBootVolumeManagerValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -316,19 +316,19 @@ func ResourceIBMISInstanceBootVolumeValidator() *validate.ResourceValidator {
 	return &ibmISVolumeResourceValidator
 }
 
-func resourceIBMISInstanceBootVolumeCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceBootVolumeManagerCreate(d *schema.ResourceData, meta interface{}) error {
 
 	volId := d.Get(isInstanceBootVolumeId).(string)
 	d.SetId(volId)
-	err := resourceIBMISInstanceBootVolumeRead(d, meta)
+	err := resourceIBMISInstanceBootVolumeManagerRead(d, meta)
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMISInstanceBootVolumeUpdate(d, meta)
+	return resourceIBMISInstanceBootVolumeManagerUpdate(d, meta)
 }
 
-func resourceIBMISInstanceBootVolumeRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceBootVolumeManagerRead(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Id()
 	err := instancebootvolGet(d, meta, id)
@@ -432,12 +432,12 @@ func instancebootvolGet(d *schema.ResourceData, meta interface{}, id string) err
 	return nil
 }
 
-func resourceIBMISInstanceBootVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceBootVolumeManagerUpdate(d *schema.ResourceData, meta interface{}) error {
 	err := instancebootvolUpdate(d, meta)
 	if err != nil {
 		return err
 	}
-	return resourceIBMISInstanceBootVolumeRead(d, meta)
+	return resourceIBMISInstanceBootVolumeManagerRead(d, meta)
 }
 
 func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -470,7 +470,7 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		vol, response, err := sess.GetVolume(options)
 		if err != nil {
-			return fmt.Errorf("Error getting Instance boot volume : %s\n%s", err, response)
+			return fmt.Errorf("[ERROR]Error getting Instance boot volume : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVolumeAccessTags)
 
@@ -490,7 +490,7 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error getting Instance boot volume (%s): %s\n%s", id, err, response)
+		return fmt.Errorf("[ERROR] Error getting Instance boot volume (%s): %s\n%s", id, err, response)
 	}
 	eTag := response.Headers.Get("ETag")
 	options := &vpcv1.UpdateVolumeOptions{
@@ -507,11 +507,12 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch in Instance boot volume : %s", err)
 		}
 		options.VolumePatch = volumeNamePatch
-		_, _, err = sess.UpdateVolume(options)
+		_, response, err = sess.UpdateVolume(options)
+		eTag = response.Headers.Get("ETag")
 		if err != nil {
 			return err
 		}
-		_, err = isWaitForInstanceBootVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
 		if err != nil {
 			return err
 		}
@@ -575,7 +576,7 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		options.VolumePatch = volumeProfilePatch
 		_, response, err = sess.UpdateVolume(options)
-		_, err = isWaitForInstanceBootVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
 		if err != nil {
 			return err
 		}
@@ -634,7 +635,7 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error updating Instance boot volume: %s\n%s", err, response)
 		}
-		_, err = isWaitForInstanceBootVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
 		if err != nil {
 			return err
 		}
@@ -661,15 +662,15 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 				volumeNamePatchModel.UserTags = userTagsArray
 				volumeNamePatch, err := volumeNamePatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("Error calling asPatch for volumeNamePatch in Instance boot volume: %s", err)
+					return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch in Instance boot volume: %s", err)
 				}
 				options.IfMatch = &eTag
 				options.VolumePatch = volumeNamePatch
 				_, response, err := sess.UpdateVolume(options)
 				if err != nil {
-					return fmt.Errorf("Error updating Instance boot volume : %s\n%s", err, response)
+					return fmt.Errorf("[ERROR] Error updating Instance boot volume : %s\n%s", err, response)
 				}
-				_, err = isWaitForInstanceBootVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+				_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
 				if err != nil {
 					return err
 				}
@@ -680,10 +681,10 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceIBMISInstanceBootVolumeDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISInstanceBootVolumeManagerDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 	// check if force delete is true
-	if d.Get(isInstanceBootVolumeDelete).(bool) {
+	if d.Get(isInstanceBootVolumeManagerDelete).(bool) {
 		sess, err := vpcClient(meta)
 		if err != nil {
 			return err
@@ -696,7 +697,7 @@ func resourceIBMISInstanceBootVolumeDelete(d *schema.ResourceData, meta interfac
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error deleting Volume : %s\n%s", err, response)
 		}
-		_, err = isWaitForInstanceBootVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
+		_, err = isWaitForInstanceBootVolumeManagerDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
 			return err
 		}
@@ -705,13 +706,13 @@ func resourceIBMISInstanceBootVolumeDelete(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func isWaitForInstanceBootVolumeDeleted(vol *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForInstanceBootVolumeManagerDeleted(vol *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isVolumeDeleting},
 		Target:     []string{"done", ""},
-		Refresh:    isInstanceBootVolumeDeleteRefreshFunc(vol, id),
+		Refresh:    isInstanceBootVolumeManagerDeleteRefreshFunc(vol, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -720,7 +721,7 @@ func isWaitForInstanceBootVolumeDeleted(vol *vpcv1.VpcV1, id string, timeout tim
 	return stateConf.WaitForState()
 }
 
-func isInstanceBootVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isInstanceBootVolumeManagerDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		volgetoptions := &vpcv1.GetVolumeOptions{
 			ID: &id,
@@ -736,7 +737,7 @@ func isInstanceBootVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource
 	}
 }
 
-func resourceIBMISInstanceBootVolumeExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceIBMISInstanceBootVolumeManagerExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 
 	id := d.Id()
 
@@ -762,13 +763,13 @@ func instancebootvolExists(d *schema.ResourceData, meta interface{}, id string) 
 	return true, nil
 }
 
-func isWaitForInstanceBootVolumeAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForInstanceBootVolumeManagerAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration, eTag *string) (interface{}, error) {
 	log.Printf("Waiting for Instance boot volume (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isVolumeProvisioning},
 		Target:     []string{isVolumeProvisioningDone, ""},
-		Refresh:    isVolumeRefreshFunc(client, id),
+		Refresh:    isInstanceBootVolumeManagerRefreshFunc(client, id, eTag),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -777,7 +778,7 @@ func isWaitForInstanceBootVolumeAvailable(client *vpcv1.VpcV1, id string, timeou
 	return stateConf.WaitForState()
 }
 
-func isInstanceBootVolumeRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isInstanceBootVolumeManagerRefreshFunc(client *vpcv1.VpcV1, id string, eTag *string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		volgetoptions := &vpcv1.GetVolumeOptions{
 			ID: &id,
@@ -790,6 +791,7 @@ func isInstanceBootVolumeRefreshFunc(client *vpcv1.VpcV1, id string) resource.St
 		if *vol.Status == "available" {
 			return vol, isVolumeProvisioningDone, nil
 		}
+		*eTag = response.Headers.Get("ETag")
 
 		return vol, isVolumeProvisioning, nil
 	}
