@@ -33,6 +33,11 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Computed:    true,
 				Description: "Secret namespace",
 			},
+			"cert_crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate CRN",
+			},
 			"secret_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -52,11 +57,6 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Persistence of secret",
-			},
-			"cert_crn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Certificate CRN",
 			},
 			"domain_name": {
 				Type:        schema.TypeString,
@@ -93,7 +93,7 @@ func DataSourceIBMContainerIngressSecretTLSValidator() *validate.ResourceValidat
 			CloudDataType:              "cluster",
 			CloudDataRange:             []string{"resolved_to:id"}})
 
-	iBMContainerIngressSecretValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret", Schema: validateSchema}
+	iBMContainerIngressSecretValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret_tls", Schema: validateSchema}
 	return &iBMContainerIngressSecretValidator
 }
 

@@ -44,6 +44,11 @@ func DataSourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Computed:    true,
 				Description: "Persistence of secret",
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the secret",
+			},
 			"user_managed": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -64,11 +69,6 @@ func DataSourceIBMContainerIngressSecretOpaque() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Field name",
-						},
-						"prefix": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Prefix field name with Secrets Manager secret name",
 						},
 						"expires_on": {
 							Type:        schema.TypeString,
@@ -92,7 +92,7 @@ func DataSourceIBMContainerIngressSecretOpaque() *schema.Resource {
 	}
 }
 
-func DataSourceIBMContainerIngressSecretValidator() *validate.ResourceValidator {
+func DataSourceIBMContainerIngressSecretOpaqueValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -103,7 +103,7 @@ func DataSourceIBMContainerIngressSecretValidator() *validate.ResourceValidator 
 			CloudDataType:              "cluster",
 			CloudDataRange:             []string{"resolved_to:id"}})
 
-	iBMContainerIngressSecretValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret", Schema: validateSchema}
+	iBMContainerIngressSecretValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret_opaque", Schema: validateSchema}
 	return &iBMContainerIngressSecretValidator
 }
 
@@ -129,6 +129,7 @@ func dataSourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta 
 	d.Set("secret_type", ingressSecretConfig.SecretType)
 	d.Set("persistence", ingressSecretConfig.Persistence)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
+	d.Set("status", ingressSecretConfig.Status)
 	d.Set("fields", flex.FlattenOpaqueSecret(ingressSecretConfig.Fields))
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", clusterID, name, namespace))

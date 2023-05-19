@@ -68,6 +68,11 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Computed:    true,
 				Description: "If the secret was created by the user",
 			},
+			"status":{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the secret",
+			}
 			"fields": {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -208,6 +213,7 @@ func resourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta in
 	d.Set("secret_type", ingressSecretConfig.Type)
 	d.Set("persistence", ingressSecretConfig.Persistence)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
+	d.Set("status", ingressSecretConfig.Status)
 
 	if len(ingressSecretConfig.Fields) > 0 {
 		d.Set("fields", flex.FlattenOpaqueSecret(ingressSecretConfig.Fields))
