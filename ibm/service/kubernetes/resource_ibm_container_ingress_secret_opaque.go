@@ -68,11 +68,11 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Computed:    true,
 				Description: "If the secret was created by the user",
 			},
-			"status":{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Status of the secret",
-			}
+			},
 			"fields": {
 				Type:        schema.TypeSet,
 				Computed:    true,
