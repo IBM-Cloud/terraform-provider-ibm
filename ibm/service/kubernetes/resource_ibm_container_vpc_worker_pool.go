@@ -141,9 +141,10 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 			},
 
 			"worker_count": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The number of workers",
+				Type:             schema.TypeInt,
+				Required:         true,
+				Description:      "The number of workers",
+				DiffSuppressFunc: SuppressResizeForAutoscaledWorkerpool,
 			},
 
 			"entitlement": {
@@ -197,6 +198,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Root Key ID for boot volume encryption",
 				RequiredWith:     []string{"kms_instance_id"},
 			},
+
 			"kms_account_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -204,9 +206,24 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Account ID of kms instance holder - if not provided, defaults to the account in use",
 				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
+
+			"autoscale_enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Autoscaling is enabled on the workerpool",
+			},
 		},
 	}
 }
+
+func SuppressResizeForAutoscaledWorkerpool(key, oldValue, newValue string, d *schema.ResourceData) bool {
+	var autoscaleEnabled bool = false
+	if v, ok := d.GetOk("autoscale_enabled"); ok {
+		autoscaleEnabled = v.(bool)
+	}
+	return autoscaleEnabled
+}
+
 func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 	tainteffects := "NoSchedule,PreferNoSchedule,NoExecute"
 	validateSchema := make([]validate.ValidateSchema, 0)
@@ -570,6 +587,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
 		}
 	}
+	d.Set("autoscale_enabled", workerPool.AutoscaleEnabled)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err

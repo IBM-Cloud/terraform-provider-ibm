@@ -27,17 +27,7 @@ variable "project_instance_location" {
 
 // Data source arguments for project_event_notification
 variable "project_event_notification_id" {
-  description = "The ID of the project, which uniquely identifies it."
+  description = "The unique project ID."
   type        = string
   default     = "id"
-}
-variable "project_event_notification_exclude_configs" {
-  description = "Only return with the active configuration, no drafts."
-  type        = bool
-  default     = false
-}
-variable "project_event_notification_complete" {
-  description = "The flag to determine if full metadata should be returned."
-  type        = bool
-  default     = false
 }

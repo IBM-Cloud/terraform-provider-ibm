@@ -15,13 +15,15 @@ import (
 
 func TestAccIbmProjectEventNotificationDataSourceBasic(t *testing.T) {
 	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	projectResourceGroup := fmt.Sprintf("Default")
+	projectLocation := fmt.Sprintf("us-south")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectName),
+				Config: testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectResourceGroup, projectLocation, projectName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
@@ -45,8 +47,6 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName, projectDescription, projectResourceGroup, projectLocation),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "project_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "exclude_configs"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "complete"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_event_notification.project_event_notification", "metadata.#"),
@@ -56,27 +56,26 @@ func TestAccIbmProjectEventNotificationDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectName string) string {
+func testAccCheckIbmProjectEventNotificationDataSourceConfigBasic(projectResourceGroup string, projectLocation string, projectName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_project_instance" "project_instance_instance" {
+		resource "ibm_project_instance" "project_instance" {
+			resource_group = "%s"
+			location = "%s"
 			name = "%s"
 		}
 
 		data "ibm_project_event_notification" "project_event_notification" {
-			project_id = ibm_project_instance.project_instance_instance.id
-			exclude_configs = false
-			complete = true
+			project_id = ibm_project_instance.project_instance.id
 		}
-	`, projectName)
+	`, projectResourceGroup, projectLocation, projectName)
 }
 
 func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string, projectDescription string, projectResourceGroup string, projectLocation string) string {
 	return fmt.Sprintf(`
-		resource "ibm_project_instance" "project_instance_instance" {
+		resource "ibm_project_instance" "project_instance" {
 			name = "%s"
 			description = "%s"
 			configs {
-				id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
@@ -94,9 +93,7 @@ func testAccCheckIbmProjectEventNotificationDataSourceConfig(projectName string,
 		}
 
 		data "ibm_project_event_notification" "project_event_notification" {
-			project_id = ibm_project_instance.project_instance_instance.id
-			exclude_configs = false
-			complete = true
+			project_id = ibm_project_instance.project_instance.id
 		}
 	`, projectName, projectDescription, projectResourceGroup, projectLocation)
 }

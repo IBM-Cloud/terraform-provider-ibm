@@ -395,6 +395,8 @@ func Provider() *schema.Provider {
 			"ibm_is_flow_logs":                       vpc.DataSourceIBMISFlowLogs(),
 			"ibm_is_image":                           vpc.DataSourceIBMISImage(),
 			"ibm_is_images":                          vpc.DataSourceIBMISImages(),
+			"ibm_is_image_export_job":                vpc.DataSourceIBMIsImageExport(),
+			"ibm_is_image_export_jobs":               vpc.DataSourceIBMIsImageExports(),
 			"ibm_is_endpoint_gateway_targets":        vpc.DataSourceIBMISEndpointGatewayTargets(),
 			"ibm_is_instance_group":                  vpc.DataSourceIBMISInstanceGroup(),
 			"ibm_is_instance_groups":                 vpc.DataSourceIBMISInstanceGroups(),
@@ -758,6 +760,8 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_sn":        eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_ce":         eventnotification.DataSourceIBMEnCodeEngineDestination(),
 			"ibm_en_subscription_ce":        eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_cos":        eventnotification.DataSourceIBMEnCOSDestination(),
+			"ibm_en_subscription_cos":       eventnotification.DataSourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -792,7 +796,12 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
 
 			// Added for Code Engine
-			"ibm_code_engine_project": codeengine.DataSourceIbmCodeEngineProject(),
+			"ibm_code_engine_app":        codeengine.DataSourceIbmCodeEngineApp(),
+			"ibm_code_engine_build":      codeengine.DataSourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map": codeengine.DataSourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_job":        codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":    codeengine.DataSourceIbmCodeEngineProject(),
+			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
 
 			// Added for Project
 			"ibm_project_event_notification": project.DataSourceIbmProjectEventNotification(),
@@ -1012,6 +1021,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpn_server_client":                      vpc.ResourceIBMIsVPNServerClient(),
 			"ibm_is_vpn_server_route":                       vpc.ResourceIBMIsVPNServerRoute(),
 			"ibm_is_image":                                  vpc.ResourceIBMISImage(),
+			"ibm_is_image_export_job":                       vpc.ResourceIBMIsImageExportJob(),
 			"ibm_lb":                                        classicinfrastructure.ResourceIBMLb(),
 			"ibm_lbaas":                                     classicinfrastructure.ResourceIBMLbaas(),
 			"ibm_lbaas_health_monitor":                      classicinfrastructure.ResourceIBMLbaasHealthMonitor(),
@@ -1222,6 +1232,8 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_sn":        eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_ce":         eventnotification.ResourceIBMEnCodeEngineDestination(),
 			"ibm_en_subscription_ce":        eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_cos":        eventnotification.ResourceIBMEnCOSDestination(),
+			"ibm_en_subscription_cos":       eventnotification.ResourceIBMEnFCMSubscription(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1364,6 +1376,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_floating_ip":                       vpc.ResourceIBMISFloatingIPValidator(),
 				"ibm_is_ike_policy":                        vpc.ResourceIBMISIKEValidator(),
 				"ibm_is_image":                             vpc.ResourceIBMISImageValidator(),
+				"ibm_is_image_export_job":                  vpc.ResourceIBMIsImageExportValidator(),
 				"ibm_is_instance_template":                 vpc.ResourceIBMISInstanceTemplateValidator(),
 				"ibm_is_instance":                          vpc.ResourceIBMISInstanceValidator(),
 				"ibm_is_instance_action":                   vpc.ResourceIBMISInstanceActionValidator(),
