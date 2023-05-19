@@ -35,7 +35,7 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Cluster ID",
+				Description: "Cluster ID or name",
 				ValidateFunc: validate.InvokeValidator(
 					"ibm_container_ingress_secret",
 					"cluster"),
@@ -98,11 +98,6 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Field expires on date",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Secrets manager secret type",
 						},
 						"last_updated_timestamp": {
 							Type:        schema.TypeString,

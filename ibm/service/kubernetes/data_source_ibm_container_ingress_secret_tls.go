@@ -18,7 +18,7 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 			"cluster": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Cluster ID",
+				Description: "Cluster ID or name",
 				ValidateFunc: validate.InvokeValidator(
 					"ibm_container_ingress_secret",
 					"cluster"),
@@ -67,11 +67,6 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Certificate expires on date",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of Secret Manager secret",
 			},
 			"last_updated_timestamp": {
 				Type:        schema.TypeString,
@@ -123,7 +118,6 @@ func dataSourceIBMContainerIngressSecretTLSRead(d *schema.ResourceData, meta int
 	d.Set("expires_on", ingressSecretConfig.ExpiresOn)
 	d.Set("status", ingressSecretConfig.Status)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
-	d.Set("type", ingressSecretConfig.Type)
 	d.Set("last_updated_timestamp", ingressSecretConfig.LastUpdatedTimestamp)
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", clusterID, name, namespace))
