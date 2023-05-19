@@ -1,4 +1,4 @@
-# Example for MetricsRouterV3
+# Example for IBM Metrics Router V3 Example
 
 This example illustrates how to use the MetricsRouterV3
 
@@ -91,23 +91,46 @@ data "metrics_router_routes" "metrics_router_routes_instance" {
 
 ## Inputs
 
+### Target
+
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names. | `string` | true |
 | destination_crn | The CRN of a destination service instance or resource. | `string` | true |
 | region | Include this optional field if you want to create a target in a different region other than the one you are connected. | `string` | false |
+
+### Route
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
 | name | The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names. | `string` | true |
 | rules | Routing rules that will be evaluated in their order of the array. | `list()` | true |
+
+### Settings
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
 | default_targets | A list of default target references. | `list()` | false |
 | permitted_target_regions | If present then only these regions may be used to define a target. | `list(string)` | false |
 | primary_metadata_region | To store all your meta data in a single region. | `string` | false |
 | backup_metadata_region | To backup all your meta data in a different region. | `string` | false |
 | private_api_endpoint_only | If you set this true then you cannot access api through public network. | `bool` | false |
+
+### Data Source For Target
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
 | name | The name of the target resource. | `string` | false |
+
+### Data Source For Route
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
 | name | The name of the route. | `string` | false |
 
 ## Outputs
+
 
 | Name | Description |
 |------|-------------|
