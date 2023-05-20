@@ -804,7 +804,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_event_notification": project.DataSourceIbmProjectEventNotification(),
+			// MISSING DATA SOURCE FOR PROJECT HERE !!!!!!
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1276,7 +1276,8 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_instance": project.ResourceIbmProjectInstance(),
+			"ibm_project":        project.ResourceIbmProject(),
+			"ibm_project_config": project.ResourceIbmProjectConfig(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1514,7 +1515,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
 
 				// Added for Project
-				"ibm_project_instance": project.ResourceIbmProjectInstanceValidator(),
+				"ibm_project":        project.ResourceIbmProjectValidator(),
+				"ibm_project_config": project.ResourceIbmProjectConfigValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
