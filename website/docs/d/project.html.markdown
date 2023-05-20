@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_project"
 description: |-
   Get information about Project definition
-subcategory: "Projects API"
+subcategory: "Project"
 ---
 
 # ibm_project
