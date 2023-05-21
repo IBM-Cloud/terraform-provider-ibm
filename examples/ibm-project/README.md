@@ -52,6 +52,22 @@ resource "project_config" "project_config_instance" {
 
 ## ProjectV1 Data sources
 
+project data source:
+
+```hcl
+data "project" "project_instance" {
+  id = ibm_project.project_instance.id
+}
+```
+project_config data source:
+
+```hcl
+data "project_config" "project_config_instance" {
+  project_id = ibm_project.project_instance.id
+  id = ibm_project_config.project_config_instance.projectConfig_id
+  version = var.project_config_version
+}
+```
 
 ## Assumptions
 
@@ -93,6 +109,10 @@ resource "project_config" "project_config_instance" {
 | compliance_profile | The profile required for compliance. | `` | false |
 | input | The input values to use to deploy the configuration. | `list()` | false |
 | setting | Schematics environment variables to use to deploy the configuration. | `list()` | false |
+| id | The unique project ID. | `string` | true |
+| project_id | The unique project ID. | `string` | true |
+| id | The unique config ID. | `string` | true |
+| version | The version of the configuration to return. | `string` | false |
 
 ## Outputs
 

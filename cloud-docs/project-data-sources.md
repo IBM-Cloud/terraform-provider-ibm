@@ -23,7 +23,7 @@ that you need to specify in the `provider` block of your Terraform configuration
 ## `ibm_project`
 {: #project}
 
-Retrieve information about Project definition.
+Retrieve information about project.
 {: shortdesc}
 
 ### Sample Terraform code
@@ -99,4 +99,70 @@ Review the output parameters that you can access after you retrieved your data s
 |`metadata.state`|String|The project status value. The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(CREATING|CREATING_FAILED|UPDATING|UPDATING_FAILED|READY)$/`.|
 |`metadata.event_notifications_crn`|String|The CRN of the event notifications instance if one is connected to this project. The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.|
 |`name`|String|The project name. The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.|
+
+## `ibm_project_config`
+{: #project_config}
+
+Retrieve information about project_config.
+{: shortdesc}
+
+### Sample Terraform code
+{: #project_config-sample}
+
+```
+data "ibm_project_config" "project_config" {
+  id = "id"
+  project_id = "project_id"
+  version = "version"
+}
+```
+
+### Input parameters
+{: #project_config-input}
+
+Review the input parameters that you can specify for your data source. {: shortdesc}
+
+|Name|Data type|Required/optional|Description|
+|----|-----------|-------|----------|
+|`id`|String|Required|The unique config ID. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`project_id`|String|Required|The unique project ID. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`version`|String|Optional|The version of the configuration to return. The default value is `active`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(active|draft|\\d+)$/`.|
+
+### Output parameters
+{: #project_config-output}
+
+Review the output parameters that you can access after you retrieved your data source. {: shortdesc}
+
+|Name|Data type|Description|
+|----|-----------|---------|
+|`authorizations`|List|The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager. This list contains only one item.|
+|`authorizations.trusted_profile`|List|The trusted profile for authorizations. This list contains only one item.|
+|`authorizations.trusted_profile.id`|String|The unique ID of a project. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`authorizations.trusted_profile.target_iam_id`|String|The unique ID of a project. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`authorizations.method`|String|The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager. The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.|
+|`authorizations.api_key`|String|The IBM Cloud API Key. The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.|
+|`compliance_profile`|List|The profile required for compliance. This list contains only one item.|
+|`compliance_profile.id`|String|The unique ID of a project. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`compliance_profile.instance_id`|String|The unique ID of a project. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`compliance_profile.instance_location`|String|The location of the compliance instance. The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.|
+|`compliance_profile.attachment_id`|String|The unique ID of a project. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`compliance_profile.profile_name`|String|The name of the compliance profile. The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.|
+|`description`|String|The project configuration description. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.|
+|`input`|List|The outputs of a Schematics template property. The maximum length is `10000` items. The minimum length is `0` items.|
+|`input.name`|String|The variable name. The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.|
+|`input.type`|String|The variable type. Allowable values are: `array`, `boolean`, `float`, `int`, `number`, `password`, `string`, `object`.|
+|`input.value`|String|Can be any value - a string, number, boolean, array, or object.|
+|`input.required`|Boolean|Whether the variable is required or not.|
+|`labels`|List|A collection of configuration labels. The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.|
+|`locator_id`|String|A dotted value of catalogID.versionID. The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.|
+|`name`|String|The configuration name. The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.|
+|`output`|List|The outputs of a Schematics template property. The maximum length is `10000` items. The minimum length is `0` items.|
+|`output.name`|String|The variable name. The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.|
+|`output.description`|String|A short explanation of the output value. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.|
+|`output.value`|String|Can be any value - a string, number, boolean, array, or object.|
+|`project_config_id`|String|The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration. The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.|
+|`setting`|List|Schematics environment variables to use to deploy the configuration. The maximum length is `10000` items. The minimum length is `0` items.|
+|`setting.name`|String|The name of the configuration setting. The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.|
+|`setting.value`|String|The value of the configuration setting. The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.|
+|`type`|String|The type of a project configuration manual property. Allowable values are: `terraform_template`, `schematics_blueprint`.|
 

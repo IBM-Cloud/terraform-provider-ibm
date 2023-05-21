@@ -56,3 +56,27 @@ variable "project_config_description" {
   type        = string
   default     = "Stage environment configuration, which includes services common to all the environment regions. There must be a blueprint configuring all the services common to the stage regions. It is a terraform_template type of configuration that points to a Github repo hosting the terraform modules that can be deployed by a Schematics Workspace."
 }
+
+// Data source arguments for project
+variable "project_id" {
+  description = "The unique project ID."
+  type        = string
+  default     = "id"
+}
+
+// Data source arguments for project_config
+variable "project_config_project_id" {
+  description = "The unique project ID."
+  type        = string
+  default     = "project_id"
+}
+variable "project_config_id" {
+  description = "The unique config ID."
+  type        = string
+  default     = "id"
+}
+variable "project_config_version" {
+  description = "The version of the configuration to return."
+  type        = string
+  default     = "placeholder"
+}
