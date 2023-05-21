@@ -397,12 +397,6 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("resource_group", getProjectOptions.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
-	}
-	if err = d.Set("location", getProjectOptions.Location); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
-	}
 	if err = d.Set("name", project.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
