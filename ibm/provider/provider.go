@@ -804,7 +804,8 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			// MISSING DATA SOURCE FOR PROJECT HERE !!!!!!
+			"ibm_project":        project.DataSourceIbmProject(),
+			"ibm_project_config": project.DataSourceIbmProjectConfig(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
