@@ -455,71 +455,11 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 	updateConfigOptions.SetProjectID(parts[0])
 	updateConfigOptions.SetID(parts[1])
 
-	hasChange := false
+	hasChange := true
 
 	if d.HasChange("project_id") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "project_id"))
-	}
-	if d.HasChange("name") || d.HasChange("locator_id") {
-		updateConfigOptions.SetName(d.Get("name").(string))
-		updateConfigOptions.SetLocatorID(d.Get("locator_id").(string))
-		hasChange = true
-	}
-	if d.HasChange("labels") {
-		var labels []string
-		for _, v := range d.Get("labels").([]interface{}) {
-			labelsItem := v.(string)
-			labels = append(labels, labelsItem)
-		}
-		updateConfigOptions.SetLabels(labels)
-		hasChange = true
-	}
-	if d.HasChange("description") {
-		updateConfigOptions.SetDescription(d.Get("description").(string))
-		hasChange = true
-	}
-	if d.HasChange("authorizations") {
-		authorizations, err := resourceIbmProjectConfigMapToProjectConfigAuth(d.Get("authorizations.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateConfigOptions.SetAuthorizations(authorizations)
-		hasChange = true
-	}
-	if d.HasChange("compliance_profile") {
-		complianceProfile, err := resourceIbmProjectConfigMapToProjectConfigComplianceProfile(d.Get("compliance_profile.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateConfigOptions.SetComplianceProfile(complianceProfile)
-		hasChange = true
-	}
-	if d.HasChange("input") {
-		var input []projectv1.ProjectConfigInputVariable
-		for _, v := range d.Get("input").([]interface{}) {
-			value := v.(map[string]interface{})
-			inputItem, err := resourceIbmProjectConfigMapToProjectConfigInputVariable(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			input = append(input, *inputItem)
-		}
-		updateConfigOptions.SetInput(input)
-		hasChange = true
-	}
-	if d.HasChange("setting") {
-		var setting []projectv1.ProjectConfigSettingCollection
-		for _, v := range d.Get("setting").([]interface{}) {
-			value := v.(map[string]interface{})
-			settingItem, err := resourceIbmProjectConfigMapToProjectConfigSettingCollection(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			setting = append(setting, *settingItem)
-		}
-		updateConfigOptions.SetSetting(setting)
-		hasChange = true
 	}
 
 	if hasChange {

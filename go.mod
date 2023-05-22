@@ -58,7 +58,7 @@ require (
 
 require (
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/project-go-sdk v0.0.11
+	github.com/IBM/project-go-sdk v0.0.12
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )

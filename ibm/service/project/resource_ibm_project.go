@@ -749,7 +749,7 @@ func resourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulative
 		modelMap["config_id"] = model.ConfigID
 	}
 	if model.ConfigVersion != nil {
-		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
+		modelMap["config_version"] = model.ConfigVersion
 	}
 	return modelMap, nil
 }
