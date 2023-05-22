@@ -20,9 +20,8 @@ import (
 func TestAccIbmProjectConfigBasic(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
+	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorIDUpdate := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -38,10 +37,10 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmProjectConfigConfigBasic(nameUpdate, locatorIDUpdate),
+				Config: testAccCheckIbmProjectConfigConfigBasic(nameUpdate, locatorID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorIDUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
 				),
 			},
 		},
@@ -51,10 +50,9 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
+	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global")
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorIDUpdate := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -72,10 +70,10 @@ func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmProjectConfigConfig(nameUpdate, locatorIDUpdate, descriptionUpdate),
+				Config: testAccCheckIbmProjectConfigConfig(nameUpdate, locatorID, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorIDUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
 					resource.TestCheckResourceAttr("ibm_project_config.project_config", "description", descriptionUpdate),
 				),
 			},
@@ -91,9 +89,9 @@ func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 func testAccCheckIbmProjectConfigConfigBasic(name string, locatorID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			resource_group = "Default"
+			resource_group = "default"
 			location = "us-south"
-			name = "acme-microservice"
+			name = "acme-microservice-3"
 		}
 
 		resource "ibm_project_config" "project_config_instance" {
@@ -108,31 +106,20 @@ func testAccCheckIbmProjectConfigConfig(name string, locatorID string, descripti
 	return fmt.Sprintf(`
 
 		resource "ibm_project" "project_instance" {
-			resource_group = "Default"
+			resource_group = "default"
 			location = "us-south"
-			name = "acme-microservice"
+			name = "acme-microservice-4"
 		}
 
 		resource "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
 			name = "%s"
 			locator_id = "%s"
-			labels = "FIXME"
+			labels = [ "labels" ]
 			description = "%s"
 			authorizations {
-				trusted_profile {
-					id = "id"
-					target_iam_id = "target_iam_id"
-				}
-				method = "method"
-				api_key = "api_key"
-			}
-			compliance_profile {
-				id = "id"
-				instance_id = "instance_id"
-				instance_location = "instance_location"
-				attachment_id = "attachment_id"
-				profile_name = "profile_name"
+				method = "API_KEY"
+				api_key = "xxx"
 			}
 			input {
 				name = "name"

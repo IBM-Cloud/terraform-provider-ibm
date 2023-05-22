@@ -28,23 +28,20 @@ func ResourceIbmProjectConfig() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_config", "project_id"),
-				Description:  "The unique project ID.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The unique project ID.",
 			},
 			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_config", "name"),
-				Description:  "The configuration name.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The configuration name.",
 			},
 			"locator_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_config", "locator_id"),
-				Description:  "A dotted value of catalogID.versionID.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A dotted value of catalogID.versionID.",
 			},
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
@@ -53,10 +50,9 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"description": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_config", "description"),
-				Description:  "The project configuration description.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The project configuration description.",
 			},
 			"authorizations": &schema.Schema{
 				Type:        schema.TypeList,
