@@ -1,4 +1,4 @@
-# Example for IBM Metrics Router V3 Example
+# Example for IBM Cloud Metrics Routing V3 Example
 
 This example illustrates how to use the MetricsRouterV3
 
@@ -97,7 +97,7 @@ data "metrics_router_routes" "metrics_router_routes_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names. | `string` | true |
-| destination_crn | The CRN of a destination service instance or resource. | `string` | true |
+| destination_crn | The CRN of the destination resource. Ensure you have a service authorization between IBM Cloud Metrics Routing and your Cloud resource - [S2S authorization](https://cloud.ibm.com/docs/metrics-router?topic=metrics-router-target-monitoring&interface=ui#target-monitoring-ui).| `string` | true |
 | region | Include this optional field if you want to create a target in a different region other than the one you are connected. | `string` | false |
 
 ### Route

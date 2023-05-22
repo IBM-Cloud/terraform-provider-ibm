@@ -24,7 +24,7 @@ resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 
 Review the argument reference that you can specify for your resource.
 
-* `destination_crn` - (Required, String) The CRN of a destination service instance or resource.
+* `destination_crn` - (Required, String) The CRN of the destination resource. Ensure you have a service authorization between IBM Cloud Metrics Routing and your Cloud resource - [S2S authorization](https://cloud.ibm.com/docs/metrics-router?topic=metrics-router-target-monitoring&interface=ui#target-monitoring-ui).
   * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-._:\/]+$/`.
 * `name` - (Required, String) The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names.
   * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 \\-._:]+$/`.

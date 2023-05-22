@@ -63,9 +63,9 @@ You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_
 Usage:
 ```
 provider "ibm" {
-    ibmcloud_api_key = ""
-    iaas_classic_username = ""
-    iaas_classic_api_key = ""
+  ibmcloud_api_key = ""
+  iaas_classic_username = ""
+  iaas_classic_api_key = ""
 }
 ```
 

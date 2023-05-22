@@ -12,10 +12,12 @@ Provides a resource for metrics_router_route. This allows metrics_router_route t
 
 ## Example Usage
 
+### Example for a single rule and single inclusion_filter
+
 ```hcl
 resource "ibm_metrics_router_route" "metrics_router_route_instance" {
-  name = "my-route"
-  rules {
+	name = "my-route"
+	rules {
 		action = "send"
 		targets {
 			id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
@@ -25,7 +27,42 @@ resource "ibm_metrics_router_route" "metrics_router_route_instance" {
 			operator = "is"
 			values = [ "us-south" ]
 		}
-  }
+  	}
+}
+```
+
+### Example for multiple rules and multiple inclusion_filters
+
+```hcl
+resource "ibm_metrics_router_route" "metrics_router_route_instance" {
+	name = "my-route"
+	rules {
+		action = "send"
+		targets {
+			id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		}
+		inclusion_filters {
+			operand = "location"
+			operator = "is"
+			values = [ "us-south" ]
+		}
+		inclusion_filters {
+			operand = "service_name"
+			operator = "in"
+			values = ["metrics-router"]
+		}
+  	}
+	rules {
+		action = "send"
+		targets {
+			id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		}
+		inclusion_filters {
+			operand = "resource_type"
+			operator = "is"
+			values = ["worker"]
+		}
+  	}
 }
 ```
 
