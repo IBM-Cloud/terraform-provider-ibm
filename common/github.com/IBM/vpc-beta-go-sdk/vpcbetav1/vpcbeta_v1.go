@@ -65,7 +65,7 @@ type VpcbetaV1Options struct {
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-05-16`
 	// and today's date (UTC).
-	Version *string `validate:"required"`
+	Version *string
 }
 
 // NewVpcbetaV1UsingExternalConfig : constructs an instance of VpcbetaV1 with passed in options and external configuration.
@@ -120,7 +120,9 @@ func NewVpcbetaV1(options *VpcbetaV1Options) (service *VpcbetaV1, err error) {
 			return
 		}
 	}
-
+	if options.Version == nil {
+		options.Version = core.StringPtr("2023-05-04")
+	}
 	service = &VpcbetaV1{
 		Service:    baseService,
 		generation: core.Int64Ptr(2),
