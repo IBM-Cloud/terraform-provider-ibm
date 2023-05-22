@@ -18,8 +18,8 @@ import (
 
 func TestAccIbmProjectBasic(t *testing.T) {
 	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("default")
+	location := fmt.Sprintf("us-south")
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -42,8 +42,8 @@ func TestAccIbmProjectBasic(t *testing.T) {
 
 func TestAccIbmProjectAllArgs(t *testing.T) {
 	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("default")
+	location := fmt.Sprintf("us-south")
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	destroyOnDelete := "false"

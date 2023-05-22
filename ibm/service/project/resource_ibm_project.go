@@ -410,19 +410,21 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting destroy_on_delete: %s", err))
 		}
 	}
-	if !core.IsNil(project.Configs) {
-		configs := []map[string]interface{}{}
-		for _, configsItem := range project.Configs {
-			configsItemMap, err := resourceIbmProjectProjectConfigPrototypeToMap(&configsItem)
-			if err != nil {
-				return diag.FromErr(err)
+	/*
+		if !core.IsNil(project.Configs) {
+			configs := []map[string]interface{}{}
+			for _, configsItem := range project.Configs {
+				configsItemMap, err := resourceIbmProjectProjectConfigPrototypeToMap(&configsItem)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				configs = append(configs, configsItemMap)
 			}
-			configs = append(configs, configsItemMap)
+			if err = d.Set("configs", configs); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
+			}
 		}
-		if err = d.Set("configs", configs); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
-		}
-	}
+	*/
 	if !core.IsNil(project.Crn) {
 		if err = d.Set("crn", project.Crn); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))

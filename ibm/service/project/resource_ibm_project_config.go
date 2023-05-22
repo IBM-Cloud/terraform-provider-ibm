@@ -388,19 +388,21 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting compliance_profile: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.Input) {
-		input := []map[string]interface{}{}
-		for _, inputItem := range projectConfig.Input {
-			inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
-			if err != nil {
-				return diag.FromErr(err)
+	/*
+		if !core.IsNil(projectConfig.Input) {
+			input := []map[string]interface{}{}
+			for _, inputItem := range projectConfig.Input {
+				inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				input = append(input, inputItemMap)
 			}
-			input = append(input, inputItemMap)
+			if err = d.Set("input", input); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
+			}
 		}
-		if err = d.Set("input", input); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
-		}
-	}
+	*/
 	if !core.IsNil(projectConfig.Setting) {
 		setting := []map[string]interface{}{}
 		for _, settingItem := range projectConfig.Setting {
