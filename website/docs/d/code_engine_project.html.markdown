@@ -14,7 +14,7 @@ Provides a read-only data source for code_engine_project. You can then reference
 
 ```hcl
 data "ibm_code_engine_project" "code_engine_project" {
-	id = "15314cc3-85b4-4338-903f-c28cdee6d005"
+	project_id = "15314cc3-85b4-4338-903f-c28cdee6d005"
 }
 ```
 

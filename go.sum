@@ -89,8 +89,8 @@ github.com/IBM/keyprotect-go-client v0.10.0 h1:UdVOwJfyVNmL4O3Aw2eGluiEr5FpV5h8E
 github.com/IBM/keyprotect-go-client v0.10.0/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
 github.com/IBM/networking-go-sdk v0.40.0 h1:NdHTG0YXtN2D/B62BRgy6iJRFLdiJtSFCdTzAZB5m5k=
 github.com/IBM/networking-go-sdk v0.40.0/go.mod h1:lTUZwtUkMANMnrLHFIgRhHrkBfwASY/Iho1fabaPHxo=
-github.com/IBM/platform-services-go-sdk v0.34.0 h1:ozGdyWdBByNS8sw07FP4qx2r1qUc59D0BoN3rMTgtIk=
-github.com/IBM/platform-services-go-sdk v0.34.0/go.mod h1:oFW/DQyAXGBcGytB+DtKjE3yNdEGM2bmw5SDOjrRwTw=
+github.com/IBM/platform-services-go-sdk v0.37.3 h1:xPJ7M6F+Qmd+4IOMn2eM/UHy2Y1iHB2jRBrKynJA7QE=
+github.com/IBM/platform-services-go-sdk v0.37.3/go.mod h1:oFW/DQyAXGBcGytB+DtKjE3yNdEGM2bmw5SDOjrRwTw=
 github.com/IBM/project-go-sdk v0.0.10 h1:vHSuemwZ4S4c6BEb22tzsEcPTs/5LnZ0yKpP3GG/GL8=
 github.com/IBM/project-go-sdk v0.0.10/go.mod h1:lqe0M4cKvABI1iHR1b+KfasVcxQL6nl2VJ8eOyQs8Ig=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
@@ -105,8 +105,8 @@ github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0 h1:Lx4Bvim/MfoHEYR+n312bty5DirAJ
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0/go.mod h1:jagqWmjZ0zUEqh5jdGB42ApSQS40fu2LWw6pdg8JJko=
 github.com/IBM/vpc-beta-go-sdk v0.1.0 h1:+kdF+Y/0KY189HhpkqDrue9o0LluAr7rlOU5Zhu7hck=
 github.com/IBM/vpc-beta-go-sdk v0.1.0/go.mod h1:TGfLgJVmgQy6XvXc4lya8Vxvw7fvk83nqs5hdP+/VGo=
-github.com/IBM/vpc-go-sdk v0.35.0 h1:Qc0OV2WIQLGwxuvPKusJdgeXiMwyHQITvSof+v125D8=
-github.com/IBM/vpc-go-sdk v0.35.0/go.mod h1:Ozn0YBCs284Qvy+CNAmoLhh2eD48NnobiAyfgVd8wmA=
+github.com/IBM/vpc-go-sdk v0.37.0 h1:L8G+mI3+jDZozPG1msqOb5Npx0MSMxbh3Qg6KjKF0vA=
+github.com/IBM/vpc-go-sdk v0.37.0/go.mod h1:MgZrbITC067AlcE5oy4hwylasFvrePL4RVxeF6GTdKQ=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=

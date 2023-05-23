@@ -23,14 +23,14 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.10.0
 	github.com/IBM/networking-go-sdk v0.40.0
-	github.com/IBM/platform-services-go-sdk v0.34.0
+	github.com/IBM/platform-services-go-sdk v0.37.3
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
 	github.com/IBM/vpc-beta-go-sdk v0.1.0
-	github.com/IBM/vpc-go-sdk v0.35.0
+	github.com/IBM/vpc-go-sdk v0.37.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
