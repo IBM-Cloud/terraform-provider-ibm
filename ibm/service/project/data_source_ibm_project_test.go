@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIbmProjectDataSourceBasic(t *testing.T) {
-	projectResourceGroup := fmt.Sprintf("default")
+	projectResourceGroup := fmt.Sprintf("Default")
 	projectLocation := fmt.Sprintf("us-south")
 	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -35,7 +35,7 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmProjectDataSourceAllArgs(t *testing.T) {
-	projectResourceGroup := fmt.Sprintf("default")
+	projectResourceGroup := fmt.Sprintf("Default")
 	projectLocation := fmt.Sprintf("us-south")
 	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	projectDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -76,7 +76,7 @@ func testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup string, pr
 		}
 
 		data "ibm_project" "project_instance" {
-			id = ibm_project.project_instance.project_id
+			id = ibm_project.project_instance.id
 		}
 	`, projectResourceGroup, projectLocation, projectName)
 }
@@ -98,7 +98,7 @@ func testAccCheckIbmProjectDataSourceConfig(projectResourceGroup string, project
 					method = "API_KEY"
 					api_key = "xxx"
 				}
-				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
+				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 				input {
 					name = "name"
 					value = "anything as a string"
@@ -111,7 +111,7 @@ func testAccCheckIbmProjectDataSourceConfig(projectResourceGroup string, project
 		}
 
 		data "ibm_project" "project_instance" {
-			id = ibm_project.project_instance.project_id
+			id = ibm_project.project_instance.id
 		}
 	`, projectResourceGroup, projectLocation, projectName, projectDescription, projectDestroyOnDelete)
 }

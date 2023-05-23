@@ -15,7 +15,7 @@ import (
 
 func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 	projectConfigName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	projectConfigLocatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global")
+	projectConfigLocatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -38,7 +38,7 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 
 func TestAccIbmProjectConfigDataSourceAllArgs(t *testing.T) {
 	projectConfigName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	projectConfigLocatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global")
+	projectConfigLocatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 	projectConfigDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -81,7 +81,7 @@ func TestAccIbmProjectConfigDataSourceAllArgs(t *testing.T) {
 func testAccCheckIbmProjectConfigDataSourceConfigBasic(projectConfigName string, projectConfigLocatorID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			resource_group = "default"
+			resource_group = "Default"
 			location = "us-south"
 			name = "acme-microservice-1"
 		}
@@ -94,7 +94,7 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic(projectConfigName string,
 
 		data "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project_config.project_config.project_id
-			id = ibm_project_config.project_config_instance.config_id
+			id = ibm_project_config.project_config_instance.project_config_id
 			version = "version"
 		}
 	`, projectConfigName, projectConfigLocatorID)
@@ -103,7 +103,7 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic(projectConfigName string,
 func testAccCheckIbmProjectConfigDataSourceConfig(projectConfigName string, projectConfigLocatorID string, projectConfigDescription string) string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			resource_group = "default"
+			resource_group = "Default"
 			location = "us-south"
 			name = "acme-microservice-2"
 		}
@@ -130,7 +130,7 @@ func testAccCheckIbmProjectConfigDataSourceConfig(projectConfigName string, proj
 
 		data "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project_config.project_config.project_id
-			id = ibm_project_config.project_config_instance.config_id
+			id = ibm_project_config.project_config_instance.project_config_id
 			version = "version"
 		}
 	`, projectConfigName, projectConfigLocatorID, projectConfigDescription)

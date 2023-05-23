@@ -20,7 +20,7 @@ import (
 func TestAccIbmProjectConfigBasic(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global")
+	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -50,7 +50,7 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global")
+	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -89,7 +89,7 @@ func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 func testAccCheckIbmProjectConfigConfigBasic(name string, locatorID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			resource_group = "default"
+			resource_group = "Default"
 			location = "us-south"
 			name = "acme-microservice-3"
 		}
@@ -106,7 +106,7 @@ func testAccCheckIbmProjectConfigConfig(name string, locatorID string, descripti
 	return fmt.Sprintf(`
 
 		resource "ibm_project" "project_instance" {
-			resource_group = "default"
+			resource_group = "Default"
 			location = "us-south"
 			name = "acme-microservice-4"
 		}
