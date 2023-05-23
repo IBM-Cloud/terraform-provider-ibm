@@ -324,7 +324,7 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(fmt.Sprintf("%s/%s", *createConfigOptions.ProjectID, *projectConfig.ID))
 
-	_, err = waitForProjectConfigCreate(d.Get("project_id").(string), context, d, meta)
+	_, err = waitForProjectConfigCreate(context, d, meta)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create config instance (%s) to be succeeded: %s", d.Id(), err))
 	}
@@ -332,15 +332,17 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 	return resourceIbmProjectConfigRead(context, d, meta)
 }
 
-func waitForProjectConfigCreate(projectID string, context context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForProjectConfigCreate(context context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
 		return false, err
 	}
-	configID := d.Id()
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
 	getConfigOptions := &projectv1.GetConfigOptions{}
-	getConfigOptions.SetProjectID(projectID)
-	getConfigOptions.SetID(configID)
+	getConfigOptions.SetProjectID(parts[0])
+	getConfigOptions.SetID(parts[1])
+	getConfigOptions.SetVersion("draft") // newly created config is in "draft" state, need to pass the version state
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"not_exists"},
@@ -380,6 +382,8 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 
 	getConfigOptions.SetProjectID(parts[0])
 	getConfigOptions.SetID(parts[1])
+	getConfigOptions.SetVersion(d.Get("version").(string))
+	fmt.Printf("VERSIONE %s\n", d.Get("version").(string))
 
 	projectConfig, response, err := projectClient.GetConfigWithContext(context, getConfigOptions)
 	if err != nil {
@@ -537,7 +541,7 @@ func resourceIbmProjectConfigDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("DeleteConfigWithContext failed %s\n%s", err, response))
 	}
 
-	_, err = waitForProjectConfigDelete(d.Get("project_id").(string), context, d, meta)
+	_, err = waitForProjectConfigDelete(context, d, meta)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for delete config instance (%s) to be succeeded: %s", d.Id(), err))
 	}
@@ -547,15 +551,16 @@ func resourceIbmProjectConfigDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func waitForProjectConfigDelete(projectID string, context context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForProjectConfigDelete(context context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
 		return false, err
 	}
-	configID := d.Id()
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
 	getConfigOptions := &projectv1.GetConfigOptions{}
-	getConfigOptions.SetProjectID(projectID)
-	getConfigOptions.SetID(configID)
+	getConfigOptions.SetProjectID(parts[0])
+	getConfigOptions.SetID(parts[1])
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"exists"},
