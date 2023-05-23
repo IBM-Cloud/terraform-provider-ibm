@@ -983,6 +983,7 @@ type Params struct {
 	Memory              int    `json:"members_memory_allocation_mb,omitempty"`
 	Disk                int    `json:"members_disk_allocation_mb,omitempty"`
 	CPU                 int    `json:"members_cpu_allocation_count,omitempty"`
+	HostFlavor          string `json:"members_host_flavor_allocation,omitempty"`
 	KeyProtectInstance  string `json:"disk_encryption_instance_crn,omitempty"`
 	ServiceEndpoints    string `json:"service-endpoints,omitempty"`
 	BackupID            string `json:"backup-id,omitempty"`
@@ -1420,6 +1421,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 			if memberGroup.CPU != nil {
 				params.CPU = memberGroup.CPU.Allocation * initialNodeCount
+			}
+
+			if memberGroup.HostFlavor != nil {
+				params.HostFlavor = memberGroup.HostFlavor.AllocationHostFlavor
 			}
 		}
 	}
