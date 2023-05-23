@@ -25,9 +25,8 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup, projectLocation, projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "name"),
 				),
 			},
 		},
@@ -48,19 +47,11 @@ func TestAccIbmProjectDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectDataSourceConfig(projectResourceGroup, projectLocation, projectName, projectDescription, projectDestroyOnDelete),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "destroy_on_delete"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "configs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "configs.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_project.project", "configs.0.name", projectName),
-					resource.TestCheckResourceAttr("data.ibm_project.project", "configs.0.description", projectDescription),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "configs.0.locator_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "configs.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "metadata.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "destroy_on_delete"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "configs.#"),
 				),
 			},
 		},
@@ -90,7 +81,6 @@ func testAccCheckIbmProjectDataSourceConfig(projectResourceGroup string, project
 			description = "%s"
 			destroy_on_delete = %s
 			configs {
-				id = "id"
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"

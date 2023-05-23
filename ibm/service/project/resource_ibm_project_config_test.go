@@ -31,16 +31,16 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigConfigBasic(name, locatorID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config", conf),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", name),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
+					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config_instance", conf),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigConfigBasic(nameUpdate, locatorID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
 				),
 			},
 		},
@@ -63,22 +63,22 @@ func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigConfig(name, locatorID, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config", conf),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", name),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "description", description),
+					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config_instance", conf),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "description", description),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigConfig(nameUpdate, locatorID, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "description", descriptionUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_project_config.project_config",
+				ResourceName:      "ibm_project_config.project_config_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -155,6 +155,7 @@ func testAccCheckIbmProjectConfigExists(n string, obj projectv1.ProjectConfig) r
 
 		getConfigOptions.SetProjectID(parts[0])
 		getConfigOptions.SetID(parts[1])
+		getConfigOptions.SetVersion("draft")
 
 		projectConfig, _, err := projectClient.GetConfig(getConfigOptions)
 		if err != nil {
@@ -185,6 +186,7 @@ func testAccCheckIbmProjectConfigDestroy(s *terraform.State) error {
 
 		getConfigOptions.SetProjectID(parts[0])
 		getConfigOptions.SetID(parts[1])
+		getConfigOptions.SetVersion("draft")
 
 		// Try to find the key
 		_, response, err := projectClient.GetConfig(getConfigOptions)

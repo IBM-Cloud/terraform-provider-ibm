@@ -26,7 +26,6 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "locator_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "type"),
@@ -50,7 +49,6 @@ func TestAccIbmProjectConfigDataSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "version"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_config_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "name"),

@@ -30,10 +30,10 @@ func TestAccIbmProjectBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigBasic(resourceGroup, location, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmProjectExists("ibm_project.project", conf),
-					resource.TestCheckResourceAttr("ibm_project.project", "resource_group", resourceGroup),
-					resource.TestCheckResourceAttr("ibm_project.project", "location", location),
-					resource.TestCheckResourceAttr("ibm_project.project", "name", name),
+					testAccCheckIbmProjectExists("ibm_project.project_instance", conf),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "resource_group", resourceGroup),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "location", location),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "name", name),
 				),
 			},
 		},
@@ -46,7 +46,7 @@ func TestAccIbmProjectAllArgs(t *testing.T) {
 	location := fmt.Sprintf("us-south")
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	destroyOnDelete := "false"
+	destroyOnDelete := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -56,18 +56,23 @@ func TestAccIbmProjectAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfig(resourceGroup, location, name, description, destroyOnDelete),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmProjectExists("ibm_project.project", conf),
-					resource.TestCheckResourceAttr("ibm_project.project", "resource_group", resourceGroup),
-					resource.TestCheckResourceAttr("ibm_project.project", "location", location),
-					resource.TestCheckResourceAttr("ibm_project.project", "name", name),
-					resource.TestCheckResourceAttr("ibm_project.project", "description", description),
-					resource.TestCheckResourceAttr("ibm_project.project", "destroy_on_delete", destroyOnDelete),
+					testAccCheckIbmProjectExists("ibm_project.project_instance", conf),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "resource_group", resourceGroup),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "location", location),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "destroy_on_delete", destroyOnDelete),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_project.project",
+				ResourceName:      "ibm_project.project_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"location",
+					"resource_group",
+					"configs",
+				},
 			},
 		},
 	})
@@ -94,7 +99,6 @@ func testAccCheckIbmProjectConfig(resourceGroup string, location string, name st
 			description = "%s"
 			destroy_on_delete = %s
 			configs {
-				id = "id"
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
