@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_sm_private_certificate_configuration_action_set_signed"
 description: |-
-Manages PrivateCertificateConfigurationActionSetSigned.
+  Manages PrivateCertificateConfigurationActionSetSigned.
 subcategory: "Secrets Manager"
 ---
 
