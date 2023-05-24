@@ -50,6 +50,7 @@ func testAccCheckIbmSmArbitrarySecretConfigBasic() string {
   			description = "Extended description for this secret."
   			labels = ["my-label"]
   			payload = "secret-credentials"
+  			expiration_date = "2033-05-30T21:00:00Z"
   			secret_group_id = "default"
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
