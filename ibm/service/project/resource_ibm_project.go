@@ -449,7 +449,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting destroy_on_delete: %s", err))
 		}
 	}
-	/*
+
 		if !core.IsNil(project.Configs) {
 			configs := []map[string]interface{}{}
 			for _, configsItem := range project.Configs {
@@ -463,7 +463,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 				return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
 			}
 		}
-	*/
+
 	if !core.IsNil(project.Crn) {
 		if err = d.Set("crn", project.Crn); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))

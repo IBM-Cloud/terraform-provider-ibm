@@ -435,7 +435,7 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting compliance_profile: %s", err))
 		}
 	}
-	/*
+
 		if !core.IsNil(projectConfigGetResponse.Input) {
 			input := []map[string]interface{}{}
 			for _, inputItem := range projectConfigGetResponse.Input {
@@ -449,7 +449,7 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 				return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
 			}
 		}
-	*/
+
 	if !core.IsNil(projectConfigGetResponse.Setting) {
 		setting := []map[string]interface{}{}
 		for _, settingItem := range projectConfigGetResponse.Setting {
@@ -510,7 +510,7 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "project_id"))
 	}
-	/*
+
 		if d.HasChange("name") || d.HasChange("locator_id") {
 			updateConfigOptions.SetName(d.Get("name").(string))
 			updateConfigOptions.SetLocatorID(d.Get("locator_id").(string))
