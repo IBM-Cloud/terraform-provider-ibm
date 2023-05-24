@@ -1127,8 +1127,10 @@ func checkGroupScaling(groupId string, resourceName string, value int, resource 
 	return nil
 }
 
-func checkGroupHostFlavor(groupId string, resourceName string, value string, resource *HostFlavorGroupResource) error {
-	//TODO
+func checkGroupHostFlavor(groupId string, resourceName string, group *Group, resource *HostFlavorGroupResource) error {
+	if group.CPU != nil || group.Memory != nil {
+		return fmt.Errorf("%s must not be set with cpu and memory", resourceName)
+	}
 	return nil
 }
 
@@ -3181,7 +3183,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 				}
 			}
 
-			if group.Memory != nil {
+			if group.HostFlavor == nil && group.Memory != nil {
 				err = checkGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
 					return err
@@ -3195,7 +3197,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 				}
 			}
 
-			if group.CPU != nil {
+			if group.HostFlavor == nil && group.CPU != nil {
 				err = checkGroupScaling(groupId, "cpu", group.CPU.Allocation, groupDefaults.CPU, nodeCount)
 				if err != nil {
 					return err
@@ -3203,7 +3205,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 			}
 
 			if group.HostFlavor != nil {
-				err = checkGroupHostFlavor(groupId, "host_flavor", group.HostFlavor.AllocationHostFlavor, groupDefaults.HostFlavor)
+				err = checkGroupHostFlavor(groupId, "host_flavor", group, groupDefaults.HostFlavor)
 				if err != nil {
 					return err
 				}
