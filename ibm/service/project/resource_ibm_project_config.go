@@ -382,6 +382,11 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 
 	getConfigOptions.SetProjectID(parts[0])
 	getConfigOptions.SetID(parts[1])
+	if _, ok := d.GetOk("version"); ok {
+		getConfigOptions.SetVersion(d.Get("version").(string))
+	} else {
+		getConfigOptions.SetVersion("draft")
+	}
 
 	projectConfig, response, err := projectClient.GetConfigWithContext(context, getConfigOptions)
 	if err != nil {

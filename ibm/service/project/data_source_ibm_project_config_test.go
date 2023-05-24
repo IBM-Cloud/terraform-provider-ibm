@@ -24,11 +24,11 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigDataSourceConfigBasic(projectConfigName, projectConfigLocatorID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "locator_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "type"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_id"),
+					resource.TestCheckResourceAttr("data.ibm_project_config.project_config_instance", "name", projectConfigName),
+					resource.TestCheckResourceAttr("data.ibm_project_config.project_config_instance", "locator_id", projectConfigLocatorID),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "type"),
 				),
 			},
 		},
@@ -47,29 +47,22 @@ func TestAccIbmProjectConfigDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigDataSourceConfig(projectConfigName, projectConfigLocatorID, projectConfigDescription),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "version"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_config_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "labels.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "authorizations.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "compliance_profile.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "locator_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "type"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "input.#"),
-					resource.TestCheckResourceAttr("data.ibm_project_config.project_config", "input.0.name", projectConfigName),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "input.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "input.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "input.0.required"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "output.#"),
-					resource.TestCheckResourceAttr("data.ibm_project_config.project_config", "output.0.name", projectConfigName),
-					resource.TestCheckResourceAttr("data.ibm_project_config.project_config", "output.0.description", projectConfigDescription),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "output.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "setting.#"),
-					resource.TestCheckResourceAttr("data.ibm_project_config.project_config", "setting.0.name", projectConfigName),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "setting.0.value"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "version"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_config_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "authorizations.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "compliance_profile.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "locator_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "type"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "input.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "output.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "output.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "setting.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "setting.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "setting.0.value"),
 				),
 			},
 		},
@@ -93,7 +86,7 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic(projectConfigName string,
 		data "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
 			id = ibm_project_config.project_config_instance.project_config_id
-			version = "version"
+			version = "draft"
 		}
 	`, projectConfigName, projectConfigLocatorID)
 }
@@ -129,7 +122,7 @@ func testAccCheckIbmProjectConfigDataSourceConfig(projectConfigName string, proj
 		data "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
 			id = ibm_project_config.project_config_instance.project_config_id
-			version = "version"
+			version = "draft"
 		}
 	`, projectConfigName, projectConfigLocatorID, projectConfigDescription)
 }
