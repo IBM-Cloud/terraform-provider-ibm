@@ -20,8 +20,9 @@ import (
 func TestAccIbmProjectConfigBasic(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
+	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	locatorIDUpdate := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,16 +32,16 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigConfigBasic(name, locatorID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config_instance", conf),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
+					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config", conf),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", name),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmProjectConfigConfigBasic(nameUpdate, locatorID),
+				Config: testAccCheckIbmProjectConfigConfigBasic(nameUpdate, locatorIDUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorIDUpdate),
 				),
 			},
 		},
@@ -50,9 +51,10 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
+	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	locatorIDUpdate := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -63,22 +65,22 @@ func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigConfig(name, locatorID, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config_instance", conf),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "description", description),
+					testAccCheckIbmProjectConfigExists("ibm_project_config.project_config", conf),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", name),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorID),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "description", description),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmProjectConfigConfig(nameUpdate, locatorID, descriptionUpdate),
+				Config: testAccCheckIbmProjectConfigConfig(nameUpdate, locatorIDUpdate, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "locator_id", locatorID),
-					resource.TestCheckResourceAttr("ibm_project_config.project_config_instance", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "locator_id", locatorIDUpdate),
+					resource.TestCheckResourceAttr("ibm_project_config.project_config", "description", descriptionUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_project_config.project_config_instance",
+				ResourceName:      "ibm_project_config.project_config",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -91,7 +93,7 @@ func testAccCheckIbmProjectConfigConfigBasic(name string, locatorID string) stri
 		resource "ibm_project" "project_instance" {
 			resource_group = "Default"
 			location = "us-south"
-			name = "acme-microservice-3"
+			name = "acme-microservice"
 		}
 
 		resource "ibm_project_config" "project_config_instance" {
@@ -108,18 +110,29 @@ func testAccCheckIbmProjectConfigConfig(name string, locatorID string, descripti
 		resource "ibm_project" "project_instance" {
 			resource_group = "Default"
 			location = "us-south"
-			name = "acme-microservice-4"
+			name = "acme-microservice"
 		}
 
 		resource "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
 			name = "%s"
 			locator_id = "%s"
-			labels = [ "labels" ]
+			labels = "FIXME"
 			description = "%s"
 			authorizations {
-				method = "API_KEY"
-				api_key = "xxx"
+				trusted_profile {
+					id = "id"
+					target_iam_id = "target_iam_id"
+				}
+				method = "method"
+				api_key = "api_key"
+			}
+			compliance_profile {
+				id = "id"
+				instance_id = "instance_id"
+				instance_location = "instance_location"
+				attachment_id = "attachment_id"
+				profile_name = "profile_name"
 			}
 			input {
 				name = "name"
@@ -155,14 +168,13 @@ func testAccCheckIbmProjectConfigExists(n string, obj projectv1.ProjectConfig) r
 
 		getConfigOptions.SetProjectID(parts[0])
 		getConfigOptions.SetID(parts[1])
-		getConfigOptions.SetVersion("draft")
 
-		projectConfig, _, err := projectClient.GetConfig(getConfigOptions)
+		projectConfigGetResponse, _, err := projectClient.GetConfig(getConfigOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *projectConfig
+		obj = *projectConfigGetResponse
 		return nil
 	}
 }
@@ -186,7 +198,6 @@ func testAccCheckIbmProjectConfigDestroy(s *terraform.State) error {
 
 		getConfigOptions.SetProjectID(parts[0])
 		getConfigOptions.SetID(parts[1])
-		getConfigOptions.SetVersion("draft")
 
 		// Try to find the key
 		_, response, err := projectClient.GetConfig(getConfigOptions)

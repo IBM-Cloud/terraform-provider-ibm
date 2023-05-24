@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/project-go-sdk/projectv1"
 )
 
@@ -565,7 +566,7 @@ func dataSourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulati
 		modelMap["config_id"] = model.ConfigID
 	}
 	if model.ConfigVersion != nil {
-		modelMap["config_version"] = model.ConfigVersion
+		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
 	}
 	return modelMap, nil
 }
