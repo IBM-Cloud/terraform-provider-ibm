@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_sm_private_certificate_configuration_action_sign_csr"
 description: |-
-Manages PrivateCertificateConfigurationActionSignCsr.
+  Manages PrivateCertificateConfigurationActionSignCsr.
 subcategory: "Secrets Manager"
 ---
 
