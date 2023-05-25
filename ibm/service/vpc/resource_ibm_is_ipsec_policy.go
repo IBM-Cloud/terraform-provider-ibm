@@ -153,8 +153,8 @@ func ResourceIBMISIPSecPolicy() *schema.Resource {
 func ResourceIBMISIPSECValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	authentication_algorithm := "sha256, sha512, sha384, disabled"
-	encryption_algorithm := "aes128, aes256, aes128gcm16, aes192gcm16, aes256gcm16"
+	authentication_algorithm := "md5, sha1, sha256, sha512, sha384, disabled"
+	encryption_algorithm := "triple_des, aes128, aes256, aes128gcm16, aes192gcm16, aes256gcm16"
 	pfs := "disabled, group_2, group_5, group_14, group_19, group_15, group_16, group_17, group_18, group_20, group_21, group_22, group_23, group_24, group_31"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
