@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021, 2022, 2023.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ type VpcV1 struct {
 	generation *int64
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and today's date (UTC).
+	// and `2023-05-25`.
 	Version *string
 }
 
@@ -63,8 +63,8 @@ type VpcV1Options struct {
 	Authenticator core.Authenticator
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and today's date (UTC).
-	Version *string
+	// and `2023-05-25`.
+	Version *string `validate:"required"`
 }
 
 // NewVpcV1UsingExternalConfig : constructs an instance of VpcV1 with passed in options and external configuration.
@@ -121,7 +121,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2022-09-13")
+		options.Version = core.StringPtr("2023-05-23")
 	}
 
 	service = &VpcV1{
@@ -5154,8 +5154,8 @@ func (vpc *VpcV1) UpdateInstanceWithContext(ctx context.Context, updateInstanceO
 }
 
 // GetInstanceInitialization : Retrieve initialization configuration for an instance
-// This request retrieves configuration variables used to initialize the instance, such as SSH keys and the Windows
-// administrator password.
+// This request retrieves configuration used to initialize the instance, such as SSH keys and the Windows administrator
+// password. These can subsequently be changed on the instance and therefore may not be current.
 func (vpc *VpcV1) GetInstanceInitialization(getInstanceInitializationOptions *GetInstanceInitializationOptions) (result *InstanceInitialization, response *core.DetailedResponse, err error) {
 	return vpc.GetInstanceInitializationWithContext(context.Background(), getInstanceInitializationOptions)
 }
@@ -11991,9 +11991,9 @@ func (vpc *VpcV1) UpdateBareMetalServerWithContext(ctx context.Context, updateBa
 }
 
 // GetBareMetalServerInitialization : Retrieve initialization configuration for a bare metal server
-// This request retrieves configuration variables used to initialize the bare metal server, such as the image used, SSH
-// keys, and any configured usernames and passwords.  These attributes can subsequently be changed manually by the user
-// and so are not guaranteed to be current.
+// This request retrieves configuration used to initialize the bare metal server, such as the image used, SSH keys, and
+// any configured usernames and passwords. These can subsequently be changed on the server and therefore may not be
+// current.
 func (vpc *VpcV1) GetBareMetalServerInitialization(getBareMetalServerInitializationOptions *GetBareMetalServerInitializationOptions) (result *BareMetalServerInitialization, response *core.DetailedResponse, err error) {
 	return vpc.GetBareMetalServerInitializationWithContext(context.Background(), getBareMetalServerInitializationOptions)
 }
@@ -27118,19 +27118,13 @@ func (options *CreateFlowLogCollectorOptions) SetHeaders(param map[string]string
 
 // CreateIkePolicyOptions : The CreateIkePolicy options.
 type CreateIkePolicyOptions struct {
-	// The authentication algorithm
-	//
-	// The `md5` and `sha1` algorithms have been deprecated.
+	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
-	// The Diffie-Hellman group
-	//
-	// Groups `2` and `5` have been deprecated.
+	// The Diffie-Hellman group.
 	DhGroup *int64 `json:"dh_group" validate:"required"`
 
-	// The encryption algorithm
-	//
-	// The `triple_des` algorithm has been deprecated.
+	// The encryption algorithm.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
 	// The IKE protocol version.
@@ -27152,26 +27146,19 @@ type CreateIkePolicyOptions struct {
 }
 
 // Constants associated with the CreateIkePolicyOptions.AuthenticationAlgorithm property.
-// The authentication algorithm
-//
-// The `md5` and `sha1` algorithms have been deprecated.
+// The authentication algorithm.
 const (
-	CreateIkePolicyOptionsAuthenticationAlgorithmMd5Const    = "md5"
-	CreateIkePolicyOptionsAuthenticationAlgorithmSha1Const   = "sha1"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha256Const = "sha256"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha384Const = "sha384"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha512Const = "sha512"
 )
 
 // Constants associated with the CreateIkePolicyOptions.EncryptionAlgorithm property.
-// The encryption algorithm
-//
-// The `triple_des` algorithm has been deprecated.
+// The encryption algorithm.
 const (
-	CreateIkePolicyOptionsEncryptionAlgorithmAes128Const    = "aes128"
-	CreateIkePolicyOptionsEncryptionAlgorithmAes192Const    = "aes192"
-	CreateIkePolicyOptionsEncryptionAlgorithmAes256Const    = "aes256"
-	CreateIkePolicyOptionsEncryptionAlgorithmTripleDesConst = "triple_des"
+	CreateIkePolicyOptionsEncryptionAlgorithmAes128Const = "aes128"
+	CreateIkePolicyOptionsEncryptionAlgorithmAes192Const = "aes192"
+	CreateIkePolicyOptionsEncryptionAlgorithmAes256Const = "aes256"
 )
 
 // NewCreateIkePolicyOptions : Instantiate CreateIkePolicyOptions
@@ -27877,24 +27864,18 @@ func (options *CreateInstanceVolumeAttachmentOptions) SetHeaders(param map[strin
 type CreateIpsecPolicyOptions struct {
 	// The authentication algorithm
 	//
-	// The `md5` and `sha1` algorithms have been deprecated
-	//
 	// Must be `disabled` if and only if the `encryption_algorithm` is
 	// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
 	// The encryption algorithm
 	//
-	// The `triple_des` algorithm has been deprecated
-	//
 	// The `authentication_algorithm` must be `disabled` if and only if
 	// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
 	// `aes256gcm16`.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
-	// Perfect Forward Secrecy
-	//
-	// Groups `group_2` and `group_5` have been deprecated.
+	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs" validate:"required"`
 
 	// The key lifetime in seconds.
@@ -27915,14 +27896,10 @@ type CreateIpsecPolicyOptions struct {
 // Constants associated with the CreateIpsecPolicyOptions.AuthenticationAlgorithm property.
 // The authentication algorithm
 //
-// # The `md5` and `sha1` algorithms have been deprecated
-//
 // Must be `disabled` if and only if the `encryption_algorithm` is
 // `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 const (
 	CreateIpsecPolicyOptionsAuthenticationAlgorithmDisabledConst = "disabled"
-	CreateIpsecPolicyOptionsAuthenticationAlgorithmMd5Const      = "md5"
-	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha1Const     = "sha1"
 	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha256Const   = "sha256"
 	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha384Const   = "sha384"
 	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha512Const   = "sha512"
@@ -27930,8 +27907,6 @@ const (
 
 // Constants associated with the CreateIpsecPolicyOptions.EncryptionAlgorithm property.
 // The encryption algorithm
-//
-// The `triple_des` algorithm has been deprecated
 //
 // The `authentication_algorithm` must be `disabled` if and only if
 // `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
@@ -27943,13 +27918,10 @@ const (
 	CreateIpsecPolicyOptionsEncryptionAlgorithmAes192gcm16Const = "aes192gcm16"
 	CreateIpsecPolicyOptionsEncryptionAlgorithmAes256Const      = "aes256"
 	CreateIpsecPolicyOptionsEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
-	CreateIpsecPolicyOptionsEncryptionAlgorithmTripleDesConst   = "triple_des"
 )
 
 // Constants associated with the CreateIpsecPolicyOptions.Pfs property.
-// Perfect Forward Secrecy
-//
-// Groups `group_2` and `group_5` have been deprecated.
+// Perfect Forward Secrecy.
 const (
 	CreateIpsecPolicyOptionsPfsDisabledConst = "disabled"
 	CreateIpsecPolicyOptionsPfsGroup14Const  = "group_14"
@@ -27958,14 +27930,12 @@ const (
 	CreateIpsecPolicyOptionsPfsGroup17Const  = "group_17"
 	CreateIpsecPolicyOptionsPfsGroup18Const  = "group_18"
 	CreateIpsecPolicyOptionsPfsGroup19Const  = "group_19"
-	CreateIpsecPolicyOptionsPfsGroup2Const   = "group_2"
 	CreateIpsecPolicyOptionsPfsGroup20Const  = "group_20"
 	CreateIpsecPolicyOptionsPfsGroup21Const  = "group_21"
 	CreateIpsecPolicyOptionsPfsGroup22Const  = "group_22"
 	CreateIpsecPolicyOptionsPfsGroup23Const  = "group_23"
 	CreateIpsecPolicyOptionsPfsGroup24Const  = "group_24"
 	CreateIpsecPolicyOptionsPfsGroup31Const  = "group_31"
-	CreateIpsecPolicyOptionsPfsGroup5Const   = "group_5"
 )
 
 // NewCreateIpsecPolicyOptions : Instantiate CreateIpsecPolicyOptions
@@ -33742,7 +33712,7 @@ func (options *DeleteSnapshotOptions) SetHeaders(param map[string]string) *Delet
 
 // DeleteSnapshotsOptions : The DeleteSnapshots options.
 type DeleteSnapshotsOptions struct {
-	// Filters the collection to resources with the source volume with the specified identifier.
+	// Filters the collection to resources with a `source_volume.id` property matching the specified identifier.
 	SourceVolumeID *string `json:"source_volume.id" validate:"required"`
 
 	// Allows users to set headers on API requests
@@ -38570,19 +38540,13 @@ func (resp *IkePolicyCollection) GetNextStart() (*string, error) {
 
 // IkePolicyPatch : IkePolicyPatch struct
 type IkePolicyPatch struct {
-	// The authentication algorithm
-	//
-	// The `md5` and `sha1` algorithms have been deprecated.
+	// The authentication algorithm.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
-	// The Diffie-Hellman group
-	//
-	// Groups `2` and `5` have been deprecated.
+	// The Diffie-Hellman group.
 	DhGroup *int64 `json:"dh_group,omitempty"`
 
-	// The encryption algorithm
-	//
-	// The `triple_des` algorithm has been deprecated.
+	// The encryption algorithm.
 	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
 
 	// The IKE protocol version.
@@ -38596,26 +38560,19 @@ type IkePolicyPatch struct {
 }
 
 // Constants associated with the IkePolicyPatch.AuthenticationAlgorithm property.
-// The authentication algorithm
-//
-// The `md5` and `sha1` algorithms have been deprecated.
+// The authentication algorithm.
 const (
-	IkePolicyPatchAuthenticationAlgorithmMd5Const    = "md5"
-	IkePolicyPatchAuthenticationAlgorithmSha1Const   = "sha1"
 	IkePolicyPatchAuthenticationAlgorithmSha256Const = "sha256"
 	IkePolicyPatchAuthenticationAlgorithmSha384Const = "sha384"
 	IkePolicyPatchAuthenticationAlgorithmSha512Const = "sha512"
 )
 
 // Constants associated with the IkePolicyPatch.EncryptionAlgorithm property.
-// The encryption algorithm
-//
-// The `triple_des` algorithm has been deprecated.
+// The encryption algorithm.
 const (
-	IkePolicyPatchEncryptionAlgorithmAes128Const    = "aes128"
-	IkePolicyPatchEncryptionAlgorithmAes192Const    = "aes192"
-	IkePolicyPatchEncryptionAlgorithmAes256Const    = "aes256"
-	IkePolicyPatchEncryptionAlgorithmTripleDesConst = "triple_des"
+	IkePolicyPatchEncryptionAlgorithmAes128Const = "aes128"
+	IkePolicyPatchEncryptionAlgorithmAes192Const = "aes192"
+	IkePolicyPatchEncryptionAlgorithmAes256Const = "aes256"
 )
 
 // UnmarshalIkePolicyPatch unmarshals an instance of IkePolicyPatch from the specified map of raw messages.
@@ -39025,15 +38982,11 @@ func UnmarshalIPsecPolicyCollectionNext(m map[string]json.RawMessage, result int
 type IPsecPolicyPatch struct {
 	// The authentication algorithm
 	//
-	// The `md5` and `sha1` algorithms have been deprecated
-	//
 	// Must be `disabled` if and only if the `encryption_algorithm` is
 	// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
 	// The encryption algorithm
-	//
-	// The `triple_des` algorithm has been deprecated
 	//
 	// The `authentication_algorithm` must be `disabled` if and only if
 	// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
@@ -39046,23 +38999,17 @@ type IPsecPolicyPatch struct {
 	// The name for this IPsec policy. The name must not be used by another IPsec policy in the region.
 	Name *string `json:"name,omitempty"`
 
-	// Perfect Forward Secrecy
-	//
-	// Groups `group_2` and `group_5` have been deprecated.
+	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs,omitempty"`
 }
 
 // Constants associated with the IPsecPolicyPatch.AuthenticationAlgorithm property.
 // The authentication algorithm
 //
-// # The `md5` and `sha1` algorithms have been deprecated
-//
 // Must be `disabled` if and only if the `encryption_algorithm` is
 // `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 const (
 	IPsecPolicyPatchAuthenticationAlgorithmDisabledConst = "disabled"
-	IPsecPolicyPatchAuthenticationAlgorithmMd5Const      = "md5"
-	IPsecPolicyPatchAuthenticationAlgorithmSha1Const     = "sha1"
 	IPsecPolicyPatchAuthenticationAlgorithmSha256Const   = "sha256"
 	IPsecPolicyPatchAuthenticationAlgorithmSha384Const   = "sha384"
 	IPsecPolicyPatchAuthenticationAlgorithmSha512Const   = "sha512"
@@ -39070,8 +39017,6 @@ const (
 
 // Constants associated with the IPsecPolicyPatch.EncryptionAlgorithm property.
 // The encryption algorithm
-//
-// The `triple_des` algorithm has been deprecated
 //
 // The `authentication_algorithm` must be `disabled` if and only if
 // `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
@@ -39083,13 +39028,10 @@ const (
 	IPsecPolicyPatchEncryptionAlgorithmAes192gcm16Const = "aes192gcm16"
 	IPsecPolicyPatchEncryptionAlgorithmAes256Const      = "aes256"
 	IPsecPolicyPatchEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
-	IPsecPolicyPatchEncryptionAlgorithmTripleDesConst   = "triple_des"
 )
 
 // Constants associated with the IPsecPolicyPatch.Pfs property.
-// Perfect Forward Secrecy
-//
-// Groups `group_2` and `group_5` have been deprecated.
+// Perfect Forward Secrecy.
 const (
 	IPsecPolicyPatchPfsDisabledConst = "disabled"
 	IPsecPolicyPatchPfsGroup14Const  = "group_14"
@@ -39098,14 +39040,12 @@ const (
 	IPsecPolicyPatchPfsGroup17Const  = "group_17"
 	IPsecPolicyPatchPfsGroup18Const  = "group_18"
 	IPsecPolicyPatchPfsGroup19Const  = "group_19"
-	IPsecPolicyPatchPfsGroup2Const   = "group_2"
 	IPsecPolicyPatchPfsGroup20Const  = "group_20"
 	IPsecPolicyPatchPfsGroup21Const  = "group_21"
 	IPsecPolicyPatchPfsGroup22Const  = "group_22"
 	IPsecPolicyPatchPfsGroup23Const  = "group_23"
 	IPsecPolicyPatchPfsGroup24Const  = "group_24"
 	IPsecPolicyPatchPfsGroup31Const  = "group_31"
-	IPsecPolicyPatchPfsGroup5Const   = "group_5"
 )
 
 // UnmarshalIPsecPolicyPatch unmarshals an instance of IPsecPolicyPatch from the specified map of raw messages.
@@ -39346,7 +39286,9 @@ type Image struct {
 	// unexpected reason code was encountered.
 	StatusReasons []ImageStatusReason `json:"status_reasons" validate:"required"`
 
-	// Whether the image is publicly visible or private to the account.
+	// The visibility of this image.
+	// - `private`: Visible only to this account
+	// - `public`: Visible to all accounts.
 	Visibility *string `json:"visibility" validate:"required"`
 }
 
@@ -39380,7 +39322,9 @@ const (
 )
 
 // Constants associated with the Image.Visibility property.
-// Whether the image is publicly visible or private to the account.
+// The visibility of this image.
+// - `private`: Visible only to this account
+// - `public`: Visible to all accounts.
 const (
 	ImageVisibilityPrivateConst = "private"
 	ImageVisibilityPublicConst  = "public"
@@ -46136,13 +46080,13 @@ type ListBackupPoliciesOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources with the exact tag value.
+	// Filters the collection to resources with an item in the `tags` property matching the exact specified tag.
 	Tag *string `json:"tag,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -46195,10 +46139,11 @@ type ListBackupPolicyJobsOptions struct {
 	// The backup policy identifier.
 	BackupPolicyID *string `json:"backup_policy_id" validate:"required,ne="`
 
-	// Filters the collection to backup policy jobs with the specified status.
+	// Filters the collection to backup policy jobs with a `status` property matching the specified value.
 	Status *string `json:"status,omitempty"`
 
-	// Filters the collection to backup policy jobs with the backup plan with the specified identifier.
+	// Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified
+	// identifier.
 	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
 
 	// A server-provided token determining what resource to start the page on.
@@ -46212,18 +46157,28 @@ type ListBackupPolicyJobsOptions struct {
 	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
 	Sort *string `json:"sort,omitempty"`
 
-	// Filters the collection to backup policy jobs with a source with the specified identifier.
+	// Filters the collection to backup policy jobs with a `source.id` property matching the specified identifier.
 	SourceID *string `json:"source.id,omitempty"`
 
-	// Filters the collection to resources with the target snapshot with the specified identifier.
+	// Filters the collection to backup policy jobs with an item in the `target_snapshots` property with an `id` property
+	// matching the specified identifier.
 	TargetSnapshotsID *string `json:"target_snapshots[].id,omitempty"`
 
-	// Filters the collection to backup policy jobs with the target snapshot with the specified CRN.
+	// Filters the collection to backup policy jobs with an item in the `target_snapshots` property with a `crn` property
+	// matching the specified CRN.
 	TargetSnapshotsCRN *string `json:"target_snapshots[].crn,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
+
+// Constants associated with the ListBackupPolicyJobsOptions.Status property.
+// Filters the collection to backup policy jobs with a `status` property matching the specified value.
+const (
+	ListBackupPolicyJobsOptionsStatusFailedConst    = "failed"
+	ListBackupPolicyJobsOptionsStatusRunningConst   = "running"
+	ListBackupPolicyJobsOptionsStatusSucceededConst = "succeeded"
+)
 
 // Constants associated with the ListBackupPolicyJobsOptions.Sort property.
 // Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
@@ -46306,7 +46261,7 @@ type ListBackupPolicyPlansOptions struct {
 	// The backup policy identifier.
 	BackupPolicyID *string `json:"backup_policy_id" validate:"required,ne="`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -46531,28 +46486,31 @@ type ListBareMetalServersOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources with `vpc.id` matching the specified identifier.
+	// Filters the collection to resources with a `vpc.id` property matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
+	// Filters the collection to resources with a `vpc.crn` property matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
+	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
-	// Filters the collection to bare metal servers on the subnet with the specified identifier.
+	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.id`
+	// property matching the specified identifier.
 	NetworkInterfacesSubnetID *string `json:"network_interfaces.subnet.id,omitempty"`
 
-	// Filters the collection to bare metal servers on the subnet with the specified CRN.
+	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.crn`
+	// property matching the specified CRN.
 	NetworkInterfacesSubnetCRN *string `json:"network_interfaces.subnet.crn,omitempty"`
 
-	// Filters the collection to bare metal servers on the subnet with the specified name.
+	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.name`
+	// property matching the exact specified name.
 	NetworkInterfacesSubnetName *string `json:"network_interfaces.subnet.name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -46666,13 +46624,13 @@ type ListDedicatedHostGroupsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources in the zone with the exact specified name.
+	// Filters the collection to resources with a `zone.name` property matching the exact specified name.
 	ZoneName *string `json:"zone.name,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -46757,7 +46715,7 @@ func (options *ListDedicatedHostProfilesOptions) SetHeaders(param map[string]str
 
 // ListDedicatedHostsOptions : The ListDedicatedHosts options.
 type ListDedicatedHostsOptions struct {
-	// Filters the collection to dedicated host groups with the specified identifier.
+	// Filters the collection to dedicated hosts with a `group.id` property matching the specified identifier.
 	DedicatedHostGroupID *string `json:"dedicated_host_group.id,omitempty"`
 
 	// A server-provided token determining what resource to start the page on.
@@ -46766,13 +46724,13 @@ type ListDedicatedHostsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources in the zone with the exact specified name.
+	// Filters the collection to resources with a `zone.name` property matching the exact specified name.
 	ZoneName *string `json:"zone.name,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -46895,7 +46853,7 @@ func (options *ListEndpointGatewayIpsOptions) SetHeaders(param map[string]string
 
 // ListEndpointGatewaysOptions : The ListEndpointGateways options.
 type ListEndpointGatewaysOptions struct {
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
 	// A server-provided token determining what resource to start the page on.
@@ -46904,7 +46862,7 @@ type ListEndpointGatewaysOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -46954,7 +46912,7 @@ type ListFloatingIpsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
 	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
@@ -47018,39 +46976,30 @@ type ListFlowLogCollectorsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources with `vpc.id` matching the specified identifier.
+	// Filters the collection to resources with a `vpc.id` property matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
+	// Filters the collection to resources with a `vpc.crn` property matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
+	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
-	// Filters the collection to flow log collectors that target the specified resource.
+	// Filters the collection to resources with a `target.id` property matching the specified identifier.
 	TargetID *string `json:"target.id,omitempty"`
 
-	// Filters the collection to flow log collectors that target the specified resource type.
+	// Filters the collection to resources with a `target.resource_type` property matching the specified value.
 	TargetResourceType *string `json:"target.resource_type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
-
-// Constants associated with the ListFlowLogCollectorsOptions.TargetResourceType property.
-// Filters the collection to flow log collectors that target the specified resource type.
-const (
-	ListFlowLogCollectorsOptionsTargetResourceTypeInstanceConst         = "instance"
-	ListFlowLogCollectorsOptionsTargetResourceTypeNetworkInterfaceConst = "network_interface"
-	ListFlowLogCollectorsOptionsTargetResourceTypeSubnetConst           = "subnet"
-	ListFlowLogCollectorsOptionsTargetResourceTypeVPCConst              = "vpc"
-)
 
 // NewListFlowLogCollectorsOptions : Instantiate ListFlowLogCollectorsOptions
 func (*VpcV1) NewListFlowLogCollectorsOptions() *ListFlowLogCollectorsOptions {
@@ -47185,7 +47134,7 @@ type ListImageExportJobsOptions struct {
 	// The image identifier.
 	ImageID *string `json:"image_id" validate:"required,ne="`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -47225,13 +47174,13 @@ type ListImagesOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to images with the specified `visibility`.
+	// Filters the collection to images with a `visibility` property matching the specified value.
 	Visibility *string `json:"visibility,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -47239,7 +47188,7 @@ type ListImagesOptions struct {
 }
 
 // Constants associated with the ListImagesOptions.Visibility property.
-// Filters the collection to images with the specified `visibility`.
+// Filters the collection to images with a `visibility` property matching the specified value.
 const (
 	ListImagesOptionsVisibilityPrivateConst = "private"
 	ListImagesOptionsVisibilityPublicConst  = "public"
@@ -47747,37 +47696,40 @@ type ListInstancesOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources with `vpc.id` matching the specified identifier.
+	// Filters the collection to resources with a `vpc.id` property matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
+	// Filters the collection to resources with a `vpc.crn` property matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
+	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
-	// Filters the collection to instances on the dedicated host with the specified identifier.
+	// Filters the collection to instances with a `dedicated_host.id` property matching the specified identifier.
 	DedicatedHostID *string `json:"dedicated_host.id,omitempty"`
 
-	// Filters the collection to instances on the dedicated host with the specified CRN.
+	// Filters the collection to instances with a `dedicated_host.crn` property matching the specified CRN.
 	DedicatedHostCRN *string `json:"dedicated_host.crn,omitempty"`
 
-	// Filters the collection to instances on the dedicated host with the specified name.
+	// Filters the collection to instances with a `dedicated_host.name` property matching the exact specified name.
 	DedicatedHostName *string `json:"dedicated_host.name,omitempty"`
 
-	// Filters the collection to instances in the placement group with the specified identifier.
+	// Filters the collection to instances with a `placement_target.id` property matching the specified placement group
+	// identifier.
 	PlacementGroupID *string `json:"placement_group.id,omitempty"`
 
-	// Filters the collection to instances in the placement group with the specified CRN.
+	// Filters the collection to instances with a `placement_target.crn` property matching the specified placement group
+	// CRN.
 	PlacementGroupCRN *string `json:"placement_group.crn,omitempty"`
 
-	// Filters the collection to instances in the placement group with the specified name.
+	// Filters the collection to instances with a `placement_target.name` property matching the exact specified placement
+	// group name.
 	PlacementGroupName *string `json:"placement_group.name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -48232,7 +48184,7 @@ type ListNetworkACLRulesOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to rules with the specified direction.
+	// Filters the collection to rules with a `direction` property matching the specified value.
 	Direction *string `json:"direction,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -48240,7 +48192,7 @@ type ListNetworkACLRulesOptions struct {
 }
 
 // Constants associated with the ListNetworkACLRulesOptions.Direction property.
-// Filters the collection to rules with the specified direction.
+// Filters the collection to rules with a `direction` property matching the specified value.
 const (
 	ListNetworkACLRulesOptionsDirectionInboundConst  = "inbound"
 	ListNetworkACLRulesOptionsDirectionOutboundConst = "outbound"
@@ -48291,7 +48243,7 @@ type ListNetworkAclsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -48405,7 +48357,7 @@ type ListPublicGatewaysOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -48569,16 +48521,16 @@ type ListSecurityGroupsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources with `vpc.id` matching the specified identifier.
+	// Filters the collection to resources with a `vpc.id` property matching the specified identifier.
 	VPCID *string `json:"vpc.id,omitempty"`
 
-	// Filters the collection to resources with `vpc.crn` matching the specified CRN.
+	// Filters the collection to resources with a `vpc.crn` property matching the specified CRN.
 	VPCCRN *string `json:"vpc.crn,omitempty"`
 
-	// Filters the collection to resources with a `vpc.name` value matching the exact specified name.
+	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -48668,28 +48620,28 @@ type ListSnapshotsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources with the exact tag value.
+	// Filters the collection to resources with an item in the `tags` property matching the exact specified tag.
 	Tag *string `json:"tag,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to resources with the source volume with the specified identifier.
+	// Filters the collection to resources with a `source_volume.id` property matching the specified identifier.
 	SourceVolumeID *string `json:"source_volume.id,omitempty"`
 
-	// Filters the collection to resources with the source volume with the specified CRN.
+	// Filters the collection to resources with a `source_volume.crn` property matching the specified CRN.
 	SourceVolumeCRN *string `json:"source_volume.crn,omitempty"`
 
-	// Filters the collection to resources with the source image with the specified identifier.
+	// Filters the collection to resources with a `source_image.id` property matching the specified identifier.
 	//
 	// This parameter also supports the values `null` and `not:null` which filter the collection to resources which have no
 	// source image or any existent source image, respectively.
 	SourceImageID *string `json:"source_image.id,omitempty"`
 
-	// Filters the collection to resources with the source volume with the specified CRN.
+	// Filters the collection to resources with a `source_image.crn` property matching the specified CRN.
 	//
 	// This parameter also supports the values `null` and `not:null` which filter the collection to resources which have no
 	// source image or any existent source image, respectively.
@@ -48700,10 +48652,12 @@ type ListSnapshotsOptions struct {
 	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
 	Sort *string `json:"sort,omitempty"`
 
-	// Filters the collection to backup policy jobs with the backup plan with the specified identifier.
+	// Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified
+	// identifier.
 	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
 
-	// Filters the collection to resources with a clone in the specified zone.
+	// Filters the collection to snapshots with an item in the `clones` property with a `zone.name` property matching the
+	// exact specified name.
 	ClonesZoneName *string `json:"clones[].zone.name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -48877,13 +48831,13 @@ type ListSubnetsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to subnets attached to the routing table with the specified identifier.
+	// Filters the collection to subnets with a `routing_table.id` property matching the specified identifier.
 	RoutingTableID *string `json:"routing_table.id,omitempty"`
 
-	// Filters the collection to subnets attached to the routing table with the specified name.
+	// Filters the collection to subnets with a `routing_table.name` property matching the exact specified name.
 	RoutingTableName *string `json:"routing_table.name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -48974,28 +48928,30 @@ type ListVolumesOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
-	// Filters the collection to volumes with the specified attachment state.
+	// Filters the collection to volumes with an `attachment_state` property matching the specified value.
 	AttachmentState *string `json:"attachment_state,omitempty"`
 
-	// Filters the collection to resources with the specified encryption type.
+	// Filters the collection to resources with an `encryption` property matching the specified value.
 	Encryption *string `json:"encryption,omitempty"`
 
-	// Filters the collection to resources with the exact specified operating system family.
+	// Filters the collection to resources with an `operating_system.family` property matching the specified operating
+	// system family.
 	//
 	// This parameter also supports the values `null` and `not:null` which filter the collection to resources which have no
 	// operating system or any operating system, respectively.
 	OperatingSystemFamily *string `json:"operating_system.family,omitempty"`
 
-	// Filters the collection to resources with the exact specified operating system architecture.
+	// Filters the collection to resources with an `operating_system.architecture` property matching the specified
+	// operating system architecture.
 	//
 	// This parameter also supports the values `null` and `not:null` which filter the collection to resources which have no
 	// operating system or any operating system, respectively.
 	OperatingSystemArchitecture *string `json:"operating_system.architecture,omitempty"`
 
-	// Filters the collection to resources in the zone with the exact specified name.
+	// Filters the collection to resources with a `zone.name` property matching the exact specified name.
 	ZoneName *string `json:"zone.name,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -49003,7 +48959,7 @@ type ListVolumesOptions struct {
 }
 
 // Constants associated with the ListVolumesOptions.AttachmentState property.
-// Filters the collection to volumes with the specified attachment state.
+// Filters the collection to volumes with an `attachment_state` property matching the specified value.
 const (
 	ListVolumesOptionsAttachmentStateAttachedConst   = "attached"
 	ListVolumesOptionsAttachmentStateUnattachedConst = "unattached"
@@ -49011,7 +48967,7 @@ const (
 )
 
 // Constants associated with the ListVolumesOptions.Encryption property.
-// Filters the collection to resources with the specified encryption type.
+// Filters the collection to resources with an `encryption` property matching the specified value.
 const (
 	ListVolumesOptionsEncryptionProviderManagedConst = "provider_managed"
 	ListVolumesOptionsEncryptionUserManagedConst     = "user_managed"
@@ -49127,7 +49083,7 @@ type ListVPCRoutesOptions struct {
 	// The VPC identifier.
 	VPCID *string `json:"vpc_id" validate:"required,ne="`
 
-	// Filters the collection to resources in the zone with the exact specified name.
+	// Filters the collection to resources with a `zone.name` property matching the exact specified name.
 	ZoneName *string `json:"zone.name,omitempty"`
 
 	// A server-provided token determining what resource to start the page on.
@@ -49244,7 +49200,7 @@ type ListVPCRoutingTablesOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to routing tables with the specified `is_default` value.
+	// Filters the collection to routing tables with an `is_default` property matching the specified value.
 	IsDefault *bool `json:"is_default,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -49296,10 +49252,10 @@ type ListVpcsOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
-	// Filters the collection to VPCs with the specified `classic_access` value.
+	// Filters the collection to VPCs with a `classic_access` property matching the specified value.
 	ClassicAccess *bool `json:"classic_access,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -49422,12 +49378,19 @@ type ListVPNGatewayConnectionsOptions struct {
 	// The VPN gateway identifier.
 	VPNGatewayID *string `json:"vpn_gateway_id" validate:"required,ne="`
 
-	// Filters the collection to VPN gateway connections with the specified status.
+	// Filters the collection to VPN gateway connections with a `status` property matching the specified value.
 	Status *string `json:"status,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
+
+// Constants associated with the ListVPNGatewayConnectionsOptions.Status property.
+// Filters the collection to VPN gateway connections with a `status` property matching the specified value.
+const (
+	ListVPNGatewayConnectionsOptionsStatusDownConst = "down"
+	ListVPNGatewayConnectionsOptionsStatusUpConst   = "up"
+)
 
 // NewListVPNGatewayConnectionsOptions : Instantiate ListVPNGatewayConnectionsOptions
 func (*VpcV1) NewListVPNGatewayConnectionsOptions(vpnGatewayID string) *ListVPNGatewayConnectionsOptions {
@@ -49462,7 +49425,7 @@ type ListVPNGatewaysOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
 	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
@@ -49470,7 +49433,7 @@ type ListVPNGatewaysOptions struct {
 	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
 	Sort *string `json:"sort,omitempty"`
 
-	// Filters the collection to VPN gateways with the specified mode.
+	// Filters the collection to VPN gateways with a `mode` property matching the specified value.
 	Mode *string `json:"mode,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -49487,7 +49450,7 @@ const (
 )
 
 // Constants associated with the ListVPNGatewaysOptions.Mode property.
-// Filters the collection to VPN gateways with the specified mode.
+// Filters the collection to VPN gateways with a `mode` property matching the specified value.
 const (
 	ListVPNGatewaysOptionsModePolicyConst = "policy"
 	ListVPNGatewaysOptionsModeRouteConst  = "route"
@@ -49667,7 +49630,7 @@ func (options *ListVPNServerRoutesOptions) SetHeaders(param map[string]string) *
 
 // ListVPNServersOptions : The ListVPNServers options.
 type ListVPNServersOptions struct {
-	// Filters the collection to resources with the exact specified name.
+	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
 	// A server-provided token determining what resource to start the page on.
@@ -49676,7 +49639,7 @@ type ListVPNServersOptions struct {
 	// The number of resources to return on a page.
 	Limit *int64 `json:"limit,omitempty"`
 
-	// Filters the collection to resources in the resource group with the specified identifier.
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
 	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
