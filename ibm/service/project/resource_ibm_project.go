@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/project-go-sdk/projectv1"
@@ -210,11 +211,6 @@ func ResourceIbmProject() *schema.Resource {
 						},
 					},
 				},
-			},
-			"crn": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
 			},
 			"metadata": &schema.Schema{
 				Type:        schema.TypeList,
@@ -449,7 +445,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting destroy_on_delete: %s", err))
 		}
 	}
-
+	/*
 		if !core.IsNil(project.Configs) {
 			configs := []map[string]interface{}{}
 			for _, configsItem := range project.Configs {
@@ -463,12 +459,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 				return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
 			}
 		}
-
-	if !core.IsNil(project.Crn) {
-		if err = d.Set("crn", project.Crn); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-		}
-	}
+	*/
 	if !core.IsNil(project.Metadata) {
 		metadataMap, err := resourceIbmProjectProjectMetadataToMap(project.Metadata)
 		if err != nil {
@@ -827,7 +818,7 @@ func resourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulative
 		modelMap["config_id"] = model.ConfigID
 	}
 	if model.ConfigVersion != nil {
-		modelMap["config_version"] = model.ConfigVersion
+		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
 	}
 	return modelMap, nil
 }

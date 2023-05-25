@@ -84,7 +84,7 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic(projectConfigName string,
 		}
 
 		data "ibm_project_config" "project_config_instance" {
-			project_id = ibm_project.project_instance.id
+			project_id = ibm_project_config.project_config_instance.project_id
 			id = ibm_project_config.project_config_instance.project_config_id
 			version = "draft"
 		}
@@ -120,7 +120,7 @@ func testAccCheckIbmProjectConfigDataSourceConfig(projectConfigName string, proj
 		}
 
 		data "ibm_project_config" "project_config_instance" {
-			project_id = ibm_project.project_instance.id
+			project_id = ibm_project_config.project_config_instance.project_id
 			id = ibm_project_config.project_config_instance.project_config_id
 			version = "draft"
 		}

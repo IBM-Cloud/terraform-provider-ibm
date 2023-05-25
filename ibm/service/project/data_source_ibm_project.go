@@ -41,11 +41,6 @@ func DataSourceIbmProject() *schema.Resource {
 				Computed:    true,
 				Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
 			},
-			"crn": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
-			},
 			"configs": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -337,10 +332,6 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	if err = d.Set("destroy_on_delete", project.DestroyOnDelete); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting destroy_on_delete: %s", err))
-	}
-
-	if err = d.Set("crn", project.Crn); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 
 	configs := []map[string]interface{}{}

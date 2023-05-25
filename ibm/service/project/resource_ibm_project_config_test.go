@@ -90,7 +90,7 @@ func testAccCheckIbmProjectConfigConfigBasic(name string, locatorID string) stri
 		resource "ibm_project" "project_instance" {
 			resource_group = "Default"
 			location = "us-south"
-			name = "acme-microservice"
+			name = "acme-microservice-3"
 		}
 
 		resource "ibm_project_config" "project_config_instance" {
@@ -107,7 +107,7 @@ func testAccCheckIbmProjectConfigConfig(name string, locatorID string, descripti
 		resource "ibm_project" "project_instance" {
 			resource_group = "Default"
 			location = "us-south"
-			name = "acme-microservice"
+			name = "acme-microservice-4"
 		}
 
 		resource "ibm_project_config" "project_config_instance" {
