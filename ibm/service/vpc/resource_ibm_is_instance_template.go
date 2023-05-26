@@ -6,7 +6,6 @@ package vpc
 import (
 	"context"
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 

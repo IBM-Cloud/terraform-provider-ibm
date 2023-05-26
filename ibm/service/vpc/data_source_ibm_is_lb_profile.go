@@ -6,7 +6,6 @@ package vpc
 import (
 	"context"
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
