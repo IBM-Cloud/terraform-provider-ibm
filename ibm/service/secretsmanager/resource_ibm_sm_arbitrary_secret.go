@@ -255,7 +255,7 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -282,7 +282,7 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -299,7 +299,7 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
 		}
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if err = d.Set("payload", secret.Payload); err != nil {
@@ -367,6 +367,21 @@ func resourceIbmSmArbitrarySecretUpdate(context context.Context, d *schema.Resou
 	if d.HasChange("custom_metadata") {
 		patchVals.CustomMetadata = d.Get("custom_metadata").(map[string]interface{})
 		hasChange = true
+	}
+
+	if d.HasChange("expiration_date") {
+		if _, ok := d.GetOk("expiration_date"); ok {
+			layout := time.RFC3339
+			parseToTime, err := time.Parse(layout, d.Get("expiration_date").(string))
+			if err != nil {
+				return diag.FromErr(errors.New(`Failed to get "expiration_date". Error: ` + err.Error()))
+			}
+			parseToDateTime := strfmt.DateTime(parseToTime)
+			patchVals.ExpirationDate = &parseToDateTime
+			hasChange = true
+		} else {
+			return diag.FromErr(errors.New(`The "expiration_date" field cannot be removed. To disable expiration set expiration date to a far future date'`))
+		}
 	}
 
 	// Apply change in metadata (if changed)
