@@ -455,10 +455,6 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 		delete = true
 	}
 
-	if d.HasChange(isVolumeName) {
-		name = d.Get(isVolumeName).(string)
-		hasNameChanged = true
-	}
 	var capacity int64
 	if delete {
 		deleteAllInstanceBootSnapshots(sess, id)
@@ -497,26 +493,6 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 		ID: &id,
 	}
 	options.IfMatch = &eTag
-
-	//name update
-	volumeNamePatchModel := &vpcv1.VolumePatch{}
-	if hasNameChanged {
-		volumeNamePatchModel.Name = &name
-		volumeNamePatch, err := volumeNamePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch in Instance boot volume : %s", err)
-		}
-		options.VolumePatch = volumeNamePatch
-		_, response, err = sess.UpdateVolume(options)
-		eTag = response.Headers.Get("ETag")
-		if err != nil {
-			return err
-		}
-		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
-		if err != nil {
-			return err
-		}
-	}
 
 	// profile/ iops update
 	if d.HasChange(isVolumeProfileName) || d.HasChange(isVolumeIops) {
@@ -675,6 +651,30 @@ func instancebootvolUpdate(d *schema.ResourceData, meta interface{}) error {
 					return err
 				}
 			}
+		}
+	}
+
+	//name update
+	if d.HasChange(isVolumeName) {
+		name = d.Get(isVolumeName).(string)
+		hasNameChanged = true
+	}
+	volumeNamePatchModel := &vpcv1.VolumePatch{}
+	if hasNameChanged {
+		volumeNamePatchModel.Name = &name
+		volumeNamePatch, err := volumeNamePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch in Instance boot volume : %s", err)
+		}
+		options.VolumePatch = volumeNamePatch
+		_, response, err = sess.UpdateVolume(options)
+		eTag = response.Headers.Get("ETag")
+		if err != nil {
+			return err
+		}
+		_, err = isWaitForInstanceBootVolumeManagerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), &eTag)
+		if err != nil {
+			return err
 		}
 	}
 
