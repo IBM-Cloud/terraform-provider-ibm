@@ -1042,7 +1042,6 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 				// var reservedipautodeleteok interface{}
 
 				if v, ok := primip[isInstanceTemplateNicReservedIpAutoDelete].(bool); ok && v {
-					log.Printf("[INFO] UJJK isInstanceTemplateNicReservedIpAutoDelete is v is %t and okay is %t", v, ok)
 					reservedIpAutoDelete = primip[isInstanceTemplateNicReservedIpAutoDelete].(bool)
 					okAuto = true
 				}
@@ -1465,7 +1464,6 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 				// var reservedipautodeleteok interface{}
 
 				if v, ok := primip[isInstanceTemplateNicReservedIpAutoDelete].(bool); ok && v {
-					log.Printf("[INFO] UJJK isInstanceTemplateNicReservedIpAutoDelete is v is %t and okay is %t", v, ok)
 					reservedIpAutoDelete = primip[isInstanceTemplateNicReservedIpAutoDelete].(bool)
 					okAuto = true
 				}
