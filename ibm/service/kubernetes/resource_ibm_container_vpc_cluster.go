@@ -646,6 +646,15 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		return err
 	}
 
+	if _, ok := d.GetOk("kms_config"); ok {
+		err := enableKMS(d, cls.ID, csClient)
+		if err != nil {
+			log.Printf(
+				"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)
+			return err
+		}
+	}
+
 	return resourceIBMContainerVpcClusterRead(d, meta)
 
 }
@@ -679,33 +688,8 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 	}
 
 	if d.HasChange("kms_config") {
-		kmsConfig := v2.KmsEnableReq{}
-		kmsConfig.Cluster = clusterID
-		targetEnv := v2.ClusterHeader{}
-		if kms, ok := d.GetOk("kms_config"); ok {
 
-			kmsConfiglist := kms.([]interface{})
-
-			for _, l := range kmsConfiglist {
-				kmsMap, _ := l.(map[string]interface{})
-
-				//instance_id - Required field
-				instanceID := kmsMap["instance_id"].(string)
-				kmsConfig.Kms = instanceID
-
-				//crk_id - Required field
-				crk := kmsMap["crk_id"].(string)
-				kmsConfig.Crk = crk
-
-				//Read event - as its optional check for existence
-				if privateEndpoint := kmsMap["private_endpoint"]; privateEndpoint != nil {
-					endpoint := privateEndpoint.(bool)
-					kmsConfig.PrivateEndpoint = endpoint
-				}
-			}
-		}
-
-		err := csClient.Kms().EnableKms(kmsConfig, targetEnv)
+		err := enableKMS(d, clusterID, csClient)
 		if err != nil {
 			log.Printf(
 				"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)
@@ -1458,4 +1442,39 @@ func getNewWorkerID(d *schema.ResourceData, meta interface{}, targetEnv v2.Clust
 		}
 	}
 	return "", -1, fmt.Errorf("[ERROR] no new node found")
+}
+
+func enableKMS(d *schema.ResourceData, clusterID string, csClient v2.ContainerServiceAPI) error {
+
+	kmsConfig := v2.KmsEnableReq{}
+	kmsConfig.Cluster = clusterID
+	targetEnv := v2.ClusterHeader{}
+	if kms, ok := d.GetOk("kms_config"); ok {
+
+		kmsConfiglist := kms.([]interface{})
+
+		for _, l := range kmsConfiglist {
+			kmsMap, _ := l.(map[string]interface{})
+
+			//instance_id - Required field
+			instanceID := kmsMap["instance_id"].(string)
+			kmsConfig.Kms = instanceID
+
+			//crk_id - Required field
+			crk := kmsMap["crk_id"].(string)
+			kmsConfig.Crk = crk
+
+			//Read event - as its optional check for existence
+			if privateEndpoint := kmsMap["private_endpoint"]; privateEndpoint != nil {
+				endpoint := privateEndpoint.(bool)
+				kmsConfig.PrivateEndpoint = endpoint
+			}
+		}
+	}
+
+	err := csClient.Kms().EnableKms(kmsConfig, targetEnv)
+	if err != nil {
+		return err
+	}
+	return nil
 }
