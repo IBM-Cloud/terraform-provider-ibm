@@ -2,9 +2,9 @@
 
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : instance_boot_volume"
+page_title: "IBM : instance_boot_volume_manager"
 description: |-
-  Manages IBM volume.
+  Manages IBM instance boot volume.
 ---
 
 # ibm_is_instance_boot_volume_manager
@@ -12,7 +12,7 @@ Provides a resource to manage a boot volume of a VPC virtual server instance. Ma
 
 ~> **NOTE:** This is an advanced resource with special caveats. Please read this document in its entirety before using this resource. The `ibm_is_instance_boot_volume_manager` resource behaves differently from normal resources. Terraform does not _create_ this resource but instead attempts to "adopt" it into management.
 
-Every Virtual server instance has a boot volume that needs to be managed but not destroyed. When Terraform first adopts a instance_boot_volume, 
+Every Virtual server instance has a boot volume that needs to be managed but not destroyed. When Terraform first adopts a instance_boot_volume_manager, 
 
 For more information, about VPC, see [getting started with Virtual Private Cloud](https://cloud.ibm.com/docs/vpc?topic=vpc-getting-started). For more information, about updating default security group, see [updating a VPC's default security group rules](https://cloud.ibm.com/docs/vpc?topic=vpc-updating-the-default-security-group&interface=ui).
 
@@ -28,13 +28,13 @@ provider "ibm" {
 ```
 
 ## Example usage
-The following example creates a volume with 10 IOPs tier.
+The following example manages a boot volume with 10 IOPs tier.
 
 ```terraform
 resource "ibm_is_instance_boot_volume_manager" "example" {
-  name    = "example-volume"
-  profile = "10iops-tier"
-  zone    = "us-south-1"
+  volume_id   = "r006-10cc2ee8-f395-47a1-b043-4e7a855a6dd0"
+  name        = "example-volume"
+  profile     = "10iops-tier"
 }
 ```
 
@@ -87,7 +87,7 @@ Review the argument references that you can specify for your resource.
 
 - `source_snapshot` - The ID of snapshot from which to clone the volume.
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
-- `zone` - (Required, Forces new resource, String) The location of the volume.
+- `volume_id` - (Required, Forces new resource, String) The volume id of the volume from boot volume.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -110,6 +110,8 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN for the volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.
 - `resource_group` - (String) The resource group ID for this volume.
+- `zone` - (String) The location of the volume.
+
 ## Import
 The `ibm_is_instance_boot_volume_manager` resource can be imported by using volume ID.
 
