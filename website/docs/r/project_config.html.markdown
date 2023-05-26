@@ -101,6 +101,15 @@ Nested scheme for **setting**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the project_config.
+* `metadata` - (List) The project configuration draft.
+Nested scheme for **metadata**:
+	* `pipeline_state` - (String) The pipeline state of the configuration.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(PIPELINE_RUNNING|PIPELINE_FAILED|PIPELINE_SUCCEEDED)$/`.
+	* `project_id` - (String) The unique ID of a project.
+	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+	* `state` - (String) The state of the configuration draft.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(DISCARDED|MERGED|ACTIVE)$/`.
+	* `version` - (Integer) The version number of the configuration.
 * `output` - (List) The outputs of a Schematics template property.
   * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
 Nested scheme for **output**:

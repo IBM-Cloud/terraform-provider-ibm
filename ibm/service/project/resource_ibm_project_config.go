@@ -202,6 +202,35 @@ func ResourceIbmProjectConfig() *schema.Resource {
 					},
 				},
 			},
+			"metadata": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The project configuration draft.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"project_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The unique ID of a project.",
+						},
+						"version": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The version number of the configuration.",
+						},
+						"state": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The state of the configuration draft.",
+						},
+						"pipeline_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The pipeline state of the configuration.",
+						},
+					},
+				},
+			},
 			"project_config_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -316,13 +345,13 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 		createConfigOptions.SetSetting(setting)
 	}
 
-	projectConfig, response, err := projectClient.CreateConfigWithContext(context, createConfigOptions)
+	projectConfigGetResponse, response, err := projectClient.CreateConfigWithContext(context, createConfigOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateConfigWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateConfigWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createConfigOptions.ProjectID, *projectConfig.ID))
+	d.SetId(fmt.Sprintf("%s/%s", *createConfigOptions.ProjectID, *projectConfigGetResponse.ID))
 
 	_, err = waitForProjectConfigCreate(context, d, meta)
 	if err != nil {
@@ -435,21 +464,19 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting compliance_profile: %s", err))
 		}
 	}
-	/*
-		if !core.IsNil(projectConfigGetResponse.Input) {
-			input := []map[string]interface{}{}
-			for _, inputItem := range projectConfigGetResponse.Input {
-				inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				input = append(input, inputItemMap)
+	if !core.IsNil(projectConfigGetResponse.Input) {
+		input := []map[string]interface{}{}
+		for _, inputItem := range projectConfigGetResponse.Input {
+			inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
+			if err != nil {
+				return diag.FromErr(err)
 			}
-			if err = d.Set("input", input); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
-			}
+			input = append(input, inputItemMap)
 		}
-	*/
+		if err = d.Set("input", input); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
+		}
+	}
 	if !core.IsNil(projectConfigGetResponse.Setting) {
 		setting := []map[string]interface{}{}
 		for _, settingItem := range projectConfigGetResponse.Setting {
@@ -477,6 +504,15 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		}
 		if err = d.Set("output", output); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting output: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigGetResponse.Metadata) {
+		metadataMap, err := resourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfigGetResponse.Metadata)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
 		}
 	}
 	if !core.IsNil(projectConfigGetResponse.ID) {
@@ -510,68 +546,66 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "project_id"))
 	}
-	/*
-		if d.HasChange("name") || d.HasChange("locator_id") {
-			updateConfigOptions.SetName(d.Get("name").(string))
-			updateConfigOptions.SetLocatorID(d.Get("locator_id").(string))
-			hasChange = true
+	if d.HasChange("name") || d.HasChange("locator_id") {
+		updateConfigOptions.SetName(d.Get("name").(string))
+		updateConfigOptions.SetLocatorID(d.Get("locator_id").(string))
+		hasChange = true
+	}
+	if d.HasChange("labels") {
+		var labels []string
+		for _, v := range d.Get("labels").([]interface{}) {
+			labelsItem := v.(string)
+			labels = append(labels, labelsItem)
 		}
-		if d.HasChange("labels") {
-			var labels []string
-			for _, v := range d.Get("labels").([]interface{}) {
-				labelsItem := v.(string)
-				labels = append(labels, labelsItem)
-			}
-			updateConfigOptions.SetLabels(labels)
-			hasChange = true
+		updateConfigOptions.SetLabels(labels)
+		hasChange = true
+	}
+	if d.HasChange("description") {
+		updateConfigOptions.SetDescription(d.Get("description").(string))
+		hasChange = true
+	}
+	if d.HasChange("authorizations") {
+		authorizations, err := resourceIbmProjectConfigMapToProjectConfigAuth(d.Get("authorizations.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if d.HasChange("description") {
-			updateConfigOptions.SetDescription(d.Get("description").(string))
-			hasChange = true
+		updateConfigOptions.SetAuthorizations(authorizations)
+		hasChange = true
+	}
+	if d.HasChange("compliance_profile") {
+		complianceProfile, err := resourceIbmProjectConfigMapToProjectConfigComplianceProfile(d.Get("compliance_profile.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if d.HasChange("authorizations") {
-			authorizations, err := resourceIbmProjectConfigMapToProjectConfigAuth(d.Get("authorizations.0").(map[string]interface{}))
+		updateConfigOptions.SetComplianceProfile(complianceProfile)
+		hasChange = true
+	}
+	if d.HasChange("input") {
+		var input []projectv1.ProjectConfigInputVariable
+		for _, v := range d.Get("input").([]interface{}) {
+			value := v.(map[string]interface{})
+			inputItem, err := resourceIbmProjectConfigMapToProjectConfigInputVariable(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			updateConfigOptions.SetAuthorizations(authorizations)
-			hasChange = true
+			input = append(input, *inputItem)
 		}
-		if d.HasChange("compliance_profile") {
-			complianceProfile, err := resourceIbmProjectConfigMapToProjectConfigComplianceProfile(d.Get("compliance_profile.0").(map[string]interface{}))
+		updateConfigOptions.SetInput(input)
+		hasChange = true
+	}
+	if d.HasChange("setting") {
+		var setting []projectv1.ProjectConfigSettingCollection
+		for _, v := range d.Get("setting").([]interface{}) {
+			value := v.(map[string]interface{})
+			settingItem, err := resourceIbmProjectConfigMapToProjectConfigSettingCollection(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			updateConfigOptions.SetComplianceProfile(complianceProfile)
-			hasChange = true
+			setting = append(setting, *settingItem)
 		}
-		if d.HasChange("input") {
-			var input []projectv1.ProjectConfigInputVariable
-			for _, v := range d.Get("input").([]interface{}) {
-				value := v.(map[string]interface{})
-				inputItem, err := resourceIbmProjectConfigMapToProjectConfigInputVariable(value)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				input = append(input, *inputItem)
-			}
-			updateConfigOptions.SetInput(input)
-			hasChange = true
-		}
-		if d.HasChange("setting") {
-			var setting []projectv1.ProjectConfigSettingCollection
-			for _, v := range d.Get("setting").([]interface{}) {
-				value := v.(map[string]interface{})
-				settingItem, err := resourceIbmProjectConfigMapToProjectConfigSettingCollection(value)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				setting = append(setting, *settingItem)
-			}
-			updateConfigOptions.SetSetting(setting)
-			hasChange = true
-		}
-	*/
+		updateConfigOptions.SetSetting(setting)
+		hasChange = true
+	}
 
 	if hasChange {
 		_, response, err := projectClient.UpdateConfigWithContext(context, updateConfigOptions)
@@ -788,6 +822,23 @@ func resourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map
 	}
 	if model.Value != nil {
 		modelMap["value"] = model.Value
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectConfigProjectConfigDraftMetadataToMap(model *projectv1.ProjectConfigDraftMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ProjectID != nil {
+		modelMap["project_id"] = model.ProjectID
+	}
+	if model.Version != nil {
+		modelMap["version"] = flex.IntValue(model.Version)
+	}
+	if model.State != nil {
+		modelMap["state"] = model.State
+	}
+	if model.PipelineState != nil {
+		modelMap["pipeline_state"] = model.PipelineState
 	}
 	return modelMap, nil
 }

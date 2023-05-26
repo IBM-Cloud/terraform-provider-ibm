@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/project-go-sdk/projectv1"
 )
 
@@ -213,6 +214,35 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 					},
 				},
 			},
+			"metadata": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The project configuration draft.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"project_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique ID of a project.",
+						},
+						"version": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The version number of the configuration.",
+						},
+						"state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The state of the configuration draft.",
+						},
+						"pipeline_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The pipeline state of the configuration.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -325,6 +355,18 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting setting %s", err))
 	}
 
+	metadata := []map[string]interface{}{}
+	if projectConfig.Metadata != nil {
+		modelMap, err := dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfig.Metadata)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		metadata = append(metadata, modelMap)
+	}
+	if err = d.Set("metadata", metadata); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting metadata %s", err))
+	}
+
 	return nil
 }
 
@@ -406,5 +448,22 @@ func dataSourceIbmProjectConfigProjectConfigSettingCollectionToMap(model *projec
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	modelMap["value"] = model.Value
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(model *projectv1.ProjectConfigDraftMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ProjectID != nil {
+		modelMap["project_id"] = model.ProjectID
+	}
+	if model.Version != nil {
+		modelMap["version"] = flex.IntValue(model.Version)
+	}
+	if model.State != nil {
+		modelMap["state"] = model.State
+	}
+	if model.PipelineState != nil {
+		modelMap["pipeline_state"] = model.PipelineState
+	}
 	return modelMap, nil
 }

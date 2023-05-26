@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIbmProjectConfigBasic(t *testing.T) {
-	var conf projectv1.ProjectConfig
+	var conf projectv1.ProjectConfigDraft
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -48,7 +48,7 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 }
 
 func TestAccIbmProjectConfigAllArgs(t *testing.T) {
-	var conf projectv1.ProjectConfig
+	var conf projectv1.ProjectConfigDraft
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -132,7 +132,7 @@ func testAccCheckIbmProjectConfigConfig(name string, locatorID string, descripti
 	`, name, locatorID, description)
 }
 
-func testAccCheckIbmProjectConfigExists(n string, obj projectv1.ProjectConfig) resource.TestCheckFunc {
+func testAccCheckIbmProjectConfigExists(n string, obj projectv1.ProjectConfigDraft) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

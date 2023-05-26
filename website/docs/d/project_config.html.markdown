@@ -80,6 +80,16 @@ Nested scheme for **input**:
 * `locator_id` - (String) A dotted value of catalogID.versionID.
   * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 
+* `metadata` - (List) The project configuration draft.
+Nested scheme for **metadata**:
+	* `pipeline_state` - (String) The pipeline state of the configuration.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(PIPELINE_RUNNING|PIPELINE_FAILED|PIPELINE_SUCCEEDED)$/`.
+	* `project_id` - (String) The unique ID of a project.
+	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+	* `state` - (String) The state of the configuration draft.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(DISCARDED|MERGED|ACTIVE)$/`.
+	* `version` - (Integer) The version number of the configuration.
+
 * `name` - (String) The configuration name.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 
