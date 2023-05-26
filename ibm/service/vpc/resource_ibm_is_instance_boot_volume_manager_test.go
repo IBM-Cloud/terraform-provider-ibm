@@ -57,9 +57,15 @@ func TestAccIBMISInstanceBootVolumeManager_basic(t *testing.T) {
 
 func TestAccIBMISInstanceBootVolumeManager_capacity_update(t *testing.T) {
 	var vol string
-	tag1 := "env:prod"
-	tag2 := "boot:unattached"
-	tag3 := "delete:false"
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
+	capacity0 := int64(0)
+	capacity := int64(180)
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -92,7 +98,7 @@ func TestAccIBMISInstanceBootVolumeManager_capacity_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerTagUpdateConfig(tag1, tag2, ""),
+				Config: testAccCheckIBMISInstanceBootVolumeManagerCapacityUpdateConfig(vpcname, subnetname, sshname, publicKey, name, capacity0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
 					resource.TestCheckResourceAttrSet(
@@ -116,11 +122,10 @@ func TestAccIBMISInstanceBootVolumeManager_capacity_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance_boot_volume_manager.boot", "zone"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "tags.#", "3"),
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerTagUpdateConfig(tag1, tag2, tag3),
+				Config: testAccCheckIBMISInstanceBootVolumeManagerCapacityUpdateConfig(vpcname, subnetname, sshname, publicKey, name, capacity),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
 					resource.TestCheckResourceAttrSet(
@@ -144,17 +149,23 @@ func TestAccIBMISInstanceBootVolumeManager_capacity_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance_boot_volume_manager.boot", "zone"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "tags.#", "3"),
+					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "capacity", fmt.Sprintf("%d", capacity)),
 				),
 			},
 		},
 	})
 }
-func TestAccIBMISInstanceBootVolumeManager_iops_update(t *testing.T) {
+func TestAccIBMISInstanceBootVolumeManager_profile_update(t *testing.T) {
 	var vol string
-	tag1 := "env:prod"
-	tag2 := "boot:unattached"
-	tag3 := "delete:false"
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
+	profile0 := ""
+	profile := "10iops-tier"
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -187,7 +198,7 @@ func TestAccIBMISInstanceBootVolumeManager_iops_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerTagUpdateConfig(tag1, tag2, ""),
+				Config: testAccCheckIBMISInstanceBootVolumeManagerProfileUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
 					resource.TestCheckResourceAttrSet(
@@ -211,11 +222,10 @@ func TestAccIBMISInstanceBootVolumeManager_iops_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance_boot_volume_manager.boot", "zone"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "tags.#", "3"),
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceBootVolumeManagerTagUpdateConfig(tag1, tag2, tag3),
+				Config: testAccCheckIBMISInstanceBootVolumeManagerProfileUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVolumeExists("ibm_is_instance_boot_volume_manager.boot", vol),
 					resource.TestCheckResourceAttrSet(
@@ -239,12 +249,13 @@ func TestAccIBMISInstanceBootVolumeManager_iops_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance_boot_volume_manager.boot", "zone"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_boot_volume_manager.boot", "tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "tags.#", "3"),
+					resource.TestCheckResourceAttr("ibm_is_instance_boot_volume_manager.boot", "profile", profile),
 				),
 			},
 		},
 	})
 }
+
 func TestAccIBMISInstanceBootVolumeManager_all_update(t *testing.T) {
 	var vol string
 	tag1 := "env:prod"
@@ -726,7 +737,7 @@ func testAccCheckIBMISInstanceBootVolumeManagerAccessTagUpdateConfig(tag1 string
 
 }
 
-func testAccCheckIBMISInstanceBootVolumeManagerTierConfig(vpcname, subnetname, sshname, publicKey, name, volName, profileName string) string {
+func testAccCheckIBMISInstanceBootVolumeManagerCapacityUpdateConfig(vpcname, subnetname, sshname, publicKey, name string, capacity int64) string {
 	return fmt.Sprintf(
 		`
 		resource "ibm_is_vpc" "testacc_vpc" {
@@ -744,25 +755,66 @@ func testAccCheckIBMISInstanceBootVolumeManagerTierConfig(vpcname, subnetname, s
 			name       = "%s"
 			public_key = "%s"
 		}
-		resource "ibm_is_volume" "storage"{
-			name 	= "%s"
-			profile = "%s"
-			zone 	= "%s"
-		}		  
+	  
 		resource "ibm_is_instance" "testacc_instance" {
 			name    = "%s"
-			image   = "%s"
 			profile = "%s"
-			volumes = [ibm_is_instance_boot_volume_manager.boot.id]
+			boot_volume {
+				volume_id 			= ibm_is_instance_boot_volume_manager.boot.id
+				auto_delete_volume 	= false
+			}
 			primary_network_interface {
 				subnet     = ibm_is_subnet.testacc_subnet.id
 			}
 			vpc  = ibm_is_vpc.testacc_vpc.id
 			zone = "%s"
 			keys = [ibm_is_ssh_key.testacc_sshkey.id]
-		}	
+		}
+		resource "ibm_is_instance_boot_volume_manager" "boot" {
+			  volume_id  	= "%s"
+			  capacity 		= %d == 0 ? null : %d
+		}
+		`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, acc.VSIUnattachedBootVolumeID, capacity, capacity)
 
-`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, volName, profileName, acc.ISZoneName, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
+}
+func testAccCheckIBMISInstanceBootVolumeManagerProfileUpdateConfig(vpcname, subnetname, sshname, publicKey, name, profile string) string {
+	return fmt.Sprintf(
+		`
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
+		  
+		resource "ibm_is_subnet" "testacc_subnet" {
+			name            			= "%s"
+			vpc             			= ibm_is_vpc.testacc_vpc.id
+			zone            			= "%s"
+			total_ipv4_address_count 	= 16
+		}
+		  
+		resource "ibm_is_ssh_key" "testacc_sshkey" {
+			name       = "%s"
+			public_key = "%s"
+		}
+	  
+		resource "ibm_is_instance" "testacc_instance" {
+			name    = "%s"
+			profile = "%s"
+			boot_volume {
+				volume_id 			= ibm_is_instance_boot_volume_manager.boot.id
+				auto_delete_volume 	= false
+			}
+			primary_network_interface {
+				subnet     = ibm_is_subnet.testacc_subnet.id
+			}
+			vpc  = ibm_is_vpc.testacc_vpc.id
+			zone = "%s"
+			keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		}
+		resource "ibm_is_instance_boot_volume_manager" "boot" {
+			  volume_id  	= "%s"
+			  profile 		= "%s" == "" ? null : "%s"
+		}
+		`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, acc.VSIUnattachedBootVolumeID, profile, profile)
 
 }
 
@@ -811,47 +863,6 @@ func testAccCheckIBMISInstanceBootVolumeManagerAttachmentDeleteConfig(vpcname, s
 			keys = [ibm_is_ssh_key.testacc_sshkey.id]
 		}
 `, capacityArray, acc.ISZoneName, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, insname, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
-
-}
-
-func testAccCheckIBMISInstanceBootVolumeManagerCapacityConfig(vpcname, subnetname, sshname, publicKey, name, volName string, capacity int64) string {
-	return fmt.Sprintf(
-		`
-		resource "ibm_is_vpc" "testacc_vpc" {
-			name = "%s"
-		}
-		  
-		resource "ibm_is_subnet" "testacc_subnet" {
-			name            			= "%s"
-			vpc             			= ibm_is_vpc.testacc_vpc.id
-			zone            			= "%s"
-			total_ipv4_address_count 	= 16
-		}
-		  
-		resource "ibm_is_ssh_key" "testacc_sshkey" {
-			name       = "%s"
-			public_key = "%s"
-		}
-		resource "ibm_is_volume" "storage"{
-			name 		= "%s"
-			profile 	= "10iops-tier"
-			zone 		= "%s"
-			capacity 	= %d
-		}		  
-		resource "ibm_is_instance" "testacc_instance" {
-			name    = "%s"
-			image   = "%s"
-			profile = "%s"
-			volumes = [ibm_is_instance_boot_volume_manager.boot.id]
-			primary_network_interface {
-				subnet     = ibm_is_subnet.testacc_subnet.id
-			}
-			vpc  = ibm_is_vpc.testacc_vpc.id
-			zone = "%s"
-			keys = [ibm_is_ssh_key.testacc_sshkey.id]
-		}	
-
-`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, volName, acc.ISZoneName, capacity, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 
 }
 
