@@ -59,7 +59,6 @@ Review the argument references that you can specify for your resource.
 
   ~> **NOTE:** Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity). Can be updated only if volume is attached to an running virtual server instance. Stopped instance will be started on update of capacity of the volume.If `source_snapshot` is provided `capacity` must be at least the snapshot's minimum_capacity. The maximum value may increase in the future and If unspecified, the capacity will be the source snapshot's minimum_capacity.
 
-- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume
 - `delete_all_snapshots` - (Optional, Bool) Deletes all snapshots created from this volume.
 - `iops` - (Optional, Integer) The total input/ output operations per second (IOPS) for your storage. This value is required for `custom` storage profiles only.
 
@@ -85,12 +84,12 @@ Review the argument references that you can specify for your resource.
 
   ~> **NOTE:**  tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
 
-- `source_snapshot` - The ID of snapshot from which to clone the volume.
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `volume_id` - (Required, Forces new resource, String) The volume id of the volume from boot volume.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume
 - `encryption_type` - (String) The type of encryption used in the volume [**provider_managed**, **user_managed**].
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 
@@ -110,6 +109,7 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN for the volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.
 - `resource_group` - (String) The resource group ID for this volume.
+- `source_snapshot` - (String) The ID of snapshot from which to clone the volume.
 - `zone` - (String) The location of the volume.
 
 ## Import
