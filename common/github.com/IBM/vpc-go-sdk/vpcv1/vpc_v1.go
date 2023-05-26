@@ -64,7 +64,7 @@ type VpcV1Options struct {
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
 	// and `2023-05-25`.
-	Version *string `validate:"required"`
+	Version *string
 }
 
 // NewVpcV1UsingExternalConfig : constructs an instance of VpcV1 with passed in options and external configuration.
