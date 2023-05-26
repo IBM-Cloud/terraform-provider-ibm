@@ -47,7 +47,7 @@ func TestAccIBMISIPSecPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ipsec_policy.example", "encryption_algorithm", "aes256"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ipsec_policy.example", "pfs", "group_2"),
+						"ibm_is_ipsec_policy.example", "pfs", "group_14"),
 				),
 			},
 		},
