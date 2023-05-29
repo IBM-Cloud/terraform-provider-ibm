@@ -12,13 +12,34 @@ Provides a resource for metrics_router_settings. This allows metrics_router_sett
 
 ## Example Usage
 
+###
+Example with single default_targets
+
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
   backup_metadata_region = "us-east"
   default_targets {
 		id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
   }
-  permitted_target_regions = us-south
+  permitted_target_regions = ["us-south"]
+  primary_metadata_region = "us-south"
+  private_api_endpoint_only = false
+}
+```
+
+###
+Example with multiple default_targets
+
+```hcl
+resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
+  backup_metadata_region = "us-east"
+  default_targets {
+		id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+  }
+  default_targets {
+		id = "c3af557f-fb0e-2222-85c3-0889e7fe7bc4"
+  }
+  permitted_target_regions = ["us-south", "us-east"]
   primary_metadata_region = "us-south"
   private_api_endpoint_only = false
 }
@@ -39,6 +60,7 @@ Nested scheme for **default_targets**:
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`. The maximum length is `16` items. The minimum length is `0` items.
 * `primary_metadata_region` - (Optional, String) To store all your meta data in a single region.
   * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`.
+  * Note: In case of _ibm_metrics_router_settings_, we don't use a traditional ID to track it since its a resource without one. However, terraform expects there will be one. To work around this, we set the primary_metadata_region to be used as the ID.
 * `private_api_endpoint_only` - (Optional, Boolean) If you set this true then you cannot access api through public network.
 
 ## Attribute Reference
