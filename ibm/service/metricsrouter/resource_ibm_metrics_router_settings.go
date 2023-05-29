@@ -215,6 +215,8 @@ func resourceIBMMetricsRouterSettingsUpdate(context context.Context, d *schema.R
 				defaultTargets = append(defaultTargets, *defaultTargetsItem)
 			}
 			updateSettingsOptions.SetDefaultTargets(defaultTargets)
+		} else {
+			updateSettingsOptions.SetDefaultTargets([]metricsrouterv3.TargetIdentity{})
 		}
 		hasChange = true
 	}
