@@ -31,6 +31,7 @@ resource "project" "project_instance" {
   name = var.project_name
   description = var.project_description
   destroy_on_delete = var.project_destroy_on_delete
+  configs = var.project_configs
 }
 ```
 project_config resource:
@@ -98,6 +99,7 @@ data "project_config" "project_config_instance" {
 | name | The project name. | `string` | true |
 | description | A project's descriptive text. | `string` | false |
 | destroy_on_delete | The policy that indicates whether the resources are destroyed or not when a project is deleted. | `bool` | false |
+| configs | The project configurations. | `list()` | false |
 | project_id | The unique project ID. | `string` | true |
 | name | The configuration name. | `string` | true |
 | locator_id | A dotted value of catalogID.versionID. | `string` | true |
@@ -105,7 +107,7 @@ data "project_config" "project_config_instance" {
 | description | The project configuration description. | `string` | false |
 | authorizations | The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager. | `` | false |
 | compliance_profile | The profile required for compliance. | `` | false |
-| input | The input values to use to deploy the configuration. | `list()` | false |
+| input | The inputs of a Schematics template property. | `list()` | false |
 | setting | Schematics environment variables to use to deploy the configuration. | `list()` | false |
 | id | The unique project ID. | `string` | true |
 | project_id | The unique project ID. | `string` | true |

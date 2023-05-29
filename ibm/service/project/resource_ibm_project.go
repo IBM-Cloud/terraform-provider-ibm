@@ -63,6 +63,155 @@ func ResourceIbmProject() *schema.Resource {
 				ForceNew:    true,
 				Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
 			},
+			"configs": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The project configurations.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The configuration name.",
+						},
+						"labels": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "A collection of configuration labels.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The project configuration description.",
+						},
+						"authorizations": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"trusted_profile": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "The trusted profile for authorizations.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID of a project.",
+												},
+												"target_iam_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID of a project.",
+												},
+											},
+										},
+									},
+									"method": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+									},
+									"api_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The IBM Cloud API Key.",
+									},
+								},
+							},
+						},
+						"compliance_profile": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The profile required for compliance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique ID of a project.",
+									},
+									"instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique ID of a project.",
+									},
+									"instance_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The location of the compliance instance.",
+									},
+									"attachment_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique ID of a project.",
+									},
+									"profile_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The name of the compliance profile.",
+									},
+								},
+							},
+						},
+						"locator_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A dotted value of catalogID.versionID.",
+						},
+						"input": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "The inputs of a Schematics template property.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The variable name.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
+								},
+							},
+						},
+						"setting": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Schematics environment variables to use to deploy the configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The name of the configuration setting.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The value of the configuration setting.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"metadata": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -201,6 +350,18 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 	}
 	if _, ok := d.GetOk("destroy_on_delete"); ok {
 		createProjectOptions.SetDestroyOnDelete(d.Get("destroy_on_delete").(bool))
+	}
+	if _, ok := d.GetOk("configs"); ok {
+		var configs []projectv1.ProjectConfigPrototype
+		for _, v := range d.Get("configs").([]interface{}) {
+			value := v.(map[string]interface{})
+			configsItem, err := resourceIbmProjectMapToProjectConfigPrototype(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			configs = append(configs, *configsItem)
+		}
+		createProjectOptions.SetConfigs(configs)
 	}
 
 	project, response, err := projectClient.CreateProjectWithContext(context, createProjectOptions)

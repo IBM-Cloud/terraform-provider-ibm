@@ -34,7 +34,6 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 			"version": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "active",
 				Description: "The version of the configuration to return.",
 			},
 			"project_config_id": &schema.Schema{
@@ -356,13 +355,15 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	}
 
 	metadata := []map[string]interface{}{}
-	if projectConfig.Metadata != nil {
-		modelMap, err := dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfig.Metadata)
-		if err != nil {
-			return diag.FromErr(err)
+	/*
+		if projectConfig.Metadata != nil {
+			modelMap, err := dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfig.Metadata)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			metadata = append(metadata, modelMap)
 		}
-		metadata = append(metadata, modelMap)
-	}
+	*/
 	if err = d.Set("metadata", metadata); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting metadata %s", err))
 	}

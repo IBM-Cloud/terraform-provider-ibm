@@ -74,7 +74,7 @@ Nested scheme for **compliance_profile**:
 	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
 * `description` - (Optional, String) The project configuration description.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
-* `input` - (Optional, List) The input values to use to deploy the configuration.
+* `input` - (Optional, List) The inputs of a Schematics template property.
   * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
 Nested scheme for **input**:
 	* `name` - (Required, String) The variable name.

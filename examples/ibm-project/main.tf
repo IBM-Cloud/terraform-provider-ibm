@@ -9,6 +9,36 @@ resource "ibm_project" "project_instance" {
   name = var.project_name
   description = var.project_description
   destroy_on_delete = var.project_destroy_on_delete
+  configs {
+    id = "id"
+    name = "name"
+    labels = [ "labels" ]
+    description = "description"
+    authorizations {
+      trusted_profile {
+        id = "id"
+        target_iam_id = "target_iam_id"
+      }
+      method = "method"
+      api_key = "api_key"
+    }
+    compliance_profile {
+      id = "id"
+      instance_id = "instance_id"
+      instance_location = "instance_location"
+      attachment_id = "attachment_id"
+      profile_name = "profile_name"
+    }
+    locator_id = "locator_id"
+    input {
+      name = "name"
+      value = "anything as a string"
+    }
+    setting {
+      name = "name"
+      value = "value"
+    }
+  }
 }
 
 // Provision project_config resource instance

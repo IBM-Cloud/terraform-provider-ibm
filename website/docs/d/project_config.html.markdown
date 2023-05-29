@@ -28,7 +28,7 @@ Review the argument reference that you can specify for your data source.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `version` - (Optional, String) The version of the configuration to return.
-  * Constraints: The default value is `active`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(active|draft|\\d+)$/`.
+  * Constraints: The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(active|draft|\\d+)$/`.
 
 ## Attribute Reference
 

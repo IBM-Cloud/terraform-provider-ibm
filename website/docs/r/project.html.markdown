@@ -14,6 +14,36 @@ Provides a resource for project. This allows project to be created, updated and 
 
 ```hcl
 resource "ibm_project" "project_instance" {
+  configs {
+		id = "id"
+		name = "name"
+		labels = [ "labels" ]
+		description = "description"
+		authorizations {
+			trusted_profile {
+				id = "id"
+				target_iam_id = "target_iam_id"
+			}
+			method = "method"
+			api_key = "api_key"
+		}
+		compliance_profile {
+			id = "id"
+			instance_id = "instance_id"
+			instance_location = "instance_location"
+			attachment_id = "attachment_id"
+			profile_name = "profile_name"
+		}
+		locator_id = "locator_id"
+		input {
+			name = "name"
+			value = "anything as a string"
+		}
+		setting {
+			name = "name"
+			value = "value"
+		}
+  }
   description = "A microservice to deploy on top of ACME infrastructure."
   location = "us-south"
   name = "acme-microservice"
@@ -25,6 +55,56 @@ resource "ibm_project" "project_instance" {
 
 Review the argument reference that you can specify for your resource.
 
+* `configs` - (Optional, Forces new resource, List) The project configurations.
+  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+Nested scheme for **configs**:
+	* `authorizations` - (Optional, List) The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.
+	Nested scheme for **authorizations**:
+		* `api_key` - (Optional, String) The IBM Cloud API Key.
+		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+		* `method` - (Optional, String) The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
+		* `trusted_profile` - (Optional, List) The trusted profile for authorizations.
+		Nested scheme for **trusted_profile**:
+			* `id` - (Optional, String) The unique ID of a project.
+			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+			* `target_iam_id` - (Optional, String) The unique ID of a project.
+			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+	* `compliance_profile` - (Optional, List) The profile required for compliance.
+	Nested scheme for **compliance_profile**:
+		* `attachment_id` - (Optional, String) The unique ID of a project.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `id` - (Optional, String) The unique ID of a project.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `instance_id` - (Optional, String) The unique ID of a project.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `instance_location` - (Optional, String) The location of the compliance instance.
+		  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
+		* `profile_name` - (Optional, String) The name of the compliance profile.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+	* `description` - (Optional, String) The project configuration description.
+	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
+	* `id` - (Optional, String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
+	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+	* `input` - (Optional, List) The inputs of a Schematics template property.
+	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+	Nested scheme for **input**:
+		* `name` - (Required, String) The variable name.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
+		* `value` - (Optional, String) Can be any value - a string, number, boolean, array, or object.
+	* `labels` - (Optional, List) A collection of configuration labels.
+	  * Constraints: The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.
+	* `locator_id` - (Required, String) A dotted value of catalogID.versionID.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
+	* `name` - (Required, String) The configuration name.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
+	* `setting` - (Optional, List) Schematics environment variables to use to deploy the configuration.
+	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+	Nested scheme for **setting**:
+		* `name` - (Required, String) The name of the configuration setting.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
+		* `value` - (Required, String) The value of the configuration setting.
+		  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
 * `description` - (Optional, Forces new resource, String) A project's descriptive text.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
 * `destroy_on_delete` - (Optional, Forces new resource, Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.

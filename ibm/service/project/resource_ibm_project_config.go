@@ -138,7 +138,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 			"input": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The input values to use to deploy the configuration.",
+				Description: "The inputs of a Schematics template property.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -411,11 +411,6 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 
 	getConfigOptions.SetProjectID(parts[0])
 	getConfigOptions.SetID(parts[1])
-	if _, ok := d.GetOk("version"); ok {
-		getConfigOptions.SetVersion(d.Get("version").(string))
-	} else {
-		getConfigOptions.SetVersion("draft")
-	}
 
 	projectConfigGetResponse, response, err := projectClient.GetConfigWithContext(context, getConfigOptions)
 	if err != nil {
@@ -464,19 +459,21 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting compliance_profile: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfigGetResponse.Input) {
-		input := []map[string]interface{}{}
-		for _, inputItem := range projectConfigGetResponse.Input {
-			inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
-			if err != nil {
-				return diag.FromErr(err)
+	/*
+		if !core.IsNil(projectConfigGetResponse.Input) {
+			input := []map[string]interface{}{}
+			for _, inputItem := range projectConfigGetResponse.Input {
+				inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				input = append(input, inputItemMap)
 			}
-			input = append(input, inputItemMap)
+			if err = d.Set("input", input); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
+			}
 		}
-		if err = d.Set("input", input); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
-		}
-	}
+	*/
 	if !core.IsNil(projectConfigGetResponse.Setting) {
 		setting := []map[string]interface{}{}
 		for _, settingItem := range projectConfigGetResponse.Setting {
@@ -506,15 +503,17 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting output: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfigGetResponse.Metadata) {
-		metadataMap, err := resourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfigGetResponse.Metadata)
-		if err != nil {
-			return diag.FromErr(err)
+	/*
+		if !core.IsNil(projectConfigGetResponse.Metadata) {
+			metadataMap, err := resourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfigGetResponse.Metadata)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
+			}
 		}
-		if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
-		}
-	}
+	*/
 	if !core.IsNil(projectConfigGetResponse.ID) {
 		if err = d.Set("project_config_id", projectConfigGetResponse.ID); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting project_config_id: %s", err))

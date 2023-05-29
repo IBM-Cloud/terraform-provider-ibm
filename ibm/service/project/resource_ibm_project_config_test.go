@@ -154,7 +154,6 @@ func testAccCheckIbmProjectConfigExists(n string, obj projectv1.ProjectConfigDra
 
 		getConfigOptions.SetProjectID(parts[0])
 		getConfigOptions.SetID(parts[1])
-		getConfigOptions.SetVersion("draft")
 
 		_, response, err := projectClient.GetConfig(getConfigOptions)
 		if err != nil {
