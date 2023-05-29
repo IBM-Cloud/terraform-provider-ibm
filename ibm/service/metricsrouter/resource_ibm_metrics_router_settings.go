@@ -220,6 +220,7 @@ func resourceIBMMetricsRouterSettingsUpdate(context context.Context, d *schema.R
 	}
 	if _, ok := d.GetOk("permitted_target_regions"); ok {
 		updateSettingsOptions.SetPermittedTargetRegions(resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{})))
+		hasChange = true
 	}
 	if d.HasChange("primary_metadata_region") {
 		updateSettingsOptions.SetPrimaryMetadataRegion(d.Get("primary_metadata_region").(string))

@@ -1441,7 +1441,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_target":                      atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                       atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_atracker_settings":                    atracker.ResourceIBMAtrackerSettingsValidator(),
-        "ibm_metrics_router_target":                metricsrouter.ResourceIBMMetricsRouterTargetValidator(),
+				"ibm_metrics_router_target":                metricsrouter.ResourceIBMMetricsRouterTargetValidator(),
 				"ibm_metrics_router_route":                 metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
 				"ibm_metrics_router_settings":              metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
 				"ibm_satellite_endpoint":                   satellite.ResourceIBMSatelliteEndpointValidator(),
