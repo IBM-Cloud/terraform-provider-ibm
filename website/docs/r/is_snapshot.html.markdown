@@ -65,8 +65,21 @@ resource "ibm_is_snapshot" "example" {
     delete = "15m"
   }
 }
-
 ```
+
+## Example usage (clones)
+```
+resource "ibm_is_snapshot" "example_clones" {
+  name            = "example-snapshot"
+  source_volume   = ibm_is_instance.example.volume_attachments[0].volume_id
+  clones          = ["us-south-1", "us-south-2"]
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    delete = "15m"
+  }
+}  
+ ``` 
 
 ## Timeouts
 The `ibm_is_snapshot` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -78,6 +91,14 @@ The `ibm_is_snapshot` resource provides the following [Timeouts](https://www.ter
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the bare metal server.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
+- `clones` - (Optional, List) The list of zones to create a clone of this snapshot.
 - `name` - (Optional, String) The name of the snapshot.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID where the snapshot is to be created
 - `source_volume` - (Required, Forces new resource, String) The unique identifier for the volume for which snapshot is to be created. 
@@ -100,6 +121,7 @@ In addition to all argument reference list, you can access the following attribu
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
 - `crn` - (String) The CRN for this snapshot.
 - `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed**.
+- `encryption_key` - (String) The CRN of the `Key Protect Root Key` or `Hyper Protect Crypto Services Root Key` for this resource. The root key used to wrap the data encryption key for the source volume. This property will be present for volumes with an encryption type of `user_managed`.
 - `href` - (String) The URL for this snapshot.
 - `id` - (String) The unique identifier for this snapshot.
 - `lifecycle_state` - (String) The lifecycle state of this snapshot. Supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.

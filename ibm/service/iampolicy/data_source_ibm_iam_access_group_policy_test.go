@@ -64,6 +64,57 @@ func TestAccIBMIAMAccessGroupPolicyDataSourceSpecificAttributesConfig(t *testing
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicyDataSource_Time_Based_Conditions_Weekly(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyDataSourceTimeBasedWeekly(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_access_group_policy.testacc_ds_access_group_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicyDataSource_Time_Based_Conditions_Custom(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyDataSourceTimeBasedCustom(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_access_group_policy.testacc_ds_access_group_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicyDataSource_ServiceGroupID(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyDataSourceServiceGroupID(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_access_group_policy.testacc_ds_access_group_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMAccessGroupPolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 	
@@ -167,4 +218,110 @@ data "ibm_iam_access_group_policy" "testacc_ds_access_group_policy" {
 }
 `, name)
 
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyDataSourceTimeBasedWeekly(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_access_group" "accgrp" {
+		name = "%s"
+	}
+
+	resource "ibm_iam_access_group_policy" "policy" {
+		access_group_id = ibm_iam_access_group.accgrp.id
+		roles  = ["Viewer"]
+		resources {
+			service = "kms"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00", "5+00:00"]
+		}
+		pattern = "time-based-conditions:weekly:all-day"
+		}
+
+	data "ibm_iam_access_group_policy" "testacc_ds_access_group_policy" {
+		access_group_id = ibm_iam_access_group_policy.policy.access_group_id
+	}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyDataSourceTimeBasedCustom(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_access_group" "accgrp" {
+		name = "%s"
+	}
+
+	resource "ibm_iam_access_group_policy" "policy" {
+		access_group_id = ibm_iam_access_group.accgrp.id
+		roles  = ["Viewer"]
+		resources {
+			service = "kms"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeGreaterThanOrEquals"
+			value = ["09:00:00+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeLessThanOrEquals"
+			value = ["17:00:00+00:00"]
+		}
+		rule_operator = "and"
+		pattern = "time-based-conditions:weekly:custom-hours"
+		}
+
+	data "ibm_iam_access_group_policy" "testacc_ds_access_group_policy" {
+		access_group_id = ibm_iam_access_group_policy.policy.access_group_id
+	}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyDataSourceServiceGroupID(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_access_group" "accgrp" {
+		name = "%s"
+	}
+
+	resource "ibm_iam_access_group_policy" "policy" {
+		access_group_id = ibm_iam_access_group.accgrp.id
+		roles  = ["Service ID creator", "User API key creator", "Viewer"]
+		resources {
+			service_group_id = "IAM"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeGreaterThanOrEquals"
+			value = ["09:00:00+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeLessThanOrEquals"
+			value = ["17:00:00+00:00"]
+		}
+		rule_operator = "and"
+		pattern = "time-based-conditions:weekly:custom-hours"
+		}
+
+	data "ibm_iam_access_group_policy" "testacc_ds_access_group_policy" {
+		access_group_id = ibm_iam_access_group_policy.policy.access_group_id
+	}
+	`, name)
 }

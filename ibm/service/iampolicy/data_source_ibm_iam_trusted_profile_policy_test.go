@@ -64,6 +64,57 @@ func TestAccIBMIAMTrustedProfilePolicyDataSourceServiceSpecificAttributesConfig(
 	})
 }
 
+func TestAccIBMIAMTrustedProfilePolicyDataSource_Time_Based_Conditions_Weekly(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyDataSourceTimeBasedWeekly(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_trusted_profile_policy.policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMTrustedProfilePolicyDataSource_Time_Based_Conditions_Custom(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyDataSourceTimeBasedCustom(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_trusted_profile_policy.policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMTrustedProfilePolicyDataSource_ServiceGroupID(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyDataSourceServiceGroupID(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_trusted_profile_policy.policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMTrustedProfilePolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 
@@ -166,4 +217,113 @@ data "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
 }`, name)
 
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyDataSourceTimeBasedWeekly(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_trusted_profile" "profileID" {
+		name        = "%s"
+		description = "Profile ID for test"
+	}
+
+	resource "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id = ibm_iam_trusted_profile.profileID.id
+		roles  = ["Viewer"]
+		resources {
+			service = "kms"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00", "5+00:00"]
+		}
+		pattern = "time-based-conditions:weekly:all-day"
+		}
+
+	data "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
+	}
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyDataSourceTimeBasedCustom(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_trusted_profile" "profileID" {
+		name        = "%s"
+		description = "Profile ID for test"
+	}
+
+	resource "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id = ibm_iam_trusted_profile.profileID.id
+		roles  = ["Viewer"]
+		resources {
+			service = "kms"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeGreaterThanOrEquals"
+			value = ["09:00:00+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeLessThanOrEquals"
+			value = ["17:00:00+00:00"]
+		}
+		rule_operator = "and"
+		pattern = "time-based-conditions:weekly:custom-hours"
+		}
+
+	data "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
+	}
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyDataSourceServiceGroupID(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_trusted_profile" "profileID" {
+		name        = "%s"
+		description = "Profile ID for test"
+	}
+
+	resource "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id = ibm_iam_trusted_profile.profileID.id
+		roles  = ["Viewer"]
+		resources {
+			service_group_id = "IAM"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeGreaterThanOrEquals"
+			value = ["09:00:00+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeLessThanOrEquals"
+			value = ["17:00:00+00:00"]
+		}
+		rule_operator = "and"
+		pattern = "time-based-conditions:weekly:custom-hours"
+		}
+
+	data "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
+	}
+	`, name)
 }

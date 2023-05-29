@@ -146,14 +146,10 @@ func testAccCheckSatelliteClusterWorkerPoolDestroy(s *terraform.State) error {
 func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix string) string {
 	return fmt.Sprintf(`
 
-	provider "ibm" {
-		region = "us-east"
-	}
-
 	variable "location_zones" {
 		description = "Allocate your hosts across these three zones"
 		type        = list(string)
-		default     = ["us-east-1", "us-east-2", "us-east-3"]
+		default     = ["us-south-1", "us-south-2", "us-south-3"]
 	}
 
 	resource "ibm_satellite_location" "location" {
@@ -186,7 +182,7 @@ func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, ope
 		name                     = "%s-subnet-${count.index}"
 		vpc                      = ibm_is_vpc.satellite_vpc.id
 		total_ipv4_address_count = 256
-		zone                     = "us-east-${count.index + 1}"
+		zone                     = "us-south-${count.index + 1}"
 	}
 	  
 	resource "ibm_is_ssh_key" "satellite_ssh" {	  
@@ -199,7 +195,7 @@ func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, ope
 
 		name           = "%s-instance-${count.index}"
 		vpc            = ibm_is_vpc.satellite_vpc.id
-		zone           = "us-east-${count.index + 1}"
+		zone           = "us-south-${count.index + 1}"
 		image          = data.ibm_is_image.rhel7.id
 		profile        = "mx2-8x64"
 		keys           = [ibm_is_ssh_key.satellite_ssh.id]

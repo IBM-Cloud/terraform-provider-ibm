@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -114,6 +115,11 @@ func DataSourceSnapshots() *schema.Resource {
 							Computed:    true,
 							Description: "Encryption type of the snapshot",
 						},
+						isSnapshotEncryptionKey: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A reference to the root key used to wrap the data encryption key for the source volume.",
+						},
 						isSnapshotHref: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -143,6 +149,14 @@ func DataSourceSnapshots() *schema.Resource {
 							Description: "The size of the snapshot",
 						},
 
+						isSnapshotClones: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "Zones for creating the snapshot clone",
+						},
+
 						isSnapshotCapturedAt: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -155,6 +169,14 @@ func DataSourceSnapshots() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "User Tags for the snapshot",
+						},
+
+						isSnapshotAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
 						},
 
 						isSnapshotBackupPolicyPlan: {
@@ -277,6 +299,9 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			isSnapshotResourceType: *snapshot.ResourceType,
 			isSnapshotBootable:     *snapshot.Bootable,
 		}
+		if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
+			l[isSnapshotEncryptionKey] = *snapshot.EncryptionKey.CRN
+		}
 		if snapshot.CapturedAt != nil {
 			l[isSnapshotCapturedAt] = (*snapshot.CapturedAt).String()
 		}
@@ -296,6 +321,16 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 		if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 			l[isSnapshotOperatingSystem] = *snapshot.OperatingSystem.Name
 		}
+		var clones []string
+		clones = make([]string, 0)
+		if snapshot.Clones != nil {
+			for _, clone := range snapshot.Clones {
+				if clone.Zone != nil {
+					clones = append(clones, *clone.Zone.Name)
+				}
+			}
+		}
+		l[isSnapshotClones] = flex.NewStringSet(schema.HashString, clones)
 		backupPolicyPlanList := []map[string]interface{}{}
 		if snapshot.BackupPolicyPlan != nil {
 			backupPolicyPlan := map[string]interface{}{}
@@ -311,6 +346,12 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
 		}
 		l[isSnapshotBackupPolicyPlan] = backupPolicyPlanList
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
+		}
+		l[isSnapshotAccessTags] = accesstags
 		snapshotsInfo = append(snapshotsInfo, l)
 	}
 	d.SetId(dataSourceIBMISSnapshotsID(d))

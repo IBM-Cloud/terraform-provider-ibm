@@ -5,9 +5,9 @@ package power
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -16,6 +16,7 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_volumes"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -445,7 +446,10 @@ func isIBMPIVolumeDeleteRefreshFunc(client *st.IBMPIVolumeClient, id string) res
 	return func() (interface{}, string, error) {
 		vol, err := client.Get(id)
 		if err != nil {
-			if strings.Contains(err.Error(), "Resource not found") {
+			uErr := errors.Unwrap(err)
+			switch uErr.(type) {
+			case *p_cloud_volumes.PcloudCloudinstancesVolumesGetNotFound:
+				log.Printf("[DEBUG] volume does not exist %v", err)
 				return vol, "deleted", nil
 			}
 			return nil, "", err

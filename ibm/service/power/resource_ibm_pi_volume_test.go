@@ -161,7 +161,7 @@ func testAccCheckIBMPIVolumePoolConfig(name string) string {
 	`, name, acc.Pi_cloud_instance_id)
 }
 
-//TestAccIBMPIVolumeGRS test the volume replication feature which is part of global replication service(GRS)
+// TestAccIBMPIVolumeGRS test the volume replication feature which is part of global replication service(GRS)
 func TestAccIBMPIVolumeGRS(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{

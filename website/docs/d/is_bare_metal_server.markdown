@@ -50,6 +50,7 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (List) Access management tags associated for the bare metal server.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces.
 - `boot_target` - (String) The unique identifier for this bare metal server disk.
 - `cpu` - (List) A nested block describing the CPU configuration of this bare metal server.
@@ -68,6 +69,7 @@ In addition to all argument reference list, you can access the following attribu
     - `name` - (String) The user-defined name for this disk
     - `resource_type` - (String) The resource type
     - `size` - (Integer) The size of the disk in GB (gigabytes)
+- `enable_secure_boot` - (Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot.
 - `href` - (String) The URL for this bare metal server
 - `id` - (String) The unique identifier for this bare metal server
 - `image` - (String) Image used in the bare metal server.
@@ -110,12 +112,33 @@ In addition to all argument reference list, you can access the following attribu
 - `profile` - (String) The name for this bare metal server profile
 - `resource_group` - (String) resource group id of the bare metal server.
 - `resource_type` - (String) The type of resource referenced
-- `status` - (String) The status of the bare metal server [ **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, **stopping** ]
+- `status` - (String) The status of the bare metal server.
+
+  -> **Supported Status** 
+    &#x2022; failed
+    </br>&#x2022; pending
+    </br>&#x2022; restarting
+    </br>&#x2022; running
+    </br>&#x2022; starting
+    </br>&#x2022; stopped
+    </br>&#x2022; stopping
+    
 - `status_reasons` - (List) Array of reasons for the current status (if any).
   Nested scheme for `status_reasons`:
     - `code` - (String) The status reason code
     - `message` - (String) An explanation of the status reason
     - `more_info` - (String) Link to documentation about this status reason
 - `tags` - (Array) Tags associated with the instance.
+- `trusted_platform_module` - (List) trusted platform module (TPM) configuration for this bare metal server
+
+    Nested scheme for **trusted_platform_module**:
+
+    - `enabled` - (Boolean) Indicates whether the trusted platform module is enabled. 
+    - `mode` - (String) The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes. Updating trusted_platform_module mode would require the server to be stopped then started again.
+      - Constraints: Allowable values are: `disabled`, `tpm_2`.
+    - `supported_modes` - (Array) The trusted platform module (TPM) mode:
+      - **disabled: No TPM functionality**
+      - **tpm_2: TPM 2.0**
+      - The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
 - `vpc` - (String) The VPC this bare metal server resides in.
 - `zone` - (String) The zone this bare metal server resides in.

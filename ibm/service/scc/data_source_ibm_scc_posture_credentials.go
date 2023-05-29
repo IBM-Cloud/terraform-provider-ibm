@@ -22,8 +22,8 @@ import (
 
 func DataSourceIBMSccPostureCredentials() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureListCredentialsRead,
-
+		ReadContext:        dataSourceIBMSccPostureListCredentialsRead,
+		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_posture_credentials is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
@@ -252,25 +252,6 @@ func DataSourceIBMSccPostureCredentials() *schema.Resource {
 							Computed:    true,
 							Description: "ID of the user who modified the credentials.",
 						},
-						"group": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Credential group details.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "credential group id.",
-									},
-									"passphrase": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "passphase of the credential.",
-									},
-								},
-							},
-						},
 						"purpose": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -444,12 +425,6 @@ func dataSourceCredentialListCredentialsToMap(credentialsItem posturemanagementv
 	if credentialsItem.UpdatedBy != nil {
 		credentialsMap["updated_by"] = credentialsItem.UpdatedBy
 	}
-	if credentialsItem.Group != nil {
-		groupList := []map[string]interface{}{}
-		groupMap := dataSourceCredentialListCredentialsGroupToMap(*credentialsItem.Group)
-		groupList = append(groupList, groupMap)
-		credentialsMap["group"] = groupList
-	}
 	if credentialsItem.Purpose != nil {
 		credentialsMap["purpose"] = credentialsItem.Purpose
 	}
@@ -534,19 +509,6 @@ func dataSourceCredentialListCredentialsDisplayFieldsToMap(displayFieldsItem pos
 	}
 
 	return displayFieldsMap
-}
-
-func dataSourceCredentialListCredentialsGroupToMap(groupItem posturemanagementv2.CredentialGroup) (groupMap map[string]interface{}) {
-	groupMap = map[string]interface{}{}
-
-	if groupItem.ID != nil {
-		groupMap["id"] = groupItem.ID
-	}
-	if groupItem.Passphrase != nil {
-		groupMap["passphrase"] = groupItem.Passphrase
-	}
-
-	return groupMap
 }
 
 func dataSourceCredentialListGetNext(next interface{}) int64 {

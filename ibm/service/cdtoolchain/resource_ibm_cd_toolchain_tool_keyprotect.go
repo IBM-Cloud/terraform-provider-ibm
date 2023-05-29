@@ -38,28 +38,28 @@ func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 				MinItems:    1,
 				MaxItems:    1,
 				Required:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
-						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Region.",
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Resource group.",
+							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
 						},
 						"instance_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.",
+							Description: "The name of the Key Protect service instance.",
+						},
+						"location": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The IBM Cloud location where the Key Protect service instance is located.",
+						},
+						"resource_group_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the resource group where the Key Protect service instance is located.",
 						},
 					},
 				},
@@ -68,12 +68,12 @@ func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_keyprotect", "name"),
-				Description:  "Name of tool.",
+				Description:  "Name of the tool.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -99,12 +99,12 @@ func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -166,8 +166,9 @@ func resourceIBMCdToolchainToolKeyprotectCreate(context context.Context, d *sche
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("keyprotect")
 	remapFields := map[string]string{
-		"resource_group": "resource-group",
-		"instance_name":  "instance-name",
+		"location":            "region",
+		"resource_group_name": "resource-group",
+		"instance_name":       "instance-name",
 	}
 	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
@@ -216,8 +217,9 @@ func resourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
 	remapFields := map[string]string{
-		"resource_group": "resource-group",
-		"instance_name":  "instance-name",
+		"location":            "region",
+		"resource_group_name": "resource-group",
+		"instance_name":       "instance-name",
 	}
 	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
@@ -283,8 +285,9 @@ func resourceIBMCdToolchainToolKeyprotectUpdate(context context.Context, d *sche
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"location":            "region",
+			"resource_group_name": "resource-group",
+			"instance_name":       "instance-name",
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
 		patchVals.Parameters = parameters

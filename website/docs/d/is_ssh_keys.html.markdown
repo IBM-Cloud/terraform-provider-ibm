@@ -25,6 +25,7 @@ In addition to all argument references listed, you can access the following attr
 - `id` - The unique identifier of the KeyCollection.
 - `keys` - (List) Collection of keys.
 	Nested scheme for **keys**:
+	- `access_tags`  - (List) Access management tags associated for the ssh key.
 	- `created_at` - (String) The date and time that the key was created.
 	- `crn` - (String) The CRN for this key.
 	- `fingerprint` - (String) The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always `SHA256`).

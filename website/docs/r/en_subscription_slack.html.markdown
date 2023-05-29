@@ -42,7 +42,7 @@ Review the argument reference that you can specify for your resource.
 - `attributes` - (Optional, List) Subscription attributes.
   Nested scheme for **attributes**:
 
-  - `attachment_color` - (Optional, Boolean) The color code for slack attachment.
+  - `attachment_color` - (Optional, String) The color code for slack attachment.
 
 ## Attribute reference
 

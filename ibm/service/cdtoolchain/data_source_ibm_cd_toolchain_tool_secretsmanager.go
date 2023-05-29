@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,28 +83,38 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
+							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
 						},
-						"region": &schema.Schema{
+						"instance_id_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Region.",
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Resource group.",
+							Description: "The type of service instance identifier. When absent defaults to `instance-name`.",
 						},
 						"instance_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of your Secrets Manager instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Secrets Manager-01.",
+							Description: "The name of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.",
+						},
+						"instance_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Secrets Manager service instance CRN (Cloud Resource Name), only relevant when using `instance-crn` as the `instance_id_type`.",
+						},
+						"location": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IBM Cloud location of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.",
+						},
+						"resource_group_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the resource group where the Secrets Manager service instance is located, only relevant when using `instance-name` as the `instance_id_type`.",
 						},
 					},
 				},
@@ -180,8 +190,11 @@ func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"instance_id_type":    "instance-id-type",
+			"location":            "region",
+			"resource_group_name": "resource-group",
+			"instance_name":       "instance-name",
+			"instance_crn":        "instance-crn",
 		}
 		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolSecretsmanager(), remapFields)
 		parameters = append(parameters, modelMap)

@@ -49,7 +49,7 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where toolchain can be found.",
+				Description: "Resource group where the toolchain is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,6 +60,11 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "URI that can be used to retrieve toolchain.",
+			},
+			"ui_href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL of a user-facing user interface for this toolchain.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -75,14 +80,6 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Identity that created the toolchain.",
-			},
-			"tags": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Tags associated with the toolchain.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 		},
 	}
@@ -132,6 +129,10 @@ func dataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 
 	if err = d.Set("href", toolchain.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+
+	if err = d.Set("ui_href", toolchain.UIHref); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting ui_href: %s", err))
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(toolchain.CreatedAt)); err != nil {

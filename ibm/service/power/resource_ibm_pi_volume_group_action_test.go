@@ -33,6 +33,14 @@ func TestAccIBMPIVolumeGroupActionbasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_pi_volume_group_action.power_volume_group_action", "volume_group_status"),
 				),
 			},
+			{
+				Config: testAccCheckIBMPIVolumeGroupStartActionConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeGroupActionExists("ibm_pi_volume_group_action.power_volume_group_action"),
+					resource.TestCheckResourceAttrSet("ibm_pi_volume_group_action.power_volume_group_action", "id"),
+					resource.TestCheckResourceAttrSet("ibm_pi_volume_group_action.power_volume_group_action", "volume_group_status"),
+				),
+			},
 		},
 	})
 }
@@ -78,6 +86,20 @@ func testAccCheckIBMPIVolumeGroupStopActionConfig(name string) string {
 		pi_volume_group_action {
 			stop {
 				access = true
+			}
+		}
+	  }
+	`, acc.Pi_cloud_instance_id)
+}
+
+func testAccCheckIBMPIVolumeGroupStartActionConfig(name string) string {
+	return testAccCheckIBMPIVolumeGroupConfig(name) + fmt.Sprintf(`
+	  resource "ibm_pi_volume_group_action" "power_volume_group_action" {
+		pi_cloud_instance_id   = "%[1]s"
+		pi_volume_group_id     = ibm_pi_volume_group.power_volume_group.volume_group_id
+		pi_volume_group_action {
+			start {
+				source = "master"
 			}
 		}
 	  }

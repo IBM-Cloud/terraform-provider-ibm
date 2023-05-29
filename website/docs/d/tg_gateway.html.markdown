@@ -45,20 +45,21 @@ In addition to the argument reference list, you can access the following attribu
   Nested scheme for `connections`:
 	- `created_at` - (String) The date and time the connection is created.
 	- `id` - (String) The unique identifier for the transit gateway connection to network either `VPC`,  `classic`.
-    - `base_connection_id` - The ID of a network_type `classic` connection a tunnel is configured over.  This field only applies to network type `gre_tunnel` connections.
-	- `name` - (String) The user-defined name for the transit gateway connection.
-	- `network_type` - (String) The type of network connected with the connection. Possible values are `classic`, `directlink`, `VPC`, or `gre_tunnel`).
-	- `network_account_id` - (String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
-	- `network_id` - (String) The ID of the network being connected with the connection.
-    - `local_bgp_asn` - (Integer) The local network BGP ASN. This field only applies to network type '`gre_tunnel` connections.
-    - `local_gateway_ip` - (String) The local gateway IP address.  This field is required for and only applicable to `gre_tunnel` connection types.
-    - `local_tunnel_ip` - (String) The local tunnel IP address. This field is required for and only applicable to type gre_tunnel connections.
-    - `mtu` - (Integer) GRE tunnel MTU. This field only applies to network type `gre_tunnel` connections.
-    - `remote_bgp_asn` - (Integer) The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type `gre_tunnel` connections.
-    - `remote_gateway_ip` - (String) The remote gateway IP address. This field only applies to network type `gre_tunnel` connections.
-    - `remote_tunnel_ip` - (String) The remote tunnel IP address. This field only applies to network type `gre_tunnel` connections.
+  - `base_connection_id` - (String) The ID of a network_type `classic` connection a tunnel is configured over.  This field applies to network type `gre_tunnel` or `unbound_gre_tunnel` connections.
+  - `base_network_type` - (String) The type of network the unbound gre tunnel is targeting. This field is required for network type `unbound_gre_tunnel`.
+  - `name` - (String) The user-defined name for the transit gateway connection.
+  - `network_type` - (String) The type of network connected with the connection. Possible values are `classic`, `directlink`, `VPC`, `gre_tunnel`, or `unbound_gre_tunnel`).
+  - `network_account_id` - (String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
+  - `network_id` - (String) The ID of the network being connected with the connection.
+  - `local_bgp_asn` - (Integer) The local network BGP ASN. This field only applies to network type '`gre_tunnel` connections.
+  - `local_gateway_ip` - (String) The local gateway IP address.  This field is required for and only applicable to `gre_tunnel` connection types.
+  - `local_tunnel_ip` - (String) The local tunnel IP address. This field is required for and only applicable to type gre_tunnel connections.
+  - `mtu` - (Integer) GRE tunnel MTU. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+  - `remote_bgp_asn` - (Integer) The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+  - `remote_gateway_ip` - (String) The remote gateway IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+  - `remote_tunnel_ip` - (String) The remote tunnel IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 	- `status` - (String) The current configuration state of the connection. Possible values are `attached`, `failed,` `pending`, `deleting`.
 	- `updated_at` - (String) The date and time the connection is last updated.
-    - `zone` - (String) The location of the GRE tunnel. This field only applies to network type `gre_tunnel` connections.
+  - `zone` - (String) The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `status` - (String) The gateway status.
 - `updated_at` - (Timestamp) The date and time resource is last updated.

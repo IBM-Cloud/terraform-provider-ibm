@@ -34,7 +34,7 @@ data "ibm_is_network_acl_rules" "example"{
 Review the argument references that you can specify for your resource.
 
 - `network_acl` - (Required, String) The network ACL identifier.
-
+- `direction` - (Optional, String) The direction of the rules to filter. Available options are `inbound` and `outbound`
 
 ## Attribute reference
 

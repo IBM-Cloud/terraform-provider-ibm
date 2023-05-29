@@ -311,6 +311,13 @@ func DataSourceIBMISInstanceGroups() *schema.Resource {
 								},
 							},
 						},
+						isInstanceGroupAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
+						},
 					},
 				},
 			},
@@ -350,7 +357,7 @@ func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.Resour
 	instanceGroups := []map[string]interface{}{}
 
 	for _, instanceGroupItem := range allrecs {
-		instanceGroup, err := DataSourceIBMIsInstanceGroupsInstanceGroupToMap(&instanceGroupItem)
+		instanceGroup, err := DataSourceIBMIsInstanceGroupsInstanceGroupToMap(&instanceGroupItem, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -377,7 +384,7 @@ func DataSourceIBMIsInstanceGroupsInstanceGroupCollectionFirstToMap(model *vpcv1
 	return modelMap, nil
 }
 
-func DataSourceIBMIsInstanceGroupsInstanceGroupToMap(model *vpcv1.InstanceGroup) (map[string]interface{}, error) {
+func DataSourceIBMIsInstanceGroupsInstanceGroupToMap(model *vpcv1.InstanceGroup, meta interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ApplicationPort != nil {
 		modelMap["application_port"] = *model.ApplicationPort
@@ -456,6 +463,12 @@ func DataSourceIBMIsInstanceGroupsInstanceGroupToMap(model *vpcv1.InstanceGroup)
 		}
 		modelMap["vpc"] = []map[string]interface{}{vpcMap}
 	}
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *model.CRN, "", isInstanceGroupAccessTagType)
+	if err != nil {
+		log.Printf(
+			"[ERROR] Error on get of resource instance group (%s) access tags: %s", *model.ID, err)
+	}
+	modelMap[isInstanceGroupAccessTags] = accesstags
 	return modelMap, nil
 }
 

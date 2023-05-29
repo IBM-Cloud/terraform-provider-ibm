@@ -150,6 +150,7 @@ func ResourceIBMSatelliteClusterWorkerPool() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Labels that describe a Satellite host",

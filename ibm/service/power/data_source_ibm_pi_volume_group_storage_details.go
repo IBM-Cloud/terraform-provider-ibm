@@ -90,12 +90,13 @@ func dataSourceIBMPIVolumeGroupStorageDetailsReads(ctx context.Context, d *schem
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	vgClient := instance.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
-	vgData, err := vgClient.GetVolumeGroupLiveDetails(d.Get(PIVolumeGroupID).(string))
+	vgID := d.Get(PIVolumeGroupID).(string)
+	vgData, err := vgClient.GetVolumeGroupLiveDetails(vgID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(PIVolumeGroupID)
+	d.SetId(vgID)
 	d.Set("consistency_group_name", vgData.ConsistencyGroupName)
 	d.Set("cycle_period_seconds", vgData.CyclePeriodSeconds)
 	d.Set("cycling_mode", vgData.CyclingMode)

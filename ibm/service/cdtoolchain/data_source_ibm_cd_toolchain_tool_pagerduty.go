@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolPagerduty() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolPagerduty() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,50 +83,24 @@ func DataSourceIBMCdToolchainToolPagerduty() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Select whether to integrate at the account level with an API key or at the service level with an integration key.",
-						},
-						"api_key": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "Type your API access key. You can find or create this key on the Configuration/API Access section of the PagerDuty website. [PagerDuty Support article on how to get API Key](https://support.pagerduty.com/hc/en-us/articles/202829310-Generating-an-API-Key).",
-						},
-						"service_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type the name of the PagerDuty service to post alerts to. If you want alerts to be posted to a new service, type a new name. PagerDuty will create the service.",
-						},
-						"user_email": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type the email address of the user to contact when an alert is posted. If you want alerts to be sent to a new email address, type the address and PagerDuty will create a user.",
-						},
-						"user_phone": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type the phone number of the user to contact when an alert is posted. Include the national code followed by a space and a 10-digit number; for example: +1 1234567890. If you omit the national code, it is set to +1 by default.",
-						},
 						"service_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL of the PagerDuty service to post alerts to.",
+							Description: "The URL of the PagerDuty service to post alerts to.",
 						},
 						"service_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "Type your integration key. You can find or create this key in the Integrations section of the PagerDuty service page.",
+							Description: "The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"service_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "service_id.",
+							Description: "The service ID of the PagerDuty service.",
 						},
 					},
 				},

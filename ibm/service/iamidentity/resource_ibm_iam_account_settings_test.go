@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -17,13 +17,15 @@ import (
 )
 
 var (
-	restrict_create_service_id      = "NOT_SET"
-	restrict_create_platform_apikey = "NOT_SET"
-	entity_tag                      = "*"
-	mfa_trait                       = "NONE"
-	session_expiration_in_seconds   = "NOT_SET"
-	session_invalidation_in_seconds = "NOT_SET"
-	max_sessions_per_identity       = "NOT_SET"
+	restrict_create_service_id                 = "NOT_SET"
+	restrict_create_platform_apikey            = "NOT_SET"
+	entity_tag                                 = "*"
+	mfa_trait                                  = "NONE"
+	session_expiration_in_seconds              = "NOT_SET"
+	session_invalidation_in_seconds            = "NOT_SET"
+	max_sessions_per_identity                  = "NOT_SET"
+	system_access_token_expiration_in_seconds  = "3600"
+	system_refresh_token_expiration_in_seconds = "2592000"
 )
 
 func TestAccIBMIAMAccountSettingsBasic(t *testing.T) {
@@ -95,6 +97,8 @@ func TestAccIBMIAMAccountSettingsUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_expiration_in_seconds", session_expiration_in_seconds),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_invalidation_in_seconds", session_invalidation_in_seconds),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "max_sessions_per_identity", max_sessions_per_identity),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "system_access_token_expiration_in_seconds", system_access_token_expiration_in_seconds),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "system_refresh_token_expiration_in_seconds", system_refresh_token_expiration_in_seconds),
 				),
 			},
 		},
@@ -126,9 +130,15 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 			restrict_create_platform_apikey = "%s"
 			if_match = "%s"
 			mfa = "%s"
+			user_mfa {
+				iam_id = "iam_id"
+				mfa = "NONE"
+			}
 			session_expiration_in_seconds = "%s"
 			session_invalidation_in_seconds = "%s"
 			max_sessions_per_identity = "%s"
+			system_access_token_expiration_in_seconds = "%s"
+			system_refresh_token_expiration_in_seconds = "%s"
 		}
 	`,
 		restrict_create_service_id,
@@ -138,6 +148,72 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 		session_expiration_in_seconds,
 		session_invalidation_in_seconds,
 		max_sessions_per_identity,
+		system_access_token_expiration_in_seconds,
+		system_refresh_token_expiration_in_seconds,
+	)
+}
+
+func testAccCheckIbmIamAccountSettingsUpdateConfigWithNoUserMfa() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_account_settings" "iam_account_settings" {
+			restrict_create_service_id = "%s"
+			restrict_create_platform_apikey = "%s"
+			if_match = "%s"
+			mfa = "%s"
+			user_mfa {
+			}
+			session_expiration_in_seconds = "%s"
+			session_invalidation_in_seconds = "%s"
+			max_sessions_per_identity = "%s"
+			system_access_token_expiration_in_seconds = "%s"
+			system_refresh_token_expiration_in_seconds = "%s"
+		}
+	`,
+		restrict_create_service_id,
+		restrict_create_platform_apikey,
+		entity_tag,
+		mfa_trait,
+		session_expiration_in_seconds,
+		session_invalidation_in_seconds,
+		max_sessions_per_identity,
+		system_access_token_expiration_in_seconds,
+		system_refresh_token_expiration_in_seconds,
+	)
+}
+
+func testAccCheckIbmIamAccountSettingsUpdateConfigWithMultipleUserMfa() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_account_settings" "iam_account_settings" {
+			restrict_create_service_id = "%s"
+			restrict_create_platform_apikey = "%s"
+			if_match = "%s"
+			mfa = "%s"
+			user_mfa {
+				iam_id = "iam_id"
+				mfa = "NONE"
+			}
+			user_mfa {
+				iam_id = "iam_id"
+				mfa = "NONE"
+			}
+			session_expiration_in_seconds = "%s"
+			session_invalidation_in_seconds = "%s"
+			max_sessions_per_identity = "%s"
+			system_access_token_expiration_in_seconds = "%s"
+			system_refresh_token_expiration_in_seconds = "%s"
+		}
+	`,
+		restrict_create_service_id,
+		restrict_create_platform_apikey,
+		entity_tag,
+		mfa_trait,
+		session_expiration_in_seconds,
+		session_invalidation_in_seconds,
+		max_sessions_per_identity,
+		system_access_token_expiration_in_seconds,
+		system_refresh_token_expiration_in_seconds,
 	)
 }
 

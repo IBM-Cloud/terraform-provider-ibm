@@ -68,6 +68,7 @@ Review the argument references that you can specify for your resource.
 - `labels` - (Optional, Map) A list of labels that you want to add to your worker pool. The labels can help you find the worker pool more easily later.
 - `machine_type` - (Required, Forces new resource, String) The machine type for your worker node. The machine type determines the amount of memory, CPU, and disk space that is available to the worker node. For an overview of supported machine types, see [Planning your worker node setup](https://cloud.ibm.com/docs/containers?topic=containers-planning_worker_nodes).
 - `name` - (Required, Forces new resource, String) The name of the worker pool.
+- `operating_system` - (Optional, Forces new resource, String) The operating system of the workers in the worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
 - `size_per_zone`  - (Required, Integer) The number of worker nodes per zone that you want to add to the worker pool.
 - `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool
@@ -97,6 +98,7 @@ In addition to all argument reference list, you can access the following attribu
   - `public_vlan` - (String) The ID of the public VLAN that is used in the zone. 
   - `worker_count` - (Integer) The number of worker nodes that are attached to the zone.
   - `zone` - (String) The name of the zone. 
+- `autoscale_enabled` - (Bool) Autoscaling is enabled on the workerpool
 
 ## Import
 The `ibm_container_worker_pool` can be imported by using `cluster_name_id`, `worker_pool_id`.

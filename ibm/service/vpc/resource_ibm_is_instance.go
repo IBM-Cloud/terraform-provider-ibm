@@ -116,6 +116,14 @@ const (
 	isInstanceDefaultTrustedProfileAutoLink = "default_trusted_profile_auto_link"
 	isInstanceDefaultTrustedProfileTarget   = "default_trusted_profile_target"
 	isInstanceMetadataServiceEnabled        = "metadata_service_enabled"
+
+	isInstanceAccessTags                  = "access_tags"
+	isInstanceUserTagType                 = "user"
+	isInstanceAccessTagType               = "access"
+	isInstanceMetadataService             = "metadata_service"
+	isInstanceMetadataServiceEnabled1     = "enabled"
+	isInstanceMetadataServiceProtocol     = "protocol"
+	isInstanceMetadataServiceRespHopLimit = "response_hop_limit"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
@@ -173,6 +181,10 @@ func ResourceIBMISInstance() *schema.Resource {
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceTagsCustomizeDiff(diff)
 				}),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -207,8 +219,8 @@ func ResourceIBMISInstance() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-				ConflictsWith: []string{"boot_volume.0.snapshot"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.volume_id"},
 				Description:   "Id of the instance template",
 			},
 			isInstanceZone: {
@@ -298,6 +310,15 @@ func ResourceIBMISInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance", "tags")},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "list of tags for the instance",
+			},
+
+			isInstanceAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "list of access tags for the instance",
 			},
 
 			isEnableCleanDelete: {
@@ -588,8 +609,8 @@ func ResourceIBMISInstance() *schema.Resource {
 				ForceNew:      true,
 				Computed:      true,
 				Optional:      true,
-				ConflictsWith: []string{"boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 				RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceKeys, isInstanceVPC, isInstanceProfile},
 				Description:   "image id",
 			},
@@ -601,6 +622,22 @@ func ResourceIBMISInstance() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceBootVolumeId: {
+							Type:          schema.TypeString,
+							Optional:      true,
+							ForceNew:      true,
+							Computed:      true,
+							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							Description:   "The unique identifier for this volume",
+						},
+						isInstanceVolAttVolAutoDelete: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Auto delete boot volume along with instance",
+						},
 						isInstanceBootAttachmentName: {
 							Type:         schema.TypeString,
 							Optional:     true,
@@ -608,18 +645,14 @@ func ResourceIBMISInstance() *schema.Resource {
 							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceBootAttachmentName),
 						},
 
-						isInstanceBootVolumeId: {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-
 						isInstanceVolumeSnapshot: {
 							Type:          schema.TypeString,
 							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 							Optional:      true,
 							ForceNew:      true,
+							Computed:      true,
 						},
 						isInstanceBootEncryption: {
 							Type:             schema.TypeString,
@@ -654,13 +687,11 @@ func ResourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceVolumes: {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
 				Description: "List of volumes",
 			},
-
 			isInstanceVolAttVolAutoDelete: {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -791,12 +822,49 @@ func ResourceIBMISInstance() *schema.Resource {
 				},
 			},
 			isInstanceMetadataServiceEnabled: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{isInstanceMetadataService},
+				Deprecated:    "Use metadata_service instead",
+				Description:   "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
 
+			isInstanceMetadataService: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Computed:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{isInstanceMetadataServiceEnabled},
+				Description:   "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceMetadataServiceEnabled1: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+						},
+
+						isInstanceMetadataServiceProtocol: {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							Description:  "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceMetadataServiceProtocol),
+						},
+
+						isInstanceMetadataServiceRespHopLimit: {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							Description:  "The hop limit (IP time to live) for IP response packets from the metadata service",
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceMetadataServiceRespHopLimit),
+						},
+					},
+				},
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -931,7 +999,24 @@ func ResourceIBMISInstance() *schema.Resource {
 func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 	actions := "stop, start, reboot"
 	host_failure := "restart, stop"
+	metadataServiceProtocol := "https, http"
 	validateSchema := make([]validate.ValidateSchema, 0)
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceMetadataServiceRespHopLimit,
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			Optional:                   true,
+			MinValue:                   "1",
+			MaxValue:                   "64"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceMetadataServiceProtocol,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              metadataServiceProtocol})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isInstanceName,
@@ -991,6 +1076,16 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			Optional:                   true,
 			AllowedValues:              host_failure})
 
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
@@ -1035,7 +1130,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -1102,7 +1197,8 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				volTemplate.UserTags = userTagsArray
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -1322,6 +1418,10 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		}
 	}
 
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1344,10 +1444,18 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
 		oldList, newList := d.GetChange(isInstanceTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -1407,7 +1515,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -1462,7 +1570,8 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -1680,6 +1789,10 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
 			Enabled: &metadataServiceEnabled,
 		}
+	}
+
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
 	}
 
 	options := &vpcv1.CreateInstanceOptions{
@@ -1785,7 +1898,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -1828,7 +1941,8 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				volTemplate.UserTags = userTagsArray
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
@@ -2047,6 +2161,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		}
 	}
 
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -2060,10 +2178,6 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	log.Printf("[INFO] Instance : %s", *instance.ID)
 	d.Set(isInstanceStatus, instance.Status)
-
-	if instance.MetadataService != nil {
-		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
-	}
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
@@ -2079,10 +2193,18 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return nil
 }
 
-func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
+func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -2161,7 +2283,6 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				CRN: &encstr,
 			}
 		}
-
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
@@ -2185,7 +2306,8 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				ID: &snapshotIdStr,
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -2401,7 +2523,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	}
 	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
 		hostFailure := availablePolicyItem.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &hostFailure,
 		}
 	}
@@ -2410,6 +2532,348 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
 			Enabled: &metadataServiceEnabled,
 		}
+	}
+
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
+	options := &vpcv1.CreateInstanceOptions{
+		InstancePrototype: instanceproto,
+	}
+
+	instance, response, err := sess.CreateInstance(options)
+	if err != nil {
+		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
+		return err
+	}
+	d.SetId(*instance.ID)
+
+	log.Printf("[INFO] Instance : %s", *instance.ID)
+	d.Set(isInstanceStatus, instance.Status)
+
+	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
+	if err != nil {
+		return err
+	}
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
+		oldList, newList := d.GetChange(isInstanceTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
+func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	instanceproto := &vpcv1.InstancePrototypeInstanceByVolume{
+		Zone: &vpcv1.ZoneIdentity{
+			Name: &zone,
+		},
+		Profile: &vpcv1.InstanceProfileIdentity{
+			Name: &profile,
+		},
+		Name: &name,
+		VPC: &vpcv1.VPCIdentity{
+			ID: &vpcID,
+		},
+	}
+
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
+
+	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
+		dHostIdStr := dHostIdInf.(string)
+		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
+			ID: &dHostIdStr,
+		}
+		instanceproto.PlacementTarget = dHostPlaementTarget
+	} else if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
+		dHostGrpIdStr := dHostGrpIdInf.(string)
+		dHostGrpPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
+			ID: &dHostGrpIdStr,
+		}
+		instanceproto.PlacementTarget = dHostGrpPlaementTarget
+	} else if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
+		placementGrpStr := placementGroupInf.(string)
+		placementGrp := &vpcv1.InstancePlacementTargetPrototypePlacementGroupIdentity{
+			ID: &placementGrpStr,
+		}
+		instanceproto.PlacementTarget = placementGrp
+	}
+
+	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
+		bootvol := boot.([]interface{})[0].(map[string]interface{})
+		volumeId, ok := bootvol[isInstanceBootVolumeId]
+
+		volumeIdStr := volumeId.(string)
+		bootVolAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{}
+		if ok && volumeIdStr != "" {
+			volumeIdentity := &vpcv1.VolumeIdentity{
+				ID: &volumeIdStr,
+			}
+			bootVolAttachment.Volume = volumeIdentity
+		}
+		if autoDeleteIntf, ok := d.GetOk("boot_volume.0.auto_delete_volume"); ok {
+			autoDelete := autoDeleteIntf.(bool)
+			bootVolAttachment.DeleteVolumeOnInstanceDelete = &autoDelete
+		}
+		instanceproto.BootVolumeAttachment = bootVolAttachment
+	}
+	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
+		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
+		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
+
+	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
+		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
+		subnetintf, _ := primnic[isInstanceNicSubnet]
+		subnetintfstr := subnetintf.(string)
+		var primnicobj = &vpcv1.NetworkInterfacePrototype{}
+		primnicobj.Subnet = &vpcv1.SubnetIdentity{
+			ID: &subnetintfstr,
+		}
+		name, _ := primnic[isInstanceNicName]
+		namestr := name.(string)
+		if namestr != "" {
+			primnicobj.Name = &namestr
+		}
+
+		// reserved ip changes
+
+		var ipv4str, reservedIp, reservedipv4, reservedipname string
+		var autodelete, okAuto bool
+		ipv4, _ := primnic[isInstanceNicPrimaryIpv4Address]
+		ipv4str = ipv4.(string)
+
+		primaryIpOk, ok := primnic[isInstanceNicPrimaryIP]
+		if ok && len(primaryIpOk.([]interface{})) > 0 {
+			primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+			reservedipok, _ := primip[isInstanceNicReservedIpId]
+			reservedIp = reservedipok.(string)
+
+			reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+			reservedipv4 = reservedipv4Ok.(string)
+
+			reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+			reservedipname = reservedipnameOk.(string)
+			var reservedipautodeleteok interface{}
+			reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+			autodelete = reservedipautodeleteok.(bool)
+		}
+		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+		}
+		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+		}
+		if reservedIp != "" {
+			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+				ID: &reservedIp,
+			}
+		} else {
+			if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+				primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+				if ipv4str != "" {
+					primaryipobj.Address = &ipv4str
+				}
+				if reservedipv4 != "" {
+					primaryipobj.Address = &reservedipv4
+				}
+				if reservedipname != "" {
+					primaryipobj.Name = &reservedipname
+				}
+				if okAuto {
+					primaryipobj.AutoDelete = &autodelete
+				}
+				primnicobj.PrimaryIP = primaryipobj
+			}
+		}
+
+		allowIPSpoofing, ok := primnic[isInstanceNicAllowIPSpoofing]
+		allowIPSpoofingbool := allowIPSpoofing.(bool)
+		if ok {
+			primnicobj.AllowIPSpoofing = &allowIPSpoofingbool
+		}
+		secgrpintf, ok := primnic[isInstanceNicSecurityGroups]
+		if ok {
+			secgrpSet := secgrpintf.(*schema.Set)
+			if secgrpSet.Len() != 0 {
+				var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+				for i, secgrpIntf := range secgrpSet.List() {
+					secgrpIntfstr := secgrpIntf.(string)
+					secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+						ID: &secgrpIntfstr,
+					}
+				}
+				primnicobj.SecurityGroups = secgrpobjs
+			}
+		}
+		instanceproto.PrimaryNetworkInterface = primnicobj
+	}
+
+	if nicsintf, ok := d.GetOk(isInstanceNetworkInterfaces); ok {
+		nics := nicsintf.([]interface{})
+		var intfs []vpcv1.NetworkInterfacePrototype
+		for _, resource := range nics {
+			nic := resource.(map[string]interface{})
+			nwInterface := &vpcv1.NetworkInterfacePrototype{}
+			subnetintf, _ := nic[isInstanceNicSubnet]
+			subnetintfstr := subnetintf.(string)
+			nwInterface.Subnet = &vpcv1.SubnetIdentity{
+				ID: &subnetintfstr,
+			}
+			name, ok := nic[isInstanceNicName]
+			namestr := name.(string)
+			if ok && namestr != "" {
+				nwInterface.Name = &namestr
+			}
+			// reserved ip changes
+
+			var ipv4str, reservedIp, reservedipv4, reservedipname string
+			var autodelete, okAuto bool
+			ipv4, _ := nic[isInstanceNicPrimaryIpv4Address]
+			ipv4str = ipv4.(string)
+
+			primaryIpOk, ok := nic[isInstanceNicPrimaryIP]
+			if ok && len(primaryIpOk.([]interface{})) > 0 {
+				primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+				reservedipok, _ := primip[isInstanceNicReservedIpId]
+				reservedIp = reservedipok.(string)
+
+				reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+				reservedipv4 = reservedipv4Ok.(string)
+
+				reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+				reservedipname = reservedipnameOk.(string)
+				var reservedipautodeleteok interface{}
+				reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+				autodelete = reservedipautodeleteok.(bool)
+			}
+			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			}
+			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			}
+			if reservedIp != "" {
+				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+					ID: &reservedIp,
+				}
+			} else {
+				if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+					primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+					if ipv4str != "" {
+						primaryipobj.Address = &ipv4str
+					}
+					if reservedipv4 != "" {
+						primaryipobj.Address = &reservedipv4
+					}
+					if reservedipname != "" {
+						primaryipobj.Name = &reservedipname
+					}
+					if okAuto {
+						primaryipobj.AutoDelete = &autodelete
+					}
+					nwInterface.PrimaryIP = primaryipobj
+				}
+			}
+			allowIPSpoofing, ok := nic[isInstanceNicAllowIPSpoofing]
+			allowIPSpoofingbool := allowIPSpoofing.(bool)
+			if ok {
+				nwInterface.AllowIPSpoofing = &allowIPSpoofingbool
+			}
+			secgrpintf, ok := nic[isInstanceNicSecurityGroups]
+			if ok {
+				secgrpSet := secgrpintf.(*schema.Set)
+				if secgrpSet.Len() != 0 {
+					var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+					for i, secgrpIntf := range secgrpSet.List() {
+						secgrpIntfstr := secgrpIntf.(string)
+						secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+							ID: &secgrpIntfstr,
+						}
+					}
+					nwInterface.SecurityGroups = secgrpobjs
+				}
+			}
+			intfs = append(intfs, *nwInterface)
+		}
+		instanceproto.NetworkInterfaces = intfs
+	}
+
+	keySet := d.Get(isInstanceKeys).(*schema.Set)
+	if keySet.Len() != 0 {
+		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+		for i, key := range keySet.List() {
+			keystr := key.(string)
+			keyobjs[i] = &vpcv1.KeyIdentity{
+				ID: &keystr,
+			}
+		}
+		instanceproto.Keys = keyobjs
+	}
+
+	if userdata, ok := d.GetOk(isInstanceUserData); ok {
+		userdatastr := userdata.(string)
+		instanceproto.UserData = &userdatastr
+	}
+
+	if grp, ok := d.GetOk(isInstanceResourceGroup); ok {
+		grpstr := grp.(string)
+		instanceproto.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &grpstr,
+		}
+
+	}
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	if metadataServiceEnabled {
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabled,
+		}
+	}
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
 	}
 
 	options := &vpcv1.CreateInstanceOptions{
@@ -2440,6 +2904,14 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return nil
 }
 
@@ -2451,6 +2923,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	zone := d.Get(isInstanceZone).(string)
 	image := d.Get(isInstanceImage).(string)
 	snapshot := d.Get("boot_volume.0.snapshot").(string)
+	volume := d.Get("boot_volume.0.volume_id").(string)
 	template := d.Get(isInstanceSourceTemplate).(string)
 	if catalogOfferingOk, ok := d.GetOk(isInstanceCatalogOffering); ok {
 		catalogOffering := catalogOfferingOk.([]interface{})[0].(map[string]interface{})
@@ -2461,8 +2934,13 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 
-	} else if snapshot != "" {
+	} else if volume != "" {
 		err := instanceCreateByVolume(d, meta, profile, name, vpcID, zone)
+		if err != nil {
+			return err
+		}
+	} else if snapshot != "" {
+		err := instanceCreateBySnapshot(d, meta, profile, name, vpcID, zone)
 		if err != nil {
 			return err
 		}
@@ -2873,6 +3351,19 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if instance.BootVolumeAttachment.Volume != nil {
 			bootVol[isInstanceBootAttachmentName] = *instance.BootVolumeAttachment.Volume.Name
 			bootVol[isInstanceBootVolumeId] = *instance.BootVolumeAttachment.Volume.ID
+
+			instanceId := *instance.ID
+			bootVolID := *instance.BootVolumeAttachment.ID
+			getinsVolAttOptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
+				InstanceID: &instanceId,
+				ID:         &bootVolID,
+			}
+			bootVolumeAtt, response, err := instanceC.GetInstanceVolumeAttachment(getinsVolAttOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error getting Instance boot volume attachment : %s\n%s", err, response)
+			}
+
+			bootVol[isInstanceVolAttVolAutoDelete] = *bootVolumeAtt.DeleteVolumeOnInstanceDelete
 			options := &vpcv1.GetVolumeOptions{
 				ID: instance.BootVolumeAttachment.Volume.ID,
 			}
@@ -2898,13 +3389,18 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		bootVolList = append(bootVolList, bootVol)
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
-	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource Instance (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isInstanceTags, tags)
-
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource Instance (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isInstanceAccessTags, accesstags)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -2920,7 +3416,20 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if instance.MetadataService != nil {
 		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+		metadataService := []map[string]interface{}{}
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+		if instance.MetadataService.Protocol != nil {
+			metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+		}
+		if instance.MetadataService.ResponseHopLimit != nil {
+			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+		}
+		metadataService = append(metadataService, metadataServiceMap)
+		d.Set(isInstanceMetadataService, metadataService)
 	}
+
 	if instance.Disks != nil {
 		disks := []map[string]interface{}{}
 		for _, disksItem := range instance.Disks {
@@ -3025,7 +3534,41 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
+	bootVolAutoDel := "boot_volume.0.auto_delete_volume"
+	if d.HasChange(bootVolAutoDel) && !d.IsNewResource() {
+		listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
+			InstanceID: &id,
+		}
+		vols, _, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
+		if err != nil {
+			return err
+		}
 
+		auto_delete := d.Get(bootVolAutoDel).(bool)
+		for _, vol := range vols.VolumeAttachments {
+			if *vol.Type == "boot" {
+				volAttachmentID := *vol.ID
+				updateInstanceVolAttOptions := &vpcv1.UpdateInstanceVolumeAttachmentOptions{
+					InstanceID: &id,
+					ID:         &volAttachmentID,
+				}
+				volAttNamePatchModel := &vpcv1.VolumeAttachmentPatch{
+					DeleteVolumeOnInstanceDelete: &auto_delete,
+				}
+				volAttNamePatchModelAsPatch, err := volAttNamePatchModel.AsPatch()
+				if err != nil || volAttNamePatchModelAsPatch == nil {
+					return fmt.Errorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
+				}
+				updateInstanceVolAttOptions.VolumeAttachmentPatch = volAttNamePatchModelAsPatch
+
+				instanceVolAttUpdate, response, err := instanceC.UpdateInstanceVolumeAttachment(updateInstanceVolAttOptions)
+				if err != nil || instanceVolAttUpdate == nil {
+					log.Printf("[DEBUG] Instance volume attachment updation err %s\n%s", err, response)
+					return err
+				}
+			}
+		}
+	}
 	if d.HasChange(isPlacementTargetDedicatedHost) || d.HasChange(isPlacementTargetDedicatedHostGroup) && !d.IsNewResource() {
 		dedicatedHost := d.Get(isPlacementTargetDedicatedHost).(string)
 		dedicatedHostGroup := d.Get(isPlacementTargetDedicatedHostGroup).(string)
@@ -3144,12 +3687,20 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if d.HasChange(isInstanceVolumes) {
-		ovs, nvs := d.GetChange(isInstanceVolumes)
-		ov := ovs.(*schema.Set)
-		nv := nvs.(*schema.Set)
-
-		remove := flex.ExpandStringList(ov.Difference(nv).List())
-		add := flex.ExpandStringList(nv.Difference(ov).List())
+		old, new := d.GetChange(isInstanceVolumes)
+		oldaddons := old.([]interface{})
+		newaddons := new.([]interface{})
+		var oldaddon, newaddon, add []string
+		for _, v := range oldaddons {
+			oldaddon = append(oldaddon, v.(string))
+		}
+		for _, v := range newaddons {
+			newaddon = append(newaddon, v.(string))
+		}
+		// 1. Remove old addons no longer appearing in the new set
+		// 2. Add new addons not already provisioned
+		remove := flex.Listdifference(oldaddon, newaddon)
+		add = flex.Listdifference(newaddon, oldaddon)
 		var volautoDelete bool
 		if volumeautodeleteIntf, ok := d.GetOk(isInstanceVolAttVolAutoDelete); ok && volumeautodeleteIntf != nil {
 			volautoDelete = volumeautodeleteIntf.(bool)
@@ -3482,6 +4033,50 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
+
+	if d.HasChange(isInstanceMetadataService) && !d.IsNewResource() {
+		metadataServiceIntf := d.Get(isInstanceMetadataService)
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		metadataServicePatchModel := &vpcv1.InstanceMetadataServicePatch{}
+		instancePatchModel := &vpcv1.InstancePatch{}
+		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
+		if d.HasChange(isInstanceMetadataService + ".0." + isInstanceMetadataServiceEnabled1) {
+			enabledIntf, ok := metadataServiceMap[isInstanceMetadataServiceEnabled1]
+			if ok {
+				enabled := enabledIntf.(bool)
+				metadataServicePatchModel.Enabled = &enabled
+			}
+		}
+		if d.HasChange(isInstanceMetadataService + ".0." + isInstanceMetadataServiceProtocol) {
+			protocolIntf, ok := metadataServiceMap[isInstanceMetadataServiceProtocol]
+			if ok {
+				protocol := protocolIntf.(string)
+				metadataServicePatchModel.Protocol = &protocol
+			}
+		}
+		if d.HasChange(isInstanceMetadataService + ".0." + isInstanceMetadataServiceRespHopLimit) {
+			respHopLimitIntf, ok := metadataServiceMap[isInstanceMetadataServiceRespHopLimit]
+			if ok {
+				respHopLimit := int64(respHopLimitIntf.(int))
+				metadataServicePatchModel.ResponseHopLimit = &respHopLimit
+			}
+		}
+		instancePatchModel.MetadataService = metadataServicePatchModel
+
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		if err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange(isInstanceAvailablePolicyHostFailure) && !d.IsNewResource() {
 
 		updatedoptions := &vpcv1.UpdateInstanceOptions{
@@ -3594,6 +4189,14 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				"Error on update of resource Instance (%s) tags: %s", d.Id(), err)
 		}
 	}
+	if d.HasChange(isInstanceAccessTags) {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource Instance (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return nil
 }
 
@@ -3685,9 +4288,12 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			return err
 		}
 		if _, ok := d.GetOk(isInstanceBootVolume); ok {
-			_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				return err
+			autoDel := d.Get("boot_volume.0.auto_delete_volume").(bool)
+			if autoDel {
+				_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -3975,4 +4581,30 @@ func resourceIbmIsInstanceDedicatedHostGroupReferenceDeletedToMap(dedicatedHostG
 	dedicatedHostGroupReferenceDeletedMap["more_info"] = dedicatedHostGroupReferenceDeleted.MoreInfo
 
 	return dedicatedHostGroupReferenceDeletedMap
+}
+
+func GetInstanceMetadataServiceOptions(d *schema.ResourceData) (metadataService *vpcv1.InstanceMetadataServicePrototype) {
+
+	if metadataServiceIntf, ok := d.GetOk(isInstanceMetadataService); ok {
+		metadataService = &vpcv1.InstanceMetadataServicePrototype{}
+		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
+		enabledIntf, ok := metadataServiceMap[isInstanceMetadataServiceEnabled1]
+
+		if ok {
+			enabled := enabledIntf.(bool)
+			metadataService.Enabled = &enabled
+		}
+		protocolIntf, ok := metadataServiceMap[isInstanceMetadataServiceProtocol]
+		if ok && protocolIntf.(string) != "" {
+			protocol := protocolIntf.(string)
+			metadataService.Protocol = &protocol
+		}
+		respHopLimitIntf, ok := metadataServiceMap[isInstanceMetadataServiceRespHopLimit]
+		if ok && int64(respHopLimitIntf.(int)) != 0 {
+			respHopLimit := int64(respHopLimitIntf.(int))
+			metadataService.ResponseHopLimit = &respHopLimit
+		}
+		return
+	}
+	return nil
 }

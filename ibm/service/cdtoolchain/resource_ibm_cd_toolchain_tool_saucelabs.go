@@ -38,20 +38,20 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 				MinItems:    1,
 				MaxItems:    1,
 				Required:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"username": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type the user name for your Sauce Labs account.",
+							Description: "The user name for the Sauce Labs account.",
 						},
-						"key": &schema.Schema{
+						"access_key": &schema.Schema{
 							Type:             schema.TypeString,
 							Required:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "Type your Sauce Labs access key. You can find your access key near the lower-left corner of your Sauce Labs account page.",
+							Description:      "The access key for the Sauce Labs account. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 					},
 				},
@@ -60,12 +60,12 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_saucelabs", "name"),
-				Description:  "Name of tool.",
+				Description:  "Name of the tool.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -91,12 +91,12 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -157,7 +157,10 @@ func resourceIBMCdToolchainToolSaucelabsCreate(context context.Context, d *schem
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("saucelabs")
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSaucelabs(), nil)
+	remapFields := map[string]string{
+		"access_key": "key",
+	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -203,7 +206,10 @@ func resourceIBMCdToolchainToolSaucelabsRead(context context.Context, d *schema.
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSaucelabs(), nil)
+	remapFields := map[string]string{
+		"access_key": "key",
+	}
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 	}
@@ -266,7 +272,10 @@ func resourceIBMCdToolchainToolSaucelabsUpdate(context context.Context, d *schem
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSaucelabs(), nil)
+		remapFields := map[string]string{
+			"access_key": "key",
+		}
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}

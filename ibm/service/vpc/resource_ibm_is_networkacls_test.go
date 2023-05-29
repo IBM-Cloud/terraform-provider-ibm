@@ -37,6 +37,54 @@ func TestNetworkACLGen1(t *testing.T) {
 	})
 }
 
+func TestNetworkACLResourceGroupUpdate(t *testing.T) {
+	var nwACL string
+	setResourceGroup := false
+	setResourceGroup1 := true
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISNetworkACLResourceGroupConfig(setResourceGroup),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.isExampleACL", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "name", "tf-nwacl-vpc"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "name", "tf-nwacl-subnet"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.isExampleACL", "resource_group_name", "Default"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISNetworkACLResourceGroupConfig(setResourceGroup1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.isExampleACL", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "name", "tf-nwacl-vpc"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet", "name", "tf-nwacl-subnet"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
+					resource.TestCheckResourceAttrWith("ibm_is_network_acl.isExampleACL", "resource_group_name", func(v string) error {
+						if v == "Default" {
+							return fmt.Errorf("Attribute 'resource_group' is still Default")
+						}
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
 func TestNetworkACLGen2(t *testing.T) {
 	var nwACL string
 	resource.Test(t, resource.TestCase{
@@ -184,4 +232,51 @@ func testAccCheckIBMISNetworkACLConfig1() string {
 		}
 	  }
 	`)
+}
+func testAccCheckIBMISNetworkACLResourceGroupConfig(resourceGroupSelect bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "tf-nwacl-vpc"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name           				 	= "tf-nwacl-subnet"
+		vpc             				= ibm_is_vpc.testacc_vpc.id
+		zone            				= "%s"
+		total_ipv4_address_count 		= 16
+		network_acl     				= ibm_is_network_acl.isExampleACL.id
+	}
+
+	resource "ibm_is_network_acl" "isExampleACL" {
+		tags = ["Tag1", "tag2"]
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		resource_group  				= %t ? "%s" : null
+		rules {
+		  name        = "outbound"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "outbound"
+		  icmp {
+			code = 8
+			type = 1
+		  }
+		}
+		rules {
+		  name        = "inbound"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "inbound"
+		  icmp {
+			code = 8
+			type = 1
+		  }
+		}
+
+		lifecycle {
+			create_before_destroy = true
+		}
+	  }
+	`, acc.ISZoneName, resourceGroupSelect, acc.IsResourceGroupID)
 }

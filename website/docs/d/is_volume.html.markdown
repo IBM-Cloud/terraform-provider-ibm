@@ -38,17 +38,39 @@ data "ibm_is_volume" "example" {
 Review the argument references that you can specify for your data source. 
 
 - `name` - (Required, String) The name of the volume.
-- `zone` - (Optional, String) The zone of the volume.
+- `zone` - (Optional, String) The zone name of the volume.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `access_tags`  - (List) Access management tags associated for the volume.
+- `active` - (Boolean) Indicates whether a running virtual server instance has an attachment to this volume.
+- `attachment_state` - (Boolean) The attachment state of the volume
 - `bandwidth` - The maximum bandwidth (in megabits per second) for the volume
+- `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. This must be `false` to perform an operation that is specified to require serialization.
 - `capacity` - (String) The capacity of the volume in gigabytes.
+- `created_at` - (String) The date and time that the volume was created.
 - `crn` - (String) The crn of this volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.
 - `encryption_type` - (String) The type of ecryption used in the volume [**provider_managed**, **user_managed**].
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+  Nested scheme for `health_reasons`:
+  - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+  - `message` - (String) An explanation of the reason for this health state.
+  - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `iops` - (String) The bandwidth for the volume.
+- `operating_system` - (List) The operating system associated with this volume. If absent, this volume was not created from an image, or the image did not include an operating system.
+  Nested scheme for **operating_system**:
+  - `architecture` - (String) The operating system architecture
+  - `dedicated_host_only` - (Boolean) Images with this operating system can only be used on dedicated hosts or dedicated host groups
+  - `display_name` - (String) A unique, display-friendly name for the operating system
+  - `family` - (String) The software family for this operating system
+  - `href` - (String) The URL for this operating system.
+  - `name` - (String) The globally unique name for this operating system.
+  - `vendor` - (String) The vendor of the operating system
+  - `version` - (String) The major release version of this operating system
 - `profile` - (String) The profile to use for this volume.
 - `resource_group` - (String) The resource group ID for this volume.
 - `source_snapshot` - ID of the snapshot, if volume was created from it.

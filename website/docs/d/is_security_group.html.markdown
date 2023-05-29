@@ -82,6 +82,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (List) Access management tags associated for the security group.
 - `crn` - The CRN of the security group.
 - `id` - (String) The ID of the security group.
 - `rules` - (List of Objects) The rules associated with security group. Each rule has following attributes.

@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolAppconfig() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolAppconfig() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,38 +83,38 @@ func DataSourceIBMCdToolchainToolAppconfig() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type a name for this tool integration, for example: my-appconfig. This name displays on your toolchain.",
+							Description: "The name used to identify this tool integration. App Configuration references include this name to identify the App Configuration instance where the configuration values reside. All App Configuration tools integrated into a toolchain should have a unique name to allow resolution to function properly.",
 						},
-						"region": &schema.Schema{
+						"location": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Region.",
+							Description: "The IBM Cloud location where the App Configuration service instance is located.",
 						},
-						"resource_group": &schema.Schema{
+						"resource_group_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Resource group.",
+							Description: "The name of the resource group where the App Configuration service instance is located.",
 						},
-						"instance_name": &schema.Schema{
+						"instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of your App Configuration instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: App Configuration-01.",
+							Description: "The guid of the App Configuration service instance.",
 						},
-						"environment_name": &schema.Schema{
+						"environment_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "App Configuration environment.",
+							Description: "The ID of the App Configuration environment.",
 						},
-						"collection_name": &schema.Schema{
+						"collection_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "App Configuration collection.",
+							Description: "The ID of the App Configuration collection.",
 						},
 					},
 				},
@@ -190,10 +190,11 @@ func dataSourceIBMCdToolchainToolAppconfigRead(context context.Context, d *schem
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group":   "resource-group",
-			"instance_name":    "instance-name",
-			"environment_name": "environment-name",
-			"collection_name":  "collection-name",
+			"location":            "region",
+			"resource_group_name": "resource-group",
+			"instance_id":         "instance-name",
+			"environment_id":      "environment-name",
+			"collection_id":       "collection-name",
 		}
 		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolAppconfig(), remapFields)
 		parameters = append(parameters, modelMap)

@@ -48,4 +48,5 @@ In addition to all argument reference list, you can access the following attribu
 - `reserved_ip` -  (String) The ID for the reserved IP.
 - `resource_type` -  (String) The resource type.
 - `subnet` -  (String) The ID of the subnet for the reserved IP.
-- `target` - The ID of the target for the reserved IP.
+- `target` - (String) The ID of the target for the reserved IP.
+- `target_crn` - (String) The crn of the target for the reserved IP.

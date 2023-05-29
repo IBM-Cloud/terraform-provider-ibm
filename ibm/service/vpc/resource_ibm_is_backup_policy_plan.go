@@ -85,6 +85,30 @@ func ResourceIBMIsBackupPolicyPlan() *schema.Resource {
 					},
 				},
 			},
+			"clone_policy": &schema.Schema{
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max_snapshots": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The maximum number of recent snapshots (per source) that will keep clones.",
+						},
+						"zones": &schema.Schema{
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Computed:    true,
+							Description: "The zone this backup policy plan will create snapshot clones in.",
+						},
+					},
+				},
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -162,6 +186,27 @@ func resourceIBMIsBackupPolicyPlanCreate(context context.Context, d *schema.Reso
 	}
 	if _, ok := d.GetOk("attach_user_tags"); ok {
 		createBackupPolicyPlanOptions.SetAttachUserTags((flex.ExpandStringList((d.Get("attach_user_tags").(*schema.Set)).List())))
+	}
+	if _, ok := d.GetOk("clone_policy"); ok {
+		backupPolicyPlanClonePolicyPrototype := &vpcv1.BackupPolicyPlanClonePolicyPrototype{}
+		if zonesOk, ok := d.GetOk("clone_policy.0.zones"); ok {
+			zonesSet := zonesOk.(*schema.Set)
+			if zonesSet.Len() != 0 {
+				zonesbjs := make([]vpcv1.ZoneIdentityIntf, zonesSet.Len())
+				for i, zone := range zonesSet.List() {
+					zonestr := zone.(string)
+					zonesbjs[i] = &vpcv1.ZoneIdentity{
+						Name: &zonestr,
+					}
+				}
+				backupPolicyPlanClonePolicyPrototype.Zones = zonesbjs
+			}
+		}
+		if maxSnapshotsOk, ok := d.GetOk("clone_policy.0.max_snapshots"); ok {
+			maxSnapshots := int64(maxSnapshotsOk.(int))
+			backupPolicyPlanClonePolicyPrototype.MaxSnapshots = &maxSnapshots
+		}
+		createBackupPolicyPlanOptions.SetClonePolicy(backupPolicyPlanClonePolicyPrototype)
 	}
 	if _, ok := d.GetOk("copy_user_tags"); ok {
 		createBackupPolicyPlanOptions.SetCopyUserTags(d.Get("copy_user_tags").(bool))
@@ -253,6 +298,24 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 		if err = d.Set("active", backupPolicyPlan.Active); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting active: %s", err))
 		}
+	}
+
+	if backupPolicyPlan.ClonePolicy != nil {
+		backupPolicyPlanClonePolicyMap := []map[string]interface{}{}
+		finalList := map[string]interface{}{}
+
+		if backupPolicyPlan.ClonePolicy.MaxSnapshots != nil {
+			finalList["max_snapshots"] = flex.IntValue(backupPolicyPlan.ClonePolicy.MaxSnapshots)
+		}
+		if backupPolicyPlan.ClonePolicy.Zones != nil && len(backupPolicyPlan.ClonePolicy.Zones) != 0 {
+			zoneList := []string{}
+			for i := 0; i < len(backupPolicyPlan.ClonePolicy.Zones); i++ {
+				zoneList = append(zoneList, string(*(backupPolicyPlan.ClonePolicy.Zones[i].Name)))
+			}
+			finalList["zones"] = flex.NewStringSet(schema.HashString, zoneList)
+		}
+		backupPolicyPlanClonePolicyMap = append(backupPolicyPlanClonePolicyMap, finalList)
+		d.Set("clone_policy", backupPolicyPlanClonePolicyMap)
 	}
 
 	if backupPolicyPlan.AttachUserTags != nil {
@@ -376,6 +439,31 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 			}
 		}
 		patchVals.DeletionTrigger = &backupPolicyPlanDeletionTriggerPrototype
+		hasChange = true
+	}
+
+	if d.HasChange("clone_policy") {
+		backupPolicyPlanClonePolicyPatch := &vpcv1.BackupPolicyPlanClonePolicyPatch{}
+		if d.HasChange("clone_policy.0.zones") {
+			zonesOk := d.Get("clone_policy.0.zones")
+			zonesSet := zonesOk.(*schema.Set)
+			if zonesSet.Len() != 0 {
+				zonesbjs := make([]vpcv1.ZoneIdentityIntf, zonesSet.Len())
+				for i, zone := range zonesSet.List() {
+					zonestr := zone.(string)
+					zonesbjs[i] = &vpcv1.ZoneIdentity{
+						Name: &zonestr,
+					}
+				}
+				backupPolicyPlanClonePolicyPatch.Zones = zonesbjs
+			}
+		}
+		if d.HasChange("clone_policy.0.max_snapshots") {
+			maxSnapshotsOk := d.Get("clone_policy.0.max_snapshots")
+			maxSnapshots := int64(maxSnapshotsOk.(int))
+			backupPolicyPlanClonePolicyPatch.MaxSnapshots = &maxSnapshots
+		}
+		patchVals.ClonePolicy = backupPolicyPlanClonePolicyPatch
 		hasChange = true
 	}
 

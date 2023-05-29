@@ -36,6 +36,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (String) Access management tags associated for the floating ip.
 - `address` - (String) The floating IP address that is created.
 - `crn` - (String) The CRN for this floating IP.
 - `id` - (String) The unique identifier of the floating IP.

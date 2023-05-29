@@ -51,7 +51,7 @@ resource "ibm_is_image" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
   metadata_service_enabled  = false
   
   primary_network_interface {
@@ -84,6 +84,7 @@ Review the argument references that you can specify for your data source.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+- `access_tags`  - (List) Access management tags associated for instance.
 - `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume` - (List of Objects) A list of boot volumes that were created for the instance.
@@ -133,8 +134,28 @@ In addition to all argument reference list, you can access the following attribu
     - `code` - (String) A snake case string succinctly identifying the reason for this lifecycle state.
     - `message` - (String) An explanation of the reason for this lifecycle state.
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
-- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
+- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. 
+ 
+  ->**lifecycle states** 
+    </br>&#x2022; deleting
+    </br>&#x2022; failed
+    </br>&#x2022; pending
+    </br>&#x2022; stable
+    </br>&#x2022; suspended
+    </br>&#x2022; updating
+    </br>&#x2022; waiting
+
 - `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+- `metadata_service` - (List) The metadata service configuration. 
+
+     Nested scheme for `metadata_service`:
+     - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+     - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+     - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+    
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
   Nested scheme for `network_interfaces`:

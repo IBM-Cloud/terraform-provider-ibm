@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,28 +83,28 @@ func DataSourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
-						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Region.",
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Resource group.",
+							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
 						},
 						"instance_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.",
+							Description: "The name of the Key Protect service instance.",
+						},
+						"location": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IBM Cloud location where the Key Protect service instance is located.",
+						},
+						"resource_group_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the resource group where the Key Protect service instance is located.",
 						},
 					},
 				},
@@ -180,8 +180,9 @@ func dataSourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *sche
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"location":            "region",
+			"resource_group_name": "resource-group",
+			"instance_name":       "instance-name",
 		}
 		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolKeyprotect(), remapFields)
 		parameters = append(parameters, modelMap)

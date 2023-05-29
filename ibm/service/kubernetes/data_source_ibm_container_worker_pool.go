@@ -101,10 +101,22 @@ func DataSourceIBMContainerWorkerPool() *schema.Resource {
 				Description: "list of labels to worker pool",
 			},
 
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The operating system of the workers in the worker pool",
+			},
+
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ID of the resource group.",
+			},
+
+			"autoscale_enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Autoscaling is enabled on the workerpool",
 			},
 		},
 	}
@@ -160,6 +172,7 @@ func dataSourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface
 	if workerPool.Labels != nil {
 		d.Set("labels", workerPool.Labels)
 	}
+	d.Set("operating_system", workerPool.OperatingSystem)
 	d.Set("zones", flex.FlattenZones(workerPool.Zones))
 	if strings.Contains(machineType, "encrypted") {
 		d.Set("disk_encryption", true)
@@ -167,5 +180,6 @@ func dataSourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface
 		d.Set("disk_encryption", false)
 	}
 	d.Set("resource_group_id", targetEnv.ResourceGroup)
+	d.Set("autoscale_enabled", workerPool.AutoscaleEnabled)
 	return nil
 }

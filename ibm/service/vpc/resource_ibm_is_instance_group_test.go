@@ -161,7 +161,7 @@ func testAccCheckIBMISInstanceGrouplbConfig(vpcname, subnetname, zone, cidr, nam
 	
 	resource "ibm_is_instance_template" "instancetemplate1" {
 	   name    = "%s"
-	   image   = "r134-63363662-a4ee-4ba4-a6c4-92e6c78c6b58"
+	   image   = "%s"
 	   profile = "bx2-8x32"
 	
 	   primary_network_interface {
@@ -182,15 +182,13 @@ func testAccCheckIBMISInstanceGrouplbConfig(vpcname, subnetname, zone, cidr, nam
         load_balancer_pool = ibm_is_lb_pool.testacc_lb_pool.pool_id
         application_port = "2364"
 	}
-	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, sshKeyName, publicKey, templateName, zone, instanceGroupName)
+	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, sshKeyName, publicKey, templateName, acc.IsImage, zone, instanceGroupName)
 
 }
 
 func testAccCheckIBMISInstanceGroupConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName string) string {
 	return fmt.Sprintf(`
-	provider "ibm" {
-		generation = 2
-	}
+	
 	
 	resource "ibm_is_vpc" "vpc2" {
 	  name = "%s"

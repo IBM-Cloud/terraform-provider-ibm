@@ -105,7 +105,6 @@ resource "ibm_is_instance_template" "example1" {
   name    = "example-template"
   image   = ibm_is_image.example.id
   profile = "bx2-8x32"
-  metadata_service_enabled = false
   
   primary_network_interface {
     subnet            = ibm_is_subnet.example.id
@@ -171,6 +170,34 @@ resource "ibm_is_instance_template" "example4" {
 
 ```
 
+```
+resource "ibm_is_instance_template" "example4" {
+  name    = "example-template"
+  image   = ibm_is_image.example.id
+  profile = "bx2-8x32"
+
+  metadata_service {
+    enabled = true
+    protocol = "https"
+    response_hop_limit = 5
+  }
+  
+  primary_network_interface {
+    subnet            = ibm_is_subnet.example.id
+    allow_ip_spoofing = true
+  }
+
+  dedicated_host = ibm_is_dedicated_host.example.id
+  vpc            = ibm_is_vpc.vpc2.id
+  zone           = "us-south-2"
+  keys           = [ibm_is_ssh_key.example.id]
+
+  boot_volume {
+    name                             = "example-boot-volume"
+    delete_volume_on_instance_delete = true
+  }
+}
+```
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 - `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
@@ -182,8 +209,17 @@ Review the argument references that you can specify for your resource.
 	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
 	- `name` - (Optional, String) The name of the boot volume.
   - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
-- `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
-- `dedicated_host` - (Optional, Force new resource,String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
+
+- `catalog_offering` - (Optional, Forces new resource, List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
+
+  ~> **Note:**
+  `catalog_offering` conflicts with `image`
+
+  Nested scheme for `catalog_offering`:
+    - `offering_crn` - (Optional, Force new resource, String) The CRN for this catalog offering. Identifies a catalog offering by this unique property. Conflicts with `catalog_offering.0.version_crn`
+    - `version_crn` - (Optional, Force new resource, String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property. Conflicts with `catalog_offering.0.offering_crn`
+   
+- `dedicated_host` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
 
   ~>**Note:** 
     only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
@@ -195,9 +231,22 @@ Review the argument references that you can specify for your resource.
 
 - `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
 - `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
-- `image` - (Required, String) The ID of the image to create the template.
+- `image` - (Required, String) The ID of the image to create the template. Conflicts when using `catalog_offering`
+
+  ~> **Note:**
+  `image` conflicts with `catalog_offering`
+
 - `keys` - (Required, List) List of SSH key IDs used to allow log in user to the instances.
 - `metadata_service_enabled` - (Optional, Forces new resource, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.  Default value : **false**
+
+  ~> **NOTE**
+  `metadata_service_enabled` is deprecated and will be removed in the future. Use `metadata_service` instead
+- `metadata_service` - (Optional, List) The metadata service configuration. 
+
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Optional, Forces new resource, Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.  Default is **false**
+  - `protocol` - (Optional, Forces new resource, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
+  - `response_hop_limit` - (Optional, Forces new resource, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The name of the instance template.
 - `placement_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the placement group where the instance is placed.
 
@@ -221,6 +270,7 @@ Review the argument references that you can specify for your resource.
   - `security_groups` - (Optional, List) List of security groups of the subnet.
   - `subnet` - (Required, Forces new resource, String) The VPC subnet to assign to the interface.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
+- `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `volume_attachments` - (Optional, Force new resource, List) A nested block describes the storage volume configuration for the template. 
 
   Nested scheme for `volume_attachments`:

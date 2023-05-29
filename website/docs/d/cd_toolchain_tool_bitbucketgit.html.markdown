@@ -3,21 +3,21 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_bitbucketgit"
 description: |-
   Get information about cd_toolchain_tool_bitbucketgit
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_bitbucketgit
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_bitbucketgit. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-bitbucket) page for more information.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_bitbucketgit" "cd_toolchain_tool_bitbucketgit" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -41,31 +41,33 @@ In addition to all argument references listed, you can access the following attr
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_root_url` - (String) e.g. https://api.bitbucket.org.
-	* `enable_traceability` - (Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
+	* `api_root_url` - (String) The API root URL for the Bitbucket Server.
+	* `default_branch` - (String) The default branch of the git repository.
+	* `enable_traceability` - (Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
-	* `git_id` - (String)
-	* `has_issues` - (Boolean) Select this check box to enable Bitbucket Issues for lightweight issue tracking.
-	  * Constraints: The default value is `true`.
+	* `git_id` - (String) Set this value to 'bitbucketgit' for bitbucket.org, or to the GUID of a custom Bitbucket server.
 	* `integration_owner` - (String) Select the user which git operations will be performed as.
-	* `owner_id` - (String)
-	* `private_repo` - (Boolean) Select this check box to make this repository private.
+	* `owner_id` - (String) The Bitbucket user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `private_repo` - (Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `false`.
-	* `repo_name` - (String)
-	* `repo_url` - (String) Type the URL of the repository that you are linking to.
-	* `source_repo_url` - (String) Type the URL of the repository that you are forking or cloning.
-	* `token_url` - (String) Integration token URL.
-	* `type` - (String)
-	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
+	* `repo_id` - (String) The ID of the Bitbucket repository.
+	* `repo_name` - (String) The name of the new Bitbucket repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `repo_url` - (String) The URL of the bitbucket repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
+	* `source_repo_url` - (String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
+	* `token_url` - (String) The token URL used for authorizing with the Bitbucket server.
+	* `toolchain_issues_enabled` - (Boolean) Setting this value to true will enable issues on the Bitbucket repository and add an issues tool card to the toolchain.  Setting the value to false will remove the tool card from the toolchain, but will not impact whether or not issues are enabled on the Bitbucket repository itself.
+	  * Constraints: The default value is `true`.
+	* `type` - (String) The operation that should be performed to initialize the new tool integration. Use 'new' or 'new_if_not_exists' to create a new git repository, 'clone' or 'clone_if_not_exists' to clone an existing repository into a new git repository, 'fork' or 'fork_if_not_exists' to fork an existing git repository, or 'link' to link to an existing git repository. If you attempt to apply a resource with type 'new', 'clone', or 'fork' when the target repo already exists, the attempt will fail. If you apply a resource with type 'new_if_not_exists`, 'clone_if_not_exists', or 'fork_if_not_exists' when the target repo already exists, the existing repo will be used as-is.
+	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`, `new_if_not_exists`, `clone_if_not_exists`, `fork_if_not_exists`.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.

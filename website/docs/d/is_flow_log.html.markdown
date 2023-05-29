@@ -43,6 +43,7 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `identifier` - The unique identifier of the FlowLogCollector.
+- `access_tags` - (String) Access management tags associated for flow log.
 - `active` - (Boolean) Indicates whether this collector is active.
 - `auto_delete` - (Boolean) If set to `true`, this flow log collector will be automatically deleted when the target is deleted.
 - `created_at` - (String) The date and time that the flow log collector was created.
@@ -80,9 +81,9 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for `vpc`:
 	- `crn` - (String) The CRN for this VPC.
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-		
+
 		Nested scheme for `deleted`:
-  		-`more_info` - (String) Link to documentation about deleted resources.
+		 - `more_info` - (String) Link to documentation about deleted resources.
 	- `href` - (String) The URL for this VPC.
 	- `id` - (String) The unique identifier for this VPC.
 	- `name` - (String) The unique user-defined name for this VPC.

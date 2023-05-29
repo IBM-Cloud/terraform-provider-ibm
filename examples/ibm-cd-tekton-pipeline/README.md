@@ -28,9 +28,12 @@ cd_tekton_pipeline resource:
 
 ```terraform
 resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
-  enable_slack_notifications = false
+  pipeline_id = ibm_cd_toolchain_tool_pipeline.cd_pipeline.tool_id
+  enable_notifications = false
   enable_partial_cloning = false
-  worker = var.cd_tekton_pipeline_worker
+  worker {
+    id = "public"
+  }
 }
 ```
 
@@ -39,10 +42,13 @@ cd_tekton_pipeline_definition resource:
 ```terraform
 resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  scm_source {
-    url = ibm_cd_toolchain_tool_hostedgit.tekton_repo.repo_url
-    branch = "master"
-    path = ".tekton"
+  source {
+    type = "git"
+    properties {
+      url = ibm_cd_toolchain_tool_hostedgit.tekton_repo.repo_url
+      branch = "master"
+      path = ".tekton"
+    }
   }
 }
 ```
@@ -153,7 +159,7 @@ data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_
 
 | Name | Version |
 |------|---------|
-| ibm | >=1.45.0 |
+| ibm | >=1.48.0 |
 
 ## Inputs
 
@@ -166,9 +172,6 @@ data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_
 | toolchain\_description | Description for the Toolchain | `string` | true |
 | clone\_repo | URL of the tekton repo to clone, e.g. `https://github.com/open-toolchain/hello-tekton` | `string` | true |
 | repo\_name | Name of the new repo that will be created in the toolchain | `string` | true |
-| cluster | Name of the cluster where the app will be deployed | `string` | true |
-| cluster_namespace | Namespace in the cluster where the app will be deployed. Default = `prod` | `string` | false |
-| registry_namespace | IBM Cloud Container Registry namespace where the app image will be built and stored | `string` | true |
 
 ## Outputs
 

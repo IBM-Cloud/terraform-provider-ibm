@@ -9,6 +9,7 @@ description: |-
 # ibm_container_cluster_config
 Retrieve information about all the Kubernetes configuration files and certificates to access your cluster. For more information, about cluster configuration, see [accessing clusters](https://cloud.ibm.com/docs/containers?topic=containers-access_cluster).
 
+If you plan to read a cluster that you also create with terraform and referencing its id, you may have to use wait_till field in the cluster resource with the value `Normal`.
 
 ## Example usage1
 

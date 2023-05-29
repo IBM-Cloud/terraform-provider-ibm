@@ -41,6 +41,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (List) Access management tags associated for dedicated host.
 - `available_memory` -  (String) The amount of memory in `GB` that is currently available for instances.
 - `available_vcpu` -  (List) The available `VCPU` for the dedicated host. 
 

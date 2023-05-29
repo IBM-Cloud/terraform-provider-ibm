@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -23,7 +24,16 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 		Read: dataSourceIBMVPNGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
-
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this vpn gateway belongs to",
+			},
+			"mode": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The mode of this vpn gateway.",
+			},
 			isvpnGateways: {
 				Type:        schema.TypeList,
 				Description: "Collection of VPN Gateways",
@@ -147,6 +157,20 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 								},
 							},
 						},
+						isVPNGatewayTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "VPN Gateway tags list",
+						},
+						isVPNGatewayAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access management tags",
+						},
 					},
 				},
 			},
@@ -162,7 +186,14 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	listvpnGWOptions := sess.NewListVPNGatewaysOptions()
-
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listvpnGWOptions.ResourceGroupID = &resGroup
+	}
+	if modeIntf, ok := d.GetOk("mode"); ok {
+		mode := modeIntf.(string)
+		listvpnGWOptions.Mode = &mode
+	}
 	start := ""
 	allrecs := []vpcv1.VPNGatewayIntf{}
 	for {
@@ -192,7 +223,19 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 		gateway[isVPNGatewayResourceGroup] = *data.ResourceGroup.ID
 		gateway[isVPNGatewaySubnet] = *data.Subnet.ID
 		gateway[isVPNGatewayCrn] = *data.CRN
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *data.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc VPN Gateway (%s) tags: %s", d.Id(), err)
+		}
+		gateway[isVPNGatewayTags] = tags
 
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *data.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource VPC VPN Gateway (%s) access tags: %s", d.Id(), err)
+		}
+		gateway[isVPNGatewayAccessTags] = accesstags
 		if data.Members != nil {
 			vpcMembersIpsList := make([]map[string]interface{}, 0)
 			for _, memberIP := range data.Members {

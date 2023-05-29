@@ -191,7 +191,6 @@ Nested scheme for **tasks**:
 
 * `tld_credentail` - (Optional, List) Stores the value of ScopeDetailsCredential .
 Nested scheme for **tld_credentail**:
-	* `credential_group` - (Optional, Map) Stores the value of credential_credential_group .
 	* `data` - (Optional, Map) Stores the value of credential_data .
 	* `description` - (Optional, String) Stores the value of credential_description .
 	* `display_fields` - (Optional, List) Details the fields on the credential. This will change as per credential type selected.
@@ -244,14 +243,7 @@ Nested scheme for **tld_credentail**:
 		  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 		* `winrm_usessl` - (Optional, String) Kerberos windows ssl.This is mandatory for Windows Kerberos Credential type.
 		  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.,_\\s]*$/`.
-	* `enabled_credential_group` - (Optional, Boolean) Stores the value of credential_enabled_credential_group .
 	* `gateway_key` - (Optional, String) Stores the value of credential_gateway_key .
-	* `groups` - (Optional, List) Stores the value of credential_groups .
-	Nested scheme for **groups**:
-		* `id` - (Required, String) credential group id.
-		  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
-		* `passphrase` - (Required, String) passphase of the credential.
-		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
 	* `id` - (Optional, String) Stores the value of credential_id .
 	* `is_enabled` - (Optional, Boolean) Stores the value of credential_is_enabled .
 	* `name` - (Optional, String) Stores the value of credential_name .
@@ -267,3 +259,4 @@ Nested scheme for **tld_credentail**:
 
 * `uuid` - (Optional, String) Stores the value of scope_uuid .Will be displayed only when value exists.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_scope is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

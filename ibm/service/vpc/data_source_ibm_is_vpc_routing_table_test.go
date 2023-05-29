@@ -47,6 +47,7 @@ func TestAccIBMIBMIsVPCRoutingTableDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table.ibm_is_vpc_routing_table_name", "route_direct_link_ingress"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table.ibm_is_vpc_routing_table_name", "route_transit_gateway_ingress"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table.ibm_is_vpc_routing_table_name", "route_vpc_zone_ingress"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc_routing_table.ibm_is_vpc_routing_table_name", "route_internet_ingress"),
 				),
 			},
 		},

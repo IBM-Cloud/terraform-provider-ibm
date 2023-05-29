@@ -18,12 +18,12 @@ import (
 
 func ResourceIBMSccPostureProfileImport() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMSccPostureProfileImport,
-		ReadContext:   resourceIBMSccPostureProfileImportRead,
-		UpdateContext: resourceIBMSccPostureProfileImportRead,
-		DeleteContext: resourceIBMSccPostureProfileImportDelete,
-		Importer:      &schema.ResourceImporter{},
-
+		CreateContext:      resourceIBMSccPostureProfileImport,
+		ReadContext:        resourceIBMSccPostureProfileImportRead,
+		UpdateContext:      resourceIBMSccPostureProfileImportRead,
+		DeleteContext:      resourceIBMSccPostureProfileImportDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "**Removal Notification** Resource Removal: Resource ibm_scc_posture_profile_import is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"file": {
 				Type:        schema.TypeString,

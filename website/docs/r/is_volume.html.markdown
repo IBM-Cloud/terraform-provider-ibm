@@ -45,6 +45,15 @@ resource "ibm_is_volume" "example" {
 
 ```
 
+The following example creates a volume from snapshot.
+```terraform
+resource "ibm_is_volume" "storage" {
+  name            = "example-volume"
+  profile         = "general-purpose"
+  zone            = "us-south-1"
+  source_snapshot = ibm_is_snapshot.example.id
+}
+```
 ## Timeouts
 The `ibm_is_volume` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -55,9 +64,16 @@ The `ibm_is_volume` resource provides the following [Timeouts](https://www.terra
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the bare metal server.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `capacity` - (Optional, Integer) (The capacity of the volume in gigabytes. This defaults to `100`, minimum to `10 ` and maximum to `16000`.
 
-  ~> **NOTE:** Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity). Can be updated only if volume is attached to an running virtual server instance. Stopped instance will be started on update of capacity of the volume.
+  ~> **NOTE:** Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity). Can be updated only if volume is attached to an running virtual server instance. Stopped instance will be started on update of capacity of the volume.If `source_snapshot` is provided `capacity` must be at least the snapshot's minimum_capacity. The maximum value may increase in the future and If unspecified, the capacity will be the source snapshot's minimum_capacity.
 
 - `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume
 - `delete_all_snapshots` - (Optional, Bool) Deletes all snapshots created from this volume.
@@ -87,15 +103,21 @@ Review the argument references that you can specify for your resource.
   ~> **NOTE:**  tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this volume.
 - `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
+- `source_snapshot` - The ID of snapshot from which to clone the volume.
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `zone` - (Required, Forces new resource, String) The location of the volume.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
-
 - `encryption_type` - (String) The type of encryption used in the volume [**provider_managed**, **user_managed**].
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+  Nested scheme for `health_reasons`:
+  - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+  - `message` - (String) An explanation of the reason for this health state.
+  - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `id` - (String) The unique identifier of the volume.
-- `source_snapshot` - ID of the snapshot, if volume was created from it.
 - `status` - (String) The status of volume. Supported values are **available**, **failed**, **pending**, **unusable**, or **pending_deletion**.
 - `status_reasons` - (List) Array of reasons for the current status.
 

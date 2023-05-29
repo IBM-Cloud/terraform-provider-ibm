@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -154,6 +155,13 @@ func DataSourceIBMISImages() *schema.Resource {
 								},
 							},
 						},
+						isImageAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
+						},
 					},
 				},
 			},
@@ -293,6 +301,12 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 			catalogOfferingList = append(catalogOfferingList, catalogOfferingMap)
 			l[isImageCatalogOffering] = catalogOfferingList
 		}
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource image (%s) access tags: %s", d.Id(), err)
+		}
+		l[isImageAccessTags] = accesstags
 		imagesInfo = append(imagesInfo, l)
 	}
 	d.SetId(dataSourceIBMISImagesID(d))

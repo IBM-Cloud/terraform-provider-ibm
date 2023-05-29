@@ -60,19 +60,26 @@ resource "ibm_is_lb" "example" {
   subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "example" {
+resource "ibm_is_lb_listener" "example_http_source" {
+  lb       = ibm_is_lb.example.id
+  port     = "9080"
+  protocol = "http"
+}
+
+resource "ibm_is_lb_listener" "example_https_target" {
   lb                   = ibm_is_lb.example.id
   port                 = "9086"
   protocol             = "https"
   certificate_instance = "crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
 }
+
 resource "ibm_is_lb_listener_policy" "example" {
   lb                                = ibm_is_lb.example.id
-  listener                          = ibm_is_lb_listener.example.listener_id
+  listener                          = ibm_is_lb_listener.example_http_source.listener_id
   action                            = "https_redirect"
   priority                          = 2
   name                              = "example-listener"
-  target_https_redirect_listener    = ibm_is_lb_listener.example.listener_id
+  target_https_redirect_listener    = ibm_is_lb_listener.example_https_target.listener_id
   target_https_redirect_status_code = 301
   target_https_redirect_uri         = "/example?doc=geta"
   rules {
@@ -155,9 +162,7 @@ Review the argument references that you can specify for your resource.
 - `target_https_redirect_status_code` - (Optional, Integer) When `action` is set to **https_redirect**, specify the HTTP status code to be returned in the redirect response. Supported values are `301`, `302`, `303`, `307`, `308`.
 - `target_https_redirect_uri` - (Optional, String) When `action` is set to **https_redirect**, specify the target URI where traffic will be redirected.
 
-~> **Note:**
-
-When action is `forward`, `target_id` should specify which pool the load balancer forwards the traffic to.
+~> **Note:** When action is `forward`, `target_id` should specify which pool the load balancer forwards the traffic to.
 When action is `redirect`, `target_url` should specify the `url` and `target_http_status_code` to specify the code used in the redirect response.
 When action is `https_redirect`, `target_https_redirect_listener` should specify the ID of the listener, `target_https_redirect_status_code` to specify the code used in the redirect response and `target_https_redirect_uri` to specify the target URI where traffic will be redirected.
 Network load balancer does not support `ibm_is_lb_listener_policy`.

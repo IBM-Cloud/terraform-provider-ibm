@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -120,6 +121,32 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 						},
+						isInstanceMetadataService: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The metadata service configuration",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceMetadataServiceEnabled1: {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+									},
+
+									isInstanceMetadataServiceProtocol: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+									},
+
+									isInstanceMetadataServiceRespHopLimit: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The hop limit (IP time to live) for IP response packets from the metadata service",
+									},
+								},
+							},
+						},
 						"status": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -220,7 +247,21 @@ func DataSourceIBMISInstances() *schema.Resource {
 								},
 							},
 						},
+						isInstanceTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "list of tags for the instance",
+						},
 
+						isInstanceAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "list of access tags for the instance",
+						},
 						"boot_volume": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -791,6 +832,18 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		l["memory"] = *instance.Memory
 		if instance.MetadataService != nil {
 			l[isInstanceMetadataServiceEnabled] = *instance.MetadataService.Enabled
+			metadataService := []map[string]interface{}{}
+			metadataServiceMap := map[string]interface{}{}
+
+			metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+			if instance.MetadataService.Protocol != nil {
+				metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+			}
+			if instance.MetadataService.ResponseHopLimit != nil {
+				metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+			}
+			metadataService = append(metadataService, metadataServiceMap)
+			l[isInstanceMetadataService] = metadataService
 		}
 		l["status"] = *instance.Status
 		l["resource_group"] = *instance.ResourceGroup.ID
@@ -841,6 +894,19 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			bootVolList = append(bootVolList, bootVol)
 			l["boot_volume"] = bootVolList
 		}
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
+		}
+		l[isInstanceTags] = tags
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc Instance (%s) access tags: %s", d.Id(), err)
+		}
+		l[isInstanceAccessTags] = accesstags
 		//set the status reasons
 		statusReasonsList := make([]map[string]interface{}, 0)
 		if instance.StatusReasons != nil {

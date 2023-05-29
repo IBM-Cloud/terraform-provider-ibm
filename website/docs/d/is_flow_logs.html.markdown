@@ -28,14 +28,35 @@ provider "ibm" {
 data "ibm_is_flow_logs" "example" {
 }
 
+data "ibm_is_flow_logs" "example1" {
+  name = "my-flow-log"
+  vpc_name = ibm_is_vpc.example.name
+  vpc_crn = ibm_is_vpc.example.crn
+  vpc = ibm_is_vpc.example.id
+  resource_group = ibm_is_vpc.example.resource_group
+  target = ibm_is_vpc.example.id
+  target_resource_type = "vpc"
+}
 ```
+## Argument reference
 
+Review the argument references that you can specify for your data source. 
+
+- `name` - (String) The name of the flow log collector
+- `vpc_name` - (String) The name of the VPC this flow log collector resides in
+- `vpc_crn` - (String) The CRN of the VPC this flow log collector resides in
+- `vpc` - (String) The ID of the VPC this flow log collector resides in
+- `resource_group` - (String) The ID of the Resource group this flow log collector belongs to
+- `target` - (String) The ID of the target this collector is collecting flow logs for.
+- `target_resource_type` - (String) The target resource type for this flow log collector. Available options are `instance`, `network_interface`, `subnet`, `vpc`
+ 
 ## Attribute reference
 Review the attribute references that you can access after you retrieve your data source. 
 
 - `flow_log_collectors` - (List) Lists all the flow logs in the IBM Cloud.
 
   Nested scheme for `flow_log_collectors`:
+    - `access_tags` - (String) Access management tags associated for flow log.
 	- `active` - (String) Indicates whether the collector is active.
 	- `created_at` - (Timestamp) The date and time the flow log created.
 	- `crn` - (String) The CRN of the flow log collector.

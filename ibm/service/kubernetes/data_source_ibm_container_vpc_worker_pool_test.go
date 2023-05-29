@@ -57,17 +57,27 @@ func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfig(name string) s
 
 func TestAccIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-wp-%d", acctest.RandIntRange(10, 100))
+	testChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "id"),
+		resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "autoscale_enabled", "false"),
+	}
+	if acc.CrkID != "" {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "crk", acc.CrkID),
+			resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "kms_instance_id", acc.KmsInstanceID),
+		)
+	}
+	if acc.WorkerPoolSecondaryStorage != "" {
+		testChecks = append(testChecks, resource.TestCheckResourceAttr(
+			"data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "secondary_storage.0.name", acc.WorkerPoolSecondaryStorage))
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(name),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "id"),
-					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "crk", acc.CrkID),
-					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "kms_instance_id", acc.KmsInstanceID),
-				),
+				Check:  resource.ComposeTestCheckFunc(testChecks...),
 			},
 		},
 	})
@@ -119,6 +129,33 @@ func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceKmsAccountEnvvar(name
 	data "ibm_container_vpc_cluster_worker_pool" "testacc_ds_kms_worker_pool" {
 	    cluster = "${ibm_container_vpc_worker_pool.test_pool.cluster}"
 	    worker_pool_name = "${ibm_container_vpc_worker_pool.test_pool.worker_pool_name}"
+	}
+`
+}
+func TestAccIBMContainerVpcOpenshiftClusterWorkerPoolDataSource(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+	openshiftFlavour := "bx2.16x64"
+	openShiftworkerCount := "2"
+	operatingSystem := "REDHAT_8_64"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcOpenshiftClusterWorkerPoolDataSourceConfig(name, openshiftFlavour, openShiftworkerCount, operatingSystem),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.default_worker_pool", "operating_system", operatingSystem),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMContainerVpcOpenshiftClusterWorkerPoolDataSourceConfig(name, openshiftFlavour, openShiftworkerCount, operatingSystem string) string {
+	return testAccCheckIBMContainerOcpClusterBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem) + `
+	data "ibm_container_vpc_cluster_worker_pool" "default_worker_pool" {
+	    cluster = ibm_container_vpc_cluster.cluster.id
+	    worker_pool_name = "default"
 	}
 `
 }

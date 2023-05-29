@@ -134,7 +134,7 @@ func resourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData, m
 
 	client := st.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
 
-	vg, err := client.Get(vgID)
+	vg, err := client.GetDetails(vgID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -144,6 +144,7 @@ func resourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("consistency_group_name", vg.ConsistencyGroupName)
 	d.Set("replication_status", vg.ReplicationStatus)
 	d.Set(PIVolumeGroupName, vg.Name)
+	d.Set(PIVolumeGroupsVolumeIds, vg.VolumeIDs)
 	d.Set("status_description_errors", flattenVolumeGroupStatusDescription(vg.StatusDescription.Errors))
 
 	return nil
@@ -196,16 +197,18 @@ func resourceIBMPIVolumeGroupDelete(ctx context.Context, d *schema.ResourceData,
 	client := st.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
 
 	volids := flex.ExpandStringList((d.Get(PIVolumeGroupsVolumeIds).(*schema.Set)).List())
-	body := &models.VolumeGroupUpdate{
-		RemoveVolumes: volids,
-	}
-	err = client.UpdateVolumeGroup(vgID, body)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	_, err = isWaitForIBMPIVolumeGroupAvailable(ctx, client, vgID, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
+	if len(volids) > 0 {
+		body := &models.VolumeGroupUpdate{
+			RemoveVolumes: volids,
+		}
+		err = client.UpdateVolumeGroup(vgID, body)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = isWaitForIBMPIVolumeGroupAvailable(ctx, client, vgID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	err = client.DeleteVolumeGroup(vgID)
@@ -217,6 +220,7 @@ func resourceIBMPIVolumeGroupDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	d.SetId("")
 	return nil
 }
 func isWaitForIBMPIVolumeGroupAvailable(ctx context.Context, client *st.IBMPIVolumeGroupClient, id string, timeout time.Duration) (interface{}, error) {

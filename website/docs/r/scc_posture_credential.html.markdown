@@ -17,7 +17,6 @@ resource "ibm_scc_posture_credential" "credentials" {
   description = "This credential is used for testing."
   display_fields {"password":"testpassword","username":"test"}
   enabled = true
-  group = {"id":"1","passphrase":"passphrase"}
   name = "test_create"
   purpose = "discovery_fact_collection_remediation"
   type = "username_password"
@@ -81,12 +80,6 @@ Nested scheme for **display_fields**:
 	* `winrm_usessl` - (Optional, String) Kerberos windows ssl.This is mandatory for Windows Kerberos Credential type ie when type=kerberos_windows.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
 * `enabled` - (Required, Boolean) Credentials status enabled/disbaled.
-* `group` - (Required, List) Credential group details.
-Nested scheme for **group**:
-	* `id` - (Required, String) credential group id.
-	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
-	* `passphrase` - (Required, String) passphase of the credential.
-	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
 * `name` - (Required, String) Credentials name.
   * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\._,\\s]*$/`.
 * `purpose` - (Required, String) Purpose for which the credential is created.
@@ -113,3 +106,4 @@ $ terraform import ibm_scc_posture_credential.credentials <id>
 ```
 $ terraform import ibm_scc_posture_credential.credentials 1
 ```
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_credential is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

@@ -73,7 +73,7 @@ func DataSourceIBMIsBackupPolicyPlan() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"delete_after": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "The maximum number of days to keep each backup after creation.",
 						},
 						"delete_over_count": &schema.Schema{
@@ -93,6 +93,25 @@ func DataSourceIBMIsBackupPolicyPlan() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The lifecycle state of this backup policy plan.",
+			},
+			"clone_policy": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max_snapshots": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum number of recent snapshots (per source) that will keep clones.",
+						},
+						"zones": &schema.Schema{
+							Type:        schema.TypeSet,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Computed:    true,
+							Description: "The zone this backup policy plan will create snapshot clones in.",
+						},
+					},
+				},
 			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -169,6 +188,23 @@ func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Reso
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting deletion_trigger %s", err))
 		}
+	}
+	if backupPolicyPlan.ClonePolicy != nil {
+		backupPolicyPlanClonePolicyMap := []map[string]interface{}{}
+		finalList := map[string]interface{}{}
+
+		if backupPolicyPlan.ClonePolicy.MaxSnapshots != nil {
+			finalList["max_snapshots"] = flex.IntValue(backupPolicyPlan.ClonePolicy.MaxSnapshots)
+		}
+		if backupPolicyPlan.ClonePolicy.Zones != nil && len(backupPolicyPlan.ClonePolicy.Zones) != 0 {
+			zoneList := []string{}
+			for i := 0; i < len(backupPolicyPlan.ClonePolicy.Zones); i++ {
+				zoneList = append(zoneList, string(*(backupPolicyPlan.ClonePolicy.Zones[i].Name)))
+			}
+			finalList["zones"] = flex.NewStringSet(schema.HashString, zoneList)
+		}
+		backupPolicyPlanClonePolicyMap = append(backupPolicyPlanClonePolicyMap, finalList)
+		d.Set("clone_policy", backupPolicyPlanClonePolicyMap)
 	}
 	if err = d.Set("href", backupPolicyPlan.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))

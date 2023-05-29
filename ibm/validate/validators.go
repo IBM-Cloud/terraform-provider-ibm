@@ -962,6 +962,26 @@ func ValidateAllowedRangeInt(start, end int) schema.SchemaValidateFunc {
 	}
 }
 
+func ValidateAllowedPolicyType(policyType []string) schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		value := v.(string)
+		var setTrue bool
+		for _, s := range policyType {
+			if value == s {
+				setTrue = true
+				break
+			}
+		}
+		if !setTrue {
+			errors = append(errors, fmt.Errorf(
+				"%q must contain a valid policy type, the value should be exactly either of (%s), got %s",
+				k, policyType, value))
+
+		}
+		return
+	}
+}
+
 func validateDeadPeerDetectionTimeout(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
 	if secs < 15 || secs > 86399 {

@@ -59,7 +59,32 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
+			isInstanceMetadataService: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceMetadataServiceEnabled1: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+						},
 
+						isInstanceMetadataServiceProtocol: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+						},
+
+						isInstanceMetadataServiceRespHopLimit: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The hop limit (IP time to live) for IP response packets from the metadata service",
+						},
+					},
+				},
+			},
 			isInstancePEM: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -174,6 +199,13 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "list of tags for the instance",
+			},
+			isInstanceAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "list of access tags for the instance",
 			},
 			isInstanceBootVolume: {
 				Type:        schema.TypeList,
@@ -706,7 +738,22 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	}
 	if instance.MetadataService != nil {
 		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+
+		metadataService := []map[string]interface{}{}
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+		if instance.MetadataService.Protocol != nil {
+			metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+		}
+		if instance.MetadataService.ResponseHopLimit != nil {
+			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+		}
+
+		metadataService = append(metadataService, metadataServiceMap)
+		d.Set(isInstanceMetadataService, metadataService)
 	}
+
 	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
 		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
 	}
@@ -1027,12 +1074,18 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		bootVolList = append(bootVolList, bootVol)
 		d.Set(isInstanceBootVolume, bootVolList)
 	}
-	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isInstanceTags, tags)
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc Instance (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isInstanceAccessTags, accesstags)
 
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
@@ -1116,7 +1169,7 @@ func dataSourceInstanceDisksToMap(disksItem vpcv1.InstanceDisk) (disksMap map[st
 
 	return disksMap
 }
-func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.LifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
+func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.InstanceLifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
 	lifecycleReasonsList = make([]map[string]interface{}, 0)
 	for _, lr := range lifecycleReasons {
 		currentLR := map[string]interface{}{}

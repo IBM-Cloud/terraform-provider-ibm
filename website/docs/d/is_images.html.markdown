@@ -48,14 +48,17 @@ You can access the following attribute references after your data source is crea
 - `images` - (List) List of all images in the IBM Cloud Infrastructure.
 
   Nested scheme for `images`:
+  - `access_tags`  - (List) Access management tags associated for image.
   - `architecture` - (String) The architecture for this image.
   - `crn` - (String) The CRN for this image.
   - `catalog_offering` - (List) The catalog offering for this image.
-    Nested scheme for **catalog_offering**:
-    - `managed` - (Bool) Indicates whether this image is managed as part of a catalog offering. If an image is managed, accounts in the same enterprise with access to that catalog can specify the image's catalog offering version CRN to provision virtual server instances using the image.
-    - `version` - (List) The catalog offering version associated with this image. If absent, this image is not associated with a cloud catalog offering.
-        Nested scheme for **version**:
-          - `crn` - (String) The CRN for this version of a catalog offering
+
+      Nested scheme for **catalog_offering**:
+      - `managed` - (Bool) Indicates whether this image is managed as part of a catalog offering. If an image is managed, accounts in the same enterprise with access to that catalog can specify the image's catalog offering version CRN to provision virtual server instances using the image.
+      - `version` - (List) The catalog offering version associated with this image. If absent, this image is not associated with a cloud catalog offering.
+      
+          Nested scheme for **version**:
+            - `crn` - (String) The CRN for this version of a catalog offering
   - `checksum` - (String) TThe SHA256 checksum for this image.
   - `encryption` - (String) The type of encryption used on the image.
   - `encryption_key` - (String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.

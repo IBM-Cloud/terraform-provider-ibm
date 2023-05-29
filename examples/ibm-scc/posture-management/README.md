@@ -164,7 +164,6 @@ data "ibm_scc_posture_scope_correlation" "scope_correlation_instance" {
 | name | Credentials name. | `string` | true |
 | description | Credentials description. | `string` | true |
 | display_fields | Details the fields on the credential. This will change as per credential type selected. | `` | true |
-| group | Credential group details. | `` | true |
 | purpose | Purpose for which the credential is created. | `string` | true |
 | id | The id for the given API. | `string` | true |
 | profile_type | The profile type ID. This will be 4 for profiles and 6 for group profiles. | `string` | true |

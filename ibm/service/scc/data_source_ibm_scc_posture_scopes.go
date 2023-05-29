@@ -19,8 +19,8 @@ import (
 
 func DataSourceIBMSccPostureScopes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureListScopesRead,
-
+		ReadContext:        dataSourceIBMSccPostureListScopesRead,
+		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_posture_scopes is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"offset": {
 				Type:        schema.TypeInt,

@@ -66,6 +66,7 @@ func testAccCheckIBMEnFCMSubscriptionDataSourceConfig(instanceName, name, descri
 			params {
 				sender_id = "sender id value"
 				server_key  = "server key value"
+				pre_prod = false
 			}
 		}
 	}

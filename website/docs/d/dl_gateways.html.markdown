@@ -1,4 +1,4 @@
----
+
 subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateways"
@@ -13,12 +13,13 @@ Import the details of an existing IBM Cloud Infrastructure Direct Link Gateways.
 
 ## Example usage
 
+---
 ```terraform
 data "ibm_dl_gateways" "ds_dlgateways" {
 }
      
 ```
-
+---
 ## Argument reference
 There is no argument reference that you need to specify for the data source. 
 
@@ -30,15 +31,14 @@ You can access the following attribute references after your data source is crea
 
   Nested scheme for `gateways`:
   - `as_prepends` - (List) List of AS Prepend configuration information
-
     Nested scheme for `as_prepend`:
-    - `created_at`- (String) The date and time AS Prepend was created.
-    - `id` - (String) The unique identifier for this AS Prepend.
-    - `length` - (Integer) Number of times the ASN to appended to the AS Path.
-    - `policy` - (String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
-    - `prefix` - (String, Optional) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
-    - `updated_at`- (String) The date and time AS Prepend was updated
-
+     - `created_at`- (String) The date and time AS Prepend was created.
+     - `id` - (String) The unique identifier for this AS Prepend.
+     - `length` - (Integer) Number of times the ASN to appended to the AS Path.
+     - `policy` - (String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
+     - `prefix` - (Deprecated, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
+     - `specific_prefixes` - (Array of Strings) Array of prefixes this AS Prepend applies to. 
+     - `updated_at`- (String) The date and time AS Prepend was updated   
   - `authentication_key` - (String) BGP MD5 authentication key.
   - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.
   - `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.
@@ -50,10 +50,14 @@ You can access the following attribute references after your data source is crea
   - `bgp_ibm_asn` - (String) The IBM BGP ASN.
   - `bgp_ibm_cidr` - (String) The IBM BGP  CIDR.
   - `bgp_status` - (String) The gateway BGP status.
+  - `bgp_status_updated_at` - (String) Date and time bgp status was updated.
+  - `default_export_route_filter` - (String) The default directional route filter action    that applies to routes that do not match any directional route filters. 
+  - `default_import_route_filter` - (String) The default directional route filter action that applies to routes that do not match any directional route filters.
   - `completion_notice_reject_reason` - (String) The reason for completion notice rejection. Only included on a dedicated gateways type with a rejected completion notice.
   - `connection_mode` - (String) Type of network connection that you want to bind to your direct link.
   - `cross_connect_router` - (String) The cross connect router. Only included on a dedicated gateways type..
   - `link_status` - (String) The gateway link status. Only included on a dedicated gateways type.
+  - `link_status_updated_at` - (String) Date and time link status was updated.
   - `created_at` - (String) The date and time resource is created.
   - `crn` - (String) The CRN of the gateway.
   - `global` - (Bool) Gateway with global routing as **true** can connect networks outside your associated region.

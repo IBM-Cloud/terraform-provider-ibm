@@ -18,8 +18,8 @@ import (
 
 func DataSourceIBMSccPostureCredential() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureCredentialRead,
-
+		ReadContext:        dataSourceIBMSccPostureCredentialRead,
+		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_posture_credential is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"credential_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -195,25 +195,6 @@ func DataSourceIBMSccPostureCredential() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the user who modified the credentials.",
 			},
-			"group": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Credential group details.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "credential group id.",
-						},
-						"passphrase": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "passphase of the credential.",
-						},
-					},
-				},
-			},
 			"purpose": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -276,13 +257,6 @@ func dataSourceIBMSccPostureCredentialRead(context context.Context, d *schema.Re
 	}
 	if err = d.Set("updated_by", credential.UpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
-	}
-
-	if credential.Group != nil {
-		err = d.Set("group", dataSourceCredentialFlattenGroup(*credential.Group))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting group %s", err))
-		}
 	}
 	if err = d.Set("purpose", credential.Purpose); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting purpose: %s", err))
@@ -376,25 +350,4 @@ func dataSourceCredentialDisplayFieldsToMap(displayFieldsItem posturemanagementv
 	}
 
 	return displayFieldsMap
-}
-
-func dataSourceCredentialFlattenGroup(result posturemanagementv2.CredentialGroup) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceCredentialGroupToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
-}
-
-func dataSourceCredentialGroupToMap(groupItem posturemanagementv2.CredentialGroup) (groupMap map[string]interface{}) {
-	groupMap = map[string]interface{}{}
-
-	if groupItem.ID != nil {
-		groupMap["id"] = groupItem.ID
-	}
-	if groupItem.Passphrase != nil {
-		groupMap["passphrase"] = groupItem.Passphrase
-	}
-
-	return groupMap
 }

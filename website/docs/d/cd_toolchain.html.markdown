@@ -3,12 +3,10 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain"
 description: |-
   Get information about cd_toolchain
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain
-
-~> **Beta:** This data source is in Beta, and is subject to change.
 
 Provides a read-only data source for cd_toolchain. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
@@ -16,7 +14,7 @@ Provides a read-only data source for cd_toolchain. You can then reference the fi
 
 ```hcl
 data "ibm_cd_toolchain" "cd_toolchain" {
-	toolchain_id = "toolchain_id"
+	toolchain_id = "b7c3f7f6-0613-4a2c-a4b0-3189ac95bdc9"
 }
 ```
 
@@ -49,9 +47,9 @@ In addition to all argument references listed, you can access the following attr
 * `name` - (String) Toolchain name.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 
-* `resource_group_id` - (String) Resource group where toolchain can be found.
+* `resource_group_id` - (String) Resource group where the toolchain is located.
 
-* `tags` - (List) Tags associated with the toolchain.
+* `ui_href` - (String) URL of a user-facing user interface for this toolchain.
 
 * `updated_at` - (String) Latest toolchain update timestamp.
 

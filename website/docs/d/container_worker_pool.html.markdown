@@ -32,6 +32,7 @@ Review the attribute references that are exported.
 - `hardware` - (String) The level of hardware isolation for your worker node.
 - `labels` - (String) Labels on all the workers in the worker pool.
 - `machine_type` - (String) The machine type of the worker node.
+- `operating_system` (String) The operating system of the workers in the worker pool.
 - `resource_group_id` - (String) The ID of the worker pool resource group.
 - `size_per_zone` - (String) Number of workers per zone in this pool.
 - `state` - (String) Worker pool state. 
@@ -43,3 +44,4 @@ Review the attribute references that are exported.
 - `crk` - Root Key ID for boot volume encryption.
 - `kms_instance_id` - Instance ID for boot volume encryption.
 - `kms_account_id` - Account ID for boot volume encryption, if other account is providing the kms.
+- `autoscale_enabled` - (Bool) Autoscaling is enabled on the workerpool

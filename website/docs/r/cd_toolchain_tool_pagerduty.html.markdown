@@ -3,30 +3,24 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_pagerduty"
 description: |-
   Manages cd_toolchain_tool_pagerduty.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_pagerduty
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_pagerduty. This allows cd_toolchain_tool_pagerduty to be created, updated and deleted.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-pagerduty) page for more information.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_pagerduty" "cd_toolchain_tool_pagerduty" {
+resource "ibm_cd_toolchain_tool_pagerduty" "cd_toolchain_tool_pagerduty_instance" {
   parameters {
-		key_type = "api"
-		api_key = "api_key"
-		service_name = "service_name"
-		user_email = "user_email"
-		user_phone = "user_phone"
-		service_url = "service_url"
-		service_key = "service_key"
-		service_id = "service_id"
+		service_url = "https://mycompany.example.pagerduty.com/services/AS34FR4"
+		service_key = "<service_key>"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -34,19 +28,13 @@ resource "ibm_cd_toolchain_tool_pagerduty" "cd_toolchain_tool_pagerduty" {
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Name of tool.
+* `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_key` - (Optional, String) Type your API access key. You can find or create this key on the Configuration/API Access section of the PagerDuty website. [PagerDuty Support article on how to get API Key](https://support.pagerduty.com/hc/en-us/articles/202829310-Generating-an-API-Key).
-	* `key_type` - (Required, String) Select whether to integrate at the account level with an API key or at the service level with an integration key.
-	  * Constraints: Allowable values are: `api`, `service`.
-	* `service_id` - (Optional, String) service_id.
-	* `service_key` - (Optional, String) Type your integration key. You can find or create this key in the Integrations section of the PagerDuty service page.
-	* `service_name` - (Optional, String) Type the name of the PagerDuty service to post alerts to. If you want alerts to be posted to a new service, type a new name. PagerDuty will create the service.
-	* `service_url` - (Optional, String) Type the URL of the PagerDuty service to post alerts to.
-	* `user_email` - (Optional, String) Type the email address of the user to contact when an alert is posted. If you want alerts to be sent to a new email address, type the address and PagerDuty will create a user.
-	* `user_phone` - (Optional, String) Type the phone number of the user to contact when an alert is posted. Include the national code followed by a space and a 10-digit number; for example: +1 1234567890. If you omit the national code, it is set to +1 by default.
+	* `service_id` - (Computed, String) The service ID of the PagerDuty service.
+	* `service_key` - (Required, String) The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
+	* `service_url` - (Required, String) The URL of the PagerDuty service to post alerts to.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -59,9 +47,9 @@ In addition to all argument references listed, you can access the following attr
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
-* `resource_group_id` - (String) Resource group where tool can be found.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

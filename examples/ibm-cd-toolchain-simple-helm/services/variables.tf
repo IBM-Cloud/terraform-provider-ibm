@@ -4,7 +4,7 @@ variable "kp_name" {
 }
 variable "kp_region" {
   type        = string
-  description = "Resion of the Key Protect Toolchain Service Instance in IBM Cloud"
+  description = "Region of the Key Protect Toolchain Service Instance in IBM Cloud"
 }
 
 variable "cluster_name" {
@@ -25,5 +25,5 @@ variable "registry_region" {
 variable "region" {
 }
 
-variable "ibm_cloud_api" {
+variable "ibmcloud_api" {
 }

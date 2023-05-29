@@ -159,9 +159,10 @@ data "ibm_resource_group" "resource_group" {
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "mycluster"
   vpc_id            = ibm_is_vpc.vpc1.id
-  flavor            = "bx2-4x16"
+  flavor            = "bx2.4x16"
   worker_count      = 3
-  resource_group_id = data.ibm_resource_group.resource_group.id  zones {
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  zones {
     subnet_id = ibm_is_subnet.subnet1.id
     name      = "us-south-1"
   }
@@ -170,7 +171,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 resource "ibm_container_vpc_worker_pool" "cluster_pool" {
   cluster           = ibm_container_vpc_cluster.cluster.id
   worker_pool_name  = "mywp"
-  flavor            = "bx2-2x8"
+  flavor            = "bx2.2x8"
   vpc_id            = ibm_is_vpc.vpc1.id
   worker_count      = 3
   resource_group_id = data.ibm_resource_group.resource_group.id
@@ -214,6 +215,7 @@ Review the argument references that you can specify for your resource.
 - `machine_type` - (Optional, Forces new resource, String) The machine type for your worker node. The machine type determines the amount of memory, CPU, and disk space that is available to the worker node. For an overview of supported machine types, see [Planning your worker node setup](https://cloud.ibm.com/docs/containers?topic=containers-planning_worker_nodes). You can retrieve the value by executing the `ibmcloud ks machine-types <data-center>` command in the IBM Cloud CLI.
 - `name` - (Required, Forces new resource, String) The name of the cluster. The name must start with a letter, can contain letters, numbers, and hyphen (-), and must be 35 characters or fewer. Use a name that is unique across regions. The cluster name and the region in which the cluster is deployed form the fully qualified domain name for the Ingress subdomain. To ensure that the Ingress subdomain is unique within a region, the cluster name might be truncated and appended with a random value within the Ingress domain name.
 - `no_subnet` - (Optional, Forces new resource, Bool) If set to **true**, no portable subnet is created during cluster creation. The portable subnet is used to provide portable IP addresses for the Ingress subdomain and Kubernetes load balancer services. If set to **false**, a portable subnet is created by default. The default is **false**.
+- `operating_system` - (Optional, Forces new resource, String) The operating system of the workers in the default worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions).
 - `patch_version` - (Optional, String) Updates the worker nodes with the required patch version. The patch_version should be in the format:  `patch_version_fixpack_version`. For more information, about Kubernetes version information and update, see [Kubernetes version update](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). **NOTE:** To update the patch or fix pack versions of the worker nodes, run the command `ibmcloud ks workers -c <cluster_name_or_id> output json`. Fetch the required patch & fix pack versions from `kubeVersion.target` and set the `patch_version` parameter.
 - `public_service_endpoint` - (Optional, Forces new resource, Bool) If set to **true**, your cluster is set up with a public service endpoint. You can use the public service endpoint to access the Kubernetes master from the public network. To use service endpoints, your account must be enabled for [Virtual Routing and Forwarding (VRF)](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint#vrf). For more information, see [Worker-to-master and user-to-master communication: Service endpoints](https://cloud.ibm.com/docs/containers?topic=containers-plan_clusters#workeruser-master). If set to **false**, the public service endpoint is disabled for your cluster.
 - `public_vlan_id` - (Optional, Forces new resource, String) The ID of the public VLAN that you want to use for your worker nodes. You can retrieve the VLAN ID with the `ibmcloud ks vlans --zone <zone>` command. </br></br> * **Free clusters**: If you want to provision a free cluster, you do not need to enter a public VLAN ID. Your cluster is automatically connected to a public VLAN that is owned by IBM. </br> * **Standard clusters**: If you create a standard cluster and you have an existing public VLAN ID for the zone where you plan to set up worker nodes, you must enter the VLAN ID. To retrieve the ID, run `ibmcloud ks vlans --zone <zone>`. If you do not have an existing public VLAN ID, or you want to connect your cluster to a private VLAN only, do not specify this option. **Note**: The prerequisite for using service endpoints, account must be enabled for [Virtual Routing and Forwarding (VRF)](https://cloud.ibm.com/docs/infrastructure/direct-link/vrf-on-ibm-cloud.html#overview-of-virtual-routing-and-forwarding-vrf-on-ibm-cloud). Account must be enabled for connectivity to service endpoints. Use the resource `ibm_container_cluster_feature` to update the `public_service_endpoint` and `private_service_endpoint`. 
@@ -241,7 +243,7 @@ Review the argument references that you can specify for your resource.
   - `version` - (Optional, String) The Kubernetes version that you want to update your worker nodes to.
 - `worker_num`- (Optional, Integer) The number of worker nodes in your cluster. This attribute creates a worker node that is not associated with a worker pool. **Note**: Conflicts with `workers`.
 - `wait_for_worker_update` - (Optional, Bool) Set to **true** to wait and update the Kubernetes version of worker nodes. **NOTE** Setting wait_for_worker_update to **false** is not recommended. Setting **false** results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
-- `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution.This argument in the resource will wait for the specified stage and complete the execution. The default stage value is `IngressReady`. The supported stages are  `MasterNodeReady` Resource waits till the master node is ready.  `OneWorkerNodeReady` Resource waits till one worker node is in to ready state.  `IngressReady` Resource waits till the ingress-host and ingress-secret are available.
+- `wait_till` - (Optional, String) The cluster creation happens in multi-stages. To avoid the longer wait times for resource execution. This argument in the resource will wait for the specified stage and complete the execution. The default stage value is `IngressReady`. The supported stages are  `MasterNodeReady` Resource waits till the master node is ready.  `OneWorkerNodeReady` Resource waits till one worker node is in to ready state. `Normal` Terraform marks the creation of your cluster complete when the cluster is in a [Normal](https://cloud.ibm.com/docs/containers?topic=containers-cluster-states-reference#cluster-state-normal) state. If you plan to do reading on the cluster from a datasource, use `Normal`. At the moment wait_till `Normal` also ignores the critical and warning states the are temporary happen during cluster creation, but cannot distinguish it from actual critical or warning states. `IngressReady` Resource waits till the ingress-host and ingress-secret are available.
 
 
 **Note**

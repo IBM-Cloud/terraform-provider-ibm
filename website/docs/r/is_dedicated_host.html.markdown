@@ -41,6 +41,13 @@ resource "ibm_is_dedicated_host" "example" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the dedicated host.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `host_group` - (Required, String)The unique ID of the dedicated host group for this dedicated host.
 - `instance_placement_enabled`- (Optional, Bool) If set to **true** instances can be placed on the dedicated host.
 - `name` - (Optional, String) The unique user-defined name for the dedicated host. If unspecified, the name will be a hyphenated list of randomly selected words.
@@ -65,16 +72,16 @@ In addition to all argument reference list, you can access the following attribu
   - `href` - (String) The URL for this disk.
   - `id` - (String) The unique identifier for this disk.
   - `instance_disks` - (List) Instance disks that are on this dedicated host disk. Nested `instance_disks` blocks have the following structure:
-
-    Nested scheme for `instance_disks`:
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-			
-       Nested scheme for `deleted`:
-       - `more_info` - (String) Link to documentation about deleted resources.
-   - `href` - (String) The URL for this instance disk.
-   - `id` - (String) The unique identifier for this instance disk.
-   - `name` - (String) The user defined name for this disk.
-   - `resource_type` - (String) The resource type.
+  
+      Nested scheme for `instance_disks`:
+      - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+          
+          Nested scheme for `deleted`:
+          - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (String) The URL for this instance disk.
+      - `id` - (String) The unique identifier for this instance disk.
+      - `name` - (String) The user defined name for this disk.
+      - `resource_type` - (String) The resource type.
  - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
  - `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
  - `name` - (String) The user defined or system provided name for this disk.
