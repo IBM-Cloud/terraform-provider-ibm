@@ -14037,7 +14037,9 @@ func (vpcbeta *VpcbetaV1) ListShareMountTargetsWithContext(ctx context.Context, 
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
+	builder.AddQuery("version", "2023-05-30")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
 	if listShareMountTargetsOptions.Name != nil {
 		builder.AddQuery("name", fmt.Sprint(*listShareMountTargetsOptions.Name))
@@ -14107,7 +14109,9 @@ func (vpcbeta *VpcbetaV1) CreateShareMountTargetWithContext(ctx context.Context,
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
+	builder.AddQuery("version", "2023-05-30")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
 
 	body := make(map[string]interface{})
@@ -14186,7 +14190,9 @@ func (vpcbeta *VpcbetaV1) DeleteShareMountTargetWithContext(ctx context.Context,
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
+	builder.AddQuery("version", "2023-05-30")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
 
 	request, err := builder.Build()
@@ -14250,7 +14256,9 @@ func (vpcbeta *VpcbetaV1) GetShareMountTargetWithContext(ctx context.Context, ge
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
+	builder.AddQuery("version", "2023-05-30")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
 
 	request, err := builder.Build()
@@ -14317,7 +14325,9 @@ func (vpcbeta *VpcbetaV1) UpdateShareMountTargetWithContext(ctx context.Context,
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
+	builder.AddQuery("version", "2023-05-30")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
 
 	_, err = builder.SetBodyContentJSON(updateShareMountTargetOptions.ShareMountTargetPatch)
