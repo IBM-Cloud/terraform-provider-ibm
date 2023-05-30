@@ -216,12 +216,18 @@ func resourceIBMMetricsRouterSettingsUpdate(context context.Context, d *schema.R
 			}
 			updateSettingsOptions.SetDefaultTargets(defaultTargets)
 		} else {
+			// In case, need to remove all the default_targets
 			updateSettingsOptions.SetDefaultTargets([]metricsrouterv3.TargetIdentity{})
 		}
 		hasChange = true
 	}
-	if _, ok := d.GetOk("permitted_target_regions"); ok {
-		updateSettingsOptions.SetPermittedTargetRegions(resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{})))
+	if d.HasChange("permitted_target_regions") {
+		if _, ok := d.GetOk("permitted_target_regions"); ok {
+			updateSettingsOptions.SetPermittedTargetRegions(resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{})))
+		} else {
+			// In case, need to remove all the permitted_target_regions
+			updateSettingsOptions.SetPermittedTargetRegions([]string{})
+		}
 		hasChange = true
 	}
 	if d.HasChange("primary_metadata_region") {

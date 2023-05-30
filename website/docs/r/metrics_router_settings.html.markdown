@@ -13,16 +13,28 @@ Provides a resource for metrics_router_settings. This allows metrics_router_sett
 ## Example Usage
 
 ###
+Example with no default_targets
+
+```hcl
+resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
+  permitted_target_regions = ["us-south"]
+  primary_metadata_region = "us-south"
+  backup_metadata_region = "us-east"
+  private_api_endpoint_only = false
+}
+```
+
+###
 Example with single default_targets
 
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
-  backup_metadata_region = "us-east"
   default_targets {
 		id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
   }
   permitted_target_regions = ["us-south"]
   primary_metadata_region = "us-south"
+  backup_metadata_region = "us-east"
   private_api_endpoint_only = false
 }
 ```
@@ -32,7 +44,6 @@ Example with multiple default_targets
 
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
-  backup_metadata_region = "us-east"
   default_targets {
 		id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
   }
@@ -41,6 +52,19 @@ resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
   }
   permitted_target_regions = ["us-south", "us-east"]
   primary_metadata_region = "us-south"
+  backup_metadata_region = "us-east"
+  private_api_endpoint_only = false
+}
+```
+
+###
+Example without permitted_target_regions
+
+```hcl
+resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
+  permitted_target_regions = []
+  primary_metadata_region = "us-south"
+  backup_metadata_region = "us-east"
   private_api_endpoint_only = false
 }
 ```
