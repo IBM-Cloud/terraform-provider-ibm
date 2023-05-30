@@ -96,10 +96,12 @@ func resourceIBMDNSLinkedZoneCreate(ctx context.Context, d *schema.ResourceData,
 
 	instanceID := d.Get(DnsLinkedZoneInstanceID).(string)
 	description := d.Get(DnsLinkedZoneDescription).(string)
+	label := d.Get(DnsLinkedZoneLabel).(string)
 
 	createLinkedZoneOptions := sess.NewCreateLinkedZoneOptions(instanceID)
 
 	createLinkedZoneOptions.SetDescription(description)
+	createLinkedZoneOptions.SetLabel(label)
 	mk := "dns_linked_zone_" + instanceID
 	conns.IbmMutexKV.Lock(mk)
 	defer conns.IbmMutexKV.Unlock(mk)
@@ -120,7 +122,7 @@ func resourceIBMDNSLinkedZoneRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 2 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id()))
+		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/linkedDnsZoneID", d.Id()))
 	}
 	instanceID := idSet[0]
 	linkedDnsZoneID := idSet[1]
@@ -135,13 +137,9 @@ func resourceIBMDNSLinkedZoneRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Linked zone:%s\n%s", err, response))
 	}
 
-	//transferFrom := []string{}
-	//for _, value := range resource.TransferFrom {
-	//	values := strings.Split(value, ":")
-	//	transferFrom = append(transferFrom, values[0])
-	//}
 	d.Set(DnsLinkedZoneInstanceID, idSet[0])
 	d.Set(DnsLinkedZoneDescription, *resource.Description)
+	d.Set(DnsLinkedZoneLabel, *resource.Label)
 	d.Set(DnsLinkedZoneCreatedOn, resource.CreatedOn)
 	d.Set(DnsLinkedZoneModifiedOn, resource.ModifiedOn)
 
@@ -172,12 +170,10 @@ func resourceIBMDNSLinkedZoneUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChange(DnsLinkedZoneDescription) ||
 		d.HasChange(DnsLinkedZoneLabel) {
 		updateLinkedZoneOptions := sess.NewUpdateLinkedZoneOptions(instanceID, linkedDnsZoneID)
-		//transferFrom := flex.ExpandStringList(d.Get(pdnsSecondaryZoneTransferFrom).([]interface{}))
 		description := d.Get(DnsLinkedZoneDescription).(string)
-		//enabled := d.Get(pdnsSecZoneEnabled).(bool)
-		//updateSecondaryZoneOptions.SetTransferFrom(transferFrom)
+		label := d.Get(DnsLinkedZoneLabel).(string)
 		updateLinkedZoneOptions.SetDescription(description)
-		//updateSecondaryZoneOptions.SetEnabled(enabled)
+		updateLinkedZoneOptions.SetLabel(label)
 
 		mk := "dns_linked_zone_" + instanceID
 		conns.IbmMutexKV.Lock(mk)

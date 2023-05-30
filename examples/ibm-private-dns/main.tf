@@ -252,11 +252,17 @@ resource "ibm_dns_custom_resolver_secondary_zone" "test" {
   transfer_from = ["10.0.0.8"]
 }
 
+resource "ibm_dns_linked_zone" "test" {
+  instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
+  description   = "seczone terraform plugin test"
+}
+
 data "ibm_dns_custom_resolver_secondary_zones" "test-sz" {
   depends_on  = [ibm_dns_custom_resolver_secondary_zone.test]
   instance_id	= ibm_dns_custom_resolver.test.instance_id
   resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 }
+
 
 output "ibm_dns_custom_resolver_secondary_zones_output" {
   value = data.ibm_dns_custom_resolver_secondary_zones.test-sz
