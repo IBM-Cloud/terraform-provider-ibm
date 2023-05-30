@@ -33,9 +33,10 @@ func ResourceIBMMetricsRouterSettings() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target uuid for a pre-defined metrics router target.",
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The target uuid for a pre-defined metrics router target.",
+							ValidateFunc: validate.InvokeValidator("ibm_metrics_router_settings", "id"),
 						},
 					},
 				},
@@ -87,6 +88,15 @@ func ResourceIBMMetricsRouterSettingsValidator() *validate.ResourceValidator {
 			Regexp:                     `^[a-zA-Z0-9 \-_]+$`,
 			MinValueLength:             3,
 			MaxValueLength:             256,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^[a-zA-Z0-9 \-._:]+$`,
+			MinValueLength:             3,
+			MaxValueLength:             1000,
 		},
 	)
 

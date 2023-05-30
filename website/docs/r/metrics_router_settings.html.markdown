@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_metrics_router_settings"
 description: |-
-  Manages metrics_router_settings.
+  Manages metrics_router_settings
 subcategory: "IBM Cloud Metrics Routing API Version 3"
 ---
 
@@ -12,8 +12,7 @@ Provides a resource for metrics_router_settings. This allows metrics_router_sett
 
 ## Example Usage
 
-###
-Example with no default_targets
+### Example with no default_targets
 
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
@@ -24,8 +23,7 @@ resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
 }
 ```
 
-###
-Example with single default_targets
+### Example with single default_targets
 
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
@@ -39,8 +37,7 @@ resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
 }
 ```
 
-###
-Example with multiple default_targets
+### Example with multiple default_targets
 
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
@@ -57,8 +54,7 @@ resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
 }
 ```
 
-###
-Example without permitted_target_regions
+### Example without permitted_target_regions
 
 ```hcl
 resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {

@@ -5,6 +5,7 @@ package metricsrouter_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -77,6 +78,25 @@ func TestAccIBMMetricsRouterSettingsAllArgs(t *testing.T) {
 	})
 }
 
+func TestAccIBMMetricsRouterSettingsEmptyTarget(t *testing.T) {
+	primaryMetadataRegion := "us-south"
+	backupMetadataRegion := "us-east"
+	permitted_target_regions := "us-south"
+	privateAPIEndpointOnly := "false"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMMetricsRouterSettingsDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMMetricsRouterSettingsEmptyTarget(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
+				ExpectError: regexp.MustCompile("should match regexp"),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMMetricsRouterSettingsConfigBasic(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
@@ -114,6 +134,20 @@ func testAccCheckIBMMetricsRouterSettingsConfig(permitted_target_regions, primar
 			private_api_endpoint_only = %s
 		}
 	`, permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
+}
+
+func testAccCheckIBMMetricsRouterSettingsEmptyTarget(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
+	return fmt.Sprintf(`
+        resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
+            default_targets {
+                id = ""
+            }
+            permitted_target_regions = ["%s"]
+            primary_metadata_region = "%s"
+            backup_metadata_region = "%s"
+            private_api_endpoint_only = %s
+        }
+    `, permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
 }
 
 func testAccCheckIBMMetricsRouterSettingsExists(n string, obj metricsrouterv3.Setting) resource.TestCheckFunc {

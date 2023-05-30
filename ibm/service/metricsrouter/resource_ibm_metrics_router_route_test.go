@@ -5,6 +5,7 @@ package metricsrouter_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -56,6 +57,79 @@ func TestAccIBMMetricsRouterRouteBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMMetricsRouterRouteDropEmptyTarget(t *testing.T) {
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	action := "drop"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMMetricsRouterRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMMetricsRouterRouteEmptyTarget(name, action),
+				ExpectError: regexp.MustCompile("should match regexp"),
+			},
+		},
+	})
+}
+
+func TestAccIBMMetricsRouterRouteSendEmptyTarget(t *testing.T) {
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	action := "send"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMMetricsRouterRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMMetricsRouterRouteEmptyTarget(name, action),
+				ExpectError: regexp.MustCompile("should match regexp"),
+			},
+		},
+	})
+}
+
+func TestAccIBMMetricsRouterRouteDropNoTarget(t *testing.T) {
+	var conf metricsrouterv3.Route
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	action := "drop"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMMetricsRouterRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMMetricsRouterRouteNoTarget(name, action),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMMetricsRouterRouteExists("ibm_metrics_router_route.metrics_router_route_instance", conf),
+					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.operand", "resource_type"),
+					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.operator", "is"),
+					resource.TestCheckResourceAttr("ibm_metrics_router_route.metrics_router_route_instance", "rules.0.inclusion_filters.0.values.0", "worker"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMMetricsRouterRouteSendNoTarget(t *testing.T) {
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	action := "send"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMMetricsRouterRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMMetricsRouterRouteNoTarget(name, action),
+				ExpectError: regexp.MustCompile("Send rule action requires non-empty targets"),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMMetricsRouterRouteConfigBasic(name, filter_value string) string {
 	return fmt.Sprintf(`
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
@@ -78,6 +152,39 @@ func testAccCheckIBMMetricsRouterRouteConfigBasic(name, filter_value string) str
 			}
 		}
 	`, name, filter_value)
+}
+
+func testAccCheckIBMMetricsRouterRouteEmptyTarget(name string, action string) string {
+	return fmt.Sprintf(`
+	resource "ibm_metrics_router_route" "metrics_router_route_instance" {
+		name = "%s"
+		rules {
+			action = "%s"
+			targets {
+				id = ""
+			}
+			inclusion_filters {
+				operand = "resource_type"
+				operator = "is"
+				values = ["worker"]
+			}
+		}
+	}`, name, action)
+}
+
+func testAccCheckIBMMetricsRouterRouteNoTarget(name string, action string) string {
+	return fmt.Sprintf(`
+	resource "ibm_metrics_router_route" "metrics_router_route_instance" {
+		name = "%s"
+		rules {
+			action = "%s"
+			inclusion_filters {
+				operand = "resource_type"
+				operator = "is"
+				values = ["worker"]
+			}
+		}
+	}`, name, action)
 }
 
 func testAccCheckIBMMetricsRouterRouteExists(n string, obj metricsrouterv3.Route) resource.TestCheckFunc {

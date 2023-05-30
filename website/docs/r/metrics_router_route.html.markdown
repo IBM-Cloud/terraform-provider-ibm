@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_metrics_router_route"
 description: |-
-  Manages metrics_router_route.
+  Manages metrics_router_route
 subcategory: "IBM Cloud Metrics Routing API Version 3"
 ---
 
@@ -63,6 +63,22 @@ resource "ibm_metrics_router_route" "metrics_router_route_instance" {
 			values = ["worker"]
 		}
   	}
+}
+```
+
+### Example of route with drop action
+
+```hcl
+resource "ibm_metrics_router_route" "metrics_router_route_instance" {
+	name = "my-route"
+	rules {
+		action = "drop"
+		inclusion_filters {
+			operand = "location"
+			operator = "is"
+			values = [ "us-south" ]
+		}
+	}
 }
 ```
 

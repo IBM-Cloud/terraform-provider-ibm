@@ -40,20 +40,22 @@ func ResourceIBMMetricsRouterRoute() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The action if the inclusion_filters matches, default is `send` action.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "The action if the inclusion_filters matches, default is `send` action.",
+							ValidateFunc: validate.InvokeValidator("ibm_metrics_router_route", "action"),
 						},
 						"targets": &schema.Schema{
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "A collection of targets with ID in the request.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The target uuid for a pre-defined metrics router target.",
+										Type:         schema.TypeString,
+										Required:     true,
+										Description:  "The target uuid for a pre-defined metrics router target.",
+										ValidateFunc: validate.InvokeValidator("ibm_metrics_router_route", "id"),
 									},
 								},
 							},
@@ -65,14 +67,16 @@ func ResourceIBMMetricsRouterRoute() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"operand": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Part of CRN that can be compared with values.",
+										Type:         schema.TypeString,
+										Required:     true,
+										Description:  "Part of CRN that can be compared with values.",
+										ValidateFunc: validate.InvokeValidator("ibm_metrics_router_route", "operand"),
 									},
 									"operator": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The operation to be performed between operand and the provided values. 'is' to be used with one value and 'in' can support upto 20 values in the array.",
+										Type:         schema.TypeString,
+										Required:     true,
+										Description:  "The operation to be performed between operand and the provided values. 'is' to be used with one value and 'in' can support upto 20 values in the array.",
+										ValidateFunc: validate.InvokeValidator("ibm_metrics_router_route", "operator"),
 									},
 									"values": &schema.Schema{
 										Type:        schema.TypeList,
@@ -116,6 +120,36 @@ func ResourceIBMMetricsRouterRouteValidator() *validate.ResourceValidator {
 			Regexp:                     `^[a-zA-Z0-9 \-._:]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             1000,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^[a-zA-Z0-9 \-._:]+$`,
+			MinValueLength:             3,
+			MaxValueLength:             1000,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "operand",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "location, service_name, service_instance, resource_type, resource",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "operator",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "is, in",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "action",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "send, drop",
 		},
 	)
 
