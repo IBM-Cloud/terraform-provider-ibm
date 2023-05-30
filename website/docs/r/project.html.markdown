@@ -14,40 +14,34 @@ Provides a resource for project. This allows project to be created, updated and 
 
 ```hcl
 resource "ibm_project" "project_instance" {
+  name = "acme-microservice"
+  description = "A microservice to deploy on top of ACME infrastructure."
+  location = "us-south"
+  resource_group = "Default"
   configs {
-		id = "id"
-		name = "name"
-		labels = [ "labels" ]
-		description = "description"
+		name = "config-stage"
+		labels = [ "env:stage" ]
+		description = "config-stage description"
 		authorizations {
-			trusted_profile {
-				id = "id"
-				target_iam_id = "target_iam_id"
-			}
-			method = "method"
-			api_key = "api_key"
+			method = "API_EKY"
+			api_key = "api_key_value"
 		}
 		compliance_profile {
-			id = "id"
+			id = "compliance_profile_id"
 			instance_id = "instance_id"
 			instance_location = "instance_location"
 			attachment_id = "attachment_id"
 			profile_name = "profile_name"
 		}
-		locator_id = "locator_id"
+		locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.018edf04-e772-4ca2-9785-03e8e03bef72-global"
 		input {
-			name = "name"
-			value = "anything as a string"
+			name = "app_repo_name"
 		}
 		setting {
-			name = "name"
-			value = "value"
-		}
+		  	name = "app_repo_name"
+			value = "static-website-dev-app-repo"
+	    }
   }
-  description = "A microservice to deploy on top of ACME infrastructure."
-  location = "us-south"
-  name = "acme-microservice"
-  resource_group = "Default"
 }
 ```
 

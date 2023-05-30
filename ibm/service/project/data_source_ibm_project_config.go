@@ -354,20 +354,20 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting setting %s", err))
 	}
 
-	metadata := []map[string]interface{}{}
-
-	if projectConfig.Metadata != nil {
-		modelMap, err := dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfig.Metadata)
-		if err != nil {
-			return diag.FromErr(err)
+	/*
+		metadata := []map[string]interface{}{}
+		if projectConfig.Metadata != nil {
+			modelMap, err := dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfig.Metadata)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			metadata = append(metadata, modelMap)
 		}
-		metadata = append(metadata, modelMap)
-	}
 
-	if err = d.Set("metadata", metadata); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting metadata %s", err))
-	}
-
+		if err = d.Set("metadata", metadata); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting metadata %s", err))
+		}
+	*/
 	return nil
 }
 

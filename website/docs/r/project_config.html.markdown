@@ -14,32 +14,22 @@ Provides a resource for project_config. This allows project_config to be created
 
 ```hcl
 resource "ibm_project_config" "project_config_instance" {
-  authorizations {
-		trusted_profile {
-			id = "id"
-			target_iam_id = "target_iam_id"
-		}
-		method = "method"
-		api_key = "api_key"
-  }
-  compliance_profile {
-		id = "id"
-		instance_id = "instance_id"
-		instance_location = "instance_location"
-		attachment_id = "attachment_id"
-		profile_name = "profile_name"
-  }
-  description = "Stage environment configuration, which includes services common to all the environment regions. There must be a blueprint configuring all the services common to the stage regions. It is a terraform_template type of configuration that points to a Github repo hosting the terraform modules that can be deployed by a Schematics Workspace."
-  input {
-		name = "name"
-		value = "anything as a string"
-  }
-  locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.018edf04-e772-4ca2-9785-03e8e03bef72-global"
-  name = "env-stage"
   project_id = ibm_project.project_instance.id
+  name = "env-stage"
+  description = "Stage environment configuration, which includes services common to all the environment regions. There must be a blueprint configuring all the services common to the stage regions. It is a terraform_template type of configuration that points to a Github repo hosting the terraform modules that can be deployed by a Schematics Workspace."
+  locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.018edf04-e772-4ca2-9785-03e8e03bef72-global"
+  authorizations {
+		method = "TRUSTED_PROFILE"
+		trusted_profile {
+		  id = "Profile-047ef95f-2f90-4276-8ba3-92512cc4a6ae"
+		}
+  }
+  input {
+		name = "app_repo_name"
+  }
   setting {
-		name = "name"
-		value = "value"
+		name = "app_repo_name"
+		value = "static-website-dev-app-repo"
   }
 }
 ```

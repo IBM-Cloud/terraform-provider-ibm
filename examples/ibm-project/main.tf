@@ -15,28 +15,16 @@ resource "ibm_project" "project_instance" {
     labels = [ "labels" ]
     description = "description"
     authorizations {
-      trusted_profile {
-        id = "id"
-        target_iam_id = "target_iam_id"
-      }
-      method = "method"
-      api_key = "api_key"
-    }
-    compliance_profile {
-      id = "id"
-      instance_id = "instance_id"
-      instance_location = "instance_location"
-      attachment_id = "attachment_id"
-      profile_name = "profile_name"
+      method = "API_KEY"
+      api_key = "api_key_value"
     }
     locator_id = "locator_id"
     input {
-      name = "name"
-      value = "anything as a string"
+      name = "app_repo_name"
     }
     setting {
-      name = "name"
-      value = "value"
+      name = "app_repo_name"
+      value = "static-website-dev-app-repo"
     }
   }
 }
@@ -50,26 +38,23 @@ resource "ibm_project_config" "project_config_instance" {
   description = var.project_config_description
   authorizations {
     trusted_profile {
-      id = "id"
-      target_iam_id = "target_iam_id"
+      id = "Profile-047ef95f-2f90-4276-8ba3-92512cc4a6ae"
     }
-    method = "method"
-    api_key = "api_key"
+    method = "TRUSTED_PROFILE"
   }
   compliance_profile {
-    id = "id"
+    id = "compliance_profile_id"
     instance_id = "instance_id"
     instance_location = "instance_location"
     attachment_id = "attachment_id"
     profile_name = "profile_name"
   }
   input {
-    name = "name"
-    value = "anything as a string"
+    name = "app_repo_name"
   }
   setting {
-    name = "name"
-    value = "value"
+    name = "app_repo_name"
+    value = "static-website-dev-app-repo"
   }
 }
 
@@ -81,6 +66,6 @@ data "ibm_project" "project_instance" {
 // Create project_config data source
 data "ibm_project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
-  id = ibm_project_config.project_config_instance.projectConfig_id
+  id = ibm_project_config.project_config_instance.project_config_id
   version = var.project_config_version
 }

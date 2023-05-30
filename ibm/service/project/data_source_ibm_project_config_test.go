@@ -103,19 +103,18 @@ func testAccCheckIbmProjectConfigDataSourceConfig(projectConfigName string, proj
 			project_id = ibm_project.project_instance.id
 			name = "%s"
 			locator_id = "%s"
-			labels = [ "labels" ]
+			labels = [ "env:staging" ]
 			description = "%s"
 			authorizations {
 				method = "API_KEY"
 				api_key = "xxx"
 			}
 			input {
-				name = "name"
-				value = "anything as a string"
+				name = "app_repo_name"
 			}
 			setting {
-				name = "name"
-				value = "value"
+				name = "app_repo_name"
+				value = "static-website-dev-app-repo"
 			}
 		}
 

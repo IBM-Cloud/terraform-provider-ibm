@@ -114,20 +114,19 @@ func testAccCheckIbmProjectConfigConfig(name string, locatorID string, descripti
 			project_id = ibm_project.project_instance.id
 			name = "%s"
 			locator_id = "%s"
-			labels = [ "labels" ]
+			labels = [ "env:staging" ]
             description = "%s"
             authorizations {
                 method = "API_KEY"
                 api_key = "xxx"
             }
-			input {
-				name = "name"
-				value = "anything as a string"
-			}
-			setting {
-				name = "name"
-				value = "value"
-			}
+            input {
+                name = "app_repo_name"
+            }
+            setting {
+                name = "app_repo_name"
+                value = "static-website-dev-app-repo"
+            }
 		}
 	`, name, locatorID, description)
 }

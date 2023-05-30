@@ -80,22 +80,21 @@ func testAccCheckIbmProjectDataSourceConfig(projectResourceGroup string, project
 			description = "%s"
 			destroy_on_delete = %s
 			configs {
-				name = "name"
-				labels = [ "labels" ]
-				description = "description"
+				name = "static-website-dev"
+				labels = [ "env:staging" ]
+				description = "static-website-dev description"
 				authorizations {
                     method = "API_KEY"
                     api_key = "xxx"
                 }
 				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 				input {
-					name = "name"
-					value = "anything as a string"
-				}
-				setting {
-					name = "name"
-					value = "value"
-				}
+                    name = "app_repo_name"
+                }
+                setting {
+                    name = "app_repo_name"
+                    value = "static-website-dev-app-repo"
+                }
 			}
 		}
 
