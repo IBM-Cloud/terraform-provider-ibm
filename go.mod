@@ -24,6 +24,7 @@ require (
 	github.com/IBM/keyprotect-go-client v0.10.0
 	github.com/IBM/networking-go-sdk v0.40.0
 	github.com/IBM/platform-services-go-sdk v0.37.3
+	github.com/IBM/project-go-sdk v0.0.16
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
@@ -58,7 +59,6 @@ require (
 
 require (
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/project-go-sdk v0.0.15-beta
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )
