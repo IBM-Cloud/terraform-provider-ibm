@@ -253,8 +253,11 @@ resource "ibm_dns_custom_resolver_secondary_zone" "test" {
 }
 
 resource "ibm_dns_linked_zone" "test" {
+  name          = "test_dns_linked_zone"
   instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
   description   = "seczone terraform plugin test"
+  owner_instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+  owner_zone_id = ibm_resource_instance.test-pdns-cr-instance.guid
 }
 
 data "ibm_dns_custom_resolver_secondary_zones" "test-sz" {

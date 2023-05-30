@@ -29,7 +29,7 @@ const (
 
 func DataSourceIBMDNSLinkedZone() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMDNSLinkedZoneRead,
+		ReadContext: dataSourceIBMDNSLinkedZonesRead,
 
 		Schema: map[string]*schema.Schema{
 			dnsLinkedZoneInstanceID: {
@@ -81,22 +81,36 @@ func DataSourceIBMDNSLinkedZone() *schema.Resource {
 	}
 }
 
-func dataSourceIBMDNSLinkedZoneRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMDNSLinkedZonesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	instanceID := d.Get(dnsLinkedZoneInstanceID).(string)
 
+	//listLinkedZonesOptions := sess.NewListLinkedZonesOptions(instanceID)
 	opt := sess.NewListLinkedZonesOptions(instanceID)
-
+	//availableDNSZones, resp, err := sess.ListLinkedZonesWithContext(context, listLinkedZonesOptions)
 	result, resp, err := sess.ListLinkedZonesWithContext(context, opt)
 	if err != nil || result == nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error listing the Linked Zones %s:%s", err, resp))
 	}
-
+	dnsLinkedZones := make([]map[string]interface{}, 0)
+	for _, instance := range result.LinkedDnszones {
+		dnsLinkedZone := map[string]interface{}{}
+		dnsLinkedZone[dnsLinkedZoneInstanceID] = instance.InstanceID
+		dnsLinkedZone[dnsLinkedZoneName] = instance.Name
+		dnsLinkedZone[dnsLinkedZoneDescription] = instance.Description
+		dnsLinkedZone[dnsLinkedZoneLinkedTo] = instance.LinkedTo
+		dnsLinkedZone[dnsLinkedZoneState] = instance.State
+		dnsLinkedZone[dnsLinkedZoneLabel] = instance.Label
+		dnsLinkedZone[dnsLinkedZoneApprovalRequiredBefore] = instance.ApprovalRequiredBefore
+		dnsLinkedZone[dnsLinkedZoneCreatedOn] = instance.CreatedOn
+		dnsLinkedZone[dnsLinkedZoneModifiedOn] = instance.ModifiedOn
+		dnsLinkedZones = append(dnsLinkedZones, dnsLinkedZone)
+	}
 	d.SetId(dataSourceIBMDNSLinkedZoneID(d))
-	d.Set(dnsLinkedZoneName)
+	//d.Set(dnsLinkedZoneName)
 	return nil
 }
 

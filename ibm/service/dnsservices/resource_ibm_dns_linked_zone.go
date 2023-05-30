@@ -18,6 +18,8 @@ const (
 	DnsLinkedZoneInstanceID             = "instance_id"
 	DnsLinkedZoneName                   = "name"
 	DnsLinkedZoneDescription            = "description"
+	DnsLinkedZoneOwnerInstanceID        = "owner_instance_id"
+	DnsLinkedZoneOwnerZoneID            = "owner_zone_id"
 	DnsLinkedZoneLinkedTo               = "linked_to"
 	DnsLinkedZoneState                  = "state"
 	DnsLinkedZoneLabel                  = "label"
@@ -53,6 +55,16 @@ func ResourceIBMDNSLinkedZone() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Descriptive text of the secondary zone",
+			},
+			DnsLinkedZoneOwnerInstanceID: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The unique identifier of the primary zone",
+			},
+			DnsLinkedZoneOwnerZoneID: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The unique identifier of the primary zone",
 			},
 			DnsLinkedZoneLinkedTo: {
 				Type:        schema.TypeString,
@@ -97,11 +109,14 @@ func resourceIBMDNSLinkedZoneCreate(ctx context.Context, d *schema.ResourceData,
 	instanceID := d.Get(DnsLinkedZoneInstanceID).(string)
 	description := d.Get(DnsLinkedZoneDescription).(string)
 	label := d.Get(DnsLinkedZoneLabel).(string)
-
+	ownerInstanceID := d.Get(DnsLinkedZoneOwnerInstanceID).(string)
+	ownerZoneID := d.Get(DnsLinkedZoneOwnerZoneID).(string)
 	createLinkedZoneOptions := sess.NewCreateLinkedZoneOptions(instanceID)
 
 	createLinkedZoneOptions.SetDescription(description)
 	createLinkedZoneOptions.SetLabel(label)
+	createLinkedZoneOptions.SetOwnerInstanceID(ownerInstanceID)
+	createLinkedZoneOptions.SetOwnerZoneID(ownerZoneID)
 	mk := "dns_linked_zone_" + instanceID
 	conns.IbmMutexKV.Lock(mk)
 	defer conns.IbmMutexKV.Unlock(mk)
