@@ -21,7 +21,7 @@ func DataSourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Required:    true,
 				Description: "Cluster ID or name",
 				ValidateFunc: validate.InvokeValidator(
-					"ibm_container_ingress_secret",
+					"ibm_container_ingress_secret_opaque",
 					"cluster"),
 			},
 			"secret_name": {

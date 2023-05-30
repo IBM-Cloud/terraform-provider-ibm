@@ -36,7 +36,7 @@ func ResourceIBMContainerIngressSecretTLS() *schema.Resource {
 				ForceNew:    true,
 				Description: "Cluster ID or name",
 				ValidateFunc: validate.InvokeValidator(
-					"ibm_container_ingress_secret",
+					"ibm_container_ingress_secret_tls",
 					"cluster"),
 			},
 			"secret_name": {
@@ -51,7 +51,7 @@ func ResourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Description: "Secret namespace",
 				ForceNew:    true,
 			},
-			"secret_type": {
+			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "TLS secret type",
@@ -64,7 +64,6 @@ func ResourceIBMContainerIngressSecretTLS() *schema.Resource {
 			"persistence": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "Persistence of secret",
 			},
 			"domain_name": {
@@ -107,7 +106,7 @@ func ResourceIBMContainerIngressSecretTLSValidator() *validate.ResourceValidator
 			CloudDataType:              "cluster",
 			CloudDataRange:             []string{"resolved_to:id"}})
 
-	iBMContainerIngressInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret", Schema: validateSchema}
+	iBMContainerIngressInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret_tls", Schema: validateSchema}
 	return &iBMContainerIngressInstanceValidator
 }
 
@@ -141,7 +140,7 @@ func resourceIBMContainerIngressSecretTLSCreate(d *schema.ResourceData, meta int
 	if err != nil {
 		return err
 	}
-	d.SetId(fmt.Sprintf("%s/%s/%s", response.Cluster, response.Name, response.Namespace))
+	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, response.Name, response.Namespace))
 
 	return resourceIBMContainerIngressSecretTLSRead(d, meta)
 }
@@ -157,7 +156,7 @@ func resourceIBMContainerIngressSecretTLSRead(d *schema.ResourceData, meta inter
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	ingressAPI := ingressClient.Ingresses()
 	ingressSecretConfig, err := ingressAPI.GetIngressSecret(cluster, secretName, secretNamespace)
@@ -165,15 +164,15 @@ func resourceIBMContainerIngressSecretTLSRead(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	d.Set("cluster", ingressSecretConfig.Cluster)
+	d.Set("cluster", cluster)
 	d.Set("secret_name", ingressSecretConfig.Name)
 	d.Set("secret_namespace", ingressSecretConfig.Namespace)
-	d.Set("secret_type", ingressSecretConfig.SecretType)
 	d.Set("cert_crn", ingressSecretConfig.CRN)
 	d.Set("persistence", ingressSecretConfig.Persistence)
-	d.Set("domain", ingressSecretConfig.Domain)
+	d.Set("domain_name", ingressSecretConfig.Domain)
 	d.Set("expires_on", ingressSecretConfig.ExpiresOn)
 	d.Set("status", ingressSecretConfig.Status)
+	d.Set("type", ingressSecretConfig.Type)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
 	d.Set("last_updated_timestamp", ingressSecretConfig.LastUpdatedTimestamp)
 
@@ -195,7 +194,7 @@ func resourceIBMContainerIngressSecretTLSDelete(d *schema.ResourceData, meta int
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	params := v2.SecretDeleteConfig{
 		Cluster:   cluster,
@@ -223,7 +222,7 @@ func resourceIBMContainerIngressSecretTLSUpdate(d *schema.ResourceData, meta int
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	params := v2.SecretUpdateConfig{
 		Cluster:   cluster,
@@ -256,7 +255,7 @@ func resourceIBMContainerIngressSecretTLSExists(d *schema.ResourceData, meta int
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	ingressAPI := ingressClient.Ingresses()
 	ingressSecretConfig, err := ingressAPI.GetIngressSecret(cluster, secretName, secretNamespace)
@@ -270,5 +269,5 @@ func resourceIBMContainerIngressSecretTLSExists(d *schema.ResourceData, meta int
 		return false, fmt.Errorf("[ERROR] Error getting ingress secret: %s", err)
 	}
 
-	return ingressSecretConfig.Cluster == cluster && ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace, nil
+	return ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace, nil
 }

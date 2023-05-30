@@ -3229,7 +3229,7 @@ func FlattenOpaqueSecret(fields containerv2.Fields) []map[string]interface{} {
 
 	for _, field := range fields {
 		opaqueSecretField := map[string]interface{}{
-			"name":                   field.Name,
+			"field_name":             field.Name,
 			"crn":                    field.CRN,
 			"expires_on":             field.ExpiresOn,
 			"last_updated_timestamp": field.LastUpdatedTimestamp,

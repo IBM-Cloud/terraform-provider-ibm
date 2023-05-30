@@ -141,15 +141,15 @@ func resourceIBMContainerIngressInstanceRead(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	clusterID := parts[0]
+	clusterIDOrName := parts[0]
 	instanceName := parts[1]
 
 	ingressAPI := ingressClient.Ingresses()
-	ingressInstanceConfig, err := ingressAPI.GetIngressInstance(clusterID, instanceName)
+	ingressInstanceConfig, err := ingressAPI.GetIngressInstance(clusterIDOrName, instanceName)
 	if err != nil {
 		return err
 	}
-	d.Set("cluster", ingressInstanceConfig.Cluster)
+	d.Set("cluster", clusterIDOrName)
 	d.Set("instance_name", ingressInstanceConfig.Name)
 	d.Set("instance_crn", ingressInstanceConfig.CRN)
 	d.Set("is_default", ingressInstanceConfig.IsDefault)
@@ -209,7 +209,6 @@ func resourceIBMContainerIngressInstanceUpdate(d *schema.ResourceData, meta inte
 	}
 
 	hasChange := false
-
 	if d.HasChange("is_default") {
 		if v, ok := d.GetOk("is_default"); ok {
 			params.IsDefault = v.(bool)
@@ -260,5 +259,5 @@ func resourceIBMContainerIngressInstanceExists(d *schema.ResourceData, meta inte
 		return false, fmt.Errorf("[ERROR] Error getting ingress instance: %s", err)
 	}
 
-	return ingressInstanceConfig.Cluster == clusterID && ingressInstanceConfig.Name == instanceName, nil
+	return ingressInstanceConfig.Name == instanceName, nil
 }

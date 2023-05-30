@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIBMContainerIngressSecretOpaque_Basic(t *testing.T) {
-	secretName := fmt.Sprintf("tf-container-ingress-secret-name-%d", acctest.RandIntRange(10, 100))
+	secretName := fmt.Sprintf("tf-container-ingress-secret-name-opaque-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -36,13 +36,16 @@ func TestAccIBMContainerIngressSecretOpaque_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_secret_opaque.secret", "persistence", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret_opaque.secret_type", "type", "opaque"),
+						"ibm_container_ingress_secret_opaque.secret", "type", "Opaque"),
+					//This number could vary depending on what type of secret is passed in
+					//A field that has a secret of type user credentials will have 2 fields
+					//Whereas a field that has a secret of type arbitrary will have 1 field
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret_opaque.secret", "fields.%", "2"),
+						"ibm_container_ingress_secret_opaque.secret", "fields.#", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "user_managed", "true"),
+						"ibm_container_ingress_secret_opaque.secret", "user_managed", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "status", "created"),
+						"ibm_container_ingress_secret_opaque.secret", "status", "created"),
 				),
 			},
 			{
@@ -53,17 +56,17 @@ func TestAccIBMContainerIngressSecretOpaque_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_secret_opaque.secret", "secret_name", secretName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret_opaque.secret", "cert_crn", acc.CertCRN),
+						"ibm_container_ingress_secret_opaque.secret", "secret_namespace", "ibm-cert-store"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_secret_opaque.secret", "persistence", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret_opaque.secret_type", "type", "opaque"),
+						"ibm_container_ingress_secret_opaque.secret", "type", "Opaque"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "user_managed", "true"),
+						"ibm_container_ingress_secret_opaque.secret", "fields.#", "1"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "status", "created"),
+						"ibm_container_ingress_secret_opaque.secret", "user_managed", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_secret_opaque.secret", "fields.%", "1"),
+						"ibm_container_ingress_secret_opaque.secret", "status", "created"),
 				),
 			},
 			{
@@ -111,7 +114,7 @@ func testAccCheckIBMContainerIngressSecretOpaqueBasic(secretName string) string 
 resource "ibm_container_ingress_secret_opaque" "secret" {
   secret_name = "%s"
   secret_namespace = "%s"
-  cluster_id  = "%s"
+  cluster  = "%s"
   persistence = "%t"
   fields {
 	crn = "%s"
@@ -119,7 +122,7 @@ resource "ibm_container_ingress_secret_opaque" "secret" {
   fields {
 	crn = "%s"
   }
-}`, secretName, "ibm-cert-store", acc.ClusterName, true, acc.CertCRN, acc.CertCRN+"1")
+}`, secretName, "ibm-cert-store", acc.ClusterName, true, acc.SecretCRN, acc.SecretCRN2)
 }
 
 func testAccCheckIBMContainerIngressSecretOpaqueUpdate(secretName string) string {
@@ -127,10 +130,10 @@ func testAccCheckIBMContainerIngressSecretOpaqueUpdate(secretName string) string
 resource "ibm_container_ingress_secret_opaque" "secret" {
   secret_name = "%s"
   secret_namespace = "%s"
-  cluster_id  = "%s"
+  cluster  = "%s"
   persistence = "%t"
   fields {
 	crn = "%s"
   }
-}`, secretName, "ibm-cert-store", acc.ClusterName, true, acc.CertCRN)
+}`, secretName, "ibm-cert-store", acc.ClusterName, true, acc.SecretCRN)
 }

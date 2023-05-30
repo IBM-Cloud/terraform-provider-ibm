@@ -45,3 +45,4 @@ data "ibm_container_ingress_secret_opaque" "ingress_secret_opaque" {
     secret_namespace= container_ingress_secret_tls.container_ingress_secret_opaque.secret_namespace
     cluster = var.cluster_name_or_id
 }
+*/

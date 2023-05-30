@@ -20,7 +20,7 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Required:    true,
 				Description: "Cluster ID or name",
 				ValidateFunc: validate.InvokeValidator(
-					"ibm_container_ingress_secret",
+					"ibm_container_ingress_secret_tls",
 					"cluster"),
 			},
 			"secret_name": {

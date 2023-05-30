@@ -37,7 +37,7 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				ForceNew:    true,
 				Description: "Cluster ID or name",
 				ValidateFunc: validate.InvokeValidator(
-					"ibm_container_ingress_secret",
+					"ibm_container_ingress_secret_opaque",
 					"cluster"),
 			},
 			"secret_name": {
@@ -52,7 +52,7 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Description: "Secret namespace",
 				ForceNew:    true,
 			},
-			"secret_type": {
+			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Opaque secret type",
@@ -75,7 +75,7 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 			},
 			"fields": {
 				Type:        schema.TypeSet,
-				Computed:    true,
+				Required:    true,
 				Description: "Fields of an opaque secret",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -87,7 +87,12 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Field name",
+							Description: "The computed field name",
+						},
+						"field_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The requested field name",
 						},
 						"prefix": {
 							Type:        schema.TypeBool,
@@ -122,7 +127,7 @@ func ResourceIBMContainerIngressSecretOpaqueValidator() *validate.ResourceValida
 			CloudDataType:              "cluster",
 			CloudDataRange:             []string{"resolved_to:id"}})
 
-	iBMContainerIngressInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret", Schema: validateSchema}
+	iBMContainerIngressInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret_opaque", Schema: validateSchema}
 	return &iBMContainerIngressInstanceValidator
 }
 
@@ -135,20 +140,21 @@ func resourceIBMContainerIngressSecretOpaqueCreate(d *schema.ResourceData, meta 
 	cluster := d.Get("cluster").(string)
 	secretName := d.Get("secret_name").(string)
 	secretNamespace := d.Get("secret_namespace").(string)
-	secretType := "opaque"
+	persistence := d.Get("persistence").(bool)
 
 	params := v2.SecretCreateConfig{
-		Cluster:   cluster,
-		Name:      secretName,
-		Namespace: secretNamespace,
-		Type:      secretType,
+		Cluster:     cluster,
+		Name:        secretName,
+		Namespace:   secretNamespace,
+		Type:        "Opaque",
+		Persistence: persistence,
 	}
 
-	if opaque_secret_fields, ok := d.GetOk("opaque_secret_fields"); ok {
-		opaqueFieldsList := opaque_secret_fields.(*schema.Set).List()
+	if fields, ok := d.GetOk("fields"); ok {
+		fieldList := fields.(*schema.Set).List()
 
 		fieldsToAdd := []containerv2.FieldAdd{}
-		for _, opaqueField := range opaqueFieldsList {
+		for _, opaqueField := range fieldList {
 			var fieldToAdd containerv2.FieldAdd
 
 			opaqueFieldMap := opaqueField.(map[string]interface{})
@@ -177,7 +183,7 @@ func resourceIBMContainerIngressSecretOpaqueCreate(d *schema.ResourceData, meta 
 	if err != nil {
 		return err
 	}
-	d.SetId(fmt.Sprintf("%s/%s/%s", response.Cluster, response.Name, response.Namespace))
+	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, response.Name, response.Namespace))
 
 	return resourceIBMContainerIngressSecretOpaqueRead(d, meta)
 }
@@ -193,7 +199,7 @@ func resourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta in
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	ingressAPI := ingressClient.Ingresses()
 	ingressSecretConfig, err := ingressAPI.GetIngressSecret(cluster, secretName, secretNamespace)
@@ -202,10 +208,10 @@ func resourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta in
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, secretName, secretNamespace))
-	d.Set("cluster", ingressSecretConfig.Cluster)
+	d.Set("cluster", cluster)
 	d.Set("secret_name", ingressSecretConfig.Name)
 	d.Set("secret_namespace", ingressSecretConfig.Namespace)
-	d.Set("secret_type", ingressSecretConfig.Type)
+	d.Set("type", ingressSecretConfig.Type)
 	d.Set("persistence", ingressSecretConfig.Persistence)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
 	d.Set("status", ingressSecretConfig.Status)
@@ -230,7 +236,7 @@ func resourceIBMContainerIngressSecretOpaqueDelete(d *schema.ResourceData, meta 
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	params := v2.SecretDeleteConfig{
 		Cluster:   cluster,
@@ -258,7 +264,7 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	params := v2.SecretUpdateConfig{
 		Cluster:   cluster,
@@ -266,8 +272,8 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 		Namespace: secretNamespace,
 	}
 
-	if d.HasChange("opaque_secret_fields") {
-		oldList, newList := d.GetChange("opaque_secret_fields")
+	if d.HasChange("fields") {
+		oldList, newList := d.GetChange("fields")
 
 		if oldList == nil {
 			oldList = new(schema.Set)
@@ -321,6 +327,7 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 		}
 		ingressAPI := ingressClient.Ingresses()
 
+		fmt.Println("params", params)
 		_, err := ingressAPI.UpdateIngressSecret(params)
 		if err != nil {
 			return err
@@ -342,7 +349,7 @@ func resourceIBMContainerIngressSecretOpaqueExists(d *schema.ResourceData, meta 
 	}
 	cluster := parts[0]
 	secretName := parts[1]
-	secretNamespace := parts[1]
+	secretNamespace := parts[2]
 
 	ingressAPI := ingressClient.Ingresses()
 	ingressSecretConfig, err := ingressAPI.GetIngressSecret(cluster, secretName, secretNamespace)
@@ -356,5 +363,5 @@ func resourceIBMContainerIngressSecretOpaqueExists(d *schema.ResourceData, meta 
 		return false, fmt.Errorf("[ERROR] Error getting ingress secret: %s", err)
 	}
 
-	return ingressSecretConfig.Cluster == cluster && ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace, nil
+	return ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace, nil
 }

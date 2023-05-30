@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccIBMContainerIngressSecret_Basic(t *testing.T) {
+func TestAccIBMContainerIngressSecretTLS_Basic(t *testing.T) {
 	secretName := fmt.Sprintf("tf-container-ingress-secret-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -40,9 +40,9 @@ func TestAccIBMContainerIngressSecret_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_secret_tls.secret", "type", "TLS"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "user_managed", "true"),
+						"ibm_container_ingress_secret_tls.secret", "user_managed", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "status", "created"),
+						"ibm_container_ingress_secret_tls.secret", "status", "created"),
 				),
 			},
 			{
@@ -55,9 +55,9 @@ func TestAccIBMContainerIngressSecret_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_secret_tls.secret", "cert_crn", acc.UpdatedCertCRN),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "user_managed", "true"),
+						"ibm_container_ingress_secret_tls.secret", "user_managed", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_ingress_instance.instance", "status", "created"),
+						"ibm_container_ingress_secret_tls.secret", "status", "created"),
 				),
 			},
 			{
@@ -72,7 +72,7 @@ func TestAccIBMContainerIngressSecret_Basic(t *testing.T) {
 
 func testAccCheckIBMContainerIngressSecretDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_container_ingress_secret" {
+		if rs.Type != "ibm_container_ingress_secret_tls" {
 			continue
 		}
 
@@ -114,9 +114,10 @@ resource "ibm_container_ingress_secret_tls" "secret" {
 func testAccCheckIBMContainerIngressSecretTLSUpdate(secretName string) string {
 	return fmt.Sprintf(`
 resource "ibm_container_ingress_secret_tls" "secret" {
-  cluster_id  = "%s"
+  cluster  = "%s"
   secret_name = "%s"
   secret_namespace = "%s"
   cert_crn    = "%s"
-}`, acc.ClusterName, secretName, "ibm-cert-store", acc.UpdatedCertCRN)
+  persistence = "%t"
+}`, acc.ClusterName, secretName, "ibm-cert-store", acc.UpdatedCertCRN, true)
 }
