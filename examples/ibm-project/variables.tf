@@ -44,7 +44,7 @@ variable "project_config_name" {
 variable "project_config_locator_id" {
   description = "A dotted value of catalogID.versionID."
   type        = string
-  default     = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.018edf04-e772-4ca2-9785-03e8e03bef72-global"
+  default     = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 }
 variable "project_config_labels" {
   description = "A collection of configuration labels."
@@ -78,5 +78,5 @@ variable "project_config_id" {
 variable "project_config_version" {
   description = "The version of the configuration to return."
   type        = string
-  default     = "placeholder"
+  default     = "draft"
 }
