@@ -209,8 +209,8 @@ func resourceIBMDNSLinkedZoneDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	idSet := strings.Split(d.Id(), "/")
-	if len(idSet) < 3 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id()))
+	if len(idSet) < 2 {
+		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/linkedDnsZoneID", d.Id()))
 	}
 	instanceID := idSet[0]
 	linkedDnsZoneID := idSet[1]
