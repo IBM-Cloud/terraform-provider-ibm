@@ -39,7 +39,7 @@ func DataSourceIBMDNSLinkedZone() *schema.Resource {
 			},
 			dnsLinkedZoneName: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The name of the linked zone.",
 			},
 			dnsLinkedZoneDescription: {
@@ -49,7 +49,7 @@ func DataSourceIBMDNSLinkedZone() *schema.Resource {
 			},
 			dnsLinkedZoneLinkedTo: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The unique identifier of the custom resolver.",
 			},
 			dnsLinkedZoneState: {
