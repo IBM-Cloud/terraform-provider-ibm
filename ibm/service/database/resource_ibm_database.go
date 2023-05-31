@@ -310,6 +310,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
+			"offline_restore": {
+				Description:      "Set offline restore mode for MongoDB Enterprise Edition",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
 			"users": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -963,6 +969,7 @@ type Params struct {
 	RemoteLeaderID      string `json:"remote_leader_id,omitempty"`
 	PITRDeploymentID    string `json:"point_in_time_recovery_deployment_id,omitempty"`
 	PITRTimeStamp       string `json:"point_in_time_recovery_time,omitempty"`
+	OfflineRestore      bool   `json:"offline_restore,omitempty"`
 }
 
 type Group struct {
@@ -1174,6 +1181,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	}
 
 	service := diff.Get("service").(string)
+	plan := diff.Get("plan").(string)
 	planPhase := diff.Get("plan_validation").(bool)
 
 	if service == "databases-for-postgresql" ||
@@ -1288,6 +1296,12 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 
 		if len(invalidFields) != 0 {
 			return fmt.Errorf("[ERROR] configuration contained invalid field(s): %s", invalidFields)
+		}
+	}
+
+	_, offlineRestoreOK := diff.GetOk("offline_restore")
+	if offlineRestoreOk && service != "databases-for-mongodb" && plan != "enterprise"{
+			return fmt.Errorf("[ERROR] offline_restore is only supported for databases-for-mongodb enterprise")
 		}
 	}
 
@@ -1428,6 +1442,9 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	}
 	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); ok {
 		params.PITRTimeStamp = pitrTime.(string)
+	}
+	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
+		params.OfflineRestore = offline_restore.(string)
 	}
 	serviceEndpoint := d.Get("service_endpoints").(string)
 	params.ServiceEndpoints = serviceEndpoint
