@@ -258,7 +258,6 @@ data "ibm_dns_custom_resolver_secondary_zones" "test-sz" {
   resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 }
 
-
 output "ibm_dns_custom_resolver_secondary_zones_output" {
   value = data.ibm_dns_custom_resolver_secondary_zones.test-sz
 }
