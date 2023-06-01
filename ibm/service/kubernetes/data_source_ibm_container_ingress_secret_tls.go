@@ -30,7 +30,7 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 			},
 			"secret_namespace": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 				Description: "Secret namespace",
 			},
 			"cert_crn": {
@@ -38,10 +38,10 @@ func DataSourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Computed:    true,
 				Description: "Certificate CRN",
 			},
-			"secret_type": {
+			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Type TLS or opaque",
+				Description: "Type TLS",
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -111,10 +111,10 @@ func dataSourceIBMContainerIngressSecretTLSRead(d *schema.ResourceData, meta int
 	d.Set("cluster", ingressSecretConfig.Cluster)
 	d.Set("secret_name", ingressSecretConfig.Name)
 	d.Set("secret_namespace", ingressSecretConfig.Namespace)
-	d.Set("secret_type", ingressSecretConfig.SecretType)
+	d.Set("type", ingressSecretConfig.Type)
 	d.Set("cert_crn", ingressSecretConfig.CRN)
 	d.Set("persistence", ingressSecretConfig.Persistence)
-	d.Set("domain", ingressSecretConfig.Domain)
+	d.Set("domain_name", ingressSecretConfig.Domain)
 	d.Set("expires_on", ingressSecretConfig.ExpiresOn)
 	d.Set("status", ingressSecretConfig.Status)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)

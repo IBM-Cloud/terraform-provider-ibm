@@ -22,8 +22,9 @@ Register a Secrets Manager Instance with your cluster:
 ```terraform
 resource "ibm_container_ingress_instance" "cluster_instance" {
   instance_crn = var.sm_instance_crn
-  is_default = true
+  is_default = var.default_instance
   cluster  = var.cluster_name_or_id
+  secret_group_id = var.sm_secret_group_id
 }
 ```
 
@@ -37,9 +38,10 @@ data "ibm_container_ingress_instance" "ingress_instance" {
 ```terraform
 resource "ibm_container_ingress_secret_tls" "container_ingress_secret_tls" {
     cluster  = var.cluster_name_or_id
-    secret_name = var.sm_instance_crn
-    secret_namespace = var.secret_namespace
-    secret_cert_crn = var.secret_cert_crn
+    secret_name = var.tls_secret_name
+    secret_namespace = var.tls_secret_namespace
+    cert_crn = var.secret_cert_crn
+    persistence = true
 }
 ```
 
@@ -55,11 +57,15 @@ data "ibm_container_ingress_secret_tls" "ingress_secret_tls" {
 ```terraform
 resource "ibm_container_ingress_secret_opaque" "container_ingress_secret_opaque" {
     cluster  = var.cluster_name_or_id
-    secret_name = var.secret_name
-    secret_name = var.secret_namespace
-    field = {
-      field_name = var.field_secret_name
-      field_namespace = var.field_secret_namespace
+    secret_name = var.opaque_secret_name
+    secret_namespace = var.opaque_secret_namespace
+    persistence = true
+    fields {
+        crn = var.field_secret_crn
+    }
+    fields {
+        field_name = var.field_secret_name
+        crn = var.field_secret_crn2
     }
 }
 ```
@@ -78,7 +84,7 @@ data "ibm_container_ingress_secret_opaque" "ingress_secret_opaque" {
 
 | Name | Version |
 |------|---------|
-| terraform | >=1.0.0, <2.0 |
+  required_version = ">= 0.12"
 
 ## Providers
 
@@ -91,12 +97,12 @@ data "ibm_container_ingress_secret_opaque" "ingress_secret_opaque" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | instance_crn | CRN for the Secrets Manager instance | `string` | yes |
-| cluster | The clusterID or name to register the instance to or secrets in | `string` | yes |
+| cluster | The cluster id or name to register the instance to or secrets in | `string` | yes |
 | secret_group_id | The Secrets Manager secret group that default TLS certs will be uploaded to | `string` | no |
-| is_default | Whether the registered instance will be used for storing the default TLS certificates for the cluster | `string` | no |
-{: caption="inputs"}
+| is_default | Whether the registered instance will be used for storing the default TLS certificates for the cluster | `bool` | no |
 | secret_name | The name of the Kubernetes secret that will be created | `string` | yes |
-| secret_namespace | The name of the Kubernetes secret that will be created | `string` | yes |
+| secret_namespace | The namespace of the Kubernetes secret that will be created | `string` | yes |
 | cert_crn | CRN of a Secrets Manager secret of type certificate | `string` | yes |
 | field_name | The name of the Kubernetes secret field that will be created | `string` | yes |
-| field_crn | CRN of a Secrets Manager secret for an opaque secret field | `string` | yes |
+| crn | CRN of a Secrets Manager secret for an opaque secret field | `string` | yes |
+{: caption="inputs"}

@@ -269,5 +269,5 @@ func resourceIBMContainerIngressSecretTLSExists(d *schema.ResourceData, meta int
 		return false, fmt.Errorf("[ERROR] Error getting ingress secret: %s", err)
 	}
 
-	return ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace, nil
+	return ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace && ingressSecretConfig.Status != "deleted", nil
 }

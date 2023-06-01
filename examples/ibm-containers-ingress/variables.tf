@@ -13,13 +13,13 @@ variable "sm_secret_group_id"{
   type        = string
 }
 
-variable "secret_name" {
-  description = "The kubernetes secret name the secret will be created with"
+variable "tls_secret_name" {
+  description = "The tls kubernetes secret name the secret will be created with"
   type        = string  
 }
 
-variable "secret_namespace" {
-  description = "The kubernetes secret namespace the secret will be created in"
+variable "tls_secret_namespace" {
+  description = "The tls kubernetes secret namespace the secret will be created in"
   type        = string  
 }
 
@@ -28,7 +28,22 @@ variable "secret_cert_crn" {
   type        = string  
 }
 
+variable "opaque_secret_name" {
+  description = "The tls kubernetes secret name the secret will be created with"
+  type        = string  
+}
+
+variable "opaque_secret_namespace" {
+  description = "The tls kubernetes secret namespace the secret will be created in"
+  type        = string  
+}
+
 variable "field_secret_crn" {
+  description = "The CRN of a secrets manager secret"
+  type        = string  
+}
+
+variable "field_secret_crn2" {
   description = "The CRN of a secrets manager secret"
   type        = string  
 }

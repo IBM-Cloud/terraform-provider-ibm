@@ -31,7 +31,7 @@ func testAccCheckIBMContainerIngressSecretTLSDataSourceConfig(secretName string)
 	resource "ibm_container_ingress_secret_tls" "test_acc_secret" {
 		secret_name    = "%s"
 		secret_namespace = "ibm-cert-store"
-		cert_crn = "%s
+		cert_crn = "%s"
 		persistence = "%t"
 		cluster  = "%s"
 	}

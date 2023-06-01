@@ -34,7 +34,7 @@ func DataSourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Required:    true,
 				Description: "Secret namespace",
 			},
-			"secret_type": {
+			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Opaque secret type",
@@ -121,7 +121,7 @@ func dataSourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta 
 	d.Set("cluster", ingressSecretConfig.Cluster)
 	d.Set("secret_name", ingressSecretConfig.Name)
 	d.Set("secret_namespace", ingressSecretConfig.Namespace)
-	d.Set("secret_type", ingressSecretConfig.SecretType)
+	d.Set("type", ingressSecretConfig.Type)
 	d.Set("persistence", ingressSecretConfig.Persistence)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
 	d.Set("status", ingressSecretConfig.Status)

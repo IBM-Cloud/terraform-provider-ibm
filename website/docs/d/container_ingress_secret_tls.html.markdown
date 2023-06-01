@@ -31,11 +31,10 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `cert_crn` - (String) The backing IBM Cloud Secrets Manager Secret CRN.
-- `secret_type` - (String) The type of Kubernetes secret (TLS).
+- `type` - (String) The type of Kubernetes secret (TLS).
 - `status` - (String) The Status of the secret.
 - `user_managed` - (Bool) Indicates whether the secret was created by a user.
 - `persistence`  - (Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.
 - `domain_name` - (String) Domain name.
 - `expires_on` - (String) Certificate expires on date.
-- `type` - (String) Type of Secret Manager secret.
 - `last_updated_timestamp` - (String) Timestamp secret was last updated in cluster.

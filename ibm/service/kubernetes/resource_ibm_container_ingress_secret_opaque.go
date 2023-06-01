@@ -86,18 +86,13 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The computed field name",
 						},
 						"field_name": {
 							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The requested field name",
-						},
-						"prefix": {
-							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Prefix field name with Secrets Manager secret name",
+							Description: "The requested field name",
 						},
 						"expires_on": {
 							Type:        schema.TypeString,
@@ -159,16 +154,12 @@ func resourceIBMContainerIngressSecretOpaqueCreate(d *schema.ResourceData, meta 
 
 			opaqueFieldMap := opaqueField.(map[string]interface{})
 
-			if name, ok := opaqueFieldMap["name"]; ok {
-				fieldToAdd.Name = name.(string)
+			if fieldName, ok := opaqueFieldMap["field_name"]; ok {
+				fieldToAdd.Name = fieldName.(string)
 			}
 
 			if crn, ok := opaqueFieldMap["crn"]; ok {
 				fieldToAdd.CRN = crn.(string)
-			}
-
-			if prefix, ok := opaqueFieldMap["prefix"]; ok {
-				fieldToAdd.AppendPrefix = prefix.(bool)
 			}
 
 			fieldsToAdd = append(fieldsToAdd, fieldToAdd)
@@ -287,50 +278,72 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 		remove := os.Difference(ns).List()
 		add := ns.Difference(os).List()
 
+		fmt.Println("remove", remove, "add", add)
+		ingressAPI := ingressClient.Ingresses()
 		if len(remove) > 0 {
-			var fieldsToRemove []containerv2.FieldRemove
+			actualSecret, err := ingressAPI.GetIngressSecret(cluster, secretName, secretNamespace)
+			if err != nil {
+				return err
+			}
+
+			// Loop through all actual secret fields to remove by CRN
+			// As secret CRN to fields do not have 1:1 matchings
+			actualFieldMap := make(map[string][]string)
+			for _, actualField := range actualSecret.Fields {
+				field, ok := actualFieldMap[actualField.CRN]
+				if ok {
+					actualFieldMap[actualField.CRN] = append(field, actualField.Name)
+				} else {
+					actualFieldMap[actualField.CRN] = []string{actualField.Name}
+				}
+			}
+
 			for _, removeField := range remove {
 				removeFieldMap := removeField.(map[string]interface{})
-				var fieldToRemove containerv2.FieldRemove
 
-				if name, ok := removeFieldMap["name"]; ok {
-					fieldToRemove.Name = name.(string)
+				if crn, ok := removeFieldMap["crn"]; ok {
+					crnToRemove := crn.(string)
+					secretNames, ok := actualFieldMap[crnToRemove]
+
+					if ok {
+						for _, secretName := range secretNames {
+							params.FieldsToRemove = append(params.FieldsToRemove, containerv2.FieldRemove{
+								Name: secretName,
+							})
+						}
+					}
 				}
-
-				fieldsToRemove = append(fieldsToRemove, fieldToRemove)
 			}
-			params.FieldsToRemove = fieldsToRemove
+
+			_, err = ingressAPI.RemoveIngressSecretField(params)
+			if err != nil {
+				return err
+			}
 		}
 
 		if len(add) > 0 {
-			var fieldsToAdd []containerv2.FieldAdd
-			for _, addField := range add {
-				var fieldToAdd containerv2.FieldAdd
+			params.FieldsToAdd = nil
 
+			for _, addField := range add {
 				addFieldMap := addField.(map[string]interface{})
 
-				if name, ok := addFieldMap["name"]; ok {
-					fieldToAdd.Name = name.(string)
+				var fieldToAdd containerv2.FieldAdd
+
+				if fieldName, ok := addFieldMap["field_name"]; ok {
+					fieldToAdd.Name = fieldName.(string)
 				}
 
 				if crn, ok := addFieldMap["crn"]; ok {
 					fieldToAdd.CRN = crn.(string)
 				}
 
-				if prefix, ok := addFieldMap["prefix"]; ok {
-					fieldToAdd.AppendPrefix = prefix.(bool)
-				}
-
-				fieldsToAdd = append(fieldsToAdd, fieldToAdd)
+				params.FieldsToAdd = append(params.FieldsToAdd, fieldToAdd)
 			}
-			params.FieldsToAdd = fieldsToAdd
-		}
-		ingressAPI := ingressClient.Ingresses()
 
-		fmt.Println("params", params)
-		_, err := ingressAPI.UpdateIngressSecret(params)
-		if err != nil {
-			return err
+			_, err = ingressAPI.AddIngressSecretField(params)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -363,5 +376,5 @@ func resourceIBMContainerIngressSecretOpaqueExists(d *schema.ResourceData, meta 
 		return false, fmt.Errorf("[ERROR] Error getting ingress secret: %s", err)
 	}
 
-	return ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace, nil
+	return ingressSecretConfig.Name == secretName && ingressSecretConfig.Namespace == secretNamespace && ingressSecretConfig.Status != "deleted", nil
 }

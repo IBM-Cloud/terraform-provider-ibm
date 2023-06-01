@@ -37,9 +37,6 @@ func TestAccIBMContainerIngressSecretOpaque_Basic(t *testing.T) {
 						"ibm_container_ingress_secret_opaque.secret", "persistence", "true"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_secret_opaque.secret", "type", "Opaque"),
-					//This number could vary depending on what type of secret is passed in
-					//A field that has a secret of type user credentials will have 2 fields
-					//Whereas a field that has a secret of type arbitrary will have 1 field
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_secret_opaque.secret", "fields.#", "2"),
 					resource.TestCheckResourceAttr(
@@ -81,7 +78,7 @@ func TestAccIBMContainerIngressSecretOpaque_Basic(t *testing.T) {
 
 func testAccCheckIBMContainerIngressSecretOpaqueDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_container_ingress_secret" {
+		if rs.Type != "ibm_container_ingress_secret_opaque" {
 			continue
 		}
 

@@ -19,7 +19,8 @@ func TestAccIBMContainerIngressSecretOpaqueDatasourceBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerIngressSecretOpaqueDataSourceConfig(secretName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_container_ingress_secret_opaque.test_ds_secret", "fields"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_ingress_secret_opaque.test_ds_secret", "fields.#", "1"),
 				),
 			},
 		},
@@ -31,10 +32,9 @@ func testAccCheckIBMContainerIngressSecretOpaqueDataSourceConfig(secretName stri
 	resource "ibm_container_ingress_secret_opaque" "test_acc_secret" {
 		secret_name    = "%s"
 		secret_namespace = "ibm-cert-store"
-		cert_crn = "%s
 		persistence = "%t"
 		cluster  = "%s"
-		fields = {
+		fields {
 			crn = "%s"
 		}
 	}
@@ -42,5 +42,5 @@ func testAccCheckIBMContainerIngressSecretOpaqueDataSourceConfig(secretName stri
 	  secret_name = ibm_container_ingress_secret_opaque.test_acc_secret.secret_name
 	  secret_namespace = ibm_container_ingress_secret_opaque.test_acc_secret.secret_namespace
 	  cluster = "%s"
-	}`, secretName, acc.CertCRN, true, acc.ClusterName, acc.CertCRN, acc.ClusterName)
+	}`, secretName, true, acc.ClusterName, acc.SecretCRN, acc.ClusterName)
 }

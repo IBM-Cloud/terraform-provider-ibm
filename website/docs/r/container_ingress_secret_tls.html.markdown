@@ -23,7 +23,7 @@ resource "ibm_container_ingress_secret_tls" "secret" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `cluster_id` - (Required, String) The cluster ID.
+- `cluster` - (Required, String) The cluster ID.
 - `secret_name` - (Required, String) The name of the kubernetes secret.
 - `secret_namespace` - (Required, string) The namespace of the kubernetes secret.
 - `cert_crn` - (Required, string) The Secrets Manager crn for a secret of type certificate.
