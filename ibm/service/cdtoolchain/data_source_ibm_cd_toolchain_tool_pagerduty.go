@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -95,7 +95,7 @@ func DataSourceIBMCdToolchainToolPagerduty() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page.",
+							Description: "The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"service_id": &schema.Schema{
 							Type:        schema.TypeString,

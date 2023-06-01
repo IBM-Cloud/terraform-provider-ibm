@@ -16,6 +16,7 @@ Create, update, or delete a Code Engine destination by using IBM Cloud™ Event 
 resource "ibm_en_destination_ce" "codeengine_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   name          = "Code engine Destination"
+  type          = "ibmce"
   description   = "Code Engine destination for event notification"
   config {
     params {

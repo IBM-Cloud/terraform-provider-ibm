@@ -12,7 +12,6 @@ odfVersion = "4.12.0"
 
 
 # To create the Ocscluster Custom Resource Definition, with the following specs
-kube_config_path = "~/.kube/config"
 autoDiscoverDevices = "false"
 billingType = "advanced"
 clusterEncryption = "false"
