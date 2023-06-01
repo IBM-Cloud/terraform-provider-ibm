@@ -103,6 +103,8 @@ github.com/IBM/schematics-go-sdk v0.2.1 h1:byATysGD+Z1k/wdtNqQmKALcAPjgSLuSyzcab
 github.com/IBM/schematics-go-sdk v0.2.1/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0 h1:Lx4Bvim/MfoHEYR+n312bty5DirAJypBGGS9YZo3zCw=
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0/go.mod h1:jagqWmjZ0zUEqh5jdGB42ApSQS40fu2LWw6pdg8JJko=
+github.com/IBM/vpc-beta-go-sdk v0.4.0 h1:OxABcc2GeclCMN/bpcQfM2cmNB2GuajwuocsPJSFdl0=
+github.com/IBM/vpc-beta-go-sdk v0.4.0/go.mod h1:fzHDAQIqH/5yJmYsKodKHLcqxMDT+yfH6vZjdiw8CQA=
 github.com/IBM/vpc-go-sdk v0.35.0 h1:Qc0OV2WIQLGwxuvPKusJdgeXiMwyHQITvSof+v125D8=
 github.com/IBM/vpc-go-sdk v0.35.0/go.mod h1:Ozn0YBCs284Qvy+CNAmoLhh2eD48NnobiAyfgVd8wmA=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=

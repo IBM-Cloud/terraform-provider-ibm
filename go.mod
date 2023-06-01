@@ -29,7 +29,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
-	github.com/IBM/vpc-beta-go-sdk v0.1.0
+	github.com/IBM/vpc-beta-go-sdk v0.4.0
 	github.com/IBM/vpc-go-sdk v0.35.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
@@ -178,5 +178,3 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace github.com/IBM/vpc-beta-go-sdk => ./common/github.com/IBM/vpc-beta-go-sdk
