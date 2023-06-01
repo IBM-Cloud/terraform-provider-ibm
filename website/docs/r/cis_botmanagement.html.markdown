@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_botmanagement
 
- Provides IBM Cloud Internet Services Bot Management resource. The resource allows to update Bot Management settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about bot management.
+ Provides IBM Cloud Internet Services Bot Management resource. The resource allows to update Bot Management settings of a domain of an IBM Cloud Internet Services CIS instance.
 
 ## Example usage
 ```terraform
