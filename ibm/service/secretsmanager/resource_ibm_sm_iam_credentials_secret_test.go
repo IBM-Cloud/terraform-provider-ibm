@@ -16,180 +16,124 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
-func TestAccIbmSmIamCredentialsSecretBasic(t *testing.T) {
-	var conf secretsmanagerv2.IAMCredentialsSecret
+var iamCredentialsSecretName = "terraform-test-iam-secret"
+var modifiedIamCredentialsSecretName = "modified-terraform-test-iam-secret"
+var iamCredentialsTtl = "259200"          // 3 days in seconds
+var modifiedIamCredentialsTtl = "7776000" // 3 months in seconds
 
-	if acc.SecretsManagerIamCredentialsConfigurationApiKey != "" {
-		if acc.SecretsManagerIamCredentialsSecretServiceId != "" {
-			resource.Test(t, resource.TestCase{
-				PreCheck:     func() { acc.TestAccPreCheck(t) },
-				Providers:    acc.TestAccProviders,
-				CheckDestroy: testAccCheckIbmSmIamCredentialsSecretDestroy,
-				Steps: []resource.TestStep{
-					resource.TestStep{
-						Config: testAccCheckIbmSmIamCredentialsSecretConfigBasic_withApikey_serviceid(),
-						Check: resource.ComposeAggregateTestCheckFunc(
-							testAccCheckIbmSmIamCredentialsSecretExists("ibm_sm_iam_credentials_secret.sm_iam_credentials_secret", conf),
-						),
-					},
-					resource.TestStep{
-						ResourceName:      "ibm_sm_iam_credentials_secret.sm_iam_credentials_secret",
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
-				},
-			})
-		} else {
-			resource.Test(t, resource.TestCase{
-				PreCheck:     func() { acc.TestAccPreCheck(t) },
-				Providers:    acc.TestAccProviders,
-				CheckDestroy: testAccCheckIbmSmIamCredentialsSecretDestroy,
-				Steps: []resource.TestStep{
-					resource.TestStep{
-						Config: testAccCheckIbmSmIamCredentialsSecretConfigBasic_withApikey_accessGroup(),
-						Check: resource.ComposeAggregateTestCheckFunc(
-							testAccCheckIbmSmIamCredentialsSecretExists("ibm_sm_iam_credentials_secret.sm_iam_credentials_secret", conf),
-						),
-					},
-					resource.TestStep{
-						ResourceName:      "ibm_sm_iam_credentials_secret.sm_iam_credentials_secret",
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
-				},
-			})
-		}
+/*
+   api_key_id:
+     $ref: '#/components/schemas/ApiKeyId'
+   service_id:
+     $ref: '#/components/schemas/ServiceId'
+   service_id_is_static:
+     $ref: '#/components/schemas/ServiceIdIsStatic'
+   reuse_api_key:
+     $ref: '#/components/schemas/ReuseApiKey'
+   rotation:
+     $ref: '#/components/schemas/RotationPolicy'
+   next_rotation_date:
+
+*/
+func TestAccIbmSmIamCredentialsSecretBasic(t *testing.T) {
+	resourceName := "ibm_sm_iam_credentials_secret.sm_iam_credentials_secret"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmIamCredentialsSecretDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmSmIamCredentialsSecretConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmIamCredentialsSecretCreated(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttrSet(resourceName, "api_key"),
+					resource.TestCheckResourceAttrSet(resourceName, "api_key_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "service_id_is_static"),
+					resource.TestCheckResourceAttrSet(resourceName, "next_rotation_date"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "2"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIbmSmIamCredentialsSecretConfigUpdated(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmIamCredentialsSecretUpdated(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "2"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+var iamCredentialsSecretConfigFormat = `
+		resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			description = "%s"
+  			labels = ["%s"]
+  			custom_metadata = %s
+   			ttl = "%s"
+			reuse_api_key = true
+			rotation %s
+			%s
+			depends_on = [
+				ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration_instance
+			]
+		}`
+
+func iamCredentialsEngineConfig() string {
+	if acc.SecretsManagerIamCredentialsConfigurationApiKey == "" {
+		return ""
 	} else {
-		if acc.SecretsManagerIamCredentialsSecretServiceId != "" {
-			resource.Test(t, resource.TestCase{
-				PreCheck:     func() { acc.TestAccPreCheck(t) },
-				Providers:    acc.TestAccProviders,
-				CheckDestroy: testAccCheckIbmSmIamCredentialsSecretDestroy,
-				Steps: []resource.TestStep{
-					resource.TestStep{
-						Config: testAccCheckIbmSmIamCredentialsSecretConfigBasic_noApikey_serviceid(),
-						Check: resource.ComposeAggregateTestCheckFunc(
-							testAccCheckIbmSmIamCredentialsSecretExists("ibm_sm_iam_credentials_secret.sm_iam_credentials_secret", conf),
-						),
-					},
-					resource.TestStep{
-						ResourceName:      "ibm_sm_iam_credentials_secret.sm_iam_credentials_secret",
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
-				},
-			})
-		} else {
-			resource.Test(t, resource.TestCase{
-				PreCheck:     func() { acc.TestAccPreCheck(t) },
-				Providers:    acc.TestAccProviders,
-				CheckDestroy: testAccCheckIbmSmIamCredentialsSecretDestroy,
-				Steps: []resource.TestStep{
-					resource.TestStep{
-						Config: testAccCheckIbmSmIamCredentialsSecretConfigBasic_noApikey_accessGroup(),
-						Check: resource.ComposeAggregateTestCheckFunc(
-							testAccCheckIbmSmIamCredentialsSecretExists("ibm_sm_iam_credentials_secret.sm_iam_credentials_secret", conf),
-						),
-					},
-					resource.TestStep{
-						ResourceName:      "ibm_sm_iam_credentials_secret.sm_iam_credentials_secret",
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
-				},
-			})
-		}
+		return fmt.Sprintf(`resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration_instance" {
+			instance_id   = "%s"
+			region        = "%s"
+			name = "terraform-test-datasource"
+			api_key = "%s"
+		}`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+			acc.SecretsManagerIamCredentialsConfigurationApiKey)
 	}
 }
 
-func testAccCheckIbmSmIamCredentialsSecretConfigBasic_withApikey_serviceid() string {
-	return fmt.Sprintf(`
-		resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration_instance" {
-			instance_id   = "%s"
-			region        = "%s"
-			name = "terraform-test-datasource"
-			api_key = "%s"
-		}
-
-		resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
-			instance_id   = "%s"
-			region        = "%s"
-  			custom_metadata = {"key":"value"}
-  			description = "Extended description for this secret."
-  			labels = ["my-label"]
-  			service_id = "%s"
-  			ttl = "1800"
-			name = "terraform-test"
-			reuse_api_key = true
-			depends_on = [
-				ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration_instance
-			]
-		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerIamCredentialsConfigurationApiKey, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerIamCredentialsSecretServiceId)
+func testAccCheckIbmSmIamCredentialsSecretConfigBasic() string {
+	var accessField string // either service ID or access groups
+	if acc.SecretsManagerIamCredentialsSecretServiceId != "" {
+		accessField = fmt.Sprintf(`service_id = "%s"`, acc.SecretsManagerIamCredentialsSecretServiceId)
+	} else {
+		accessField = fmt.Sprintf(`access_groups = ["%s"]`, acc.SecretsManagerIamCredentialsSecretServiceAccessGroup)
+	}
+	return iamCredentialsEngineConfig() +
+		fmt.Sprintf(iamCredentialsSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+			iamCredentialsSecretName, description, label, customMetadata, iamCredentialsTtl, rotationPolicy, accessField)
 }
 
-func testAccCheckIbmSmIamCredentialsSecretConfigBasic_withApikey_accessGroup() string {
-	return fmt.Sprintf(`
-		resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration_instance" {
-			instance_id   = "%s"
-			region        = "%s"
-			name = "terraform-test-datasource"
-			api_key = "%s"
-		}
-
-		resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
-			instance_id   = "%s"
-			region        = "%s"
-  			custom_metadata = {"key":"value"}
-  			description = "Extended description for this secret."
-  			labels = ["my-label"]
-  			access_groups = ["%s"]
-  			ttl = "1800"
-			name = "iam-credentials-test-terraform"
-			reuse_api_key = true
-			depends_on = [
-				ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration_instance
-			]
-		}
-
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerIamCredentialsConfigurationApiKey, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerIamCredentialsSecretServiceAccessGroup)
+func testAccCheckIbmSmIamCredentialsSecretConfigUpdated() string {
+	var accessField string // either service ID or access groups
+	if acc.SecretsManagerIamCredentialsSecretServiceId != "" {
+		accessField = fmt.Sprintf(`service_id = "%s"`, acc.SecretsManagerIamCredentialsSecretServiceId)
+	} else {
+		accessField = fmt.Sprintf(`access_groups = ["%s"]`, acc.SecretsManagerIamCredentialsSecretServiceAccessGroup)
+	}
+	return iamCredentialsEngineConfig() +
+		fmt.Sprintf(iamCredentialsSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+			modifiedIamCredentialsSecretName, modifiedDescription, modifiedLabel,
+			modifiedCustomMetadata, modifiedIamCredentialsTtl, modifiedRotationPolicy, accessField)
 }
 
-func testAccCheckIbmSmIamCredentialsSecretConfigBasic_noApikey_serviceid() string {
-	return fmt.Sprintf(`
-		resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
-			instance_id   = "%s"
-			region        = "%s"
-  			custom_metadata = {"key":"value"}
-  			description = "Extended description for this secret."
-  			labels = ["my-label"]
-  			service_id = "%s"
-  			ttl = "1800"
-			name = "iam-credentials-test-terraform"
-			reuse_api_key = true
-		}
-
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerIamCredentialsSecretServiceId)
-}
-
-func testAccCheckIbmSmIamCredentialsSecretConfigBasic_noApikey_accessGroup() string {
-	return fmt.Sprintf(`
-		resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
-			instance_id   = "%s"
-			region        = "%s"
-  			custom_metadata = {"key":"value"}
-  			description = "Extended description for this secret."
-  			labels = ["my-label"]
-  			access_groups = ["%s"]
-  			ttl = "1800"
-			name = "iam-credentials-test-terraform"
-			reuse_api_key = true
-		}
-
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerIamCredentialsSecretServiceAccessGroup)
-}
-
-func testAccCheckIbmSmIamCredentialsSecretExists(n string, obj secretsmanagerv2.IAMCredentialsSecret) resource.TestCheckFunc {
+func testAccCheckIbmSmIamCredentialsSecretCreated(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -215,8 +159,68 @@ func testAccCheckIbmSmIamCredentialsSecretExists(n string, obj secretsmanagerv2.
 			return err
 		}
 
-		iAMCredentialsSecret := iAMCredentialsSecretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
-		obj = *iAMCredentialsSecret
+		secret := iAMCredentialsSecretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
+
+		if err := verifyAttr(*secret.Name, iamCredentialsSecretName, "secret name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, description, "secret description"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], label, "label"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, customMetadata, "custom metadata"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "1", "rotation interval"); err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func testAccCheckIbmSmIamCredentialsSecretUpdated(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		iamCredentialsSecretIntf, err := getSecret(s, n)
+		if err != nil {
+			return err
+		}
+		secret := iamCredentialsSecretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
+
+		if err := verifyAttr(*secret.Name, modifiedIamCredentialsSecretName, "secret name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, modifiedDescription, "secret description after update"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels after update: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], modifiedLabel, "label after update"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, modifiedCustomMetadata, "custom metadata after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval after update"); err != nil {
+			return err
+		}
 		return nil
 	}
 }

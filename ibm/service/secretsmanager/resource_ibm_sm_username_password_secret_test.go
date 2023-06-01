@@ -16,8 +16,15 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
+var username = "user"
+var modifiedUsername = "modified_user"
+var password = "password"
+var modifiedPassword = "modified_password"
+var usernamePasswordSecretName = "terraform-test-username-secret"
+var modifiedUsernamePasswordSecretName = "modified-terraform-test-username-secret"
+
 func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
-	var conf secretsmanagerv2.UsernamePasswordSecret
+	resourceName := "ibm_sm_username_password_secret.sm_username_password_secret"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,11 +34,26 @@ func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmUsernamePasswordSecretConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmUsernamePasswordSecretExists("ibm_sm_username_password_secret.sm_username_password_secret", conf),
+					testAccCheckIbmSmUsernamePasswordSecretCreated(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttrSet(resourceName, "next_rotation_date"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_sm_username_password_secret.sm_username_password_secret",
+				Config: testAccCheckIbmSmUsernamePasswordSecretConfigUpdated(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmUsernamePasswordSecretUpdated(resourceName),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -39,57 +61,118 @@ func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSmUsernamePasswordSecretConfigBasic() string {
-	return fmt.Sprintf(`
-
+var usernamePasswordSecretConfigFormat = `
 		resource "ibm_sm_username_password_secret" "sm_username_password_secret" {
-			  instance_id   = "%s"
-              region        = "%s"
-              custom_metadata = {"key":"value"}
-              description = "Extended description for this secret."
-              labels = ["my-label"]
-              rotation {
-                auto_rotate = true
-                interval = 1
-                unit = "day"
-              }
-              secret_group_id = "default"
-              username = "username"
-    		  password = "password"
-			  name = "username_password-datasource-terraform-test"
-  			  expiration_date = "2033-05-30T21:00:00Z"
-		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			description = "%s"
+  			labels = ["%s"]
+			username = "%s"
+			password = "%s"
+  			expiration_date = "%s"
+  			custom_metadata = %s
+			secret_group_id = "default"
+			rotation %s
+		}`
+
+func testAccCheckIbmSmUsernamePasswordSecretConfigBasic() string {
+	return fmt.Sprintf(usernamePasswordSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		usernamePasswordSecretName, description, label, username, password, expirationDate, customMetadata, rotationPolicy)
 }
 
-func testAccCheckIbmSmUsernamePasswordSecretExists(n string, obj secretsmanagerv2.UsernamePasswordSecret) resource.TestCheckFunc {
+func testAccCheckIbmSmUsernamePasswordSecretConfigUpdated() string {
+	return fmt.Sprintf(usernamePasswordSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		modifiedUsernamePasswordSecretName, modifiedDescription, modifiedLabel, modifiedUsername, modifiedPassword,
+		modifiedExpirationDate, modifiedCustomMetadata, modifiedRotationPolicy)
+}
 
+func testAccCheckIbmSmUsernamePasswordSecretCreated(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		secretsManagerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecretsManagerV2()
+		usernamePasswordSecretIntf, err := getSecret(s, n)
 		if err != nil {
 			return err
 		}
+		secret := usernamePasswordSecretIntf.(*secretsmanagerv2.UsernamePasswordSecret)
 
-		secretsManagerClient = getClientWithInstanceEndpointTest(secretsManagerClient)
+		if err := verifyAttr(*secret.Name, usernamePasswordSecretName, "secret name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, description, "secret description"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], label, "label"); err != nil {
+			return err
+		}
+		if err := verifyDateAttr(secret.ExpirationDate, expirationDate, "expiration date"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, customMetadata, "custom metadata"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Username, username, "username"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Password, password, "password"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "1", "rotation interval"); err != nil {
+			return err
+		}
+		return nil
+	}
+}
 
-		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-
-		id := strings.Split(rs.Primary.ID, "/")
-		secretId := id[2]
-		getSecretOptions.SetID(secretId)
-
-		usernamePasswordSecretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
+func testAccCheckIbmSmUsernamePasswordSecretUpdated(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		usernamePasswordSecretIntf, err := getSecret(s, n)
 		if err != nil {
 			return err
 		}
+		secret := usernamePasswordSecretIntf.(*secretsmanagerv2.UsernamePasswordSecret)
 
-		usernamePasswordSecret := usernamePasswordSecretIntf.(*secretsmanagerv2.UsernamePasswordSecret)
-		obj = *usernamePasswordSecret
+		if err := verifyAttr(*secret.Name, modifiedUsernamePasswordSecretName, "secret name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, modifiedDescription, "secret description after update"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels after update: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], modifiedLabel, "label after update"); err != nil {
+			return err
+		}
+		if err := verifyDateAttr(secret.ExpirationDate, modifiedExpirationDate, "expiration date after update"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, modifiedCustomMetadata, "custom metadata after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Username, modifiedUsername, "username after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Password, modifiedPassword, "password after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval after update"); err != nil {
+			return err
+		}
 		return nil
 	}
 }
