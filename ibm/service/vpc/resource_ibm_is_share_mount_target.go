@@ -128,7 +128,7 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 
 	d.SetId(fmt.Sprintf("%s/%s", *createShareMountTargetOptions.ShareID, *shareTarget.ID))
 	d.Set("mount_target", *shareTarget.ID)
-	return resourceIbmIsShareMountTargetRead(context, d, meta)
+	return resourceIBMIsShareMountTargetRead(context, d, meta)
 }
 
 func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -226,7 +226,7 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 		}
 	}
 
-	return resourceIbmIsShareMountTargetRead(context, d, meta)
+	return resourceIBMIsShareMountTargetRead(context, d, meta)
 }
 
 func resourceIBMIsShareMountTargetDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
