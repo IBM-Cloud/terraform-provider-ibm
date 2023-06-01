@@ -489,7 +489,7 @@ data "ibm_cis_botmanagements" "tests" {
     domain = data.ibm_cis_domain.cis_domain.domain
 }
 # CIS Bot Management resource
-resource "ibm_cis_botmanagement" "mtls_settings" {
+resource "ibm_cis_botmanagement" "test" {
     cis_id                          = data.ibm_cis.cis.id
     domain = data.ibm_cis_domain.cis_domain.domain
     fight_mode				= false
