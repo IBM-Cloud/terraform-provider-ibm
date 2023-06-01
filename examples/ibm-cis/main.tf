@@ -483,6 +483,23 @@ data "ibm_cis_mtls_apps" "test" {
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
 }
 
+# CIS Bot Management data source
+data "ibm_cis_botmanagements" "tests" {
+	cis_id    = data.ibm_cis.cis.id
+    domain = data.ibm_cis_domain.cis_domain.domain
+}
+# CIS Bot Management resource
+resource "ibm_cis_botmanagement" "mtls_settings" {
+    cis_id                          = data.ibm_cis.cis.id
+    domain = data.ibm_cis_domain.cis_domain.domain
+    fight_mode				= false
+    session_score			= false
+    enable_js				= false
+    auth_id_logging			= false
+    use_latest_model 		= false
+
+}
+
 # CIS Logpush Job
 resource "ibm_cis_logpush_job" "test" {
     cis_id          = data.ibm_cis.cis.id

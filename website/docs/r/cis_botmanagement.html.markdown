@@ -8,13 +8,13 @@ description: |-
 
 # ibm_cis_botmanagement
 
- Provides IBM Cloud Internet Services Bot Management resource. The resource allows to update Bot Management settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about mtls, see [CIS MTLS](https://cloud.ibm.com/docs/cis?topic=cis-mtls-features).
+ Provides IBM Cloud Internet Services Bot Management resource. The resource allows to update Bot Management settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about bot management.
 
 ## Example usage
 ```terraform
-# Change mTLS certificate setting of CIS instance
+# Change Bot Management setting of CIS instance
 
-resource "ibm_cis_botmanagement" "mtls_settings" {
+resource "ibm_cis_botmanagement" "test" {
     cis_id                          = data.ibm_cis.cis.id
     domain = data.ibm_cis_domain.cis_domain.domain
     fight_mode				= false

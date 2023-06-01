@@ -1121,8 +1121,8 @@ func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
 
 //CIS Bot Management
 func (sess clientSession) CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error) {
-	if sess.cisMtlsErr != nil {
-		return sess.cisBotManagementClient, sess.cisMtlsErr
+	if sess.cisBotManagementErr != nil {
+		return sess.cisBotManagementClient, sess.cisBotManagementErr
 	}
 	return sess.cisBotManagementClient.Clone(), nil
 }
