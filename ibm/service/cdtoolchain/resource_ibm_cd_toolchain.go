@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -25,6 +26,11 @@ func ResourceIBMCdToolchain() *schema.Resource {
 		UpdateContext: resourceIBMCdToolchainUpdate,
 		DeleteContext: resourceIBMCdToolchainDelete,
 		Importer:      &schema.ResourceImporter{},
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.ResourceTagsCustomizeDiff(diff)
+			},
+		),
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
