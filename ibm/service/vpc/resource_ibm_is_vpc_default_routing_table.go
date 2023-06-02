@@ -1,0 +1,402 @@
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+package vpc
+
+import (
+	"fmt"
+	"log"
+	"strings"
+	"time"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+const ()
+
+func ResourceIBMISVPCDefaultRoutingTable() *schema.Resource {
+	return &schema.Resource{
+		Create:   resourceIBMISVPCDefaultRoutingTableCreate,
+		Read:     resourceIBMISVPCDefaultRoutingTableRead,
+		Update:   resourceIBMISVPCDefaultRoutingTableUpdate,
+		Delete:   resourceIBMISVPCDefaultRoutingTableDelete,
+		Exists:   resourceIBMISVPCDefaultRoutingTableExists,
+		Importer: &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+		Schema: map[string]*schema.Schema{
+			rtVpcID: {
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The VPC identifier.",
+			},
+			"accept_routes_from_resource_type": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The filters specifying the resources that may create routes in this routing table, The resource type: vpn_gateway or vpn_server",
+			},
+			rtRouteDirectLinkIngress: {
+				Type:        schema.TypeBool,
+				ForceNew:    false,
+				Default:     false,
+				Optional:    true,
+				Description: "If set to true, this routing table will be used to route traffic that originates from Direct Link to this VPC.",
+			},
+			rtRouteInternetIngress: {
+				Type:        schema.TypeBool,
+				ForceNew:    false,
+				Default:     false,
+				Optional:    true,
+				Description: "If set to true, this routing table will be used to route traffic that originates from the internet. For this to succeed, the VPC must not already have a routing table with this property set to true.",
+			},
+			rtRouteTransitGatewayIngress: {
+				Type:        schema.TypeBool,
+				ForceNew:    false,
+				Default:     false,
+				Optional:    true,
+				Description: "If set to true, this routing table will be used to route traffic that originates from Transit Gateway to this VPC.",
+			},
+			rtRouteVPCZoneIngress: {
+				Type:        schema.TypeBool,
+				ForceNew:    false,
+				Default:     false,
+				Optional:    true,
+				Description: "If set to true, this routing table will be used to route traffic that originates from subnets in other zones in this VPC.",
+			},
+			rtName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The user-defined name for this routing table.",
+			},
+			rtID: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The routing table identifier.",
+			},
+			rtHref: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Routing table Href",
+			},
+			rtResourceType: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Routing table Resource Type",
+			},
+			rtCreateAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Routing table Created At",
+			},
+			rtLifecycleState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Routing table Lifecycle State",
+			},
+			rtIsDefault: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this is the default routing table for this VPC",
+			},
+			rtRoutes: &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "The routes for this routing table.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						rDeleted: &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									rMoreInfo: &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						rtHref: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this route.",
+						},
+						rId: &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this route.",
+						},
+						rName: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rAction: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rNextHop: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rZone: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rPriority: &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+						rDestination: &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The user-defined name for this route.",
+						},
+					},
+				},
+			},
+			rtSubnets: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						rtName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Subnet name",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Subnet ID",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func ResourceIBMISVPCDefaultRoutingTableValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+	actionAllowedValues := "delegate, delegate_vpc, deliver, drop"
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 rtName,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   false,
+			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
+			MinValueLength:             1,
+			MaxValueLength:             63})
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 rtAction,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   false,
+			AllowedValues:              actionAllowedValues})
+
+	ibmISVPCRoutingTableValidator := validate.ResourceValidator{ResourceName: "ibm_is_vpc_default_routing_table", Schema: validateSchema}
+	return &ibmISVPCRoutingTableValidator
+}
+
+func resourceIBMISVPCDefaultRoutingTableCreate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	vpcID := d.Get(rtVpcID).(string)
+	getVpcRoutingTableOptions := &vpcv1.GetVPCDefaultRoutingTableOptions{
+		ID: &vpcID,
+	}
+
+	routeTable, response, err := sess.GetVPCDefaultRoutingTable(getVpcRoutingTableOptions)
+	if err != nil {
+		log.Printf("[DEBUG] Create VPC Default Routing table err %s\n%s", err, response)
+		return err
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", vpcID, *routeTable.ID))
+
+	return resourceIBMISVPCRoutingTableRead(d, meta)
+}
+
+func resourceIBMISVPCDefaultRoutingTableRead(d *schema.ResourceData, meta interface{}) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+
+	idSet := strings.Split(d.Id(), "/")
+	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
+	routeTable, response, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("[ERROR] Error Getting VPC Routing table: %s\n%s", err, response)
+	}
+
+	d.Set(rtVpcID, idSet[0])
+	d.Set(rtID, routeTable.ID)
+	d.Set(rtName, routeTable.Name)
+	d.Set(rtHref, routeTable.Href)
+	d.Set(rtLifecycleState, routeTable.LifecycleState)
+	d.Set(rtCreateAt, routeTable.CreatedAt.String())
+	d.Set(rtResourceType, routeTable.ResourceType)
+	d.Set(rtRouteDirectLinkIngress, routeTable.RouteDirectLinkIngress)
+	d.Set(rtRouteInternetIngress, routeTable.RouteInternetIngress)
+	d.Set(rtRouteTransitGatewayIngress, routeTable.RouteTransitGatewayIngress)
+	d.Set(rtRouteVPCZoneIngress, routeTable.RouteVPCZoneIngress)
+	d.Set(rtIsDefault, routeTable.IsDefault)
+	acceptRoutesFromArray := make([]string, 0)
+	for i := 0; i < len(routeTable.AcceptRoutesFrom); i++ {
+		acceptRoutesFromArray = append(acceptRoutesFromArray, string(*(routeTable.AcceptRoutesFrom[i].ResourceType)))
+	}
+	if err = d.Set("accept_routes_from_resource_type", acceptRoutesFromArray); err != nil {
+		return fmt.Errorf("[ERROR] Error setting accept_routes_from_resource_type: %s", err)
+	}
+	subnets := make([]map[string]interface{}, 0)
+
+	for _, s := range routeTable.Subnets {
+		subnet := make(map[string]interface{})
+		subnet[ID] = *s.ID
+		subnet["name"] = *s.Name
+		subnets = append(subnets, subnet)
+	}
+
+	d.Set(rtSubnets, subnets)
+
+	return nil
+}
+
+func resourceIBMISVPCDefaultRoutingTableUpdate(d *schema.ResourceData, meta interface{}) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	//Etag
+	idSett := strings.Split(d.Id(), "/")
+	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSett[0], idSett[1])
+	_, respGet, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
+	eTag := respGet.Headers.Get("ETag")
+
+	idSet := strings.Split(d.Id(), "/")
+	updateVpcRoutingTableOptions := new(vpcv1.UpdateVPCRoutingTableOptions)
+	updateVpcRoutingTableOptions.VPCID = &idSet[0]
+	updateVpcRoutingTableOptions.ID = &idSet[1]
+	hasChange := false
+	// Construct an instance of the RoutingTablePatch model
+	routingTablePatchModel := new(vpcv1.RoutingTablePatch)
+
+	if d.HasChange(rtName) {
+		name := d.Get(rtName).(string)
+		routingTablePatchModel.Name = core.StringPtr(name)
+		hasChange = true
+	}
+	if d.HasChange("accept_routes_from_resource_type") {
+		var aroutes []vpcv1.ResourceFilter
+		acptRoutes := d.Get("accept_routes_from_resource_type").(*schema.Set)
+		for _, val := range acptRoutes.List() {
+			value := val.(string)
+			resourceFilter := vpcv1.ResourceFilter{
+				ResourceType: &value,
+			}
+			aroutes = append(aroutes, resourceFilter)
+		}
+		routingTablePatchModel.AcceptRoutesFrom = aroutes
+		hasChange = true
+	}
+	if d.HasChange(rtRouteDirectLinkIngress) {
+		routeDirectLinkIngress := d.Get(rtRouteDirectLinkIngress).(bool)
+		routingTablePatchModel.RouteDirectLinkIngress = core.BoolPtr(routeDirectLinkIngress)
+		hasChange = true
+	}
+	if d.HasChange(rtRouteInternetIngress) {
+		rtRouteInternetIngress := d.Get(rtRouteInternetIngress).(bool)
+		routingTablePatchModel.RouteInternetIngress = core.BoolPtr(rtRouteInternetIngress)
+	}
+	if d.HasChange(rtRouteTransitGatewayIngress) {
+		routeTransitGatewayIngress := d.Get(rtRouteTransitGatewayIngress).(bool)
+		routingTablePatchModel.RouteTransitGatewayIngress = core.BoolPtr(routeTransitGatewayIngress)
+		hasChange = true
+	}
+	if d.HasChange(rtRouteVPCZoneIngress) {
+		routeVPCZoneIngress := d.Get(rtRouteVPCZoneIngress).(bool)
+		routingTablePatchModel.RouteVPCZoneIngress = core.BoolPtr(routeVPCZoneIngress)
+		hasChange = true
+	}
+	if hasChange {
+		updateVpcRoutingTableOptions.IfMatch = &eTag
+	}
+
+	routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
+	if asPatchErr != nil {
+		return fmt.Errorf("[ERROR] Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
+	}
+
+	updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
+	_, response, err := sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
+	if err != nil {
+		log.Printf("[DEBUG] Update VPC Routing table err %s\n%s", err, response)
+		return err
+	}
+	return resourceIBMISVPCRoutingTableRead(d, meta)
+}
+
+func resourceIBMISVPCDefaultRoutingTableDelete(d *schema.ResourceData, meta interface{}) error {
+	d.SetId("")
+	return nil
+}
+
+func resourceIBMISVPCDefaultRoutingTableExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return false, err
+	}
+
+	idSet := strings.Split(d.Id(), "/")
+	if len(idSet) != 2 {
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/routingTableID", d.Id())
+	}
+	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
+	_, response, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return false, nil
+		}
+		return false, fmt.Errorf("[ERROR] Error Getting VPC Routing table : %s\n%s", err, response)
+	}
+	return true, nil
+}
