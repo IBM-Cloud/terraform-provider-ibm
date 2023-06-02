@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2022, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -85,6 +86,15 @@ func ResourceIBMCdToolchain() *schema.Resource {
 				Computed:    true,
 				Description: "Identity that created the toolchain.",
 			},
+			"tags": &schema.Schema{
+				Type:         schema.TypeSet,
+				Optional:     true,
+				Computed:     true,
+				Elem:         &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain", "tags")},
+				Set:          flex.ResourceIBMVPCHash,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain", "tags"),
+				Description:  "Toolchain tags.",
+			},
 		},
 	}
 }
@@ -119,6 +129,13 @@ func ResourceIBMCdToolchainValidator() *validate.ResourceValidator {
 			MinValueLength:             0,
 			MaxValueLength:             500,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "tags",
+			Optional:                   true,
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_toolchain", Schema: validateSchema}
@@ -147,6 +164,16 @@ func resourceIBMCdToolchainCreate(context context.Context, d *schema.ResourceDat
 
 	d.SetId(*toolchainPost.ID)
 
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *toolchainPost.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of toolchain (%s) tags: %s", d.Id(), err)
+		}
+	}
+
 	return resourceIBMCdToolchainRead(context, d, meta)
 }
 
@@ -169,6 +196,13 @@ func resourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData,
 		log.Printf("[DEBUG] GetToolchainByIDWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetToolchainByIDWithContext failed %s\n%s", err, response))
 	}
+
+	tags, err := flex.GetTagsUsingCRN(meta, *toolchain.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of toolchain (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
 
 	if err = d.Set("name", toolchain.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
@@ -233,6 +267,15 @@ func resourceIBMCdToolchainUpdate(context context.Context, d *schema.ResourceDat
 		newDescription := d.Get("description").(string)
 		patchVals.Description = &newDescription
 		hasChange = true
+	}
+
+	if d.HasChange("tags") {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string))
+		if err != nil {
+			log.Printf(
+				"Error on update of toolchain (%s) tags: %s", d.Id(), err)
+		}
 	}
 
 	if hasChange {
