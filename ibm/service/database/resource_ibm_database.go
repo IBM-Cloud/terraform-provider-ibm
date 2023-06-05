@@ -929,7 +929,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, enterprise",
+			AllowedValues:              "standard, enterprise, sharding",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1005,6 +1005,10 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 
 	if service == "mongodb" && _plan == "enterprise" {
 		service = "mongodbee"
+	}
+
+	if service == "mongodb" && _plan == "sharding" {
+		service = "mongodbees"
 	}
 
 	getDefaultScalingGroupsOptions := cloudDatabasesClient.NewGetDefaultScalingGroupsOptions(service)
