@@ -177,7 +177,11 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		}
 		configuration                = <<CONFIGURATION
 		{
-		  "maxmemory-policy": "allkeys-lru"
+		  "appendonly": "no",
+		  "maxmemory": 0,
+		  "maxmemory-policy": "noeviction",
+		  "maxmemory-samples": 5,
+		  "stop-writes-on-bgsave-error": "yes"
 		}
 		CONFIGURATION
 	  }

@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a read-only data source for cd_toolchain_tool_eventnotifications. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-See the [tool integration](https://cloud.ibm.com/docs/event-notifications) page for more information.
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-event-notifications-integration) page for more information.
 
 ## Example Usage
 
