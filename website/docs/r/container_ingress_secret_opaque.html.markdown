@@ -1,18 +1,18 @@
 ---
 subcategory: "Kubernetes Service"
 layout: "ibm"
-page_title: "IBM: ibm_container_ingress_secret_tls"
+page_title: "IBM: ibm_container_ingress_secret_opaque"
 description: |-
   Registers an IBM Cloud Secrets Manager certificate secret with your cluster
 ---
 
-# ibm_container_ingress_instance
-Registers an IBM Cloud Secrets Manager secret type certificate with your IBM Cloud Kubernetes Service or Red Hat OpenShift on IBM Cloud cluster. For more information about how TLS secrets can be used see [about Secrets Manager secrets](https://cloud.ibm.com/docs/containers?topic=containers-secrets#tls)
+# ibm_container_ingress_secret_opaque
+Registers an IBM Cloud Secrets Manager secret type certificate with your IBM Cloud Kubernetes Service or Red Hat OpenShift on IBM Cloud cluster. For more information about how opaque secrets can be used see [about Secrets Manager secrets](https://cloud.ibm.com/docs/containers?topic=containers-secrets#non-tls)
 
 ## Example usage
 
 ```terraform
-resource "ibm_container_ingress_secret_tls" "secret" {
+resource "ibm_container_ingress_secret_opaque" "secret" {
   cluster="exampleClusterName"
   secret_name="mySecretName"
   secret_namespace="mySecretNamespace"
@@ -34,7 +34,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `secret_type` - (String) The type of Kubernetes secret (TLS).
+- `secret_type` - (String) The type of Kubernetes secret (Opaque).
 - `status` - (String) The Status of the secret.
 - `user_managed` - (Bool) Indicates whether the secret was created by a user.
 - `persistence`  - (Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.

@@ -6,7 +6,7 @@ description: |-
   Get information about a managed TLS kubernetes secret backed by Secrets Manager secrets
 ---
 
-# ibm_container_ingress_tls_secret
+# ibm_container_ingress_secret_tls
 Get details about a managed TLS certificate that is stored as a Kubernetes TLS secret.
 
 ## Example usage

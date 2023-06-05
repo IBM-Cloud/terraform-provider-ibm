@@ -6,7 +6,7 @@ description: |-
   Registers an IBM Cloud Secrets Manager certificate secret with your cluster
 ---
 
-# ibm_container_ingress_instance
+# ibm_container_ingress_secret_tls
 Registers an IBM Cloud Secrets Manager secret type certificate with your IBM Cloud Kubernetes Service or Red Hat OpenShift on IBM Cloud cluster. For more information about how TLS secrets can be used see [about Secrets Manager secrets](https://cloud.ibm.com/docs/containers?topic=containers-secrets#tls)
 
 ## Example usage

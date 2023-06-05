@@ -6,7 +6,7 @@ description: |-
   Get information about a managed opaque kubernetes secret backed by Secrets Manager secrets
 ---
 
-# ibm_container_ingress_tls_secret
+# ibm_container_ingress_secret_opaque
 Get details about a managed opaque secret that is stored as a Kubernetes opaque secret.
 
 ## Example usage

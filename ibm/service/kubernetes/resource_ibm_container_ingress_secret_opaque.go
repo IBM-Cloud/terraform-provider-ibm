@@ -278,7 +278,6 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 		remove := os.Difference(ns).List()
 		add := ns.Difference(os).List()
 
-		fmt.Println("remove", remove, "add", add)
 		ingressAPI := ingressClient.Ingresses()
 		if len(remove) > 0 {
 			actualSecret, err := ingressAPI.GetIngressSecret(cluster, secretName, secretNamespace)
