@@ -371,7 +371,6 @@ func waitForProjectConfigCreate(context context.Context, d *schema.ResourceData,
 	getConfigOptions := &projectv1.GetConfigOptions{}
 	getConfigOptions.SetProjectID(parts[0])
 	getConfigOptions.SetID(parts[1])
-	getConfigOptions.SetVersion("draft") // newly created config is in "draft" state, need to pass the version state
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"not_exists"},

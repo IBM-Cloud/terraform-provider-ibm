@@ -61,7 +61,7 @@ Nested scheme for **compliance_profile**:
 	* `instance_location` - (Optional, String) The location of the compliance instance.
 	  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
 	* `profile_name` - (Optional, String) The name of the compliance profile.
-	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
 * `description` - (Optional, String) The project configuration description.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
 * `input` - (Optional, List) The inputs of a Schematics template property.

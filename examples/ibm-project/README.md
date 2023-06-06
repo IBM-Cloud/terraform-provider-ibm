@@ -65,7 +65,6 @@ project_config data source:
 data "project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
   id = ibm_project_config.project_config_instance.project_config_id
-  version = var.project_config_version
 }
 ```
 
@@ -112,7 +111,6 @@ data "project_config" "project_config_instance" {
 | id | The unique project ID. | `string` | true |
 | project_id | The unique project ID. | `string` | true |
 | id | The unique config ID. | `string` | true |
-| version | The version of the configuration to return. | `string` | false |
 
 ## Outputs
 

@@ -27,8 +27,6 @@ Review the argument reference that you can specify for your data source.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-* `version` - (Optional, String) The version of the configuration to return.
-  * Constraints: The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(active|draft|\\d+)$/`.
 
 ## Attribute Reference
 
@@ -59,7 +57,7 @@ Nested scheme for **compliance_profile**:
 	* `instance_location` - (String) The location of the compliance instance.
 	  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
 	* `profile_name` - (String) The name of the compliance profile.
-	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
 
 * `description` - (String) The project configuration description.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.

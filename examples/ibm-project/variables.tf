@@ -75,8 +75,3 @@ variable "project_config_id" {
   type        = string
   default     = "id"
 }
-variable "project_config_version" {
-  description = "The version of the configuration to return."
-  type        = string
-  default     = "draft"
-}

@@ -31,11 +31,6 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Required:    true,
 				Description: "The unique config ID.",
 			},
-			"version": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The version of the configuration to return.",
-			},
 			"project_config_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -256,9 +251,6 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	getConfigOptions.SetProjectID(d.Get("project_id").(string))
 	getConfigOptions.SetID(d.Get("id").(string))
-	if _, ok := d.GetOk("version"); ok {
-		getConfigOptions.SetVersion(d.Get("version").(string))
-	}
 
 	projectConfig, response, err := projectClient.GetConfigWithContext(context, getConfigOptions)
 	if err != nil {
@@ -353,21 +345,20 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("setting", setting); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting setting %s", err))
 	}
-
 	/*
-		metadata := []map[string]interface{}{}
-		if projectConfig.Metadata != nil {
-			modelMap, err := dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfig.Metadata)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			metadata = append(metadata, modelMap)
-		}
-
-		if err = d.Set("metadata", metadata); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting metadata %s", err))
-		}
+		        metadata := []map[string]interface{}{}
+		        if projectConfig.Metadata != nil {
+		            modelMap, err := dataSourceIbmProjectConfigProjectConfigDraftMetadataToMap(projectConfig.Metadata)
+		            if err != nil {
+		                return diag.FromErr(err)
+		            }
+		            metadata = append(metadata, modelMap)
+		        }
+				if err = d.Set("metadata", metadata); err != nil {
+					return diag.FromErr(fmt.Errorf("Error setting metadata %s", err))
+				}
 	*/
+
 	return nil
 }
 

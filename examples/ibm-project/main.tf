@@ -67,5 +67,4 @@ data "ibm_project" "project_instance" {
 data "ibm_project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
   id = ibm_project_config.project_config_instance.project_config_id
-  version = var.project_config_version
 }
