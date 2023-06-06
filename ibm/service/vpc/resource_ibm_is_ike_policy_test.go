@@ -30,11 +30,11 @@ func TestAccIBMISIKEPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "authentication_algorithm", "md5"),
+						"ibm_is_ike_policy.example", "authentication_algorithm", "sha256"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "encryption_algorithm", "triple_des"),
+						"ibm_is_ike_policy.example", "encryption_algorithm", "aes128"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "dh_group", "2"),
+						"ibm_is_ike_policy.example", "dh_group", "14"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "ike_version", "1"),
 				),
@@ -107,9 +107,9 @@ func testAccCheckIBMISIKEPolicyConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ike_policy" "example" {
 			name = "%s"
-			authentication_algorithm = "md5"
-			encryption_algorithm = "triple_des"
-			dh_group = 2
+			authentication_algorithm = "sha256"
+			encryption_algorithm = "aes128"
+			dh_group = 14
 			ike_version = 1
 		}
 	`, name)

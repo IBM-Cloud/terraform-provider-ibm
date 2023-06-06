@@ -538,6 +538,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeList,
 							Description: "CPU Auto Scaling",
 							Computed:    true,
+							Deprecated:  "This field is deprecated, auto scaling cpu is unsupported by IBM Cloud Databases",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"rate_increase_percent": {

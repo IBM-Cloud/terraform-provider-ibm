@@ -9,14 +9,14 @@ require (
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.3.1
+	github.com/IBM/cloud-databases-go-sdk v0.3.2
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/continuous-delivery-go-sdk v1.1.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.13.2
+	github.com/IBM/go-sdk-core/v5 v5.13.4
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -30,14 +30,14 @@ require (
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
 	github.com/IBM/vpc-beta-go-sdk v0.1.0
-	github.com/IBM/vpc-go-sdk v0.37.0
+	github.com/IBM/vpc-go-sdk v0.38.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/errors v0.20.3 // indirect
-	github.com/go-openapi/strfmt v0.21.5
+	github.com/go-openapi/strfmt v0.21.7
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
@@ -154,11 +154,11 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.11.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/term v0.8.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154 // indirect

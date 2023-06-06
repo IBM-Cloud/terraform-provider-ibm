@@ -20,7 +20,7 @@ import (
 )
 
 func TestAccIBMISBareMetalServerNetworkInterfaceFloatingIp_basic(t *testing.T) {
-	var server string
+	var serverNicFip string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
@@ -32,12 +32,12 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISBareMetalServerNetworkInterfaceDestroy,
+		CheckDestroy: testAccCheckIBMISBareMetalServerNetworkInterfaceFloatingIpDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMISBareMetalServerNetworkInterfaceFloatingIpConfig(vpcname, subnetname, sshname, publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISBareMetalServerNetworkInterfaceExists("ibm_is_bare_metal_server.testacc_bms", server),
+					testAccCheckIBMISBareMetalServerNetworkInterfaceFloatingIpExists("ibm_is_bare_metal_server_network_interface_floating_ip.bms_nic_fip", serverNicFip),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "name", name),
 					resource.TestCheckResourceAttr(
