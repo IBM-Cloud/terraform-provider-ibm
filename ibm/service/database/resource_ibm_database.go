@@ -558,17 +558,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							},
 						},
 						"host_flavor": {
-							Optional: true,
-							Type:     schema.TypeSet,
-							MaxItems: 1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"allocation_host_flavor": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-								},
-							},
+							Description: "The host flavor",
+							Optional:    true,
+							Type:        schema.TypeString,
 						},
 					},
 				},
@@ -664,19 +656,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 								},
 							},
 						},
-						"host_flavor": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"allocation_host_flavor": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The current host flavor",
-									},
-								},
-							},
-						},
 						"disk": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -714,6 +693,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									},
 								},
 							},
+						},
+						"host_flavor": {
+							Description: "The host flavor",
+							Optional:    true,
+							Computed:    true,
+							Type:        schema.TypeString,
 						},
 					},
 				},
@@ -998,7 +983,7 @@ type Group struct {
 	Memory     *GroupResource
 	Disk       *GroupResource
 	CPU        *GroupResource
-	HostFlavor *HostFlavorGroupResource
+	HostFlavor *string
 }
 
 type GroupResource struct {
@@ -1010,10 +995,6 @@ type GroupResource struct {
 	IsAdjustable bool
 	IsOptional   bool
 	CanScaleDown bool
-}
-
-type HostFlavorGroupResource struct {
-	AllocationHostFlavor string
 }
 
 func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
@@ -1127,7 +1108,7 @@ func checkGroupScaling(groupId string, resourceName string, value int, resource 
 	return nil
 }
 
-func checkGroupHostFlavor(groupId string, resourceName string, group *Group, resource *HostFlavorGroupResource) error {
+func checkGroupHostFlavor(groupId string, resourceName string, group *Group) error {
 	if group.CPU != nil || group.Memory != nil {
 		return fmt.Errorf("%s must not be set with cpu and memory", resourceName)
 	}
@@ -1426,7 +1407,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			}
 
 			if memberGroup.HostFlavor != nil {
-				params.HostFlavor = memberGroup.HostFlavor.AllocationHostFlavor
+				params.HostFlavor = *memberGroup.HostFlavor
 			}
 		}
 	}
@@ -1551,8 +1532,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
-			if g.HostFlavor != nil && g.HostFlavor.AllocationHostFlavor != currentGroup.HostFlavor.AllocationHostFlavor {
-				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{AllocationHostFlavor: &g.HostFlavor.AllocationHostFlavor}
+			if g.HostFlavor != nil && g.HostFlavor != currentGroup.HostFlavor {
+				groupScaling.HostFlavor = g.HostFlavor
 			}
 
 			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
@@ -2194,8 +2175,8 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
 			}
-			if group.HostFlavor != nil && group.HostFlavor.AllocationHostFlavor != currentGroup.HostFlavor.AllocationHostFlavor {
-				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{AllocationHostFlavor: &group.HostFlavor.AllocationHostFlavor}
+			if group.HostFlavor != nil && group.HostFlavor != currentGroup.HostFlavor {
+				groupScaling.HostFlavor = group.HostFlavor
 			}
 
 			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
@@ -3047,9 +3028,7 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 		}
 
 		//TODO group needs host flavor
-		group.HostFlavor = &HostFlavorGroupResource{
-			AllocationHostFlavor: "",
-		}
+		group.HostFlavor = core.StringPtr("")
 
 		groups = append(groups, group)
 	}
@@ -3096,11 +3075,8 @@ func expandGroups(_groups []interface{}) []*Group {
 				}
 			}
 
-			if hostFlavorSet, ok := tfGroup["host_flavor"].(*schema.Set); ok {
-				hostFlavor := hostFlavorSet.List()
-				if len(hostFlavor) != 0 {
-					group.HostFlavor = &HostFlavorGroupResource{AllocationHostFlavor: hostFlavor[0].(map[string]interface{})["allocation_host_flavor"].(string)}
-				}
+			if _, ok := tfGroup["host_flavor"]; ok {
+				group.HostFlavor = core.StringPtr(tfGroup["host_flavor"].(string))
 			}
 
 			groups = append(groups, &group)
@@ -3205,7 +3181,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 			}
 
 			if group.HostFlavor != nil {
-				err = checkGroupHostFlavor(groupId, "host_flavor", group, groupDefaults.HostFlavor)
+				err = checkGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
 					return err
 				}
