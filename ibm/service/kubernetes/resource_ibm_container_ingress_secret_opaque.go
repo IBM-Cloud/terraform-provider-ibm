@@ -198,7 +198,6 @@ func resourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta in
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, secretName, secretNamespace))
 	d.Set("cluster", cluster)
 	d.Set("secret_name", ingressSecretConfig.Name)
 	d.Set("secret_namespace", ingressSecretConfig.Namespace)
@@ -240,7 +239,6 @@ func resourceIBMContainerIngressSecretOpaqueDelete(d *schema.ResourceData, meta 
 		return err
 	}
 
-	d.SetId("")
 	return nil
 }
 

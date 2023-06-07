@@ -176,7 +176,6 @@ func resourceIBMContainerIngressSecretTLSRead(d *schema.ResourceData, meta inter
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
 	d.Set("last_updated_timestamp", ingressSecretConfig.LastUpdatedTimestamp)
 
-	d.SetId(fmt.Sprintf("%s/%s/%s", cluster, secretName, secretNamespace))
 	return nil
 }
 
@@ -207,7 +206,6 @@ func resourceIBMContainerIngressSecretTLSDelete(d *schema.ResourceData, meta int
 		return err
 	}
 
-	d.SetId("")
 	return nil
 }
 
