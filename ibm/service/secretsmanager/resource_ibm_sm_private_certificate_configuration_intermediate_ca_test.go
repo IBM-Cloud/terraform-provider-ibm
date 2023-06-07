@@ -70,7 +70,7 @@ func TestAccIbmSmPrivateCertificateConfigurationIntermediateCAllArgs(t *testing.
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{"crl_expiry", "max_ttl", "max_path_length",
-					"permitted_dns_domains#", "ttl", "use_csr_values"},
+					"permitted_dns_domains", "ttl", "use_csr_values"},
 			},
 		},
 	})
