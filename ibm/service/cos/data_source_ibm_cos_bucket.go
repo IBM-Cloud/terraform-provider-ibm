@@ -75,6 +75,11 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "CRN of the key you want to use data at rest encryption",
 			},
+			"kms_key_crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of the key you want to use data at rest encryption",
+			},
 			"single_site_location": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -453,6 +458,7 @@ func DataSourceIBMCosBucketValidator() *validate.ResourceValidator {
 }
 func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
+	var keyProtectFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -462,6 +468,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
 	endpointType := d.Get("endpoint_type").(string)
+	if _, ok := d.GetOk("key_protect"); ok {
+		keyProtectFlag = true
+	}
 
 	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint string
 
@@ -557,7 +566,17 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion, endpointType)
 	d.SetId(bucketID)
-	d.Set("key_protect", head.IBMSSEKPCrkId)
+	if *head.IBMSSEKPEnabled == true {
+		if keyProtectFlag == true {
+			d.Set("key_protect", head.IBMSSEKPCrkId)
+		} else {
+			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+		}
+	} else {
+		d.Set("kms_key_crn", "")
+		d.Set("key_protect", "")
+	}
+
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)

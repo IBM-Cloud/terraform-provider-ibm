@@ -95,10 +95,18 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 			"key_protect": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "CRN of the key you want to use data at rest encryption",
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"kms_key_crn"},
+				Description:   "CRN of the key you want to use data at rest encryption",
+			},
+			"kms_key_crn": {
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"key_protect"},
+				Description:   "CRN of the key you want to use data at rest encryption",
 			},
 			"satellite_location_id": {
 				Type:          schema.TypeString,
@@ -1016,6 +1024,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
+	var keyProtectFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -1025,6 +1034,10 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	endpointType := parseBucketId(d.Id(), "endpointType")
 	apiType := parseBucketId(d.Id(), "apiType")
 	bLocation := parseBucketId(d.Id(), "bLocation")
+
+	if _, ok := d.GetOk("key_protect"); ok {
+		keyProtectFlag = true
+	}
 
 	//split satellite resource instance id to get the 1st value
 	if apiType == "sl" {
@@ -1151,6 +1164,20 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
+	}
+	head, err := s3Client.HeadBucket(headInput)
+	if err != nil {
+		return err
+	}
+	if *head.IBMSSEKPEnabled == true {
+		if keyProtectFlag == true {
+			d.Set("key_protect", head.IBMSSEKPCrkId)
+		} else {
+			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+		}
+	} else {
+		d.Set("kms_key_crn", "")
+		d.Set("key_protect", "")
 	}
 
 	if bucketPtr != nil {
@@ -1350,6 +1377,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 
 	if keyprotect, ok := d.GetOk("key_protect"); ok {
 		create.IBMSSEKPCustomerRootKeyCrn = aws.String(keyprotect.(string))
+		create.IBMSSEKPEncryptionAlgorithm = aws.String(keyAlgorithm)
+	} else if kmsKeyCrn, ok := d.GetOk("kms_key_crn"); ok {
+		create.IBMSSEKPCustomerRootKeyCrn = aws.String(kmsKeyCrn.(string))
 		create.IBMSSEKPEncryptionAlgorithm = aws.String(keyAlgorithm)
 	}
 
