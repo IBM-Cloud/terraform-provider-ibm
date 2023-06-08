@@ -30,9 +30,9 @@ func TestAccIBMISIPSecPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ipsec_policy.example", "name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ipsec_policy.example", "authentication_algorithm", "md5"),
+						"ibm_is_ipsec_policy.example", "authentication_algorithm", "sha256"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ipsec_policy.example", "encryption_algorithm", "triple_des"),
+						"ibm_is_ipsec_policy.example", "encryption_algorithm", "aes128"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ipsec_policy.example", "pfs", "disabled"),
 				),
@@ -43,11 +43,11 @@ func TestAccIBMISIPSecPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ipsec_policy.example", "name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ipsec_policy.example", "authentication_algorithm", "sha1"),
+						"ibm_is_ipsec_policy.example", "authentication_algorithm", "sha512"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ipsec_policy.example", "encryption_algorithm", "aes128"),
+						"ibm_is_ipsec_policy.example", "encryption_algorithm", "aes256"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ipsec_policy.example", "pfs", "group_2"),
+						"ibm_is_ipsec_policy.example", "pfs", "group_14"),
 				),
 			},
 		},
@@ -105,8 +105,8 @@ func testAccCheckIBMISIPSecPolicyConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ipsec_policy" "example" {
 			name = "%s"
-			authentication_algorithm = "md5"
-			encryption_algorithm = "triple_des"
+			authentication_algorithm = "sha256"
+			encryption_algorithm = "aes128"
 			pfs = "disabled"
 		}
 	`, name)
@@ -116,8 +116,8 @@ func testAccCheckIBMISIPSecPolicyConfigUpdate(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ipsec_policy" "example" {
 			name = "%s"
-			authentication_algorithm = "sha1"
-			encryption_algorithm = "aes128"
+			authentication_algorithm = "sha512"
+			encryption_algorithm = "aes256"
 			pfs = "group_2"
 		}
 	`, name)
