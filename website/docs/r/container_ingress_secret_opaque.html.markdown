@@ -16,7 +16,14 @@ resource "ibm_container_ingress_secret_opaque" "secret" {
   cluster="exampleClusterName"
   secret_name="mySecretName"
   secret_namespace="mySecretNamespace"
-  cert_crn="cert:region:crn"
+  persistence = true
+  fields = {
+    crn = "cert:region:crn"
+  }
+  fields = {
+    field_name = "myFieldName"
+    crn = "cert:region:crn"
+  }
 }
 ```
 
@@ -25,10 +32,12 @@ Review the argument references that you can specify for your resource.
 
 - `cluster` - (Required, String) The cluster ID.
 - `secret_name` - (Required, String) The name of the kubernetes secret.
-- `secret_namespace` - (Required, string) The namespace of the kubernetes secret.
- `fields` - (Required, string) The fields of the opaque secret.
-  - `crn` - (String) Secrets manager secret crn
-  - `name` - (String) Field name
+- `secret_namespace` - (Required, String) The namespace of the kubernetes secret.
+- `persistence`  - (Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.
+ `fields` - (Required, List) List of fields of the opaque secret.
+  Nested scheme for `fields`:
+  - `crn` - (Required, String) Secrets manager secret crn
+  - `field_name` - (String) Field name
   - `prefix` - (String) Prefix field name with Secrets Manager secret name
 
 ## Attribute reference
@@ -38,9 +47,11 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The Status of the secret.
 - `user_managed` - (Bool) Indicates whether the secret was created by a user.
 - `persistence`  - (Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.
- `fields` - (Required, string) The fields of the opaque secret.
+ `fields` - (List) List of fields of the opaque secret.
+  Nested scheme for `fields`:
   - `crn` - (String) Secrets manager secret crn
-  - `name` - (String) Field name
+  - `field_name` - (String) Requested field name
+  - `name` - (String) computed field name
   - `expires_on` - (String) Expiration date of the secret
   - `type` - (String) Secrets manager secret type
   - `last_updated_timestamp` - (String) The most recent time the kubernetes secret was updated

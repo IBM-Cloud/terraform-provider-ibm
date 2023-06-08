@@ -34,7 +34,8 @@ In addition to all argument reference list, you can access the following attribu
 - `persistence`  - (Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.
 - `status` - (String) The status of the secret.
 - `user_managed` - (Bool) Indicates whether the secret was created by a user.
-- `fields` - (String) The fields of the opaque secret.
+- `fields` - (String) List of fields of the opaque secret.
+  Nested scheme for `fields`:
   - `crn` - (String) Secrets manager secret crn
   - `name` - (String) Field name
   - `expires_on` - (String) Expiration date of the secret
