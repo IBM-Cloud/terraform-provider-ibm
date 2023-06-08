@@ -78,7 +78,7 @@ Nested scheme for **default_targets**:
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-._:]+$/`.
 * `permitted_target_regions` - (Optional, List) If present then only these regions may be used to define a target.
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`. The maximum length is `16` items. The minimum length is `0` items.
-* `primary_metadata_region` - (Optional, String) To store all your meta data in a single region.
+* `primary_metadata_region` - (Optional, String) To store all your meta data in a single region. For new accounts, all target / route creation will fail until primary_metadata_region is set.
   * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`.
   * Note: In case of _ibm_metrics_router_settings_, we don't use a traditional ID to track it since its a resource without one. However, terraform expects there will be one. To work around this, we set the primary_metadata_region to be used as the ID.
 * `private_api_endpoint_only` - (Optional, Boolean) If you set this true then you cannot access api through public network.

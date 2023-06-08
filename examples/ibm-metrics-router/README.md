@@ -113,7 +113,7 @@ data "metrics_router_routes" "metrics_router_routes_instance" {
 |------|-------------|------|---------|
 | default_targets | A list of default target references. | `list()` | false |
 | permitted_target_regions | If present then only these regions may be used to define a target. | `list(string)` | false |
-| primary_metadata_region | To store all your meta data in a single region. | `string` | false |
+| primary_metadata_region | To store all your meta data in a single region. For new accounts, all target / route creation will fail until primary_metadata_region is set. | `string` | false |
 | backup_metadata_region | To backup all your meta data in a different region. | `string` | false |
 | private_api_endpoint_only | If you set this true then you cannot access api through public network. | `bool` | false |
 
