@@ -21,8 +21,6 @@ func TestAccIBMCdTektonPipelineTriggerPropertyBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.TriggerProperty
 	name := "trig-prop-1"
 	typeVar := "text"
-	typeVarUpdate := "text"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -36,13 +34,6 @@ func TestAccIBMCdTektonPipelineTriggerPropertyBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic("", "", name, typeVarUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVarUpdate),
-				),
-			},
 		},
 	})
 }
@@ -53,7 +44,6 @@ func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 	typeVar := "text"
 	value := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	path := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
-	typeVarUpdate := "text"
 	valueUpdate := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	pathUpdate := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
@@ -72,10 +62,10 @@ func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, typeVarUpdate, valueUpdate, pathUpdate),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, typeVar, valueUpdate, pathUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVarUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "value", valueUpdate),
 				),
 			},
