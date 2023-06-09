@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"os"
 	"strconv"
@@ -87,6 +88,22 @@ func verifyAttr(actual, expected, attrName string) error {
 	}
 }
 
+func verifyIntAttr(actual, expected int, attrName string) error {
+	if actual != expected {
+		return fmt.Errorf("Wrong %s. Actual: %d. Expected: %d", attrName, actual, expected)
+	} else {
+		return nil
+	}
+}
+
+func verifyBoolAttr(actual, expected bool, attrName string) error {
+	if actual != expected {
+		return fmt.Errorf("Wrong %s. Actual: %t. Expected: %t", attrName, actual, expected)
+	} else {
+		return nil
+	}
+}
+
 func verifyDateAttr(actualDate *strfmt.DateTime, expected string, attrName string) error {
 	var strDate = time.Time(*actualDate).Format(time.RFC3339)
 	if strDate != expected {
@@ -134,4 +151,19 @@ func getRotationInterval(policyIntf secretsmanagerv2.RotationPolicyIntf) string 
 		}
 	}
 	return interval
+}
+
+// extract the value of the rotate_keys attribute from given rotation policy and convert to string
+func getRotateKeys(policyIntf secretsmanagerv2.RotationPolicyIntf) string {
+	rotateKeys := ""
+	if policy, ok := policyIntf.(*secretsmanagerv2.RotationPolicy); ok {
+		if policy.RotateKeys != nil {
+			rotateKeys = strconv.FormatBool(*policy.RotateKeys)
+		}
+	}
+	return rotateKeys
+}
+
+func generatePublicCertCommonName() string {
+	return acctest.RandStringFromCharSet(4, "123456789") + "." + acc.SecretsManagerPublicCertificateCommonName
 }

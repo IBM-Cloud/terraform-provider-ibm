@@ -670,10 +670,10 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 		model.KeyType = core.StringPtr(d.Get("key_type").(string))
 	}
 	if _, ok := d.GetOk("key_bits"); ok {
-		model.KeyBits = core.Int64Ptr(d.Get("key_bits").(int64))
+		model.KeyBits = core.Int64Ptr(int64(d.Get("key_bits").(int)))
 	}
 	if _, ok := d.GetOk("max_path_length"); ok {
-		model.MaxPathLength = core.Int64Ptr(d.Get("max_path_length").(int64))
+		model.MaxPathLength = core.Int64Ptr(int64(d.Get("max_path_length").(int)))
 	}
 	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
 		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))
