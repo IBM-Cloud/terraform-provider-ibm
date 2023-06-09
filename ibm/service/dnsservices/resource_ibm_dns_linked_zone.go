@@ -44,57 +44,57 @@ func ResourceIBMDNSLinkedZone() *schema.Resource {
 			DnsLinkedZoneInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The unique identifier of a service instance.",
+				Description: "The unique identifier of a DNS Linked zone.",
 			},
 			DnsLinkedZoneName: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The unique identifier of a service instance.",
+				Description: "The name of the DNS Linked zone.",
 			},
 			DnsLinkedZoneDescription: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Descriptive text of the secondary zone",
+				Description: "Descriptive text of the DNS Linked zone",
 			},
 			DnsLinkedZoneOwnerInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The unique identifier of the primary zone",
+				Description: "The unique identifier of the owner DNS instance",
 			},
 			DnsLinkedZoneOwnerZoneID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The unique identifier of the primary zone",
+				Description: "The unique identifier of the owner DNS zone",
 			},
 			DnsLinkedZoneLinkedTo: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The unique identifier of the primary zone",
+				Description: "The zone that is linked to the DNS Linked zone",
 			},
 			DnsLinkedZoneState: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The state of the secondary zone",
+				Description: "The state of the DNS Linked zone",
 			},
 			DnsLinkedZoneLabel: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The label of the secondary zone",
+				Description: "The label of the DNS Linked zone",
 			},
 			DnsLinkedZoneApprovalRequiredBefore: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The date when the secondary zone will be deleted",
+				Description: "DNS Linked Approval required before",
 			},
 			DnsLinkedZoneCreatedOn: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Secondary Zone Creation date",
+				Description: "DNS Linked Zone Creation date",
 			},
 			DnsLinkedZoneModifiedOn: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Secondary Zone Modification date",
+				Description: "DNS Linked Zone Modification date",
 			},
 		},
 	}
