@@ -107,8 +107,8 @@ func resourceIBMDNSLinkedZoneCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	instanceID := d.Get(DnsLinkedZoneInstanceID).(string)
-	description := d.Get(DnsLinkedZoneDescription).(string)
-	label := d.Get(DnsLinkedZoneLabel).(string)
+	description := d.GetOk(DnsLinkedZoneDescription).(string)
+	label := d.GetOk(DnsLinkedZoneLabel).(string)
 	ownerInstanceID := d.Get(DnsLinkedZoneOwnerInstanceID).(string)
 	ownerZoneID := d.Get(DnsLinkedZoneOwnerZoneID).(string)
 	createLinkedZoneOptions := sess.NewCreateLinkedZoneOptions(instanceID)
@@ -185,8 +185,8 @@ func resourceIBMDNSLinkedZoneUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChange(DnsLinkedZoneDescription) ||
 		d.HasChange(DnsLinkedZoneLabel) {
 		updateLinkedZoneOptions := sess.NewUpdateLinkedZoneOptions(instanceID, linkedDnsZoneID)
-		description := d.Get(DnsLinkedZoneDescription).(string)
-		label := d.Get(DnsLinkedZoneLabel).(string)
+		description := d.GetOk(DnsLinkedZoneDescription).(string)
+		label := d.GetOk(DnsLinkedZoneLabel).(string)
 		updateLinkedZoneOptions.SetDescription(description)
 		updateLinkedZoneOptions.SetLabel(label)
 
