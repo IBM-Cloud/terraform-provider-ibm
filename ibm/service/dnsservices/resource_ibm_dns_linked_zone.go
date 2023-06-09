@@ -106,12 +106,17 @@ func resourceIBMDNSLinkedZoneCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	var (
+		description string
+		label       string
+	)
+
 	instanceID := d.Get(DnsLinkedZoneInstanceID).(string)
-	if v, ok := d.GetOk(DnsLinkedDescription); ok {
-		description := v.(string)
+	if v, ok := d.GetOk(DnsLinkedZoneDescription); ok {
+		description = v.(string)
 	}
 	if v, ok := d.GetOk(DnsLinkedZoneLabel); ok {
-		label := v.(string)
+		label = v.(string)
 	}
 	ownerInstanceID := d.Get(DnsLinkedZoneOwnerInstanceID).(string)
 	ownerZoneID := d.Get(DnsLinkedZoneOwnerZoneID).(string)

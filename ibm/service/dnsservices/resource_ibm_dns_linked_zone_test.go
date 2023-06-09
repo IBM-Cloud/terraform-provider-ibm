@@ -16,10 +16,10 @@ import (
 )
 
 func TestAccIBMDNSLinkedZone_basic(t *testing.T) {
-	vpcname := fmt.Sprintf("seczone-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("seczone-subnet-name-%d", acctest.RandIntRange(10, 100))
+	//vpcname := fmt.Sprintf("seczone-vpc-%d", acctest.RandIntRange(10, 100))
+	//subnetname := fmt.Sprintf("seczone-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("seczone-cr-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
-	description := "new test CR - TF"
+	//description := "new test CR - TF"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() {},
@@ -27,10 +27,80 @@ func TestAccIBMDNSLinkedZone_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDNSLinkedZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDNSLinkedZoneResource(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description),
+				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", "seczone-terraform-plugin-test.com"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMDNSLinkedZone_update(t *testing.T) {
+	name := fmt.Sprintf("seczone-cr-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() {},
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDNSLinkedZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", "seczone-terraform-plugin-test.com"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDNSLinkedZoneUpdateConfig(name, "test description", "label"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", "seczone-terraform-plugin-test.com"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDNSLinkedZoneUpdateConfig(name string, description string, label string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_group" "rg" {
+		is_default	= true
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name				= "test-pdns-cr-instance"
+		resource_group_id	= data.ibm_resource_group.rg.id
+		service				= "dns-svcs"
+		plan				= "standard"
+	}
+	resource "ibm_dns_linked_zone" "test" {
+		instance_id	= ibm_resource_instance.test-pdns-cr-instance.id
+		zone		= "seczone-terraform-plugin-test.com"
+		description	= "new test CR - TF"
+		label		= "label"
+	}
+	`)
+}
+
+func TestAccIBMDNSLinkedZoneImport(t *testing.T) {
+	var linkedZoneID string
+	name := fmt.Sprintf("seczone-vpc-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDNSLinkedZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMDNSLinkedZoneExists("ibm_dns_linked_zone.test", &linkedZoneID),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", acc.ISZoneName),
+				),
+			},
+			{
+				ResourceName:      "ibm_dns_linked_zone.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"zone",
+				},
 			},
 		},
 	})
@@ -68,21 +138,10 @@ func testAccCheckIBMDNSLinkedZoneDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMDNSLinkedZoneResource(vpcname, subnetname, zone, cidr, name, description string) string {
+func testAccCheckIBMDNSLinkedZoneBasic(name string) string {
 	return fmt.Sprintf(`
-	data "ibm_resource_group" "rg" {
+	resource "ibm_resource_group" "rg" {
 		is_default	= true
-	}
-	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name			= "%s"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name			= "%s"
-		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
-		zone			= "%s"
-		ipv4_cidr_block	= "%s"
-		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
 		name				= "test-pdns-cr-instance"
@@ -91,28 +150,62 @@ func testAccCheckIBMDNSLinkedZoneResource(vpcname, subnetname, zone, cidr, name,
 		service				= "dns-svcs"
 		plan				= "standard-dns"
 	}
-	resource "ibm_dns_custom_resolver" "test" {
-		name		= "%s"
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "%s"
-		high_availability = false
-		enabled 	= true
-		locations {
-			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
-			enabled		= true
-		}
-	}
-
-	resource "ibm_dns_zone" "pdns-1-zone" {
-		name        = "seczone-terraform-plugin-test.com"
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "testdescription"
-		label       = "testlabel"
-	}
-	
 	resource "ibm_dns_linked_zone" "test" {
-		instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
-		description   = "seczone terraform plugin test"
+		name		= "%s"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.id
 	}
-	`, vpcname, subnetname, zone, cidr, name, description)
+	`, name)
+}
+
+//func testAccCheckIBMDNSLinkedZoneResource(vpcname, subnetname, zone, cidr, name, description string) string {
+//	return fmt.Sprintf(`
+//	data "ibm_resource_group" "rg" {
+//		is_default	= true
+//	}
+//	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+//		name				= "test-pdns-cr-instance"
+//		resource_group_id	= data.ibm_resource_group.rg.id
+//		location			= "global"
+//		service				= "dns-svcs"
+//		plan				= "standard-dns"
+//	}
+//	resource "ibm_dns_zone" "pdns-1-zone" {
+//		name        = "seczone-terraform-plugin-test.com"
+//		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+//		description = "testdescription"
+//		label       = "testlabel"
+//	}
+//
+//	resource "ibm_dns_linked_zone" "test" {
+//		instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
+//		description   = "seczone terraform plugin test"
+//	}
+//	`, name)
+//}
+
+func testAccCheckIBMDNSLinkedZoneExists(n string, linkedZoneID *string) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Linked Zone not found: %s", n)
+		}
+		pdnsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PrivateDNSClientSession()
+		if err != nil {
+			return err
+		}
+		parts := rs.Primary.ID
+		partslist := strings.Split(parts, "/")
+
+		getLinkedZoneOptions := pdnsClient.NewGetLinkedZoneOptions(
+			partslist[0],
+			partslist[1],
+		)
+		linkedZone, _, err := pdnsClient.GetLinkedZone(getLinkedZoneOptions)
+		if err != nil {
+			return fmt.Errorf("Error Fetching Linked Zone: %s", err)
+		}
+		*linkedZoneID = *linkedZone.ID
+		return nil
+	}
 }
