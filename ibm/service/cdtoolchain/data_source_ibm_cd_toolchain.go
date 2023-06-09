@@ -109,6 +109,13 @@ func dataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 
 	d.SetId(fmt.Sprintf("%s", *getToolchainByIDOptions.ToolchainID))
 
+	tags, err := flex.GetTagsUsingCRN(meta, *toolchain.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of toolchain (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
+
 	if err = d.Set("name", toolchain.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -152,13 +159,6 @@ func dataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("created_by", toolchain.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-
-	tags, err := flex.GetTagsUsingCRN(meta, *toolchain.CRN)
-	if err != nil {
-		log.Printf(
-			"Error on get of toolchain (%s) tags: %s", d.Id(), err)
-	}
-	d.Set("tags", tags)
 
 	return nil
 }
