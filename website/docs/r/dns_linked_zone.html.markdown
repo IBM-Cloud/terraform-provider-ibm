@@ -14,38 +14,48 @@ The DNS linked zone resource allows users to request and manage linked zones.
 ## Example usage
 
 ```
+resource "ibm_resource_instance" "test-pdns-instance" {
+  name              = "test-pdns"
+  resource_group_id = data.ibm_resource_group.rg.id
+  location          = "global"
+  service           = "dns-svcs"
+  plan              = "standard-dns"
+}
+
+resource "ibm_dns_zone" "test-pdns-zone" {
+  name        = "test.com"
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
+  description = "testdescription"
+  label       = "testlabel-updated"
+}
+
 resource "ibm_dns_linked_zone" "test" {
   name          = "test_dns_linked_zone"
-  instance_id   = "****************************"
+  instance_id = ibm_resource_instance.test-pdns-instance.guid
   description   = "seczone terraform plugin test"
   owner_instance_id = "**************************"
   owner_zone_id = "************************"
   label         = "test"
 }
-
-data "ibm_dns_linked_zone" "test-lz" {
-  depends_on  = [ibm_dns_linked_zone.test]
-  instance_id   = "***********************"
-}
-
-output "ibm_dns_linked_zone_id" {
-  value = data.ibm_dns_linked_zone.test-lz.instance_id
-}
-
 ```
 
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `instance_id` - (Required, String) The unique identifier of a service instance.
-- `description` - (Optional, String) Descriptive text of the linked zone.
+- `instance_id` - (Required, String) The unique identifier of a DNS Linked zone.
+- `name`        - (Required, String) The name of the DNS Linked zone.
+- `description` - (Optional, String) Descriptive text of the DNS Linked zone.
+- `owner_instance_id` - (Required, String) The unique identifier of the owner DNS instance.
+- `owner_zone_id`     - (Required, String) The unique identifier of the owner DNS zone.
+- `label`             - (Optional, String) The label of the DNS Linked zone.
+- `approval_required_before` - (Optional, String) DNS Linked Approval required before.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
 
+- `state`      - (String) The state of the DNS Linked zone.
 - `created_on` - (Timestamp) The time (created On) of the Linked Zone. 
 - `modified_on` - (Timestamp) The time (modified On) of the Linked Zone.
-- `linked_zone_id` - (String) The unique ID of the DNS Services linked zone.
 
 ## Import
 The `ibm_dns_linked_zone` can be imported by using DNS Services instance ID, Linked Zone ID.
