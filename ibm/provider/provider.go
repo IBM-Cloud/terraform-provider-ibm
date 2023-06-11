@@ -797,6 +797,7 @@ func Provider() *schema.Provider {
 
 			// Added for Code Engine
 			"ibm_code_engine_app":        codeengine.DataSourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":    codeengine.DataSourceIbmCodeEngineBinding(),
 			"ibm_code_engine_build":      codeengine.DataSourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map": codeengine.DataSourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.DataSourceIbmCodeEngineJob(),
@@ -1271,6 +1272,7 @@ func Provider() *schema.Provider {
 
 			// // Added for Code Engine
 			"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBinding(),
 			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
@@ -1509,6 +1511,7 @@ func Validator() validate.ValidatorDict {
 
 				// // Added for Code Engine
 				"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineAppValidator(),
+				"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBindingValidator(),
 				"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuildValidator(),
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),

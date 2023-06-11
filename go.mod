@@ -11,7 +11,7 @@ require (
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.3.2
 	github.com/IBM/cloudant-go-sdk v0.0.43
-	github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6
+	github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/continuous-delivery-go-sdk v1.1.1
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.2

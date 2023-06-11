@@ -266,6 +266,8 @@ var COSApiKey string
 
 var CeResourceGroupID string
 var CeProjectId string
+var CeServiceInstanceID string
+var CeResourceKeyID string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -1418,6 +1420,18 @@ func init() {
 	if CeProjectId == "" {
 		CeProjectId = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_PROJECT_INSTANCE_ID with the ID of a Code Engine project instance")
+	}
+
+	CeServiceInstanceID = os.Getenv("IBM_CODE_ENGINE_SERVICE_INSTANCE_ID")
+	if CeServiceInstanceID == "" {
+		CeServiceInstanceID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_SERVICE_INSTANCE_ID with the ID of a IBM Cloud service instance, e.g. for COS")
+	}
+
+	CeResourceKeyID = os.Getenv("IBM_CODE_ENGINE_RESOURCE_KEY_ID")
+	if CeResourceKeyID == "" {
+		CeResourceKeyID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_KEY_ID with the ID of a resource key to access a service instance")
 	}
 
 }

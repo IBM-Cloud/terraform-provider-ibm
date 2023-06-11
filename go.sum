@@ -53,8 +53,8 @@ github.com/IBM/cloud-databases-go-sdk v0.3.2 h1:AUi7/xswqCwuXIlSyuXtDZJIm4d0ZicU
 github.com/IBM/cloud-databases-go-sdk v0.3.2/go.mod h1:nCIVfeZnhBYIiwByT959dFP4VWUeNLxomDYy63tTC6M=
 github.com/IBM/cloudant-go-sdk v0.0.43 h1:YxTy4RpAEezX32YIWnds76hrBREmO4u6IkBz1WylNuQ=
 github.com/IBM/cloudant-go-sdk v0.0.43/go.mod h1:WeYrJPaHTw19943ndWnVfwMIlZ5z0XUM2uEXNBrwZ1M=
-github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6 h1:PlYtJ+VZ1CLuhDiB1ldGW5uJBbnKG6CBIEblgU5b5mY=
-github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6/go.mod h1:IP6U/1NxgxzPeYdyiEwMaZyzelTw82JGHWl7bY78eQM=
+github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918 h1:RfHezAVs3HegiGOcMmTXqsBPqZqfwZZHqje1EMriHBQ=
+github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918/go.mod h1:IP6U/1NxgxzPeYdyiEwMaZyzelTw82JGHWl7bY78eQM=
 github.com/IBM/container-registry-go-sdk v0.0.15 h1:sfEXm4qNj9ZCwTlFOsdjF5P/lvajU/Sc22yNlzg0F9I=
 github.com/IBM/container-registry-go-sdk v0.0.15/go.mod h1:KqSZFO4VIK9QAyF8O1JW6jkyzkfE/BNKUIo+OdzIDk4=
 github.com/IBM/continuous-delivery-go-sdk v1.1.1 h1:bYrK0+rJgoWfBmIJAlAfo/AxI5vOr8DSLJPrM3iEOzQ=
