@@ -72,7 +72,8 @@ func testAccCheckIBMDNSLinkedZoneUpdateConfig(name string, description string, l
 	}
 	resource "ibm_dns_linked_zone" "test" {
 		instance_id	= ibm_resource_instance.test-pdns-cr-instance.id
-		zone		= "seczone-terraform-plugin-test.com"
+		owner_instance_id = "OWNER Instance ID"
+                owner_zone_id = "OWNER ZONE ID"
 		description	= "new test CR - TF"
 		label		= "label"
 	}
@@ -91,7 +92,7 @@ func TestAccIBMDNSLinkedZoneImport(t *testing.T) {
 				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDNSLinkedZoneExists("ibm_dns_linked_zone.test", &linkedZoneID),
-					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "name", name),
 				),
 			},
 			{
