@@ -221,6 +221,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "Property type.",
 						},
 						"path": &schema.Schema{
@@ -304,6 +305,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
+										ForceNew:    true,
 										Description: "Property type.",
 									},
 									"path": &schema.Schema{

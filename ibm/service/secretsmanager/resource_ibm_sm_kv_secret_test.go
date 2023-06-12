@@ -22,6 +22,36 @@ var kvSecretData = `{"secret_key":"secret_value"}`
 var modifiedKvSecretData = `{"modified_key":"modified_value"}`
 
 func TestAccIbmSmKvSecretBasic(t *testing.T) {
+	resourceName := "ibm_sm_kv_secret.sm_kv_secret_basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmKvSecretDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: kvSecretConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIbmSmKvSecretAllArgs(t *testing.T) {
 	resourceName := "ibm_sm_kv_secret.sm_kv_secret"
 
 	resource.Test(t, resource.TestCase{
@@ -30,7 +60,7 @@ func TestAccIbmSmKvSecretBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSmKvSecretDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSmKvSecretConfigBasic(),
+				Config: kvSecretConfigAllArgs(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSmKvSecretCreated(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
@@ -44,7 +74,7 @@ func TestAccIbmSmKvSecretBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmSmKvSecretConfigUpdated(),
+				Config: kvSecretConfigUpdated(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSmKvSecretUpdated(resourceName),
 				),
@@ -58,7 +88,15 @@ func TestAccIbmSmKvSecretBasic(t *testing.T) {
 	})
 }
 
-var kvSecretConfigFormat = `
+var kvSecretBasicConfigFormat = `
+		resource "ibm_sm_kv_secret" "sm_kv_secret_basic" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			data = %s
+		}`
+
+var kvSecretFullConfigFormat = `
 		resource "ibm_sm_kv_secret" "sm_kv_secret" {
 			instance_id   = "%s"
   			region        = "%s"
@@ -70,13 +108,18 @@ var kvSecretConfigFormat = `
 			secret_group_id = "default"
 		}`
 
-func testAccCheckIbmSmKvSecretConfigBasic() string {
-	return fmt.Sprintf(kvSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+func kvSecretConfigBasic() string {
+	return fmt.Sprintf(kvSecretBasicConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		kvSecretName, kvSecretData)
+}
+
+func kvSecretConfigAllArgs() string {
+	return fmt.Sprintf(kvSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		kvSecretName, description, label, kvSecretData, customMetadata)
 }
 
-func testAccCheckIbmSmKvSecretConfigUpdated() string {
-	return fmt.Sprintf(kvSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+func kvSecretConfigUpdated() string {
+	return fmt.Sprintf(kvSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		modifiedKvSecretName, modifiedDescription, modifiedLabel, modifiedKvSecretData, modifiedCustomMetadata)
 }
 

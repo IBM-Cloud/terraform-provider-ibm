@@ -219,6 +219,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "Property type.",
 						},
 						"path": &schema.Schema{
