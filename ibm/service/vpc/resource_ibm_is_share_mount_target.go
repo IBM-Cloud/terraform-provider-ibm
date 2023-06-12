@@ -121,12 +121,12 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 		log.Printf("[DEBUG] CreateShareMountTargetWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
+	d.SetId(fmt.Sprintf("%s/%s", *createShareMountTargetOptions.ShareID, *shareTarget.ID))
 	_, err = WaitForTargetAvailable(context, vpcClient, *createShareMountTargetOptions.ShareID, *shareTarget.ID, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createShareMountTargetOptions.ShareID, *shareTarget.ID))
 	d.Set("mount_target", *shareTarget.ID)
 	return resourceIBMIsShareMountTargetRead(context, d, meta)
 }
@@ -148,7 +148,7 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 	getShareMountTargetOptions.SetID(parts[1])
 
 	shareTarget, response, err := vpcClient.GetShareMountTargetWithContext(context, getShareMountTargetOptions)
-	if err != nil {
+	if err != nil || shareTarget == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
