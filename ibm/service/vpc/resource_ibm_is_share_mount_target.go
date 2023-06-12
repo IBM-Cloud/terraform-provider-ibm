@@ -98,10 +98,58 @@ func ResourceIBMIsShareMountTargetValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
+func isWaitForOldTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareid, targetid string) {
+
+	shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+	shareTargetOptions.SetShareID(shareid)
+	shareTargetOptions.SetID(targetid)
+	for i := 0; i < 6; i++ {
+		target, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
+		if err != nil {
+			return
+		}
+		if target != nil && *target.LifecycleState != "deleting" {
+			time.Sleep(10 * time.Second)
+		} else {
+			break
+		}
+	}
+
+	return
+}
+
 func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	//Temporary code to fix concurrent mount target issues.
+	listShareMountTargetOptions := &vpcbetav1.ListShareMountTargetsOptions{}
+	shareId := d.Get("share").(string)
+	vpcId := d.Get("vpc").(string)
+	listShareMountTargetOptions.SetShareID(shareId)
+
+	shareTargets, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareMountTargetOptions)
+	if err != nil || shareTargets == nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] ListShareMountTargetsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
+	}
+	for _, mountTargets := range shareTargets.MountTargets {
+		if mountTargets.VPC != nil && *mountTargets.VPC.ID == vpcId {
+			isWaitForOldTargetDelete(context, vpcClient, d, shareId, *mountTargets.ID)
+			if *mountTargets.LifecycleState == "deleting" {
+				_, err = isWaitForTargetDelete(context, vpcClient, d, shareId, *mountTargets.ID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
 	}
 
 	createShareMountTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
