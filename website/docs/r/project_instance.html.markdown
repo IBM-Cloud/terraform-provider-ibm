@@ -13,7 +13,7 @@ Provides a resource for Project definition. This allows Project definition to be
 ## Example Usage
 
 ```hcl
-resource "ibm_project" "project_instance" {
+resource "ibm_project_instance" "project_instance" {
   configs {
 		id = "0013790d-6cb5-4adc-8927-a725a1261d0c"
 		name = "static-website-dev"
