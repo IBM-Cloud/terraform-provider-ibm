@@ -20,6 +20,8 @@ import (
 func TestAccIbmCodeEngineBindingBasic(t *testing.T) {
 	var conf codeenginev2.Binding
 	prefix := fmt.Sprintf("PREFIX_%d", acctest.RandIntRange(10, 100))
+	secretName := fmt.Sprintf("tf-secret-service-access-binding-%d", acctest.RandIntRange(10, 1000))
+	appName := fmt.Sprintf("tf-app-binding-%d", acctest.RandIntRange(10, 1000))
 
 	projectID := acc.CeProjectId
 	resourceKeyId := acc.CeResourceKeyID
@@ -31,7 +33,7 @@ func TestAccIbmCodeEngineBindingBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineBindingDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineBindingConfigBasic(projectID, resourceKeyId, serviceInstanceId, prefix),
+				Config: testAccCheckIbmCodeEngineBindingConfigBasic(projectID, appName, secretName, resourceKeyId, serviceInstanceId, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineBindingExists("ibm_code_engine_binding.code_engine_binding_instance", conf),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_binding.code_engine_binding_instance", "status"),
@@ -39,10 +41,10 @@ func TestAccIbmCodeEngineBindingBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_code_engine_binding.code_engine_binding_instance", "href"),
 					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "resource_type", "binding_v2"),
-					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "component.resource_type", "app_v2"),
-					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "component.name", "app_v2"),
+					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "component.0.resource_type", "app_v2"),
+					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "component.0.name", appName),
 					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "prefix", prefix),
-					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "secret_name", "my-service-access"),
+					resource.TestCheckResourceAttr("ibm_code_engine_binding.code_engine_binding_instance", "secret_name", secretName),
 				),
 			},
 			resource.TestStep{
@@ -54,7 +56,7 @@ func TestAccIbmCodeEngineBindingBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineBindingConfigBasic(projectID string, resourceKeyId string, serviceInstanceId string, prefix string) string {
+func testAccCheckIbmCodeEngineBindingConfigBasic(projectID string, appName string, secretName string, resourceKeyId string, serviceInstanceId string, prefix string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -63,7 +65,7 @@ func testAccCheckIbmCodeEngineBindingConfigBasic(projectID string, resourceKeyId
 		resource "ibm_code_engine_app" "code_engine_app_instance" {
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			image_reference = "icr.io/codeengine/helloworld"
-			name = "my-app"
+			name = "%s"
 
 			lifecycle {
 				ignore_changes = [
@@ -75,7 +77,7 @@ func testAccCheckIbmCodeEngineBindingConfigBasic(projectID string, resourceKeyId
 		resource "ibm_code_engine_secret" "code_engine_secret_instance" {
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			format = "service_access"
-			name = "my-service-access"
+			name = "%s"
 			service_access {
 				resource_key {
 					id = "%s"
@@ -83,6 +85,11 @@ func testAccCheckIbmCodeEngineBindingConfigBasic(projectID string, resourceKeyId
 				service_instance {
 					id = "%s"
 				}
+			}
+			lifecycle {
+				ignore_changes = [
+					data, service_access
+				]
 			}
 		}
 
@@ -95,7 +102,7 @@ func testAccCheckIbmCodeEngineBindingConfigBasic(projectID string, resourceKeyId
 			prefix = "%s"
 			secret_name = ibm_code_engine_secret.code_engine_secret_instance.name
 		}
-	`, projectID, resourceKeyId, serviceInstanceId, prefix)
+	`, projectID, appName, secretName, resourceKeyId, serviceInstanceId, prefix)
 }
 
 func testAccCheckIbmCodeEngineBindingExists(n string, obj codeenginev2.Binding) resource.TestCheckFunc {
