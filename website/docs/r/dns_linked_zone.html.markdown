@@ -33,8 +33,8 @@ resource "ibm_dns_linked_zone" "test" {
   name          = "test_dns_linked_zone"
   instance_id = ibm_resource_instance.test-pdns-instance.guid
   description   = "seczone terraform plugin test"
-  owner_instance_id = "**************************"
-  owner_zone_id = "************************"
+  owner_instance_id = "OWNER Instance ID"
+  owner_zone_id = "OWNER ZONE ID"
   label         = "test"
 }
 ```
