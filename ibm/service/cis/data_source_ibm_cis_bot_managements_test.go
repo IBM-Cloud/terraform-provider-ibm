@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMCisBotManagementDataSource_Basic(t *testing.T) {
-	name := "data.ibm_cis_botmanagements.test"
+	name := "data.ibm_cis_bot_managements.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
 		Providers: acc.TestAccProviders,
@@ -29,7 +29,7 @@ func TestAccIBMCisBotManagementDataSource_Basic(t *testing.T) {
 }
 func testAccCheckCisBotManagementDataSource_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	data "ibm_cis_botmanagements" "%[1]s" {
+	data "ibm_cis_bot_managements" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
 		domain = data.ibm_cis_domain.cis_domain.domain_id
 	  }

@@ -1,19 +1,19 @@
 ---
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_botmanagements"
+page_title: "IBM: ibm_cis_bot_managements"
 description: |-
   Get information on an IBM Cloud Internet Services Bot Management APIs.
 ---
 
-# ibm_cis_botmanagements
+# ibm_cis_bot_managements
 
 Retrieve information about an IBM Cloud Internet Services Bot Management data sources for a zone. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
 
 ## Example usage
 
 ```terraform
-data "ibm_cis_botmanagements" "tests" {
+data "ibm_cis_bot_managements" "tests" {
     cis_id                          = data.ibm_cis.cis.id
     domain = data.ibm_cis_domain.cis_domain.domain
 

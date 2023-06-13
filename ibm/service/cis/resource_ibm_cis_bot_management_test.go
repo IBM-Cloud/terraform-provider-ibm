@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMCisBotManagement_Basic(t *testing.T) {
-	name := "ibm_cis_botmanagement." + "test"
+	name := "ibm_cis_bot_management." + "test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
@@ -35,7 +35,7 @@ func TestAccIBMCisBotManagement_Basic(t *testing.T) {
 
 func testAccCheckCisBotManagementBasic1(id string, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	resource "ibm_cis_botmanagement" "%[1]s" {
+	resource "ibm_cis_bot_management" "%[1]s" {
 		cis_id                    = data.ibm_cis.cis.id
 		domain                 = data.ibm_cis_domain.cis_domain.domain
 		fight_mode				= false

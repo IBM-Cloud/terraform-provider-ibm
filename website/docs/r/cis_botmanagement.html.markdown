@@ -1,12 +1,12 @@
 ---
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_botmanagement"
+page_title: "IBM: ibm_cis_bot_management"
 description: |-
   Get information on an IBM Cloud Internet Services Bot Management APIs.
 ---
 
-# ibm_cis_botmanagement
+# ibm_cis_bot_management
 
  Provides IBM Cloud Internet Services Bot Management resource. The resource allows to update Bot Management settings of a domain of an IBM Cloud Internet Services CIS instance.
 
@@ -14,7 +14,7 @@ description: |-
 ```terraform
 # Change Bot Management setting of CIS instance
 
-resource "ibm_cis_botmanagement" "test" {
+resource "ibm_cis_bot_management" "test" {
     cis_id                          = data.ibm_cis.cis.id
     domain = data.ibm_cis_domain.cis_domain.domain
     fight_mode				= false

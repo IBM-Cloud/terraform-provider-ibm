@@ -21,7 +21,7 @@ func ResourceIBMCISBotManagement() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
-				ValidateFunc: validate.InvokeValidator("ibm_cis_botmanagements",
+				ValidateFunc: validate.InvokeValidator("ibm_cis_bot_managements",
 					"cis_id"),
 			},
 			cisDomainID: {
@@ -30,39 +30,30 @@ func ResourceIBMCISBotManagement() *schema.Resource {
 				Required:         true,
 				DiffSuppressFunc: suppressDomainIDDiff,
 			},
-			cisBotManagementOutput: {
-				Type:        schema.TypeList,
+			cisBotManagementFightMode: {
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Container for response information.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						cisBotManagementFightMode: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Fight Mode",
-						},
-						cisBotManagementSessionScore: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Session Score",
-						},
-						cisBotManagementEnableJs: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Enable JS",
-						},
-						cisBotManagementAuthIdLogging: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Auth ID Logging",
-						},
-						cisBotManagementUseLatestModel: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Use Latest Model",
-						},
-					},
-				},
+				Description: "Fight Mode",
+			},
+			cisBotManagementSessionScore: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Session Score",
+			},
+			cisBotManagementEnableJs: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Enable JS",
+			},
+			cisBotManagementAuthIdLogging: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Auth ID Logging",
+			},
+			cisBotManagementUseLatestModel: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Use Latest Model",
 			},
 		},
 	}
@@ -129,6 +120,6 @@ func ResourceIBMCISBotManagementValidator() *validate.ResourceValidator {
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 
-	ibmCISBotManagementResourceValidator := validate.ResourceValidator{ResourceName: "ibm_cis_botmanagements", Schema: validateSchema}
+	ibmCISBotManagementResourceValidator := validate.ResourceValidator{ResourceName: "ibm_cis_bot_managements", Schema: validateSchema}
 	return &ibmCISBotManagementResourceValidator
 }

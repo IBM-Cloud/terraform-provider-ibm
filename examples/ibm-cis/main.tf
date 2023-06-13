@@ -485,8 +485,8 @@ data "ibm_cis_mtls_apps" "test" {
 
 # CIS Bot Management data source
 data "ibm_cis_botmanagements" "tests" {
-	cis_id    = data.ibm_cis.cis.id
-    domain = data.ibm_cis_domain.cis_domain.domain
+  cis_id    = data.ibm_cis.cis.id
+  domain = data.ibm_cis_domain.cis_domain.domain
 }
 # CIS Bot Management resource
 resource "ibm_cis_botmanagement" "test" {
