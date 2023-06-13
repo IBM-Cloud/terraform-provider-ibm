@@ -100,7 +100,7 @@ func TestAccIBMDNSLinkedZoneImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"zone",
+					"instance_id",
 				},
 			},
 		},
