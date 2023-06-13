@@ -29,7 +29,7 @@ func TestAccIBMDNSLinkedZone_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", "seczone-terraform-plugin-test.com"),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "name", name),
 				),
 			},
 		},
@@ -46,13 +46,14 @@ func TestAccIBMDNSLinkedZone_update(t *testing.T) {
 			{
 				Config: testAccCheckIBMDNSLinkedZoneBasic(name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", "seczone-terraform-plugin-test.com"),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "name", name),
 				),
 			},
 			{
 				Config: testAccCheckIBMDNSLinkedZoneUpdateConfig(name, "test description", "label"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "zone", "seczone-terraform-plugin-test.com"),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "description", "test description"),
+					resource.TestCheckResourceAttr("ibm_dns_linked_zone.test", "label", "label"),
 				),
 			},
 		},
@@ -123,7 +124,7 @@ func testAccCheckIBMDNSLinkedZoneDestroy(s *terraform.State) error {
 
 		partslist := strings.Split(rs.Primary.ID, "/")
 		if len(partslist) < 2 {
-			return fmt.Errorf("Invalid resource primary ID. Must contain 3 parts.")
+			return fmt.Errorf("Invalid resource primary ID. Must contain 2 parts.")
 		}
 		instanceID := partslist[0]
 		linkedDnsZoneID := partslist[1]
