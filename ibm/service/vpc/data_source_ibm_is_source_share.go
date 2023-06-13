@@ -439,8 +439,8 @@ func dataSourceIbmIsSourceShareRead(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("Error setting source_share %s", err))
 		}
 	}
-	if share.Targets != nil {
-		err = d.Set("share_targets", dataSourceShareFlattenTargets(share.Targets))
+	if share.MountTargets != nil {
+		err = d.Set("share_targets", dataSourceShareFlattenTargets(share.MountTargets))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
 		}

@@ -16,7 +16,8 @@ import (
 
 func DataSourceIbmIsShareTarget() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmIsShareTargetRead,
+		ReadContext:        dataSourceIbmIsShareTargetRead,
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use ibm_is_share_mount_target instead",
 
 		Schema: map[string]*schema.Schema{
 			"share": {
@@ -208,7 +209,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 			log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(err)
 		}
-		for _, targetsItem := range shareTargetCollection.Targets {
+		for _, targetsItem := range shareTargetCollection.MountTargets {
 			if *targetsItem.Name == share_target_name {
 				shareTarget = &targetsItem
 				break

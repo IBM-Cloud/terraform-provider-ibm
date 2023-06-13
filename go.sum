@@ -59,8 +59,8 @@ github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6 h1:PlYtJ+VZ
 github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6/go.mod h1:IP6U/1NxgxzPeYdyiEwMaZyzelTw82JGHWl7bY78eQM=
 github.com/IBM/container-registry-go-sdk v0.0.15 h1:sfEXm4qNj9ZCwTlFOsdjF5P/lvajU/Sc22yNlzg0F9I=
 github.com/IBM/container-registry-go-sdk v0.0.15/go.mod h1:KqSZFO4VIK9QAyF8O1JW6jkyzkfE/BNKUIo+OdzIDk4=
-github.com/IBM/continuous-delivery-go-sdk v1.1.0 h1:E0hPM4H7Bmn31+4UAMavBngRjTMoqbjkBb4AlIgi0tA=
-github.com/IBM/continuous-delivery-go-sdk v1.1.0/go.mod h1:JUHFfLCLDMtEQhfDvxBT79O2OcBmSV+is9bKRdnUF1o=
+github.com/IBM/continuous-delivery-go-sdk v1.1.1 h1:bYrK0+rJgoWfBmIJAlAfo/AxI5vOr8DSLJPrM3iEOzQ=
+github.com/IBM/continuous-delivery-go-sdk v1.1.1/go.mod h1:A9rI1HPbccBBFgwJxXB999yXXpj1l+MnlE+rsxKtxw0=
 github.com/IBM/event-notifications-go-admin-sdk v0.2.2 h1:Aww+OUcKgsbXyY7a/nlMH7nvZGn0sBTr6p6rUjOyy1Y=
 github.com/IBM/event-notifications-go-admin-sdk v0.2.2/go.mod h1:1TlGAFP47DybbovJfHtYYgSI8xpLL8Q0wao6vsAlb6c=
 github.com/IBM/eventstreams-go-sdk v1.2.0 h1:eP0afHArMGjwhGqvZAhhu/3EDKRch2JehpveqF1TUjs=
@@ -105,8 +105,8 @@ github.com/IBM/schematics-go-sdk v0.2.1 h1:byATysGD+Z1k/wdtNqQmKALcAPjgSLuSyzcab
 github.com/IBM/schematics-go-sdk v0.2.1/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0 h1:Lx4Bvim/MfoHEYR+n312bty5DirAJypBGGS9YZo3zCw=
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0/go.mod h1:jagqWmjZ0zUEqh5jdGB42ApSQS40fu2LWw6pdg8JJko=
-github.com/IBM/vpc-beta-go-sdk v0.1.0 h1:+kdF+Y/0KY189HhpkqDrue9o0LluAr7rlOU5Zhu7hck=
-github.com/IBM/vpc-beta-go-sdk v0.1.0/go.mod h1:TGfLgJVmgQy6XvXc4lya8Vxvw7fvk83nqs5hdP+/VGo=
+github.com/IBM/vpc-beta-go-sdk v0.4.0 h1:OxABcc2GeclCMN/bpcQfM2cmNB2GuajwuocsPJSFdl0=
+github.com/IBM/vpc-beta-go-sdk v0.4.0/go.mod h1:fzHDAQIqH/5yJmYsKodKHLcqxMDT+yfH6vZjdiw8CQA=
 github.com/IBM/vpc-go-sdk v0.38.0 h1:iB2/ukDciK6s2VBnMmNQeZqenOaUXJSt+V2M4fMjAnM=
 github.com/IBM/vpc-go-sdk v0.38.0/go.mod h1:MgZrbITC067AlcE5oy4hwylasFvrePL4RVxeF6GTdKQ=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
@@ -688,7 +688,6 @@ github.com/onsi/gomega v1.17.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAl
 github.com/onsi/gomega v1.18.0/go.mod h1:0q+aL8jAiMXy9hbwj2mr5GziHiwhAIQpFmmtT5hitRs=
 github.com/onsi/gomega v1.18.1/go.mod h1:0q+aL8jAiMXy9hbwj2mr5GziHiwhAIQpFmmtT5hitRs=
 github.com/onsi/gomega v1.19.0/go.mod h1:LY+I3pBVzYsTBU1AnDwOSxaYi9WoWiqgwooUqq9yPro=
-github.com/onsi/gomega v1.20.0/go.mod h1:DtrZpjmvpn2mPm4YWQa0/ALMDj9v4YxLgojwPeREyVo=
 github.com/onsi/gomega v1.20.1/go.mod h1:DtrZpjmvpn2mPm4YWQa0/ALMDj9v4YxLgojwPeREyVo=
 github.com/onsi/gomega v1.21.1/go.mod h1:iYAIXgPSaDHak0LCMA+AWBpIKBr8WZicMxnE8luStNc=
 github.com/onsi/gomega v1.27.7 h1:fVih9JD6ogIiHUN6ePK7HJidyEDpWGVB5mzM7cWNXoU=
