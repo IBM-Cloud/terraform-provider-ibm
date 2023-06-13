@@ -16,10 +16,7 @@ import (
 )
 
 func TestAccIBMDNSLinkedZone_basic(t *testing.T) {
-	//vpcname := fmt.Sprintf("seczone-vpc-%d", acctest.RandIntRange(10, 100))
-	//subnetname := fmt.Sprintf("seczone-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("seczone-cr-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
-	//description := "new test CR - TF"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() {},
@@ -63,11 +60,11 @@ func TestAccIBMDNSLinkedZone_update(t *testing.T) {
 func testAccCheckIBMDNSLinkedZoneUpdateConfig(name string, description string, label string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_group" "rg" {
-		is_default	= true
+		name		= "DNS_linked_zone_test"
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
 		name				= "test-pdns-cr-instance"
-		resource_group_id	= data.ibm_resource_group.rg.id
+		resource_group_id	= ibm_resource_group.rg.id
 		service				= "dns-svcs"
 		plan				= "standard"
 	}
@@ -140,11 +137,11 @@ func testAccCheckIBMDNSLinkedZoneDestroy(s *terraform.State) error {
 func testAccCheckIBMDNSLinkedZoneBasic(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_group" "rg" {
-		is_default	= true
+		name		= "DNS_linked_zone_test"
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
 		name				= "test-pdns-cr-instance"
-		resource_group_id	= data.ibm_resource_group.rg.id
+		resource_group_id	= ibm_resource_group.rg.id
 		location			= "global"
 		service				= "dns-svcs"
 		plan				= "standard-dns"
@@ -152,6 +149,8 @@ func testAccCheckIBMDNSLinkedZoneBasic(name string) string {
 	resource "ibm_dns_linked_zone" "test" {
 		name		= "%s"
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.id
+                owner_instance_id = "OWNER Instance ID"
+                owner_zone_id = "OWNER ZONE ID"
 	}
 	`, name)
 }
