@@ -1,15 +1,15 @@
 ---
 layout: "ibm"
-page_title: "IBM : is_share_target"
+page_title: "IBM : is_share_mount_target"
 description: |-
   Manages ShareTarget.
 subcategory: "VPC infrastructure"
 ---
 
 
-# ibm\_is_share_target
+# ibm\_is_share_mount_target
 
-Provides a resource for ShareTarget. This allows ShareTarget to be created, updated and deleted.
+Provides a resource for ShareMountTarget. This allows ShareTarget to be created, updated and deleted.
 
 
 ~> **NOTE**
@@ -17,9 +17,6 @@ IBM Cloud® File Storage for VPC is available for customers with special approva
 
 ~> **NOTE**
 This is a Beta feature and it is subject to change in the GA release 
-
-~> **NOTE**
-This resource is being deprecated. Please use `ibm_is_share_mount_target` instead
 
 ## Example Usage
 
@@ -35,8 +32,8 @@ resource "ibm_is_share" "is_share" {
   zone = "us-south-2"
 }
 
-resource "is_share_target" "is_share_target" {
-  share = is_share.is_share.id
+resource "ibm_is_share_mount_target" "is_share_target" {
+  share = ibm_is_share.is_share.id
   vpc = ibm_is_vpc.vpc.id
   name = "my-share-target"
 }`
@@ -49,13 +46,12 @@ The following arguments are supported:
 - `share` - (Required, String) The file share identifier.
 - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.
 - `name` - (Required, String) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
-- `subnet` - (Optional, String) The unique identifier of the subnet associated with this file share target.Only virtual server instances in the same VPC as this subnetwill be allowed to mount the file share.In the future, this property may be required and used to assignan IP address for the file share target.
 ## Attribute Reference
 
 The following attributes are exported:
 
 
-- `share_target` - The unique identifier of the share target
+- `mount_target` - The unique identifier of the share target
 - `created_at` - The date and time that the share target was created.
 - `href` - The URL for this share target.
 - `id` - The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_target_id\>
