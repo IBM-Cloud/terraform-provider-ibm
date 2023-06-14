@@ -47,10 +47,11 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 				Description:  "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
 			"transit_encryption": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The transit encryption mode.",
 			},
 			"mount_target": {
 				Type:        schema.TypeString,

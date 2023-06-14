@@ -65,7 +65,7 @@ type VpcbetaV1Options struct {
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
 	// and `2023-06-14`.
-	Version *string `validate:"required"`
+	Version *string
 }
 
 // NewVpcbetaV1UsingExternalConfig : constructs an instance of VpcbetaV1 with passed in options and external configuration.
@@ -120,11 +120,11 @@ func NewVpcbetaV1(options *VpcbetaV1Options) (service *VpcbetaV1, err error) {
 			return
 		}
 	}
-
+	version := "2023-06-14"
 	service = &VpcbetaV1{
 		Service:    baseService,
 		generation: core.Int64Ptr(2),
-		Version:    options.Version,
+		Version:    &version,
 	}
 
 	return
@@ -13611,6 +13611,8 @@ func (vpcbeta *VpcbetaV1) ListSharesWithContext(ctx context.Context, listSharesO
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	if listSharesOptions.Start != nil {
 		builder.AddQuery("start", fmt.Sprint(*listSharesOptions.Start))
 	}
@@ -13693,6 +13695,8 @@ func (vpcbeta *VpcbetaV1) CreateShareWithContext(ctx context.Context, createShar
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 
 	_, err = builder.SetBodyContentJSON(createShareOptions.SharePrototype)
 	if err != nil {
@@ -13770,7 +13774,8 @@ func (vpcbeta *VpcbetaV1) DeleteShareWithContext(ctx context.Context, deleteShar
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -13833,7 +13838,8 @@ func (vpcbeta *VpcbetaV1) GetShareWithContext(ctx context.Context, getShareOptio
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -13901,7 +13907,8 @@ func (vpcbeta *VpcbetaV1) UpdateShareWithContext(ctx context.Context, updateShar
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	_, err = builder.SetBodyContentJSON(updateShareOptions.SharePatch)
 	if err != nil {
 		return
@@ -13974,7 +13981,8 @@ func (vpcbeta *VpcbetaV1) FailoverShareWithContext(ctx context.Context, failover
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	body := make(map[string]interface{})
 	if failoverShareOptions.FallbackPolicy != nil {
 		body["fallback_policy"] = failoverShareOptions.FallbackPolicy
@@ -14044,6 +14052,8 @@ func (vpcbeta *VpcbetaV1) ListShareMountTargetsWithContext(ctx context.Context, 
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	if listShareMountTargetsOptions.Name != nil {
 		builder.AddQuery("name", fmt.Sprint(*listShareMountTargetsOptions.Name))
 	}
@@ -14114,7 +14124,8 @@ func (vpcbeta *VpcbetaV1) CreateShareMountTargetWithContext(ctx context.Context,
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	_, err = builder.SetBodyContentJSON(createShareMountTargetOptions.ShareMountTargetPrototype)
 	if err != nil {
 		return
@@ -14186,7 +14197,8 @@ func (vpcbeta *VpcbetaV1) DeleteShareMountTargetWithContext(ctx context.Context,
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -14250,7 +14262,8 @@ func (vpcbeta *VpcbetaV1) GetShareMountTargetWithContext(ctx context.Context, ge
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -14317,7 +14330,8 @@ func (vpcbeta *VpcbetaV1) UpdateShareMountTargetWithContext(ctx context.Context,
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	_, err = builder.SetBodyContentJSON(updateShareMountTargetOptions.ShareMountTargetPatch)
 	if err != nil {
 		return
@@ -14388,7 +14402,8 @@ func (vpcbeta *VpcbetaV1) DeleteShareSourceWithContext(ctx context.Context, dele
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -14441,7 +14456,8 @@ func (vpcbeta *VpcbetaV1) GetShareSourceWithContext(ctx context.Context, getShar
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	request, err := builder.Build()
 	if err != nil {
 		return

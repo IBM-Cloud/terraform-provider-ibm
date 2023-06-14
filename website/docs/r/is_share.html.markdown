@@ -81,6 +81,7 @@ The following arguments are supported:
   - `mount_targets` - (Optional, List) Mount targets for the replica file share.
     - `name` - (Optional, String) The user-defined name for this share target. Names must be unique within the share the share target resides in.
     - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.
+    - `transit_encryption` - (Optional, String) The transit encryption mode for this share target. Supported values are **none**, **user_managed**. Default is **none**
   - `zone` - (Required, Forces new resource, String) The zone this replica file share will reside in. Must be a different zone in the same region as the source share.
   - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
   - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
@@ -89,6 +90,7 @@ The following arguments are supported:
 - `mount_targets` - (Optional, List) Share targets for the file share.
   - `name` - (Optional, String) The user-defined name for this share target. Names must be unique within the share the share target resides in.
   - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.
+  - `transit_encryption` - (Optional, String) The transit encryption mode for this share target. Supported values are **none**, **user_managed**. Default is **none**
 - `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `replication_cron_spec` - (Optional, String) The cron specification for the file share replication schedule.
 - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
