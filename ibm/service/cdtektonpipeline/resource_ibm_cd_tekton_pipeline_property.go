@@ -15,6 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
@@ -43,6 +44,7 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "type"),
 				Description:  "Property type.",
 			},
@@ -141,10 +143,10 @@ func resourceIBMCdTektonPipelinePropertyCreate(context context.Context, d *schem
 		createTektonPipelinePropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("enum"); ok {
-		enumInterface := d.Get("enum").([]interface{})
-		enum := make([]string, len(enumInterface))
-		for i, v := range enumInterface {
-			enum[i] = fmt.Sprint(v)
+		var enum []string
+		for _, v := range d.Get("enum").([]interface{}) {
+			enumItem := v.(string)
+			enum = append(enum, enumItem)
 		}
 		createTektonPipelinePropertiesOptions.SetEnum(enum)
 	}
@@ -198,19 +200,25 @@ func resourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.
 	if err = d.Set("type", property.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
-	if err = d.Set("value", property.Value); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+	if !core.IsNil(property.Value) {
+		if err = d.Set("value", property.Value); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+		}
 	}
-	if property.Enum != nil {
+	if !core.IsNil(property.Enum) {
 		if err = d.Set("enum", property.Enum); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
 		}
 	}
-	if err = d.Set("path", property.Path); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
+	if !core.IsNil(property.Path) {
+		if err = d.Set("path", property.Path); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
+		}
 	}
-	if err = d.Set("href", property.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	if !core.IsNil(property.Href) {
+		if err = d.Set("href", property.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
 	}
 
 	return nil
@@ -245,8 +253,8 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 			" The resource must be re-created to update this property.", "name"))
 	}
 	if d.HasChange("type") {
-		replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
-		hasChange = true
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "type"))
 	}
 
 	if d.Get("type").(string) == "integration" {
@@ -257,10 +265,10 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 		}
 	} else if d.Get("type").(string) == "single_select" {
 		if d.HasChange("enum") || d.HasChange("value") {
-			enumInterface := d.Get("enum").([]interface{})
-			enum := make([]string, len(enumInterface))
-			for i, v := range enumInterface {
-				enum[i] = fmt.Sprint(v)
+			var enum []string
+			for _, v := range d.Get("enum").([]interface{}) {
+				enumItem := v.(string)
+				enum = append(enum, enumItem)
 			}
 			replaceTektonPipelinePropertyOptions.SetEnum(enum)
 			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))

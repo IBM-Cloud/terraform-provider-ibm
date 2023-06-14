@@ -26,6 +26,7 @@ import (
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
@@ -892,6 +893,58 @@ func ReplicationRuleGet(in *s3.ReplicationConfiguration) []map[string]interface{
 	return rules
 }
 
+func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]interface{} {
+	configuration := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		objectLockConfig := make(map[string]interface{})
+
+		if in.ObjectLockEnabled != nil {
+			objectLockConfig["object_lock_enabled"] = s3.ObjectLockEnabledEnabled
+		}
+		if in.Rule != nil {
+			objectLockConfig["object_lock_rule"] = ObjectLockRuleGet(in.Rule)
+		}
+
+		configuration = append(configuration, objectLockConfig)
+	}
+	return configuration
+}
+func ObjectLockRuleGet(in *s3.ObjectLockRule) []map[string]interface{} {
+	objectLockRule := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		objectLockConfig := make(map[string]interface{})
+
+		if in.DefaultRetention != nil {
+			objectLockConfig["default_retention"] = ObjectLockDefaultRetentionGet(in.DefaultRetention)
+		}
+
+		objectLockRule = append(objectLockRule, objectLockConfig)
+	}
+	return objectLockRule
+}
+
+func ObjectLockDefaultRetentionGet(in *s3.DefaultRetention) []map[string]interface{} {
+	defaultRetention := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		defaultRetentionMap := make(map[string]interface{})
+
+		if in.Days != nil {
+			defaultRetentionMap["days"] = int(aws.Int64Value(in.Days))
+		}
+
+		if in.Mode != nil {
+			defaultRetentionMap["mode"] = aws.StringValue(in.Mode)
+		}
+
+		if in.Years != nil {
+			defaultRetentionMap["years"] = int(aws.Int64Value(in.Years))
+		}
+
+		defaultRetention = append(defaultRetention, defaultRetentionMap)
+
+	}
+	return defaultRetention
+}
 func FlattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
@@ -1316,6 +1369,30 @@ func getCustomAttributes(r iampolicymanagementv1.PolicyResource) []iampolicymana
 	return attributes
 }
 
+func GetV2PolicyCustomAttributes(r iampolicymanagementv1.V2PolicyResource) []iampolicymanagementv1.V2PolicyResourceAttribute {
+	attributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
+	for _, a := range r.Attributes {
+
+		switch *a.Key {
+		case "accesGroupId":
+		case "accountId":
+		case "organizationId":
+		case "spaceId":
+		case "region":
+		case "resource":
+		case "resourceType":
+		case "resourceGroupId":
+		case "serviceType":
+		case "serviceName":
+		case "serviceInstance":
+		case "service_group_id":
+		default:
+			attributes = append(attributes, a)
+		}
+	}
+	return attributes
+}
+
 func FlattenPolicyResource(list []iampolicymanagementv1.PolicyResource) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
@@ -1372,6 +1449,109 @@ func FlattenPolicyResourceTags(resources []iampolicymanagementv1.PolicyResource)
 				result = append(result, tag)
 			}
 		}
+	}
+	return result
+}
+
+func FlattenV2PolicyResource(resource iampolicymanagementv1.V2PolicyResource) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+
+	l := map[string]interface{}{
+		"service":              GetV2PolicyResourceAttribute("serviceName", resource),
+		"resource_instance_id": GetV2PolicyResourceAttribute("serviceInstance", resource),
+		"region":               GetV2PolicyResourceAttribute("region", resource),
+		"resource_type":        GetV2PolicyResourceAttribute("resourceType", resource),
+		"resource":             GetV2PolicyResourceAttribute("resource", resource),
+		"resource_group_id":    GetV2PolicyResourceAttribute("resourceGroupId", resource),
+		"service_type":         GetV2PolicyResourceAttribute("serviceType", resource),
+		"service_group_id":     GetV2PolicyResourceAttribute("service_group_id", resource),
+	}
+	customAttributes := GetV2PolicyCustomAttributes(resource)
+
+	if len(customAttributes) > 0 {
+		out := make(map[string]string)
+		for _, a := range customAttributes {
+			out[*a.Key] = fmt.Sprint(a.Value)
+		}
+		l["attributes"] = out
+	}
+	result = append(result, l)
+
+	return result
+}
+
+func FlattenV2PolicyResourceAttributes(attributes []iampolicymanagementv1.V2PolicyResourceAttribute) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+	for _, a := range attributes {
+		if *a.Key != "accountId" {
+			l := map[string]interface{}{
+				"name":     a.Key,
+				"value":    a.Value,
+				"operator": a.Operator,
+			}
+			result = append(result, l)
+		}
+	}
+	return result
+}
+
+func FlattenV2PolicyResourceTags(resource iampolicymanagementv1.V2PolicyResource) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+	if resource.Tags != nil {
+		for _, tags := range resource.Tags {
+			tag := map[string]interface{}{
+				"name":     tags.Key,
+				"value":    tags.Value,
+				"operator": tags.Operator,
+			}
+			result = append(result, tag)
+		}
+	}
+	return result
+}
+
+func FlattenRuleConditions(rule iampolicymanagementv1.V2PolicyRule) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+	if len(rule.Conditions) > 0 {
+		for _, c := range rule.Conditions {
+			var values []string
+			switch value := c.Value.(type) {
+			case string:
+				values = append(values, value)
+			case []interface{}:
+				for _, v := range value {
+					values = append(values, fmt.Sprint(v))
+				}
+			default:
+				values = append(values, value.(string))
+			}
+
+			condition := map[string]interface{}{
+				"key":      c.Key,
+				"value":    values,
+				"operator": c.Operator,
+			}
+			result = append(result, condition)
+		}
+	} else {
+		var values []string
+		switch value := rule.Value.(type) {
+		case string:
+			values = append(values, value)
+		case []interface{}:
+			for _, v := range value {
+				values = append(values, fmt.Sprint(v))
+			}
+		default:
+			values = append(values, value.(string))
+		}
+
+		condition := map[string]interface{}{
+			"key":      rule.Key,
+			"value":    values,
+			"operator": rule.Operator,
+		}
+		result = append(result, condition)
 	}
 	return result
 }
@@ -2409,28 +2589,49 @@ func ResourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 }
 
 func ResourceSharesValidate(diff *schema.ResourceDiff) error {
+	err := ResourceSharesValidateHelper(diff, "size", "profile", "iops")
+	if err != nil {
+		return err
+	}
+	if _, ok := diff.GetOk("replica_share"); ok {
+		err := ResourceSharesValidateHelper(diff, "replica_share.0.size", "replica_share.0.profile", "replica_share.0.iops")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func ResourceSharesValidateHelper(diff *schema.ResourceDiff, sizeStr, profileStr, iopsStr string) error {
 
 	profile := ""
 	var size, iops int
 
-	if iopsIntf, ok := diff.GetOk("iops"); ok {
+	if iopsIntf, ok := diff.GetOk(iopsStr); ok {
 		iops = iopsIntf.(int)
 	}
-
-	if sizeIntf, ok := diff.GetOk("size"); ok {
-		size = sizeIntf.(int)
+	if profileIntf, ok := diff.GetOk(profileStr); ok {
+		profile = profileIntf.(string)
 	}
-	if diff.HasChange("size") {
-		oldSize, newSize := diff.GetChange("size")
+	if diff.HasChange(sizeStr) && !diff.HasChange(profileStr) {
+		oldSize, newSize := diff.GetChange(sizeStr)
 		if newSize.(int) < oldSize.(int) {
 			return fmt.Errorf("The new share size '%d' must be greater than the current share size '%d'", newSize.(int), oldSize.(int))
 		}
 	}
-	if profileIntf, ok := diff.GetOk("profile"); ok {
-		profile = profileIntf.(string)
+
+	if sizeIntf, ok := diff.GetOk(sizeStr); ok {
+		size = sizeIntf.(int)
+		if profile == "tier-5iops" && size > 9600 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 9600)
+		} else if profile == "tier-10iops" && size > 4800 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 4800)
+		} else if profile == "custom-iops" && size > 16000 {
+			return fmt.Errorf("'%s' shares cannot have size more than %d.", profile, 16000)
+		}
 	}
+
 	if profile != "custom-iops" {
-		if iops != 0 && diff.NewValueKnown("iops") && diff.HasChange("iops") {
+		if iops != 0 && diff.NewValueKnown(iopsStr) && diff.HasChange(iopsStr) {
 			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")
 		}
 	} else {
@@ -3087,9 +3288,31 @@ func GetResourceAttribute(name string, r iampolicymanagementv1.PolicyResource) *
 	return core.StringPtr("")
 }
 
+func GetV2PolicyResourceAttribute(key string, r iampolicymanagementv1.V2PolicyResource) string {
+	for _, a := range r.Attributes {
+		if *a.Key == key &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			return a.Value.(string)
+		}
+	}
+	return *core.StringPtr("")
+}
+
 func GetSubjectAttribute(name string, s iampolicymanagementv1.PolicySubject) *string {
 	for _, a := range s.Attributes {
 		if *a.Name == name {
+			return a.Value
+		}
+	}
+	return core.StringPtr("")
+}
+
+func GetV2PolicySubjectAttribute(key string, s iampolicymanagementv1.V2PolicySubject) *string {
+	for _, a := range s.Attributes {
+		if *a.Key == key &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
 			return a.Value
 		}
 	}
@@ -3110,6 +3333,22 @@ func SetResourceAttribute(name *string, value *string, r []iampolicymanagementv1
 	})
 	return r
 }
+
+func SetV2PolicyResourceAttribute(key *string, value *string, r []iampolicymanagementv1.V2PolicyResourceAttribute) []iampolicymanagementv1.V2PolicyResourceAttribute {
+	for _, a := range r {
+		if *a.Key == *key {
+			a.Value = value
+			return r
+		}
+	}
+	r = append(r, iampolicymanagementv1.V2PolicyResourceAttribute{
+		Key:      key,
+		Value:    value,
+		Operator: core.StringPtr("stringEquals"),
+	})
+	return r
+}
+
 func FindRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (iampolicymanagementv1.PolicyRole, error) {
 	for _, role := range supported {
 		if role.DisplayName != nil {
@@ -3122,6 +3361,21 @@ func FindRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (
 	supportedRoles := getSupportedRolesStr(supported)
 	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
 		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
+
+}
+
+func FindRoleByCRN(supported []iampolicymanagementv1.PolicyRole, crn string) (iampolicymanagementv1.PolicyRole, error) {
+	for _, role := range supported {
+		if role.RoleID != nil {
+			if *role.RoleID == crn {
+				role.RoleID = nil
+				return role, nil
+			}
+		}
+	}
+	supportedRoles := getSupportedRolesStr(supported)
+	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
+		fmt.Sprintf("%s was not found. Valid roles are %s", crn, supportedRoles))
 
 }
 
@@ -3178,10 +3432,107 @@ func MapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampoli
 	return policyRoles
 }
 
+func MapPolicyRolesToRoles(policyRoles []iampolicymanagementv1.PolicyRole) []iampolicymanagementv1.Roles {
+	roles := make([]iampolicymanagementv1.Roles, len(policyRoles))
+	for i, policyRole := range policyRoles {
+		roles[i].RoleID = policyRole.RoleID
+	}
+	return roles
+}
+
+func MapRolesToPolicyRoles(roles []iampolicymanagementv1.Roles) []iampolicymanagementv1.PolicyRole {
+	policyRoles := make([]iampolicymanagementv1.PolicyRole, len(roles))
+	for i, role := range roles {
+		policyRoles[i].RoleID = role.RoleID
+	}
+	return policyRoles
+}
+
+func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2Policy, d *schema.ResourceData, meta interface{}) ([]string, error) {
+	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
+	if err != nil {
+		return []string{}, err
+	}
+
+	controlResponse := policy.Control.(*iampolicymanagementv1.ControlResponse)
+	policyRoles := MapRolesToPolicyRoles(controlResponse.Grant.Roles)
+	resourceAttributes := policy.Resource.Attributes
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return []string{}, err
+	}
+
+	var (
+		serviceName    string
+		resourceType   string
+		serviceGroupID string
+	)
+
+	for _, a := range resourceAttributes {
+		if *a.Key == "serviceName" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			serviceName = a.Value.(string)
+		}
+		if *a.Key == "resourceType" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			resourceType = a.Value.(string)
+		}
+		if *a.Key == "service_group_id" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			serviceGroupID = a.Value.(string)
+		}
+	}
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
+
+	var isAccountManagementPolicy bool
+	if accountManagement, ok := d.GetOk("account_management"); ok {
+		isAccountManagementPolicy = accountManagement.(bool)
+	}
+	if serviceName == "" && // no specific service specified
+		!isAccountManagementPolicy && // not all account management services
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
+	}
+
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
+	}
+
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+
+	if err != nil {
+		return []string{}, err
+	}
+	roles := MapRoleListToPolicyRoles(*roleList)
+	roleNames := []string{}
+	for _, role := range policyRoles {
+		role, err := FindRoleByCRN(roles, *role.RoleID)
+		if err != nil {
+			return []string{}, err
+		}
+		roleNames = append(roleNames, *role.DisplayName)
+	}
+
+	return roleNames, nil
+}
+
 func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicymanagementv1.CreatePolicyOptions, error) {
 
 	var serviceName string
 	var resourceType string
+	var serviceGroupID string
 	resourceAttributes := []iampolicymanagementv1.ResourceAttribute{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -3194,6 +3545,18 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("service_group_id"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}
@@ -3283,6 +3646,9 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			if name == "serviceName" {
 				serviceName = value
 			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
@@ -3327,17 +3693,20 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 		return iampolicymanagementv1.CreatePolicyOptions{}, err
 	}
 
-	serviceToQuery := serviceName
-
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" { // service_group_id and service is mutually exclusive
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
-
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -3352,6 +3721,252 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 	}
 
 	return iampolicymanagementv1.CreatePolicyOptions{Roles: policyRoles, Resources: []iampolicymanagementv1.PolicyResource{policyResources}}, nil
+}
+
+func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicymanagementv1.CreateV2PolicyOptions, error) {
+
+	var serviceName string
+	var resourceType string
+	var serviceGroupID string
+	resourceAttributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
+
+	if res, ok := d.GetOk("resources"); ok {
+		resources := res.([]interface{})
+		for _, resource := range resources {
+			r, _ := resource.(map[string]interface{})
+
+			if r, ok := r["service"]; ok && r != nil {
+				serviceName = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("service_group_id"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource_instance_id"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("serviceInstance"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["region"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("region"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource_type"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("resourceType"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("resource"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["resource_group_id"]; ok {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("resourceGroupId"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_type"]; ok && r != nil {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("serviceType"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["attributes"]; ok {
+				for k, v := range r.(map[string]interface{}) {
+					resourceAttributes = SetV2PolicyResourceAttribute(core.StringPtr(k), core.StringPtr(v.(string)), resourceAttributes)
+				}
+			}
+		}
+	}
+	if r, ok := d.GetOk("resource_attributes"); ok {
+		for _, attribute := range r.(*schema.Set).List() {
+			a := attribute.(map[string]interface{})
+			name := a["name"].(string)
+			value := a["value"].(string)
+			operator := a["operator"].(string)
+			if name == "serviceName" {
+				serviceName = value
+			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
+			at := iampolicymanagementv1.V2PolicyResourceAttribute{
+				Key:      &name,
+				Value:    &value,
+				Operator: &operator,
+			}
+			resourceAttributes = append(resourceAttributes, at)
+		}
+	}
+
+	var serviceTypeResourceAttribute iampolicymanagementv1.V2PolicyResourceAttribute
+
+	if d.Get("account_management").(bool) {
+		serviceTypeResourceAttribute = iampolicymanagementv1.V2PolicyResourceAttribute{
+			Key:      core.StringPtr("serviceType"),
+			Value:    core.StringPtr("platform_service"),
+			Operator: core.StringPtr("stringEquals"),
+		}
+		resourceAttributes = append(resourceAttributes, serviceTypeResourceAttribute)
+	}
+
+	if len(resourceAttributes) == 0 {
+		serviceTypeResourceAttribute = iampolicymanagementv1.V2PolicyResourceAttribute{
+			Key:      core.StringPtr("serviceType"),
+			Value:    core.StringPtr("service"),
+			Operator: core.StringPtr("stringEquals"),
+		}
+		resourceAttributes = append(resourceAttributes, serviceTypeResourceAttribute)
+	}
+
+	policyResource := iampolicymanagementv1.V2PolicyResource{
+		Attributes: resourceAttributes,
+	}
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return iampolicymanagementv1.CreateV2PolicyOptions{}, err
+	}
+
+	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
+
+	if err != nil {
+		return iampolicymanagementv1.CreateV2PolicyOptions{}, err
+	}
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
+
+	if serviceName == "" && // no specific service specified
+		!d.Get("account_management").(bool) && // not all account management services
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
+	}
+
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
+	}
+
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+	if err != nil {
+		return iampolicymanagementv1.CreateV2PolicyOptions{}, err
+	}
+
+	roles := MapRoleListToPolicyRoles(*roleList)
+	policyRoles, err := GetRolesFromRoleNames(ExpandStringList(d.Get("roles").([]interface{})), roles)
+	if err != nil {
+		return iampolicymanagementv1.CreateV2PolicyOptions{}, err
+	}
+	policyGrant := &iampolicymanagementv1.Grant{
+		Roles: MapPolicyRolesToRoles(policyRoles),
+	}
+	policyControl := &iampolicymanagementv1.Control{
+		Grant: policyGrant,
+	}
+
+	return iampolicymanagementv1.CreateV2PolicyOptions{Control: policyControl, Resource: &policyResource}, nil
+}
+
+func GeneratePolicyRule(d *schema.ResourceData, ruleConditions interface{}) *iampolicymanagementv1.V2PolicyRule {
+	conditions := []iampolicymanagementv1.RuleAttribute{}
+
+	for _, condition := range ruleConditions.(*schema.Set).List() {
+		c := condition.(map[string]interface{})
+		key := c["key"].(string)
+		operator := c["operator"].(string)
+		r := iampolicymanagementv1.RuleAttribute{
+			Key:      &key,
+			Operator: &operator,
+		}
+
+		interfaceValues := c["value"].([]interface{})
+		values := make([]string, len(interfaceValues))
+		for i, v := range interfaceValues {
+			values[i] = fmt.Sprint(v)
+		}
+
+		if len(values) > 1 {
+			r.Value = &values
+		} else if operator == "stringExists" && values[0] == "true" {
+			r.Value = true
+		} else {
+			r.Value = &values[0]
+		}
+
+		conditions = append(conditions, r)
+	}
+	rule := new(iampolicymanagementv1.V2PolicyRule)
+	if len(conditions) == 1 {
+		rule.Key = conditions[0].Key
+		rule.Operator = conditions[0].Operator
+		rule.Value = conditions[0].Value
+	} else {
+		ruleOperator := d.Get("rule_operator").(string)
+		rule.Operator = &ruleOperator
+		rule.Conditions = conditions
+	}
+
+	return rule
 }
 
 func SetTags(d *schema.ResourceData) []iampolicymanagementv1.ResourceTag {
@@ -3372,6 +3987,26 @@ func SetTags(d *schema.ResourceData) []iampolicymanagementv1.ResourceTag {
 		return resourceAttributes
 	}
 	return []iampolicymanagementv1.ResourceTag{}
+}
+
+func SetV2PolicyTags(d *schema.ResourceData) []iampolicymanagementv1.V2PolicyResourceTag {
+	resourceAttributes := []iampolicymanagementv1.V2PolicyResourceTag{}
+	if r, ok := d.GetOk("resource_tags"); ok {
+		for _, attribute := range r.(*schema.Set).List() {
+			a := attribute.(map[string]interface{})
+			name := a["name"].(string)
+			value := a["value"].(string)
+			operator := a["operator"].(string)
+			tag := iampolicymanagementv1.V2PolicyResourceTag{
+				Key:      &name,
+				Value:    &value,
+				Operator: &operator,
+			}
+			resourceAttributes = append(resourceAttributes, tag)
+		}
+		return resourceAttributes
+	}
+	return []iampolicymanagementv1.V2PolicyResourceTag{}
 }
 
 func GetIBMUniqueId(accountID, userEmail string, meta interface{}) (string, error) {
@@ -3567,4 +4202,20 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 
 	err = json.Unmarshal(data, &newMap) // Convert to a map
 	return
+}
+
+// This function takes two lists and returns the difference between the two lists
+// Listdifference([1,2] [2,3]) = [1]
+func Listdifference(a, b []string) []string {
+	mb := map[string]bool{}
+	for _, x := range b {
+		mb[x] = true
+	}
+	ab := []string{}
+	for _, x := range a {
+		if _, ok := mb[x]; !ok {
+			ab = append(ab, x)
+		}
+	}
+	return ab
 }

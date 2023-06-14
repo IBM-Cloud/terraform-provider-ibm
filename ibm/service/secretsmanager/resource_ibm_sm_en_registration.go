@@ -7,13 +7,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmEnRegistration() *schema.Resource {
@@ -28,18 +29,21 @@ func ResourceIbmSmEnRegistration() *schema.Resource {
 			"event_notifications_instance_crn": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_instance_crn"),
 				Description:  "A CRN that uniquely identifies an IBM Cloud resource.",
 			},
 			"event_notifications_source_name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_name"),
 				Description:  "The name that is displayed as a source that is in your Event Notifications instance.",
 			},
 			"event_notifications_source_description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_description"),
 				Description:  "An optional description for the source  that is in your Event Notifications instance.",
 			},
@@ -89,7 +93,9 @@ func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createNotificationsRegistrationOptions := &secretsmanagerv2.CreateNotificationsRegistrationOptions{}
 
@@ -99,13 +105,13 @@ func resourceIbmSmEnRegistrationCreate(context context.Context, d *schema.Resour
 		createNotificationsRegistrationOptions.SetEventNotificationsSourceDescription(d.Get("event_notifications_source_description").(string))
 	}
 
-	notificationsRegistration, response, err := secretsManagerClient.CreateNotificationsRegistrationWithContext(context, createNotificationsRegistrationOptions)
+	_, response, err := secretsManagerClient.CreateNotificationsRegistrationWithContext(context, createNotificationsRegistrationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateNotificationsRegistrationWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateNotificationsRegistrationWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*notificationsRegistration.EventNotificationsInstanceCrn)
+	d.SetId(fmt.Sprintf("%s/%s", region, instanceId))
 
 	return resourceIbmSmEnRegistrationRead(context, d, meta)
 }
@@ -116,7 +122,13 @@ func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	if len(id) != 2 {
+		return diag.Errorf("Wrong format of resource ID. To import event notification registration use the format `<region>/<instance_id>`")
+	}
+	region := id[0]
+	instanceId := id[1]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getNotificationsRegistrationOptions := &secretsmanagerv2.GetNotificationsRegistrationOptions{}
 
@@ -130,15 +142,15 @@ func resourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("GetNotificationsRegistrationWithContext failed %s\n%s", err, response))
 	}
 
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("event_notifications_instance_crn", notificationsRegistration.EventNotificationsInstanceCrn); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting event_notifications_instance_crn: %s", err))
 	}
-	//if err = d.Set("event_notifications_source_name", notificationsRegistration.EventNotificationsSourceName); err != nil {
-	//	return diag.FromErr(fmt.Errorf("Error setting event_notifications_source_name: %s", err))
-	//}
-	//if err = d.Set("event_notifications_source_description", notificationsRegistration.EventNotificationsSourceDescription); err != nil {
-	//	return diag.FromErr(fmt.Errorf("Error setting event_notifications_source_description: %s", err))
-	//}
 
 	return nil
 }
@@ -149,7 +161,10 @@ func resourceIbmSmEnRegistrationUpdate(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createNotificationsRegistrationOptions := &secretsmanagerv2.CreateNotificationsRegistrationOptions{}
 
@@ -182,7 +197,10 @@ func resourceIbmSmEnRegistrationDelete(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteNotificationsRegistrationOptions := &secretsmanagerv2.DeleteNotificationsRegistrationOptions{}
 

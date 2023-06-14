@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_username_password_secret_metadata (Beta)"
+page_title: "IBM : ibm_sm_username_password_secret_metadata"
 description: |-
   Get information about UsernamePasswordSecretMetadata
 subcategory: "Secrets Manager"
@@ -13,10 +13,10 @@ Provides a read-only data source for UsernamePasswordSecretMetadata. You can the
 ## Example Usage
 
 ```hcl
-data "ibm_sm_username_password_secret_metadata" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+data "ibm_sm_username_password_secret_metadata" "username_password_secret_metadata" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
-  id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+  secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 ```
 
@@ -24,7 +24,11 @@ data "ibm_sm_username_password_secret_metadata" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, String) The ID of the secret.
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
+* `secret_id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 
 ## Attribute Reference
@@ -56,7 +60,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 
 * `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 

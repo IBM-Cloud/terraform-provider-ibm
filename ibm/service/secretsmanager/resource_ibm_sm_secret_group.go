@@ -7,14 +7,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmSecretGroup() *schema.Resource {
@@ -26,6 +26,11 @@ func ResourceIbmSmSecretGroup() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"secret_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A v4 UUID identifier.",
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -60,7 +65,7 @@ func ResourceIbmSmSecretGroupValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[A-Za-z][A-Za-z0-9]*(?:_?-?.?[A-Za-z0-9]+)*$`,
+			Regexp:                     `[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`,
 			MinValueLength:             2,
 			MaxValueLength:             64,
 		},
@@ -85,7 +90,9 @@ func resourceIbmSmSecretGroupCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretGroupOptions := &secretsmanagerv2.CreateSecretGroupOptions{}
 
@@ -100,7 +107,8 @@ func resourceIbmSmSecretGroupCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("CreateSecretGroupWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*secretGroup.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secretGroup.ID))
+	d.Set("secret_group_id", *secretGroup.ID)
 
 	return resourceIbmSmSecretGroupRead(context, d, meta)
 }
@@ -111,11 +119,18 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret group use the format `<region>/<instance_id>/<secret_group_id>`")
+	}
+	region := id[0]
+	instanceId := id[1]
+	secretGroupId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretGroupOptions := &secretsmanagerv2.GetSecretGroupOptions{}
 
-	getSecretGroupOptions.SetID(d.Id())
+	getSecretGroupOptions.SetID(secretGroupId)
 
 	secretGroup, response, err := secretsManagerClient.GetSecretGroupWithContext(context, getSecretGroupOptions)
 	if err != nil {
@@ -127,16 +142,25 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("GetSecretGroupWithContext failed %s\n%s", err, response))
 	}
 
+	if err = d.Set("secret_group_id", secretGroupId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_group_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("name", secretGroup.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if err = d.Set("description", secretGroup.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secretGroup.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secretGroup.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secretGroup.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secretGroup.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -149,11 +173,15 @@ func resourceIbmSmSecretGroupUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretGroupId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretGroupOptions := &secretsmanagerv2.UpdateSecretGroupOptions{}
 
-	updateSecretGroupOptions.SetID(d.Id())
+	updateSecretGroupOptions.SetID(secretGroupId)
 
 	hasChange := false
 
@@ -187,11 +215,15 @@ func resourceIbmSmSecretGroupDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretGroupId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretGroupOptions := &secretsmanagerv2.DeleteSecretGroupOptions{}
 
-	deleteSecretGroupOptions.SetID(d.Id())
+	deleteSecretGroupOptions.SetID(secretGroupId)
 
 	response, err := secretsManagerClient.DeleteSecretGroupWithContext(context, deleteSecretGroupOptions)
 	if err != nil {

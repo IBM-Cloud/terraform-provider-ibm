@@ -53,3 +53,4 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `zones`:
 	- `subnet-id` - (String) The worker pool subnet to assign the cluster.
 	- `subnet-name` - (String) Name of the zone.
+- `autoscale_enabled` - (Bool) Autoscaling is enabled on the workerpool

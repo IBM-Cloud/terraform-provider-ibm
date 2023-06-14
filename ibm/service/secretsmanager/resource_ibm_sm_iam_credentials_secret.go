@@ -6,7 +6,11 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
@@ -51,13 +55,15 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"ttl": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: StringIsIntBetween(60, 7776000),
+				Description:  "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value is an integer that specifies the number of seconds .Minimum duration is 1 minute. Maximum is 90 days.",
 			},
 			"access_groups": &schema.Schema{
 				Type:        schema.TypeList,
@@ -75,9 +81,9 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			},
 			"reuse_api_key": &schema.Schema{
 				Type:        schema.TypeBool,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.",
+				Optional:    true,
+				Default:     true,
+				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. Must be set to `true` for IAM credentials secrets managed with Terraform.",
 			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
@@ -117,6 +123,7 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -147,7 +154,7 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.",
 			},
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A v4 UUID identifier.",
@@ -196,7 +203,7 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.",
+				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.",
 			},
 		},
 	}
@@ -208,10 +215,15 @@ func resourceIbmSmIamCredentialsSecretCreate(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
+	if !d.Get("reuse_api_key").(bool) {
+		return diag.Errorf("IAM credentials secrets managed by Terraform must have reuse_api_key set to true")
+	}
 	secretPrototypeModel, err := resourceIbmSmIamCredentialsSecretMapToSecretPrototype(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -225,9 +237,50 @@ func resourceIbmSmIamCredentialsSecretCreate(context context.Context, d *schema.
 	}
 
 	secret := secretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
-	d.SetId(*secret.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
+	d.Set("secret_id", *secret.ID)
+
+	_, err = waitForIbmSmIamCredentialsSecretCreate(secretsManagerClient, d)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmIamCredentialsSecret (%s) to be created: %s", d.Id(), err))
+	}
 
 	return resourceIbmSmIamCredentialsSecretRead(context, d, meta)
+}
+
+func waitForIbmSmIamCredentialsSecretCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
+	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+
+	id := strings.Split(d.Id(), "/")
+	secretId := id[2]
+
+	getSecretOptions.SetID(secretId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pre_activation"},
+		Target:  []string{"active"},
+		Refresh: func() (interface{}, string, error) {
+			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
+			stateObj := stateObjIntf.(*secretsmanagerv2.IAMCredentialsSecret)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"destroyed": true}
+			if failStates[*stateObj.StateDescription] {
+				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
+			}
+			return stateObj, *stateObj.StateDescription, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      0 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -236,11 +289,18 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
+	}
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Id())
+	getSecretOptions.SetID(secretId)
 
 	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -254,10 +314,19 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 
 	secret := secretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
 
+	if err = d.Set("secret_id", secretId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -295,7 +364,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -318,8 +387,14 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("service_id_is_static", secret.ServiceIdIsStatic); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting service_id_is_static: %s", err))
 	}
-	if err = d.Set("reuse_api_key", secret.ReuseApiKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting reuse_api_key: %s", err))
+
+	// Prevent import of secrets with reuse_api_key = false into Terraform
+	if !*secret.ReuseApiKey {
+		return diag.Errorf("IAM credentials secrets with Reuse IAM credentials turned off (reuse_api_key = false) cannot be managed by Terraform")
+	} else {
+		if err = d.Set("reuse_api_key", true); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting reuse_api_key: %s", err))
+		}
 	}
 	rotationMap, err := resourceIbmSmIamCredentialsSecretRotationPolicyToMap(secret.Rotation)
 	if err != nil {
@@ -330,7 +405,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 			return diag.FromErr(fmt.Errorf("Error setting rotation: %s", err))
 		}
 	}
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(secret.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(secret.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 	if err = d.Set("api_key", secret.ApiKey); err != nil {
@@ -346,11 +421,15 @@ func resourceIbmSmIamCredentialsSecretUpdate(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
-	updateSecretMetadataOptions.SetID(d.Id())
+	updateSecretMetadataOptions.SetID(secretId)
 
 	hasChange := false
 
@@ -409,11 +488,15 @@ func resourceIbmSmIamCredentialsSecretDelete(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
-	deleteSecretOptions.SetID(d.Id())
+	deleteSecretOptions.SetID(secretId)
 
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {
@@ -461,7 +544,7 @@ func resourceIbmSmIamCredentialsSecretMapToSecretPrototype(d *schema.ResourceDat
 	if _, ok := d.GetOk("service_id"); ok {
 		model.ServiceID = core.StringPtr(d.Get("service_id").(string))
 	}
-	model.ReuseApiKey = core.BoolPtr(d.Get("reuse_api_key").(bool))
+	model.ReuseApiKey = core.BoolPtr(true) // Always true for IAM credentials secrets in Terraform
 	if _, ok := d.GetOk("rotation"); ok {
 		RotationModel, err := resourceIbmSmIamCredentialsSecretMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
 		if err != nil {

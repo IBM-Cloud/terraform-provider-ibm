@@ -38,9 +38,13 @@ data "ibm_is_image" "example" {
 Review the argument references that you can specify for your data source.
 
 - `identifier` - (Optional, String) The id of the image.
+
     ~> **Note:** `name` and `identifier` are mutually exclusive.
+
 - `name` - (Optional, String) The name of the image.
+
     ~> **Note:** `name` and `identifier` are mutually exclusive.
+
 - `visibility` - (Optional, String) The visibility of the image. Accepted values are `public` or `private`.
 
 ## Attribute reference
@@ -49,9 +53,11 @@ In addition to all argument reference list, you can access the following attribu
 - `access_tags`  - (List) Access management tags associated for image.
 - `architecture` - (String) The architecture of the image.
 - `catalog_offering` - (List) The catalog offering for this image.
+
   Nested scheme for **catalog_offering**:
   - `managed` - (Bool) Indicates whether this image is managed as part of a catalog offering. If an image is managed, accounts in the same enterprise with access to that catalog can specify the image's catalog offering version CRN to provision virtual server instances using the image.
   - `version` - (List) The catalog offering version associated with this image. If absent, this image is not associated with a cloud catalog offering.
+  
       Nested scheme for **version**:
         - `crn` - (String) The CRN for this version of a catalog offering
 - `checksum`-  (String) The `SHA256` checksum of the image.

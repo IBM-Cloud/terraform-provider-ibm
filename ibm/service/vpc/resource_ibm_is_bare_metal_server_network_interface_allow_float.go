@@ -573,7 +573,46 @@ func resourceIBMISBareMetalServerNetworkInterfaceAllowFloatUpdate(context contex
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if d.HasChange("security_groups") && !d.IsNewResource() {
+		ovs, nvs := d.GetChange("security_groups")
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+		remove := flex.ExpandStringList(ov.Difference(nv).List())
+		add := flex.ExpandStringList(nv.Difference(ov).List())
+		if len(add) > 0 {
+			for i := range add {
+				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &add[i],
+					ID:              &nicId,
+				}
+				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response))
+				}
+				_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
 
+		}
+		if len(remove) > 0 {
+			for i := range remove {
+				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &remove[i],
+					ID:              &nicId,
+				}
+				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for network interface of bare metal server %s\n%s: %q", remove[i], d.Id(), err, response))
+				}
+				_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
 	if d.HasChange("primary_ip.0.name") || d.HasChange("primary_ip.0.auto_delete") {
 		subnetId := d.Get(isBareMetalServerNicSubnet).(string)
 		ripId := d.Get("primary_ip.0.reserved_ip").(string)

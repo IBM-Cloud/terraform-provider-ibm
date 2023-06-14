@@ -9,14 +9,15 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func DataSourceIbmIsShareTarget() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmIsShareTargetRead,
+		ReadContext:        dataSourceIbmIsShareTargetRead,
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use ibm_is_share_mount_target instead",
 
 		Schema: map[string]*schema.Schema{
 			"share": {
@@ -24,7 +25,7 @@ func DataSourceIbmIsShareTarget() *schema.Resource {
 				Optional:    true,
 				Description: "The file share identifier.",
 			},
-			"mount_target": {
+			"share_target": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The share target identifier.",
@@ -35,10 +36,10 @@ func DataSourceIbmIsShareTarget() *schema.Resource {
 				ExactlyOneOf: []string{"share", "share_name"},
 				Description:  "The file share name.",
 			},
-			"mount_target_name": {
+			"share_target_name": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ExactlyOneOf: []string{"mount_target", "mount_target_name"},
+				ExactlyOneOf: []string{"share_target", "share_target_name"},
 				Description:  "The share target name.",
 			},
 			"created_at": {
@@ -179,11 +180,11 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 
 	share_id := d.Get("share").(string)
 	share_name := d.Get("share_name").(string)
-	share_target := d.Get("mount_target").(string)
-	share_target_name := d.Get("mount_target_name").(string)
-	var shareTarget *vpcv1.ShareMountTarget
+	share_target := d.Get("share_target").(string)
+	share_target_name := d.Get("share_target_name").(string)
+	var shareTarget *vpcbetav1.ShareMountTarget
 	if share_name != "" {
-		listSharesOptions := &vpcv1.ListSharesOptions{}
+		listSharesOptions := &vpcbetav1.ListSharesOptions{}
 		listSharesOptions.Name = &share_name
 		shareCollection, response, err := vpcClient.ListSharesWithContext(context, listSharesOptions)
 		if err != nil {
@@ -198,7 +199,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 		}
 	}
 	if share_target_name != "" {
-		listShareTargetsOptions := &vpcv1.ListShareMountTargetsOptions{}
+		listShareTargetsOptions := &vpcbetav1.ListShareMountTargetsOptions{}
 
 		listShareTargetsOptions.SetShareID(share_id)
 		listShareTargetsOptions.SetName(share_target_name)
@@ -215,7 +216,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 			}
 		}
 	} else {
-		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 		getShareTargetOptions.SetShareID(share_id)
 		getShareTargetOptions.SetID(share_target)
 		shareTarget1, response, err := vpcClient.GetShareMountTargetWithContext(context, getShareTargetOptions)
@@ -263,7 +264,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-// func dataSourceShareTargetFlattenSubnet(result vpcv1.SubnetReference) (finalList []map[string]interface{}) {
+// func dataSourceShareTargetFlattenSubnet(result vpcbetav1.SubnetReference) (finalList []map[string]interface{}) {
 // 	finalList = []map[string]interface{}{}
 // 	finalMap := dataSourceShareTargetSubnetToMap(result)
 // 	finalList = append(finalList, finalMap)
@@ -271,7 +272,7 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 // 	return finalList
 // }
 
-func dataSourceShareTargetSubnetToMap(subnetItem vpcv1.SubnetReference) (subnetMap map[string]interface{}) {
+func dataSourceShareTargetSubnetToMap(subnetItem vpcbetav1.SubnetReference) (subnetMap map[string]interface{}) {
 	subnetMap = map[string]interface{}{}
 
 	if subnetItem.CRN != nil {
@@ -300,7 +301,7 @@ func dataSourceShareTargetSubnetToMap(subnetItem vpcv1.SubnetReference) (subnetM
 	return subnetMap
 }
 
-func dataSourceShareTargetSubnetDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetSubnetDeletedToMap(deletedItem vpcbetav1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -310,7 +311,7 @@ func dataSourceShareTargetSubnetDeletedToMap(deletedItem vpcv1.SubnetReferenceDe
 	return deletedMap
 }
 
-func dataSourceShareTargetFlattenVpc(result vpcv1.VPCReference) (finalList []map[string]interface{}) {
+func dataSourceShareTargetFlattenVpc(result vpcbetav1.VPCReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceShareTargetVpcToMap(result)
 	finalList = append(finalList, finalMap)
@@ -318,7 +319,7 @@ func dataSourceShareTargetFlattenVpc(result vpcv1.VPCReference) (finalList []map
 	return finalList
 }
 
-func dataSourceShareTargetVpcToMap(vpcItem vpcv1.VPCReference) (vpcMap map[string]interface{}) {
+func dataSourceShareTargetVpcToMap(vpcItem vpcbetav1.VPCReference) (vpcMap map[string]interface{}) {
 	vpcMap = map[string]interface{}{}
 
 	if vpcItem.CRN != nil {
@@ -348,7 +349,7 @@ func dataSourceShareTargetVpcToMap(vpcItem vpcv1.VPCReference) (vpcMap map[strin
 	return vpcMap
 }
 
-func dataSourceShareTargetVpcDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetVpcDeletedToMap(deletedItem vpcbetav1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

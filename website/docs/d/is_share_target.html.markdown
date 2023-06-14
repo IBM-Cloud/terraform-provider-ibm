@@ -1,15 +1,25 @@
 ---
 layout: "ibm"
 page_title: "IBM : is_share_target"
-sidebar_current: "docs-ibm-datasource-is-share-target"
 description: |-
   Get information about ShareTarget
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_share_target
 
 Provides a read-only data source for ShareTarget. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+
+
+~> **NOTE**
+IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
+
+~> **NOTE**
+This is a Beta feature and it is subject to change in the GA release 
+
+~> **NOTE**
+This data source is being deprecated. Please use `ibm_is_share_mount_target` instead
+
 
 ## Example Usage
 
@@ -18,21 +28,21 @@ resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
 resource "ibm_is_share" "example" {
-  name = "example-share"
-  size = 200
+  name    = "example-share"
+  size    = 200
   profile = "tier-3iops"
-  zone = "us-south-2"
+  zone    = "us-south-2"
 }
 
 resource "ibm_is_share_target" "example" {
   share = ibm_is_share.is_share.id
-  vpc = ibm_is_vpc.example.id
-  name = "example-share-target"
+  vpc   = ibm_is_vpc.example.id
+  name  = "example-share-target"
 }
 
 data "ibm_is_share_target" "example" {
-	share = ibm_is_share.example.id
-	share_target = ibm_is_share_target.example.share_target
+  share        = ibm_is_share.example.id
+  share_target = ibm_is_share_target.example.share_target
 }
 ```
 

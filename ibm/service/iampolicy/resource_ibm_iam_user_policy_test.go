@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -47,7 +47,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -75,7 +75,7 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_ServiceType(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -95,7 +95,7 @@ func TestAccIBMIAMUserPolicy_With_ServiceType(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -116,7 +116,7 @@ func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -136,7 +136,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -155,7 +155,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_import(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_user_policy.policy"
 
@@ -181,7 +181,7 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 	})
 }
 func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -191,14 +191,14 @@ func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 			{
 				Config: testAccCheckIBMIAMUserPolicyResourceAttributes(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_user_policy.policy", conf),
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
 				),
 			},
 			{
 				Config: testAccCheckIBMIAMUserPolicyResourceAttributesUpdate(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_user_policy.policy", conf),
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
 				),
 			},
@@ -206,7 +206,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 	})
 }
 func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_user_policy.policy"
 
@@ -242,7 +242,7 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 
@@ -264,7 +264,7 @@ func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicyWithSpecificServiceRole(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -284,7 +284,7 @@ func TestAccIBMIAMUserPolicyWithSpecificServiceRole(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -314,7 +314,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Transaction_Id(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2Policy
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -324,8 +324,155 @@ func TestAccIBMIAMUserPolicy_With_Transaction_Id(t *testing.T) {
 			{
 				Config: testAccCheckIBMIAMUserPolicyTransactionId(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_user_policy.policy", conf),
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "transaction_id", "terrformUserPolicy"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Weekly_Custom(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyWeeklyCustomHours(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "time-based-conditions:weekly:custom-hours"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.#", "3"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.2.key", "{{environment.attributes.day_of_week}}"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.2.value.#", "5"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Custom Hours Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMUserPolicyUpdateConditions(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "time-based-conditions:weekly:custom-hours"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.2.value.#", "4"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Custom Hours Update for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Weekly_All_Day(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyWeeklyAllDay(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "time-based-conditions:weekly:all-day"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.0.key", "{{environment.attributes.day_of_week}}"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.0.value.#", "5"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy All Day Weekly Time-Based Conditions Creation for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Once(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyTimeBasedOnce(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "time-based-conditions:once"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.0.key", "{{environment.attributes.current_date_time}}"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Once Time-Based Conditions Creation for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_With_Resource_Attributes(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyTimeBasedWithResourceAttributes(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "time-based-conditions:once"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "rule_conditions.0.key", "{{environment.attributes.current_date_time}}"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Once Time-Based Conditions Creation for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyResourceAttributes(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config:      testAccCheckIBMIAMUserPolicyUpdateConditions(),
+				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUSerPolicy_With_ServiceGroupID(t *testing.T) {
+	var conf iampolicymanagementv1.V2Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.0.value", "IAM"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
 				),
 			},
 		},
@@ -349,12 +496,12 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 
 		userPolicyID := parts[1]
 
-		getPolicyOptions := rsContClient.NewGetPolicyOptions(
+		getPolicyOptions := rsContClient.NewGetV2PolicyOptions(
 			userPolicyID,
 		)
 
 		// Try to find the key
-		destroyedPolicy, response, err := rsContClient.GetPolicy(getPolicyOptions)
+		destroyedPolicy, response, err := rsContClient.GetV2Policy(getPolicyOptions)
 
 		if err == nil && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("User policy still exists: %s\n", rs.Primary.ID)
@@ -366,7 +513,7 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMUserPolicyExists(n string, obj iampolicymanagementv1.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMUserPolicyExists(n string, obj iampolicymanagementv1.V2Policy) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -386,11 +533,11 @@ func testAccCheckIBMIAMUserPolicyExists(n string, obj iampolicymanagementv1.Poli
 		}
 		userPolicyID := parts[1]
 
-		getPolicyOptions := rsContClient.NewGetPolicyOptions(
+		getPolicyOptions := rsContClient.NewGetV2PolicyOptions(
 			userPolicyID,
 		)
 
-		policy, _, err := rsContClient.GetPolicy(getPolicyOptions)
+		policy, _, err := rsContClient.GetV2Policy(getPolicyOptions)
 		if err != nil {
 			return err
 		}
@@ -703,5 +850,161 @@ func testAccCheckIBMIAMUserPolicyTransactionId() string {
 			}
 	  	}
 
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyWeeklyCustomHours() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.day_of_week}}"
+				operator = "dayOfWeekAnyOf"
+				value = ["1+00:00","2+00:00","3+00:00","4+00:00", "5+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeGreaterThanOrEquals"
+				value = ["09:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeLessThanOrEquals"
+				value = ["17:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:weekly:custom-hours"
+			description = "IAM User Policy Custom Hours Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyUpdateConditions() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer", "Manager"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.day_of_week}}"
+				operator = "dayOfWeekAnyOf"
+				value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeGreaterThanOrEquals"
+				value = ["09:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeLessThanOrEquals"
+				value = ["17:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:weekly:custom-hours"
+			description = "IAM User Policy Custom Hours Update for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyWeeklyAllDay() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.day_of_week}}"
+				operator = "dayOfWeekAnyOf"
+				value = ["1+00:00","2+00:00","3+00:00","4+00:00", "5+00:00"]
+			}
+
+		  pattern = "time-based-conditions:weekly:all-day"
+			description = "IAM User Policy All Day Weekly Time-Based Conditions Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyTimeBasedOnce() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeGreaterThanOrEquals"
+				value = ["2022-10-01T12:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeLessThanOrEquals"
+				value = ["2022-10-31T12:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:once"
+			description = "IAM User Policy Once Time-Based Conditions Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyTimeBasedWithResourceAttributes() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+			resource_attributes {
+				name     = "resource"
+				value    = "test*"
+				operator = "stringMatch"
+			}
+			resource_attributes {
+				name     = "serviceName"
+				value    = "messagehub"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeGreaterThanOrEquals"
+				value = ["2022-10-01T12:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeLessThanOrEquals"
+				value = ["2022-10-31T12:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:once"
+			description = "IAM User Policy Once Time-Based Conditions with Resource Attributes Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+
+			roles           = ["Service ID creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
+		}
 	`, acc.IAMUser)
 }

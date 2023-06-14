@@ -31,9 +31,11 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The default value is `false`.
 * `enable_partial_cloning` - (Optional, Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work.
   * Constraints: The default value is `false`.
+* `next_build_number` - (Optional, Integer) Specify the build number that will be used for the next pipeline run. Build numbers can be any positive whole number between 0 and 100000000000000.
+  * Constraints: The maximum value is `99999999999999`. The minimum value is `1`.
 * `worker` - (Optional, List) Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default.
 Nested scheme for **worker**:
-	* `id` - (Required, Forces new resource, String) ID of the worker.
+	* `id` - (Required, String) ID of the worker.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,253}$/`.
 
 ## Attribute Reference
@@ -74,7 +76,7 @@ Nested scheme for **definitions**:
 * `href` - (String) API URL for interacting with the pipeline.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `name` - (String) String.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,251}[a-zA-Z0-9]$/`.
 * `properties` - (List) Tekton pipeline's environment properties.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 Nested scheme for **properties**:
@@ -86,7 +88,7 @@ Nested scheme for **properties**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^[-0-9a-zA-Z_.]*$/`.
-	* `type` - (String) Property type.
+	* `type` - (Forces new resource, String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 	* `value` - (String) Property value. Any string value is valid.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
@@ -121,7 +123,7 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 	* `name` - (String) Trigger name.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\\(\\)\\[\\]]{1,251}[a-zA-Z0-9])$/`.
 	* `properties` - (List) Optional trigger properties used to override or supplement the pipeline properties when triggering a pipeline run.
 	  * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 	Nested scheme for **properties**:
@@ -133,7 +135,7 @@ Nested scheme for **triggers**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^[-0-9a-zA-Z_.]*$/`.
-		* `type` - (String) Property type.
+		* `type` - (Forces new resource, String) Property type.
 		  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 		* `value` - (String) Property value. Any string value is valid.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
@@ -158,8 +160,8 @@ Nested scheme for **triggers**:
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 			* `hook_id` - (String) ID of the webhook from the repo. Computed upon creation of the trigger.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-			* `pattern` - (String) Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.
-			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
+			* `pattern` - (String) The pattern of Git branch or tag to which to listen. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository. The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. One of branch or pattern must be specified, but only one or the other.
+			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.:@=$&^\/\\?\\!\\*\\+\\[\\]\\(\\)\\{\\}\\|\\\\]*$/`.
 			* `tool` - (List) Reference to the repository tool in the parent toolchain.
 			Nested scheme for **tool**:
 				* `id` - (String) ID of the repository tool instance in the parent toolchain.

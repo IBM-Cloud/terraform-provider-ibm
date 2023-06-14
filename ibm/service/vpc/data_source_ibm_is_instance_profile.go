@@ -461,6 +461,29 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"network_interface_count": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum value for this profile field",
+						},
+						"min": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum value for this profile field",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+					},
+				},
+			},
 			"port_speed": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -638,6 +661,12 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 
 	if profile.Memory != nil {
 		err = d.Set("memory", dataSourceInstanceProfileFlattenMemory(*profile.Memory.(*vpcv1.InstanceProfileMemory)))
+		if err != nil {
+			return err
+		}
+	}
+	if profile.NetworkInterfaceCount != nil {
+		err = d.Set("network_interface_count", dataSourceInstanceProfileFlattenNetworkInterfaceCount(*profile.NetworkInterfaceCount.(*vpcv1.InstanceProfileNetworkInterfaceCount)))
 		if err != nil {
 			return err
 		}
@@ -849,6 +878,29 @@ func dataSourceInstanceProfileMemoryToMap(memoryItem vpcv1.InstanceProfileMemory
 	}
 
 	return memoryMap
+}
+
+func dataSourceInstanceProfileFlattenNetworkInterfaceCount(result vpcv1.InstanceProfileNetworkInterfaceCount) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileNetworkInterfaceCount(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileNetworkInterfaceCount(networkInterfaceCountItem vpcv1.InstanceProfileNetworkInterfaceCount) (networkInterfaceCountMap map[string]interface{}) {
+	networkInterfaceCountMap = map[string]interface{}{}
+
+	if networkInterfaceCountItem.Max != nil {
+		networkInterfaceCountMap["max"] = networkInterfaceCountItem.Max
+	}
+	if networkInterfaceCountItem.Min != nil {
+		networkInterfaceCountMap["min"] = networkInterfaceCountItem.Min
+	}
+	if networkInterfaceCountItem.Type != nil {
+		networkInterfaceCountMap["type"] = networkInterfaceCountItem.Type
+	}
+	return networkInterfaceCountMap
 }
 
 func dataSourceInstanceProfileFlattenPortSpeed(result vpcv1.InstanceProfilePortSpeed) (finalList []map[string]interface{}) {

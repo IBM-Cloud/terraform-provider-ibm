@@ -42,7 +42,7 @@ func testAccCheckIbmIsShareTargetDataSourceConfigBasic(sname, vpcName, targetNam
 		
 		data "ibm_is_share_target" "is_share_target" {
 			share = ibm_is_share.is_share.id
-			mount_target = data.ibm_is_share_targets.is_share_targets.mount_targets.0.id
+			share_target = data.ibm_is_share_targets.is_share_targets.share_targets.0.id
 		}
 	`)
 }

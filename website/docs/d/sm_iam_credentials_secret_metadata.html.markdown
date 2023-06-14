@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_iam_credentials_secret_metadata (Beta)"
+page_title: "IBM : ibm_sm_iam_credentials_secret_metadata"
 description: |-
   Get information about IAMCredentialsSecretMetadata
 subcategory: "Secrets Manager"
@@ -8,15 +8,15 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_iam_credentials_secret_metadata
 
-Provides a read-only data source for IAMCredentialsSecretMetadata. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for the metadata of an IAM credentials secret. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_sm_iam_credentials_secret_metadata" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+data "ibm_sm_iam_credentials_secret_metadata" "iam_secret_metadata" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
-  id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+  secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 ```
 
@@ -24,14 +24,18 @@ data "ibm_sm_iam_credentials_secret_metadata" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, String) The ID of the secret.
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
+* `secret_id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the IAMCredentialsSecretMetadata.
+* `id` - The unique identifier of the data source.
 * `access_groups` - (List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
   * Constraints: The list items must match regular expression `/^AccessGroupId-[a-z0-9-]+[a-z0-9]$/`. The maximum length is `10` items. The minimum length is `1` item.
 
@@ -59,11 +63,11 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 
 * `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
 
-* `reuse_api_key` - (Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.
+* `reuse_api_key` - (Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. The value is always `true` for IAM credentials secrets managed by Terraform.
 
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:

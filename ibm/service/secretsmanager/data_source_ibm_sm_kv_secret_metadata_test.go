@@ -20,8 +20,8 @@ func TestAccIbmSmKvSecretMetadataDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmKvSecretMetadataDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret_metadata.sm_kv_secret_metadata", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret_metadata.sm_kv_secret_metadata", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret_metadata.sm_kv_secret_metadata", "secret_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret_metadata.sm_kv_secret_metadata", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret_metadata.sm_kv_secret_metadata", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret_metadata.sm_kv_secret_metadata", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_kv_secret_metadata.sm_kv_secret_metadata", "crn"),
@@ -51,7 +51,7 @@ func testAccCheckIbmSmKvSecretMetadataDataSourceConfigBasic() string {
 		data "ibm_sm_kv_secret_metadata" "sm_kv_secret_metadata" {
 			instance_id   = "%s"
 			region        = "%s"
-			id = ibm_sm_kv_secret.sm_kv_secret_instance.id
+			secret_id = ibm_sm_kv_secret.sm_kv_secret_instance.secret_id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

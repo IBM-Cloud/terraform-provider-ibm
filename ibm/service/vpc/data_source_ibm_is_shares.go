@@ -13,7 +13,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
+
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 )
 
 func DataSourceIbmIsShares() *schema.Resource {
@@ -280,7 +281,7 @@ func DataSourceIbmIsShares() *schema.Resource {
 								},
 							},
 						},
-						"mount_targets": {
+						"share_targets": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Mount targets for the file share.",
@@ -367,7 +368,7 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 	if resGrpIntf, ok := d.GetOk("resource_group"); ok {
 		resGrp = resGrpIntf.(string)
 	}
-	listSharesOptions := &vpcv1.ListSharesOptions{}
+	listSharesOptions := &vpcbetav1.ListSharesOptions{}
 
 	if shareName != "" {
 		listSharesOptions.Name = &shareName
@@ -376,7 +377,7 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 		listSharesOptions.ResourceGroupID = &resGrp
 	}
 	start := ""
-	allrecs := []vpcv1.Share{}
+	allrecs := []vpcbetav1.Share{}
 	totalCount := 0
 	for {
 		if start != "" {
@@ -417,7 +418,7 @@ func dataSourceIbmIsSharesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcv1.Share) (shares []map[string]interface{}) {
+func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcbetav1.Share) (shares []map[string]interface{}) {
 	for _, sharesItem := range result {
 		shares = append(shares, dataSourceShareCollectionSharesToMap(meta, sharesItem))
 	}
@@ -425,7 +426,7 @@ func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcv1.Sha
 	return shares
 }
 
-func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Share) (sharesMap map[string]interface{}) {
+func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcbetav1.Share) (sharesMap map[string]interface{}) {
 	sharesMap = map[string]interface{}{}
 
 	if sharesItem.CreatedAt != nil {
@@ -490,7 +491,7 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 		for _, targetsItem := range sharesItem.MountTargets {
 			targetsList = append(targetsList, dataSourceShareCollectionSharesTargetsToMap(targetsItem))
 		}
-		sharesMap["mount_targets"] = targetsList
+		sharesMap["share_targets"] = targetsList
 	}
 	if sharesItem.Zone != nil {
 		sharesMap["zone"] = *sharesItem.Zone.Name
@@ -509,7 +510,7 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	return sharesMap
 }
 
-func dataSourceShareCollectionSharesTargetsToMap(targetsItem vpcv1.ShareMountTargetReference) (targetsMap map[string]interface{}) {
+func dataSourceShareCollectionSharesTargetsToMap(targetsItem vpcbetav1.ShareMountTargetReference) (targetsMap map[string]interface{}) {
 	targetsMap = map[string]interface{}{}
 
 	if targetsItem.Deleted != nil {

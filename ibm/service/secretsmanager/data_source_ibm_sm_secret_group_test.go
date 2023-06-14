@@ -23,7 +23,7 @@ func TestAccIbmSmSecretGroupDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmSecretGroupDataSourceConfigBasic(secretGroupName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "secret_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "updated_at"),
@@ -44,7 +44,7 @@ func TestAccIbmSmSecretGroupDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmSecretGroupDataSourceConfig(secretGroupName, secretGroupDescription),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "secret_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_secret_group.sm_secret_group", "description"),
@@ -67,7 +67,7 @@ func testAccCheckIbmSmSecretGroupDataSourceConfigBasic(secretGroupName string) s
 		data "ibm_sm_secret_group" "sm_secret_group" {
 			instance_id   = "%s"
 			region        = "%s"
-			id = ibm_sm_secret_group.sm_secret_group_instance.id
+			secret_group_id = ibm_sm_secret_group.sm_secret_group_instance.secret_group_id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, secretGroupName, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }
@@ -84,7 +84,7 @@ func testAccCheckIbmSmSecretGroupDataSourceConfig(secretGroupName string, secret
 		data "ibm_sm_secret_group" "sm_secret_group" {
 			instance_id   = "%s"
 			region        = "%s"
-			id = ibm_sm_secret_group.sm_secret_group_instance.id
+			secret_group_id = ibm_sm_secret_group.sm_secret_group_instance.secret_group_id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, secretGroupName, secretGroupDescription, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

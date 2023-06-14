@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmArbitrarySecretMetadata() *schema.Resource {
@@ -21,7 +21,7 @@ func DataSourceIbmSmArbitrarySecretMetadata() *schema.Resource {
 		ReadContext: dataSourceIbmSmArbitrarySecretMetadataRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -122,11 +122,14 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretMetadataOptions := &secretsmanagerv2.GetSecretMetadataOptions{}
 
-	getSecretMetadataOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretMetadataOptions.SetID(secretId)
 
 	arbitrarySecretMetadataIntf, response, err := secretsManagerClient.GetSecretMetadataWithContext(context, getSecretMetadataOptions)
 	if err != nil {
@@ -136,13 +139,17 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 
 	arbitrarySecretMetadata := arbitrarySecretMetadataIntf.(*secretsmanagerv2.ArbitrarySecretMetadata)
 
-	d.SetId(*arbitrarySecretMetadata.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 
 	if err = d.Set("created_by", arbitrarySecretMetadata.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(arbitrarySecretMetadata.CreatedAt)); err != nil {
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
+
+	if err = d.Set("created_at", DateTimeToRFC3339(arbitrarySecretMetadata.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -196,7 +203,7 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(arbitrarySecretMetadata.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(arbitrarySecretMetadata.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -204,7 +211,7 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting versions_total: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(arbitrarySecretMetadata.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(arbitrarySecretMetadata.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 

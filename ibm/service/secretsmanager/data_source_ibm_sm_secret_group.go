@@ -12,8 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmSecretGroup() *schema.Resource {
@@ -21,7 +20,7 @@ func DataSourceIbmSmSecretGroup() *schema.Resource {
 		ReadContext: dataSourceIbmSmSecretGroupRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret group.",
@@ -56,11 +55,14 @@ func dataSourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretGroupOptions := &secretsmanagerv2.GetSecretGroupOptions{}
 
-	getSecretGroupOptions.SetID(d.Get("id").(string))
+	secretGroupId := d.Get("secret_group_id").(string)
+	getSecretGroupOptions.SetID(secretGroupId)
 
 	secretGroup, response, err := secretsManagerClient.GetSecretGroupWithContext(context, getSecretGroupOptions)
 	if err != nil {
@@ -68,8 +70,11 @@ func dataSourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("GetSecretGroupWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getSecretGroupOptions.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretGroupId))
 
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("name", secretGroup.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -78,11 +83,11 @@ func dataSourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(secretGroup.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secretGroup.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(secretGroup.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secretGroup.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

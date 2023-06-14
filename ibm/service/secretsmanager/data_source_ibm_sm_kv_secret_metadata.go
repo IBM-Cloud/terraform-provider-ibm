@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmKvSecretMetadata() *schema.Resource {
@@ -21,7 +21,7 @@ func DataSourceIbmSmKvSecretMetadata() *schema.Resource {
 		ReadContext: dataSourceIbmSmKvSecretMetadataRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -117,11 +117,14 @@ func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretMetadataOptions := &secretsmanagerv2.GetSecretMetadataOptions{}
 
-	getSecretMetadataOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretMetadataOptions.SetID(secretId)
 
 	kVSecretMetadataIntf, response, err := secretsManagerClient.GetSecretMetadataWithContext(context, getSecretMetadataOptions)
 	if err != nil {
@@ -130,13 +133,17 @@ func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.Reso
 	}
 	kVSecretMetadata := kVSecretMetadataIntf.(*secretsmanagerv2.KVSecretMetadata)
 
-	d.SetId(*kVSecretMetadata.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if err = d.Set("created_by", kVSecretMetadata.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(kVSecretMetadata.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(kVSecretMetadata.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -190,7 +197,7 @@ func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(kVSecretMetadata.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(kVSecretMetadata.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

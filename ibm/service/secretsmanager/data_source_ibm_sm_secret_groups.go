@@ -14,7 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmSecretGroups() *schema.Resource {
@@ -71,7 +71,9 @@ func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	listSecretGroupsOptions := &secretsmanagerv2.ListSecretGroupsOptions{}
 
@@ -81,7 +83,7 @@ func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("ListSecretGroupsWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIbmSmSecretGroupsID(d))
+	d.SetId(fmt.Sprintf("%s/%s", region, instanceId))
 
 	secretGroups := []map[string]interface{}{}
 	if secretGroupCollection.SecretGroups != nil {
@@ -101,6 +103,9 @@ func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	return nil
 }
 

@@ -1,6 +1,6 @@
 # Example for SecretsManagerV2
 
-This example illustrates how to use the SecretsManagerV2 (Beta)
+This example illustrates how to use the SecretsManagerV2
 
 These types of resources are supported:
 * SecretGroup
@@ -17,7 +17,8 @@ These types of resources are supported:
 * PublicCertificateConfigurationCALetsEncrypt
 * PublicCertificateConfigurationDNSCloudInternetServices
 * PublicCertificateConfigurationDNSClassicInfrastructure
-* NotificationsRegistrationPrototype
+* NotificationsRegistration
+* IAMCredentialsConfiguration
 
 ## Usage
 
@@ -55,25 +56,30 @@ data "ibm_secrets_manager_secret" "secrets_manager_secret_instance" {
 }
 ```
 
-## SecretsManagerV2 resources (Beta)
+## SecretsManagerV2 resources
 
 sm_secret_group resource:
 
 ```hcl
 resource "sm_secret_group" "sm_secret_group_instance" {
-  description = var.sm_secret_group_description
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name          = var.sm_secret_group_name
+  description   = var.sm_secret_group_description
 }
 ```
 sm_imported_certificate resource:
 
 ```hcl
 resource "sm_imported_certificate" "sm_imported_certificate_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name 			= var.sm_imported_certificate_name
   custom_metadata = var.sm_imported_certificate_custom_metadata
   description = var.sm_imported_certificate_description
   expiration_date = var.sm_imported_certificate_expiration_date
   labels = var.sm_imported_certificate_labels
   secret_group_id = var.sm_imported_certificate_secret_group_id
-  secret_type = var.sm_imported_certificate_secret_type
   certificate = var.sm_imported_certificate_certificate
   intermediate = var.sm_imported_certificate_intermediate
   private_key = var.sm_imported_certificate_private_key
@@ -83,12 +89,14 @@ sm_public_certificate resource:
 
 ```hcl
 resource "sm_public_certificate" "sm_public_certificate_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name 			= var.sm_public_certificate_name
   custom_metadata = var.sm_public_certificate_custom_metadata
   description = var.sm_public_certificate_description
   expiration_date = var.sm_public_certificate_expiration_date
   labels = var.sm_public_certificate_labels
   secret_group_id = var.sm_public_certificate_secret_group_id
-  secret_type = var.sm_public_certificate_secret_type
   rotation = var.sm_public_certificate_rotation
 }
 ```
@@ -96,11 +104,13 @@ sm_kv_secret resource:
 
 ```hcl
 resource "sm_kv_secret" "sm_kv_secret_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name 			= var.sm_kv_secret_name
   custom_metadata = var.sm_kv_secret_custom_metadata
   description = var.sm_kv_secret_description
   labels = var.sm_kv_secret_labels
   secret_group_id = var.sm_kv_secret_secret_group_id
-  secret_type = var.sm_kv_secret_secret_type
   data = var.sm_kv_secret_data
 }
 ```
@@ -108,14 +118,15 @@ sm_iam_credentials_secret resource:
 
 ```hcl
 resource "sm_iam_credentials_secret" "sm_iam_credentials_secret_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name 			= var.sm_iam_credentials_secret_name
   custom_metadata = var.sm_iam_credentials_secret_custom_metadata
   description = var.sm_iam_credentials_secret_description
   labels = var.sm_iam_credentials_secret_labels
   secret_group_id = var.sm_iam_credentials_secret_secret_group_id
-  secret_type = var.sm_iam_credentials_secret_secret_type
   ttl = var.sm_iam_credentials_secret_ttl
   access_groups = var.sm_iam_credentials_secret_access_groups
-  service_id = var.sm_iam_credentials_secret_service_id
   reuse_api_key = var.sm_iam_credentials_secret_reuse_api_key
   rotation = var.sm_iam_credentials_secret_rotation
 }
@@ -124,12 +135,14 @@ sm_arbitrary_secret resource:
 
 ```hcl
 resource "sm_arbitrary_secret" "sm_arbitrary_secret_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name 			= var.sm_arbitrary_secret_name
   custom_metadata = var.sm_arbitrary_secret_custom_metadata
   description = var.sm_arbitrary_secret_description
   expiration_date = var.sm_arbitrary_secret_expiration_date
   labels = var.sm_arbitrary_secret_labels
   secret_group_id = var.sm_arbitrary_secret_secret_group_id
-  secret_type = var.sm_arbitrary_secret_secret_type
   payload = var.sm_arbitrary_secret_payload
 }
 ```
@@ -137,357 +150,357 @@ sm_username_password_secret resource:
 
 ```hcl
 resource "sm_username_password_secret" "sm_username_password_secret_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name 			= var.sm_username_password_secret_name
   custom_metadata = var.sm_username_password_secret_custom_metadata
   description = var.sm_username_password_secret_description
   expiration_date = var.sm_username_password_secret_expiration_date
   labels = var.sm_username_password_secret_labels
   secret_group_id = var.sm_username_password_secret_secret_group_id
-  secret_type = var.sm_username_password_secret_secret_type
   rotation = var.sm_username_password_secret_rotation
   username = var.sm_username_password_secret_username
   password = var.sm_username_password_secret_password
-}
-```
-sm_arbitrary_secret_version resource:
-
-```hcl
-resource "sm_arbitrary_secret_version" "sm_arbitrary_secret_version_instance" {
-  payload = var.sm_arbitrary_secret_version_payload
-  version_custom_metadata = var.sm_arbitrary_secret_version_version_custom_metadata
-  secret_id = var.sm_arbitrary_secret_version_secret_id
 }
 ```
 sm_private_certificate resource:
 
 ```hcl
 resource "sm_private_certificate" "sm_private_certificate_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name 			= var.sm_private_certificate_name
   custom_metadata = var.sm_private_certificate_custom_metadata
   description = var.sm_private_certificate_description
   expiration_date = var.sm_private_certificate_expiration_date
   labels = var.sm_private_certificate_labels
   secret_group_id = var.sm_private_certificate_secret_group_id
-  secret_type = var.sm_private_certificate_secret_type
   rotation = var.sm_private_certificate_rotation
   certificate_template = var.sm_private_certificate_certificate_template
 }
 ```
-sm_configuration_private_certificate_root_CA resource:
+sm_private_certificate_configuration_root_ca resource:
 
 ```hcl
-resource "sm_configuration_private_certificate_root_CA" "sm_configuration_private_certificate_root_CA_instance" {
-  config_type = var.sm_configuration_private_certificate_root_CA_config_type
-  crl_disable = var.sm_configuration_private_certificate_root_CA_crl_disable
-  crl_distribution_points_encoded = var.sm_configuration_private_certificate_root_CA_crl_distribution_points_encoded
-  issuing_certificates_urls_encoded = var.sm_configuration_private_certificate_root_CA_issuing_certificates_urls_encoded
-  ttl = var.sm_configuration_private_certificate_root_CA_ttl
+resource "sm_private_certificate_configuration_root_ca" "sm_private_certificate_configuration_root_ca_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name          = var.sm_private_certificate_configuration_root_ca_name
+  crl_disable = var.sm_private_certificate_configuration_root_ca_crl_disable
+  crl_distribution_points_encoded = var.sm_private_certificate_configuration_root_ca_crl_distribution_points_encoded
+  issuing_certificates_urls_encoded = var.sm_private_certificate_configuration_root_ca_issuing_certificates_urls_encoded
+  ttl = var.sm_private_certificate_configuration_root_ca_ttl
 }
 ```
-sm_configuration_private_certificate_intermediate_CA resource:
+sm_private_certificate_configuration_intermediate_ca resource:
 
 ```hcl
-resource "sm_configuration_private_certificate_intermediate_CA" "sm_configuration_private_certificate_intermediate_CA_instance" {
-  config_type = var.sm_configuration_private_certificate_intermediate_CA_config_type
-  crl_disable = var.sm_configuration_private_certificate_intermediate_CA_crl_disable
-  crl_distribution_points_encoded = var.sm_configuration_private_certificate_intermediate_CA_crl_distribution_points_encoded
-  issuing_certificates_urls_encoded = var.sm_configuration_private_certificate_intermediate_CA_issuing_certificates_urls_encoded
-  signing_method = var.sm_configuration_private_certificate_intermediate_CA_signing_method
+resource "sm_private_certificate_configuration_intermediate_ca" "sm_private_certificate_configuration_intermediate_ca_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name           = var.sm_private_certificate_configuration_intermediate_ca_name
+  crl_disable = var.sm_private_certificate_configuration_intermediate_ca_crl_disable
+  crl_distribution_points_encoded = var.sm_private_certificate_configuration_intermediate_ca_crl_distribution_points_encoded
+  issuing_certificates_urls_encoded = var.sm_private_certificate_configuration_intermediate_ca_issuing_certificates_urls_encoded
+  signing_method = var.sm_private_certificate_configuration_intermediate_ca_signing_method
 }
 ```
-sm_configuration_private_certificate_template resource:
+sm_private_certificate_configuration_template resource:
 
 ```hcl
-resource "sm_configuration_private_certificate_template" "sm_configuration_private_certificate_template_instance" {
-  config_type = var.sm_configuration_private_certificate_template_config_type
-  certificate_authority = var.sm_configuration_private_certificate_template_certificate_authority
-  allowed_secret_groups = var.sm_configuration_private_certificate_template_allowed_secret_groups
-  allow_localhost = var.sm_configuration_private_certificate_template_allow_localhost
-  allowed_domains = var.sm_configuration_private_certificate_template_allowed_domains
-  allowed_domains_template = var.sm_configuration_private_certificate_template_allowed_domains_template
-  allow_bare_domains = var.sm_configuration_private_certificate_template_allow_bare_domains
-  allow_subdomains = var.sm_configuration_private_certificate_template_allow_subdomains
-  allow_glob_domains = var.sm_configuration_private_certificate_template_allow_glob_domains
-  allow_any_name = var.sm_configuration_private_certificate_template_allow_any_name
-  enforce_hostnames = var.sm_configuration_private_certificate_template_enforce_hostnames
-  allow_ip_sans = var.sm_configuration_private_certificate_template_allow_ip_sans
-  allowed_uri_sans = var.sm_configuration_private_certificate_template_allowed_uri_sans
-  allowed_other_sans = var.sm_configuration_private_certificate_template_allowed_other_sans
-  server_flag = var.sm_configuration_private_certificate_template_server_flag
-  client_flag = var.sm_configuration_private_certificate_template_client_flag
-  code_signing_flag = var.sm_configuration_private_certificate_template_code_signing_flag
-  email_protection_flag = var.sm_configuration_private_certificate_template_email_protection_flag
-  key_usage = var.sm_configuration_private_certificate_template_key_usage
-  ext_key_usage = var.sm_configuration_private_certificate_template_ext_key_usage
-  ext_key_usage_oids = var.sm_configuration_private_certificate_template_ext_key_usage_oids
-  use_csr_common_name = var.sm_configuration_private_certificate_template_use_csr_common_name
-  use_csr_sans = var.sm_configuration_private_certificate_template_use_csr_sans
-  require_cn = var.sm_configuration_private_certificate_template_require_cn
-  policy_identifiers = var.sm_configuration_private_certificate_template_policy_identifiers
-  basic_constraints_valid_for_non_ca = var.sm_configuration_private_certificate_template_basic_constraints_valid_for_non_ca
+resource "sm_private_certificate_configuration_template" "sm_private_certificate_configuration_template_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name          = var.sm_private_certificate_configuration_template_name
+  certificate_authority = var.sm_private_certificate_configuration_template_certificate_authority
+  allowed_secret_groups = var.sm_private_certificate_configuration_template_allowed_secret_groups
+  allow_localhost = var.sm_private_certificate_configuration_template_allow_localhost
+  allowed_domains = var.sm_private_certificate_configuration_template_allowed_domains
+  allowed_domains_template = var.sm_private_certificate_configuration_template_allowed_domains_template
+  allow_bare_domains = var.sm_private_certificate_configuration_template_allow_bare_domains
+  allow_subdomains = var.sm_private_certificate_configuration_template_allow_subdomains
+  allow_glob_domains = var.sm_private_certificate_configuration_template_allow_glob_domains
+  allow_any_name = var.sm_private_certificate_configuration_template_allow_any_name
+  enforce_hostnames = var.sm_private_certificate_configuration_template_enforce_hostnames
+  allow_ip_sans = var.sm_private_certificate_configuration_template_allow_ip_sans
+  allowed_uri_sans = var.sm_private_certificate_configuration_template_allowed_uri_sans
+  allowed_other_sans = var.sm_private_certificate_configuration_template_allowed_other_sans
+  server_flag = var.sm_private_certificate_configuration_template_server_flag
+  client_flag = var.sm_private_certificate_configuration_template_client_flag
+  code_signing_flag = var.sm_private_certificate_configuration_template_code_signing_flag
+  email_protection_flag = var.sm_private_certificate_configuration_template_email_protection_flag
+  key_usage = var.sm_private_certificate_configuration_template_key_usage
+  ext_key_usage = var.sm_private_certificate_configuration_template_ext_key_usage
+  ext_key_usage_oids = var.sm_private_certificate_configuration_template_ext_key_usage_oids
+  use_csr_common_name = var.sm_private_certificate_configuration_template_use_csr_common_name
+  use_csr_sans = var.sm_private_certificate_configuration_template_use_csr_sans
+  require_cn = var.sm_private_certificate_configuration_template_require_cn
+  policy_identifiers = var.sm_private_certificate_configuration_template_policy_identifiers
+  basic_constraints_valid_for_non_ca = var.sm_private_certificate_configuration_template_basic_constraints_valid_for_non_ca
 }
 ```
-sm_configuration_public_certificate_CA_Lets_Encrypt resource:
+sm_public_certificate_configuration_ca_lets_encrypt resource:
 
 ```hcl
-resource "sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration_public_certificate_CA_Lets_Encrypt_instance" {
-  config_type = var.sm_configuration_public_certificate_CA_Lets_Encrypt_config_type
-  lets_encrypt_environment = var.sm_configuration_public_certificate_CA_Lets_Encrypt_lets_encrypt_environment
-  lets_encrypt_private_key = var.sm_configuration_public_certificate_CA_Lets_Encrypt_lets_encrypt_private_key
-  lets_encrypt_preferred_chain = var.sm_configuration_public_certificate_CA_Lets_Encrypt_lets_encrypt_preferred_chain
+resource "sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name          = var.sm_public_certificate_configuration_ca_lets_encrypt_name
+  lets_encrypt_environment = var.sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_environment
+  lets_encrypt_private_key = var.sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_private_key
+  lets_encrypt_preferred_chain = var.sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_preferred_chain
 }
 ```
-sm_configuration_public_certificate_dns_cis resource:
+sm_public_certificate_configuration_dns_cis resource:
 
 ```hcl
-resource "sm_configuration_public_certificate_dns_cis" "sm_configuration_public_certificate_dns_cis_instance" {
-  config_type = var.sm_configuration_public_certificate_dns_cis_config_type
-  cloud_internet_services_apikey = var.sm_configuration_public_certificate_dns_cis_cloud_internet_services_apikey
-  cloud_internet_services_crn = var.sm_configuration_public_certificate_dns_cis_cloud_internet_services_crn
+resource "sm_public_certificate_configuration_dns_cis" "sm_public_certificate_configuration_dns_cis_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name          = var.sm_public_certificate_configuration_dns_cis_name
+  cloud_internet_services_apikey = var.sm_public_certificate_configuration_dns_cis_cloud_internet_services_apikey
+  cloud_internet_services_crn = var.sm_public_certificate_configuration_dns_cis_cloud_internet_services_crn
 }
 ```
-sm_configuration_public_certificate_dns_classic_infrastructure resource:
+sm_public_certificate_configuration_dns_classic_infrastructure resource:
 
 ```hcl
-resource "sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure_instance" {
-  config_type = var.sm_configuration_public_certificate_dns_classic_infrastructure_config_type
-  classic_infrastructure_username = var.sm_configuration_public_certificate_dns_classic_infrastructure_classic_infrastructure_username
-  classic_infrastructure_password = var.sm_configuration_public_certificate_dns_classic_infrastructure_classic_infrastructure_password
+resource "sm_public_certificate_configuration_dns_classic_infrastructure" "sm_public_certificate_configuration_dns_classic_infrastructure_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name          = var.sm_public_certificate_configuration_dns_classic_infrastructure_name
+  classic_infrastructure_username = var.sm_public_certificate_configuration_dns_classic_infrastructure_classic_infrastructure_username
+  classic_infrastructure_password = var.sm_public_certificate_configuration_dns_classic_infrastructure_classic_infrastructure_password
 }
 ```
 sm_en_registration resource:
 
 ```hcl
 resource "sm_en_registration" "sm_en_registration_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
   event_notifications_instance_crn = var.sm_en_registration_event_notifications_instance_crn
   event_notifications_source_name = var.sm_en_registration_event_notifications_source_name
   event_notifications_source_description = var.sm_en_registration_event_notifications_source_description
 }
 ```
 
-## SecretsManagerV2 Data sources (Beta)
+## SecretsManagerV2 Data sources
 
 sm_secret_group data source:
 
 ```hcl
 data "sm_secret_group" "sm_secret_group_instance" {
-  id = ibm_sm_secret_group.sm_secret_group_instance.id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_group_id = ibm_sm_secret_group.sm_secret_group_instance.secret_group_id
 }
 ```
 sm_secret_groups data source:
 
 ```hcl
 data "sm_secret_groups" "sm_secret_groups_instance" {
-}
-```
-sm_secret_version_action data source:
-
-```hcl
-data "sm_secret_version_action" "sm_secret_version_action_instance" {
-  secret_id = var.sm_secret_version_action_secret_id
-  id = var.sm_secret_version_action_id
-  secret_version_action_prototype = var.sm_secret_version_action_secret_version_action_prototype
-}
-```
-sm_public_certificate_action_validate_manual_dns data source:
-
-```hcl
-data "sm_public_certificate_action_validate_manual_dns" "sm_public_certificate_action_validate_manual_dns_instance" {
-  id = var.sm_public_certificate_action_validate_manual_dns_id
-  secret_action_prototype = var.sm_public_certificate_action_validate_manual_dns_secret_action_prototype
-}
-```
-sm_private_certificate_action_revoke data source:
-
-```hcl
-data "sm_private_certificate_action_revoke" "sm_private_certificate_action_revoke_instance" {
-  id = var.sm_private_certificate_action_revoke_id
-  secret_action_prototype = var.sm_private_certificate_action_revoke_secret_action_prototype
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
 }
 ```
 sm_secrets data source:
 
 ```hcl
 data "sm_secrets" "sm_secrets_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
 }
 ```
-sm_secrets_locks data source:
 
-```hcl
-data "sm_secrets_locks" "sm_secrets_locks_instance" {
-}
-```
-sm_secret_versions data source:
-
-```hcl
-data "sm_secret_versions" "sm_secret_versions_instance" {
-  secret_id = var.sm_secret_versions_secret_id
-}
-```
-sm_secret_version_metadata data source:
-
-```hcl
-data "sm_secret_version_metadata" "sm_secret_version_metadata_instance" {
-  secret_id = var.sm_secret_version_metadata_secret_id
-  id = var.sm_secret_version_metadata_id
-}
-```
 sm_imported_certificate_metadata data source:
 
 ```hcl
 data "sm_imported_certificate_metadata" "sm_imported_certificate_metadata_instance" {
-  id = var.sm_imported_certificate_metadata_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_imported_certificate_metadata_id
 }
 ```
 sm_public_certificate_metadata data source:
 
 ```hcl
 data "sm_public_certificate_metadata" "sm_public_certificate_metadata_instance" {
-  id = var.sm_public_certificate_metadata_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_public_certificate_metadata_id
 }
 ```
 sm_kv_secret_metadata data source:
 
 ```hcl
 data "sm_kv_secret_metadata" "sm_kv_secret_metadata_instance" {
-  id = var.sm_kv_secret_metadata_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_kv_secret_metadata_id
 }
 ```
 sm_iam_credentials_secret_metadata data source:
 
 ```hcl
 data "sm_iam_credentials_secret_metadata" "sm_iam_credentials_secret_metadata_instance" {
-  id = var.sm_iam_credentials_secret_metadata_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_iam_credentials_secret_metadata_id
 }
 ```
 sm_arbitrary_secret_metadata data source:
 
 ```hcl
 data "sm_arbitrary_secret_metadata" "sm_arbitrary_secret_metadata_instance" {
-  id = var.sm_arbitrary_secret_metadata_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_arbitrary_secret_metadata_id
 }
 ```
 sm_username_password_secret_metadata data source:
 
 ```hcl
 data "sm_username_password_secret_metadata" "sm_username_password_secret_metadata_instance" {
-  id = var.sm_username_password_secret_metadata_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_username_password_secret_metadata_id
 }
 ```
 sm_imported_certificate data source:
 
 ```hcl
 data "sm_imported_certificate" "sm_imported_certificate_instance" {
-  id = var.sm_imported_certificate_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_imported_certificate_id
 }
 ```
 sm_public_certificate data source:
 
 ```hcl
 data "sm_public_certificate" "sm_public_certificate_instance" {
-  id = var.sm_public_certificate_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_public_certificate_id
 }
 ```
 sm_kv_secret data source:
 
 ```hcl
 data "sm_kv_secret" "sm_kv_secret_instance" {
-  id = var.sm_kv_secret_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_kv_secret_id
 }
 ```
 sm_iam_credentials_secret data source:
 
 ```hcl
 data "sm_iam_credentials_secret" "sm_iam_credentials_secret_instance" {
-  id = var.sm_iam_credentials_secret_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_iam_credentials_secret_id
 }
 ```
 sm_arbitrary_secret data source:
 
 ```hcl
 data "sm_arbitrary_secret" "sm_arbitrary_secret_instance" {
-  id = var.sm_arbitrary_secret_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_arbitrary_secret_id
 }
 ```
 sm_username_password_secret data source:
 
 ```hcl
 data "sm_username_password_secret" "sm_username_password_secret_instance" {
-  id = var.sm_username_password_secret_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_username_password_secret_id
 }
 ```
-arbitrary_sm_secret_version data source:
 
-```hcl
-data "arbitrary_sm_secret_version" "arbitrary_sm_secret_version_instance" {
-  secret_id = var.arbitrary_sm_secret_version_secret_id
-  id = var.arbitrary_sm_secret_version_id
-}
-```
 sm_private_certificate data source:
 
 ```hcl
 data "sm_private_certificate" "sm_private_certificate_instance" {
-  id = var.sm_private_certificate_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_private_certificate_id
 }
 ```
 sm_private_certificate_metadata data source:
 
 ```hcl
 data "sm_private_certificate_metadata" "sm_private_certificate_metadata_instance" {
-  id = var.sm_private_certificate_metadata_id
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  secret_id = var.sm_private_certificate_metadata_id
 }
 ```
-sm_configuration_private_certificate_root_CA data source:
+sm_private_certificate_configuration_root_ca data source:
 
 ```hcl
-data "sm_configuration_private_certificate_root_CA" "sm_configuration_private_certificate_root_CA_instance" {
-  name = var.sm_configuration_private_certificate_root_CA_name
+data "sm_private_certificate_configuration_root_ca" "sm_private_certificate_configuration_root_ca_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name = var.sm_private_certificate_configuration_root_ca_name
 }
 ```
-sm_configuration_private_certificate_intermediate_CA data source:
+sm_private_certificate_configuration_intermediate_ca data source:
 
 ```hcl
-data "sm_configuration_private_certificate_intermediate_CA" "sm_configuration_private_certificate_intermediate_CA_instance" {
-  name = var.sm_configuration_private_certificate_intermediate_CA_name
+data "sm_private_certificate_configuration_intermediate_ca" "sm_private_certificate_configuration_intermediate_ca_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name = var.sm_private_certificate_configuration_intermediate_ca_name
 }
 ```
-sm_configuration_private_certificate_template data source:
+sm_private_certificate_configuration_template data source:
 
 ```hcl
-data "sm_configuration_private_certificate_template" "sm_configuration_private_certificate_template_instance" {
-  name = var.sm_configuration_private_certificate_template_name
+data "sm_private_certificate_configuration_template" "sm_private_certificate_configuration_template_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name = var.sm_private_certificate_configuration_template_name
 }
 ```
-sm_configurations data source:
+
+sm_public_certificate_configuration_ca_lets_encrypt data source:
 
 ```hcl
-data "sm_configurations" "sm_configurations_instance" {
+data "sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name = var.sm_public_certificate_configuration_ca_lets_encrypt_name
 }
 ```
-sm_configuration_public_certificate_CA_Lets_Encrypt data source:
+sm_public_certificate_configuration_dns_cis data source:
 
 ```hcl
-data "sm_configuration_public_certificate_CA_Lets_Encrypt" "sm_configuration_public_certificate_CA_Lets_Encrypt_instance" {
-  name = var.sm_configuration_public_certificate_CA_Lets_Encrypt_name
+data "sm_public_certificate_configuration_dns_cis" "sm_public_certificate_configuration_dns_cis_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name = var.sm_public_certificate_configuration_dns_cis_name
 }
 ```
-sm_configuration_public_certificate_dns_cis data source:
+sm_public_certificate_configuration_dns_classic_infrastructure data source:
 
 ```hcl
-data "sm_configuration_public_certificate_dns_cis" "sm_configuration_public_certificate_dns_cis_instance" {
-  name = var.sm_configuration_public_certificate_dns_cis_name
-}
-```
-sm_configuration_public_certificate_dns_classic_infrastructure data source:
-
-```hcl
-data "sm_configuration_public_certificate_dns_classic_infrastructure" "sm_configuration_public_certificate_dns_classic_infrastructure_instance" {
-  name = var.sm_configuration_public_certificate_dns_classic_infrastructure_name
+data "sm_public_certificate_configuration_dns_classic_infrastructure" "sm_public_certificate_configuration_dns_classic_infrastructure_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
+  name = var.sm_public_certificate_configuration_dns_classic_infrastructure_name
 }
 ```
 sm_en_registration data source:
 
 ```hcl
 data "sm_en_registration" "sm_en_registration_instance" {
+  instance_id   = var.secrets_manager_instance_id
+  region        = var.region
 }
 ```
 ## Assumptions
@@ -496,7 +509,6 @@ data "sm_en_registration" "sm_en_registration_instance" {
 
 ## Notes
 
-1. Secrets Manager V2 resources and datasources are currently in beta state and are still subject to change.
 
 ## Requirements
 
@@ -578,14 +590,9 @@ data "sm_en_registration" "sm_en_registration_instance" {
 | event_notifications_instance_crn       | A CRN that uniquely identifies an IBM Cloud resource. | `string` | true |
 | event_notifications_source_name        | The name that is displayed as a source that is in your Event Notifications instance. | `string` | true |
 | event_notifications_source_description | An optional description for the source  that is in your Event Notifications instance. | `string` | false |
-| id                                     | The ID of the secret group. | `string` | true |
+| secret_group_id                                     | The ID of the secret group. | `string` | true |
 | secret_id                              | The ID of the secret. | `string` | true |
-| id                                     | The ID of the secret version. | `string` | true |
-| secret_version_action_prototype        | The request body to specify the properties of the action to create a secret version. | `` | true |
-| id                                     | The ID of the secret. | `string` | true |
-| secret_action_prototype                | Specify the properties for your secret action. | `` | true |
 | name                                   | The name of the configuration. | `string` | true |
-| config_action_prototype                | The request body to specify the properties of the action to create a configuration. | `` | true |
 
 ## Outputs
 
@@ -600,21 +607,15 @@ data "sm_en_registration" "sm_en_registration_instance" {
 | sm_iam_credentials_secret | sm_iam_credentials_secret object |
 | sm_arbitrary_secret | sm_arbitrary_secret object |
 | sm_username_password_secret | sm_username_password_secret object |
-| sm_arbitrary_secret_version | sm_arbitrary_secret_version object |
 | sm_private_certificate | sm_private_certificate object |
-| sm_configuration_private_certificate_root_CA | sm_configuration_private_certificate_root_CA object |
-| sm_configuration_private_certificate_intermediate_CA | sm_configuration_private_certificate_intermediate_CA object |
-| sm_configuration_private_certificate_template | sm_configuration_private_certificate_template object |
-| sm_configuration_public_certificate_CA_Lets_Encrypt | sm_configuration_public_certificate_CA_Lets_Encrypt object |
+| sm_private_certificate_configuration_root_ca | sm_private_certificate_configuration_root_ca object |
+| sm_private_certificate_configuration_intermediate_ca | sm_private_certificate_configuration_intermediate_ca object |
+| sm_private_certificate_configuration_template | sm_private_certificate_configuration_template object |
+| sm_public_certificate_configuration_ca_lets_encrypt | sm_public_certificate_configuration_ca_lets_encrypt object |
 | sm_en_registration | sm_en_registration object |
 | sm_secret_group | sm_secret_group object |
 | sm_secret_groups | sm_secret_groups object |
-| sm_secret_version_action | sm_secret_version_action object |
-| sm_public_certificate_action_validate_manual_dns | sm_public_certificate_action_validate_manual_dns object |
-| sm_private_certificate_action_revoke | sm_private_certificate_action_revoke object |
 | sm_secrets | sm_secrets object |
-| sm_secret_versions | sm_secret_versions object |
-| sm_secret_version_metadata | sm_secret_version_metadata object |
 | sm_imported_certificate_metadata | sm_imported_certificate_metadata object |
 | sm_public_certificate_metadata | sm_public_certificate_metadata object |
 | sm_kv_secret_metadata | sm_kv_secret_metadata object |

@@ -20,7 +20,7 @@ func TestAccIbmSmArbitrarySecretMetadataDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmArbitrarySecretMetadataDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret_metadata.sm_arbitrary_secret_metadata", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret_metadata.sm_arbitrary_secret_metadata", "secret_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret_metadata.sm_arbitrary_secret_metadata", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret_metadata.sm_arbitrary_secret_metadata", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret_metadata.sm_arbitrary_secret_metadata", "created_at"),
@@ -38,7 +38,7 @@ func TestAccIbmSmArbitrarySecretMetadataDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSmArbitrarySecretMetadataDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret_instance" {
-			name = "test_arbitrary_secret"
+			name = "test_arbitrary_secret_terraform"
 			instance_id   = "%s"
   			region        = "%s"
   			custom_metadata = {"key":"value"}
@@ -51,7 +51,7 @@ func testAccCheckIbmSmArbitrarySecretMetadataDataSourceConfigBasic() string {
 		data "ibm_sm_arbitrary_secret_metadata" "sm_arbitrary_secret_metadata" {
 			instance_id = "%s"
 			region = "%s"
-			id = ibm_sm_arbitrary_secret.sm_arbitrary_secret_instance.id
+			secret_id = ibm_sm_arbitrary_secret.sm_arbitrary_secret_instance.secret_id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

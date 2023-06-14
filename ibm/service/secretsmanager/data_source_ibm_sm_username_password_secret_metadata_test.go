@@ -20,8 +20,8 @@ func TestAccIbmSmUsernamePasswordSecretMetadataDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSmUsernamePasswordSecretMetadataDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "secret_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_username_password_secret_metadata.sm_username_password_secret_metadata", "crn"),
@@ -58,7 +58,7 @@ func testAccCheckIbmSmUsernamePasswordSecretMetadataDataSourceConfigBasic() stri
 		data "ibm_sm_username_password_secret_metadata" "sm_username_password_secret_metadata" {
 			instance_id   = "%s"
 			region        = "%s"
-			id = ibm_sm_username_password_secret.sm_username_password_secret_instance.id
+			secret_id = ibm_sm_username_password_secret.sm_username_password_secret_instance.secret_id
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

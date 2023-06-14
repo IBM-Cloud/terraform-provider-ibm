@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
@@ -21,7 +21,7 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 		ReadContext: dataSourceIbmSmIamCredentialsSecretRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -138,7 +138,7 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 			"reuse_api_key": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.",
+				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. The value is always `true` for IAM credentials secrets managed by Terraform.",
 			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
@@ -178,7 +178,7 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.",
+				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.",
 			},
 		},
 	}
@@ -190,11 +190,14 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretOptions.SetID(secretId)
 
 	iAMCredentialsSecretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -202,14 +205,17 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getSecretOptions.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 	iAMCredentialsSecret := iAMCredentialsSecretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
 
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", iAMCredentialsSecret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(iAMCredentialsSecret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(iAMCredentialsSecret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -263,7 +269,7 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(iAMCredentialsSecret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(iAMCredentialsSecret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -303,7 +309,7 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting rotation %s", err))
 	}
 
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(iAMCredentialsSecret.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(iAMCredentialsSecret.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 
@@ -317,8 +323,6 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 func dataSourceIbmSmIamCredentialsSecretRotationPolicyToMap(model secretsmanagerv2.RotationPolicyIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*secretsmanagerv2.CommonRotationPolicy); ok {
 		return dataSourceIbmSmIamCredentialsSecretCommonRotationPolicyToMap(model.(*secretsmanagerv2.CommonRotationPolicy))
-	} else if _, ok := model.(*secretsmanagerv2.PublicCertificateRotationPolicy); ok {
-		return dataSourceIbmSmIamCredentialsSecretPublicCertificateRotationPolicyToMap(model.(*secretsmanagerv2.PublicCertificateRotationPolicy))
 	} else if _, ok := model.(*secretsmanagerv2.RotationPolicy); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*secretsmanagerv2.RotationPolicy)
@@ -350,23 +354,6 @@ func dataSourceIbmSmIamCredentialsSecretCommonRotationPolicyToMap(model *secrets
 	}
 	if model.Unit != nil {
 		modelMap["unit"] = *model.Unit
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSmIamCredentialsSecretPublicCertificateRotationPolicyToMap(model *secretsmanagerv2.PublicCertificateRotationPolicy) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.AutoRotate != nil {
-		modelMap["auto_rotate"] = *model.AutoRotate
-	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
-	if model.RotateKeys != nil {
-		modelMap["rotate_keys"] = *model.RotateKeys
 	}
 	return modelMap, nil
 }

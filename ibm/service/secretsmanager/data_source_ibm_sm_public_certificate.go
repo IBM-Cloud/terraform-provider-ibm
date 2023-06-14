@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmPublicCertificate() *schema.Resource {
@@ -21,7 +21,7 @@ func DataSourceIbmSmPublicCertificate() *schema.Resource {
 		ReadContext: dataSourceIbmSmPublicCertificateSecretRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the secret.",
@@ -254,16 +254,6 @@ func DataSourceIbmSmPublicCertificate() *schema.Resource {
 							Computed:    true,
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
-						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
-						},
-						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
-						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -280,12 +270,12 @@ func DataSourceIbmSmPublicCertificate() *schema.Resource {
 			"ca": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name that is assigned to the certificate authority configuration.",
+				Description: "The name of the certificate authority configuration.",
 			},
 			"dns": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name that is assigned to the DNS provider configuration.",
+				Description: "The name of the DNS provider configuration.",
 			},
 			"certificate": &schema.Schema{
 				Type:        schema.TypeString,
@@ -315,11 +305,14 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Get("id").(string))
+	secretId := d.Get("secret_id").(string)
+	getSecretOptions.SetID(secretId)
 
 	publicCertificateIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -329,13 +322,17 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 
 	publicCertificate := publicCertificateIntf.(*secretsmanagerv2.PublicCertificate)
 
-	d.SetId(fmt.Sprintf("%s", *getSecretOptions.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
+
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if err = d.Set("created_by", publicCertificate.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(publicCertificate.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(publicCertificate.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -365,6 +362,11 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting downloaded: %s", err))
 	}
 
+	if publicCertificate.Labels != nil {
+		if err = d.Set("labels", publicCertificate.Labels); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
+		}
+	}
 	if err = d.Set("locks_total", flex.IntValue(publicCertificate.LocksTotal)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
 	}
@@ -389,7 +391,7 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(publicCertificate.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(publicCertificate.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -401,11 +403,17 @@ func dataSourceIbmSmPublicCertificateSecretRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 
+	if publicCertificate.AltNames != nil {
+		if err = d.Set("alt_names", publicCertificate.AltNames); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
+		}
+	}
+
 	if err = d.Set("common_name", publicCertificate.CommonName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(publicCertificate.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(publicCertificate.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 
@@ -563,12 +571,6 @@ func dataSourceIbmSmPublicCertificateSecretRotationPolicyToMap(model secretsmana
 		if model.AutoRotate != nil {
 			modelMap["auto_rotate"] = *model.AutoRotate
 		}
-		if model.Interval != nil {
-			modelMap["interval"] = *model.Interval
-		}
-		if model.Unit != nil {
-			modelMap["unit"] = *model.Unit
-		}
 		if model.RotateKeys != nil {
 			modelMap["rotate_keys"] = *model.RotateKeys
 		}
@@ -583,12 +585,6 @@ func dataSourceIbmSmPublicCertificateSecretCommonRotationPolicyToMap(model *secr
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
 	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
-	}
 	return modelMap, nil
 }
 
@@ -596,12 +592,6 @@ func dataSourceIbmSmPublicCertificateSecretPublicCertificateRotationPolicyToMap(
 	modelMap := make(map[string]interface{})
 	if model.AutoRotate != nil {
 		modelMap["auto_rotate"] = *model.AutoRotate
-	}
-	if model.Interval != nil {
-		modelMap["interval"] = *model.Interval
-	}
-	if model.Unit != nil {
-		modelMap["unit"] = *model.Unit
 	}
 	if model.RotateKeys != nil {
 		modelMap["rotate_keys"] = *model.RotateKeys

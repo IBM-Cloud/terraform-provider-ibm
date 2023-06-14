@@ -49,6 +49,11 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 					"ibm_database_connection",
 					"endpoint_type"),
 			},
+			"certificate_root": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Optional certificate root path to prepend certificate names. Certificates would be stored in this directory for use by other commands.",
+			},
 			"postgres": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -1645,6 +1650,10 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	getConnectionOptions.SetUserType(d.Get("user_type").(string))
 	getConnectionOptions.SetUserID(d.Get("user_id").(string))
 	getConnectionOptions.SetEndpointType(d.Get("endpoint_type").(string))
+
+	if _, ok := d.GetOk("certificate_root"); ok {
+		getConnectionOptions.SetCertificateRoot(d.Get("certificate_root").(string))
+	}
 
 	connection, response, err := cloudDatabasesClient.GetConnectionWithContext(context, getConnectionOptions)
 	if err != nil {

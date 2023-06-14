@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_sm_public_certificate_metadata (Beta)"
+page_title: "IBM : ibm_sm_public_certificate_metadata"
 description: |-
   Get information about PublicCertificateMetadata
 subcategory: "Secrets Manager"
@@ -8,15 +8,15 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_public_certificate_metadata
 
-Provides a read-only data source for PublicCertificateMetadata. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for the metadata of a public certificate. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_sm_public_certificate_metadata" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+data "ibm_sm_public_certificate_metadata" "public_certificate_metadata" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
-  id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+  secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 ```
 
@@ -24,20 +24,24 @@ data "ibm_sm_public_certificate_metadata" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, String) The ID of the secret.
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+	* Constraints: Allowable values are: `private`, `public`.
+* `secret_id` - (Required, String) The ID of the secret.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the PublicCertificateMetadata.
+* `id` - The unique identifier of the data source.
 * `alt_names` - (List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
   * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 
 * `bundle_certs` - (Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
 
-* `ca` - (String) The name that is assigned to the certificate authority configuration.
+* `ca` - (String) The name of the certificate authority configuration.
 
 * `common_name` - (String) The Common Name (AKA CN) represents the server name protected by the SSL certificate.
   * Constraints: The maximum length is `64` characters. The minimum length is `4` characters. The value must match regular expression `/^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])\\.?$/`.
@@ -55,7 +59,7 @@ In addition to all argument references listed, you can access the following attr
 * `description` - (String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 
-* `dns` - (String) The name that is assigned to the DNS provider configuration.
+* `dns` - (String) The name of the DNS provider configuration.
 
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 
@@ -94,7 +98,7 @@ Nested scheme for **issuance_info**:
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 
 * `name` - (String) The human-readable name of your secret.
-  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+  * Constraints: The maximum length is `256` characters. The minimum length is `2` characters.
 
 * `rotation` - (List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:

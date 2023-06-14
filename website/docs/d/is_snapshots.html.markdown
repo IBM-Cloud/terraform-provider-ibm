@@ -64,6 +64,7 @@ In addition to all argument reference list, you can access the following attribu
   - `clones` - (List) The list of zones where clones of this snapshot exist.
   - `crn` - (String) The CRN for this snapshot.
   - `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed** ]).
+  - `encryption_key` - (String) The CRN of the `Key Protect Root Key` or `Hyper Protect Crypto Services Root Key` for this resource. The root key used to wrap the data encryption key for the source volume. This property will be present for volumes with an encryption type of `user_managed`.
   - `href` - (String) The URL for this snapshot.
   - `lifecycle_state` - (String) The lifecycle state of this snapshot. Supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.
   - `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this will be set to the capacity of the source_volume.

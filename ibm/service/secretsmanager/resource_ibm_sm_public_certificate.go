@@ -6,7 +6,13 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
+	"reflect"
+	"sort"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,7 +20,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmPublicCertificate() *schema.Resource {
@@ -45,11 +51,13 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
+				Computed:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
 			},
 			"labels": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -60,11 +68,13 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Description: "The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.",
 			},
 			"alt_names": &schema.Schema{
-				Type:        schema.TypeList,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:             schema.TypeList,
+				ForceNew:         true,
+				Optional:         true,
+				Computed:         true,
+				Description:      "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: altNamesDiffSuppress,
 			},
 			"key_algorithm": &schema.Schema{
 				Type:        schema.TypeString,
@@ -77,13 +87,13 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "A human-readable unique name to assign to your configuration.To protect your privacy, do not use personal data, such as your name or location, as an name for your secret.",
+				Description: "The name of the certificate authority configuration.",
 			},
 			"dns": &schema.Schema{
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "A human-readable unique name to assign to your configuration.To protect your privacy, do not use personal data, such as your name or location, as an name for your secret.",
+				Description: "The name of the DNS provider configuration.",
 			},
 			"bundle_certs": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -106,18 +116,6 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 							Computed:    true,
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
-						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
-						},
-						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
-						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
@@ -130,6 +128,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 			"custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The secret metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -160,7 +159,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.",
 			},
-			"id": &schema.Schema{
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A v4 UUID identifier.",
@@ -296,12 +295,12 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"not_before": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 						"not_after": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 					},
@@ -326,6 +325,9 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Description: "(Optional) The PEM-encoded private key to associate with the certificate.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(35 * time.Minute),
+		},
 	}
 }
 
@@ -335,7 +337,9 @@ func resourceIbmSmPublicCertificateCreate(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	region := getRegion(secretsManagerClient, d)
+	instanceId := d.Get("instance_id").(string)
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -352,9 +356,54 @@ func resourceIbmSmPublicCertificateCreate(context context.Context, d *schema.Res
 	}
 
 	secret := secretIntf.(*secretsmanagerv2.PublicCertificate)
-	d.SetId(*secret.ID)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
+	d.Set("secret_id", *secret.ID)
+
+	if *secret.Dns == "manual" {
+		_, err = waitForIbmSmPublicCertificateCreate(secretsManagerClient, d, "", "pre_activation")
+	} else {
+		_, err = waitForIbmSmPublicCertificateCreate(secretsManagerClient, d, "pre_activation", "active")
+	}
+
+	if err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmPublicCertificate (%s) to be created: %s", d.Id(), err))
+	}
 
 	return resourceIbmSmPublicCertificateRead(context, d, meta)
+}
+
+func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData, pendingStatus string, targetStatus string) (interface{}, error) {
+	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
+
+	id := strings.Split(d.Id(), "/")
+	secretId := id[2]
+
+	getSecretOptions.SetID(secretId)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{pendingStatus},
+		Target:  []string{targetStatus},
+		Refresh: func() (interface{}, string, error) {
+			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
+			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
+				}
+				return nil, "", err
+			}
+			failStates := map[string]bool{"destroyed": true}
+			if failStates[*stateObj.StateDescription] {
+				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
+			}
+			return stateObj, *stateObj.StateDescription, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      0 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -363,11 +412,18 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
+	}
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
-	getSecretOptions.SetID(d.Id())
+	getSecretOptions.SetID(secretId)
 
 	secretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 	if err != nil {
@@ -381,10 +437,19 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 
 	secret := secretIntf.(*secretsmanagerv2.PublicCertificate)
 
+	if err = d.Set("secret_id", secretId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
+	}
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -411,7 +476,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -429,8 +494,18 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 			return diag.FromErr(fmt.Errorf("Error setting issuance_info: %s", err))
 		}
 	}
+
 	if err = d.Set("key_algorithm", secret.KeyAlgorithm); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting key_algorithm: %s", err))
+	}
+	if err = d.Set("ca", secret.Ca); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting ca: %s", err))
+	}
+	if err = d.Set("dns", secret.Dns); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
+	}
+	if err = d.Set("bundle_certs", secret.BundleCerts); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting bundle_certs: %s", err))
 	}
 	rotationMap, err := resourceIbmSmPublicCertificateRotationPolicyToMap(secret.Rotation)
 	if err != nil {
@@ -458,7 +533,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
 		}
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if err = d.Set("issuer", secret.Issuer); err != nil {
@@ -467,14 +542,12 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("serial_number", secret.SerialNumber); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting serial_number: %s", err))
 	}
-	if secret.Validity != nil {
-		validityMap, err := resourceIbmSmPublicCertificateCertificateValidityToMap(secret.Validity)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("validity", []map[string]interface{}{validityMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting validity: %s", err))
-		}
+	validityMap, err := resourceIbmSmPublicCertificateCertificateValidityToMap(secret.Validity)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("validity", []map[string]interface{}{validityMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting validity: %s", err))
 	}
 	if err = d.Set("certificate", secret.Certificate); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting certificate: %s", err))
@@ -494,11 +567,15 @@ func resourceIbmSmPublicCertificateUpdate(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
-	updateSecretMetadataOptions.SetID(d.Id())
+	updateSecretMetadataOptions.SetID(secretId)
 
 	hasChange := false
 
@@ -553,11 +630,15 @@ func resourceIbmSmPublicCertificateDelete(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, d)
+	id := strings.Split(d.Id(), "/")
+	region := id[0]
+	instanceId := id[1]
+	secretId := id[2]
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
-	deleteSecretOptions.SetID(d.Id())
+	deleteSecretOptions.SetID(secretId)
 
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {
@@ -615,7 +696,7 @@ func resourceIbmSmPublicCertificateMapToSecretPrototype(d *schema.ResourceData) 
 		model.BundleCerts = core.BoolPtr(d.Get("bundle_certs").(bool))
 	}
 	if _, ok := d.GetOk("rotation"); ok {
-		RotationModel, err := resourceIbmSmPublicCertificateMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
+		RotationModel, err := resourceIbmSmPublicCertificateMapToPublicCertificateRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -665,12 +746,6 @@ func resourceIbmSmPublicCertificateMapToPublicCertificateRotationPolicy(modelMap
 	model := &secretsmanagerv2.PublicCertificateRotationPolicy{}
 	if modelMap["auto_rotate"] != nil {
 		model.AutoRotate = core.BoolPtr(modelMap["auto_rotate"].(bool))
-	}
-	if modelMap["interval"] != nil {
-		model.Interval = core.Int64Ptr(int64(modelMap["interval"].(int)))
-	}
-	if modelMap["unit"] != nil && modelMap["unit"].(string) != "" {
-		model.Unit = core.StringPtr(modelMap["unit"].(string))
 	}
 	if modelMap["rotate_keys"] != nil {
 		model.RotateKeys = core.BoolPtr(modelMap["rotate_keys"].(bool))
@@ -756,7 +831,59 @@ func resourceIbmSmPublicCertificateChallengeResourceToMap(model *secretsmanagerv
 
 func resourceIbmSmPublicCertificateCertificateValidityToMap(model *secretsmanagerv2.CertificateValidity) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["not_before"] = model.NotBefore.String()
-	modelMap["not_after"] = model.NotAfter.String()
+	if model == nil {
+		modelMap["not_before"] = ""
+		modelMap["not_after"] = ""
+	} else {
+		modelMap["not_before"] = model.NotBefore.String()
+		modelMap["not_after"] = model.NotAfter.String()
+	}
 	return modelMap, nil
+}
+
+func altNamesDiffSuppress(key, oldValue, newValue string, d *schema.ResourceData) bool {
+	lastDotIndex := strings.LastIndex(key, ".")
+	if lastDotIndex != -1 {
+		key = key[:lastDotIndex]
+	}
+
+	oldData, newData := d.GetChange(key)
+	if oldData == nil || newData == nil {
+		return false
+	}
+
+	oldAltNames, _ := ConcreteListToStringSlice(oldData.([]any), d.Get("common_name").(string))
+	newAltNames, _ := ConcreteListToStringSlice(newData.([]any), d.Get("common_name").(string))
+
+	sort.Strings(oldAltNames)
+	sort.Strings(newAltNames)
+
+	return reflect.DeepEqual(oldAltNames, newAltNames)
+}
+
+func ConcreteListToStringSlice(elements []interface{}, commonName string) ([]string, error) {
+	// Create a new slice of strings with the same length as the input slice
+	output := make([]string, len(elements))
+	commonNameIndex := -1
+
+	// Iterate over the input slice and cast each element to a string
+	for i, elem := range elements {
+		// Make sure the element is castable to string
+		str, ok := elem.(string)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast element %d to type []string", i)
+		}
+		if str == commonName {
+			commonNameIndex = i
+		}
+		// Store the string in the output slice
+		output[i] = str
+	}
+
+	if commonNameIndex != -1 {
+		tempLst := append([]string{}, output[:commonNameIndex]...)
+		output = append(tempLst, output[commonNameIndex+1:]...)
+	}
+
+	return output, nil
 }

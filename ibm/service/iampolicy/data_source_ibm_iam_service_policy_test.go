@@ -64,6 +64,57 @@ func TestAccIBMIAMServicePolicyDataSourceServiceSpecificAttributesConfig(t *test
 	})
 }
 
+func TestAccIBMIAMServicePolicyDataSource_Time_Based_Conditions_Weekly(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyDataSourceTimeBasedWeekly(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_service_policy.testacc_ds_service_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMServicePolicyDataSource_Time_Based_Conditions_Custom(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyDataSourceTimeBasedCustom(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_service_policy.testacc_ds_service_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMServicePolicyDataSource_ServiceGroupID(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyDataSourceServiceGroupID(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_service_policy.testacc_ds_service_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 
@@ -169,4 +220,113 @@ data "ibm_iam_service_policy" "testacc_ds_service_policy" {
   iam_service_id = ibm_iam_service_policy.policy.iam_service_id
 }`, name)
 
+}
+
+func testAccCheckIBMIAMServicePolicyDataSourceTimeBasedWeekly(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_service_id" "serviceID" {
+		name        = "%s"
+		description = "Service ID for test"
+	}
+
+	resource "ibm_iam_service_policy" "policy" {
+		iam_service_id = ibm_iam_service_id.serviceID.id
+		roles  = ["Viewer"]
+		resources {
+			service = "kms"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00", "5+00:00"]
+		}
+		pattern = "time-based-conditions:weekly:all-day"
+		}
+
+	data "ibm_iam_service_policy" "testacc_ds_service_policy" {
+		iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+	}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyDataSourceTimeBasedCustom(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_service_id" "serviceID" {
+		name        = "%s"
+		description = "Service ID for test"
+	}
+
+	resource "ibm_iam_service_policy" "policy" {
+		iam_service_id = ibm_iam_service_id.serviceID.id
+		roles  = ["Viewer"]
+		resources {
+			service = "kms"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeGreaterThanOrEquals"
+			value = ["09:00:00+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeLessThanOrEquals"
+			value = ["17:00:00+00:00"]
+		}
+		rule_operator = "and"
+		pattern = "time-based-conditions:weekly:custom-hours"
+		}
+
+	data "ibm_iam_service_policy" "testacc_ds_service_policy" {
+		iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+	}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyDataSourceServiceGroupID(name string) string {
+	return fmt.Sprintf(`
+
+
+	resource "ibm_iam_service_id" "serviceID" {
+		name        = "%s"
+		description = "Service ID for test"
+	}
+
+	resource "ibm_iam_service_policy" "policy" {
+		iam_service_id = ibm_iam_service_id.serviceID.id
+		roles  = ["Viewer"]
+		resources {
+			service_group_id = "IAM"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeGreaterThanOrEquals"
+			value = ["09:00:00+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeLessThanOrEquals"
+			value = ["17:00:00+00:00"]
+		}
+		rule_operator = "and"
+		pattern = "time-based-conditions:weekly:custom-hours"
+		}
+
+	data "ibm_iam_service_policy" "testacc_ds_service_policy" {
+		iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+	}
+	`, name)
 }

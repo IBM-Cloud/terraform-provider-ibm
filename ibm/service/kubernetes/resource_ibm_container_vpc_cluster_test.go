@@ -410,6 +410,8 @@ func TestAccIBMContainerVpcClusterEnvvar(t *testing.T) {
 			"ibm_container_vpc_cluster.cluster", "name", name),
 		resource.TestCheckResourceAttr(
 			"ibm_container_vpc_cluster.cluster", "worker_count", "1"),
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_cluster.cluster", "taints.#", "1"),
 	}
 	if acc.WorkerPoolSecondaryStorage != "" {
 		testChecks = append(testChecks, resource.TestCheckResourceAttr(
@@ -495,6 +497,11 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 		crk = "%[6]s"
 		kms_account_id = "%[7]s"
 		secondary_storage = "%[8]s"
+		taints {
+			key    = "key1"
+			value  = "value1"
+			effect = "NoSchedule"
+		  }
 	}
 	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID, acc.WorkerPoolSecondaryStorage)
 	fmt.Println(config)

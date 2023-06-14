@@ -64,43 +64,57 @@ output "ibm_sm_private_certificate" {
   description = "sm_private_certificate resource instance"
   sensitive   = true
 }
-// This allows sm_configuration_private_certificate_root_CA data to be referenced by other resources and the terraform CLI
+// This allows sm_private_certificate_configuration_root_ca data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_private_certificate_root_CA" {
-  value       = ibm_sm_configuration_private_certificate_root_CA.sm_configuration_private_certificate_root_CA_instance
-  description = "sm_configuration_private_certificate_root_CA resource instance"
+output "ibm_sm_private_certificate_configuration_root_ca" {
+  value       = ibm_sm_private_certificate_configuration_root_ca.sm_private_certificate_configuration_root_ca_instance
+  description = "sm_private_certificate_configuration_root_ca resource instance"
   sensitive   = true
 }
-// This allows sm_configuration_private_certificate_intermediate_CA data to be referenced by other resources and the terraform CLI
+// This allows sm_private_certificate_configuration_intermediate_ca data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_private_certificate_intermediate_CA" {
-  value       = ibm_sm_configuration_private_certificate_intermediate_CA.sm_configuration_private_certificate_intermediate_CA_instance
-  description = "sm_configuration_private_certificate_intermediate_CA resource instance"
+output "ibm_sm_private_certificate_configuration_intermediate_ca" {
+  value       = ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_certificate_configuration_intermediate_ca_instance
+  description = "sm_private_certificate_configuration_intermediate_ca resource instance"
   sensitive   = true
 }
-// This allows sm_configuration_private_certificate_template data to be referenced by other resources and the terraform CLI
+// This allows sm_private_certificate_configuration_template data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_private_certificate_template" {
-  value       = ibm_sm_configuration_private_certificate_template.sm_configuration_private_certificate_template_instance
-  description = "sm_configuration_private_certificate_template resource instance"
+output "ibm_sm_private_certificate_configuration_template" {
+  value       = ibm_sm_private_certificate_configuration_template.sm_private_certificate_configuration_template_instance
+  description = "sm_private_certificate_configuration_template resource instance"
 }
-// This allows sm_configuration_public_certificate_CA_Lets_Encrypt data to be referenced by other resources and the terraform CLI
+// This allows sm_private_certificate_configuration_action_sign_csr data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_public_certificate_CA_Lets_Encrypt" {
-  value       = ibm_sm_configuration_public_certificate_CA_Lets_Encrypt.sm_configuration_public_certificate_CA_Lets_Encrypt_instance
-  description = "sm_configuration_public_certificate_CA_Lets_Encrypt resource instance"
+output "ibm_sm_private_certificate_configuration_action_sign_csr" {
+  value       = ibm_sm_private_certificate_configuration_action_sign_csr.sm_private_certificate_configuration_action_sign_csr_instance
+  description = "sm_private_certificate_configuration_action_sign_csr resource instance"
+  sensitive   = true
 }
-// This allows sm_configuration_public_certificate_dns_cis data to be referenced by other resources and the terraform CLI
+// This allows sm_private_certificate_configuration_action_set_signed data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_public_certificate_dns_cis" {
-  value       = ibm_sm_configuration_public_certificate_dns_cis.sm_configuration_public_certificate_dns_cis_instance
-  description = "sm_configuration_public_certificate_dns_cis resource instance"
+output "ibm_sm_private_certificate_configuration_action_set_signed" {
+  value       = ibm_sm_private_certificate_configuration_action_set_signed.sm_private_certificate_configuration_action_set_signed_instance
+  description = "sm_private_certificate_configuration_action_set_signed resource instance"
+  sensitive   = true
 }
-// This allows sm_configuration_public_certificate_dns_classic_infrastructure data to be referenced by other resources and the terraform CLI
+// This allows sm_public_certificate_configuration_ca_lets_encrypt data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
-output "ibm_sm_configuration_public_certificate_dns_classic_infrastructure" {
-  value       = ibm_sm_configuration_public_certificate_dns_classic_infrastructure.sm_configuration_public_certificate_dns_classic_infrastructure_instance
-  description = "sm_configuration_public_certificate_dns_classic_infrastructure resource instance"
+output "ibm_sm_public_certificate_configuration_ca_lets_encrypt" {
+  value       = ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt_instance
+  description = "sm_public_certificate_configuration_ca_lets_encrypt resource instance"
+}
+// This allows sm_public_certificate_configuration_dns_cis data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_public_certificate_configuration_dns_cis" {
+  value       = ibm_sm_public_certificate_configuration_dns_cis.sm_public_certificate_configuration_dns_cis_instance
+  description = "sm_public_certificate_configuration_dns_cis resource instance"
+}
+// This allows sm_public_certificate_configuration_dns_classic_infrastructure data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_public_certificate_configuration_dns_classic_infrastructure" {
+  value       = ibm_sm_public_certificate_configuration_dns_classic_infrastructure.sm_public_certificate_configuration_dns_classic_infrastructure_instance
+  description = "sm_public_certificate_configuration_dns_classic_infrastructure resource instance"
 }
 // This allows sm_en_registration data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed

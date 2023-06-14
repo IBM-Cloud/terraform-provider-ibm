@@ -25,14 +25,23 @@ resource "ibm_tg_connection_prefix_filter" "test_tg_prefix_filter" {
                 ge = "32"
 }
 /*
-# Create a transit gateway cross account connection
+# Create and approve a transit gateway cross account connection
+provider "ibm" {
+                alias = "account2"
+                ibmcloud_api_key = "<Insert cross account api key>"
+}
 resource "ibm_tg_connection" "test_tg_cross_connection"{
-                gateway = "${ibm_tg_gateway.new_tg_gw.id}"
+                gateway = ibm_tg_gateway.new_tg_gw.id
                 network_type = var.network_type
                 name= var.vc_name
                 # vpc crn from other account
                 network_id = var.network_id
-                network_account_id = var.network_account_id
+}
+resource "ibm_tg_connection_action" "test_tg_cross_connection_approval" {
+                provider = ibm.account2
+                gateway = ibm_tg_gateway.new_tg_gw.id
+                connection_id = ibm_tg_conneciton.test_tg_cross_connection
+                action = "approve"
 }
 
 # Create a transit gateway gre_tunnel connection

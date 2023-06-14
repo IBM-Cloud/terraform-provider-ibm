@@ -5,8 +5,10 @@ package catalogmanagement
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -51,45 +53,59 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Display Name in the requested language.",
 			},
 			"label_i18n": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "A map of translated strings, by language code.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The programmatic name of this offering.",
 			},
 			"offering_icon_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "URL for an icon associated with this offering.",
 			},
 			"offering_docs_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "URL for an additional docs with this offering.",
 			},
 			"offering_support_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
+				Deprecated:  "This argument is deprecated",
 				Description: "[deprecated] - Use offering.support instead.  URL to be displayed in the Consumption UI for getting support on this offering.",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of tags associated with this catalog.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"keywords": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of keywords associated with offering, typically used to search for it.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"deprecate": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Deprecate this offering.",
 			},
 			"rating": &schema.Schema{
 				Type:        schema.TypeList,
@@ -99,22 +115,22 @@ func ResourceIBMCmOffering() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"one_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "One start rating.",
 						},
 						"two_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Two start rating.",
 						},
 						"three_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Three start rating.",
 						},
 						"four_star_count": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Four start rating.",
 						},
 					},
@@ -133,50 +149,59 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"short_description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Short description in the requested language.",
 			},
 			"short_description_i18n": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "A map of translated strings, by language code.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"long_description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Long description in the requested language.",
 			},
 			"long_description_i18n": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "A map of translated strings, by language code.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"features": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "list of features associated with this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"title": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Heading.",
 						},
 						"title_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Feature description.",
 						},
 						"description_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
@@ -375,85 +400,101 @@ func ResourceIBMCmOffering() *schema.Resource {
 									"configuration": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
+										Computed:    true,
 										Description: "List of user solicited overrides.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"key": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Configuration key.",
 												},
 												"type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Value type (string, boolean, int).",
 												},
-												// "default_value": &schema.Schema{
-												// 	Type:        schema.TypeMap,
-												// 	Optional:    true,
-												// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-												// },
+												"default_value": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "The default value as a JSON encoded string.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+												},
 												"display_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Display name for configuration type.",
 												},
 												"value_constraint": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Constraint associated with value, e.g., for string type - regx:[a-z].",
 												},
 												"description": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Key description.",
 												},
 												"required": &schema.Schema{
 													Type:        schema.TypeBool,
 													Optional:    true,
+													Computed:    true,
 													Description: "Is key required to install.",
 												},
 												"options": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
+													Computed:    true,
 													Description: "List of options of type.",
 													Elem:        &schema.Schema{Type: schema.TypeMap},
 												},
 												"hidden": &schema.Schema{
 													Type:        schema.TypeBool,
 													Optional:    true,
+													Computed:    true,
 													Description: "Hide values.",
 												},
 												"custom_config": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Render type.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "ID of the widget type.",
 															},
 															"grouping": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Determines where this configuration type is rendered (3 sections today - Target, Resource, and Deployment).",
 															},
 															"original_grouping": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Original grouping type for this configuration (3 types - Target, Resource, and Deployment).",
 															},
 															"grouping_index": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Determines the order that this configuration item shows in that particular grouping.",
 															},
 															"config_constraints": &schema.Schema{
 																Type:        schema.TypeMap,
 																Optional:    true,
+																Computed:    true,
 																Description: "Map of constraint parameters that will be passed to the custom widget.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -461,23 +502,27 @@ func ResourceIBMCmOffering() *schema.Resource {
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "List of parameters that are associated with this configuration.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"parameters": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Parameters for this association.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"name": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Optional:    true,
+																						Computed:    true,
 																						Description: "Name of this parameter.",
 																					},
 																					"options_refresh": &schema.Schema{
 																						Type:        schema.TypeBool,
 																						Optional:    true,
+																						Computed:    true,
 																						Description: "Refresh options.",
 																					},
 																				},
@@ -492,6 +537,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 												"type_metadata": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "The original type, as found in the source being onboarded.",
 												},
 											},
@@ -596,7 +642,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 													Description: "The time validation ended.",
 												},
 												"est_deploy_time": &schema.Schema{
-													Type:        schema.TypeString,
+													Type:        schema.TypeFloat,
 													Computed:    true,
 													Description: "The estimated time validation takes.",
 												},
@@ -1193,24 +1239,24 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"deprecate_pending": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
+										Computed:    true,
 										Optional:    true,
-										Description: "Deprecation information for an Offering.",
+										Description: "Deprecation information for a Version.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"deprecate_date": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Date of deprecation.",
 												},
 												"deprecate_state": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Deprecation state.",
 												},
 												"description": &schema.Schema{
 													Type:     schema.TypeString,
-													Optional: true,
+													Computed: true,
 												},
 											},
 										},
@@ -1336,121 +1382,119 @@ func ResourceIBMCmOffering() *schema.Resource {
 												},
 												"cost_estimate": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
+													Computed:    true,
 													Description: "Cost estimate definition.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"version": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost estimate version.",
 															},
 															"currency": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost estimate currency.",
 															},
 															"projects": &schema.Schema{
 																Type:        schema.TypeList,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost estimate projects.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"name": &schema.Schema{
 																			Type:        schema.TypeString,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Project name.",
 																		},
 																		"metadata": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Project metadata.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"past_breakdown": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost breakdown definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
-																					"total_monthly_c_ost": &schema.Schema{
+																					"total_monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total monthly cost.",
 																					},
 																					"resources": &schema.Schema{
 																						Type:        schema.TypeList,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Resources.",
 																						Elem: &schema.Resource{
 																							Schema: map[string]*schema.Schema{
 																								"name": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource name.",
 																								},
 																								"metadata": &schema.Schema{
 																									Type:        schema.TypeMap,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource metadata.",
 																									Elem:        &schema.Schema{Type: schema.TypeString},
 																								},
 																								"hourly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Hourly cost.",
 																								},
 																								"monthly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Monthly cost.",
 																								},
 																								"cost_components": &schema.Schema{
 																									Type:        schema.TypeList,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Cost components.",
 																									Elem: &schema.Resource{
 																										Schema: map[string]*schema.Schema{
 																											"name": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component name.",
 																											},
 																											"unit": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component unit.",
 																											},
 																											"hourly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly quantity.",
 																											},
 																											"monthly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly quantity.",
 																											},
 																											"price": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component price.",
 																											},
 																											"hourly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly cost.",
 																											},
 																											"monthly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly cist.",
 																											},
 																										},
@@ -1464,87 +1508,86 @@ func ResourceIBMCmOffering() *schema.Resource {
 																		},
 																		"breakdown": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost breakdown definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
-																					"total_monthly_c_ost": &schema.Schema{
+																					"total_monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total monthly cost.",
 																					},
 																					"resources": &schema.Schema{
 																						Type:        schema.TypeList,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Resources.",
 																						Elem: &schema.Resource{
 																							Schema: map[string]*schema.Schema{
 																								"name": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource name.",
 																								},
 																								"metadata": &schema.Schema{
 																									Type:        schema.TypeMap,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource metadata.",
 																									Elem:        &schema.Schema{Type: schema.TypeString},
 																								},
 																								"hourly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Hourly cost.",
 																								},
 																								"monthly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Monthly cost.",
 																								},
 																								"cost_components": &schema.Schema{
 																									Type:        schema.TypeList,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Cost components.",
 																									Elem: &schema.Resource{
 																										Schema: map[string]*schema.Schema{
 																											"name": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component name.",
 																											},
 																											"unit": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component unit.",
 																											},
 																											"hourly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly quantity.",
 																											},
 																											"monthly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly quantity.",
 																											},
 																											"price": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component price.",
 																											},
 																											"hourly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly cost.",
 																											},
 																											"monthly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly cist.",
 																											},
 																										},
@@ -1558,87 +1601,86 @@ func ResourceIBMCmOffering() *schema.Resource {
 																		},
 																		"diff": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost breakdown definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_hourly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total hourly cost.",
 																					},
-																					"total_monthly_c_ost": &schema.Schema{
+																					"total_monthly_cost": &schema.Schema{
 																						Type:        schema.TypeString,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total monthly cost.",
 																					},
 																					"resources": &schema.Schema{
 																						Type:        schema.TypeList,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Resources.",
 																						Elem: &schema.Resource{
 																							Schema: map[string]*schema.Schema{
 																								"name": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource name.",
 																								},
 																								"metadata": &schema.Schema{
 																									Type:        schema.TypeMap,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Resource metadata.",
 																									Elem:        &schema.Schema{Type: schema.TypeString},
 																								},
 																								"hourly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Hourly cost.",
 																								},
 																								"monthly_cost": &schema.Schema{
 																									Type:        schema.TypeString,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Monthly cost.",
 																								},
 																								"cost_components": &schema.Schema{
 																									Type:        schema.TypeList,
-																									Optional:    true,
+																									Computed:    true,
 																									Description: "Cost components.",
 																									Elem: &schema.Resource{
 																										Schema: map[string]*schema.Schema{
 																											"name": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component name.",
 																											},
 																											"unit": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component unit.",
 																											},
 																											"hourly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly quantity.",
 																											},
 																											"monthly_quantity": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly quantity.",
 																											},
 																											"price": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component price.",
 																											},
 																											"hourly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component hourly cost.",
 																											},
 																											"monthly_cost": &schema.Schema{
 																												Type:        schema.TypeString,
-																												Optional:    true,
+																												Computed:    true,
 																												Description: "Cost component monthly cist.",
 																											},
 																										},
@@ -1652,45 +1694,44 @@ func ResourceIBMCmOffering() *schema.Resource {
 																		},
 																		"summary": &schema.Schema{
 																			Type:        schema.TypeList,
-																			MaxItems:    1,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Cost summary definition.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"total_detected_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total detected resources.",
 																					},
 																					"total_supported_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total supported resources.",
 																					},
 																					"total_unsupported_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total unsupported resources.",
 																					},
 																					"total_usage_based_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total usage based resources.",
 																					},
 																					"total_no_price_resources": &schema.Schema{
 																						Type:        schema.TypeInt,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Total no price resources.",
 																					},
 																					"unsupported_resource_counts": &schema.Schema{
 																						Type:        schema.TypeMap,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "Unsupported resource counts.",
 																						Elem:        &schema.Schema{Type: schema.TypeString},
 																					},
 																					"no_price_resource_counts": &schema.Schema{
 																						Type:        schema.TypeMap,
-																						Optional:    true,
+																						Computed:    true,
 																						Description: "No price resource counts.",
 																						Elem:        &schema.Schema{Type: schema.TypeString},
 																					},
@@ -1702,45 +1743,44 @@ func ResourceIBMCmOffering() *schema.Resource {
 															},
 															"summary": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
-																Optional:    true,
+																Computed:    true,
 																Description: "Cost summary definition.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"total_detected_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total detected resources.",
 																		},
 																		"total_supported_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total supported resources.",
 																		},
 																		"total_unsupported_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total unsupported resources.",
 																		},
 																		"total_usage_based_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total usage based resources.",
 																		},
 																		"total_no_price_resources": &schema.Schema{
 																			Type:        schema.TypeInt,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Total no price resources.",
 																		},
 																		"unsupported_resource_counts": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "Unsupported resource counts.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
 																		"no_price_resource_counts": &schema.Schema{
 																			Type:        schema.TypeMap,
-																			Optional:    true,
+																			Computed:    true,
 																			Description: "No price resource counts.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
@@ -1749,37 +1789,37 @@ func ResourceIBMCmOffering() *schema.Resource {
 															},
 															"total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total hourly cost.",
 															},
 															"total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Total monthly cost.",
 															},
 															"past_total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Past total hourly cost.",
 															},
 															"past_total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Past total monthly cost.",
 															},
 															"diff_total_hourly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Difference in total hourly cost.",
 															},
 															"diff_total_monthly_cost": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "Difference in total monthly cost.",
 															},
 															"time_generated": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "When this estimate was generated.",
 															},
 														},
@@ -1825,7 +1865,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"is_consumable": &schema.Schema{
 										Type:        schema.TypeBool,
-										Optional:    true,
+										Computed:    true,
 										Description: "Is the version able to be shared.",
 									},
 								},
@@ -1979,81 +2019,81 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"pc_managed": &schema.Schema{
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 				Description: "Offering is managed by Partner Center.",
 			},
 			"publish_approved": &schema.Schema{
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 				Description: "Offering has been approved to publish to permitted to IBM or Public Catalog.",
 			},
 			"share_with_all": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Denotes public availability of an Offering - if share_enabled is true.",
 			},
 			"share_with_ibm": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Denotes IBM employee availability of an Offering - if share_enabled is true.",
 			},
 			"share_enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Denotes sharing including access list availability of an Offering is enabled.",
 			},
-			"publish_to_access_list": &schema.Schema{
+			"share_with_access_list": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "A list of account IDs to add to this offering's access list.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"publish_to_ibm": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether you would like to publish this offering to IBM or not.",
-			},
-			"publish_to_public": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether you would like to publish this offering to the public catalog or not.",
-			},
 			"permit_request_ibm_public_publish": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This argument is deprecated",
 				Description: "Is it permitted to request publishing to IBM or Public.",
 			},
 			"ibm_publish_approved": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This argument is deprecated",
 				Description: "Indicates if this offering has been approved for use by all IBMers.",
 			},
 			"public_publish_approved": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This argument is deprecated",
 				Description: "Indicates if this offering has been approved for use by all IBM Cloud users.",
 			},
 			"public_original_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The original offering CRN that this publish entry came from.",
 			},
 			"publish_public_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The crn of the public catalog entry of this offering.",
 			},
 			"portal_approval_record": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The portal's approval record ID.",
 			},
 			"portal_ui_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The portal UI URL.",
 			},
 			"catalog_name": &schema.Schema{
@@ -2064,17 +2104,20 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "Map of metadata values for this offering.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"disclaimer": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "A disclaimer for this offering.",
 			},
 			"hidden": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Determine if this offering should be displayed in the Consumption UI.",
 			},
 			// "provider": &schema.Schema{
@@ -2087,17 +2130,20 @@ func ResourceIBMCmOffering() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "Information on the provider for this offering, or omitted if no provider information is given.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The id of this provider.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The name of this provider.",
 						},
 					},
@@ -2125,22 +2171,26 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"image_pull_keys": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Image pull keys for this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Key name.",
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Key value.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Key description.",
 						},
 					},
@@ -2154,57 +2204,56 @@ func ResourceIBMCmOffering() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "URL to be displayed in the Consumption UI for getting support on this offering.",
 						},
 						"process": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Support process as provided by an ISV.",
 						},
 						"process_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
-							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"locations": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "A list of country codes indicating where support is provided.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"support_details": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "A list of support options (e.g. email, phone, slack, other).",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Type of the current support detail.",
 									},
 									"contact": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Contact for the current support detail.",
 									},
 									"response_wait_time": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Time descriptor.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"value": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Amount of time to wait in unit 'type'.",
 												},
 												"type": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Valid values are hour or day.",
 												},
 											},
@@ -2212,30 +2261,29 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"availability": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Times when support is available.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"times": &schema.Schema{
 													Type:        schema.TypeList,
-													Optional:    true,
+													Computed:    true,
 													Description: "A list of support times.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"day": &schema.Schema{
 																Type:        schema.TypeInt,
-																Optional:    true,
+																Computed:    true,
 																Description: "The day of the week, represented as an integer.",
 															},
 															"start_time": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "HOURS:MINUTES:SECONDS using 24 hour time (e.g. 8:15:00).",
 															},
 															"end_time": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
+																Computed:    true,
 																Description: "HOURS:MINUTES:SECONDS using 24 hour time (e.g. 8:15:00).",
 															},
 														},
@@ -2243,12 +2291,12 @@ func ResourceIBMCmOffering() *schema.Resource {
 												},
 												"timezone": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Timezone (e.g. America/New_York).",
 												},
 												"always_available": &schema.Schema{
 													Type:        schema.TypeBool,
-													Optional:    true,
+													Computed:    true,
 													Description: "Is this support always available.",
 												},
 											},
@@ -2259,26 +2307,24 @@ func ResourceIBMCmOffering() *schema.Resource {
 						},
 						"support_escalation": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "Support escalation policy.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"escalation_wait_time": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Time descriptor.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"value": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Amount of time to wait in unit 'type'.",
 												},
 												"type": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Valid values are hour or day.",
 												},
 											},
@@ -2286,19 +2332,18 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"response_wait_time": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Time descriptor.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"value": &schema.Schema{
 													Type:        schema.TypeInt,
-													Optional:    true,
+													Computed:    true,
 													Description: "Amount of time to wait in unit 'type'.",
 												},
 												"type": &schema.Schema{
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Valid values are hour or day.",
 												},
 											},
@@ -2306,7 +2351,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 									},
 									"contact": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Escalation contact.",
 									},
 								},
@@ -2314,7 +2359,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 						},
 						"support_type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Support type for this product.",
 						},
 					},
@@ -2323,34 +2368,40 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"media": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "A list of media items related to this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "URL of the specified media item.",
 						},
 						"api_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "CM API specific URL of the specified media item.",
 						},
 						"url_proxy": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
+							Computed:    true,
 							Description: "Offering URL proxy information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"url": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "URL of the specified media item being proxied.",
 									},
 									"sha": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "SHA256 fingerprint of image.",
 									},
 								},
@@ -2359,22 +2410,26 @@ func ResourceIBMCmOffering() *schema.Resource {
 						"caption": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Caption for this media item.",
 						},
 						"caption_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Type of this media item.",
 						},
 						"thumbnail_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Thumbnail URL for this media item.",
 						},
 					},
@@ -2382,24 +2437,23 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"deprecate_pending": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Deprecation information for an Offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"deprecate_date": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Date of deprecation.",
 						},
 						"deprecate_state": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Deprecation state.",
 						},
 						"description": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -2407,71 +2461,71 @@ func ResourceIBMCmOffering() *schema.Resource {
 			"product_kind": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The product kind.  Valid values are module, solution, or empty string.",
 			},
 			"badges": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "A list of badges for this offering.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "ID of the current badge.",
 						},
 						"label": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Display name for the current badge.",
 						},
 						"label_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
-							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Description of the current badge.",
 						},
 						"description_i18n": &schema.Schema{
 							Type:        schema.TypeMap,
-							Optional:    true,
+							Computed:    true,
 							Description: "A map of translated strings, by language code.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"icon": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Icon for the current badge.",
 						},
 						"authority": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Authority for the current badge.",
 						},
 						"tag": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Tag for the current badge.",
 						},
 						"learn_more_links": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
+							Computed:    true,
 							Description: "Learn more links for a badge.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"first_party": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "First party link.",
 									},
 									"third_party": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Third party link.",
 									},
 								},
@@ -2479,18 +2533,18 @@ func ResourceIBMCmOffering() *schema.Resource {
 						},
 						"constraints": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "An optional set of constraints indicating which versions in an Offering have this particular badge.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Type of the current constraint.",
 									},
 									"rule": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Rule for the current constraint.",
 									},
 								},
@@ -2535,6 +2589,12 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 		}
 
 		d.SetId(*offering.ID)
+
+		err = handleShareOfferingAfterCreate(catalogManagementClient, *offering, d, context)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		return resourceIBMCmOfferingRead(context, d, meta)
 	}
 
@@ -2712,13 +2772,6 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 		}
 		createOfferingOptions.SetMedia(media)
 	}
-	if _, ok := d.GetOk("deprecate_pending"); ok {
-		deprecatePendingModel, err := resourceIBMCmOfferingMapToDeprecatePending(d.Get("deprecate_pending.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createOfferingOptions.SetDeprecatePending(deprecatePendingModel)
-	}
 	if _, ok := d.GetOk("product_kind"); ok {
 		createOfferingOptions.SetProductKind(d.Get("product_kind").(string))
 	}
@@ -2743,40 +2796,9 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 
 	d.SetId(*offering.ID)
 
-	shareOffering := false
-	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
-	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
-	shareOfferingOptions.SetOfferingID(*offering.ID)
-	shareOfferingOptions.SetEnabled(true)
-
-	if _, ok := d.GetOk("publish_to_access_list"); ok {
-		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
-		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
-		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
-		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("publish_to_access_list").([]interface{})))
-		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
-		if err != nil {
-			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
-		}
-	}
-
-	if _, ok := d.GetOk("publish_to_ibm"); ok {
-		shareOffering = true
-		shareOfferingOptions.SetIBM(d.Get("publish_to_ibm").(bool))
-	}
-
-	if _, ok := d.GetOk("publish_to_public"); ok {
-		shareOffering = true
-		shareOfferingOptions.SetPublic(d.Get("publish_to_public").(bool))
-	}
-
-	if shareOffering {
-		_, response, err = catalogManagementClient.ShareOfferingWithContext(context, &shareOfferingOptions)
-		if err != nil {
-			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response))
-		}
+	err = handleShareOfferingAfterCreate(catalogManagementClient, *offering, d, context)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceIBMCmOfferingRead(context, d, meta)
@@ -2815,6 +2837,9 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("label", offering.Label); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
 	}
+	if err = d.Set("label_i18n", offering.LabelI18n); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting label_i18n: %s", err))
+	}
 	if err = d.Set("name", offering.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -2827,10 +2852,30 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("offering_support_url", offering.OfferingSupportURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting offering_support_url: %s", err))
 	}
-	if offering.Keywords != nil {
-		if err = d.Set("keywords", offering.Keywords); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting keywords: %s", err))
+	tags := []string{}
+	if offering.Tags != nil {
+		specifiedTags := SIToSS(d.Get("tags").([]interface{}))
+		for _, specifiedTag := range specifiedTags {
+			for _, offeringTag := range offering.Tags {
+				if offeringTag == specifiedTag {
+					tags = append(tags, specifiedTag)
+					break
+				}
+			}
 		}
+	}
+	if err = d.Set("tags", tags); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+	}
+	keywords := []string{}
+	if offering.Keywords != nil {
+		keywords = offering.Keywords
+	}
+	if err = d.Set("keywords", keywords); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting keywords: %s", err))
+	}
+	if err = d.Set("metadata", offering.Metadata); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting offering metadata: %s", err))
 	}
 	if offering.Rating != nil {
 		ratingMap, err := resourceIBMCmOfferingRatingToMap(offering.Rating)
@@ -2850,8 +2895,14 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("short_description", offering.ShortDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting short_description: %s", err))
 	}
+	if err = d.Set("short_description_i18n", offering.ShortDescriptionI18n); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting short_description_i18n: %s", err))
+	}
 	if err = d.Set("long_description", offering.LongDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting long_description: %s", err))
+	}
+	if err = d.Set("long_description_i18n", offering.LongDescriptionI18n); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting long_description_i18n: %s", err))
 	}
 	features := []map[string]interface{}{}
 	if offering.Features != nil {
@@ -2980,14 +3031,15 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("media", media); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting media: %s", err))
 	}
+	deprecatePendingMap := make(map[string]interface{})
 	if offering.DeprecatePending != nil {
-		deprecatePendingMap, err := resourceIBMCmOfferingDeprecatePendingToMap(offering.DeprecatePending)
+		deprecatePendingMap, err = resourceIBMCmOfferingDeprecatePendingToMap(offering.DeprecatePending)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
-		}
+	}
+	if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
 	}
 	if err = d.Set("product_kind", offering.ProductKind); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting product_kind: %s", err))
@@ -3268,54 +3320,6 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
 	}
-	if d.HasChange("share_with_all") {
-		var method string
-		if offering.ShareWithAll == nil {
-			method = "add"
-		} else {
-			method = "replace"
-		}
-		path := "/share_with_all"
-		update := catalogmanagementv1.JSONPatchOperation{
-			Op:    &method,
-			Path:  &path,
-			Value: d.Get("share_with_all"),
-		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
-		hasChange = true
-	}
-	if d.HasChange("share_with_ibm") {
-		var method string
-		if offering.ShareWithIBM == nil {
-			method = "add"
-		} else {
-			method = "replace"
-		}
-		path := "/share_with_ibm"
-		update := catalogmanagementv1.JSONPatchOperation{
-			Op:    &method,
-			Path:  &path,
-			Value: d.Get("share_with_ibm"),
-		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
-		hasChange = true
-	}
-	if d.HasChange("share_enabled") {
-		var method string
-		if offering.ShareEnabled == nil {
-			method = "add"
-		} else {
-			method = "replace"
-		}
-		path := "/share_enabled"
-		update := catalogmanagementv1.JSONPatchOperation{
-			Op:    &method,
-			Path:  &path,
-			Value: d.Get("share_enabled"),
-		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
-		hasChange = true
-	}
 	if d.HasChange("public_original_crn") {
 		var method string
 		if offering.PublicOriginalCRN == nil {
@@ -3529,33 +3533,68 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		hasChange = true
 	}
 
+	if d.HasChange("share_with_access_list") {
+		// Find removed accounts, ones that are present in old list but not in new list
+		oldAccountList, newAccountList := d.GetChange("share_with_access_list")
+		accountsToRemove := make([]string, 0)
+		for _, oldAccount := range oldAccountList.([]interface{}) {
+			presentInNewList := false
+			for _, newAccount := range newAccountList.([]interface{}) {
+				if newAccount.(string) == oldAccount.(string) {
+					// found id in both lists, do not remove it
+					presentInNewList = true
+					break
+				}
+			}
+			if !presentInNewList {
+				accountsToRemove = append(accountsToRemove, oldAccount.(string))
+			}
+		}
+		// Delete accounts from access list that are no longer specified, if there are any to delete
+		if len(accountsToRemove) > 0 {
+			deleteOfferingAccessListOptions := catalogmanagementv1.DeleteOfferingAccessListOptions{}
+			deleteOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+			deleteOfferingAccessListOptions.SetOfferingID(*offering.ID)
+			deleteOfferingAccessListOptions.SetAccesses(accountsToRemove)
+			_, response, err = catalogManagementClient.DeleteOfferingAccessListWithContext(context, &deleteOfferingAccessListOptions)
+			if err != nil {
+				log.Printf("[DEBUG] DeleteOfferingAccessListWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("DeleteOfferingAccessListWithContext failed %s\n%s", err, response))
+			}
+		}
+
+		// Share with accounts if there are any
+		if len(newAccountList.([]interface{})) > 0 {
+			addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
+			addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+			addOfferingAccessListOptions.SetOfferingID(*offering.ID)
+			addOfferingAccessListOptions.SetAccesses(SIToSS(newAccountList.([]interface{})))
+			_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
+			if err != nil {
+				log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
+			}
+		}
+	}
+
 	publishStatusChanged := false
 	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
 	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
 	shareOfferingOptions.SetOfferingID(*offering.ID)
-	shareOfferingOptions.SetEnabled(true)
+	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
 
-	if d.HasChange("publish_to_access_list") {
+	if d.HasChange("share_enabled") {
 		publishStatusChanged = true
-		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
-		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
-		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
-		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("publish_to_access_list").([]interface{})))
-		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
-		if err != nil {
-			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
-		}
 	}
 
-	if d.HasChange("publish_to_ibm") {
+	if d.HasChange("share_with_ibm") {
 		publishStatusChanged = true
-		shareOfferingOptions.SetIBM(d.Get("publish_to_ibm").(bool))
+		shareOfferingOptions.SetIBM(d.Get("share_with_ibm").(bool))
 	}
 
-	if d.HasChange("publish_to_public") {
+	if d.HasChange("share_with_all") {
 		publishStatusChanged = true
-		shareOfferingOptions.SetPublic(d.Get("publish_to_public").(bool))
+		shareOfferingOptions.SetPublic(d.Get("share_with_all").(bool))
 	}
 
 	if publishStatusChanged {
@@ -3563,6 +3602,19 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		if err != nil {
 			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	if d.HasChange("deprecate") && d.Get("deprecate") != nil {
+		deprecateOfferingOptions := &catalogmanagementv1.DeprecateOfferingOptions{}
+		deprecateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+		deprecateOfferingOptions.SetOfferingID(*offering.ID)
+		deprecateOfferingOptions.SetSetting(strconv.FormatBool(d.Get("deprecate").(bool)))
+
+		response, err := catalogManagementClient.DeprecateOfferingWithContext(context, deprecateOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed trying to deprecate offering - %s\n%s", err, response))
 		}
 	}
 
@@ -3963,6 +4015,9 @@ func resourceIBMCmOfferingMapToRenderType(modelMap map[string]interface{}) (*cat
 	if modelMap["grouping_index"] != nil {
 		model.GroupingIndex = core.Int64Ptr(int64(modelMap["grouping_index"].(int)))
 	}
+	if modelMap["config_constraints"] != nil {
+		model.ConfigConstraints = modelMap["config_constraints"].(map[string]interface{})
+	}
 	if modelMap["associations"] != nil && len(modelMap["associations"].([]interface{})) > 0 {
 		AssociationsModel, err := resourceIBMCmOfferingMapToRenderTypeAssociations(modelMap["associations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -4216,7 +4271,7 @@ func resourceIBMCmOfferingMapToSolutionInfo(modelMap map[string]interface{}) (*c
 		model.CostEstimate = CostEstimateModel
 	}
 	if modelMap["dependencies"] != nil {
-		dependencies := []catalogmanagementv1.Dependency{}
+		dependencies := []catalogmanagementv1.OfferingReference{}
 		for _, dependenciesItem := range modelMap["dependencies"].([]interface{}) {
 			dependenciesItemModel, err := resourceIBMCmOfferingMapToDependency(dependenciesItem.(map[string]interface{}))
 			if err != nil {
@@ -4373,8 +4428,8 @@ func resourceIBMCmOfferingMapToCostBreakdown(modelMap map[string]interface{}) (*
 	if modelMap["total_hourly_cost"] != nil && modelMap["total_hourly_cost"].(string) != "" {
 		model.TotalHourlyCost = core.StringPtr(modelMap["total_hourly_cost"].(string))
 	}
-	if modelMap["total_monthly_c_ost"] != nil && modelMap["total_monthly_c_ost"].(string) != "" {
-		model.TotalMonthlyCOst = core.StringPtr(modelMap["total_monthly_c_ost"].(string))
+	if modelMap["total_monthly_cost"] != nil && modelMap["total_monthly_cost"].(string) != "" {
+		model.TotalMonthlyCost = core.StringPtr(modelMap["total_monthly_cost"].(string))
 	}
 	if modelMap["resources"] != nil {
 		resources := []catalogmanagementv1.CostResource{}
@@ -4461,8 +4516,8 @@ func resourceIBMCmOfferingMapToCostSummary(modelMap map[string]interface{}) (*ca
 	return model, nil
 }
 
-func resourceIBMCmOfferingMapToDependency(modelMap map[string]interface{}) (*catalogmanagementv1.Dependency, error) {
-	model := &catalogmanagementv1.Dependency{}
+func resourceIBMCmOfferingMapToDependency(modelMap map[string]interface{}) (*catalogmanagementv1.OfferingReference, error) {
+	model := &catalogmanagementv1.OfferingReference{}
 	if modelMap["catalog_id"] != nil && modelMap["catalog_id"].(string) != "" {
 		model.CatalogID = core.StringPtr(modelMap["catalog_id"].(string))
 	}
@@ -5125,9 +5180,13 @@ func resourceIBMCmOfferingConfigurationToMap(model *catalogmanagementv1.Configur
 	if model.Type != nil {
 		modelMap["type"] = model.Type
 	}
-	// if model.DefaultValue != nil {
-	// 	modelMap["default_value"] = model.DefaultValue
-	// }
+	if model.DefaultValue != nil {
+		defaultValueJson, err := json.Marshal(model.DefaultValue)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
+		}
+		modelMap["default_value"] = string(defaultValueJson)
+	}
 	if model.DisplayName != nil {
 		modelMap["display_name"] = model.DisplayName
 	}
@@ -5176,6 +5235,9 @@ func resourceIBMCmOfferingRenderTypeToMap(model *catalogmanagementv1.RenderType)
 	}
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
+	}
+	if model.ConfigConstraints != nil {
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints)
 	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmOfferingRenderTypeAssociationsToMap(model.Associations)
@@ -5575,8 +5637,8 @@ func resourceIBMCmOfferingCostBreakdownToMap(model *catalogmanagementv1.CostBrea
 	if model.TotalHourlyCost != nil {
 		modelMap["total_hourly_cost"] = model.TotalHourlyCost
 	}
-	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_c_ost"] = model.TotalMonthlyCOst
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -5663,7 +5725,7 @@ func resourceIBMCmOfferingCostSummaryToMap(model *catalogmanagementv1.CostSummar
 	return modelMap, nil
 }
 
-func resourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.Dependency) (map[string]interface{}, error) {
+func resourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.OfferingReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CatalogID != nil {
 		modelMap["catalog_id"] = model.CatalogID
@@ -5989,4 +6051,51 @@ func resourceIBMCmOfferingConstraintToMap(model *catalogmanagementv1.Constraint)
 	// 	modelMap["rule"] = model.Rule
 	// }
 	return modelMap, nil
+}
+
+func handleShareOfferingAfterCreate(catalogManagementClient *catalogmanagementv1.CatalogManagementV1, offering catalogmanagementv1.Offering, d *schema.ResourceData, context context.Context) error {
+	if _, ok := d.GetOk("share_with_access_list"); ok {
+		// Share with accounts if there are any
+		if len(d.Get("share_with_access_list").([]interface{})) > 0 {
+			addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
+			addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+			addOfferingAccessListOptions.SetOfferingID(*offering.ID)
+			addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("share_with_access_list").([]interface{})))
+			_, response, err := catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
+			if err != nil {
+				log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
+				return fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response)
+			}
+		}
+	}
+
+	shareOffering := false
+	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
+	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	shareOfferingOptions.SetOfferingID(*offering.ID)
+	shareOfferingOptions.SetEnabled(d.Get("share_enabled").(bool))
+
+	if _, ok := d.GetOk("share_with_ibm"); ok {
+		shareOffering = true
+	}
+
+	if _, ok := d.GetOk("share_with_ibm"); ok {
+		shareOffering = true
+		shareOfferingOptions.SetIBM(d.Get("share_with_ibm").(bool))
+	}
+
+	if _, ok := d.GetOk("share_with_all"); ok {
+		shareOffering = true
+		shareOfferingOptions.SetPublic(d.Get("share_with_all").(bool))
+	}
+
+	if shareOffering {
+		_, response, err := catalogManagementClient.ShareOfferingWithContext(context, &shareOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
+			return fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response)
+		}
+	}
+
+	return nil
 }

@@ -1135,6 +1135,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
 		}
 	}
+
 	if d.HasChange("taints") {
 		workerPoolsAPI := csClient.WorkerPools()
 		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
@@ -1152,23 +1153,16 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			poolContains = true
 		}
 		if poolContains {
-			taintParam := expandWorkerPoolTaints(d, meta, clusterID, poolName)
-			targetEnv, err := getVpcClusterTargetHeader(d, meta)
-			if err != nil {
-				return err
+			var taints []interface{}
+			if taintRes, ok := d.GetOk("taints"); ok {
+				taints = taintRes.(*schema.Set).List()
 			}
-			ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-			if err != nil {
+			if err := updateWorkerpoolTaints(d, meta, clusterID, poolName, taints); err != nil {
 				return err
-			}
-			err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
 			}
 		} else {
 			return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
 		}
-
 	}
 
 	if d.HasChange("worker_num") {

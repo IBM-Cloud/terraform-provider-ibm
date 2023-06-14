@@ -106,3 +106,4 @@ $ terraform import ibm_scc_posture_credential.credentials <id>
 ```
 $ terraform import ibm_scc_posture_credential.credentials 1
 ```
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_credential is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

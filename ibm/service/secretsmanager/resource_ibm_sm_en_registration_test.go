@@ -12,31 +12,31 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func TestAccIbmSmEnRegistrationBasic(t *testing.T) {
-	//var conf secretsmanagerv2.NotificationsRegistration
-	//
-	//resource.Test(t, resource.TestCase{
-	//	PreCheck:     func() { acc.TestAccPreCheck(t) },
-	//	Providers:    acc.TestAccProviders,
-	//	CheckDestroy: testAccCheckIbmSmEnRegistrationDestroy,
-	//	Steps: []resource.TestStep{
-	//		resource.TestStep{
-	//			Config: testAccCheckIbmSmEnRegistrationConfigBasic(),
-	//			Check: resource.ComposeAggregateTestCheckFunc(
-	//				testAccCheckIbmSmEnRegistrationExists("ibm_sm_en_registration.sm_en_registration", conf),
-	//			),
-	//		},
-	//	},
-	//})
+	var conf secretsmanagerv2.NotificationsRegistration
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmEnRegistrationDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmSmEnRegistrationConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmEnRegistrationExists("ibm_sm_en_registration.sm_en_registration", conf),
+				),
+			},
+		},
+	})
 }
 
 func testAccCheckIbmSmEnRegistrationConfigBasic() string {
 	return fmt.Sprintf(`
 
-		resource "ibm_sm_en_registration" "ibm_sm_en_registration"{
+		resource "ibm_sm_en_registration" "sm_en_registration"{
   			instance_id   = "%s"
   			region        = "%s"
   			event_notifications_instance_crn = "%s"
@@ -70,6 +70,11 @@ func testAccCheckIbmSmEnRegistrationExists(n string, obj secretsmanagerv2.Notifi
 		}
 
 		obj = *notificationsRegistration
+
+		if err := verifyAttr(*notificationsRegistration.EventNotificationsInstanceCrn, acc.SecretsManagerENInstanceCrn, "snotification instance CRN"); err != nil {
+			return err
+		}
+
 		return nil
 	}
 }

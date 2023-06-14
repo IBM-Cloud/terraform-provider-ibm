@@ -58,13 +58,12 @@ func DataSourceIBMEnPagerDutyDestination() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"api_key": {
 										Type:        schema.TypeString,
-										Sensitive:   true,
-										Optional:    true,
+										Computed:    true,
 										Description: "The api key for chrome app authorization",
 									},
 									"routing_key": {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The website url",
 									},
 								},

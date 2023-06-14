@@ -67,6 +67,11 @@ func DataSourceIBMCmCatalog() *schema.Resource {
 				Computed:    true,
 				Description: "URL for an icon associated with this catalog.",
 			},
+			"catalog_banner_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL for a banner image for this catalog.",
+			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -435,6 +440,10 @@ func dataSourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData,
 
 	if err = d.Set("catalog_icon_url", catalog.CatalogIconURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting catalog_icon_url: %s", err))
+	}
+
+	if err = d.Set("catalog_banner_url", catalog.CatalogBannerURL); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting catalog_banner_url: %s", err))
 	}
 
 	if err = d.Set("url", catalog.URL); err != nil {

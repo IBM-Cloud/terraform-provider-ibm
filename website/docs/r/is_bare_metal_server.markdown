@@ -99,6 +99,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
+- `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
 - `image` - (Required, String) ID of the image.
 - `keys` - (Required, List) Comma separated IDs of ssh keys.  
 - `name` - (Optional, String) The bare metal server name.
@@ -133,7 +134,15 @@ Review the argument references that you can specify for your resource.
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface. [default : `false`]
     - `allowed_vlans` - (Optional, Array) Comma separated VLANs, Indicates what VLAN IDs (for VLAN type only) can use this physical (`PCI` type) interface. A given VLAN can only be in the allowed_vlans array for one PCI type adapter per bare metal server.
     - `enable_infrastructure_nat` - (Optional, Boolean) If true, the VPC infrastructure performs any needed NAT operations. If false, the packet is passed unmodified to/from the network interface, allowing the workload to perform any needed NAT operations. [default : `true`]
+
     - `name` - (Optional, String) The name of the network interface.
+    - `interface_type` - (Optional, String) The type of the network interface.[**pci**, **hipersocket**]. `allowed_vlans` is required for `pci` type.
+
+      The network interface type:
+
+          - `hipersocket`: a virtual network device that provides high-speed TCP/IP connectivity within a s390x based system. Not supported on bare metal servers with a cpu architecture of amd64
+          - `pci`: a physical PCI device which can only be created or deleted when the bare metal server is stopped. Has an allowed_vlans property which controls the VLANs that will be permitted to use the PCI interface. Cannot directly use an IEEE 802.1q VLAN tag. Not supported on bare metal servers with a cpu architecture of s390x
+
     - `primary_ip` - (Optional, List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
       Nested scheme for `primary_ip`:
@@ -147,6 +156,12 @@ Review the argument references that you can specify for your resource.
 
 - `profile` - (Required, Forces new resource, String) The name the profile to use for this bare metal server. 
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this bare metal server.
+- `trusted_platform_module` - (Optional, List) trusted platform module (TPM) configuration for the bare metals server
+
+  Nested scheme for **trusted_platform_module**:
+  
+    - `mode` - (Optional, String) The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes. Updating trusted_platform_module mode would require the server to be stopped then started again.
+      - Constraints: Allowable values are: `disabled`, `tpm_2`.
 - `user_data` - (Optional, String) User data to transfer to the server bare metal server.
 - `vpc` - (Required, Forces new resource, String) The VPC ID of the bare metal server is to be a part of. It must match the VPC tied to the subnets of the server's network interfaces.
 - `zone` - (Required, Forces new resource, String) Name of the zone in which this bare metal server will reside in.
@@ -188,14 +203,26 @@ In addition to all argument reference list, you can access the following attribu
     - `vlan` -  (Integer) Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface. [ conflicts with `allowed_vlans`]
 
 - `resource_type` - (String) The type of resource.
-- `status` - (String) The status of the bare metal server :[ **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, **stopping** ]
+- `status` - (String) The status of the bare metal server.
+
+  -> **Supported Status** &#x2022; failed </br>&#x2022; pending </br>&#x2022; restarting </br>&#x2022; running </br>&#x2022; starting </br>&#x2022; stopped </br>&#x2022; stopping
 - `status_reasons` - (List) Array of reasons for the current status (if any).
 
   Nested `status_reasons`:
     - `code` - (String) The status reason code
     - `message` - (String) An explanation of the status reason
     - `more_info` - (String) Link to documentation about this status reason
+- `trusted_platform_module` - (List) trusted platform module (TPM) configuration for this bare metal server
 
+    Nested scheme for **trusted_platform_module**:
+
+    - `enabled` - (Boolean) Indicates whether the trusted platform module is enabled. 
+    - `mode` - (String) The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes. Updating trusted_platform_module mode would require the server to be stopped then started again.
+      - Constraints: Allowable values are: `disabled`, `tpm_2`.
+    - `supported_modes` - (Array) The trusted platform module (TPM) mode:
+      - **disabled: No TPM functionality**
+      - **tpm_2: TPM 2.0**
+      - The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
 
 ## Import
 

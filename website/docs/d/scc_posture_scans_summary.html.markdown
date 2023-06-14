@@ -72,3 +72,4 @@ Nested scheme for **controls**:
 
 * `scope_id` - (String) The scan summary scope ID.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_scan_summary is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).
