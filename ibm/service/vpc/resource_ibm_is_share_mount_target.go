@@ -19,14 +19,13 @@ import (
 	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 )
 
-func ResourceIbmIsShareMountTarget() *schema.Resource {
+func ResourceIBMIsShareMountTarget() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:      resourceIbmIsShareMountTargetCreate,
-		ReadContext:        resourceIbmIsShareMountTargetRead,
-		UpdateContext:      resourceIbmIsShareMountTargetUpdate,
-		DeleteContext:      resourceIbmIsShareMountTargetDelete,
-		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use ibm_is_share_mount_target instead",
-		Importer:           &schema.ResourceImporter{},
+		CreateContext: resourceIBMIsShareMountTargetCreate,
+		ReadContext:   resourceIBMIsShareMountTargetRead,
+		UpdateContext: resourceIBMIsShareMountTargetUpdate,
+		DeleteContext: resourceIBMIsShareMountTargetDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"share": {
@@ -44,10 +43,10 @@ func ResourceIbmIsShareMountTarget() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_share_target", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_is_share_mount_target", "name"),
 				Description:  "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
-			"share_target": {
+			"mount_target": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier of this target",
@@ -81,7 +80,7 @@ func ResourceIbmIsShareMountTarget() *schema.Resource {
 	}
 }
 
-func ResourceIbmIsShareMountTargetValidator() *validate.ResourceValidator {
+func ResourceIBMIsShareMountTargetValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -95,14 +94,62 @@ func ResourceIbmIsShareMountTargetValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_share_target", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_share_mount_target", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIbmIsShareMountTargetCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func isWaitForOldTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareid, targetid string) {
+
+	shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+	shareTargetOptions.SetShareID(shareid)
+	shareTargetOptions.SetID(targetid)
+	for i := 0; i < 6; i++ {
+		target, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
+		if err != nil {
+			return
+		}
+		if target != nil && *target.LifecycleState != "deleting" {
+			time.Sleep(10 * time.Second)
+		} else {
+			break
+		}
+	}
+
+	return
+}
+
+func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	//Temporary code to fix concurrent mount target issues.
+	listShareMountTargetOptions := &vpcbetav1.ListShareMountTargetsOptions{}
+	shareId := d.Get("share").(string)
+	vpcId := d.Get("vpc").(string)
+	listShareMountTargetOptions.SetShareID(shareId)
+
+	shareTargets, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareMountTargetOptions)
+	if err != nil || shareTargets == nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] ListShareMountTargetsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
+	}
+	for _, mountTargets := range shareTargets.MountTargets {
+		if mountTargets.VPC != nil && *mountTargets.VPC.ID == vpcId {
+			isWaitForOldTargetDelete(context, vpcClient, d, shareId, *mountTargets.ID)
+			if *mountTargets.LifecycleState == "deleting" {
+				_, err = isWaitForTargetDelete(context, vpcClient, d, shareId, *mountTargets.ID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
 	}
 
 	createShareMountTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
@@ -122,17 +169,17 @@ func resourceIbmIsShareMountTargetCreate(context context.Context, d *schema.Reso
 		log.Printf("[DEBUG] CreateShareMountTargetWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
+	d.SetId(fmt.Sprintf("%s/%s", *createShareMountTargetOptions.ShareID, *shareTarget.ID))
 	_, err = WaitForTargetAvailable(context, vpcClient, *createShareMountTargetOptions.ShareID, *shareTarget.ID, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createShareMountTargetOptions.ShareID, *shareTarget.ID))
-	d.Set("share_target", *shareTarget.ID)
-	return resourceIbmIsShareMountTargetRead(context, d, meta)
+	d.Set("mount_target", *shareTarget.ID)
+	return resourceIBMIsShareMountTargetRead(context, d, meta)
 }
 
-func resourceIbmIsShareMountTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
@@ -149,7 +196,7 @@ func resourceIbmIsShareMountTargetRead(context context.Context, d *schema.Resour
 	getShareMountTargetOptions.SetID(parts[1])
 
 	shareTarget, response, err := vpcClient.GetShareMountTargetWithContext(context, getShareMountTargetOptions)
-	if err != nil {
+	if err != nil || shareTarget == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
@@ -158,7 +205,7 @@ func resourceIbmIsShareMountTargetRead(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.Set("share_target", *shareTarget.ID)
+	d.Set("mount_target", *shareTarget.ID)
 
 	if err = d.Set("vpc", *shareTarget.VPC.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
@@ -187,7 +234,7 @@ func resourceIbmIsShareMountTargetRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceIbmIsShareMountTargetUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
@@ -227,10 +274,10 @@ func resourceIbmIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 		}
 	}
 
-	return resourceIbmIsShareMountTargetRead(context, d, meta)
+	return resourceIBMIsShareMountTargetRead(context, d, meta)
 }
 
-func resourceIbmIsShareMountTargetDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIsShareMountTargetDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
@@ -251,7 +298,7 @@ func resourceIbmIsShareMountTargetDelete(context context.Context, d *schema.Reso
 		log.Printf("[DEBUG] DeleteShareMountTargetWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-	_, err = isWaitForTargetDelete(context, vpcClient, d, parts[0], parts[1])
+	_, err = isWaitForMountTargetDelete(context, vpcClient, d, parts[0], parts[1])
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -261,13 +308,13 @@ func resourceIbmIsShareMountTargetDelete(context context.Context, d *schema.Reso
 	return nil
 }
 
-func WaitForTargetAvailable(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+func WaitForMountTargetAvailable(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for target (%s) to be available.", targetid)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"updating", "pending", "waiting"},
 		Target:     []string{"stable", "failed"},
-		Refresh:    mountTargetRefreshFunc(context, vpcClient, shareid, targetid, d),
+		Refresh:    mountTargetRefresh(context, vpcClient, shareid, targetid, d),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -276,7 +323,7 @@ func WaitForTargetAvailable(context context.Context, vpcClient *vpcbetav1.Vpcbet
 	return stateConf.WaitForState()
 }
 
-func mountTargetRefreshFunc(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func mountTargetRefresh(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
@@ -297,7 +344,7 @@ func mountTargetRefreshFunc(context context.Context, vpcClient *vpcbetav1.Vpcbet
 	}
 }
 
-func isWaitForTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
+func isWaitForMountTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"deleting", "stable"},
