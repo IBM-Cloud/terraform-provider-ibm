@@ -3027,8 +3027,11 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 			CanScaleDown: *g.CPU.CanScaleDown,
 		}
 
-		//TODO group needs host flavor
-		group.HostFlavor = core.StringPtr("")
+		if g.HostFlavor != nil {
+			group.HostFlavor = g.HostFlavor.ID
+		} else {
+			group.HostFlavor = core.StringPtr("")
+		}
 
 		groups = append(groups, group)
 	}
