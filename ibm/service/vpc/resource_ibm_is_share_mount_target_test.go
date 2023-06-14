@@ -44,7 +44,27 @@ func TestAccIbmIsShareMountTarget(t *testing.T) {
 		},
 	})
 }
-
+func TestAccIBMIsShareMountTargetTransitEncryptionBasic(t *testing.T) {
+	var conf vpcbetav1.ShareMountTarget
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
+	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareTargetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcname, sname, targetName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareTargetExists("ibm_is_share_target.is_share_target", conf),
+					resource.TestCheckResourceAttr("ibm_is_share_target.is_share_target", "name", targetName),
+					resource.TestCheckResourceAttr("ibm_is_share_target.is_share_target", "transit_encryption", "user_managed"),
+				),
+			},
+		},
+	})
+}
 func testAccCheckIbmIsShareTargetConfig(vpcName, sname, targetName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
@@ -66,7 +86,28 @@ func testAccCheckIbmIsShareTargetConfig(vpcName, sname, targetName string) strin
 	}
 	`, sname, acc.ShareProfileName, vpcName, targetName)
 }
-
+func testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcName, sname, targetName string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_share" "is_share" {
+		zone = "us-south-2"
+		size = 200
+		name = "%s"
+		profile = "%s"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_share_target" "is_share_target" {
+		share = ibm_is_share.is_share.id
+		vpc = ibm_is_vpc.testacc_vpc.id
+		transit_encryption = "user_managed"
+		name = "%s"
+	}
+	`, sname, acc.ShareProfileName, vpcName, targetName)
+}
 func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcbetav1.ShareMountTarget) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
