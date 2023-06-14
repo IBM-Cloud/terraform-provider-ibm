@@ -3162,7 +3162,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 				}
 			}
 
-			if (group.HostFlavor == nil || *group.HostFlavor == "") && group.Memory != nil {
+			if (group.HostFlavor == nil || *group.HostFlavor == "" || *group.HostFlavor == "multitenant") && group.Memory != nil {
 				err = checkGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
 					return err
@@ -3176,14 +3176,14 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 				}
 			}
 
-			if (group.HostFlavor == nil || *group.HostFlavor == "") && group.CPU != nil {
+			if (group.HostFlavor == nil || *group.HostFlavor == "" || *group.HostFlavor == "multitenant") && group.CPU != nil {
 				err = checkGroupScaling(groupId, "cpu", group.CPU.Allocation, groupDefaults.CPU, nodeCount)
 				if err != nil {
 					return err
 				}
 			}
 
-			if group.HostFlavor != nil && *group.HostFlavor != "" {
+			if group.HostFlavor != nil && *group.HostFlavor != "" && *group.HostFlavor != "multitenant" {
 				err = checkGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
 					return err
