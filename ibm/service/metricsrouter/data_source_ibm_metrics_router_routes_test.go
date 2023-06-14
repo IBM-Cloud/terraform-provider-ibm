@@ -39,7 +39,7 @@ func testAccCheckIBMMetricsRouterRoutesDataSourceConfigBasic(routeName string) s
 	return fmt.Sprintf(`
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
-			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "%s"
 		}
 
 		resource "ibm_metrics_router_route" "metrics_router_route_instance" {
@@ -60,5 +60,5 @@ func testAccCheckIBMMetricsRouterRoutesDataSourceConfigBasic(routeName string) s
 		data "ibm_metrics_router_routes" "metrics_router_routes_instance" {
 			name = ibm_metrics_router_route.metrics_router_route_instance.name
 		}
-	`, routeName)
+	`, destinationCRN, routeName)
 }

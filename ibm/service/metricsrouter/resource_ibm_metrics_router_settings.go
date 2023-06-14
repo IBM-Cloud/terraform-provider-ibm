@@ -50,6 +50,7 @@ func ResourceIBMMetricsRouterSettings() *schema.Resource {
 			"primary_metadata_region": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_metrics_router_settings", "primary_metadata_region"),
 				Description:  "To store all your meta data in a single region.",
 			},

@@ -57,9 +57,24 @@ func TestAccIBMMetricsRouterRouteBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMMetricsRouterRouteDropEmptyTarget(t *testing.T) {
+func TestAccIBMMetricsRouterRouteConfigBasicWithoutAction(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	action := "drop"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMMetricsRouterRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMMetricsRouterRouteConfigBasicWithoutAction(name),
+			},
+		},
+	})
+}
+
+func TestAccIBMMetricsRouterRouteSendEmptyTarget(t *testing.T) {
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	action := "send"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -74,9 +89,9 @@ func TestAccIBMMetricsRouterRouteDropEmptyTarget(t *testing.T) {
 	})
 }
 
-func TestAccIBMMetricsRouterRouteSendEmptyTarget(t *testing.T) {
+func TestAccIBMMetricsRouterRouteDropEmptyTarget(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	action := "send"
+	action := "drop"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -134,7 +149,7 @@ func testAccCheckIBMMetricsRouterRouteConfigBasic(name, filter_value string) str
 	return fmt.Sprintf(`
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
-			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "%s"
 		}
 
 		resource "ibm_metrics_router_route" "metrics_router_route_instance" {
@@ -151,7 +166,29 @@ func testAccCheckIBMMetricsRouterRouteConfigBasic(name, filter_value string) str
 				}
 			}
 		}
-	`, name, filter_value)
+	`, destinationCRN, name, filter_value)
+}
+
+func testAccCheckIBMMetricsRouterRouteConfigBasicWithoutAction(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
+			name = "my-mr-target"
+			destination_crn = "%s"
+		}
+
+		resource "ibm_metrics_router_route" "metrics_router_route_instance" {
+			name = "%s"
+			rules {
+				targets {
+					id = ibm_metrics_router_target.metrics_router_target_instance.id
+				}
+				inclusion_filters {
+					operand = "resource_type"
+					operator = "is"
+					values = ["worker"]
+				}
+			}
+		}`, destinationCRN, name)
 }
 
 func testAccCheckIBMMetricsRouterRouteEmptyTarget(name string, action string) string {

@@ -20,7 +20,7 @@ func TestAccIBMMetricsRouterSettingsBasic(t *testing.T) {
 	var conf metricsrouterv3.Setting
 	primaryMetadataRegion := "us-south"
 	backupMetadataRegion := "us-east"
-	permitted_target_regions := "us-south"
+	permittedTargetRegions := "us-south"
 	privateAPIEndpointOnly := "false"
 
 	resource.Test(t, resource.TestCase{
@@ -29,10 +29,10 @@ func TestAccIBMMetricsRouterSettingsBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMMetricsRouterSettingsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMMetricsRouterSettingsConfigBasic(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
+				Config: testAccCheckIBMMetricsRouterSettingsConfigBasic(permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMMetricsRouterSettingsExists("ibm_metrics_router_settings.metrics_router_settings_instance", conf),
-					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "permitted_target_regions.0", permitted_target_regions),
+					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "permitted_target_regions.0", permittedTargetRegions),
 					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "primary_metadata_region", primaryMetadataRegion),
 					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "backup_metadata_region", backupMetadataRegion),
 					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnly),
@@ -51,7 +51,7 @@ func TestAccIBMMetricsRouterSettingsAllArgs(t *testing.T) {
 	var conf metricsrouterv3.Setting
 	primaryMetadataRegion := "us-south"
 	backupMetadataRegion := "us-east"
-	permitted_target_regions := "us-south"
+	permittedTargetRegions := "us-south"
 	privateAPIEndpointOnly := "false"
 
 	resource.Test(t, resource.TestCase{
@@ -60,10 +60,10 @@ func TestAccIBMMetricsRouterSettingsAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMMetricsRouterSettingsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMMetricsRouterSettingsConfig(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
+				Config: testAccCheckIBMMetricsRouterSettingsConfig(permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMMetricsRouterSettingsExists("ibm_metrics_router_settings.metrics_router_settings_instance", conf),
-					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "permitted_target_regions.0", permitted_target_regions),
+					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "permitted_target_regions.0", permittedTargetRegions),
 					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "primary_metadata_region", primaryMetadataRegion),
 					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "backup_metadata_region", backupMetadataRegion),
 					resource.TestCheckResourceAttr("ibm_metrics_router_settings.metrics_router_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnly),
@@ -81,7 +81,7 @@ func TestAccIBMMetricsRouterSettingsAllArgs(t *testing.T) {
 func TestAccIBMMetricsRouterSettingsEmptyTarget(t *testing.T) {
 	primaryMetadataRegion := "us-south"
 	backupMetadataRegion := "us-east"
-	permitted_target_regions := "us-south"
+	permittedTargetRegions := "us-south"
 	privateAPIEndpointOnly := "false"
 
 	resource.Test(t, resource.TestCase{
@@ -90,18 +90,18 @@ func TestAccIBMMetricsRouterSettingsEmptyTarget(t *testing.T) {
 		CheckDestroy: testAccCheckIBMMetricsRouterSettingsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIBMMetricsRouterSettingsEmptyTarget(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
+				Config:      testAccCheckIBMMetricsRouterSettingsEmptyTarget(permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
 				ExpectError: regexp.MustCompile("should match regexp"),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMMetricsRouterSettingsConfigBasic(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
+func testAccCheckIBMMetricsRouterSettingsConfigBasic(permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
-			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "%s"
 		}
 
 		resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
@@ -113,15 +113,15 @@ func testAccCheckIBMMetricsRouterSettingsConfigBasic(permitted_target_regions, p
 			backup_metadata_region = "%s"
 			private_api_endpoint_only = %s
 		}
-	`, permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
+	`, destinationCRN, permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
 }
 
-func testAccCheckIBMMetricsRouterSettingsConfig(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
+func testAccCheckIBMMetricsRouterSettingsConfig(permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_metrics_router_target" "metrics_router_target_instance" {
 			name = "my-mr-target"
-			destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "%s"
 		}
 
 		resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
@@ -133,10 +133,10 @@ func testAccCheckIBMMetricsRouterSettingsConfig(permitted_target_regions, primar
 			backup_metadata_region = "%s"
 			private_api_endpoint_only = %s
 		}
-	`, permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
+	`, destinationCRN, permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
 }
 
-func testAccCheckIBMMetricsRouterSettingsEmptyTarget(permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
+func testAccCheckIBMMetricsRouterSettingsEmptyTarget(permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
         resource "ibm_metrics_router_settings" "metrics_router_settings_instance" {
             default_targets {
@@ -147,7 +147,7 @@ func testAccCheckIBMMetricsRouterSettingsEmptyTarget(permitted_target_regions, p
             backup_metadata_region = "%s"
             private_api_endpoint_only = %s
         }
-    `, permitted_target_regions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
+    `, permittedTargetRegions, primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly)
 }
 
 func testAccCheckIBMMetricsRouterSettingsExists(n string, obj metricsrouterv3.Setting) resource.TestCheckFunc {

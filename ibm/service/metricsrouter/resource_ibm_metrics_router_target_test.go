@@ -19,9 +19,7 @@ import (
 func TestAccIBMMetricsRouterTargetBasic(t *testing.T) {
 	var conf metricsrouterv3.Target
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRN := "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 	nameUpdate := fmt.Sprintf("updated_tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRNUpdate := "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -55,10 +53,8 @@ func TestAccIBMMetricsRouterTargetBasic(t *testing.T) {
 func TestAccIBMMetricsRouterTargetAllArgs(t *testing.T) {
 	var conf metricsrouterv3.Target
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRN := "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 	region := "us-south"
 	nameUpdate := fmt.Sprintf("updated_tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRNUpdate := "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },

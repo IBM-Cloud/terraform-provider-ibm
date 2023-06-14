@@ -42,6 +42,7 @@ func ResourceIBMMetricsRouterRoute() *schema.Resource {
 						"action": &schema.Schema{
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							Description:  "The action if the inclusion_filters matches, default is `send` action.",
 							ValidateFunc: validate.InvokeValidator("ibm_metrics_router_route", "action"),
 						},
