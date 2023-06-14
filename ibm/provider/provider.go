@@ -303,6 +303,8 @@ func Provider() *schema.Provider {
 			"ibm_container_alb":                     kubernetes.DataSourceIBMContainerALB(),
 			"ibm_container_alb_cert":                kubernetes.DataSourceIBMContainerALBCert(),
 			"ibm_container_ingress_instance":        kubernetes.DataSourceIBMContainerIngressInstance(),
+			"ibm_container_ingress_secret_tls":      kubernetes.DataSourceIBMContainerIngressSecretTLS(),
+			"ibm_container_ingress_secret_opaque":   kubernetes.DataSourceIBMContainerIngressSecretOpaque(),
 			"ibm_container_bind_service":            kubernetes.DataSourceIBMContainerBindService(),
 			"ibm_container_cluster":                 kubernetes.DataSourceIBMContainerCluster(),
 			"ibm_container_cluster_config":          kubernetes.DataSourceIBMContainerClusterConfig(),
@@ -905,6 +907,8 @@ func Provider() *schema.Provider {
 			"ibm_container_vpc_cluster":                 kubernetes.ResourceIBMContainerVpcCluster(),
 			"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCert(),
 			"ibm_container_ingress_instance":            kubernetes.ResourceIBMContainerIngressInstance(),
+			"ibm_container_ingress_secret_tls":          kubernetes.ResourceIBMContainerIngressSecretTLS(),
+			"ibm_container_ingress_secret_opaque":       kubernetes.ResourceIBMContainerIngressSecretOpaque(),
 			"ibm_container_cluster":                     kubernetes.ResourceIBMContainerCluster(),
 			"ibm_container_cluster_feature":             kubernetes.ResourceIBMContainerClusterFeature(),
 			"ibm_container_bind_service":                kubernetes.ResourceIBMContainerBindService(),
@@ -1492,6 +1496,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_bind_service":                kubernetes.ResourceIBMContainerBindServiceValidator(),
 				"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCertValidator(),
 				"ibm_container_ingress_instance":            kubernetes.ResourceIBMContainerIngressInstanceValidator(),
+				"ibm_container_ingress_secret_tls":          kubernetes.ResourceIBMContainerIngressSecretTLSValidator(),
+				"ibm_container_ingress_secret_opaque":       kubernetes.ResourceIBMContainerIngressSecretOpaqueValidator(),
 				"ibm_container_cluster_feature":             kubernetes.ResourceIBMContainerClusterFeatureValidator(),
 
 				"ibm_iam_access_group_dynamic_rule": iamaccessgroup.ResourceIBMIAMDynamicRuleValidator(),
@@ -1588,7 +1594,10 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_vpc_cluster":             kubernetes.DataSourceIBMContainerVPCClusterValidator(),
 				"ibm_container_alb_cert":                kubernetes.DataSourceIBMContainerALBCertValidator(),
 				"ibm_container_ingress_instance":        kubernetes.DataSourceIBMContainerIngressInstanceValidator(),
-				"ibm_iam_access_group":                  iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
+				"ibm_container_ingress_secret_tls":      kubernetes.DataSourceIBMContainerIngressSecretTLSValidator(),
+				"ibm_container_ingress_secret_opaque":   kubernetes.DataSourceIBMContainerIngressSecretOpaqueValidator(),
+
+				"ibm_iam_access_group": iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
 
 				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIAMServiceIDValidator(),
 				"ibm_iam_trusted_profile_claim_rule":  iamidentity.DataSourceIBMIamTrustedProfileClaimRuleValidator(),
