@@ -46,7 +46,7 @@ require (
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
-	github.ibm.com/ibmcloud/vpc-beta-go-sdk v0.0.1-unpublished
+	github.com/IBM/vpc-beta-go-sdk v0.0.1
 	go.mongodb.org/mongo-driver v1.10.2 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	gotest.tools v2.2.0+incompatible
@@ -176,6 +176,6 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.ibm.com/ibmcloud/vpc-beta-go-sdk v0.0.1-unpublished => ./common/github.ibm.com/ibmcloud/vpc-beta-go-sdk
+replace github.com/IBM/vpc-beta-go-sdk  => ./common/github.com/IBM/vpc-beta-go-sdk
 
 replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230202132733-fd8f31729d57
