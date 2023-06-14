@@ -47,6 +47,12 @@ func ResourceIbmIsShareMountTarget() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_share_target", "name"),
 				Description:  "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
+			"transit_encryption": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
 			"share_target": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -108,15 +114,20 @@ func resourceIbmIsShareMountTargetCreate(context context.Context, d *schema.Reso
 	createShareMountTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
 
 	createShareMountTargetOptions.SetShareID(d.Get("share").(string))
+	shareMountTargetPrototype := &vpcbetav1.ShareMountTargetPrototype{}
 	vpcid := d.Get("vpc").(string)
 	vpc := &vpcbetav1.VPCIdentity{
 		ID: &vpcid,
 	}
-	createShareMountTargetOptions.SetVPC(vpc)
-	if _, ok := d.GetOk("name"); ok {
-		createShareMountTargetOptions.SetName(d.Get("name").(string))
+	shareMountTargetPrototype.VPC = vpc
+	if nameIntf, ok := d.GetOk("name"); ok {
+		name := nameIntf.(string)
+		shareMountTargetPrototype.Name = &name
 	}
-
+	if transitEncryptionIntf, ok := d.GetOk("transit_encryption"); ok {
+		transitEncryption := transitEncryptionIntf.(string)
+		shareMountTargetPrototype.TransitEncryption = &transitEncryption
+	}
 	shareTarget, response, err := vpcClient.CreateShareMountTargetWithContext(context, createShareMountTargetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateShareMountTargetWithContext failed %s\n%s", err, response)

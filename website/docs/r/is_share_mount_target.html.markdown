@@ -46,6 +46,7 @@ The following arguments are supported:
 - `share` - (Required, String) The file share identifier.
 - `vpc` - (Required, String) The VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.
 - `name` - (Required, String) The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
+- `transit_encryption` - (Optional, String) The transit encryption mode for this share target. Supported values are **none**, **user_managed**. Default is **none**
 ## Attribute Reference
 
 The following attributes are exported:
@@ -58,7 +59,7 @@ The following attributes are exported:
 - `lifecycle_state` - The lifecycle state of the mount target.
 - `mount_path` - The mount path for the share.The IP addresses used in the mount path are currently within the IBM services IP range, but are expected to change to be within one of the VPC's subnets in the future.
 - `resource_type` - The type of resource referenced.
-
+- `transit_encryption` - (String) The transit encryption mode for this share target.
 
 ## Import
 

@@ -120,6 +120,10 @@ func DataSourceIBMIsShareTargets() *schema.Resource {
 								},
 							},
 						},
+						"transit_encryption": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"vpc": {
 							Type:        schema.TypeList,
 							Computed:    true,

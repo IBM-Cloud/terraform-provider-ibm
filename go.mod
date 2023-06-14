@@ -49,7 +49,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
-	github.com/IBM/vpc-beta-go-sdk v0.0.1
 	golang.org/x/crypto v0.7.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.25.0
@@ -180,6 +179,6 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/vpc-beta-go-sdk  => ./common/github.com/IBM/vpc-beta-go-sdk
+replace github.com/IBM/vpc-beta-go-sdk => ./common/github.com/IBM/vpc-beta-go-sdk
 
 replace github.com/IBM/secrets-manager-go-sdk v1.0.49 => github.com/IBM/secrets-manager-go-sdk v1.0.50-0.20230316070833-1e1d44fe67be

@@ -32,6 +32,7 @@ func TestAccIbmIsShareMountTarget(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareMountTargetExists("ibm_is_share_mount_target.is_share_target", conf),
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetName),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "transit_encryption", "none"),
 				),
 			},
 			{

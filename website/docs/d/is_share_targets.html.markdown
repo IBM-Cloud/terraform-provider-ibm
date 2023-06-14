@@ -65,6 +65,7 @@ The following attributes are exported:
 		- `id` - The unique identifier for this subnet.
 		- `name` - The user-defined name for this subnet.
 		- `resource_type` - The resource type.
+	- `transit_encryption` - (String) The transit encryption mode for this share target.
 	- `vpc` - The VPC to which this share target is allowing to mount the file share. Nested `vpc` blocks have the following structure:
 		- `crn` - The CRN for this VPC.
 		- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:

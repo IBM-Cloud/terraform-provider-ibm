@@ -574,7 +574,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 
 			replicaTargets, ok := replicaShareMap["mount_targets"]
 			if ok {
-				var targets []vpcbetav1.ShareMountTargetPrototype
+				var targets []vpcbetav1.ShareMountTargetPrototypeIntf
 				targetsIntf := replicaTargets.([]interface{})
 				for _, targetIntf := range targetsIntf {
 					target := targetIntf.(map[string]interface{})
@@ -632,7 +632,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if shareTargetPrototypeIntf, ok := d.GetOk("mount_targets"); ok {
-		var targets []vpcbetav1.ShareMountTargetPrototype
+		var targets []vpcbetav1.ShareMountTargetPrototypeIntf
 		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
 			targetsItem := resourceIbmIsShareMapToShareMountTargetPrototype(value)
@@ -705,7 +705,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap map[string]interface{}) vpcbetav1.ShareMountTargetPrototype {
+func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap map[string]interface{}) vpcbetav1.ShareMountTargetPrototypeIntf {
 	shareTargetPrototype := vpcbetav1.ShareMountTargetPrototype{}
 
 	if nameIntf, ok := shareTargetPrototypeMap["name"]; ok && nameIntf != "" {
@@ -719,7 +719,7 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap ma
 		}
 	}
 
-	return shareTargetPrototype
+	return &shareTargetPrototype
 }
 
 func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

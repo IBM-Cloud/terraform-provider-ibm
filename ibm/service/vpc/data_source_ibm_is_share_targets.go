@@ -121,6 +121,10 @@ func DataSourceIbmIsShareTargets() *schema.Resource {
 								},
 							},
 						},
+						"transit_encryption": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"vpc": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -239,6 +243,9 @@ func dataSourceShareTargetCollectionTargetsToMap(targetsItem vpcbetav1.ShareMoun
 	}
 	if targetsItem.Name != nil {
 		targetsMap["name"] = targetsItem.Name
+	}
+	if targetsItem.TransitEncryption != nil {
+		targetsMap["transit_encryption"] = *targetsItem.TransitEncryption
 	}
 	if targetsItem.ResourceType != nil {
 		targetsMap["resource_type"] = targetsItem.ResourceType
