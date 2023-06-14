@@ -57,6 +57,7 @@ Review the argument references that you can specify for your resource.
 - `default_worker_pool_labels` - (Optional, String) The labels on all the workers in the default worker pool.
 - `pull_secret` - (Optional, String) The Red Hat pull secret to create the OpenShift cluster.
 - `zone` - (Optional, List) The zone for the worker pool in a multi-zone cluster. 
+- `infrastructure_topology` - (Optional, String) Specify whether the cluster should run a single worker node or the default number of worker nodes. Only works with kube version 4.11 and newer. To create a single-node cluster, specify 'single-replica'. To create a default cluster with multiple worker nodes, specify 'highly-available'. The 'highly-available' option is applied by default. Available options: single-replica, highly-available (default: "highly-available")
 
    Nested scheme for `zone`:
     - `id` - The name of the zone.

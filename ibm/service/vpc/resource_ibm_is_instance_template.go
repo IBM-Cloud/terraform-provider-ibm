@@ -107,13 +107,51 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 			},
 
 			isInstanceTemplateMetadataServiceEnabled: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				Deprecated:    "Use metadata_service instead",
+				ConflictsWith: []string{isInstanceMetadataService},
+				Description:   "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
 
+			isInstanceMetadataService: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Computed:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{isInstanceTemplateMetadataServiceEnabled},
+				Description:   "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceMetadataServiceEnabled1: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							ForceNew:    true,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+						},
+
+						isInstanceMetadataServiceProtocol: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Computed:    true,
+							Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+						},
+
+						isInstanceMetadataServiceRespHopLimit: {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							ForceNew:    true,
+							Computed:    true,
+							Description: "The hop limit (IP time to live) for IP response packets from the metadata service",
+						},
+					},
+				},
+			},
 			isInstanceTemplateVPC: {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -655,7 +693,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceByCatalogOffering{
+	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceByCatalogOfferingInstanceTemplateContext{
 		Zone: &vpcv1.ZoneIdentity{
 			Name: &zone,
 		},
@@ -693,6 +731,11 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			Enabled: &metadataServiceEnabled,
 		}
 	}
+
+	if metadataService := GetInstanceTemplateMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -713,7 +756,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 	}
 	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
 		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &availablePolicyHostFailure,
 		}
 	}
@@ -1111,6 +1154,11 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			Enabled: &metadataServiceEnabled,
 		}
 	}
+
+	if metadataService := GetInstanceTemplateMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -1131,7 +1179,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	}
 	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
 		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &availablePolicyHostFailure,
 		}
 	}
@@ -1570,6 +1618,19 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	}
 	if instance.MetadataService != nil {
 		d.Set(isInstanceTemplateMetadataServiceEnabled, instance.MetadataService.Enabled)
+		metadataService := []map[string]interface{}{}
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+		if instance.MetadataService.Protocol != nil {
+			metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+		}
+		if instance.MetadataService.ResponseHopLimit != nil {
+			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+		}
+		metadataService = append(metadataService, metadataServiceMap)
+		d.Set(isInstanceMetadataService, metadataService)
+
 	}
 
 	var placementTargetMap map[string]interface{}
@@ -1849,4 +1910,29 @@ func instanceTemplateExists(d *schema.ResourceData, meta interface{}, ID string)
 		return false, fmt.Errorf("[ERROR] Error Getting InstanceTemplate: %s\n%s", err, response)
 	}
 	return true, nil
+}
+
+func GetInstanceTemplateMetadataServiceOptions(d *schema.ResourceData) (metadataService *vpcv1.InstanceMetadataServicePrototype) {
+	if metadataServiceIntf, ok := d.GetOk(isInstanceMetadataService); ok {
+		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
+		enabledIntf, ok := metadataServiceMap[isInstanceMetadataServiceEnabled1]
+		metadataService = &vpcv1.InstanceMetadataServicePrototype{}
+		if ok {
+			enabled := enabledIntf.(bool)
+			metadataService.Enabled = &enabled
+		}
+		protocolIntf, ok := metadataServiceMap[isInstanceMetadataServiceProtocol]
+		if ok && protocolIntf.(string) != "" {
+			protocol := protocolIntf.(string)
+			metadataService.Protocol = &protocol
+		}
+		respHopLimitIntf, ok := metadataServiceMap[isInstanceMetadataServiceRespHopLimit]
+		if ok && int64(respHopLimitIntf.(int)) != 0 {
+			respHopLimit := int64(respHopLimitIntf.(int))
+			metadataService.ResponseHopLimit = &respHopLimit
+		}
+
+		return
+	}
+	return nil
 }

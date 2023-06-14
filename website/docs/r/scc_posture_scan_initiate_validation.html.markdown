@@ -56,3 +56,4 @@ $ terraform import ibm_scc_posture_scan_initiate_validation.scans <id>
 ```
 $ terraform import ibm_scc_posture_scan_initiate_validation.scans 1
 ```
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_scan_initiate_validation is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

@@ -10,14 +10,26 @@ subcategory: "Context Based Restrictions"
 
 Provides a resource for cbr_zone. This allows cbr_zone to be created, updated and deleted.
 
-## Example Usage
+## Example Usage to create a zone with excluded addresses
 
 ```hcl
 resource "ibm_cbr_zone" "cbr_zone" {
   account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
   addresses {
-		type = "ipAddress"
-		value = "value"
+    type = "ipAddress"
+    value = "169.23.56.234"
+  }
+  addresses {
+    type = "ipRange"
+    value = "169.23.22.0-169.23.22.255"
+  }
+  excluded {
+    type  = "ipAddress"
+    value = "169.23.22.10"
+  }
+  excluded {
+    type  = "ipAddress"
+    value = "169.23.22.11"
   }
   description = "this is an example of zone"
   excluded {

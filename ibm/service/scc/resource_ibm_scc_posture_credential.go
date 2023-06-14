@@ -19,12 +19,12 @@ import (
 
 func ResourceIBMSccPostureCredentials() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMSccPostureCredentialsCreate,
-		ReadContext:   resourceIBMSccPostureCredentialsRead,
-		UpdateContext: resourceIBMSccPostureCredentialsUpdate,
-		DeleteContext: resourceIBMSccPostureCredentialsDelete,
-		Importer:      &schema.ResourceImporter{},
-
+		CreateContext:      resourceIBMSccPostureCredentialsCreate,
+		ReadContext:        resourceIBMSccPostureCredentialsRead,
+		UpdateContext:      resourceIBMSccPostureCredentialsUpdate,
+		DeleteContext:      resourceIBMSccPostureCredentialsDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "**Removal Notification** Resource Removal: Resource ibm_scc_posture_credential is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"enabled": {
 				Type:        schema.TypeBool,

@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -537,6 +538,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeList,
 							Description: "CPU Auto Scaling",
 							Computed:    true,
+							Deprecated:  "This field is deprecated, auto scaling cpu is unsupported by IBM Cloud Databases",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"rate_increase_percent": {
@@ -747,12 +749,12 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
 
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
@@ -779,11 +781,16 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
-	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
+	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
+		ID:      &instance.ID,
+		GroupID: core.StringPtr("member"),
 	}
-	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
+
+	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err)
+	}
+	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
 		ID: &instance.ID,

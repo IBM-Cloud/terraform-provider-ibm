@@ -56,7 +56,7 @@ resource "ibm_is_lb_pool" "example" {
 
 ```
 
-//In the following example, you can create a load balancer pool with `app_cookie` session persistence:
+In the following example, you can create a load balancer pool with `app_cookie` session persistence:
 
 ```terraform
 resource "ibm_is_lb_pool" "example" {
@@ -75,7 +75,7 @@ resource "ibm_is_lb_pool" "example" {
 
 ```
 
-//In the following example, you can create a load balancer pool with `http_cookie` session persistence:
+In the following example, you can create a load balancer pool with `http_cookie` session persistence:
 
 ```terraform
 resource "ibm_is_lb_pool" "example" {
@@ -93,7 +93,7 @@ resource "ibm_is_lb_pool" "example" {
 
 ```
 
-//In the following example, you can create a load balancer pool with `source_ip` session persistence:
+In the following example, you can create a load balancer pool with `source_ip` session persistence:
 
 ```terraform
 resource "ibm_is_lb_pool" "example" {

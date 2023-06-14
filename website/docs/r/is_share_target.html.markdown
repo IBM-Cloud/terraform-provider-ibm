@@ -3,35 +3,39 @@ layout: "ibm"
 page_title: "IBM : is_share_target"
 description: |-
   Manages ShareTarget.
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
+
 
 # ibm\_is_share_target
 
 Provides a resource for ShareTarget. This allows ShareTarget to be created, updated and deleted.
 
+
+~> **NOTE**
+IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
+
+~> **NOTE**
+This is a Beta feature and it is subject to change in the GA release 
+
+~> **NOTE**
+This resource is being deprecated. Please use `ibm_is_share_mount_target` instead
+
 ## Example Usage
 
 ```hcl
-//Example to create share with access_control_mode vpc and mount target with vpc
-resource "ibm_is_vpc" "example" {
+resource "ibm_is_vpc" "vpc" {
   name = "my-vpc"
 }
-resource "ibm_is_subnet" "example" {
-  name                     = "example-subnet"
-  vpc                      = ibm_is_vpc.example.id
-  zone                     = "us-south-1"
-  total_ipv4_address_count = 256
-}
-resource "ibm_is_share" "example" {
+
+resource "ibm_is_share" "is_share" {
   name = "my-share"
-  access_control_mode = "vpc"
   size = 200
   profile = "tier-3iops"
   zone = "us-south-2"
 }
 
-resource "ibm_is_share_target" "example" {
+resource "ibm_is_share_mount_target" "example" {
   share = ibm_is_share.example.id
   vpc = ibm_is_vpc.vpc.id
   name = "my-share-target"
@@ -48,7 +52,7 @@ resource "ibm_is_share" "example1" {
 }
 
 // Example with virtual network interface with reserved ip prototype 
-resource "ibm_is_share_target" "example1" {
+resource "ibm_is_share_mount_target" "example1" {
   share = ibm_is_share.example1.id
   virtual_network_interface {
     name = "my-virtual_network_interface"
@@ -67,7 +71,7 @@ resource "ibm_is_subnet_reserved_ip" "example" {
   name        = "example-subnet-reserved-ip"
   auto_delete = true
 }
-resource "ibm_is_share_target" "example2" {
+resource "ibm_is_share_mount_target" "example2" {
   share = ibm_is_share.example1.id
   virtual_network_interface {
     name = "my-virtual_network_interface"
@@ -79,7 +83,7 @@ resource "ibm_is_share_target" "example2" {
 }
 
 // Example with virtual network interface with subnet
-resource "ibm_is_share_target" "example3" {
+resource "ibm_is_share_mount_target" "example3" {
   share = ibm_is_share.example1.id
   virtual_network_interface {
     name = "my-virtual_network_interface"
@@ -151,3 +155,21 @@ The following attributes are exported:
   If access_control_mode is:
   `security_group`: ID of the VPC for the virtual network interface of this share mount target
   `vpc`: ID of the VPC in which instances can mount the file share using this share mount target
+
+
+
+## Import
+
+The `ibm_is_share_target` can be imported using ID.
+
+**Syntax**
+
+```
+$ terraform import ibm_is_share_mount_target.example `\<ibm_is_share_id\>/\<ibm_is_share_target_id\>`
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_share_mount_target.example d7bec597-4726-451f-8a63-e62e6f19c32c/d7bec597-4726-451f-8a63-e62e6f19c32c
+```

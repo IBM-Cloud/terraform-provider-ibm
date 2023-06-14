@@ -110,7 +110,6 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "auto_scaling.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.disk.0.capacity_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.memory.0.io_enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.cpu.0.rate_increase_percent", "20"),
 				),
 			},
 			{
@@ -178,7 +177,11 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		}
 		configuration                = <<CONFIGURATION
 		{
-		  "maxmemory-policy": "allkeys-lru"
+		  "appendonly": "no",
+		  "maxmemory": 0,
+		  "maxmemory-policy": "noeviction",
+		  "maxmemory-samples": 5,
+		  "stop-writes-on-bgsave-error": "yes"
 		}
 		CONFIGURATION
 	  }
@@ -275,12 +278,6 @@ func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, na
 		plan              = "standard"
 		location          = "%[3]s"
 		auto_scaling {
-			cpu {
-			  rate_increase_percent       = 20
-			  rate_limit_count_per_member = 20
-			  rate_period_seconds         = 900
-			  rate_units                  = "count"
-			}
 			disk {
 			  capacity_enabled             = true
 			  free_space_less_than_percent = 15
@@ -292,7 +289,7 @@ func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, na
 			  rate_period_seconds          = 900
 			  rate_units                   = "mb"
 			}
-			  memory {
+		  memory {
 			  io_above_percent         = 90
 			  io_enabled               = true
 			  io_over_period           = "15m"

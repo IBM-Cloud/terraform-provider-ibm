@@ -359,10 +359,13 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	if err != nil || vol == nil {
 		return fmt.Errorf("[ERROR] Error retrieving Volume (%s) details: %s\n%s", volume, err, response)
 	}
-	if vol.VolumeAttachments == nil {
-		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not attached to a virtual server instance ", volume)
+	if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 {
+		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not attached to a virtual server instance", volume)
 	}
 	volAtt := &vol.VolumeAttachments[0]
+	if *volAtt.Type != "boot" {
+		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not boot volume", volume)
+	}
 	insId = *volAtt.Instance.ID
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &insId,

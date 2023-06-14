@@ -19,11 +19,11 @@ import (
 
 func ResourceIBMSccPostureScanInitiateValidation() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMSccPostureScanInitiateValidation,
-		ReadContext:   resourceIBMSccPostureScanInitiateRead,
-		DeleteContext: resourceIBMSccPostureScanInitiateDelete,
-		Importer:      &schema.ResourceImporter{},
-
+		CreateContext:      resourceIBMSccPostureScanInitiateValidation,
+		ReadContext:        resourceIBMSccPostureScanInitiateRead,
+		DeleteContext:      resourceIBMSccPostureScanInitiateDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "**Removal Notification** Resource Removal: Resource ibm_scc_posture_scan_initiate_validation is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"scope_id": {
 				Type:         schema.TypeString,

@@ -53,6 +53,11 @@ func ResourceIBMCmCatalog() *schema.Resource {
 				Optional:    true,
 				Description: "URL for an icon associated with this catalog.",
 			},
+			"catalog_banner_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "URL for a banner image for this catalog.",
+			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -376,6 +381,9 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("catalog_icon_url"); ok {
 		createCatalogOptions.SetCatalogIconURL(d.Get("catalog_icon_url").(string))
 	}
+	if _, ok := d.GetOk("catalog_banner_url"); ok {
+		createCatalogOptions.SetCatalogBannerURL(d.Get("catalog_banner_url").(string))
+	}
 	if _, ok := d.GetOk("tags"); ok {
 		createCatalogOptions.SetTags(SIToSS(d.Get("tags").([]interface{})))
 	}
@@ -457,6 +465,9 @@ func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, m
 	}
 	if err = d.Set("catalog_icon_url", catalog.CatalogIconURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting catalog_icon_url: %s", err))
+	}
+	if err = d.Set("catalog_banner_url", catalog.CatalogBannerURL); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting catalog_banner_url: %s", err))
 	}
 	if catalog.Tags != nil {
 		if err = d.Set("tags", catalog.Tags); err != nil {
@@ -546,6 +557,9 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 	}
 	if _, ok := d.GetOk("catalog_icon_url"); ok {
 		replaceCatalogOptions.SetCatalogIconURL(d.Get("catalog_icon_url").(string))
+	}
+	if _, ok := d.GetOk("catalog_banner_url"); ok {
+		replaceCatalogOptions.SetCatalogBannerURL(d.Get("catalog_banner_url").(string))
 	}
 	if _, ok := d.GetOk("tags"); ok {
 		replaceCatalogOptions.SetTags(d.Get("tags").([]string))

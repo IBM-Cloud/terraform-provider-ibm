@@ -3,47 +3,55 @@ layout: "ibm"
 page_title: "IBM : is_share"
 description: |-
   Manages Share.
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm\_is_share
 
 Provides a resource for Share. This allows Share to be created, updated and deleted.
 
+
+~> **NOTE**
+IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
+
+~> **NOTE**
+This is a Beta feature and it is subject to change in the GA release 
+
+
 ## Example Usage
 
 ```terraform
 resource "ibm_is_share" "example" {
-  name = "my-share"
-  size = 200
+  name    = "my-share"
+  size    = 200
   profile = "tier-3iops"
-  zone = "us-south-2"
+  zone    = "us-south-2"
 }
 ```
 ## Example Usage (Create a replica share)
 
 ```terraform
 resource "ibm_is_share" "example-1" {
-    zone = "us-south-3"
-    source_share = ibm_is_share.example.id
-    name = "my-replica1"
-    profile = "tier-3iops"
-    replication_cron_spec = "0 */5 * * *"
+  zone                  = "us-south-3"
+  source_share          = ibm_is_share.example.id
+  name                  = "my-replica1"
+  profile               = "tier-3iops"
+  replication_cron_spec = "0 */5 * * *"
 }
 ```
-## Example Usage (Create a source share with replica share)
+## Example Usage (Create a file share with inline replica share)
 
 ```terraform
 resource "ibm_is_share" "example-2" {
-  zone = "us-south-1"
-  size = 220
-  name = "my-share"
+  zone    = "us-south-1"
+  size    = 220
+  name    = "my-share"
   profile = "tier-3iops"
   replica_share {
-    name = "my-replica" 
+    name                  = "my-replica"
     replication_cron_spec = "0 */5 * * *"
-    profile = "tier-3iops"
-    zone = "us-south-3"
+    profile               = "tier-3iops"
+    zone                  = "us-south-3"
   }
 }
 ```

@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 )
 
 func DataSourceIbmIsShare() *schema.Resource {
@@ -341,9 +341,9 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 
 	shareName := d.Get("name").(string)
 	shareId := d.Get("share").(string)
-	var share *vpcv1.Share = nil
+	var share *vpcbetav1.Share = nil
 	if shareId != "" {
-		getShareOptions := &vpcv1.GetShareOptions{}
+		getShareOptions := &vpcbetav1.GetShareOptions{}
 
 		getShareOptions.SetID(d.Get("share").(string))
 
@@ -361,7 +361,7 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 		}
 		share = shareItem
 	} else if shareName != "" {
-		listSharesOptions := &vpcv1.ListSharesOptions{}
+		listSharesOptions := &vpcbetav1.ListSharesOptions{}
 
 		if shareName != "" {
 			listSharesOptions.Name = &shareName
@@ -500,7 +500,7 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func dataSourceShareFlattenTargets(result []vpcv1.ShareMountTargetReference) (targets []map[string]interface{}) {
+func dataSourceShareFlattenTargets(result []vpcbetav1.ShareMountTargetReference) (targets []map[string]interface{}) {
 	for _, targetsItem := range result {
 		targets = append(targets, dataSourceShareTargetsToMap(targetsItem))
 	}
@@ -508,7 +508,7 @@ func dataSourceShareFlattenTargets(result []vpcv1.ShareMountTargetReference) (ta
 	return targets
 }
 
-func dataSourceShareTargetsToMap(targetsItem vpcv1.ShareMountTargetReference) (targetsMap map[string]interface{}) {
+func dataSourceShareTargetsToMap(targetsItem vpcbetav1.ShareMountTargetReference) (targetsMap map[string]interface{}) {
 	targetsMap = map[string]interface{}{}
 
 	if targetsItem.Deleted != nil {
@@ -533,7 +533,7 @@ func dataSourceShareTargetsToMap(targetsItem vpcv1.ShareMountTargetReference) (t
 	return targetsMap
 }
 
-func dataSourceShareTargetsDeletedToMap(deletedItem vpcv1.ShareMountTargetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetsDeletedToMap(deletedItem vpcbetav1.ShareMountTargetReferenceDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -543,7 +543,7 @@ func dataSourceShareTargetsDeletedToMap(deletedItem vpcv1.ShareMountTargetRefere
 	return deletedMap
 }
 
-func dataSourceShareFlattenLatestJob(result vpcv1.ShareJob) (finalList []map[string]interface{}) {
+func dataSourceShareFlattenLatestJob(result vpcbetav1.ShareJob) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceShareLatestJobToMap(result)
 	finalList = append(finalList, finalMap)
@@ -551,7 +551,7 @@ func dataSourceShareFlattenLatestJob(result vpcv1.ShareJob) (finalList []map[str
 	return finalList
 }
 
-func dataSourceShareLatestJobToMap(latestJobItem vpcv1.ShareJob) (latestJobMap map[string]interface{}) {
+func dataSourceShareLatestJobToMap(latestJobItem vpcbetav1.ShareJob) (latestJobMap map[string]interface{}) {
 	latestJobMap = map[string]interface{}{}
 
 	if latestJobItem.Status != nil {
@@ -571,7 +571,7 @@ func dataSourceShareLatestJobToMap(latestJobItem vpcv1.ShareJob) (latestJobMap m
 	return latestJobMap
 }
 
-func dataSourceShareLatestJobStatusReasonsToMap(statusReasonsItem vpcv1.ShareJobStatusReason) (statusReasonsMap map[string]interface{}) {
+func dataSourceShareLatestJobStatusReasonsToMap(statusReasonsItem vpcbetav1.ShareJobStatusReason) (statusReasonsMap map[string]interface{}) {
 	statusReasonsMap = map[string]interface{}{}
 
 	if statusReasonsItem.Code != nil {
@@ -587,7 +587,7 @@ func dataSourceShareLatestJobStatusReasonsToMap(statusReasonsItem vpcv1.ShareJob
 	return statusReasonsMap
 }
 
-func dataSourceShareFlattenReplicaShare(result vpcv1.ShareReference) (finalList []map[string]interface{}) {
+func dataSourceShareFlattenReplicaShare(result vpcbetav1.ShareReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceShareReplicaShareToMap(result)
 	finalList = append(finalList, finalMap)
@@ -595,7 +595,7 @@ func dataSourceShareFlattenReplicaShare(result vpcv1.ShareReference) (finalList 
 	return finalList
 }
 
-func dataSourceShareReplicaShareToMap(replicaShareItem vpcv1.ShareReference) (replicaShareMap map[string]interface{}) {
+func dataSourceShareReplicaShareToMap(replicaShareItem vpcbetav1.ShareReference) (replicaShareMap map[string]interface{}) {
 	replicaShareMap = map[string]interface{}{}
 
 	if replicaShareItem.CRN != nil {
@@ -623,7 +623,7 @@ func dataSourceShareReplicaShareToMap(replicaShareItem vpcv1.ShareReference) (re
 	return replicaShareMap
 }
 
-func dataSourceShareReplicaShareDeletedToMap(deletedItem vpcv1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareReplicaShareDeletedToMap(deletedItem vpcbetav1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -633,7 +633,7 @@ func dataSourceShareReplicaShareDeletedToMap(deletedItem vpcv1.ShareReferenceDel
 	return deletedMap
 }
 
-func dataSourceShareFlattenReplicationStatusReasons(result []vpcv1.ShareReplicationStatusReason) (replicationStatusReasons []map[string]interface{}) {
+func dataSourceShareFlattenReplicationStatusReasons(result []vpcbetav1.ShareReplicationStatusReason) (replicationStatusReasons []map[string]interface{}) {
 	for _, replicationStatusReasonsItem := range result {
 		replicationStatusReasons = append(replicationStatusReasons, dataSourceShareReplicationStatusReasonsToMap(replicationStatusReasonsItem))
 	}
@@ -641,7 +641,7 @@ func dataSourceShareFlattenReplicationStatusReasons(result []vpcv1.ShareReplicat
 	return replicationStatusReasons
 }
 
-func dataSourceShareReplicationStatusReasonsToMap(replicationStatusReasonsItem vpcv1.ShareReplicationStatusReason) (replicationStatusReasonsMap map[string]interface{}) {
+func dataSourceShareReplicationStatusReasonsToMap(replicationStatusReasonsItem vpcbetav1.ShareReplicationStatusReason) (replicationStatusReasonsMap map[string]interface{}) {
 	replicationStatusReasonsMap = map[string]interface{}{}
 
 	if replicationStatusReasonsItem.Code != nil {
@@ -657,7 +657,7 @@ func dataSourceShareReplicationStatusReasonsToMap(replicationStatusReasonsItem v
 	return replicationStatusReasonsMap
 }
 
-func dataSourceShareFlattenSourceShare(result vpcv1.ShareReference) (finalList []map[string]interface{}) {
+func dataSourceShareFlattenSourceShare(result vpcbetav1.ShareReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceShareSourceShareToMap(result)
 	finalList = append(finalList, finalMap)
@@ -665,7 +665,7 @@ func dataSourceShareFlattenSourceShare(result vpcv1.ShareReference) (finalList [
 	return finalList
 }
 
-func dataSourceShareSourceShareToMap(sourceShareItem vpcv1.ShareReference) (sourceShareMap map[string]interface{}) {
+func dataSourceShareSourceShareToMap(sourceShareItem vpcbetav1.ShareReference) (sourceShareMap map[string]interface{}) {
 	sourceShareMap = map[string]interface{}{}
 
 	if sourceShareItem.CRN != nil {
@@ -693,7 +693,7 @@ func dataSourceShareSourceShareToMap(sourceShareItem vpcv1.ShareReference) (sour
 	return sourceShareMap
 }
 
-func dataSourceShareSourceShareDeletedToMap(deletedItem vpcv1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareSourceShareDeletedToMap(deletedItem vpcbetav1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

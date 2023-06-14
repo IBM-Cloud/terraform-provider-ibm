@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -86,6 +87,25 @@ func DataSourceIBMIsBackupPolicyPlans() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL for this backup policy plan.",
+						},
+						"clone_policy": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"max_snapshots": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum number of recent snapshots (per source) that will keep clones.",
+									},
+									"zones": &schema.Schema{
+										Type:        schema.TypeSet,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Computed:    true,
+										Description: "The zone this backup policy plan will create snapshot clones in.",
+									},
+								},
+							},
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -215,6 +235,23 @@ func dataSourceBackupPolicyPlanCollectionPlansToMap(plansItem vpcv1.BackupPolicy
 	}
 	if plansItem.ResourceType != nil {
 		plansMap["resource_type"] = plansItem.ResourceType
+	}
+	if plansItem.ClonePolicy != nil {
+		backupPolicyPlanClonePolicyMap := []map[string]interface{}{}
+		finalList := map[string]interface{}{}
+
+		if plansItem.ClonePolicy.MaxSnapshots != nil {
+			finalList["max_snapshots"] = flex.IntValue(plansItem.ClonePolicy.MaxSnapshots)
+		}
+		if plansItem.ClonePolicy.Zones != nil && len(plansItem.ClonePolicy.Zones) != 0 {
+			zoneList := []string{}
+			for i := 0; i < len(plansItem.ClonePolicy.Zones); i++ {
+				zoneList = append(zoneList, string(*(plansItem.ClonePolicy.Zones[i].Name)))
+			}
+			finalList["zones"] = flex.NewStringSet(schema.HashString, zoneList)
+		}
+		backupPolicyPlanClonePolicyMap = append(backupPolicyPlanClonePolicyMap, finalList)
+		plansMap["clone_policy"] = backupPolicyPlanClonePolicyMap
 	}
 
 	return plansMap

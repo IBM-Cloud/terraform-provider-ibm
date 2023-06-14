@@ -22,8 +22,8 @@ import (
 
 func DataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureGroupProfileDetailsRead,
-
+		ReadContext:        dataSourceIBMSccPostureGroupProfileDetailsRead,
+		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_posture_group_profile is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"profile_id": {
 				Type:        schema.TypeString,

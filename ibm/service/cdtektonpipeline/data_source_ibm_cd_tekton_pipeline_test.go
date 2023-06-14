@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -46,6 +45,7 @@ func TestAccIBMCdTektonPipelineDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdTektonPipelineDataSourceAllArgs(t *testing.T) {
+	tektonPipelineNextBuildNumber := fmt.Sprintf("%d", acctest.RandIntRange(1, 99999999999999))
 	tektonPipelineEnableNotifications := "true"
 	tektonPipelineEnablePartialCloning := "true"
 
@@ -54,7 +54,7 @@ func TestAccIBMCdTektonPipelineDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineEnableNotifications, tektonPipelineEnablePartialCloning),
+				Config: testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineNextBuildNumber, tektonPipelineEnableNotifications, tektonPipelineEnablePartialCloning),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "id"),
@@ -71,6 +71,7 @@ func TestAccIBMCdTektonPipelineDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "runs_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "build_number"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "next_build_number"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enabled"),
@@ -99,6 +100,7 @@ func testAccCheckIBMCdTektonPipelineDataSourceConfigBasic() string {
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}
@@ -112,7 +114,7 @@ func testAccCheckIBMCdTektonPipelineDataSourceConfigBasic() string {
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineEnableNotifications string, tektonPipelineEnablePartialCloning string) string {
+func testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineNextBuildNumber string, tektonPipelineEnableNotifications string, tektonPipelineEnablePartialCloning string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -131,6 +133,7 @@ func testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineEnableNotific
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = %s
 			enable_notifications = %s
 			enable_partial_cloning = %s
 			worker {
@@ -175,5 +178,5 @@ func testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineEnableNotific
 		data "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
 		}
-	`, rgName, tcName, tektonPipelineEnableNotifications, tektonPipelineEnablePartialCloning)
+	`, rgName, tcName, tektonPipelineNextBuildNumber, tektonPipelineEnableNotifications, tektonPipelineEnablePartialCloning)
 }

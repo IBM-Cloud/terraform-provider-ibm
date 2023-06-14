@@ -44,6 +44,8 @@ Nested scheme for **catalog_filters**:
 
 * `catalog_icon_url` - (String) URL for an icon associated with this catalog.
 
+* `catalog_banner_url` - (String) URL for a banner image for this catalog.
+
 * `created` - (String) The date-time this catalog was created.
 
 * `crn` - (String) CRN associated with the catalog.

@@ -72,4 +72,4 @@ Nested scheme for **latest_scans**:
 * `previous` - (List) The URL of a page.
 Nested scheme for **previous**:
 	* `href` - (String) The URL of a page.
-
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_latest_scans is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

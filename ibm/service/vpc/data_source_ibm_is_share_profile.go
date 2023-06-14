@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func DataSourceIbmIsShareProfile() *schema.Resource {
@@ -50,7 +50,7 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	getShareProfileOptions := &vpcv1.GetShareProfileOptions{}
+	getShareProfileOptions := &vpcbetav1.GetShareProfileOptions{}
 
 	getShareProfileOptions.SetName(d.Get("name").(string))
 

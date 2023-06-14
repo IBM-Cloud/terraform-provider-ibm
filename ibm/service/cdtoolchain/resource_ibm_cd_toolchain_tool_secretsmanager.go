@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -46,20 +46,30 @@ func ResourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 							Required:    true,
 							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
 						},
+						"instance_id_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The type of service instance identifier. When absent defaults to `instance-name`.",
+						},
 						"instance_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the Secrets Manager service instance.",
+							Optional:    true,
+							Description: "The name of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.",
+						},
+						"instance_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The Secrets Manager service instance CRN (Cloud Resource Name), only relevant when using `instance-crn` as the `instance_id_type`.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The IBM Cloud location where the Secrets Manager service instance is located.",
+							Optional:    true,
+							Description: "The IBM Cloud location of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.",
 						},
 						"resource_group_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the resource group where the Secrets Manager service instance is located.",
+							Optional:    true,
+							Description: "The name of the resource group where the Secrets Manager service instance is located, only relevant when using `instance-name` as the `instance_id_type`.",
 						},
 					},
 				},
@@ -166,9 +176,11 @@ func resourceIBMCdToolchainToolSecretsmanagerCreate(context context.Context, d *
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("secretsmanager")
 	remapFields := map[string]string{
+		"instance_id_type":    "instance-id-type",
 		"location":            "region",
 		"resource_group_name": "resource-group",
 		"instance_name":       "instance-name",
+		"instance_crn":        "instance-crn",
 	}
 	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSecretsmanager(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
@@ -217,9 +229,11 @@ func resourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *sc
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
 	remapFields := map[string]string{
+		"instance_id_type":    "instance-id-type",
 		"location":            "region",
 		"resource_group_name": "resource-group",
 		"instance_name":       "instance-name",
+		"instance_crn":        "instance-crn",
 	}
 	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSecretsmanager(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
@@ -285,9 +299,11 @@ func resourceIBMCdToolchainToolSecretsmanagerUpdate(context context.Context, d *
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
+			"instance_id_type":    "instance-id-type",
 			"location":            "region",
 			"resource_group_name": "resource-group",
 			"instance_name":       "instance-name",
+			"instance_crn":        "instance-crn",
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSecretsmanager(), remapFields)
 		patchVals.Parameters = parameters

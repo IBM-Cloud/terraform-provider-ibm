@@ -22,8 +22,8 @@ import (
 
 func DataSourceIBMSccPostureCredentials() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureListCredentialsRead,
-
+		ReadContext:        dataSourceIBMSccPostureListCredentialsRead,
+		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_posture_credentials is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"first": &schema.Schema{
 				Type:        schema.TypeList,

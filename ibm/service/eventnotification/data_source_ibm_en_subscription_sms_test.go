@@ -65,7 +65,7 @@ func testAccCheckIBMEnSMSSubscriptionDataSourceConfig(instanceName, name, descri
 		topic_id       = ibm_en_topic.en_topic_resource_4.topic_id
 		destination_id = "Set SMS Destination ID"
 		attributes {
-			to = ["+16382922821", "+18976569023"]	
+			invited = ["+16382922821", "+18976569023"]	
 		}
 	}
 

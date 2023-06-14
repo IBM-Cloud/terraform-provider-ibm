@@ -111,14 +111,14 @@ func ResourceIBMCdToolchainToolGitlab() *schema.Resource {
 						"auth_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Select the method of authentication that will be used to access the git provider.",
+							Description: "Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.",
 						},
 						"api_token": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "Personal Access Token.",
+							Description:      "Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,

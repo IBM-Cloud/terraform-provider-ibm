@@ -73,6 +73,7 @@ func testAccCheckIBMEnSafariDestinationDataSourceConfigBasic(instanceName, name,
                 url_format_string = "https://ensafaripush.mybluemix.net"
                 website_push_id = "web.net.mybluemix.ensafaripush"
                 website_url = "https://ensafaripush.mybluemix.net"
+				pre_prod = false
 			}
 		}
 	}

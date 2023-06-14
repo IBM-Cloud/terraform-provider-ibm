@@ -128,9 +128,9 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
 		# name = "%[1]s"
-	  }
-	  
-	  resource "ibm_database" "%[2]s" {
+	}
+
+	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "messages-for-rabbitmq"
@@ -140,14 +140,19 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 3072
 		users {
-		  name     = "user123"
-		  password = "password12"
+			name     = "user123"
+			password = "password12"
 		}
 		allowlist {
-		  address     = "172.168.1.2/32"
-		  description = "desc1"
+			address     = "172.168.1.2/32"
+			description = "desc1"
 		}
-	  }
+		configuration = <<CONFIGURATION
+		{
+			"delete_undefined_queues": true
+		}
+		CONFIGURATION
+	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
@@ -156,9 +161,9 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
 		# name = "%[1]s"
-	  }
-	  
-	  resource "ibm_database" "%[2]s" {
+	}
+
+	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "messages-for-rabbitmq"
@@ -168,23 +173,23 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		members_memory_allocation_mb = 6144
 		members_disk_allocation_mb   = 6144
 		users {
-		  name     = "user123"
-		  password = "password12"
+			name     = "user123"
+			password = "password12"
 		}
 		users {
-		  name     = "user124"
-		  password = "password12"
+			name     = "user124"
+			password = "password12"
 		}
 		allowlist {
-		  address     = "172.168.1.2/32"
-		  description = "desc1"
+			address     = "172.168.1.2/32"
+			description = "desc1"
 		}
 		allowlist {
-		  address     = "172.168.1.1/32"
-		  description = "desc"
+			address     = "172.168.1.1/32"
+			description = "desc"
 		}
-	  }
-	  
+	}
+
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
@@ -193,9 +198,9 @@ func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
 		# name = "%[1]s"
-	  }
-	  
-	  resource "ibm_database" "%[2]s" {
+	}
+
+	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "messages-for-rabbitmq"
@@ -204,7 +209,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 6144
-	  }
+	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
@@ -213,14 +218,14 @@ func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string,
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
 		# name = "%[1]s"
-	  }
-	  
-	  resource "ibm_database" "%[2]s" {
+	}
+
+	resource "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
 		service           = "messages-for-rabbitmq"
 		plan              = "standard"
 		location          = "%[3]s"
-	  }
+	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }

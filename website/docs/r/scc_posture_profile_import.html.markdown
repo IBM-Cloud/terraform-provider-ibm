@@ -43,3 +43,4 @@ $ terraform import ibm_scc_posture_profile_import.profiles <id>
 ```
 $ terraform import ibm_scc_posture_profile_import.profiles 1
 ```
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_profile_import is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

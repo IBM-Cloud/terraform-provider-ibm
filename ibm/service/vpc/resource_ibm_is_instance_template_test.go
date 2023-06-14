@@ -123,10 +123,11 @@ func TestAccIBMISInstanceTemplate_metadata_service(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISInstanceTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceMetadataServiceTemplateConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, true),
+				Config: testAccCheckIBMISInstanceMetadataServiceTemplateConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, true, "https", 10),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_template.instancetemplate1", "metadata_service_enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "metadata_service.0.enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "metadata_service.0.protocol", "https"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "metadata_service.0.response_hop_limit", "10"),
 				),
 			},
 		},
@@ -379,7 +380,7 @@ func testAccCheckIBMISInstanceTemplateRipConfig(vpcName, subnetName, sshKeyName,
 
 }
 
-func testAccCheckIBMISInstanceMetadataServiceTemplateConfig(vpcName, subnetName, sshKeyName, publicKey, templateName string, metadataService bool) string {
+func testAccCheckIBMISInstanceMetadataServiceTemplateConfig(vpcName, subnetName, sshKeyName, publicKey, templateName string, metadataService bool, protocol string, hop_limit int) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_is_vpc" "vpc2" {
@@ -398,12 +399,9 @@ func testAccCheckIBMISInstanceMetadataServiceTemplateConfig(vpcName, subnetName,
 	  public_key = "%s"
 	}
 
-	data "ibm_is_images" "is_images" {
-	}
-
 	resource "ibm_is_instance_template" "instancetemplate1" {
 	   name    = "%s"
-	   image   = data.ibm_is_images.is_images.images.0.id
+	   image   = "%s"
 	   profile = "bx2-8x32"
 	
 	   primary_network_interface {
@@ -413,11 +411,15 @@ func testAccCheckIBMISInstanceMetadataServiceTemplateConfig(vpcName, subnetName,
 	   vpc       = ibm_is_vpc.vpc2.id
 	   zone      = "us-south-2"
 	   keys      = [ibm_is_ssh_key.sshkey.id]
-	   metadata_service_enabled      = %t
+	   metadata_service {
+		enabled = %t
+		protocol = "%s"
+		response_hop_limit = %d
+	  }
 	 }
 		
 	
-	`, vpcName, subnetName, sshKeyName, publicKey, templateName, metadataService)
+	`, vpcName, subnetName, sshKeyName, publicKey, templateName, acc.IsImage, metadataService, protocol, hop_limit)
 
 }
 
