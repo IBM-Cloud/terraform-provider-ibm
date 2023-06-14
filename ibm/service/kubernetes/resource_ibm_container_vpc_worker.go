@@ -77,7 +77,7 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				Optional:    true,
 				Description: "Name of Software Defined Storage",
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					var sdsList []string = []string{odf, ptx}
+					var sdsList []string = []string{odf}
 					value := v.(string)
 					set := make(map[string]bool)
 					var err error
@@ -85,13 +85,14 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 						set[v] = true
 					}
 					if !set[strings.ToUpper(value)] {
-						err = fmt.Errorf("[ERROR] Software Defined Storage not found! The current supported values are ODF and PTX!")
+						err = fmt.Errorf("[ERROR] Software Defined Storage not found! The current supported values are `ODF`!")
 						errors = append(errors, err)
 					}
 					return
 				},
 				DiffSuppressFunc: flex.ApplyOnce,
 				RequiredWith:     []string{"kube_config_path"},
+				ConflictsWith:    []string{"check_ptx_status"},
 			},
 
 			"sds_timeout": {
@@ -131,7 +132,6 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
-				RequiredWith:     []string{"check_ptx_status", "sds"},
 				Description:      "Path of downloaded cluster config",
 			},
 
@@ -143,6 +143,7 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				RequiredWith:     []string{"kube_config_path"},
 				Default:          false,
 				Description:      "Check portworx status after worker replace",
+				ConflictsWith:    []string{"sds"},
 			},
 
 			"ptx_timeout": {
