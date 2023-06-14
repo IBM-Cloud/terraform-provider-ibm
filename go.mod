@@ -9,7 +9,7 @@ require (
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.3.3-0.20230607015925-965c89cdf006
+	github.com/IBM/cloud-databases-go-sdk v0.3.3-0.20230614141927-b4cf366129d3
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6
 	github.com/IBM/container-registry-go-sdk v0.0.15

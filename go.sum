@@ -49,8 +49,12 @@ github.com/IBM/appconfiguration-go-admin-sdk v0.3.0 h1:OqFxnDxro0JiRwHBKytCcseY2
 github.com/IBM/appconfiguration-go-admin-sdk v0.3.0/go.mod h1:xPxAYhr/uywUIDEo/JqWbkUdTryPdzRdYBfUpA5IjoE=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
+github.com/IBM/cloud-databases-go-sdk v0.3.2 h1:AUi7/xswqCwuXIlSyuXtDZJIm4d0ZicUBHhPrE9TnH0=
+github.com/IBM/cloud-databases-go-sdk v0.3.2/go.mod h1:nCIVfeZnhBYIiwByT959dFP4VWUeNLxomDYy63tTC6M=
 github.com/IBM/cloud-databases-go-sdk v0.3.3-0.20230607015925-965c89cdf006 h1:HWZeR2HRceJkluo+y7BMobXgC8zJIsBNdmrHQmMkpYA=
 github.com/IBM/cloud-databases-go-sdk v0.3.3-0.20230607015925-965c89cdf006/go.mod h1:nCIVfeZnhBYIiwByT959dFP4VWUeNLxomDYy63tTC6M=
+github.com/IBM/cloud-databases-go-sdk v0.3.3-0.20230614141927-b4cf366129d3 h1:ZHLNGB75ND7pQSw5PcBMy0rY1POty7P3t3THb9oZVII=
+github.com/IBM/cloud-databases-go-sdk v0.3.3-0.20230614141927-b4cf366129d3/go.mod h1:nCIVfeZnhBYIiwByT959dFP4VWUeNLxomDYy63tTC6M=
 github.com/IBM/cloudant-go-sdk v0.0.43 h1:YxTy4RpAEezX32YIWnds76hrBREmO4u6IkBz1WylNuQ=
 github.com/IBM/cloudant-go-sdk v0.0.43/go.mod h1:WeYrJPaHTw19943ndWnVfwMIlZ5z0XUM2uEXNBrwZ1M=
 github.com/IBM/code-engine-go-sdk v0.0.0-20230324212854-743a707334f6 h1:PlYtJ+VZ1CLuhDiB1ldGW5uJBbnKG6CBIEblgU5b5mY=
