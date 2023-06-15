@@ -29,6 +29,19 @@ func TestAccIBMContainerIngressInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_instance.instance", "instance_crn", acc.InstanceCRN),
 					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "is_default", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "status", "created"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerIngressInstanceUpdate(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "instance_crn", acc.InstanceCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_instance.instance", "is_default", "false"),
+					resource.TestCheckResourceAttr(
 						"ibm_container_ingress_instance.instance", "status", "created"),
 				),
 			},
@@ -78,4 +91,13 @@ resource "ibm_container_ingress_instance" "instance" {
   is_default = "%t"
   cluster  = "%s"
 }`, acc.InstanceCRN, acc.SecretGroupID, true, acc.ClusterName)
+}
+
+func testAccCheckIBMContainerIngressInstanceUpdate() string {
+	return fmt.Sprintf(`
+resource "ibm_container_ingress_instance" "instance" {
+  instance_crn    = "%s"
+  is_default = "%t"
+  cluster  = "%s"
+}`, acc.InstanceCRN, false, acc.ClusterName)
 }

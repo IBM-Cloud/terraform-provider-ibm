@@ -1251,6 +1251,21 @@ data "ibm_is_share_targets" "is_share_targets" {
   share = ibm_is_share.is_share.id
 }
 
+resource "ibm_is_share_mount_target" "is_share_mount_target" {
+  share = ibm_is_share.is_share.id
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target-1"
+}
+
+data "ibm_is_share_mount_target" "is_share_mount_target" {
+  share        = ibm_is_share.is_share.id
+  mount_target = ibm_is_share_mount_target.is_share_target.mount_target
+}
+
+data "ibm_is_share_mount_targets" "is_share_mount_targets" {
+  share = ibm_is_share.is_share.id
+}
+
 data "ibm_is_share" "is_share" {
   share = ibm_is_share.is_share.id
 }
