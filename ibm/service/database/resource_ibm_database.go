@@ -823,6 +823,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						"cpu": {
 							Type:        schema.TypeList,
 							Description: "CPU Auto Scaling",
+							Deprecated:  "This field is deprecated, auto scaling cpu is unsupported by IBM Cloud Databases",
 							Optional:    true,
 							Computed:    true,
 							MaxItems:    1,

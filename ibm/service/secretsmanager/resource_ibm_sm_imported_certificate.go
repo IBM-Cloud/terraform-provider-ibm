@@ -528,7 +528,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 			if hasChange {
 				// Before returning an error, call the read function to update the Terraform state with the change
 				// that was already applied to the metadata
-				resourceIbmSmArbitrarySecretRead(context, d, meta)
+				resourceIbmSmImportedCertificateRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] CreateSecretVersionWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("CreateSecretVersionWithContext failed %s\n%s", err, response))
@@ -547,7 +547,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 		if err != nil {
 			if hasChange {
 				// Call the read function to update the Terraform state with the change already applied to the metadata
-				resourceIbmSmArbitrarySecretRead(context, d, meta)
+				resourceIbmSmImportedCertificateRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))
