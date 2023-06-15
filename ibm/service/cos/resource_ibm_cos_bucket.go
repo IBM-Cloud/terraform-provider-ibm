@@ -95,10 +95,18 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 			"key_protect": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "CRN of the key you want to use data at rest encryption",
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"kms_key_crn"},
+				Description:   "CRN of the key you want to use data at rest encryption",
+			},
+			"kms_key_crn": {
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"key_protect"},
+				Description:   "CRN of the key you want to use data at rest encryption",
 			},
 			"satellite_location_id": {
 				Type:          schema.TypeString,
