@@ -25,6 +25,7 @@ Identity & Access Management (IAM)
 Internet services
 Key Management Service
 Kubernetes Service
+Metrics Router
 Object Storage
 Power Systems
 Project

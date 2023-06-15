@@ -38,6 +38,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iampolicy"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -706,6 +707,10 @@ func Provider() *schema.Provider {
 			"ibm_atracker_routes":    atracker.DataSourceIBMAtrackerRoutes(),
 			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
 
+			//  Metrics Router
+			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
+			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
+
 			//Security and Compliance Center
 			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
 			"ibm_scc_account_locations":             scc.DataSourceIBMSccAccountLocations(),
@@ -1195,6 +1200,11 @@ func Provider() *schema.Provider {
 			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
 			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
 
+			// Metrics Router
+			"ibm_metrics_router_target":   metricsrouter.ResourceIBMMetricsRouterTarget(),
+			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
+			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
+
 			// //Security and Compliance Center
 			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
 			"ibm_scc_rule":                scc.ResourceIBMSccRule(),
@@ -1444,6 +1454,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_target":                      atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                       atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_atracker_settings":                    atracker.ResourceIBMAtrackerSettingsValidator(),
+				"ibm_metrics_router_target":                metricsrouter.ResourceIBMMetricsRouterTargetValidator(),
+				"ibm_metrics_router_route":                 metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
+				"ibm_metrics_router_settings":              metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
 				"ibm_satellite_endpoint":                   satellite.ResourceIBMSatelliteEndpointValidator(),
 				"ibm_scc_account_settings":                 scc.ResourceIBMSccAccountSettingsValidator(),
 				"ibm_scc_posture_collector":                scc.ResourceIBMSccPostureCollectorsValidator(),
