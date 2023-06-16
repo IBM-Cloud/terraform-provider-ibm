@@ -5,10 +5,8 @@
 # To enable ODF AddOn on your cluster
 ibmcloud_api_key = ""
 cluster = ""
-region = "us-south"
-odfVersion = "4.12.0"
-
-
+region = ""
+odfVersion = ""
 
 
 # To create the Ocscluster Custom Resource Definition, with the following specs
