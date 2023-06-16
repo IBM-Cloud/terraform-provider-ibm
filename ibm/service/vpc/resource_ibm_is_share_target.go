@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceIbmIsShareTarget() *schema.Resource {
+func ResourceIbmIsShareMountTarget() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmIsShareTargetCreate,
 		ReadContext:   resourceIbmIsShareTargetRead,
@@ -187,7 +187,7 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 	}
 }
 
-func ResourceIbmIsShareTargetValidator() *validate.ResourceValidator {
+func ResourceIbmIsShareMountTargetValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
