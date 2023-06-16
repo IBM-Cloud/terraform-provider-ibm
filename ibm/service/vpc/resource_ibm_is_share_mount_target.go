@@ -155,13 +155,15 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 	createShareMountTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
 
 	createShareMountTargetOptions.SetShareID(d.Get("share").(string))
+	shareMountTargetPrototype := &vpcbetav1.ShareMountTargetPrototype{}
 	vpcid := d.Get("vpc").(string)
 	vpc := &vpcbetav1.VPCIdentity{
 		ID: &vpcid,
 	}
-	createShareMountTargetOptions.SetVPC(vpc)
-	if _, ok := d.GetOk("name"); ok {
-		createShareMountTargetOptions.SetName(d.Get("name").(string))
+	shareMountTargetPrototype.VPC = vpc
+	if nameIntf, ok := d.GetOk("name"); ok {
+		name := nameIntf.(string)
+		shareMountTargetPrototype.Name = &name
 	}
 
 	shareTarget, response, err := vpcClient.CreateShareMountTargetWithContext(context, createShareMountTargetOptions)

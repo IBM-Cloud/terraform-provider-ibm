@@ -12,10 +12,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	vpcbetav1 "github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 const (
@@ -338,7 +338,7 @@ func isLBSgTargetRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefre
 	}
 }
 
-func isWaitForVNISgTargetCreateAvailable(sess *vpcbetav1.VpcV1, vniId string, timeout time.Duration) (interface{}, error) {
+func isWaitForVNISgTargetCreateAvailable(sess *vpcbetav1.VpcbetaV1, vniId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for virtual network interface (%s) to be available.", vniId)
 
 	stateConf := &resource.StateChangeConf{
@@ -353,7 +353,7 @@ func isWaitForVNISgTargetCreateAvailable(sess *vpcbetav1.VpcV1, vniId string, ti
 	return stateConf.WaitForState()
 }
 
-func isVNISgTargetRefreshFunc(vpcClient *vpcbetav1.VpcV1, vniId string) resource.StateRefreshFunc {
+func isVNISgTargetRefreshFunc(vpcClient *vpcbetav1.VpcbetaV1, vniId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getVNIOptions := &vpcbetav1.GetVirtualNetworkInterfaceOptions{

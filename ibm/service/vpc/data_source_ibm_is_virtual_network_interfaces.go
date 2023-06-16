@@ -9,9 +9,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -354,7 +354,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 		return diag.FromErr(err)
 	}
 
-	listVirtualNetworkInterfacesOptions := &vpcv1.ListVirtualNetworkInterfacesOptions{}
+	listVirtualNetworkInterfacesOptions := &vpcbetav1.ListVirtualNetworkInterfacesOptions{}
 
 	vniCollection, response, err := vpcbetaClient.ListVirtualNetworkInterfacesWithContext(context, listVirtualNetworkInterfacesOptions)
 	//log.Printf(len(vniCollection.VirtualNetworkInterfaces))
@@ -362,7 +362,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response))
 	}
-	// var pager *vpcv1.VirtualNetworkInterfacesPager
+	// var pager *vpcbetav1.VirtualNetworkInterfacesPager
 	// pager, err = vpcbetaClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
 	// if err != nil {
 	// 	return diag.FromErr(err)
@@ -397,7 +397,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionFirstToMap(model *vpcv1.VirtualNetworkInterfaceCollectionFirst) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionFirstToMap(model *vpcbetav1.VirtualNetworkInterfaceCollectionFirst) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
@@ -405,7 +405,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionFir
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionNextToMap(model *vpcv1.VirtualNetworkInterfaceCollectionNext) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionNextToMap(model *vpcbetav1.VirtualNetworkInterfaceCollectionNext) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
@@ -413,7 +413,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionNex
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *vpcv1.VirtualNetworkInterface) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *vpcbetav1.VirtualNetworkInterface) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AutoDelete != nil {
 		modelMap["auto_delete"] = *model.AutoDelete
@@ -495,7 +495,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceToMap(model *vpcbetav1.ReservedIPReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Address != nil {
 		modelMap["address"] = *model.Address
@@ -522,7 +522,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceToMap(model *vpcv
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceDeletedToMap(model *vpcv1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceDeletedToMap(model *vpcbetav1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -530,7 +530,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceDeletedToMap(mode
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesResourceGroupReferenceToMap(model *vpcv1.ResourceGroupReference) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesResourceGroupReferenceToMap(model *vpcbetav1.ResourceGroupReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
@@ -544,7 +544,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesResourceGroupReferenceToMap(model *v
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceToMap(model *vpcv1.SecurityGroupReference) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceToMap(model *vpcbetav1.SecurityGroupReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CRN != nil {
 		modelMap["crn"] = *model.CRN
@@ -568,7 +568,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceToMap(model *v
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceDeletedToMap(model *vpcv1.SecurityGroupReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceDeletedToMap(model *vpcbetav1.SecurityGroupReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -576,7 +576,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceDeletedToMap(m
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceToMap(model *vpcbetav1.SubnetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CRN != nil {
 		modelMap["crn"] = *model.CRN
@@ -603,7 +603,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceToMap(model *vpcv1.Su
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceDeletedToMap(model *vpcbetav1.SubnetReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -611,12 +611,12 @@ func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceDeletedToMap(model *v
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetToMap(model vpcv1.VirtualNetworkInterfaceTargetIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*vpcv1.VirtualNetworkInterfaceTargetShareMountTargetReference); ok {
-		return dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetShareMountTargetReferenceToMap(model.(*vpcv1.VirtualNetworkInterfaceTargetShareMountTargetReference))
-	} else if _, ok := model.(*vpcv1.VirtualNetworkInterfaceTarget); ok {
+func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetToMap(model vpcbetav1.VirtualNetworkInterfaceTargetIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcbetav1.VirtualNetworkInterfaceTargetShareMountTargetReference); ok {
+		return dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetShareMountTargetReferenceToMap(model.(*vpcbetav1.VirtualNetworkInterfaceTargetShareMountTargetReference))
+	} else if _, ok := model.(*vpcbetav1.VirtualNetworkInterfaceTarget); ok {
 		modelMap := make(map[string]interface{})
-		model := model.(*vpcv1.VirtualNetworkInterfaceTarget)
+		model := model.(*vpcbetav1.VirtualNetworkInterfaceTarget)
 		if model.Deleted != nil {
 			deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMap(model.Deleted)
 			if err != nil {
@@ -638,11 +638,11 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetToMap(m
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.VirtualNetworkInterfaceTargetIntf subtype encountered")
+		return nil, fmt.Errorf("Unrecognized vpcbetav1.VirtualNetworkInterfaceTargetIntf subtype encountered")
 	}
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMap(model *vpcv1.ShareMountTargetReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMap(model *vpcbetav1.ShareMountTargetReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -650,7 +650,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMa
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetShareMountTargetReferenceToMap(model *vpcv1.VirtualNetworkInterfaceTargetShareMountTargetReference) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetShareMountTargetReferenceToMap(model *vpcbetav1.VirtualNetworkInterfaceTargetShareMountTargetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Deleted != nil {
 		deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMap(model.Deleted)
@@ -674,7 +674,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetShareMo
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceToMap(model *vpcv1.VPCReference) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceToMap(model *vpcbetav1.VPCReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CRN != nil {
 		modelMap["crn"] = *model.CRN
@@ -701,7 +701,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceToMap(model *vpcv1.VPCRe
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceDeletedToMap(model *vpcv1.VPCReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceDeletedToMap(model *vpcbetav1.VPCReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -709,7 +709,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceDeletedToMap(model *vpcv
 	return modelMap, nil
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesZoneReferenceToMap(model *vpcbetav1.ZoneReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = *model.Href

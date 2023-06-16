@@ -269,13 +269,6 @@ func ResourceIbmIsShare() *schema.Resource {
 				Description:   "Configuration for a replica file share to create and associate with this file share. Ifunspecified, a replica may be subsequently added by creating a new file share with a`source_share` referencing this file share.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"access_control_mode": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
-							Computed:    true,
-							Description: "The access control mode for the replica share:",
-						},
 						"crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -718,9 +711,9 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	createShareOptions := &vpcv1.CreateShareOptions{}
+	createShareOptions := &vpcbetav1.CreateShareOptions{}
 
-	sharePrototype := &vpcv1.SharePrototype{}
+	sharePrototype := &vpcbetav1.SharePrototype{}
 	if accessControlModeIntf, ok := d.GetOk("access_control_mode"); ok {
 		accessControlMode := accessControlModeIntf.(string)
 		sharePrototype.AccessControlMode = &accessControlMode
@@ -758,10 +751,6 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		if replicaShareIntf, ok := d.GetOk("replica_share"); ok {
 			replicaShareMap := replicaShareIntf.([]interface{})[0].(map[string]interface{})
 			replicaShare := &vpcbetav1.SharePrototypeShareContext{}
-			if accessControlModeIntf, ok := d.GetOk("replica_share.0.access_control_mode"); ok {
-				accessControlMode := accessControlModeIntf.(string)
-				replicaShare.AccessControlMode = &accessControlMode
-			}
 			iopsIntf, ok := replicaShareMap["iops"]
 			iops := iopsIntf.(int)
 			if ok && iops != 0 {
@@ -786,12 +775,15 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 
 			replicaTargets, ok := replicaShareMap["mount_targets"]
 			if ok {
-				var targets []vpcbetav1.ShareMountTargetPrototype
+				var targets []vpcbetav1.ShareMountTargetPrototypeIntf
 				targetsIntf := replicaTargets.([]interface{})
 				for _, targetIntf := range targetsIntf {
 					target := targetIntf.(map[string]interface{})
-					targetsItem := resourceIbmIsShareMapToShareMountTargetPrototype(target)
-					targets = append(targets, targetsItem)
+					targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(target)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					targets = append(targets, &targetsItem)
 				}
 				replicaShare.MountTargets = targets
 			}
@@ -844,11 +836,14 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if shareTargetPrototypeIntf, ok := d.GetOk("mount_targets"); ok {
-		var targets []vpcbetav1.ShareMountTargetPrototype
+		var targets []vpcbetav1.ShareMountTargetPrototypeIntf
 		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
-			targetsItem := resourceIbmIsShareMapToShareMountTargetPrototype(value)
-			targets = append(targets, targetsItem)
+			targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			targets = append(targets, &targetsItem)
 		}
 		sharePrototype.MountTargets = targets
 	}
@@ -917,7 +912,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap map[string]interface{}) vpcbetav1.ShareMountTargetPrototype {
+func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap map[string]interface{}) (vpcbetav1.ShareMountTargetPrototype, error) {
 	shareTargetPrototype := vpcbetav1.ShareMountTargetPrototype{}
 
 	if nameIntf, ok := shareTargetPrototypeMap["name"]; ok && nameIntf != "" {
@@ -926,21 +921,19 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap ma
 
 	if vpcIntf, ok := shareTargetPrototypeMap["vpc"]; ok && vpcIntf != "" {
 		vpc := vpcIntf.(string)
-		shareTargetPrototype.VPC = &vpcv1.VPCIdentity{
+		shareTargetPrototype.VPC = &vpcbetav1.VPCIdentity{
 			ID: &vpc,
 		}
 	} else if vniIntf, ok := shareTargetPrototypeMap["virtual_network_interface"]; ok {
-		vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
+		vniPrototype := vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
 		vniPrototype, err := ShareMountTargetMapToShareMountTargetPrototype(vniMap)
 		if err != nil {
-			return &shareTargetPrototype, err
+			return shareTargetPrototype, err
 		}
 		shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
 	}
-
-	shareTargetPrototypeIntf := &shareTargetPrototype
-	return shareTargetPrototypeIntf, nil
+	return shareTargetPrototype, nil
 }
 
 func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1148,7 +1141,7 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	if d.HasChange("replica_share") {
-		getShareOptions := &vpcv1.GetShareOptions{}
+		getShareOptions := &vpcbetav1.GetShareOptions{}
 
 		getShareOptions.SetID(d.Id())
 
@@ -1177,14 +1170,14 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.ResourceData, meta interface{}, shareType, shareId string) error {
-	updateShareOptions := &vpcv1.UpdateShareOptions{}
+func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *schema.ResourceData, meta interface{}, shareType, shareId, eTag string) error {
+	updateShareOptions := &vpcbetav1.UpdateShareOptions{}
 
 	updateShareOptions.SetID(shareId)
 
 	hasChange := false
 	hasSizeChanged := false
-	sharePatchModel := &vpcv1.SharePatch{}
+	sharePatchModel := &vpcbetav1.SharePatch{}
 	shareNameSchema := ""
 	shareIopsSchema := ""
 	shareProfileSchema := ""
@@ -1233,7 +1226,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 		// 	}
 		// }
 		profile := new.(string)
-		sharePatchModel.Profile = &vpcv1.ShareProfileIdentity{
+		sharePatchModel.Profile = &vpcbetav1.ShareProfileIdentity{
 			Name: &profile,
 		}
 		hasChange = true
@@ -1300,12 +1293,12 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 			vniResvedIp := fmt.Sprintf("%s.%d.virtual_network_interface.0.primary_ip.0.reserved_ip", shareMountTargetSchema, targetIdx)
 			mountTargetId := d.Get(targetId).(string)
 			if d.HasChange(targetName) {
-				updateShareTargetOptions := &vpcv1.UpdateShareMountTargetOptions{}
+				updateShareTargetOptions := &vpcbetav1.UpdateShareMountTargetOptions{}
 
 				updateShareTargetOptions.SetShareID(shareId)
 				updateShareTargetOptions.SetID(mountTargetId)
 
-				shareTargetPatchModel := &vpcv1.ShareMountTargetPatch{}
+				shareTargetPatchModel := &vpcbetav1.ShareMountTargetPatch{}
 
 				name := d.Get(targetName).(string)
 				shareTargetPatchModel.Name = &name
@@ -1329,7 +1322,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 
 			if d.HasChange(vniName) {
 				vniNameStr := d.Get(vniName).(string)
-				vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{
+				vniPatchModel := &vpcbetav1.VirtualNetworkInterfacePatch{
 					Name: &vniNameStr,
 				}
 				vniPatch, err := vniPatchModel.AsPatch()
@@ -1337,7 +1330,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 					log.Printf("[DEBUG] Virtual network interface AsPatch failed %s", err)
 					return err
 				}
-				shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+				shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
 				shareTargetOptions.SetShareID(shareId)
 				shareTargetOptions.SetID(mountTargetId)
@@ -1347,7 +1340,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 					return err
 				}
 				vniId := *shareTarget.VirtualNetworkInterface.ID
-				updateVNIOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
+				updateVNIOptions := &vpcbetav1.UpdateVirtualNetworkInterfaceOptions{
 					ID:                           &vniId,
 					VirtualNetworkInterfacePatch: vniPatch,
 				}
@@ -1372,7 +1365,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				if len(add) > 0 {
 
 					for i := range add {
-						createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+						createsgnicoptions := &vpcbetav1.CreateSecurityGroupTargetBindingOptions{
 							SecurityGroupID: &add[i],
 							ID:              &networkID,
 						}
@@ -1394,7 +1387,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				}
 				if len(remove) > 0 {
 					for i := range remove {
-						deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+						deletesgnicoptions := &vpcbetav1.DeleteSecurityGroupTargetBindingOptions{
 							SecurityGroupID: &remove[i],
 							ID:              &networkID,
 						}
@@ -1422,11 +1415,11 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				}
 				subnetId := d.Get(vniSubnet).(string)
 				ripId := d.Get(vniResvedIp).(string)
-				updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+				updateripoptions := &vpcbetav1.UpdateSubnetReservedIPOptions{
 					SubnetID: &subnetId,
 					ID:       &ripId,
 				}
-				reservedIpPath := &vpcv1.ReservedIPPatch{}
+				reservedIpPath := &vpcbetav1.ReservedIPPatch{}
 				if d.HasChange(vniPrimaryIpName) {
 					name := d.Get(vniPrimaryIpName).(string)
 					reservedIpPath.Name = &name
@@ -1655,7 +1648,7 @@ func suppressCronSpecDiff(k, old, new string, d *schema.ResourceData) bool {
 	return d.Get("latest_job.0.type").(string) == "replication_failover" && d.Get("latest_job.0.status").(string) == "succeeded"
 }
 
-func ShareMountTargetToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareMountTarget vpcv1.ShareMountTarget) (map[string]interface{}, error) {
+func ShareMountTargetToMap(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareMountTarget vpcbetav1.ShareMountTarget) (map[string]interface{}, error) {
 	mountTarget := map[string]interface{}{}
 
 	mountTarget["name"] = *shareMountTarget.Name

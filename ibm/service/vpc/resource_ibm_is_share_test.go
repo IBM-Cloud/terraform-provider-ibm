@@ -10,14 +10,14 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func TestAccIbmIsShareBasic(t *testing.T) {
-	var conf vpcv1.Share
+	var conf vpcbetav1.Share
 	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -39,7 +39,7 @@ func TestAccIbmIsShareBasic(t *testing.T) {
 }
 
 func TestAccIbmIsShareAllArgs(t *testing.T) {
-	var conf vpcv1.Share
+	var conf vpcbetav1.Share
 
 	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	shareTargetName := fmt.Sprintf("tf-fs-tg-name-%d", acctest.RandIntRange(10, 100))
@@ -77,7 +77,7 @@ func TestAccIbmIsShareAllArgs(t *testing.T) {
 }
 
 func TestAccIbmIsShareReplica(t *testing.T) {
-	var conf vpcv1.Share
+	var conf vpcbetav1.Share
 
 	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	replicaName := fmt.Sprintf("tf-fsrp-name-%d", acctest.RandIntRange(10, 100))
@@ -107,7 +107,7 @@ func TestAccIbmIsShareReplica(t *testing.T) {
 }
 
 func TestAccIbmIsShareReplicaInline(t *testing.T) {
-	var conf vpcv1.Share
+	var conf vpcbetav1.Share
 
 	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	replicaName := fmt.Sprintf("tf-fsrp-name-%d", acctest.RandIntRange(10, 100))
@@ -233,7 +233,7 @@ func testAccCheckIbmIsShareConfigReplicaInline(vpcName, name string, size int, s
 	`, vpcName, name, acc.ShareProfileName, size, shareTergetName, replicaName, acc.ShareProfileName)
 }
 
-func testAccCheckIbmIsShareExists(n string, obj vpcv1.Share) resource.TestCheckFunc {
+func testAccCheckIbmIsShareExists(n string, obj vpcbetav1.Share) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -246,7 +246,7 @@ func testAccCheckIbmIsShareExists(n string, obj vpcv1.Share) resource.TestCheckF
 			return err
 		}
 
-		getShareOptions := &vpcv1.GetShareOptions{}
+		getShareOptions := &vpcbetav1.GetShareOptions{}
 
 		getShareOptions.SetID(rs.Primary.ID)
 
@@ -270,7 +270,7 @@ func testAccCheckIbmIsShareDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getShareOptions := &vpcv1.GetShareOptions{}
+		getShareOptions := &vpcbetav1.GetShareOptions{}
 
 		getShareOptions.SetID(rs.Primary.ID)
 

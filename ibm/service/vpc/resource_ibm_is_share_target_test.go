@@ -10,14 +10,14 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func TestAccIbmIsShareTargetBasic(t *testing.T) {
-	var conf vpcv1.ShareMountTarget
+	var conf vpcbetav1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -45,7 +45,7 @@ func TestAccIbmIsShareTargetBasic(t *testing.T) {
 }
 
 func TestAccIbmIsShareTargetVNI(t *testing.T) {
-	var conf vpcv1.ShareMountTarget
+	var conf vpcbetav1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -82,7 +82,7 @@ func TestAccIbmIsShareTargetVNI(t *testing.T) {
 }
 
 func TestAccIbmIsShareTargetVNISubnet(t *testing.T) {
-	var conf vpcv1.ShareMountTarget
+	var conf vpcbetav1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -117,7 +117,7 @@ func TestAccIbmIsShareTargetVNISubnet(t *testing.T) {
 }
 
 func TestAccIbmIsShareTargetVNISubnetPrimaryIPID(t *testing.T) {
-	var conf vpcv1.ShareMountTarget
+	var conf vpcbetav1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -279,7 +279,7 @@ func testAccCheckIbmIsShareTargetConfigVNIPrimaryIPID(vpcName, sname, targetName
 	}
 	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, resIPName, vniName, targetName)
 }
-func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareMountTarget) resource.TestCheckFunc {
+func testAccCheckIbmIsShareTargetExists(n string, obj vpcbetav1.ShareMountTarget) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -292,7 +292,7 @@ func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareMountTarget) re
 			return err
 		}
 
-		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
@@ -322,7 +322,7 @@ func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {

@@ -12,10 +12,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func ResourceIbmIsShareTarget() *schema.Resource {
@@ -211,18 +211,18 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	createShareTargetOptions := &vpcv1.CreateShareMountTargetOptions{}
+	createShareTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
 
 	createShareTargetOptions.SetShareID(d.Get("share").(string))
-	shareMountTargetPrototype := &vpcv1.ShareMountTargetPrototype{}
+	shareMountTargetPrototype := &vpcbetav1.ShareMountTargetPrototype{}
 	if vpcIdIntf, ok := d.GetOk("vpc"); ok {
 		vpcId := vpcIdIntf.(string)
-		vpc := &vpcv1.VPCIdentity{
+		vpc := &vpcbetav1.VPCIdentity{
 			ID: &vpcId,
 		}
 		shareMountTargetPrototype.VPC = vpc
 	} else if vniIntf, ok := d.GetOk("virtual_network_interface"); ok {
-		vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
+		vniPrototype := vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
 		vniPrototype, err = ShareMountTargetMapToShareMountTargetPrototype(vniMap)
 		if err != nil {
@@ -264,7 +264,7 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	GetShareMountTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+	GetShareMountTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -328,7 +328,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	updateShareTargetOptions := &vpcv1.UpdateShareMountTargetOptions{}
+	updateShareTargetOptions := &vpcbetav1.UpdateShareMountTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	shareId := parts[0]
@@ -342,7 +342,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 
 	hasChange := false
 
-	shareTargetPatchModel := &vpcv1.ShareMountTargetPatch{}
+	shareTargetPatchModel := &vpcbetav1.ShareMountTargetPatch{}
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
@@ -352,7 +352,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 
 	if d.HasChange("virtual_network_interface.0.name") {
 		vniName := d.Get("virtual_network_interface.0.name").(string)
-		vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{
+		vniPatchModel := &vpcbetav1.VirtualNetworkInterfacePatch{
 			Name: &vniName,
 		}
 		vniPatch, err := vniPatchModel.AsPatch()
@@ -360,7 +360,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 			log.Printf("[DEBUG] Virtual network interface AsPatch failed %s", err)
 			return diag.FromErr(err)
 		}
-		shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+		shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
 		shareTargetOptions.SetShareID(shareId)
 		shareTargetOptions.SetID(mountTargetId)
@@ -369,7 +369,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 			diag.FromErr(err)
 		}
 		vniId := *shareTarget.VirtualNetworkInterface.ID
-		updateVNIOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
+		updateVNIOptions := &vpcbetav1.UpdateVirtualNetworkInterfaceOptions{
 			ID:                           &vniId,
 			VirtualNetworkInterfacePatch: vniPatch,
 		}
@@ -394,7 +394,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		if len(add) > 0 {
 
 			for i := range add {
-				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+				createsgnicoptions := &vpcbetav1.CreateSecurityGroupTargetBindingOptions{
 					SecurityGroupID: &add[i],
 					ID:              &networkID,
 				}
@@ -416,7 +416,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		}
 		if len(remove) > 0 {
 			for i := range remove {
-				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+				deletesgnicoptions := &vpcbetav1.DeleteSecurityGroupTargetBindingOptions{
 					SecurityGroupID: &remove[i],
 					ID:              &networkID,
 				}
@@ -444,11 +444,11 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 		}
 		subnetId := d.Get("virtual_network_interface.0.subnet").(string)
 		ripId := d.Get("virtual_network_interface.0.primary_ip.0.reserved_ip").(string)
-		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+		updateripoptions := &vpcbetav1.UpdateSubnetReservedIPOptions{
 			SubnetID: &subnetId,
 			ID:       &ripId,
 		}
-		reservedIpPath := &vpcv1.ReservedIPPatch{}
+		reservedIpPath := &vpcbetav1.ReservedIPPatch{}
 		if d.HasChange("virtual_network_interface.0.primary_ip.0.name") {
 			name := d.Get("virtual_network_interface.0.primary_ip.0.name").(string)
 			reservedIpPath.Name = &name
@@ -499,7 +499,7 @@ func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	deleteShareTargetOptions := &vpcv1.DeleteShareMountTargetOptions{}
+	deleteShareTargetOptions := &vpcbetav1.DeleteShareMountTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
@@ -524,7 +524,7 @@ func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+func WaitForTargetAvailable(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for target (%s) to be available.", targetid)
 
 	stateConf := &resource.StateChangeConf{
@@ -539,9 +539,9 @@ func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, sha
 	return stateConf.WaitForState()
 }
 
-func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func mountTargetRefreshFunc(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+		shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
 		shareTargetOptions.SetShareID(shareid)
 		shareTargetOptions.SetID(targetid)
@@ -560,7 +560,7 @@ func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, sha
 	}
 }
 
-func WaitForVNIAvailable(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+func WaitForVNIAvailable(vpcClient *vpcbetav1.VpcbetaV1, vniId string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VNI (%s) to be available.", vniId)
 
 	stateConf := &resource.StateChangeConf{
@@ -575,9 +575,9 @@ func WaitForVNIAvailable(vpcClient *vpcv1.VpcV1, vniId string, d *schema.Resourc
 	return stateConf.WaitForState()
 }
 
-func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData) resource.StateRefreshFunc {
+func VNIRefreshFunc(vpcClient *vpcbetav1.VpcbetaV1, vniId string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getVNIOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+		getVNIOptions := &vpcbetav1.GetVirtualNetworkInterfaceOptions{
 			ID: &vniId,
 		}
 		vni, response, err := vpcClient.GetVirtualNetworkInterface(getVNIOptions)
@@ -592,13 +592,13 @@ func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData
 	}
 }
 
-func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
+func isWaitForTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"deleting", "stable"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {
-			shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+			shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
 
 			shareTargetOptions.SetShareID(shareid)
 			shareTargetOptions.SetID(targetid)
@@ -623,15 +623,15 @@ func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *s
 	return stateConf.WaitForState()
 }
 
-func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{}) (vpcv1.ShareTargetVirtualNetworkInterfacePrototype, error) {
-	vniPrototype := vpcv1.ShareTargetVirtualNetworkInterfacePrototype{}
+func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{}) (vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext, error) {
+	vniPrototype := vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext{}
 	name, _ := vniMap["name"].(string)
 	if name != "" {
 		vniPrototype.Name = &name
 	}
 	primaryIp, ok := vniMap["primary_ip"]
 	if ok && len(primaryIp.([]interface{})) > 0 {
-		primaryIpPrototype := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
+		primaryIpPrototype := &vpcbetav1.VirtualNetworkInterfacePrimaryIPReservedIPPrototype{}
 		primaryIpMap := primaryIp.([]interface{})[0].(map[string]interface{})
 
 		reservedIp := primaryIpMap["reserved_ip"].(string)
@@ -657,22 +657,22 @@ func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{
 
 	}
 	if subnet := vniMap["subnet"].(string); subnet != "" {
-		vniPrototype.Subnet = &vpcv1.SubnetIdentity{
+		vniPrototype.Subnet = &vpcbetav1.SubnetIdentity{
 			ID: &subnet,
 		}
 	}
 	if resourceGroup := vniMap["resource_group"].(string); resourceGroup != "" {
-		vniPrototype.ResourceGroup = &vpcv1.VirtualNetworkInterfacePrototypeTargetContextResourceGroup{
+		vniPrototype.ResourceGroup = &vpcbetav1.VirtualNetworkInterfacePrototypeTargetContextResourceGroup{
 			ID: &resourceGroup,
 		}
 	}
 	if secGrpIntf, ok := vniMap["security_groups"]; ok {
 		secGrpSet := secGrpIntf.(*schema.Set)
 		if secGrpSet.Len() != 0 {
-			var secGroups = make([]vpcv1.SecurityGroupIdentityIntf, secGrpSet.Len())
+			var secGroups = make([]vpcbetav1.SecurityGroupIdentityIntf, secGrpSet.Len())
 			for i, secGrpIntf := range secGrpSet.List() {
 				secGrp := secGrpIntf.(string)
-				secGroups[i] = &vpcv1.SecurityGroupIdentity{
+				secGroups[i] = &vpcbetav1.SecurityGroupIdentity{
 					ID: &secGrp,
 				}
 			}
@@ -682,10 +682,10 @@ func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{
 	return vniPrototype, nil
 }
 
-func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, vniId string) (map[string]interface{}, error) {
+func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, vniId string) (map[string]interface{}, error) {
 
 	vniMap := map[string]interface{}{}
-	vniOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+	vniOptions := &vpcbetav1.GetVirtualNetworkInterfaceOptions{
 		ID: &vniId,
 	}
 	vni, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, vniOptions)
@@ -722,7 +722,7 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 			currentPrimIp["resource_type"] = *vni.PrimaryIP.ResourceType
 		}
 
-		rIpOptions := &vpcv1.GetSubnetReservedIPOptions{
+		rIpOptions := &vpcbetav1.GetSubnetReservedIPOptions{
 			SubnetID: vni.Subnet.ID,
 			ID:       vni.PrimaryIP.ID,
 		}
