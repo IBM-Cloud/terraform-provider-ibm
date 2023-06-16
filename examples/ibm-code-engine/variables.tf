@@ -3,6 +3,11 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
+variable "ibmcloud_region" {
+  description = "IBM Cloud Region"
+  type        = string
+}
+
 // Resource arguments for code_engine_project
 variable "code_engine_project_name" {
   description = "The name of the project."
@@ -88,6 +93,30 @@ variable "code_engine_job_name" {
   description = "The name of the job. Use a name that is unique within the project."
   type        = string
   default     = "my-job"
+}
+
+// Resource arguments for code_engine_secret with format service_access
+variable "code_engine_secret_service_access_name" {
+  description = "The name of the service access secret"
+  type        = string
+  default     = "my-service-access"
+}
+
+variable "code_engine_secret_service_access_resource_key" {
+  description = "The ID of a resource key to access a resource instance."
+  type        = string
+}
+
+variable "code_engine_secret_service_access_service_instance" {
+  description = "The ID of a service instance."
+  type        = string
+}
+
+// Resource arguments for code_engine_binding
+variable "code_engine_binding_prefix" {
+  description = "The name of the service access secret"
+  type        = string
+  default     = "MY_PREFIX"
 }
 
 // Data source arguments for code_engine_project
