@@ -821,8 +821,6 @@ func resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(model *secretsma
 			challenges = append(challenges, challengesItemMap)
 		}
 		modelMap["challenges"] = challenges
-	} else {
-		modelMap["challenges"] = nil
 	}
 	if model.DnsChallengeValidationTime != nil {
 		modelMap["dns_challenge_validation_time"] = model.DnsChallengeValidationTime.String()
