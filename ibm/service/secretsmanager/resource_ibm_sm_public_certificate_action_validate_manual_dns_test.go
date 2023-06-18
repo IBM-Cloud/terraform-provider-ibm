@@ -62,9 +62,6 @@ func testAccCheckSmPublicCertificateActionValidateManualDnsConfigBasic() string 
   			name    = ibm_sm_public_certificate.sm_public_certificate.issuance_info[0].challenges[0].txt_record_name
   			type    = "TXT"
   			content = ibm_sm_public_certificate.sm_public_certificate.issuance_info[0].challenges[0].txt_record_value
-			depends_on = [
-				data.ibm_cis_domain.cis_instance_domain
-			]
 		}
 
 		resource "ibm_sm_public_certificate_action_validate_manual_dns" "sm_public_certificate_action_validate_manual_dns_instance" {
