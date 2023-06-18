@@ -55,15 +55,10 @@ func testAccCheckSmPublicCertificateActionValidateManualDnsConfigBasic() string 
   			ca = ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt_instance.name
   			dns = "manual"
 		}
-
-		data "ibm_cis_domain" "cis_instance_domain" {
-			domain = ibm_sm_public_certificate.sm_public_certificate.issuance_info[0].challenges[0].domain
-			cis_id = "%s"
-		}
 		
 		resource "ibm_cis_dns_record" "test_dns_txt_record" {
 			cis_id  = "%s"
-			domain_id = data.ibm_cis_domain.cis_instance_domain.domain_id
+			domain_id = "%s"
   			name    = ibm_sm_public_certificate.sm_public_certificate.issuance_info[0].challenges[0].txt_record_name
   			type    = "TXT"
   			content = ibm_sm_public_certificate.sm_public_certificate.issuance_info[0].challenges[0].txt_record_value
@@ -84,8 +79,7 @@ func testAccCheckSmPublicCertificateActionValidateManualDnsConfigBasic() string 
 
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateLetsEncryptEnvironment, acc.SecretsManagerPublicCertificateLetsEncryptPrivateKey,
 		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateCommonName,
-		acc.SecretsManagerPublicCertificateCisCrn,
-		acc.SecretsManagerPublicCertificateCisCrn,
+		acc.SecretsManagerPublicCertificateCisCrn, acc.SecretsManagerValidateManualDnsCisZoneId,
 		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }
 
