@@ -930,7 +930,7 @@ func setChallengesWithAkamaiAndValidateManualDns(context context.Context, d *sch
 	config, err := edgegrid.InitEdgeRc(edgerc, configSection)
 	if err != nil {
 		resourceIbmSmPublicCertificateDelete(context, d, meta)
-		return diag.FromErr(fmt.Errorf("error initiating edgerc: %s. Error deleting secret: %s", err))
+		return diag.FromErr(fmt.Errorf("error initiating edgerc: %s", err))
 	}
 	successfullySetChallengeDomains := make(map[string]string)
 	ttl := 120
