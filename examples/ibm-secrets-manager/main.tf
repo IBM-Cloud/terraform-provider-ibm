@@ -42,6 +42,13 @@ resource "ibm_sm_public_certificate" "sm_public_certificate_instance" {
   }
 }
 
+resource "ibm_sm_public_certificate_action_validate_manual_dns" "sm_public_certificate_action_validate_manual_dns_instance" {
+  instance_id      = var.secrets_manager_instance_id
+  region           = var.region
+  endpoint_type    = var.endpoint_type
+  secret_id 	   = var.sm_public_certificate_action_validate_manual_dns_secret_id
+}
+
 // Provision sm_kv_secret resource instance
 resource "ibm_sm_kv_secret" "sm_kv_secret_instance" {
   instance_id   = var.secrets_manager_instance_id
