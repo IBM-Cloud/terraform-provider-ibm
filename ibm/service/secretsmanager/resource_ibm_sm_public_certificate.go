@@ -475,7 +475,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -502,7 +502,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -527,9 +527,6 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("ca", secret.Ca); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting ca: %s", err))
 	}
-	//if err = d.Set("dns", secret.Dns); err != nil {
-	//	return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
-	//}
 	if err = d.Set("bundle_certs", secret.BundleCerts); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting bundle_certs: %s", err))
 	}
@@ -559,7 +556,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
 		}
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if err = d.Set("issuer", secret.Issuer); err != nil {
@@ -644,6 +641,7 @@ func resourceIbmSmPublicCertificateUpdate(context context.Context, d *schema.Res
 		patchVals.Rotation = RotationModel
 		hasChange = true
 	}
+
 	if hasChange {
 		updateSecretMetadataOptions.SecretMetadataPatch, _ = patchVals.AsPatch()
 		_, response, err := secretsManagerClient.UpdateSecretMetadataWithContext(context, updateSecretMetadataOptions)

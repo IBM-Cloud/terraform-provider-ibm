@@ -126,5 +126,33 @@ func testAccCheckSmPublicCertificateActionValidateManualDnsExists(n string, obj 
 }
 
 func testAccCheckSmPublicCertificateActionValidateManualDnsDestroy(s *terraform.State) error {
+	//secretsManagerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecretsManagerV2()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//secretsManagerClient = getClientWithInstanceEndpointTest(secretsManagerClient)
+	//
+	//for _, rs := range s.RootModule().Resources {
+	//	if rs.Type != "ibm_sm_public_certificate_configuration_ca_lets_encrypt" {
+	//		continue
+	//	}
+	//
+	//	getConfigurationOptions := &secretsmanagerv2.GetConfigurationOptions{}
+	//
+	//	id := strings.Split(rs.Primary.ID, "/")
+	//	configName := id[2]
+	//	getConfigurationOptions.SetName(configName)
+	//
+	//	// Try to find the key
+	//	_, response, err := secretsManagerClient.GetConfiguration(getConfigurationOptions)
+	//
+	//	if err == nil {
+	//		return fmt.Errorf("PublicCertificateConfigurationCALetsEncrypt still exists: %s", rs.Primary.ID)
+	//	} else if response.StatusCode != 404 {
+	//		return fmt.Errorf("Error checking for PublicCertificateConfigurationCALetsEncrypt (%s) has been destroyed: %s", rs.Primary.ID, err)
+	//	}
+	//}
+
 	return nil
 }
