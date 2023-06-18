@@ -117,6 +117,7 @@ var SecretsManagerPublicCertificateCisCrn string
 var SecretsManagerPublicCertificateClassicInfrastructureUsername string
 var SecretsManagerPublicCertificateClassicInfrastructurePassword string
 var SecretsManagerPublicCertificateCommonName string
+var SecretsManagerValidateManualDnsCisZoneId string
 var SecretsManagerImportedCertificatePathToCertificate string
 var SecretsManagerSecretType string
 var SecretsManagerSecretID string
@@ -1082,6 +1083,10 @@ func init() {
 	SecretsManagerPublicCertificateCommonName = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_COMMON_NAME")
 	if SecretsManagerPublicCertificateCommonName == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_COMMON_NAME for testing public certificate's tests, else tests fail if not set correctly")
+	}
+	SecretsManagerValidateManualDnsCisZoneId = os.Getenv("SECRETS_MANAGER_VALIDATE_MANUAL_DNS_CIS_ZONE_ID")
+	if SecretsManagerValidateManualDnsCisZoneId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_VALIDATE_MANUAL_DNS_CIS_ZONE_ID for testing validate manual dns' test, else tests fail if not set correctly")
 	}
 
 	SecretsManagerPublicCertificateCisCrn = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_CIS_CRN")
