@@ -512,7 +512,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 	if secret.IssuanceInfo != nil {
-		issuanceInfoMap, err := resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(secret.IssuanceInfo, d)
+		issuanceInfoMap, err := resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(secret.IssuanceInfo)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -806,7 +806,7 @@ func resourceIbmSmPublicCertificateRotationPolicyToMap(modelIntf secretsmanagerv
 	return modelMap, nil
 }
 
-func resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(model *secretsmanagerv2.CertificateIssuanceInfo, d *schema.ResourceData) (map[string]interface{}, error) {
+func resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(model *secretsmanagerv2.CertificateIssuanceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AutoRotated != nil {
 		modelMap["auto_rotated"] = model.AutoRotated
@@ -822,7 +822,7 @@ func resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(model *secretsma
 		}
 		modelMap["challenges"] = challenges
 	} else {
-		modelMap["challenges"] = d.Get("issuance_info").([]interface{})[0].(map[string]interface{})["challenges"]
+		modelMap["challenges"] = nil
 	}
 	if model.DnsChallengeValidationTime != nil {
 		modelMap["dns_challenge_validation_time"] = model.DnsChallengeValidationTime.String()
