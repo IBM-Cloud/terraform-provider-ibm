@@ -502,11 +502,6 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if d.Get("dns").(string) != "akamai" {
-		if err = d.Set("dns", secret.Dns); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
-		}
-	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
@@ -531,6 +526,11 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	}
 	if err = d.Set("ca", secret.Ca); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting ca: %s", err))
+	}
+	if d.Get("dns").(string) != "akamai" {
+		if err = d.Set("dns", secret.Dns); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
+		}
 	}
 	if err = d.Set("bundle_certs", secret.BundleCerts); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting bundle_certs: %s", err))
