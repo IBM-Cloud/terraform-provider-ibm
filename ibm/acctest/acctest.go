@@ -1016,7 +1016,7 @@ func init() {
 	IsImageName = os.Getenv("IS_IMAGE_NAME")
 	if IsImageName == "" {
 		//IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
-		IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
+		IsImageName = "ibm-ubuntu-22-04-1-minimal-amd64-4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
