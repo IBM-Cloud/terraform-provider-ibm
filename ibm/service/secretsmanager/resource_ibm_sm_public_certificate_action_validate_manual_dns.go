@@ -44,9 +44,9 @@ func resourceIbmSmPublicCertificateActionValidateManualDnsCreateOrUpdate(context
 	instanceId := d.Get("instance_id").(string)
 	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
 
-	validateManualDns(context, d, secretsManagerClient)
-
 	d.SetId(fmt.Sprintf("%s/%s/%s/validate_manual_dns", region, instanceId, d.Get("secret_id").(string)))
+
+	validateManualDns(context, d, secretsManagerClient)
 
 	return nil
 }
