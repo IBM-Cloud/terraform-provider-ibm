@@ -980,7 +980,7 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 	if err = d.Set("size", flex.IntValue(share.Size)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting size: %s", err))
 	}
-	targets := []map[string]interface{}{}
+	targets := make([]map[string]interface{}, 0)
 	if share.MountTargets != nil {
 		for _, targetsItem := range share.MountTargets {
 			GetShareMountTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}

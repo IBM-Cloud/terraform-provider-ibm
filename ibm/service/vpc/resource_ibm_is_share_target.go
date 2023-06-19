@@ -292,12 +292,10 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 	if shareTarget.VirtualNetworkInterface != nil {
-		vniList := make([]map[string]interface{}, 0)
-		vniMap, err := ShareMountTargetVirtualNetworkInterfaceToMap(context, vpcClient, d, *shareTarget.VirtualNetworkInterface.ID)
+		vniList, err := ShareMountTargetVirtualNetworkInterfaceToMap(context, vpcClient, d, *shareTarget.VirtualNetworkInterface.ID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		vniList = append(vniList, vniMap)
 		d.Set("virtual_network_interface", vniList)
 	}
 	if err = d.Set("name", *shareTarget.Name); err != nil {
@@ -682,8 +680,9 @@ func ShareMountTargetMapToShareMountTargetPrototype(vniMap map[string]interface{
 	return vniPrototype, nil
 }
 
-func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, vniId string) (map[string]interface{}, error) {
+func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, vniId string) ([]map[string]interface{}, error) {
 
+	vniSlice := make([]map[string]interface{}, 0)
 	vniMap := map[string]interface{}{}
 	vniOptions := &vpcbetav1.GetVirtualNetworkInterfaceOptions{
 		ID: &vniId,
@@ -706,7 +705,7 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 	currentPrimIp := map[string]interface{}{}
 	if vni.PrimaryIP != nil {
 		if vni.PrimaryIP.Address != nil {
-			vniMap["address"] = vni.PrimaryIP.Address
+			currentPrimIp["address"] = vni.PrimaryIP.Address
 		}
 		if vni.PrimaryIP.Name != nil {
 			currentPrimIp["name"] = *vni.PrimaryIP.Name
@@ -737,6 +736,6 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 	}
 	vniMap["subnet"] = vni.Subnet.ID
 	vniMap["resource_type"] = vni.ResourceType
-
-	return vniMap, nil
+	vniSlice = append(vniSlice, vniMap)
+	return vniSlice, nil
 }

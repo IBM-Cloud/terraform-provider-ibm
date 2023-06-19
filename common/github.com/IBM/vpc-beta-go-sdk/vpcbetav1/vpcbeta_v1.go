@@ -14767,6 +14767,8 @@ func (vpcbeta *VpcbetaV1) ListVirtualNetworkInterfacesWithContext(ctx context.Co
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	if listVirtualNetworkInterfacesOptions.Start != nil {
 		builder.AddQuery("start", fmt.Sprint(*listVirtualNetworkInterfacesOptions.Start))
 	}
@@ -14839,7 +14841,8 @@ func (vpcbeta *VpcbetaV1) GetVirtualNetworkInterfaceWithContext(ctx context.Cont
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -14905,7 +14908,8 @@ func (vpcbeta *VpcbetaV1) UpdateVirtualNetworkInterfaceWithContext(ctx context.C
 
 	builder.AddQuery("version", fmt.Sprint(*vpcbeta.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpcbeta.generation))
-
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("future_version", "true")
 	_, err = builder.SetBodyContentJSON(updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch)
 	if err != nil {
 		return
