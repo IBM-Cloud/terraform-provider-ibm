@@ -778,7 +778,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 				targetsIntf := replicaTargets.([]interface{})
 				for _, targetIntf := range targetsIntf {
 					target := targetIntf.(map[string]interface{})
-					targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(target)
+					targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, target)
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -838,7 +838,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		var targets []vpcbetav1.ShareMountTargetPrototypeIntf
 		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
-			targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(value)
+			targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -911,7 +911,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap map[string]interface{}) (vpcbetav1.ShareMountTargetPrototype, error) {
+func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, shareTargetPrototypeMap map[string]interface{}) (vpcbetav1.ShareMountTargetPrototype, error) {
 	shareTargetPrototype := vpcbetav1.ShareMountTargetPrototype{}
 
 	if nameIntf, ok := shareTargetPrototypeMap["name"]; ok && nameIntf != "" {
@@ -926,7 +926,7 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(shareTargetPrototypeMap ma
 	} else if vniIntf, ok := shareTargetPrototypeMap["virtual_network_interface"]; ok {
 		vniPrototype := vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
-		vniPrototype, err := ShareMountTargetMapToShareMountTargetPrototype(vniMap)
+		vniPrototype, err := ShareMountTargetMapToShareMountTargetPrototype(d, vniMap)
 		if err != nil {
 			return shareTargetPrototype, err
 		}

@@ -84,28 +84,32 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 										Type:          schema.TypeString,
 										Optional:      true,
 										ForceNew:      true,
-										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name"},
-										ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										Description:   "ID of reserved IP",
 									},
 									"address": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										ForceNew:    true,
-										Description: "The IP address to reserve, which must not already be reserved on the subnet.",
+										Type:          schema.TypeString,
+										Optional:      true,
+										Computed:      true,
+										ForceNew:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										Description:   "The IP address to reserve, which must not already be reserved on the subnet.",
 									},
 									"auto_delete": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Computed:    true,
-										Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
+										Type:          schema.TypeBool,
+										Optional:      true,
+										Computed:      true,
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Description:   "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
 									},
 									"name": {
 										Type:          schema.TypeString,
 										Optional:      true,
 										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
-										ExactlyOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name"},
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										Description:   "Name for reserved IP",
 									},
 									"resource_type": {
@@ -275,7 +279,7 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 	} else if vniIntf, ok := d.GetOk("virtual_network_interface"); ok {
 		vniPrototype := vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
-		vniPrototype, err = ShareMountTargetMapToShareMountTargetPrototype(vniMap)
+		vniPrototype, err = ShareMountTargetMapToShareMountTargetPrototype(d, vniMap)
 		if err != nil {
 			return diag.FromErr(err)
 		}
