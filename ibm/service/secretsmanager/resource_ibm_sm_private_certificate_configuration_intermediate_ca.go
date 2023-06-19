@@ -286,31 +286,6 @@ func ResourceIbmSmPrivateCertificateConfigurationIntermediateCA() *schema.Resour
 					},
 				},
 			},
-			// parameters for signing intermediate actions (internal)
-			"ttl": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days.",
-			},
-			"max_path_length": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "        The maximum path length to encode in the generated certificate. `-1` means no limit.",
-			},
-			"permitted_dns_domains": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "        The allowed DNS domains or subdomains for the certificates that are to be signed and issued by this CA certificate.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"use_csr_values": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Determines whether to use values from a certificate signing request (CSR) to complete a `private_cert_configuration_action_sign_csr` action.",
-			},
 		},
 	}
 }
@@ -802,24 +777,8 @@ func resourceIbmSmConfigurationActionPrivateCertificateSignIntermediateCAMapToCo
 		}
 		model.OtherSans = otherSans
 	}
-	if _, ok := d.GetOk("ttl"); ok {
-		model.TTL = core.StringPtr(d.Get("ttl").(string))
-	}
-	if _, ok := d.GetOk("max_path_length"); ok {
-		model.MaxPathLength = core.Int64Ptr(int64(d.Get("max_path_length").(int)))
-	}
 	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
 		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))
-	}
-	if _, ok := d.GetOk("permitted_dns_domains"); ok {
-		permittedDnsDomains := []string{}
-		for _, permittedDnsDomainsItem := range d.Get("permitted_dns_domains").([]interface{}) {
-			permittedDnsDomains = append(permittedDnsDomains, permittedDnsDomainsItem.(string))
-		}
-		model.PermittedDnsDomains = permittedDnsDomains
-	}
-	if _, ok := d.GetOk("use_csr_values"); ok {
-		model.UseCsrValues = core.BoolPtr(d.Get("use_csr_values").(bool))
 	}
 	if _, ok := d.GetOk("ou"); ok {
 		ou := []string{}

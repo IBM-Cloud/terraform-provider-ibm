@@ -66,11 +66,10 @@ func TestAccIbmSmPrivateCertificateConfigurationIntermediateCAllArgs(t *testing.
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{"crl_expiry", "max_ttl", "max_path_length",
-					"permitted_dns_domains", "ttl", "use_csr_values"},
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"crl_expiry", "max_ttl"},
 			},
 		},
 	})
@@ -133,10 +132,6 @@ func privateCertificateIntermediateCAConfigAllArgs(maxTtl, crlExpiry, crlDisable
 			province = ["PV"]
 			street_address = ["123 Main St."]
 			postal_code = ["12345"]
-			ttl = "5000000"
-			permitted_dns_domains = ["example.com"]
-			use_csr_values = true
-			max_path_length = 80
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, maxTtl, crlExpiry, crlDisable,
 		crlDistributionPointsEncoded, issuingCertificatesUrlsEncoded)
