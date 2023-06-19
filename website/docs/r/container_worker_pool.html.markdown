@@ -98,6 +98,7 @@ In addition to all argument reference list, you can access the following attribu
   - `public_vlan` - (String) The ID of the public VLAN that is used in the zone. 
   - `worker_count` - (Integer) The number of worker nodes that are attached to the zone.
   - `zone` - (String) The name of the zone. 
+- `autoscale_enabled` - (Bool) Autoscaling is enabled on the workerpool
 
 ## Import
 The `ibm_container_worker_pool` can be imported by using `cluster_name_id`, `worker_pool_id`.

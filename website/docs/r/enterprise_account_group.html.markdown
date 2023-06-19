@@ -9,7 +9,7 @@ description: |-
 
 # ibm_enterprise_account_group
 
-Create and update an `enterprise_account_group`resource. Delete operation is not supported. For more information, about enterprise account group, refer to [setting up access groups](https://cloud.ibm.com/docs/account?topic=account-groups).
+Create and update and delete `enterprise_account_group`resource. For more information, about enterprise account group, refer to [setting up access groups](https://cloud.ibm.com/docs/account?topic=account-groups).
 
 ## Example usage
 

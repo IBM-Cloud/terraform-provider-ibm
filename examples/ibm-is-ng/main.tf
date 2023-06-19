@@ -306,16 +306,16 @@ resource "ibm_is_subnet" "subnet2" {
 
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "test-ipsec"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
   pfs                      = "disabled"
 }
 
 resource "ibm_is_ike_policy" "example" {
   name                     = "test-ike"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
-  dh_group                 = 2
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
+  dh_group                 = 14
   ike_version              = 1
 }
 
@@ -1198,6 +1198,22 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
+resource "ibm_is_image_export_job" "example" {
+  image = ibm_is_image.image1.id
+  name = "my-image-export"
+  storage_bucket {
+    name = "bucket-27200-lwx4cfvcue"
+  }
+}
+
+data "ibm_is_image_export_jobs" "example" {
+  image = ibm_is_image_export_job.example.image
+}
+
+data "ibm_is_image_export_job" "example" {
+  image = ibm_is_image_export_job.example.image
+  image_export_job = ibm_is_image_export_job.example.image_export_job
+}
 resource "ibm_is_vpc" "vpc" {
   name = "my-vpc"
 }
@@ -1232,6 +1248,21 @@ data "ibm_is_share_target" "is_share_target" {
 }
 
 data "ibm_is_share_targets" "is_share_targets" {
+  share = ibm_is_share.is_share.id
+}
+
+resource "ibm_is_share_mount_target" "is_share_mount_target" {
+  share = ibm_is_share.is_share.id
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target-1"
+}
+
+data "ibm_is_share_mount_target" "is_share_mount_target" {
+  share        = ibm_is_share.is_share.id
+  mount_target = ibm_is_share_mount_target.is_share_target.mount_target
+}
+
+data "ibm_is_share_mount_targets" "is_share_mount_targets" {
   share = ibm_is_share.is_share.id
 }
 

@@ -210,7 +210,7 @@ func dataSourceIbmSmImportedCertificateMetadataRead(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(importedCertificateMetadata.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(importedCertificateMetadata.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -264,7 +264,7 @@ func dataSourceIbmSmImportedCertificateMetadataRead(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(importedCertificateMetadata.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(importedCertificateMetadata.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -280,7 +280,7 @@ func dataSourceIbmSmImportedCertificateMetadataRead(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(importedCertificateMetadata.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(importedCertificateMetadata.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 

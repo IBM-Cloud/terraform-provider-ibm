@@ -14,7 +14,7 @@ Provides a resource for IAMCredentialsSecret. This allows IAMCredentialsSecret t
 
 ```hcl
 resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   access_groups = ["AccessGroupId-45884031-54be-4dd7-86ff-112511e92699"]
@@ -26,9 +26,9 @@ resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret" {
 		interval = 1
 		unit = "day"
   }
-  secret_group_id = "default"
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
   service_id = "ServiceId-bb4ccc31-bd31-493a-bb58-52ec399800be"
-  ttl = "30m"
+  ttl = "1800"
 }
 ```
 
@@ -48,7 +48,7 @@ Review the argument reference that you can specify for your resource.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
 * `name` - (Required, String) The human-readable name of your secret.
-    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/^\\w(([\\w-.]+)?\\w)?$/`.
+    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
 * `reuse_api_key` - (Optional, Boolean) Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. Must be set to `true` for IAM credentials secrets managed by Terraform.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
@@ -62,7 +62,7 @@ Nested scheme for **rotation**:
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
 * `service_id` - (Optional, Forces new resource, String) The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter.
   * Constraints: The maximum length is `50` characters. The minimum length is `40` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:-?[A-Za-z0-9]+)*$/`.
-* `ttl` - (Optional, String) The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value should be an integer that specifies the number of seconds. Minimum duration is 60 seconds. Maximum is 7776000 seconds (90 days).
+* `ttl` - (Required, String) The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value should be an integer that specifies the number of seconds. Minimum duration is 60 seconds. Maximum is 7776000 seconds (90 days).
   * Constraints: The maximum length is `7` characters. The minimum length is `2` characters. 
 
 ## Attribute Reference

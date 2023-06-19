@@ -52,6 +52,7 @@ provider "ibm" {
 |Compilance (Posture Management)|IBMCLOUD_COMPLIANCE_API_ENDPOINT|
 |Container Registry|IBMCLOUD_CR_API_ENDPOINT|
 |Kubernetes Service|IBMCLOUD_CS_API_ENDPOINT|
+|Metrics Router| IBMCLOUD_METRICS_ROUTING_API_ENDPOINT|
 |Direct Link|IBMCLOUD_DL_API_ENDPOINT|
 |Direct Link Provider|IBMCLOUD_DL_PROVIDER_API_ENDPOINT|
 |Enterprise Management|IBMCLOUD_ENTERPRISE_API_ENDPOINT|

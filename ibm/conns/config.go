@@ -73,8 +73,10 @@ import (
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
+	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
@@ -290,6 +292,7 @@ type ClientSession interface {
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
+	MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
@@ -299,6 +302,7 @@ type ClientSession interface {
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
 	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 	CodeEngineV2() (*codeengine.CodeEngineV2, error)
+	ProjectV1() (*project.ProjectV1, error)
 }
 
 type clientSession struct {
@@ -581,6 +585,10 @@ type clientSession struct {
 	atrackerClientV2    *atrackerv2.AtrackerV2
 	atrackerClientV2Err error
 
+	// Metrics Router
+	metricsRouterClient    *metricsrouterv3.MetricsRouterV3
+	metricsRouterClientErr error
+
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
 	satelliteLinkClientErr error
@@ -619,6 +627,10 @@ type clientSession struct {
 	// Code Engine options
 	codeEngineClient    *codeengine.CodeEngineV2
 	codeEngineClientErr error
+
+	// Project options
+	projectClient    *project.ProjectV1
+	projectClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1140,6 +1152,11 @@ func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
 	return session.atrackerClientV2, session.atrackerClientV2Err
 }
 
+// Metrics Router API Version 3
+func (session clientSession) MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error) {
+	return session.metricsRouterClient, session.metricsRouterClientErr
+}
+
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
@@ -1187,6 +1204,11 @@ func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonP
 // Code Engine
 func (session clientSession) CodeEngineV2() (*codeengine.CodeEngineV2, error) {
 	return session.codeEngineClient, session.codeEngineClientErr
+}
+
+// Projects API Specification
+func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
+	return session.projectClient, session.projectClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1283,6 +1305,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
+		session.projectClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1505,6 +1528,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
+	projectEndpoint := project.DefaultServiceURL
+	// Construct an "options" struct for creating the service client.
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		projectEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PROJECT_API_ENDPOINT", c.Region, project.DefaultServiceURL)
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		session.projectClientErr = fmt.Errorf("Project Service API does not support private endpoints")
+	}
+	// Construct an "options" struct for creating the service client.
+	projectClientOptions := &project.ProjectV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_PROJECT_API_ENDPOINT"}, projectEndpoint),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.projectClient, err = project.NewProjectV1(projectClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.projectClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.projectClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.projectClientErr = fmt.Errorf("Error occurred while configuring Projects API Specification service: %q", err)
+	}
+
 	// Construct an "options" struct for creating the service client.
 	ukoClientOptions := &ukov4.UkoV4Options{
 		Authenticator: authenticator,
@@ -1676,6 +1726,42 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client for Metrics Router
+	var metricsRouterClientURL string
+	var metricsRouterURLV3Err error
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion("private." + c.Region)
+		if metricsRouterURLV3Err != nil && c.Visibility == "public-and-private" {
+			metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion(c.Region)
+	}
+	if metricsRouterURLV3Err != nil {
+		metricsRouterClientURL = metricsrouterv3.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		metricsRouterClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_METRICS_ROUTING_API_ENDPOINT", c.Region, metricsRouterClientURL)
+	}
+	metricsRouterClientOptions := &metricsrouterv3.MetricsRouterV3Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_METRICS_ROUTING_API_ENDPOINT"}, metricsRouterClientURL),
+	}
+
+	// Construct the service client.
+	session.metricsRouterClient, err = metricsrouterv3.NewMetricsRouterV3(metricsRouterClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.metricsRouterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.metricsRouterClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.metricsRouterClientErr = fmt.Errorf("Error occurred while configuring Metrics Router API Version 3 service: %q", err)
 	}
 
 	// SCC ADMIN Service

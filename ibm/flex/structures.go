@@ -3224,6 +3224,22 @@ func FlattenNlbConfigs(nlbData []containerv2.NlbVPCListConfig) []map[string]inte
 	return nlbConfigList
 }
 
+func FlattenOpaqueSecret(fields containerv2.Fields) []map[string]interface{} {
+	flattenedOpaqueSecret := make([]map[string]interface{}, 0)
+
+	for _, field := range fields {
+		opaqueSecretField := map[string]interface{}{
+			"name":                   field.Name,
+			"crn":                    field.CRN,
+			"expires_on":             field.ExpiresOn,
+			"last_updated_timestamp": field.LastUpdatedTimestamp,
+		}
+		flattenedOpaqueSecret = append(flattenedOpaqueSecret, opaqueSecretField)
+	}
+
+	return flattenedOpaqueSecret
+}
+
 // flattenHostLabels ..
 func FlattenHostLabels(hostLabels []interface{}) map[string]string {
 	labels := make(map[string]string)
@@ -4202,4 +4218,20 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 
 	err = json.Unmarshal(data, &newMap) // Convert to a map
 	return
+}
+
+// This function takes two lists and returns the difference between the two lists
+// Listdifference([1,2] [2,3]) = [1]
+func Listdifference(a, b []string) []string {
+	mb := map[string]bool{}
+	for _, x := range b {
+		mb[x] = true
+	}
+	ab := []string{}
+	for _, x := range a {
+		if _, ok := mb[x]; !ok {
+			ab = append(ab, x)
+		}
+	}
+	return ab
 }
