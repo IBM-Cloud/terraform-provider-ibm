@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -94,7 +95,8 @@ func dataSourceIBMCISBotManagementRead(d *schema.ResourceData, meta interface{})
 
 	crn := d.Get(cisID).(string)
 	zoneName := d.Get(cisDomainID).(string)
-
+	cisClient.Crn = core.StringPtr(crn)
+	cisClient.ZoneIdentifier = core.StringPtr(zoneName)
 	opt := cisClient.NewGetBotManagementOptions()
 
 	result, resp, err := cisClient.GetBotManagement(opt)
