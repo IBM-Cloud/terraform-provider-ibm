@@ -66,6 +66,11 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 							Computed:    true,
 							Description: "ID of this VNI",
 						},
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "CRN of this VNI",
+						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -84,6 +89,7 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 										Type:          schema.TypeString,
 										Optional:      true,
 										ForceNew:      true,
+										Computed:      true,
 										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										Description:   "ID of reserved IP",
@@ -108,6 +114,7 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 									"name": {
 										Type:          schema.TypeString,
 										Optional:      true,
+										Computed:      true,
 										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
 										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										Description:   "Name for reserved IP",
@@ -128,6 +135,7 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 						"resource_group": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Resource group id",
 						},
 						"resource_type": {

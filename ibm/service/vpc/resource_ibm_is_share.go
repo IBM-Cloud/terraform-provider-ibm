@@ -161,17 +161,20 @@ func ResourceIbmIsShare() *schema.Resource {
 									"name": {
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Name of this VNI",
 									},
 									"primary_ip": {
 										Type:        schema.TypeList,
 										Optional:    true,
+										Computed:    true,
 										Description: "VNI for mount target.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"reserved_ip": {
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "ID of reserved IP",
 												},
 												"address": {
@@ -208,6 +211,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									"resource_group": {
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Resource group id",
 									},
 									"resource_type": {
@@ -239,6 +243,7 @@ func ResourceIbmIsShare() *schema.Resource {
 						"vpc": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
 						},
 					},
@@ -363,6 +368,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 									},
 									"virtual_network_interface": {
@@ -389,17 +395,20 @@ func ResourceIbmIsShare() *schema.Resource {
 												"name": {
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Name of this VNI",
 												},
 												"primary_ip": {
 													Type:        schema.TypeList,
 													Optional:    true,
+													Computed:    true,
 													Description: "VNI for mount target.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"reserved_ip": {
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "ID of reserved IP",
 															},
 															"address": {
@@ -436,6 +445,7 @@ func ResourceIbmIsShare() *schema.Resource {
 												"resource_group": {
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Resource group id",
 												},
 												"resource_type": {

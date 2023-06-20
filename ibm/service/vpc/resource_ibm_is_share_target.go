@@ -64,6 +64,11 @@ func ResourceIbmIsShareMountTarget() *schema.Resource {
 							Computed:    true,
 							Description: "ID of this VNI",
 						},
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "CRN of this VNI",
+						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -82,6 +87,7 @@ func ResourceIbmIsShareMountTarget() *schema.Resource {
 										Type:          schema.TypeString,
 										Optional:      true,
 										ForceNew:      true,
+										Computed:      true,
 										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										Description:   "ID of reserved IP",
@@ -106,6 +112,7 @@ func ResourceIbmIsShareMountTarget() *schema.Resource {
 									"name": {
 										Type:          schema.TypeString,
 										Optional:      true,
+										Computed:      true,
 										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
 										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
 										Description:   "Name for reserved IP",
@@ -126,6 +133,7 @@ func ResourceIbmIsShareMountTarget() *schema.Resource {
 						"resource_group": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Resource group id",
 						},
 						"resource_type": {
@@ -741,6 +749,14 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 	}
 	vniMap["subnet"] = vni.Subnet.ID
 	vniMap["resource_type"] = vni.ResourceType
+	vniMap["resource_group"] = vni.ResourceGroup.Name
+	if len(vni.SecurityGroups) != 0 {
+		secgrpList := []string{}
+		for i := 0; i < len(vni.SecurityGroups); i++ {
+			secgrpList = append(secgrpList, string(*(vni.SecurityGroups[i].ID)))
+		}
+		vniMap["security_groups"] = flex.NewStringSet(schema.HashString, secgrpList)
+	}
 	vniSlice = append(vniSlice, vniMap)
 	return vniSlice, nil
 }
