@@ -1175,9 +1175,6 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		} else {
 			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
 		}
-	} else {
-		d.Set("kms_key_crn", "")
-		d.Set("key_protect", "")
 	}
 
 	if bucketPtr != nil {
