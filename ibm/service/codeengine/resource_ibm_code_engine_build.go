@@ -53,12 +53,6 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "output_secret"),
 				Description:  "The secret that is required to access the image registry. Make sure that the secret is granted with push permissions towards the specified container registry namespace.",
 			},
-			"source_url": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_url"),
-				Description:  "The URL of the code repository. This field is required if the `source_type` is `git`. If the `source_type` value is `local`, this field must be omitted. If the repository is publicly available you can provide a 'https' URL like `https://github.com/IBM/CodeEngine`. If the repository requires authentication, you need to provide a 'ssh' URL like `git@github.com:IBM/CodeEngine.git` along with a `source_secret` that points to a secret of format `ssh_auth`.",
-			},
 			"strategy_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -89,6 +83,12 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 				Default:      "git",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_type"),
 				Description:  "Specifies the type of source to determine if your build source is in a repository or based on local source code.* local - For builds from local source code.* git - For builds from git version controlled source code.",
+			},
+			"source_url": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_url"),
+				Description:  "The URL of the code repository. This field is required if the `source_type` is `git`. If the `source_type` value is `local`, this field must be omitted. If the repository is publicly available you can provide a 'https' URL like `https://github.com/IBM/CodeEngine`. If the repository requires authentication, you need to provide a 'ssh' URL like `git@github.com:IBM/CodeEngine.git` along with a `source_secret` that points to a secret of format `ssh_auth`.",
 			},
 			"strategy_size": &schema.Schema{
 				Type:         schema.TypeString,
@@ -203,15 +203,6 @@ func ResourceIbmCodeEngineBuildValidator() *validate.ResourceValidator {
 			MaxValueLength:             253,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "source_url",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^((https:\/\/[a-z0-9]([\-.]?[a-z0-9])+(:\d{1,5})?)|((ssh:\/\/)?git@[a-z0-9]([\-.]{0,1}[a-z0-9])+(:[a-zA-Z0-9\/][\w\-.]*)?))(\/([\w\-.]|%20)+)*$`,
-			MinValueLength:             1,
-			MaxValueLength:             253,
-		},
-		validate.ValidateSchema{
 			Identifier:                 "strategy_type",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -253,6 +244,15 @@ func ResourceIbmCodeEngineBuildValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Optional:                   true,
 			AllowedValues:              "git, local",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "source_url",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^((https:\/\/[a-z0-9]([\-.]?[a-z0-9])+(:\d{1,5})?)|((ssh:\/\/)?git@[a-z0-9]([\-.]{0,1}[a-z0-9])+(:[a-zA-Z0-9\/][\w\-.]*)?))(\/([\w\-.]|%20)+)*$`,
+			MinValueLength:             1,
+			MaxValueLength:             253,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "strategy_size",
@@ -298,7 +298,6 @@ func resourceIbmCodeEngineBuildCreate(context context.Context, d *schema.Resourc
 	createBuildOptions.SetName(d.Get("name").(string))
 	createBuildOptions.SetOutputImage(d.Get("output_image").(string))
 	createBuildOptions.SetOutputSecret(d.Get("output_secret").(string))
-	createBuildOptions.SetSourceURL(d.Get("source_url").(string))
 	createBuildOptions.SetStrategyType(d.Get("strategy_type").(string))
 	if _, ok := d.GetOk("source_context_dir"); ok {
 		createBuildOptions.SetSourceContextDir(d.Get("source_context_dir").(string))
@@ -311,6 +310,9 @@ func resourceIbmCodeEngineBuildCreate(context context.Context, d *schema.Resourc
 	}
 	if _, ok := d.GetOk("source_type"); ok {
 		createBuildOptions.SetSourceType(d.Get("source_type").(string))
+	}
+	if _, ok := d.GetOk("source_url"); ok {
+		createBuildOptions.SetSourceURL(d.Get("source_url").(string))
 	}
 	if _, ok := d.GetOk("strategy_size"); ok {
 		createBuildOptions.SetStrategySize(d.Get("strategy_size").(string))
@@ -371,9 +373,6 @@ func resourceIbmCodeEngineBuildRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("output_secret", build.OutputSecret); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting output_secret: %s", err))
 	}
-	if err = d.Set("source_url", build.SourceURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting source_url: %s", err))
-	}
 	if err = d.Set("strategy_type", build.StrategyType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting strategy_type: %s", err))
 	}
@@ -395,6 +394,11 @@ func resourceIbmCodeEngineBuildRead(context context.Context, d *schema.ResourceD
 	if !core.IsNil(build.SourceType) {
 		if err = d.Set("source_type", build.SourceType); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting source_type: %s", err))
+		}
+	}
+	if !core.IsNil(build.SourceURL) {
+		if err = d.Set("source_url", build.SourceURL); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting source_url: %s", err))
 		}
 	}
 	if !core.IsNil(build.StrategySize) {
@@ -475,14 +479,19 @@ func resourceIbmCodeEngineBuildUpdate(context context.Context, d *schema.Resourc
 	hasChange := false
 
 	patchVals := &codeenginev2.BuildPatch{}
-	if d.HasChange("name") || d.HasChange("output_image") || d.HasChange("output_secret") || d.HasChange("source_url") || d.HasChange("strategy_type") {
-		updateBuildOptions.SetName(d.Get("name").(string))
+	if d.HasChange("project_id") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "project_id"))
+	}
+	if d.HasChange("name") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "name"))
+	}
+	if d.HasChange("output_image") || d.HasChange("output_secret") || d.HasChange("strategy_type") {
 		newOutputImage := d.Get("output_image").(string)
 		patchVals.OutputImage = &newOutputImage
 		newOutputSecret := d.Get("output_secret").(string)
 		patchVals.OutputSecret = &newOutputSecret
-		newSourceURL := d.Get("source_url").(string)
-		patchVals.SourceURL = &newSourceURL
 		newStrategyType := d.Get("strategy_type").(string)
 		patchVals.StrategyType = &newStrategyType
 		hasChange = true
@@ -505,6 +514,11 @@ func resourceIbmCodeEngineBuildUpdate(context context.Context, d *schema.Resourc
 	if d.HasChange("source_type") {
 		newSourceType := d.Get("source_type").(string)
 		patchVals.SourceType = &newSourceType
+		hasChange = true
+	}
+	if d.HasChange("source_url") {
+		newSourceURL := d.Get("source_url").(string)
+		patchVals.SourceURL = &newSourceURL
 		hasChange = true
 	}
 	if d.HasChange("strategy_size") {

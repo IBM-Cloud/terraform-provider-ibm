@@ -215,6 +215,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `vcpu`:
   - `architecture` - (String) The architecture of the virtual CPU.
+  - `manufacturer` - (String) The manufacturer of the virtual CPU.
   - `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
 - `volume_attachments`- (List) A list of volume attachments that were created for the instance. 
 
