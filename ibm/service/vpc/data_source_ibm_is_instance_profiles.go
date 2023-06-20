@@ -574,6 +574,29 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"vcpu_manufacturer": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default VCPU manufacturer for an instance with this profile.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The VCPU manufacturer for an instance with this profile.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -684,6 +707,15 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 			vcpuCountList = append(vcpuCountList, vcpuCountMap)
 			l["vcpu_count"] = vcpuCountList
 		}
+		// Changes for manufacturer for AMD Support.
+		// reduce the line of code here. - sumit's suggestions
+		if profile.VcpuManufacturer != nil {
+			vcpuManufacturerList := []map[string]interface{}{}
+			vcpuManufacturerMap := dataSourceInstanceProfileVcpuManufacturerToMap(*profile.VcpuManufacturer)
+			vcpuManufacturerList = append(vcpuManufacturerList, vcpuManufacturerMap)
+			l["vcpu_manufacturer"] = vcpuManufacturerList
+		}
+
 		if profile.Disks != nil {
 			l[isInstanceDisks] = dataSourceInstanceProfileFlattenDisks(profile.Disks)
 			if err != nil {

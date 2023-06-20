@@ -611,8 +611,8 @@ func init() {
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
 	if IsWinImage == "" {
 		//IsWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
-		IsWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
-		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
+		IsWinImage = "r006-d2e0d0e9-0a4f-4c45-afd7-cab787030776" // next gen windows machine: ibm-windows-server-2022-full-standard-amd64-8
+		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-d2e0d0e9-0a4f-4c45-afd7-cab787030776'")
 	}
 
 	IsCosBucketName = os.Getenv("IS_COS_BUCKET_NAME")
