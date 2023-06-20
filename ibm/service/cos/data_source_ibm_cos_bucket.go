@@ -572,9 +572,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		} else {
 			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
 		}
-	} else {
-		d.Set("kms_key_crn", "")
-		d.Set("key_protect", "")
 	}
 
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
