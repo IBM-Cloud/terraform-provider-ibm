@@ -37,7 +37,7 @@ func testAccCheckCisBotManagementBasic1(id string, CisDomainStatic string) strin
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_bot_management" "%[1]s" {
 		cis_id                    = data.ibm_cis.cis.id
-		domain                 = data.ibm_cis_domain.cis_domain.domain
+		domain_id                 = data.ibm_cis_domain.cis_domain.domain
 		fight_mode				= false
 		session_score			= false
 		enable_js				= false

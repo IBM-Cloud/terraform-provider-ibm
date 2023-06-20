@@ -31,7 +31,7 @@ func testAccCheckCisBotManagementDataSource_basic(id, CisDomainStatic string) st
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	data "ibm_cis_bot_managements" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
-		domain = data.ibm_cis_domain.cis_domain.domain_id
+		domain_id = data.ibm_cis_domain.cis_domain.domain_id
 	  }
 `, id, acc.CisDomainStatic)
 }

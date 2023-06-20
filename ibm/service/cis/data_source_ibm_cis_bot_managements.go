@@ -32,7 +32,7 @@ func DataSourceIBMCISBotManagement() *schema.Resource {
 					"ibm_cis_bot_managements",
 					"cis_id"),
 			},
-			cisDomain: {
+			cisDomainID: {
 				Type:             schema.TypeString,
 				Description:      "Associated CIS domain",
 				Required:         true,
@@ -93,7 +93,7 @@ func dataSourceIBMCISBotManagementRead(d *schema.ResourceData, meta interface{})
 	}
 
 	crn := d.Get(cisID).(string)
-	zoneName := d.Get(cisDomain).(string)
+	zoneName := d.Get(cisDomainID).(string)
 
 	opt := cisClient.NewGetBotManagementOptions()
 
@@ -105,7 +105,7 @@ func dataSourceIBMCISBotManagementRead(d *schema.ResourceData, meta interface{})
 
 	res := result.Result
 	d.Set(cisID, crn)
-	d.Set(cisDomain, zoneName)
+	d.Set(cisDomainID, zoneName)
 	d.Set(cisBotManagementFightMode, res.FightMode)
 	d.Set(cisBotManagementSessionScore, res.SessionScore)
 	d.Set(cisBotManagementEnableJs, res.EnableJs)

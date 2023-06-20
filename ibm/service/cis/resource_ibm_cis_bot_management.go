@@ -21,7 +21,7 @@ func ResourceIBMCISBotManagement() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
-				ValidateFunc: validate.InvokeValidator("ibm_cis_bot_managements",
+				ValidateFunc: validate.InvokeValidator("ibm_cis_bot_management",
 					"cis_id"),
 			},
 			cisDomainID: {
@@ -120,6 +120,6 @@ func ResourceIBMCISBotManagementValidator() *validate.ResourceValidator {
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 
-	ibmCISBotManagementResourceValidator := validate.ResourceValidator{ResourceName: "ibm_cis_bot_managements", Schema: validateSchema}
+	ibmCISBotManagementResourceValidator := validate.ResourceValidator{ResourceName: "ibm_cis_bot_management", Schema: validateSchema}
 	return &ibmCISBotManagementResourceValidator
 }
