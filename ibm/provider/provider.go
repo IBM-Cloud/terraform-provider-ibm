@@ -275,6 +275,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_origin_auths":                  cis.DataSourceIBMCISOriginAuthPull(),
 			"ibm_cis_mtlss":                         cis.DataSourceIBMCISMtls(),
 			"ibm_cis_mtls_apps":                     cis.DataSourceIBMCISMtlsApp(),
+			"ibm_cis_bot_managements":               cis.DataSourceIBMCISBotManagement(),
 			"ibm_cis_webhooks":                      cis.DataSourceIBMCISWebhooks(),
 			"ibm_cis_logpush_jobs":                  cis.DataSourceIBMCISLogPushJobs(),
 			"ibm_cis_edge_functions_actions":        cis.DataSourceIBMCISEdgeFunctionsActions(),
@@ -806,6 +807,7 @@ func Provider() *schema.Provider {
 
 			// Added for Code Engine
 			"ibm_code_engine_app":        codeengine.DataSourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":    codeengine.DataSourceIbmCodeEngineBinding(),
 			"ibm_code_engine_build":      codeengine.DataSourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map": codeengine.DataSourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.DataSourceIbmCodeEngineJob(),
@@ -877,6 +879,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_origin_auth":                       cis.ResourceIBMCISOriginAuthPull(),
 			"ibm_cis_mtls":                              cis.ResourceIBMCISMtls(),
 			"ibm_cis_mtls_app":                          cis.ResourceIBMCISMtlsApp(),
+			"ibm_cis_bot_management":                    cis.ResourceIBMCISBotManagement(),
 			"ibm_cis_logpush_job":                       cis.ResourceIBMCISLogPushJob(),
 			"ibm_cis_alert":                             cis.ResourceIBMCISAlert(),
 			"ibm_cis_routing":                           cis.ResourceIBMCISRouting(),
@@ -1290,6 +1293,7 @@ func Provider() *schema.Provider {
 
 			// // Added for Code Engine
 			"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBinding(),
 			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
@@ -1348,6 +1352,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_logpush_job":             cis.ResourceIBMCISLogPushJobValidator(),
 				"ibm_cis_mtls_app":                cis.ResourceIBMCISMtlsAppValidator(),
 				"ibm_cis_mtls":                    cis.ResourceIBMCISMtlsValidator(),
+				"ibm_cis_bot_management":          cis.ResourceIBMCISBotManagementValidator(),
 				"ibm_cis_origin_auth":             cis.ResourceIBMCISOriginAuthPullValidator(),
 				"ibm_cis_origin_pool":             cis.ResourceIBMCISPoolValidator(),
 				"ibm_container_cluster":           kubernetes.ResourceIBMContainerClusterValidator(),
@@ -1535,6 +1540,7 @@ func Validator() validate.ValidatorDict {
 
 				// // Added for Code Engine
 				"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineAppValidator(),
+				"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBindingValidator(),
 				"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuildValidator(),
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
@@ -1564,6 +1570,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_secrets_manager_secrets":     secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 				"ibm_cis_webhooks":                cis.DataSourceIBMCISAlertWebhooksValidator(),
 				"ibm_cis_alerts":                  cis.DataSourceIBMCISAlertsValidator(),
+				"ibm_cis_bot_managements":         cis.DataSourceIBMCISBotManagementValidator(),
 				"ibm_cis_cache_settings":          cis.DataSourceIBMCISCacheSettingsValidator(),
 				"ibm_cis_custom_certificates":     cis.DataSourceIBMCISCustomCertificatesValidator(),
 				"ibm_cis_custom_pages":            cis.DataSourceIBMCISCustomPagesValidator(),

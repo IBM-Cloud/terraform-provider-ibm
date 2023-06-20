@@ -47,6 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `available_vcpu`:
   - `architecture` -  (String) The `VCPU` architecture.
+  - `manufacturer` -  (String) The `VCPU` manufacturer.
   - `count` -  (String) The number of `VCPUs` assigned.
 - `created_at` -  (String) The date and time that the dedicated host was created.
 - `crn` -  (String) The CRN for this dedicated host.
@@ -112,5 +113,6 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `vcpu`:
   - `architecture` -  (String) The `VCPU` architecture.
+  - `manufacturer` -  (String) The `VCPU` manufacturer.
   - `count` -  (String) The number of `VCPUs` assigned.
 - `zone` -  (String) The globally unique name of the zone this dedicated host resides in.
