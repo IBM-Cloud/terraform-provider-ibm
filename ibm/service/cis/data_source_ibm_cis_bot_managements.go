@@ -23,10 +23,6 @@ const (
 func DataSourceIBMCISBotManagement() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMCISBotManagementRead,
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -100,10 +96,6 @@ func dataSourceIBMCISBotManagementRead(d *schema.ResourceData, meta interface{})
 	zoneName := d.Get(cisDomainID).(string)
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneName)
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 	opt := cisClient.NewGetBotManagementOptions()
 
 	result, resp, err := cisClient.GetBotManagement(opt)

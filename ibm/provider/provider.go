@@ -275,15 +275,8 @@ func Provider() *schema.Provider {
 			"ibm_cis_origin_auths":                  cis.DataSourceIBMCISOriginAuthPull(),
 			"ibm_cis_mtlss":                         cis.DataSourceIBMCISMtls(),
 			"ibm_cis_mtls_apps":                     cis.DataSourceIBMCISMtlsApp(),
-<<<<<<< Updated upstream
-			"ibm_cis_bot_managements":               cis.DataSourceIBMCISBotManagement(),
-=======
-<<<<<<< Updated upstream
-=======
 			"ibm_cis_bot_managements":               cis.DataSourceIBMCISBotManagement(),
 			"ibm_cis_bot_analytics":                 cis.DataSourceIBMCISBotAnalytics(),
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 			"ibm_cis_webhooks":                      cis.DataSourceIBMCISWebhooks(),
 			"ibm_cis_logpush_jobs":                  cis.DataSourceIBMCISLogPushJobs(),
 			"ibm_cis_edge_functions_actions":        cis.DataSourceIBMCISEdgeFunctionsActions(),
@@ -1575,15 +1568,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_secrets_manager_secrets":     secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 				"ibm_cis_webhooks":                cis.DataSourceIBMCISAlertWebhooksValidator(),
 				"ibm_cis_alerts":                  cis.DataSourceIBMCISAlertsValidator(),
-<<<<<<< Updated upstream
-				"ibm_cis_bot_managements":         cis.DataSourceIBMCISBotManagementValidator(),
-=======
-<<<<<<< Updated upstream
-=======
 				"ibm_cis_bot_managements":         cis.DataSourceIBMCISBotManagementValidator(),
 				"ibm_cis_bot_analytics":           cis.DataSourceIBMCISBotAnalyticsValidator(),
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 				"ibm_cis_cache_settings":          cis.DataSourceIBMCISCacheSettingsValidator(),
 				"ibm_cis_custom_certificates":     cis.DataSourceIBMCISCustomCertificatesValidator(),
 				"ibm_cis_custom_pages":            cis.DataSourceIBMCISCustomPagesValidator(),

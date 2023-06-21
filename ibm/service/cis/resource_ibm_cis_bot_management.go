@@ -14,14 +14,10 @@ import (
 
 func ResourceIBMCISBotManagement() *schema.Resource {
 	return &schema.Resource{
-<<<<<<< Updated upstream
-		Update:   ResourceIBMCISBotManagementUpdate,
-=======
 		Read:     dataSourceIBMCISBotAnalyticsRead,
 		Create:   ResourceIBMCISBotManagementCreate,
 		Update:   ResourceIBMCISBotManagementUpdate,
 		Delete:   ResourceIBMCISBotManagementDelete,
->>>>>>> Stashed changes
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
@@ -66,14 +62,11 @@ func ResourceIBMCISBotManagement() *schema.Resource {
 	}
 }
 
-<<<<<<< Updated upstream
-=======
 func ResourceIBMCISBotManagementCreate(d *schema.ResourceData, meta interface{}) error {
 
 	return ResourceIBMCISBotManagementUpdate(d, meta)
 }
 
->>>>>>> Stashed changes
 func ResourceIBMCISBotManagementUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisBotManagementSession()
 	if err != nil {
@@ -138,10 +131,7 @@ func ResourceIBMCISBotManagementValidator() *validate.ResourceValidator {
 	ibmCISBotManagementResourceValidator := validate.ResourceValidator{ResourceName: "ibm_cis_bot_management", Schema: validateSchema}
 	return &ibmCISBotManagementResourceValidator
 }
-<<<<<<< Updated upstream
-=======
 
 func ResourceIBMCISBotManagementDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
->>>>>>> Stashed changes
