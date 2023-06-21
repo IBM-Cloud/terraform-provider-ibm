@@ -41,13 +41,17 @@ resource "ibm_cos_bucket" "smart-us-south" {
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
   storage_class        = "smart"
-  key_protect          = ibm_kms_key.test.id
+  kms_key_crn          = ibm_kms_key.test.id
 }
 ```
 
 **Note**
 
 An alias that identifies a key. Each alias is unique only within the given instance and is not reserved across the Key Protect service. Each key can have up to five aliases. There is a limit of 1000 aliases per instance. Alias must be alphanumeric and cannot contain spaces or special characters other than '-' or '_'.
+
+  **Note:**
+
+ `key_protect` attribute to associate a kms_key with a COS bucket has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
 
 ## Argument reference
 Review the argument references that you can specify for your resource.

@@ -176,6 +176,7 @@ In addition to all argument reference list, you can access the following attribu
 
 	  Nested scheme for `vcpu`:
 		- `architecture` - (String) The architecture of the virtual CPU.
+		- `manufacturer` - (String) The manufacturer of the virtual CPU.
 		- `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
 	- `vpc` - (String) The ID of the VPC that the instance belongs to.
 	- `zone` - (String) The zone where the instance was created.

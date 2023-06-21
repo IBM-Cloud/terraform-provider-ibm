@@ -633,6 +633,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `vcpu`:
   - `architecture` - (String) The architecture of the CPU.
   - `count`- (Integer) The number of virtual CPUS that are assigned to the instance.
+  - `manufacturer`- (String) The VCPU manufacturer.
 
 
 ## Import
