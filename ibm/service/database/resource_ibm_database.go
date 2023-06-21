@@ -3056,14 +3056,9 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 			CanScaleDown: *g.CPU.CanScaleDown,
 		}
 
+		group.HostFlavor = &HostFlavorGroupResource{}
 		if g.HostFlavor != nil {
-			group.HostFlavor = &HostFlavorGroupResource{
-				ID: *g.HostFlavor.ID,
-			}
-		} else {
-			group.HostFlavor = &HostFlavorGroupResource{
-				ID: "multitenant",
-			}
+			group.HostFlavor.ID = *g.HostFlavor.ID
 		}
 
 		groups = append(groups, group)
