@@ -120,7 +120,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
+							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your certificate 31 days before it expires.",
 						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
