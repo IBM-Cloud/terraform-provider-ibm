@@ -48,6 +48,38 @@ func TestAccIBMAtrackerRouteBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMAtrackerRouteBasicMultipleRules(t *testing.T) {
+	var conf atrackerv2.Route
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMAtrackerRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMAtrackerRouteExists("ibm_atracker_route.atracker_route", conf),
+					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", name),
+				),
+			},
+			{
+				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(nameUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", nameUpdate),
+				),
+			},
+			{
+				ResourceName:      "ibm_atracker_route.atracker_route",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMAtrackerRouteConfigBasic(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_atracker_target" "atracker_target" {
@@ -66,6 +98,33 @@ func testAccCheckIBMAtrackerRouteConfigBasic(name string) string {
 			rules {
 				target_ids = [ ibm_atracker_target.atracker_target.id ]
 				locations = [ "us-south" ]
+			}
+		}
+	`, name)
+}
+
+func testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_atracker_target" "atracker_target" {
+			name = "my-cos-target"
+			target_type = "cloud_object_storage"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx"
+			}
+		}
+
+		resource "ibm_atracker_route" "atracker_route" {
+			name = "%s"
+			rules {
+				target_ids = [ ibm_atracker_target.atracker_target.id ]
+				locations = [ "us-south" ]
+			}
+			rules {
+				target_ids = [ ibm_atracker_target.atracker_target.id ]
+				locations = [ "us-east" ]
 			}
 		}
 	`, name)
