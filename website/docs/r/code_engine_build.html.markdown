@@ -94,5 +94,5 @@ $ terraform import ibm_code_engine_build.code_engine_build <project_id>/<name>
 
 # Example
 ```
-$ terraform import ibm_code_engine_project.code_engine_project "15314cc3-85b4-4338-903f-c28cdee6d005/my-build"
+$ terraform import ibm_code_engine_build.code_engine_build "15314cc3-85b4-4338-903f-c28cdee6d005/my-build"
 ```
