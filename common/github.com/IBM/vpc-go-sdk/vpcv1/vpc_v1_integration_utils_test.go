@@ -3373,7 +3373,7 @@ func UpdateSnapshot(vpcService *vpcv1.VpcV1, userTags []string, snapshotId, name
 	return
 }
 
-//Placement Groups
+// Placement Groups
 func ListPlacementGroups(vpcService *vpcv1.VpcV1) (placementGroupCollection *vpcv1.PlacementGroupCollection, response *core.DetailedResponse, err error) {
 	listPlacementGroupsOptions := &vpcv1.ListPlacementGroupsOptions{}
 
