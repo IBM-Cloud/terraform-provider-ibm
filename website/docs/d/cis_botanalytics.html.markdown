@@ -36,6 +36,6 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `id` - (String) The ID of the CIS service instance.
-- `domain` - (String) The Domain of the CIS service instance.
+- `domain_id` - (String) The Domain of the CIS service instance.
 - `type`   - (String) The type of bot analytics score - `score_source`, `timeseries` and `top_ns`.
 - `result` - (String) The bot analytics data as per the requested type.
