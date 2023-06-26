@@ -51,12 +51,12 @@ func DataSourceIBMCISBotAnalytics() *schema.Resource {
 			},
 			cisBotAnalyticsSince: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Datetime for start of query",
 			},
 			cisBotAnalyticsUntil: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Datetime for end of query",
 			},
 			cisBotAnalyticsResult: {
