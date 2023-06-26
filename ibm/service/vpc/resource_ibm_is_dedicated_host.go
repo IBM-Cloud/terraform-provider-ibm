@@ -562,8 +562,10 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("name", dedicatedHost.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
 	}
-	if err = d.Set("numa", dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHost.Numa)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting numa: %s", err))
+	if dedicatedHost.Numa != nil {
+		if err = d.Set("numa", dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHost.Numa)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting numa: %s", err))
+		}
 	}
 
 	if err = d.Set("profile", *dedicatedHost.Profile.Name); err != nil {

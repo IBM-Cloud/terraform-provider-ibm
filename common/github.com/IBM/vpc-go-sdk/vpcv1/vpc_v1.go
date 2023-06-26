@@ -121,7 +121,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-05-23")
+		options.Version = core.StringPtr("2023-05-26")
 	}
 
 	service = &VpcV1{

@@ -487,9 +487,22 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 				},
 			},
 			"numa_count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.",
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
 			},
 			"port_speed": {
 				Type:     schema.TypeList,
@@ -702,7 +715,7 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 		}
 	}
 	if profile.NumaCount != nil {
-		err := d.Set("numa_count", profile.NumaCount)
+		err = d.Set("numa_count", dataSourceInstanceProfileFlattenNumaCount(*profile.NumaCount.(*vpcv1.InstanceProfileNuma)))
 		if err != nil {
 			return err
 		}
@@ -1192,4 +1205,25 @@ func dataSourceInstanceProfileTotalVolumeBandwidthToMap(bandwidthItem vpcv1.Inst
 	}
 
 	return bandwidthMap
+}
+
+func dataSourceInstanceProfileFlattenNumaCount(result vpcv1.InstanceProfileNuma) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileNumaCountToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileNumaCountToMap(numaItem vpcv1.InstanceProfileNuma) (numaMap map[string]interface{}) {
+	numaMap = map[string]interface{}{}
+
+	if numaItem.Type != nil {
+		numaMap["type"] = numaItem.Type
+	}
+	if numaItem.Value != nil {
+		numaMap["value"] = numaItem.Value
+	}
+
+	return numaMap
 }
