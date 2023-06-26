@@ -397,22 +397,6 @@ func dataSourceIBMIsVirtualNetworkInterfacesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionFirstToMap(model *vpcbetav1.VirtualNetworkInterfaceCollectionFirst) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceCollectionNextToMap(model *vpcbetav1.VirtualNetworkInterfaceCollectionNext) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	return modelMap, nil
-}
-
 func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *vpcbetav1.VirtualNetworkInterface) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AutoDelete != nil {
@@ -437,14 +421,14 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *
 		modelMap["name"] = *model.Name
 	}
 	if model.PrimaryIP != nil {
-		primaryIPMap, err := dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceToMap(model.PrimaryIP)
+		primaryIPMap, err := dataSourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(model.PrimaryIP)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
 	}
 	if model.ResourceGroup != nil {
-		resourceGroupMap, err := dataSourceIBMIsVirtualNetworkInterfacesResourceGroupReferenceToMap(model.ResourceGroup)
+		resourceGroupMap, err := dataSourceIBMIsVirtualNetworkInterfaceResourceGroupReferenceToMap(model.ResourceGroup)
 		if err != nil {
 			return modelMap, err
 		}
@@ -456,7 +440,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *
 	if model.SecurityGroups != nil {
 		securityGroups := []map[string]interface{}{}
 		for _, securityGroupsItem := range model.SecurityGroups {
-			securityGroupsItemMap, err := dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceToMap(&securityGroupsItem)
+			securityGroupsItemMap, err := dataSourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceToMap(&securityGroupsItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -465,257 +449,32 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *
 		modelMap["security_groups"] = securityGroups
 	}
 	if model.Subnet != nil {
-		subnetMap, err := dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceToMap(model.Subnet)
+		subnetMap, err := dataSourceIBMIsVirtualNetworkInterfaceSubnetReferenceToMap(model.Subnet)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["subnet"] = []map[string]interface{}{subnetMap}
 	}
 	if model.Target != nil {
-		targetMap, err := dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetToMap(model.Target)
+		targetMap, err := dataSourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetToMap(model.Target)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["target"] = []map[string]interface{}{targetMap}
 	}
 	if model.VPC != nil {
-		vpcMap, err := dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceToMap(model.VPC)
+		vpcMap, err := dataSourceIBMIsVirtualNetworkInterfaceVPCReferenceToMap(model.VPC)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["vpc"] = []map[string]interface{}{vpcMap}
 	}
 	if model.Zone != nil {
-		zoneMap, err := dataSourceIBMIsVirtualNetworkInterfacesZoneReferenceToMap(model.Zone)
+		zoneMap, err := dataSourceIBMIsVirtualNetworkInterfaceZoneReferenceToMap(model.Zone)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["zone"] = []map[string]interface{}{zoneMap}
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceToMap(model *vpcbetav1.ReservedIPReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Address != nil {
-		modelMap["address"] = *model.Address
-	}
-	if model.Deleted != nil {
-		deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	if model.ResourceType != nil {
-		modelMap["resource_type"] = *model.ResourceType
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesReservedIPReferenceDeletedToMap(model *vpcbetav1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesResourceGroupReferenceToMap(model *vpcbetav1.ResourceGroupReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceToMap(model *vpcbetav1.SecurityGroupReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.CRN != nil {
-		modelMap["crn"] = *model.CRN
-	}
-	if model.Deleted != nil {
-		deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesSecurityGroupReferenceDeletedToMap(model *vpcbetav1.SecurityGroupReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceToMap(model *vpcbetav1.SubnetReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.CRN != nil {
-		modelMap["crn"] = *model.CRN
-	}
-	if model.Deleted != nil {
-		deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	if model.ResourceType != nil {
-		modelMap["resource_type"] = *model.ResourceType
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesSubnetReferenceDeletedToMap(model *vpcbetav1.SubnetReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetToMap(model vpcbetav1.VirtualNetworkInterfaceTargetIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*vpcbetav1.VirtualNetworkInterfaceTargetShareMountTargetReference); ok {
-		return dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetShareMountTargetReferenceToMap(model.(*vpcbetav1.VirtualNetworkInterfaceTargetShareMountTargetReference))
-	} else if _, ok := model.(*vpcbetav1.VirtualNetworkInterfaceTarget); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*vpcbetav1.VirtualNetworkInterfaceTarget)
-		if model.Deleted != nil {
-			deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMap(model.Deleted)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["deleted"] = []map[string]interface{}{deletedMap}
-		}
-		if model.Href != nil {
-			modelMap["href"] = *model.Href
-		}
-		if model.ID != nil {
-			modelMap["id"] = *model.ID
-		}
-		if model.Name != nil {
-			modelMap["name"] = *model.Name
-		}
-		if model.ResourceType != nil {
-			modelMap["resource_type"] = *model.ResourceType
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized vpcbetav1.VirtualNetworkInterfaceTargetIntf subtype encountered")
-	}
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMap(model *vpcbetav1.ShareMountTargetReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceTargetShareMountTargetReferenceToMap(model *vpcbetav1.VirtualNetworkInterfaceTargetShareMountTargetReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Deleted != nil {
-		deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesShareMountTargetReferenceDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	if model.ResourceType != nil {
-		modelMap["resource_type"] = *model.ResourceType
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceToMap(model *vpcbetav1.VPCReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.CRN != nil {
-		modelMap["crn"] = *model.CRN
-	}
-	if model.Deleted != nil {
-		deletedMap, err := dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	if model.ResourceType != nil {
-		modelMap["resource_type"] = *model.ResourceType
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesVPCReferenceDeletedToMap(model *vpcbetav1.VPCReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MoreInfo != nil {
-		modelMap["more_info"] = *model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMIsVirtualNetworkInterfacesZoneReferenceToMap(model *vpcbetav1.ZoneReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }
