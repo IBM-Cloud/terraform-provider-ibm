@@ -358,6 +358,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_links":         iamidentity.DataSourceIBMIamTrustedProfileLinks(),
 			"ibm_iam_trusted_profiles":              iamidentity.DataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":        iampolicy.DataSourceIBMIAMTrustedProfilePolicy(),
+			"ibm_iam_user_mfa_enrollments":          iamidentity.DataSourceIBMIamUserMfaEnrollments(),
 
 			//backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
