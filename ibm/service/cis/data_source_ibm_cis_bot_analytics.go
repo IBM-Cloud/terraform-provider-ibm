@@ -6,6 +6,7 @@ package cis
 import (
 	"encoding/json"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -20,7 +21,7 @@ const (
 	cisBotAnalyticsSince         = "since"
 	cisBotAnalyticsUntil         = "until"
 	cisBotAnalyticsResult        = "result"
-	cisBotAnalyticsSourceScore   = "score_source"
+	cisBotAnalyticsScoreSource   = "score_source"
 	cisBotAnalyticsTimeseries    = "timeseries"
 	cisBotAnalyticsTopAttributes = "top_ns"
 )
@@ -51,18 +52,19 @@ func DataSourceIBMCISBotAnalytics() *schema.Resource {
 			},
 			cisBotAnalyticsSince: {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Datetime for start of query",
 			},
 			cisBotAnalyticsUntil: {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Datetime for end of query",
 			},
 			cisBotAnalyticsResult: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Bot Analytics result",
+				Elem:        &schema.Schema{Type: schema.TypeMap},
 			},
 		},
 	}
@@ -112,15 +114,12 @@ func dataSourceIBMCISBotAnalyticsRead(d *schema.ResourceData, meta interface{}) 
 	}
 	until := strfmt.DateTime(parseUntilTime)
 
-	log.Printf("Since Value : %s", since)
-	log.Printf("Until Value : %s", until)
-
 	d.SetId(crn)
-
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneName)
 	d.Set(cisBotAnalyticsType, requestType)
-	if requestType == cisBotAnalyticsSourceScore {
+
+	if requestType == cisBotAnalyticsScoreSource {
 		sourceScoreOpt := cisClient.NewGetBotScoreOptions(&since, &until)
 		sourceScoreResult, sourceScoreResp, sourceScoreErr := cisClient.GetBotScore(sourceScoreOpt)
 		if sourceScoreErr != nil {
@@ -132,9 +131,9 @@ func dataSourceIBMCISBotAnalyticsRead(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			log.Printf("Response Marshal failed: %s", err)
 		}
+		stringRes := strings.Replace(string(jsonRes), "\"", "'", -1)
 
-		errorObj := d.Set(cisBotAnalyticsResult, jsonRes)
-		log.Printf("errorObj : %s", errorObj)
+		d.Set(cisBotAnalyticsResult, stringRes)
 
 	} else if requestType == cisBotAnalyticsTimeseries {
 		timeSeriesOpt := cisClient.NewGetBotTimeseriesOptions(&since, &until)
@@ -148,9 +147,9 @@ func dataSourceIBMCISBotAnalyticsRead(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			log.Printf("Response Marshal failed: %s", err)
 		}
+		stringRes := strings.Replace(string(jsonRes), "\"", "'", -1)
 
-		errorObj := d.Set(cisBotAnalyticsResult, jsonRes)
-		log.Printf("errorObj : %s", errorObj)
+		d.Set(cisBotAnalyticsResult, stringRes)
 
 	} else if requestType == cisBotAnalyticsTopAttributes {
 		topAttributesOpt := cisClient.NewGetBotTopnsOptions(&since, &until)
@@ -159,14 +158,13 @@ func dataSourceIBMCISBotAnalyticsRead(d *schema.ResourceData, meta interface{}) 
 			log.Printf("Get topAttributes Failed with response : %s\n", topAttributesResp)
 			return topAttributesErr
 		}
-
 		jsonRes, err := json.Marshal(topAttributesResult.Result)
 		if err != nil {
 			log.Printf("Response Marshal failed: %s", err)
 		}
+		stringRes := strings.Replace(string(jsonRes), "\"", "'", -1)
 
-		errorObj := d.Set(cisBotAnalyticsResult, jsonRes)
-		log.Printf("errorObj : %s", errorObj)
+		d.Set(cisBotAnalyticsResult, stringRes)
 
 	} else {
 		log.Printf("dataSourceIBMCISBotAnalyticsRead - Wrong Type provided.")
