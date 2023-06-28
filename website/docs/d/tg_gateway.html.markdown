@@ -1,4 +1,3 @@
----
 
 subcategory: "Transit Gateway"
 layout: "ibm"
@@ -13,6 +12,7 @@ Retrieve information of an existing IBM Cloud infrastructure transit gateway as 
 
 ## Example usage
 
+---
 ```terraform
 resource "ibm_tg_gateway" "new_tg_gw" {
   name           = "transit-gateway-1"
@@ -25,6 +25,7 @@ data "ibm_tg_gateway" "ds_tggateway" {
   name = ibm_tg_gateway.new_tg_gw.name
 }
 ```
+---
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
@@ -44,11 +45,11 @@ In addition to the argument reference list, you can access the following attribu
 
   Nested scheme for `connections`:
 	- `created_at` - (String) The date and time the connection is created.
-	- `id` - (String) The unique identifier for the transit gateway connection to network either `VPC`,  `classic`.
+	- `id` - (String) The unique identifier for the transit gateway connection to network either `vpc`,  `classic`.
   - `base_connection_id` - (String) The ID of a network_type `classic` connection a tunnel is configured over.  This field applies to network type `gre_tunnel` or `unbound_gre_tunnel` connections.
   - `base_network_type` - (String) The type of network the unbound gre tunnel is targeting. This field is required for network type `unbound_gre_tunnel`.
   - `name` - (String) The user-defined name for the transit gateway connection.
-  - `network_type` - (String) The type of network connected with the connection. Possible values are `classic`, `directlink`, `VPC`, `gre_tunnel`, or `unbound_gre_tunnel`).
+  - `network_type` - (String) The type of network connected with the connection. Possible values are `classic`, `directlink`, `vpc`, `gre_tunnel`, or `unbound_gre_tunnel`, or `power_virtual_server`).
   - `network_account_id` - (String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
   - `network_id` - (String) The ID of the network being connected with the connection.
   - `local_bgp_asn` - (Integer) The local network BGP ASN. This field only applies to network type '`gre_tunnel` connections.

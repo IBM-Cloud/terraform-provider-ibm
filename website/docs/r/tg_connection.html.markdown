@@ -1,4 +1,4 @@
----
+
 subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_connection"
@@ -11,6 +11,7 @@ Create, update and delete for the transit gateway's connection resource. For mor
 
 ## Example usage
 
+---
 ```terraform
 resource "ibm_tg_connection" "test_ibm_tg_connection" {
   gateway      = ibm_tg_gateway.test_tg_gateway.id
@@ -20,6 +21,7 @@ resource "ibm_tg_connection" "test_ibm_tg_connection" {
 }
   
 ```
+---
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -31,7 +33,7 @@ Review the argument references that you can specify for your resource.
 - `local_tunnel_ip` - (Optional, Forces new resource, String) - The local tunnel IP address. This field is required for and only applicable to type gre_tunnel connections.
 - `name` -  (Optional, String) Enter a name. If the name is not given, the default name is provided based on the network type, such as `vpc` for network type VPC and `classic` for network type classic.
 - `network_account_id` - (Optional, Forces new resource, String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
-- `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic`, `directlink`, `gre_tunnel`, `unbound_gre_tunnel`, and `vpc`.
+- `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic`, `directlink`, `gre_tunnel`, `unbound_gre_tunnel`, `vpc`,  and `power_virtual_server`.
 - `network_id` -  (Optional, Forces new resource, String) Enter the ID of the network being connected through this connection. This parameter is required for network type `vpc` and `directlink`, the CRN of the VPC or direct link gateway to be connected. This field is required to be unspecified for network type `classic`. For example, `crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b`.
 - `remote_bgp_asn` - (Optional, Forces new resource, Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_gateway_ip` - (Optional, Forces new resource, String) - The remote gateway IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
@@ -60,7 +62,9 @@ The `ibm_tg_connection` resource can be imported by using transit gateway ID and
 
 **Example**
 
+---
 ```
 $ terraform import ibm_tg_connection.example 5ffda12064634723b079acdb018ef308/cea6651a-bd0a-4438-9f8a-a0770bbf3ebb
 
 ```
+---
