@@ -29,8 +29,8 @@ Review the argument references that you can specify for your data source.
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Required, String) The Domain of the CIS service instance.
 - `type`   - (Required, String) The type of bot analytics score - `score_source`, `timeseries` and `top_ns`.
-- `since`  - (Optional, String) The time from which the analytics data is requested. Default - data of last 24 hours.
-- `until`  - (Optional, String) The time till which the analytics data is requested. Default - data of last 24 hours.
+- `since`  - (Required, String) The time from which the analytics data is requested. 
+- `until`  - (Required, String) The time till which the analytics data is requested.
 
 ## Attributes reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
