@@ -96,3 +96,4 @@ Nested scheme for **scopes**:
 
 * `total_count` - (Integer) The total number of scopes. This value is 0 if no scopes are available and below fields will not be available in that case.
 
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_scopes is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

@@ -1,72 +1,77 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package catalogmanagement_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMCmCatalogDataSource(t *testing.T) {
-	ResourceGroupID := os.Getenv("CATMGMT_RESOURCE_GROUP_ID")
-
+func TestAccIBMCmCatalogDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCmCatalogDataSourceConfig(ResourceGroupID),
+			resource.TestStep{
+				Config: testAccCheckIBMCmCatalogDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "label"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "kind"),
-					resource.TestCheckResourceAttrSet("ibm_cm_catalog.cm_catalog", "resource_group_id"),
-				),
-			},
-			{
-				Config: testAccCheckIBMCmCatalogDataSourceConfigDefault(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "label"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog_data", "kind"),
-					resource.TestCheckResourceAttrSet("ibm_cm_catalog.cm_catalog", "resource_group_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "catalog_identifier"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMCmCatalogDataSourceConfig(resourceGroupID string) string {
-	return fmt.Sprintf(`
+func TestAccIBMCmCatalogDataSourceSimpleArgs(t *testing.T) {
+	catalogLabel := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
+	catalogShortDescription := fmt.Sprintf("tf_short_description_%d", acctest.RandIntRange(10, 100))
 
-		resource "ibm_cm_catalog" "cm_catalog" {
-			label = "tf_test_datasource_catalog"
-			short_description = "testing terraform provider with catalog"
-			resource_group_id = "%s"
-		}
-		
-		data "ibm_cm_catalog" "cm_catalog_data" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
-		}
-		`, resourceGroupID)
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCmCatalogDataSourceConfig(catalogLabel, catalogShortDescription),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "catalog_identifier"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "label"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "short_description"),
+				),
+			},
+		},
+	})
 }
 
-func testAccCheckIBMCmCatalogDataSourceConfigDefault() string {
-	return `
-
+func testAccCheckIBMCmCatalogDataSourceConfigBasic() string {
+	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
-			label = "tf_test_datasource_catalog"
-			short_description = "testing terraform provider with catalog"
+			label = "basic-catalog-label-test"
+			kind = "offering"
 		}
-		
-		data "ibm_cm_catalog" "cm_catalog_data" {
+
+		data "ibm_cm_catalog" "cm_catalog" {
 			catalog_identifier = ibm_cm_catalog.cm_catalog.id
 		}
-		`
+	`)
+}
+
+func testAccCheckIBMCmCatalogDataSourceConfig(catalogLabel string, catalogShortDescription string) string {
+	return fmt.Sprintf(`
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "%s"
+			short_description = "%s"
+			kind = "offering"
+		}
+
+		data "ibm_cm_catalog" "cm_catalog" {
+			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+		}
+	`, catalogLabel, catalogShortDescription)
 }

@@ -43,6 +43,15 @@ You can access the following attribute references after your data source is crea
 		- `name` - (String) The name of the boot volume.
 		- `profile` - (String) The profile for the boot volume configuration.
 		- `size` - (String) The boot volume size to configure in giga bytes.
+		- `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags).
+
+	- `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
+
+		Nested scheme for `catalog_offering`:
+
+		- `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
+		- `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+			
 	- `crn` - (String) The CRN of the instance template.
 	- `default_trusted_profile_auto_link` - (Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default is true. 
 	- `default_trusted_profile_target` - (String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
@@ -51,6 +60,16 @@ You can access the following attribute references after your data source is crea
 	- `image` - (String) The ID of the image to create the template.
 	- `keys` - (String) List of SSH key IDs used to allow log in user to the instances.
 	- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+	
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+	- `metadata_service` - (List) The metadata service configuration. 
+
+       Nested scheme for `metadata_service`:
+       - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+       - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+       - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+       
 	- `name` - (String) The name of the instance template.
 	- `network_interfaces` - (List) A nested block describes the network interfaces for the template.
 
@@ -88,5 +107,6 @@ You can access the following attribute references after your data source is crea
 		  - `encryption_key` - (String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 		  - `iops` - (String) The maximum input/output operations per second (IOPS) for the volume.
 		  - `profile` - (String) The global unique name for the volume profile to use for the volume.
+		  - `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 	- `vpc` - (String) The VPC ID that the instance templates needs to be created.
 	- `zone` - (String) The name of the zone.

@@ -28,6 +28,12 @@ data "ibm_is_vpn_gateways" "example" {
 }
 
 ```
+## Argument reference
+
+Review the argument references that you can specify for your data source. 
+
+- `resource_group` - (Optional, String) The ID of the Resource group this vpn gateway belongs to
+- `mode` - (Optional, String) The mode of this VPN Gateway. Available options are `policy` and `route`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
@@ -35,6 +41,7 @@ In addition to all argument reference list, you can access the following attribu
 - `vpn_gateways` - (List) Collection of VPN Gateways.
 
   Nested scheme for `vpn_gateways`:
+  - `access_tags`  - (List) Access management tags associated for the vpn gateway.
   - `crn` - (String) The VPN gateway's CRN.
   - `created_at`- (Timestamp) The date and time the VPN gateway was created.
   - `id` - (String) The ID of the VPN gateway.
@@ -56,6 +63,15 @@ In addition to all argument reference list, you can access the following attribu
   - `resource_type` - (String) The resource type, supported value is `vpn_gateway`.
   - `status` - (String) The status of the VPN gateway, supported values are **available**, **deleting**, **failed**, **pending**.
   - `subnet` - (String) The VPN gateway subnet information.
+  - `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
+  - `vpc` - (String) 	The VPC this VPN server resides in.
+    `Nested scheme for `vpc`:
+    - `crn` - (String) The CRN for this VPC.
+    - `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+      Nested scheme for **deleted**:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) - The URL for this VPC
+    - `id` - (String) - The unique identifier for this VPC.
+    - `name` - (String) - The unique user-defined name for this VPC.
   - `resource_group` - (String) The resource group ID.
   - `mode` - (String) The VPN gateway mode, supported values are `policy` and `route`.
-

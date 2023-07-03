@@ -3,21 +3,21 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_nexus"
 description: |-
   Get information about cd_toolchain_tool_nexus
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_nexus
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_nexus. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-nexus) page for more information.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -37,34 +37,34 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the cd_toolchain_tool_nexus.
 * `crn` - (String) Tool CRN.
 
-
 * `href` - (String) URI representing the tool.
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `dashboard_url` - (String) Type the URL that you want to navigate to when you click the Nexus integration tile.
-	* `mirror_url` - (String) Type the URL for your Nexus virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
-	* `name` - (String) Type a name for this tool integration, for example: my-nexus. This name displays on your toolchain.
-	* `release_url` - (String) Type the URL for your Nexus release repository.
-	* `snapshot_url` - (String) Type the URL for your Nexus snapshot repository.
-	* `token` - (String) Type the password or authentication token for your Nexus repository.
-	* `type` - (String) Choose the type of repository for your Nexus integration.
+	* `mirror_url` - (String) The URL of the Nexus virtual repository, which is a repository that can see your private repositories and is a cache of the public repositories.
+	* `name` - (String) The name for this tool integration.
+	* `release_url` - (String) The URL of the Nexus release repository.
+	* `server_url` - (String) The URL of the Nexus server.
+	* `snapshot_url` - (String) The URL of the Nexus snapshot repository.
+	* `token` - (String) The password or token for authenticating to the Nexus repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
+	* `type` - (String) The type of repository for the Nexus integration.
 	  * Constraints: Allowable values are: `npm`, `maven`.
-	* `user_id` - (String) Type the User ID or email for your Nexus repository.
+	* `user_id` - (String) The user id or email for authenticating to the Nexus repository.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+
 
 * `updated_at` - (String) Latest tool update timestamp.
 

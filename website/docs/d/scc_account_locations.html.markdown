@@ -36,4 +36,3 @@ Nested scheme for **locations**:
 		* `id` - (String) The programatic ID of the available regions.
 		  * Constraints: Allowable values are: `us`, `eu`, `uk`.
 	* `results_endpoint_url` - (String) The endpoint that is used to get the results for the Configuration Governance component.
-	* `si_endpoint_url` - (String) The endpoint that is used to call the Security Insights APIs.

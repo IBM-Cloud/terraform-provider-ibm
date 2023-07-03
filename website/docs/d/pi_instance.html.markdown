@@ -53,6 +53,7 @@ In addition to all argument reference list, you can access the following attribu
   - `network_id` - (String) The network ID of the instance.
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of the network.
+- `deployment_type` - (String) The custom deployment type.
 - `health_status` - (String) The health of the instance.
 - `id` - (String) The unique identifier of the instance.
 - `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
@@ -75,6 +76,8 @@ In addition to all argument reference list, you can access the following attribu
 - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
+- `shared_processor_pool`- (String) The name of the shared processor pool for the instance.
+- `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.
 - `storage_pool` - (String) The storage Pool where server is deployed.
 - `storage_pool_affinity` - (Bool) Indicates if all volumes attached to the server must reside in the same storage pool.

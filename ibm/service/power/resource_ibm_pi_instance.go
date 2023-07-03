@@ -193,6 +193,18 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Description: "Placement group ID",
 			},
+			Arg_PIInstanceSharedProcessorPool: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{PISAPInstanceProfileID},
+				Description:   "Shared Processor Pool the instance is deployed on",
+			},
+			Attr_PIInstanceSharedProcessorPoolID: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Shared Processor Pool ID the instance is deployed on",
+			},
 			"health_status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -246,6 +258,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:      true,
 				ConflictsWith: []string{PISAPInstanceProfileID},
 				Description:   "Memory size",
+			},
+			PIInstanceDeploymentType: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Custom Deployment Type Information",
 			},
 			PISAPInstanceProfileID: {
 				Type:          schema.TypeString,
@@ -435,6 +452,8 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	if *powervmdata.PlacementGroup != "none" {
 		d.Set(helpers.PIPlacementGroupID, powervmdata.PlacementGroup)
 	}
+	d.Set(Arg_PIInstanceSharedProcessorPool, powervmdata.SharedProcessorPool)
+	d.Set(Attr_PIInstanceSharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
 
 	networksMap := []map[string]interface{}{}
 	if powervmdata.Networks != nil {
@@ -476,7 +495,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	}
 	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
-
+	d.Set(PIInstanceDeploymentType, powervmdata.DeploymentType)
 	return nil
 }
 
@@ -594,15 +613,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 
 		//if d.GetOkExists("reboot_for_resource_change")
 
-		if mem > maxMemLpar || procs > maxCPULpar {
+		instanceState := d.Get("status")
+		log.Printf("the instance state is %s", instanceState)
 
+		if (mem > maxMemLpar || procs > maxCPULpar) && instanceState != "SHUTOFF" {
 			err = performChangeAndReboot(ctx, client, instanceID, cloudInstanceID, mem, procs)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else {
-
 			body := &models.PVMInstanceUpdate{
 				Memory:     mem,
 				Processors: procs,
@@ -622,9 +642,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			if err != nil {
 				return diag.Errorf("failed to update the lpar with the change %v", err)
 			}
-			_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
-			if err != nil {
-				return diag.FromErr(err)
+			if instanceState == "SHUTOFF" {
+				_, err = isWaitforPIInstanceUpdate(ctx, client, instanceID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			} else {
+				_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
@@ -943,7 +970,7 @@ func performChangeAndReboot(ctx context.Context, client *st.IBMPIInstanceClient,
 }
 
 func isWaitforPIInstanceUpdate(ctx context.Context, client *st.IBMPIInstanceClient, id string) (interface{}, error) {
-	log.Printf("Waiting for PIInstance (%s) to be SHUTOFF AFTER THE RESIZE Due to DLPAR Operation ", id)
+	log.Printf("Waiting for PIInstance (%s) to be ACTIVE or SHUTOFF AFTER THE RESIZE Due to DLPAR Operation ", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"RESIZE", "VERIFY_RESIZE"},
@@ -997,6 +1024,7 @@ func checkCloudInstanceCapability(cloudInstance *models.CloudInstance, custom_ca
 	}
 	return false
 }
+
 func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceClient) (*models.PVMInstanceList, error) {
 
 	name := d.Get(helpers.PIInstanceName).(string)
@@ -1113,6 +1141,7 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 
 	return pvmList, nil
 }
+
 func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, imageClient *st.IBMPIImageClient) (*models.PVMInstanceList, error) {
 
 	name := d.Get(helpers.PIInstanceName).(string)
@@ -1222,6 +1251,10 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		body.StoragePool = sp.(string)
 	}
 
+	if dt, ok := d.GetOk(PIInstanceDeploymentType); ok {
+		body.DeploymentType = dt.(string)
+	}
+
 	if ap, ok := d.GetOk(PIAffinityPolicy); ok {
 		policy := ap.(string)
 		affinity := &models.StorageAffinity{
@@ -1256,6 +1289,10 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 
 	if pg, ok := d.GetOk(helpers.PIPlacementGroupID); ok {
 		body.PlacementGroup = pg.(string)
+	}
+
+	if spp, ok := d.GetOk(Arg_PIInstanceSharedProcessorPool); ok {
+		body.SharedProcessorPool = spp.(string)
 	}
 
 	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {

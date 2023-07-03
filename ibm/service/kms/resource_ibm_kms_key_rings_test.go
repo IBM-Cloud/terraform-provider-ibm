@@ -96,7 +96,7 @@ func testAccCheckIBMKmsResourceKeyRingKeyConfig(instanceName, keyRing, keyName s
 	resource "ibm_kms_key" "test" {
 		instance_id = ibm_resource_instance.kms_instance.guid
 		key_name = "%s"
-		key_ring_id = ibm_kms_key_rings.key_ring.key_ring_id}
+		key_ring_id = ibm_kms_key_rings.key_ring.key_ring_id
 		standard_key =  true
 		force_delete = true
 	}

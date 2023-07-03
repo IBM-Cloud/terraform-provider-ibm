@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cis
@@ -6,11 +6,12 @@ package cis
 import (
 	"log"
 
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -51,6 +52,7 @@ const (
 	cisDomainSettingsSecurityHeaderMaxAge            = "max_age"
 	cisDomainSettingsSecurityHeaderIncludeSubdomains = "include_subdomains"
 	cisDomainSettingsSecurityHeaderNoSniff           = "nosniff"
+	cisDomainSettingsSecurityHeaderPreload           = "preload"
 	cisDomainSettingsMobileRedirect                  = "mobile_redirect"
 	cisDomainSettingsMobileRedirectStatus            = "status"
 	cisDomainSettingsMobileRedirectMobileSubdomain   = "mobile_subdomain"
@@ -76,6 +78,8 @@ func ResourceIBMCISSettings() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
+				ValidateFunc: validate.InvokeValidator(ibmCISDomainSettings,
+					"cis_id"),
 			},
 			cisDomainID: {
 				Type:             schema.TypeString,
@@ -410,6 +414,12 @@ func ResourceIBMCISSettings() *schema.Resource {
 							Description: "security header no sniff",
 							Required:    true,
 						},
+						cisDomainSettingsSecurityHeaderPreload: {
+							Type:        schema.TypeBool,
+							Description: "security header preload",
+							Optional:    true,
+							Default:     false,
+						},
 					},
 				},
 			},
@@ -466,7 +476,14 @@ func ResourceIBMCISDomainSettingValidator() *validate.ResourceValidator {
 	cipher := "ECDHE-ECDSA-AES128-GCM-SHA256,ECDHE-ECDSA-CHACHA20-POLY1305, ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-CHACHA20-POLY1305, ECDHE-ECDSA-AES128-SHA256, ECDHE-ECDSA-AES128-SHA, ECDHE-RSA-AES128-SHA256, ECDHE-RSA-AES128-SHA, AES128-GCM-SHA256, AES128-SHA256, AES128-SHA, ECDHE-ECDSA-AES256-GCM-SHA384, ECDHE-ECDSA-AES256-SHA384, ECDHE-RSA-AES256-GCM-SHA384, ECDHE-RSA-AES256-SHA384, ECDHE-RSA-AES256-SHA, AES256-GCM-SHA384, AES256-SHA256, AES256-SHA, DES-CBC3-SHA, AEAD-AES128-GCM-SHA256, AEAD-AES256-GCM-SHA384, AEAD-CHACHA20-POLY1305-SHA256"
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cis_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_instance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 cisDomainSettingsWAF,
@@ -1021,10 +1038,12 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 					dataMap := v.([]interface{})[0].(map[string]interface{})
 					enabled := dataMap[cisDomainSettingsSecurityHeaderEnabled].(bool)
 					nosniff := dataMap[cisDomainSettingsSecurityHeaderNoSniff].(bool)
+					preload := dataMap[cisDomainSettingsSecurityHeaderPreload].(bool)
+
 					includeSubdomain := dataMap[cisDomainSettingsSecurityHeaderIncludeSubdomains].(bool)
 					maxAge := int64(dataMap[cisDomainSettingsSecurityHeaderMaxAge].(int))
 					securityVal, err := cisClient.NewSecurityHeaderSettingValueStrictTransportSecurity(
-						enabled, maxAge, includeSubdomain, nosniff)
+						enabled, maxAge, includeSubdomain, preload, nosniff)
 					if err != nil {
 						log.Println("Invalid security header setting values")
 						return err
@@ -1370,6 +1389,9 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 					}
 					if securityHeader.Nosniff != nil {
 						value[cisDomainSettingsSecurityHeaderNoSniff] = *securityHeader.Nosniff
+					}
+					if securityHeader.Preload != nil {
+						value[cisDomainSettingsSecurityHeaderPreload] = *securityHeader.Preload
 					}
 					if securityHeader.IncludeSubdomains != nil {
 						value[cisDomainSettingsSecurityHeaderIncludeSubdomains] = *securityHeader.IncludeSubdomains

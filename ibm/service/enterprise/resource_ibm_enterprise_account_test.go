@@ -4,6 +4,7 @@ package enterprise_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -25,8 +26,9 @@ func TestAccIbmEnterpriseAccountBasic(t *testing.T) {
 	//parentUpdate := fmt.Sprintf("parent_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMEnterpriseAccountDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIbmEnterpriseAccountConfigBasic(name),
@@ -54,13 +56,17 @@ func TestAccIbmEnterpriseAccountBasic(t *testing.T) {
 	})
 }
 
-/* To run this test case ensure the IC_API_KEY belongs to an enterprise.
-ACCOUNT_TO_BE_IMPORTED should invite enterprise and grant relevant iam policies before running this test case" */
+/*
+	To run this test case ensure the IC_API_KEY belongs to an enterprise.
+
+ACCOUNT_TO_BE_IMPORTED should invite enterprise and grant relevant iam policies before running this test case"
+*/
 func TestAccIbmEnterpriseImportAccountBasic(t *testing.T) {
 	var conf enterprisemanagementv1.Account
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckEnterpriseAccountImport(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheckEnterpriseAccountImport(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMEnterpriseAccountDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIbmAccountsDataSourceConfigImportBasic(acc.Account_to_be_imported),
@@ -137,4 +143,38 @@ func testAccCheckIbmEnterpriseAccountExists(n string, obj enterprisemanagementv1
 		obj = *account
 		return nil
 	}
+}
+
+func testAccCheckIBMEnterpriseAccountDestroy(s *terraform.State) error {
+
+	enterpriseManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EnterpriseManagementV1()
+	if err != nil {
+		return err
+	}
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_enterprise_account" {
+			continue
+		}
+
+		getAccountOptions := &enterprisemanagementv1.GetAccountOptions{}
+
+		getAccountOptions.SetAccountID(rs.Primary.ID)
+
+		instance, resp, err := enterpriseManagementClient.GetAccount(getAccountOptions)
+
+		if err == nil {
+			if *instance.State == "active" {
+				return fmt.Errorf("IBM Enterprise AccountGroup still exists: %s", rs.Primary.ID)
+			}
+		} else {
+			if !strings.Contains(err.Error(), "404") {
+				return fmt.Errorf("[ERROR] Error checking if AccountGroup (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
+			}
+		}
+
+	}
+
+	return nil
+
 }

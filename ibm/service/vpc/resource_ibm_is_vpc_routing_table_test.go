@@ -47,6 +47,48 @@ func TestAccIBMISVPCRoutingTable_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVPCRoutingTable_acceptRoutesFrom(t *testing.T) {
+	var vpcRouteTables string
+	name1 := fmt.Sprintf("tfvpc-create-%d", acctest.RandIntRange(10, 100))
+	routeTableName := fmt.Sprintf("tfvpcrt-create-%d", acctest.RandIntRange(10, 100))
+	routeTableName1 := fmt.Sprintf("tfvpcrt-up-create-%d", acctest.RandIntRange(10, 100))
+	acceptRoutesFromVPNServer := "vpn_server"
+	acceptRoutesFromVPNGateway := "vpn_gateway"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCRouteTableDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPCRouteTableAcceptRoutesFromConfig(routeTableName, name1, acceptRoutesFromVPNServer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCRouteTableExists("ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", vpcRouteTables),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "name", routeTableName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "accept_routes_from_resource_type.#"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPCRouteTableAcceptRoutesFromConfig(routeTableName1, name1, acceptRoutesFromVPNGateway),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCRouteTableExists("ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", vpcRouteTables),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "name", routeTableName1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "accept_routes_from_resource_type.#"),
+				),
+			},
+			{
+				ResourceName:      "ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISVPCRouteTableDestroy(s *terraform.State) error {
 	//userDetails, _ := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 
@@ -118,4 +160,17 @@ resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
 	vpc = ibm_is_vpc.testacc_vpc.id
 	name = "%s"
 }`, name, rtName)
+}
+
+func testAccCheckIBMISVPCRouteTableAcceptRoutesFromConfig(rtName, name, acceptRoutesFromVPNServer string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "%s"
+}
+resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
+	depends_on = [ibm_is_vpc.testacc_vpc]
+	vpc = ibm_is_vpc.testacc_vpc.id
+	name = "%s"
+	accept_routes_from_resource_type=["%s"]
+}`, name, rtName, acceptRoutesFromVPNServer)
 }

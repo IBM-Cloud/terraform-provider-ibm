@@ -6,6 +6,9 @@ description: |-
   Manages scc_si_note.
 ---
 
+# DEPRECATED
+Security and Compliance Center - Security Insights has now deprecated, backend services are no longer available. The docs will be removed in next release.
+
 # ibm_scc_si_note
 
 Provides a resource for scc_si_note. This allows scc_si_note to be created, updated and deleted.

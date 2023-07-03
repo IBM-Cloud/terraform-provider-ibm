@@ -61,6 +61,7 @@ Review the argument references that you can specify for your resource.
 
 - `name` - (Required, Forces new resource, String) The name of the worker pool.
 - `cluster` - (Required, Forces new resource, String) The name or id of the cluster.
+- `operating_system` - (Optional, String) Operating system of the worker pool. Options are REDHAT_7_64, REDHAT_8_64, or RHCOS.
 - `worker_count` - (Optional, Integer) The number of worker nodes per zone in the worker pool.
 - `flavor` - (Optional, String) The flavor defines the amount of virtual CPU, memory, and disk space that is set up in each worker node.
 - `isolation` - (Optional, String) Isolation for the worker node.
@@ -69,7 +70,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `zones`:
   - `id` - (Required, String) The name of the zone.
-- `host_labels` - (Optional, Array of Strings) Key-value pairs to label the host, such as cpu=4 to describe the host capabilities.
+- `host_labels` - (Optional, Set(Strings)) Labels to add to the worker pool, formatted as `cpu:4` key-value pairs. Satellite uses host labels to automatically assign hosts to worker pools with matching labels.
 - `worker_pool_labels` - Labels on all the workers in the worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group.  You can retrieve the value from data source 
 - `entitlement` - (Optional, String) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.

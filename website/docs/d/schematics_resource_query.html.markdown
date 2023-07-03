@@ -24,6 +24,8 @@ data "ibm_schematics_resource_query" "schematics_resource_query" {
 Review the argument reference that you can specify for your data source.
 
 - `query_id` - (Required, String) Resource query ID.  Use `GET /v2/resource_query` API to look up the Resource query definition Ids  in your IBM Cloud account.
+* `location` - (Optional,String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+  * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 
 ## Attribute reference
 

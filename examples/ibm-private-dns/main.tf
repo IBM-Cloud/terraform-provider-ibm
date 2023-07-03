@@ -242,3 +242,22 @@ data "ibm_dns_custom_resolver_forwarding_rules" "test-fr" {
 		instance_id	= ibm_dns_custom_resolver.test.instance_id
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 }
+
+resource "ibm_dns_custom_resolver_secondary_zone" "test" {
+  instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
+  resolver_id   = ibm_dns_custom_resolver.test.custom_resolver_id
+  description   = "seczone terraform plugin test"
+  zone          = "seczone-terraform-plugin-test.com"
+  enabled       = false
+  transfer_from = ["10.0.0.8"]
+}
+
+data "ibm_dns_custom_resolver_secondary_zones" "test-sz" {
+  depends_on  = [ibm_dns_custom_resolver_secondary_zone.test]
+  instance_id	= ibm_dns_custom_resolver.test.instance_id
+  resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+}
+
+output "ibm_dns_custom_resolver_secondary_zones_output" {
+  value = data.ibm_dns_custom_resolver_secondary_zones.test-sz
+}

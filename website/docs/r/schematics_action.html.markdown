@@ -128,7 +128,7 @@ Nested scheme for **credentials**:
 	* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
 * `description` - (Optional, String) Action description.
 * `inventory` - (Optional, String) Target inventory record ID, used by the action or ansible playbook.
-* `location` - (Optional, String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+* `location` - (Optional, String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
   * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 * `name` - (Required, String) The unique name of your action. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. **Example** you can use the name to stop action.
 * `resource_group` - (Optional, String) Resource-group name for an action.  By default, action is created in default resource group.
@@ -177,9 +177,6 @@ Nested scheme for **source**:
 		* `offering_id` - (Optional, String) Id of the offering the IBM Catalog.
 		* `offering_version_id` - (Optional, String) Id of the offering version the IBM Catalog.
 		* `offering_repo_url` - (Optional, String) Repo Url of the offering, in the IBM Catalog.
-	* `cos_bucket` - (Optional, List) Connection details to a IBM Cloud Object Storage bucket. MaxItems: 1.
-	Nested scheme for **cos_bucket**:
-		* `cos_bucket_url` - (Optional, String) COS Bucket Url.
 * `source_readme_url` - (Optional, String) URL of the `README` file, for the source URL.
 * `source_type` - (Optional, String) Type of source for the Template.
   * Constraints: Allowable values are: local, git_hub, git_hub_enterprise, git_lab, ibm_git_lab, ibm_cloud_catalog, external_scm, cos_bucket

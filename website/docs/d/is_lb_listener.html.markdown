@@ -33,15 +33,19 @@ In addition to all argument references listed, you can access the following attr
 - `accept_proxy_protocol` - (Boolean) If set to `true`, this listener will accept and forward PROXY protocol information. Supported by load balancers in the `application` family (otherwise always `false`). Additional restrictions:- If this listener has `https_redirect` specified, its `accept_proxy_protocol` value must  match the `accept_proxy_protocol` value of the `https_redirect` listener.- If this listener is the target of another listener's `https_redirect`, its  `accept_proxy_protocol` value must match that listener's `accept_proxy_protocol` value.
 
 - `certificate_instance` - (List) The certificate instance used for SSL termination. It is applicable only to `https`protocol.
-Nested scheme for `certificate_instance`:
+
+	Nested scheme for `certificate_instance`:
 	- `crn` - (String) The CRN for this certificate instance.
+
+		!> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
 
 - `connection_limit` - (Integer) The connection limit of the listener.
 
 - `created_at` - (String) The date and time that this listener was created.
 
 - `default_pool` - (List) The default pool associated with the listener.
-Nested scheme for `default_pool`:
+
+	Nested scheme for `default_pool`:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
 	Nested scheme for `deleted`:
 		- `more_info` - (String) Link to documentation about deleted resources.
@@ -52,7 +56,8 @@ Nested scheme for `default_pool`:
 - `href` - (String) The listener's canonical URL.
 
 - `https_redirect` - (List) If specified, the target listener that requests are redirected to.
-Nested scheme for `https_redirect`:
+
+	Nested scheme for `https_redirect`:
 	- `http_status_code` - (Integer) The HTTP status code for this redirect.
 	- `listener` - (List)
 	Nested scheme for `listener`:
@@ -62,6 +67,8 @@ Nested scheme for `https_redirect`:
 		- `href` - (String) The listener's canonical URL.
 		- `id` - (String) The unique identifier for this load balancer listener.
 	- `uri` - (String) The redirect relative target URI.
+
+- `idle_connection_timeout` - (Integer) The idle connection timeout of the listener in seconds. This property will be present for load balancers in the `application` family. Default value is `50`.
 
 - `policies` - (List) The policies for this listener.
 Nested scheme for `policies`:

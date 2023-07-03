@@ -58,6 +58,9 @@ const (
 	isVPCSecurityGroupRulePortMin   = "port_min"
 	isVPCSecurityGroupRuleProtocol  = "protocol"
 	isVPCSecurityGroupID            = "group_id"
+	isVPCAccessTags                 = "access_tags"
+	isVPCUserTagType                = "user"
+	isVPCAccessTagType              = "access"
 )
 
 func ResourceIBMISVPC() *schema.Resource {
@@ -74,10 +77,16 @@ func ResourceIBMISVPC() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return flex.ResourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -93,11 +102,8 @@ func ResourceIBMISVPC() *schema.Resource {
 
 			isVPCDefaultNetworkACL: {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     nil,
 				Computed:    true,
-				Deprecated:  "This field is deprecated",
-				Description: "Default network ACL",
+				Description: "Default network ACL ID",
 			},
 
 			isVPCDefaultRoutingTable: {
@@ -185,7 +191,14 @@ func ResourceIBMISVPC() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of tags",
 			},
-
+			isVPCAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_vpc", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access management tags",
+			},
 			isVPCCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -382,6 +395,13 @@ func ResourceIBMISVPCValidator() *validate.ResourceValidator {
 			AllowedValues:              address_prefix_management})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "is",
+			CloudDataRange:             []string{"service:vpc", "resolved_to:id"}})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
 			Identifier:                 isVPCName,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -424,6 +444,15 @@ func ResourceIBMISVPCValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
@@ -500,10 +529,18 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPCTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPCTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource vpc (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isVPCAccessTags); ok {
+		oldList, newList := d.GetChange(isVPCAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -591,12 +628,18 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 		d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
 	}
-	tags, err := flex.GetTagsUsingCRN(meta, *vpc.CRN)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource vpc (%s) tags: %s", d.Id(), err)
 	}
 	d.Set(isVPCTags, tags)
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isVPCAccessTags, accesstags)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -810,10 +853,25 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 			return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVPCTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *vpc.CRN)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource vpc (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if d.HasChange(isVPCAccessTags) {
+		getvpcOptions := &vpcv1.GetVPCOptions{
+			ID: &id,
+		}
+		vpc, response, err := sess.GetVPC(getvpcOptions)
+		if err != nil {
+			return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isVPCAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource VPC (%s) access tags: %s", d.Id(), err)
 		}
 	}
 

@@ -5,6 +5,7 @@ package resourcecontroller_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -145,6 +146,60 @@ func TestAccIBMResourceInstanceWithResourceGroup(t *testing.T) {
 	})
 }
 
+func TestAccIBMCOSResourceInstanceOneRatePlan(t *testing.T) {
+	serviceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMResourceInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCOSResourceInstanceOneRatePlan(serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMResourceInstanceExists("ibm_resource_instance.instance"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "name", serviceName),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "plan", "cos-one-rate-plan"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "location", "global"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSResourceInstancewithoutplan(t *testing.T) {
+	serviceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMResourceInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCOSResourceInstancewithoutplan(serviceName),
+				ExpectError: regexp.MustCompile("Missing required argument"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSResourceInstanceWithInvalidPlan(t *testing.T) {
+	serviceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMResourceInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCOSResourceInstanceWithInvalidPlan(serviceName),
+				ExpectError: regexp.MustCompile("Error retrieving deployment for plan invalidcosplan"),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMResourceInstanceDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -224,7 +279,66 @@ func testAccCheckIBMResourceInstanceBasic(serviceName string) string {
 	  }
 	`, serviceName)
 }
+func testAccCheckIBMCOSResourceInstanceOneRatePlan(serviceName string) string {
+	return fmt.Sprintf(`
+		
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "cos-one-rate-plan"
+		location = "global"
+		parameters = {
+		  "HMAC" = true
+		}
+	  
+		timeouts {
+		  create = "15m"
+		  update = "15m"
+		  delete = "15m"
+		}
+	  }
+	`, serviceName)
+}
 
+func testAccCheckIBMCOSResourceInstancewithoutplan(serviceName string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		location = "global"
+		parameters = {
+		  "HMAC" = true
+		}
+
+		timeouts {
+		  create = "15m"
+		  update = "15m"
+		  delete = "15m"
+		}
+	  }
+	`, serviceName)
+}
+func testAccCheckIBMCOSResourceInstanceWithInvalidPlan(serviceName string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "invalidcosplan"
+		location = "global"
+		parameters = {
+		  "HMAC" = true
+		}
+
+		timeouts {
+		  create = "15m"
+		  update = "15m"
+		  delete = "15m"
+		}
+	  }
+	`, serviceName)
+}
 func testAccCheckIBMResourceInstanceUpdateWithSameName(serviceName string) string {
 	return fmt.Sprintf(`
 		

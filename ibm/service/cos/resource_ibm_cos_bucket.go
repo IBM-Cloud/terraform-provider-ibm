@@ -38,7 +38,7 @@ var crossRegionLocation = []string{
 }
 
 var storageClass = []string{
-	"standard", "vault", "cold", "smart",
+	"standard", "vault", "cold", "smart", "flex", "onerate_active",
 }
 
 var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
@@ -87,7 +87,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				ForceNew:         true,
 				Description:      "resource instance ID",
 				DiffSuppressFunc: resourceinstanceidDiffSuppress,
-				ValidateFunc:     validate.ValidateRegexps(`^crn:.+:.+:.+:.+:.+:a\/[0-9a-f]{32}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\:\:$`),
+				ValidateFunc:     validate.InvokeValidator("ibm_cos_bucket", "resource_instance_id"),
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -95,10 +95,18 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 			"key_protect": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "CRN of the key you want to use data at rest encryption",
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"kms_key_crn"},
+				Description:   "CRN of the key you want to use data at rest encryption",
+			},
+			"kms_key_crn": {
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"key_protect"},
+				Description:   "CRN of the key you want to use data at rest encryption",
 			},
 			"satellite_location_id": {
 				Type:          schema.TypeString,
@@ -110,46 +118,43 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"single_site_location": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validate.ValidateAllowedStringValues(singleSiteLocation),
+				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "single_site_location"),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "cross_region_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
 				Description:   "single site location info",
 			},
 			"region_location": {
-				Type:     schema.TypeString,
-				Optional: true,
-				//ValidateFunc:  validate.ValidateAllowedStringValues(regionLocation),
+				Type:          schema.TypeString,
+				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"cross_region_location", "single_site_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
 				Description:   "Region Location info.",
 			},
 			"cross_region_location": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validate.ValidateAllowedStringValues(crossRegionLocation),
+				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "cross_region_location"),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "single_site_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
 				Description:   "Cros region location info",
 			},
 			"storage_class": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
+				Computed:      true,
 				Description:   "Storage class info",
 				ConflictsWith: []string{"satellite_location_id"},
-				ValidateFunc:  validate.ValidateAllowedStringValues(storageClass),
+				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "storage_class"),
 			},
 			"endpoint_type": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
 				Description:      "public or private",
 				ConflictsWith:    []string{"satellite_location_id"},
 				DiffSuppressFunc: flex.ApplyOnce,
 				Default:          "public",
+				ValidateFunc:     validate.InvokeValidator("ibm_cos_bucket", "endpoint_type"),
 			},
 			"s3_endpoint_public": {
 				Type:        schema.TypeString,
@@ -288,7 +293,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 						"type": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     validate.ValidateAllowedStringValues([]string{"GLACIER", "ACCELERATED", "Glacier", "Accelerated", "glacier", "accelerated"}),
+							ValidateFunc:     validate.InvokeValidator("ibm_cos_bucket", "type"),
 							DiffSuppressFunc: caseDiffSuppress,
 							Description:      "Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated",
 						},
@@ -438,8 +443,70 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Default:     true,
 				Description: "COS buckets need to be empty before they can be deleted. force_delete option empty the bucket and delete it.",
 			},
+			"object_lock": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				RequiredWith: []string{"object_versioning"},
+				Description:  "Enable objectlock for the bucket. When enabled, buckets within the container vault can have Object Lock Configuration applied to the bucket.",
+			},
 		},
 	}
+}
+func ResourceIBMCOSBucketValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "resource_instance_id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^crn:.+:.+:.+:.+:.+:a\/[0-9a-f]{32}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\:\:$`,
+			CloudDataType:              "resource_instance",
+			CloudDataRange:             []string{"service:cloud-object-storage"}})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "single_site_location",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "ams03,che01,hkg02,mel01,mex01,mil01,mon01,osl01,par01,sjc04,sao01,seo01,sng01,tor01",
+		})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cross_region_location",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "us,eu,ap",
+		})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "storage_class",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "standard,vault,cold,smart,flex,onerate_active",
+		})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "endpoint_type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "public,private,direct",
+		})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "GLACIER,ACCELERATED,Glacier,Accelerated,glacier,accelerated",
+		})
+
+	ibmCOSBucketResourceValidator := validate.ResourceValidator{ResourceName: "ibm_cos_bucket", Schema: validateSchema}
+	return &ibmCOSBucketResourceValidator
 }
 
 func archiveRuleList(archiveList []interface{}) []*s3.LifecycleRule {
@@ -957,6 +1024,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
+	var keyProtectFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -966,6 +1034,10 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	endpointType := parseBucketId(d.Id(), "endpointType")
 	apiType := parseBucketId(d.Id(), "apiType")
 	bLocation := parseBucketId(d.Id(), "bLocation")
+
+	if _, ok := d.GetOk("key_protect"); ok {
+		keyProtectFlag = true
+	}
 
 	//split satellite resource instance id to get the 1st value
 	if apiType == "sl" {
@@ -1093,20 +1165,43 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
+	head, err := s3Client.HeadBucket(headInput)
+	if err != nil {
+		return err
+	}
+	if *head.IBMSSEKPEnabled == true {
+		if keyProtectFlag == true {
+			d.Set("key_protect", head.IBMSSEKPCrkId)
+		} else {
+			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+		}
+	}
 
 	if bucketPtr != nil {
 
 		if bucketPtr.Firewall != nil {
 			d.Set("allowed_ip", flex.FlattenStringList(bucketPtr.Firewall.AllowedIp))
+		} else {
+
+			d.Set("allowed_ip", []string{})
 		}
 		if bucketPtr.ActivityTracking != nil {
 			d.Set("activity_tracking", flex.FlattenActivityTrack(bucketPtr.ActivityTracking))
+		} else {
+
+			d.Set("activity_tracking", []interface{}{})
 		}
+
 		if bucketPtr.MetricsMonitoring != nil {
 			d.Set("metrics_monitoring", flex.FlattenMetricsMonitor(bucketPtr.MetricsMonitoring))
+		} else {
+
+			d.Set("metrics_monitoring", []interface{}{})
 		}
 		if bucketPtr.HardQuota != nil {
 			d.Set("hard_quota", bucketPtr.HardQuota)
+		} else {
+			d.Set("hard_quota", 0)
 		}
 	}
 	// Read the lifecycle configuration (archive & expiration or non current version or abort incomplete multipart upload)
@@ -1175,6 +1270,17 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("object_versioning", nil)
 		}
 	}
+	// reading objectlock
+	getObjectLockConfigurationInput := &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
+	if output.ObjectLockConfiguration != nil {
+		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
+		if objectLockEnabled == "Enabled" {
+			d.Set("object_lock", true)
+		}
+	}
 	return nil
 }
 
@@ -1186,6 +1292,7 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketName := d.Get("bucket_name").(string)
 	storageClass := d.Get("storage_class").(string)
+	objectLockEnabled := d.Get("object_lock").(bool)
 	var bLocation string
 	var apiType string
 	var satlc_id string
@@ -1216,10 +1323,10 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		bLocation = bucketLocation.(string)
 		apiType = "sl"
 	}
-
 	if bLocation == "" {
 		return fmt.Errorf("Provide either `cross_region_location` or `region_location` or `single_site_location` or `satellite_location_id`")
 	}
+
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 
 	var endpointType = d.Get("endpoint_type").(string)
@@ -1247,9 +1354,14 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	var create *s3.CreateBucketInput
-	if satlc_id != "" {
+	if satlc_id != "" || storageClass == "" {
 		create = &s3.CreateBucketInput{
 			Bucket: aws.String(bucketName),
+		}
+	} else if objectLockEnabled == true {
+		create = &s3.CreateBucketInput{
+			Bucket:                     aws.String(bucketName),
+			ObjectLockEnabledForBucket: aws.Bool(true),
 		}
 	} else {
 		create = &s3.CreateBucketInput{
@@ -1262,6 +1374,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 
 	if keyprotect, ok := d.GetOk("key_protect"); ok {
 		create.IBMSSEKPCustomerRootKeyCrn = aws.String(keyprotect.(string))
+		create.IBMSSEKPEncryptionAlgorithm = aws.String(keyAlgorithm)
+	} else if kmsKeyCrn, ok := d.GetOk("kms_key_crn"); ok {
+		create.IBMSSEKPCustomerRootKeyCrn = aws.String(kmsKeyCrn.(string))
 		create.IBMSSEKPEncryptionAlgorithm = aws.String(keyAlgorithm)
 	}
 
@@ -1515,7 +1630,7 @@ func SelectCosApi(apiType string, bLocation string) (string, string, string) {
 	return "", "", ""
 }
 
-///Satellite ENdpoint configuration
+// /Satellite ENdpoint configuration
 func SelectSatlocCosApi(apiType string, serviceID string, bLocation string) string {
 	if apiType == "sl" {
 		return fmt.Sprintf("s3.%s.%s.cloud-object-storage.appdomain.cloud", serviceID, bLocation)

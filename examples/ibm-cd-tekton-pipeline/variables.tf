@@ -3,116 +3,38 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
-variable "tekton_pipeline_pipeline_id" {
-  description = "The tekton pipeline ID."
+variable "resource_group" {
   type        = string
-  default     = "94619026-912b-4d92-8f51-6c74f0692d90"
+  description = "Resource group within which toolchain will be created"
+  default     = "Default"
 }
 
-variable "tekton_pipeline_trigger_property_trigger_id" {
-  description = "The trigger ID."
+variable "clone_repo" {
   type        = string
-  default     = "1bb892a1-2e04-4768-a369-b1159eace147"
-}
-variable "tekton_pipeline_trigger_property_name" {
-  description = "Property name."
-  type        = string
-  default     = "key1"
-}
-variable "tekton_pipeline_trigger_property_value" {
-  description = "String format property value."
-  type        = string
-  default     = "https://github.com/IBM/tekton-tutorial.git"
-}
-variable "tekton_pipeline_trigger_property_enum" {
-  description = "Options for SINGLE_SELECT property type."
-  type        = list(string)
-  default     = [ "enum" ]
-}
-variable "tekton_pipeline_trigger_property_default" {
-  description = "Default option for SINGLE_SELECT property type."
-  type        = string
-  default     = "default"
-}
-variable "tekton_pipeline_trigger_property_type" {
-  description = "Property type."
-  type        = string
-  default     = "TEXT"
-}
-variable "tekton_pipeline_trigger_property_path" {
-  description = "property path for INTEGRATION type properties."
-  type        = string
-  default     = "path"
+  description = "URL of the tekton repo to clone"
+  default     = "https://github.com/open-toolchain/hello-tekton"
 }
 
-// Resource arguments for tekton_pipeline_property
-variable "tekton_pipeline_property_name" {
-  description = "Property name."
+variable "repo_name" {
   type        = string
-  default     = "key1"
-}
-variable "tekton_pipeline_property_value" {
-  description = "String format property value."
-  type        = string
-  default     = "https://github.com/IBM/tekton-tutorial.git"
-}
-variable "tekton_pipeline_property_enum" {
-  description = "Options for SINGLE_SELECT property type."
-  type        = list(string)
-  default     = [ "enum" ]
-}
-variable "tekton_pipeline_property_default" {
-  description = "Default option for SINGLE_SELECT property type."
-  type        = string
-  default     = "default"
-}
-variable "tekton_pipeline_property_type" {
-  description = "Property type."
-  type        = string
-  default     = "TEXT"
-}
-variable "tekton_pipeline_property_path" {
-  description = "property path for INTEGRATION type properties."
-  type        = string
-  default     = "path"
+  description = "Name of the new repo that will be created in the toolchain"
+  default     = "simple-tekton"
 }
 
-// Resource arguments for tekton_pipeline
-
-// Data source arguments for tekton_pipeline_definition
-variable "tekton_pipeline_definition_definition_id" {
-  description = "The definition ID."
+variable "region" {
   type        = string
-  default     = "94299034-d45f-4e9a-8ed5-6bd5c7bb7ada"
+  description = "IBM Cloud region where your toolchain will be created"
+  default     = "us-south"
 }
 
-// Data source arguments for tekton_pipeline_trigger_property
-variable "tekton_pipeline_pipeline_id" {
-  description = "The tekton pipeline ID."
+variable "toolchain_name" {
   type        = string
-  default     = "94619026-912b-4d92-8f51-6c74f0692d90"
-}
-variable "tekton_pipeline_trigger_property_trigger_id" {
-  description = "The trigger ID."
-  type        = string
-  default     = "1bb892a1-2e04-4768-a369-b1159eace147"
-}
-variable "tekton_pipeline_trigger_property_property_name" {
-  description = "The property's name."
-  type        = string
-  default     = "debug-pipeline"
+  description = "Name of the Toolchain"
+  default     = "Simple Terraform Toolchain"
 }
 
-// Data source arguments for tekton_pipeline_property
-variable "tekton_pipeline_property_property_name" {
-  description = "The property's name."
+variable "toolchain_description" {
   type        = string
-  default     = "debug-pipeline"
-}
-
-// Data source arguments for tekton_pipeline_trigger
-variable "tekton_pipeline_trigger_trigger_id" {
-  description = "The trigger ID."
-  type        = string
-  default     = "1bb892a1-2e04-4768-a369-b1159eace147"
+  description = "Description for the Toolchain"
+  default     = "Toolchain created using IBM Cloud Continuous Delivery Service"
 }

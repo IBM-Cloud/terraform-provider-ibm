@@ -36,8 +36,6 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
-- `id` -  (String) The ID for the all the reserved ID in current timestamp format.
-- `limit` -  (String) The number of reserved IPs to list.
 - `reserved_ips` -  (List) The collection of all the reserved IPs in the subnet.
 
   Nested scheme for `reserved_ips`:
@@ -45,12 +43,12 @@ In addition to the argument reference list, you can access the following attribu
   - `auto_delete` -  (String) If reserved IP shall be deleted automatically.
   - `created_at` -  (String) The date and time that the reserved IP was created.
   - `href` -  (String) The URL for this reserved IP.
-  - `lifecycle_state` - (String) TThe lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
+  - `lifecycle_state` - (String) The lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
   - `reserved_ip` -  (String) The unique identifier for this reserved IP.
   - `name` -  (String) The user defined or system provided name for this reserved IP.
   - `owner` -  (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
   - `resource_type` -  (String) The resource type.
-- `sort` -  (String) The keyword on which all the reserved IPs are sorted.
-- `subnet` -  (String) The ID for the subnet for the reserved IP.
-- `total_count` -  (String) The number of reserved IP in the subnet.
+  - `target` - (String) The ID of the target for the reserved IP.
+  - `target_crn` - (String) The crn of the target for the reserved IP.
+- `total_count` -  (String) The total number of resources across all pages.
 

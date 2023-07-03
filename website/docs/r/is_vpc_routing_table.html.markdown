@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_is_vpc_routing_table
-Create, update, or delete an VPC routing tables. For more information, about VPC routes, see [routing tables for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc (List)routing-tables-for-vpc).
+Create, update, or delete an VPC routing tables. For more information, about VPC routes, see [routing tables for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
@@ -38,12 +38,28 @@ resource "ibm_is_vpc_routing_table" "example" {
 
 ```
 
+# Example usage for accept_routes_from_resource_type
+```terraform
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+resource "ibm_is_vpc_routing_table" "example" {
+  vpc                              = ibm_is_vpc.example.id
+  name                             = "example-vpc-routing-table"
+  route_direct_link_ingress        = true
+  route_transit_gateway_ingress    = false
+  route_vpc_zone_ingress           = false
+  accept_routes_from_resource_type = ["vpn_server"]
+}
+
+```
 ## Argument reference
 Review the argument references that you can specify for your resource. 
-
+- `accept_routes_from_resource_type` - (Optional, List) The resource type filter specifying the resources that may create routes in this routing table. Ex: `vpn_server`, `vpn_gateway`
 - `created_at` - (Timestamp)  The date and time when the routing table was created.
 - `name` - (Optional, String) The routing table name.
 - `route_direct_link_ingress` - (Optional, Bool)  If set to **true**, the routing table is used to route traffic that originates from Direct Link to the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
+- `route_internet_ingress` - (Optional, Bool) If set to **true**, this routing table will be used to route traffic that originates from the internet. For this to succeed, the VPC must not already have a routing table with this property set to **true**.
 - `route_transit_gateway_ingress` - (Optional, Bool) If set to **true**, the routing table is used to route traffic that originates from Transit Gateway to the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
 - `route_vpc_zone_ingress` - (Optional, Bool) If set to true, the routing table is used to route traffic that originates from subnets in other zones in the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
 - `vpc` - (Required, Forces new resource, String) The VPC ID. 

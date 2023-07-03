@@ -31,6 +31,16 @@ func TestAccIBMISVpnGatewaysDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(node, "vpn_gateways.#"),
 				),
 			},
+			{
+				Config: testAccCheckIBMISVpnGatewaysDataSourceConfig(vpcname, subnetname, name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.0.id"),
+				),
+			},
 		},
 	})
 }

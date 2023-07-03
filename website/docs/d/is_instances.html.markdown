@@ -57,6 +57,7 @@ In addition to all argument reference list, you can access the following attribu
 - `instances`- (List of Object) A list of Virtual Servers for VPC instances that exist in your account.
    
    Nested scheme for `instances`:
+    - `access_tags`  - (List) Access management tags associated for the instances.
     - `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
     - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 	- `boot_volume`- (List) A list of boot volumes that were created for the instance.
@@ -67,6 +68,12 @@ In addition to all argument reference list, you can access the following attribu
 		- `name` - (String) The name of the boot volume.
 		- `volume_id` - (String) The ID of the volume that is associated with the boot volume attachment.
 		- `volume_crn` - (String) The CRN of the volume that is associated with the boot volume attachment.
+	- `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
+
+	  Nested scheme for `catalog_offering`:
+		- `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
+		- `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+ 	
 	- `crn` - (String) The CRN of the instance.
 	- `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:
 
@@ -86,8 +93,25 @@ In addition to all argument reference list, you can access the following attribu
         - `model` - Model of the gpu.
 	- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 	- `image` - (String) The ID of the virtual server image that is used in the instance.
+	- `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
+
+		Nested scheme for `lifecycle_reasons`:
+		- `code` - (String) A snake case string succinctly identifying the reason for this lifecycle state.
+		- `message` - (String) An explanation of the reason for this lifecycle state.
+		- `more_info` - (String) Link to documentation about the reason for this lifecycle state.
+	- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 	- `memory`- (Integer) The amount of memory that was allocated to the instance.
 	- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+	
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+	- `metadata_service` - (List) The metadata service configuration. 
+
+       Nested scheme for `metadata_service`:
+       - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+       - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+       - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+       
 	- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
 	  Nested scheme for `network_interfaces`:
@@ -96,7 +120,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
 			Nested scheme for `primary_ip`:
-			- `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `address` - (String) The IP address of the reserved IP. Same as `primary_ipv4_address`
 			- `href`- (String) The URL for this reserved IP
 			- `name`- (String) The user-defined or system-provided name for this reserved IP
 			- `reserved_ip`- (String) The unique identifier for this reserved IP
@@ -124,7 +148,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
 			Nested scheme for `primary_ip`:
-			- `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `address` - (String) The IP address of the reserved IP. Same as `primary_ipv4_address`
 			- `href`- (String) The URL for this reserved IP
 			- `name`- (String) The user-defined or system-provided name for this reserved IP
 			- `reserved_ip`- (String) The unique identifier for this reserved IP
@@ -152,6 +176,7 @@ In addition to all argument reference list, you can access the following attribu
 
 	  Nested scheme for `vcpu`:
 		- `architecture` - (String) The architecture of the virtual CPU.
+		- `manufacturer` - (String) The manufacturer of the virtual CPU.
 		- `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
 	- `vpc` - (String) The ID of the VPC that the instance belongs to.
 	- `zone` - (String) The zone where the instance was created.

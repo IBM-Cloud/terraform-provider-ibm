@@ -49,6 +49,9 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+- `accept_routes_from` - (List) The filters specifying the resources that may create routes in this routing table.At present, only the `resource_type` filter is permitted, and only the `vpn_gateway` value is supported, but filter support is expected to expand in the future.
+	Nested scheme for **accept_routes_from**:
+	- `resource_type` - (String) The resource type.
 - `created_at` - (String) The date and time that this routing table was created.
 - `href` - (String) The URL for this routing table.
 - `id` - (String) The unique identifier of the RoutingTable.
@@ -58,6 +61,7 @@ In addition to all argument references listed, you can access the following attr
 - `name` - (String) The user-defined name for this routing table.
 - `resource_type` - (String) The resource type.
 - `route_direct_link_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from [Direct Link](https://cloud.ibm.com/docs/dl/) to this VPC.Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway connection, the packet will be dropped.
+- `route_internet_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from the internet.Incoming traffic will be routed according to the routing table with two exceptions:- Traffic destined for IP addresses associated with public gateways will not be  subject to routes in this routing table.- Routes with an action of deliver are treated as drop unless the `next_hop` is an  IP address bound to a network interface on a subnet in the route's `zone`.  Therefore, if an incoming packet matches a route with a `next_hop` of an  internet-bound IP address or a VPN gateway connection, the packet will be dropped.
 - `route_transit_gateway_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from from [Transit Gateway](https://cloud.ibm.com/cloud/transit-gateway/) to this VPC.Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway connection, the packet will be dropped.
 - `route_vpc_zone_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from subnets in other zones in this VPC.Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway connection, the packet will be dropped.
 - `routes` - (List) The routes for this routing table.

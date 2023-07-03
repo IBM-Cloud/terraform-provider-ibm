@@ -36,7 +36,15 @@ func TestAccIBMISInstanceDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						resName, "primary_network_interface.0.port_speed"),
 					resource.TestCheckResourceAttrSet(
-						resName, "availability_policy.#"),
+						resName, "availability_policy_host_failure"),
+					resource.TestCheckResourceAttrSet(
+						resName, "lifecycle_state"),
+					resource.TestCheckResourceAttr(
+						resName, "lifecycle_reasons.#", "0"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.0.manufacturer"),
 				),
 			},
 		},
@@ -96,7 +104,7 @@ resource "ibm_is_subnet" "testacc_subnet" {
 
 resource "ibm_is_ssh_key" "testacc_sshkey" {
   name       = "%s"
-  public_key = file("../../test-fixtures/.ssh/id_rsa.pub")
+  public_key = file("./test-fixtures/.ssh/id_rsa.pub")
 }
 
 resource "ibm_is_instance" "testacc_instance" {
@@ -117,7 +125,7 @@ resource "ibm_is_instance" "testacc_instance" {
 }
 data "ibm_is_instance" "ds_instance" {
   name        = ibm_is_instance.testacc_instance.name
-  private_key = file("../../test-fixtures/.ssh/id_rsa")
+  private_key = file("./test-fixtures/.ssh/id_rsa")
   passphrase  = ""
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName)
 }

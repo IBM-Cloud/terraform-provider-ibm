@@ -3,21 +3,21 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_sonarqube"
 description: |-
   Get information about cd_toolchain_tool_sonarqube
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_sonarqube
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_sonarqube. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-sonarqube) page for more information.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_sonarqube.cd_toolchain_tool_sonarqube.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -37,31 +37,31 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the cd_toolchain_tool_sonarqube.
 * `crn` - (String) Tool CRN.
 
-
 * `href` - (String) URI representing the tool.
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `blind_connection` - (Boolean) Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
+	* `blind_connection` - (Boolean) When set to true, instructs IBM Cloud Continuous Delivery to not validate the configuration of this integration. Set this to true if the SonarQube server is not addressable on the public internet.
 	  * Constraints: The default value is `false`.
-	* `dashboard_url` - (String) Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.
-	* `name` - (String) Type a name for this tool integration, for example: my-sonarqube. This name displays on your toolchain.
-	* `user_login` - (String) If you are using an authentication token, leave this field empty.
-	* `user_password` - (String)
+	* `name` - (String) The name for this tool integration.
+	* `server_url` - (String) The URL of the SonarQube server.
+	* `user_login` - (String) The user id for authenticating to the SonarQube server.
+	* `user_password` - (String) The password or token for authenticating to the SonarQube server. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+
 
 * `updated_at` - (String) Latest tool update timestamp.
 

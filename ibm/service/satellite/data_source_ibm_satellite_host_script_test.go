@@ -43,3 +43,37 @@ data "ibm_satellite_attach_host_script" "script" {
 	host_provider  = "ibm"
 }`, locationName)
 }
+
+// test coreos-enabled locations
+func TestAccIBMSatelliteAttachHostScriptDataSourceBasicCoreos(t *testing.T) {
+	locationName := fmt.Sprintf("tf-satellitelocation-coreos-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMSatelliteAttachHostScriptDataSourceConfigCoreos(locationName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_satellite_attach_host_script.script", "host_provider", "ibm"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMSatelliteAttachHostScriptDataSourceConfigCoreos(locationName string) string {
+	return fmt.Sprintf(`
+resource "ibm_satellite_location" "testacc_satellite" {
+	location     = "%s"
+	managed_from = "wdc04"
+	coreos_enabled = true
+	zones		 = ["us-east-1", "us-east-2", "us-east-3"]
+}
+
+data "ibm_satellite_attach_host_script" "script" {
+	location       = ibm_satellite_location.testacc_satellite.id
+	labels         = ["env:prod"]
+	coreos_host	   = true
+	host_provider  = "ibm"
+}`, locationName)
+}

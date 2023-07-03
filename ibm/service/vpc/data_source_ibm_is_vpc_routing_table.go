@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package vpc
@@ -38,6 +38,20 @@ func DataSourceIBMIBMIsVPCRoutingTable() *schema.Resource {
 				ConflictsWith: []string{isRoutingTableID},
 				Description:   "The user-defined name for this routing table.",
 			},
+			isRoutingTableAcceptRoutesFrom: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The filters specifying the resources that may create routes in this routing table.At present, only the `resource_type` filter is permitted, and only the `vpn_gateway` value is supported, but filter support is expected to expand in the future.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"resource_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 			isRoutingTableID: &schema.Schema{
 				Type:          schema.TypeString,
 				AtLeastOneOf:  []string{rName, isRoutingTableID},
@@ -75,6 +89,11 @@ func DataSourceIBMIBMIsVPCRoutingTable() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicates whether this routing table is used to route traffic that originates from[Direct Link](https://cloud.ibm.com/docs/dl/) to this VPC.Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of `deliver` are treated as `drop` unless the `next_hop` is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a `next_hop` of an internet-bound IP address or a VPN gateway connection, the packet will be dropped.",
+			},
+			rtRouteInternetIngress: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this routing table is used to route traffic that originates from the internet.Incoming traffic will be routed according to the routing table with two exceptions:- Traffic destined for IP addresses associated with public gateways will not be  subject to routes in this routing table.- Routes with an action of deliver are treated as drop unless the `next_hop` is an  IP address bound to a network interface on a subnet in the route's `zone`.  Therefore, if an incoming packet matches a route with a `next_hop` of an  internet-bound IP address or a VPN gateway connection, the packet will be dropped.",
 			},
 			rtRouteTransitGatewayIngress: &schema.Schema{
 				Type:        schema.TypeBool,
@@ -225,6 +244,19 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 	if err = d.Set(rtCreateAt, flex.DateTimeToString(routingTable.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
 	}
+	acceptRoutesFromInfo := make([]map[string]interface{}, 0)
+	if routingTable.AcceptRoutesFrom != nil {
+		for _, AcceptRoutesFrom := range routingTable.AcceptRoutesFrom {
+			l := map[string]interface{}{}
+			if AcceptRoutesFrom.ResourceType != nil {
+				l["resource_type"] = *AcceptRoutesFrom.ResourceType
+				acceptRoutesFromInfo = append(acceptRoutesFromInfo, l)
+			}
+		}
+	}
+	if err = d.Set(isRoutingTableAcceptRoutesFrom, acceptRoutesFromInfo); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting accept_routes_from %s", err))
+	}
 
 	if err = d.Set(isRoutingTableID, routingTable.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting routing_table: %s", err))
@@ -254,6 +286,9 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_direct_link_ingress: %s", err))
 	}
 
+	if err = d.Set(rtRouteInternetIngress, routingTable.RouteInternetIngress); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_internet_ingress: %s", err))
+	}
 	if err = d.Set(rtRouteTransitGatewayIngress, routingTable.RouteTransitGatewayIngress); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_transit_gateway_ingress: %s", err))
 	}

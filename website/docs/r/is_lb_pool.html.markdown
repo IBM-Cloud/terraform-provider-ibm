@@ -56,7 +56,7 @@ resource "ibm_is_lb_pool" "example" {
 
 ```
 
-//In the following example, you can create a load balancer pool with `app_cookie` session persistence:
+In the following example, you can create a load balancer pool with `app_cookie` session persistence:
 
 ```terraform
 resource "ibm_is_lb_pool" "example" {
@@ -75,7 +75,7 @@ resource "ibm_is_lb_pool" "example" {
 
 ```
 
-//In the following example, you can create a load balancer pool with `http_cookie` session persistence:
+In the following example, you can create a load balancer pool with `http_cookie` session persistence:
 
 ```terraform
 resource "ibm_is_lb_pool" "example" {
@@ -93,7 +93,7 @@ resource "ibm_is_lb_pool" "example" {
 
 ```
 
-//In the following example, you can create a load balancer pool with `source_ip` session persistence:
+In the following example, you can create a load balancer pool with `source_ip` session persistence:
 
 ```terraform
 resource "ibm_is_lb_pool" "example" {
@@ -127,7 +127,7 @@ Review the argument references that you can specify for your resource.
 - `health_timeout`- (Required, Integer) The health check timeout in seconds.
 - `health_type` - (Required, String) The pool protocol. Enumeration type: `http`, `https`, `tcp` are supported.
 - `health_monitor_url` - (Optional, String) The health check URL. This option is applicable only to the HTTP `health-type`.
-- `health_monitor_port` - (Optional, Integer) The health check port number.
+- `health_monitor_port` - (Optional, Integer) The health check port number. Specify `0` to remove an existing health check port.
 - `lb`  - (Required, Forces new resource, String) The load balancer unique identifier.
 - `name` - (Required, String) The name of the pool.
 - `protocol` - (Required, String) The pool protocol. Enumeration type: `http`, `https`, `tcp`, `udp` are supported.

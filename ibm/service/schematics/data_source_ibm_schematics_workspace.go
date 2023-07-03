@@ -115,6 +115,7 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"location": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The IBM Cloud location where your workspace was provisioned.",
 			},
@@ -297,7 +298,111 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "A list of input variables that are associated with the workspace.",
-				Elem:        &schema.Schema{Type: schema.TypeMap},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of the variable.",
+						},
+						"aliases": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The list of aliases for the variable name.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The description of the meta data.",
+						},
+						"cloud_data_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
+						},
+						"default_value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Default value for the variable only if the override value is not specified.",
+						},
+						"link_status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of the link.",
+						},
+						"secure": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Is the variable secure or sensitive ?.",
+						},
+						"immutable": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Is the variable readonly ?.",
+						},
+						"hidden": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If **true**, the variable is not displayed on UI or Command line.",
+						},
+						"required": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If the variable required?.",
+						},
+						"options": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"min_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum value of the variable. Applicable for the integer type.",
+						},
+						"max_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum value of the variable. Applicable for the integer type.",
+						},
+						"min_length": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum length of the variable value. Applicable for the string type.",
+						},
+						"max_length": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum length of the variable value. Applicable for the string type.",
+						},
+						"matches": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The regex for the variable value.",
+						},
+						"position": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The relative position of this variable in a list.",
+						},
+						"group_by": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The display name of the group this variable belongs to.",
+						},
+						"source": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The source of this meta-data.",
+						},
+					},
+				},
 			},
 			"template_inputs": {
 				Type:        schema.TypeList,
@@ -451,10 +556,36 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 	}
 }
 
+func SchematicsEndpointURL(region, meta interface{}) (string, bool, error) {
+	sess, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return "", false, err
+	}
+	if region != sess.Config.Region {
+		// overide provider region with resource/datasource region argument
+		// update client with updated region endpoint
+		schematicsEndpoint := fmt.Sprintf("https://%s.%s", fmt.Sprintf("%s.schematics", region), "cloud.ibm.com")
+		visibility := sess.Config.Visibility
+		if visibility == "private" || visibility == "public-and-private" {
+			schematicsEndpoint = fmt.Sprintf("https://%s.%s", fmt.Sprintf("private-%s.schematics", region), "cloud.ibm.com")
+		}
+		schematicsEndpointURL := conns.EnvFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint)
+		return schematicsEndpointURL, true, nil
+	}
+	return "", false, nil
+}
+
 func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if r, ok := d.GetOk("location"); ok {
+		region := r.(string)
+		schematicsURL, updatedURL, _ := SchematicsEndpointURL(region, meta)
+		if updatedURL {
+			schematicsClient.Service.Options.URL = schematicsURL
+		}
 	}
 
 	getWorkspaceOptions := &schematicsv1.GetWorkspaceOptions{}
@@ -784,7 +915,12 @@ func dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem schematicsv1.
 		templateDataMap["values"] = templateDataItem.Values
 	}
 	if templateDataItem.ValuesMetadata != nil {
-		templateDataMap["values_metadata"] = templateDataItem.ValuesMetadata
+		valuesMetadata := []map[string]interface{}{}
+		for _, valuesMetadataItem := range templateDataItem.ValuesMetadata {
+			valuesMetadataItemMap := dataSourceIbmSchematicsWorkspaceVariableMetadataToMap(&valuesMetadataItem)
+			valuesMetadata = append(valuesMetadata, valuesMetadataItemMap)
+		}
+		templateDataMap["values_metadata"] = valuesMetadata
 	}
 	if templateDataItem.ValuesURL != nil {
 		templateDataMap["values_url"] = templateDataItem.ValuesURL
@@ -799,7 +935,67 @@ func dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem schematicsv1.
 
 	return templateDataMap
 }
-
+func dataSourceIbmSchematicsWorkspaceVariableMetadataToMap(model *schematicsv1.VariableMetadata) map[string]interface{} {
+	modelMap := make(map[string]interface{})
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.Aliases != nil {
+		modelMap["aliases"] = model.Aliases
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.CloudDataType != nil {
+		modelMap["cloud_data_type"] = *model.CloudDataType
+	}
+	if model.DefaultValue != nil {
+		modelMap["default_value"] = *model.DefaultValue
+	}
+	if model.LinkStatus != nil {
+		modelMap["link_status"] = *model.LinkStatus
+	}
+	if model.Secure != nil {
+		modelMap["secure"] = *model.Secure
+	}
+	if model.Immutable != nil {
+		modelMap["immutable"] = *model.Immutable
+	}
+	if model.Hidden != nil {
+		modelMap["hidden"] = *model.Hidden
+	}
+	if model.Required != nil {
+		modelMap["required"] = *model.Required
+	}
+	if model.Options != nil {
+		modelMap["options"] = model.Options
+	}
+	if model.MinValue != nil {
+		modelMap["min_value"] = *model.MinValue
+	}
+	if model.MaxValue != nil {
+		modelMap["max_value"] = *model.MaxValue
+	}
+	if model.MinLength != nil {
+		modelMap["min_length"] = *model.MinLength
+	}
+	if model.MaxLength != nil {
+		modelMap["max_length"] = *model.MaxLength
+	}
+	if model.Matches != nil {
+		modelMap["matches"] = *model.Matches
+	}
+	if model.Position != nil {
+		modelMap["position"] = *model.Position
+	}
+	if model.GroupBy != nil {
+		modelMap["group_by"] = *model.GroupBy
+	}
+	if model.Source != nil {
+		modelMap["source"] = *model.Source
+	}
+	return modelMap
+}
 func dataSourceWorkspaceResponseTemplateDataEnvValuesToMap(envValuesItem schematicsv1.EnvVariableResponse) (envValuesMap map[string]interface{}) {
 	envValuesMap = map[string]interface{}{}
 

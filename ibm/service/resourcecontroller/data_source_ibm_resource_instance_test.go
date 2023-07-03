@@ -15,17 +15,19 @@ import (
 
 func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
 	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	instanceName2 := fmt.Sprintf("terraform_onerate%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:  setupResourceInstanceConfig(instanceName),
+				Config:  setupResourceInstanceConfig(instanceName, instanceName2),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance", "service", "cloud-object-storage"),
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance2", "service", "kms"),
+					resource.TestCheckResourceAttr("ibm_resource_instance.instance3", "service", "cloud-object-storage"),
 				),
 			},
 			{
@@ -47,11 +49,21 @@ func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance2", "location", "us-south"),
 				),
 			},
+			{
+				Config:  testAccCheckIBMResourceInstanceDataSourceConfigWithOneRate(instanceName2),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance3", "name", instanceName2),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance3", "service", "cloud-object-storage"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance3", "plan", "cos-one-rate-plan"),
+					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance3", "location", "global"),
+				),
+			},
 		},
 	})
 }
 
-func setupResourceInstanceConfig(instanceName string) string {
+func setupResourceInstanceConfig(instanceName string, instanceName2 string) string {
 	return fmt.Sprintf(`
 
 resource "ibm_resource_instance" "instance" {
@@ -67,8 +79,15 @@ resource "ibm_resource_instance" "instance2" {
   plan     = "tiered-pricing"
   location = "us-south"
 }
+resource "ibm_resource_instance" "instance3" {
+	name     = "%s"
+	service  = "cloud-object-storage"
+	plan     = "cos-one-rate-plan"
+	location = "global"
+  }
 
-`, instanceName, instanceName)
+
+`, instanceName, instanceName, instanceName2)
 
 }
 
@@ -123,5 +142,26 @@ data "ibm_resource_instance" "testacc_ds_resource_instance2" {
   service = "kms"
 }
 `, instanceName, instanceName)
+
+}
+func testAccCheckIBMResourceInstanceDataSourceConfigWithOneRate(instanceName2 string) string {
+	return fmt.Sprintf(`
+data "ibm_resource_group" "group" {
+  is_default=true
+}
+
+resource "ibm_resource_instance" "instance3" {
+  name     = "%s"
+  service  = "cloud-object-storage"
+  plan     = "cos-one-rate-plan"
+  location = "global"
+}
+
+data "ibm_resource_instance" "testacc_ds_resource_instance3" {
+  name              = ibm_resource_instance.instance3.name
+  location          = "global"
+  resource_group_id = data.ibm_resource_group.group.id
+}
+`, instanceName2)
 
 }

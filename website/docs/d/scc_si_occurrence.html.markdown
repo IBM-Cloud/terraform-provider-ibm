@@ -6,6 +6,9 @@ description: |-
   Get information about Security and Compliance Center
 ---
 
+# DEPRECATED
+Security and Compliance Center - Security Insights has now deprecated, backend services are no longer available. The docs will be removed in next release.
+
 # ibm_scc_si_occurence
 
 Retrieve information about a Security and Compliance Center occurrence. For more information, about Security and Compliance Center, see [getting started with Security and Compliance Center](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-getting-started).

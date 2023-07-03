@@ -5,7 +5,9 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,6 +51,14 @@ func DataSourceSnapshot() *schema.Resource {
 				Description: "If present, the image id from which the data on this volume was most directly provisioned.",
 			},
 
+			isSnapshotAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access tags",
+			},
+
 			isSnapshotOperatingSystem: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -76,6 +86,11 @@ func DataSourceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "Encryption type of the snapshot",
 			},
+			isSnapshotEncryptionKey: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A reference to the root key used to wrap the data encryption key for the source volume.",
+			},
 			isSnapshotHref: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -98,11 +113,69 @@ func DataSourceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "The size of the snapshot",
 			},
-
+			isSnapshotClones: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Zones for creating the snapshot clone",
+			},
 			isSnapshotCapturedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time that this snapshot was created",
+			},
+
+			isSnapshotUserTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "User Tags for the snapshot",
+			},
+
+			isSnapshotBackupPolicyPlan: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "If present, the backup policy plan which created this snapshot.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this backup policy plan.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this backup policy plan.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique user-defined name for this backup policy plan.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of resource referenced",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -142,46 +215,95 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		return err
 	}
 	if name != "" {
-		listSnapshotOptions := &vpcv1.ListSnapshotsOptions{
-			Name: &name,
+		start := ""
+		allrecs := []vpcv1.Snapshot{}
+		for {
+			listSnapshotOptions := &vpcv1.ListSnapshotsOptions{
+				Name: &name,
+			}
+			if start != "" {
+				listSnapshotOptions.Start = &start
+			}
+			snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error Fetching snapshots %s\n%s", err, response)
+			}
+			start = flex.GetNext(snapshots.Next)
+			allrecs = append(allrecs, snapshots.Snapshots...)
+			if start == "" {
+				break
+			}
 		}
 
-		snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching snapshots %s\n%s", err, response)
-		}
-		allrecs := snapshots.Snapshots
+		for _, snapshot := range allrecs {
+			if *snapshot.Name == name || *snapshot.ID == id {
+				d.SetId(*snapshot.ID)
+				d.Set(isSnapshotName, *snapshot.Name)
+				d.Set(isSnapshotHref, *snapshot.Href)
+				d.Set(isSnapshotCRN, *snapshot.CRN)
+				d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
+				d.Set(isSnapshotSize, *snapshot.Size)
+				d.Set(isSnapshotEncryption, *snapshot.Encryption)
+				if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
+					d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN)
+				}
+				d.Set(isSnapshotLCState, *snapshot.LifecycleState)
+				d.Set(isSnapshotResourceType, *snapshot.ResourceType)
+				d.Set(isSnapshotBootable, *snapshot.Bootable)
+				if snapshot.UserTags != nil {
+					if err = d.Set(isSnapshotUserTags, snapshot.UserTags); err != nil {
+						return fmt.Errorf("Error setting user tags: %s", err)
+					}
+				}
+				if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
+					d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
+				}
+				if snapshot.SourceVolume != nil && snapshot.SourceVolume.ID != nil {
+					d.Set(isSnapshotSourceVolume, *snapshot.SourceVolume.ID)
+				}
+				if snapshot.SourceImage != nil && snapshot.SourceImage.ID != nil {
+					d.Set(isSnapshotSourceImage, *snapshot.SourceImage.ID)
+				}
+				if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
+					d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
+				}
 
-		if len(allrecs) == 0 {
-			return fmt.Errorf("[ERROR] No snapshot found with name %s", name)
+				var clones []string
+				clones = make([]string, 0)
+				if snapshot.Clones != nil {
+					for _, clone := range snapshot.Clones {
+						if clone.Zone != nil && clone.Zone.Name != nil {
+							clones = append(clones, *clone.Zone.Name)
+						}
+					}
+				}
+				d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
+
+				backupPolicyPlanList := []map[string]interface{}{}
+				if snapshot.BackupPolicyPlan != nil {
+					backupPolicyPlan := map[string]interface{}{}
+					if snapshot.BackupPolicyPlan.Deleted != nil {
+						snapshotBackupPolicyPlanDeletedMap := map[string]interface{}{}
+						snapshotBackupPolicyPlanDeletedMap["more_info"] = snapshot.BackupPolicyPlan.Deleted.MoreInfo
+						backupPolicyPlan["deleted"] = []map[string]interface{}{snapshotBackupPolicyPlanDeletedMap}
+					}
+					backupPolicyPlan["href"] = snapshot.BackupPolicyPlan.Href
+					backupPolicyPlan["id"] = snapshot.BackupPolicyPlan.ID
+					backupPolicyPlan["name"] = snapshot.BackupPolicyPlan.Name
+					backupPolicyPlan["resource_type"] = snapshot.BackupPolicyPlan.ResourceType
+					backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
+				}
+				d.Set(isSnapshotBackupPolicyPlan, backupPolicyPlanList)
+				accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
+				if err != nil {
+					log.Printf(
+						"Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
+				}
+				d.Set(isSnapshotAccessTags, accesstags)
+				return nil
+			}
 		}
-		snapshot := allrecs[0]
-		d.SetId(*snapshot.ID)
-		d.Set(isSnapshotName, *snapshot.Name)
-		d.Set(isSnapshotHref, *snapshot.Href)
-		d.Set(isSnapshotCRN, *snapshot.CRN)
-		d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
-		d.Set(isSnapshotSize, *snapshot.Size)
-		d.Set(isSnapshotEncryption, *snapshot.Encryption)
-		d.Set(isSnapshotLCState, *snapshot.LifecycleState)
-		d.Set(isSnapshotResourceType, *snapshot.ResourceType)
-		d.Set(isSnapshotBootable, *snapshot.Bootable)
-		if snapshot.CapturedAt != nil {
-			d.Set(isSnapshotCapturedAt, (*snapshot.CapturedAt).String())
-		}
-		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
-			d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
-		}
-		if snapshot.SourceVolume != nil && snapshot.SourceVolume.ID != nil {
-			d.Set(isSnapshotSourceVolume, *snapshot.SourceVolume.ID)
-		}
-		if snapshot.SourceImage != nil && snapshot.SourceImage.ID != nil {
-			d.Set(isSnapshotSourceImage, *snapshot.SourceImage.ID)
-		}
-		if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
-			d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
-		}
-		return nil
+		return fmt.Errorf("[ERROR] No snapshot found with name %s", name)
 	} else {
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 			ID: &id,
@@ -206,6 +328,11 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		if snapshot.CapturedAt != nil {
 			d.Set(isSnapshotCapturedAt, (*snapshot.CapturedAt).String())
 		}
+		if snapshot.UserTags != nil {
+			if err = d.Set(isSnapshotUserTags, snapshot.UserTags); err != nil {
+				return fmt.Errorf("Error setting user tags: %s", err)
+			}
+		}
 		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 			d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
 		}
@@ -218,6 +345,38 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 			d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
 		}
+		var clones []string
+		clones = make([]string, 0)
+		if snapshot.Clones != nil {
+			for _, clone := range snapshot.Clones {
+				if clone.Zone != nil && clone.Zone.Name != nil {
+					clones = append(clones, *clone.Zone.Name)
+				}
+			}
+		}
+		d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
+
+		backupPolicyPlanList := []map[string]interface{}{}
+		if snapshot.BackupPolicyPlan != nil {
+			backupPolicyPlan := map[string]interface{}{}
+			if snapshot.BackupPolicyPlan.Deleted != nil {
+				snapshotBackupPolicyPlanDeletedMap := map[string]interface{}{}
+				snapshotBackupPolicyPlanDeletedMap["more_info"] = snapshot.BackupPolicyPlan.Deleted.MoreInfo
+				backupPolicyPlan["deleted"] = []map[string]interface{}{snapshotBackupPolicyPlanDeletedMap}
+			}
+			backupPolicyPlan["href"] = snapshot.BackupPolicyPlan.Href
+			backupPolicyPlan["id"] = snapshot.BackupPolicyPlan.ID
+			backupPolicyPlan["name"] = snapshot.BackupPolicyPlan.Name
+			backupPolicyPlan["resource_type"] = snapshot.BackupPolicyPlan.ResourceType
+			backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
+		}
+		d.Set(isSnapshotBackupPolicyPlan, backupPolicyPlanList)
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
+		}
+		d.Set(isSnapshotAccessTags, accesstags)
 		return nil
 	}
 }

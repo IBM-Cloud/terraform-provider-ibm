@@ -40,7 +40,6 @@ resource "cbr_rule" "cbr_rule_instance" {
   description = var.cbr_rule_description
   contexts = var.cbr_rule_contexts
   resources = var.cbr_rule_resources
-  enforcement_mode = var.cbr_rule_enforcement_mode
 }
 ```
 
@@ -86,6 +85,7 @@ data "cbr_rule" "cbr_rule_instance" {
 | description | The description of the rule. | `string` | false |
 | contexts | The contexts this rule applies to. | `list()` | false |
 | resources | The resources this rule apply to. | `list()` | false |
+| operations | The operations this rule applies to. | `` | false |
 | enforcement_mode | The rule enforcement mode: * `enabled` - The restrictions are enforced and reported. This is the default. * `disabled` - The restrictions are disabled. Nothing is enforced or reported. * `report` - The restrictions are evaluated and reported, but not enforced. | `string` | false |
 | zone_id | The ID of a zone. | `string` | true |
 | rule_id | The ID of a rule. | `string` | true |

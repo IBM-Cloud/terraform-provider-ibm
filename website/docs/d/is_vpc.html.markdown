@@ -23,10 +23,6 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "example" {
-  name = "example-vpc"
-}
-
 data "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
@@ -35,11 +31,13 @@ data "ibm_is_vpc" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `name` - (Required, String) The name of the VPC.
+~> **Note:** `name` and `identifier` are mutually exclusive. One of them is required.
+- `name` - (Optional, String) The name of the VPC.
+- `identifier` - (Optional, String) The id of the VPC.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
-
+- `access_tags`  - (List) Access management tags associated for the volume.
 - `available_ipv4_address_count`- (Integer) The number of IPv4 addresses in the subnet that are available for you to be used.
 - `classic_access`- (Bool) Indicates whether this VPC is connected to Classic Infrastructure.
 - `crn` - (String) The CRN of the VPC.

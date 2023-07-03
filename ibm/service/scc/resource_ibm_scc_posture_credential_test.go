@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 )
 
 func TestAccIBMSccPostureCredentialsBasic(t *testing.T) {
@@ -76,10 +76,6 @@ func testAccCheckIBMSccPostureCredentialsConfigBasic(enabled string, typeVar str
 			display_fields {
 				ibm_api_key = "sample_api_key"
 				
-			}
-			group {
-				id = "1"
-				passphrase = "passphrase"
 			}
 			purpose = "%s"
 		}

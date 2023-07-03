@@ -145,6 +145,11 @@ func ResourceIBMPICloudConnection() *schema.Resource {
 				Computed:    true,
 				Description: "GRE auto-assigned source IP address",
 			},
+			PICloudConnectionConnectionMode: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of service the gateway is attached to",
+			},
 		},
 	}
 }
@@ -179,13 +184,16 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 		classic := &models.CloudConnectionEndpointClassicUpdate{
 			Enabled: classicEnabled,
 		}
+		gre := &models.CloudConnectionGRETunnelCreate{}
 		if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreCidr); ok {
 			greCIDR := v.(string)
-			classic.Gre.Cidr = &greCIDR
+			gre.Cidr = &greCIDR
+			classic.Gre = gre
 		}
 		if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreDest); ok {
 			greDest := v.(string)
-			classic.Gre.DestIPAddress = &greDest
+			gre.DestIPAddress = &greDest
+			classic.Gre = gre
 		}
 		body.Classic = classic
 	}
@@ -200,8 +208,9 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 			vpcIds := flex.ExpandStringList(v.(*schema.Set).List())
 			vpcs := make([]*models.CloudConnectionVPC, len(vpcIds))
 			for i, vpcId := range vpcIds {
+				vpcIdCopy := vpcId[0:]
 				vpcs[i] = &models.CloudConnectionVPC{
-					VpcID: &vpcId,
+					VpcID: &vpcIdCopy,
 				}
 			}
 			vpc.Vpcs = vpcs
@@ -278,13 +287,16 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 			classic := &models.CloudConnectionEndpointClassicUpdate{
 				Enabled: classicEnabled,
 			}
+			gre := &models.CloudConnectionGRETunnelCreate{}
 			if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreCidr); ok {
 				greCIDR := v.(string)
-				classic.Gre.Cidr = &greCIDR
+				gre.Cidr = &greCIDR
+				classic.Gre = gre
 			}
 			if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreDest); ok {
 				greDest := v.(string)
-				classic.Gre.DestIPAddress = &greDest
+				gre.DestIPAddress = &greDest
+				classic.Gre = gre
 			}
 			body.Classic = classic
 		} else {

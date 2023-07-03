@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -16,24 +16,57 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
-func TestAccIBMTektonPipelineBasic(t *testing.T) {
+func TestAccIBMCdTektonPipelineBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.TektonPipeline
-	rgID := acc.CdResourceGroupID
-	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMTektonPipelineDestroy,
+		CheckDestroy: testAccCheckIBMCdTektonPipelineDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMTektonPipelineConfigBasic(tcName, rgID),
+				Config: testAccCheckIBMCdTektonPipelineConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMTektonPipelineExists("ibm_cd_tekton_pipeline.tekton_pipeline", conf),
+					testAccCheckIBMCdTektonPipelineExists("ibm_cd_tekton_pipeline.cd_tekton_pipeline", conf),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
+	var conf cdtektonpipelinev2.TektonPipeline
+	nextBuildNumber := "5"
+	enableNotifications := "true"
+	enablePartialCloning := "true"
+	nextBuildNumberUpdate := fmt.Sprintf("%d", acctest.RandIntRange(1, 99999999999999))
+	enableNotificationsUpdate := "false"
+	enablePartialCloningUpdate := "false"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCdTektonPipelineDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCdTektonPipelineConfig(nextBuildNumber, enableNotifications, enablePartialCloning),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCdTektonPipelineExists("ibm_cd_tekton_pipeline.cd_tekton_pipeline", conf),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "next_build_number", nextBuildNumber),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications", enableNotifications),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning", enablePartialCloning),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cd_tekton_pipeline.tekton_pipeline",
+				Config: testAccCheckIBMCdTektonPipelineConfig(nextBuildNumberUpdate, enableNotificationsUpdate, enablePartialCloningUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "next_build_number", nextBuildNumberUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications", enableNotificationsUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning", enablePartialCloningUpdate),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_cd_tekton_pipeline.cd_tekton_pipeline",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -41,32 +74,69 @@ func TestAccIBMTektonPipelineBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMTektonPipelineConfigBasic(tcName string, rgID string) string {
+func testAccCheckIBMCdTektonPipelineConfigBasic() string {
+	rgName := acc.CdResourceGroupName
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
-
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				name = "name"
-				type = "tekton"
-				ui_pipeline = true
+				name = "pipeline-name"
 			}
 		}
-
-		resource "ibm_cd_tekton_pipeline" "tekton_pipeline" {
+		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
-			}			
+			}
+			depends_on = [
+				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
+			]
 		}
-	`, tcName, rgID)
+	`, rgName, tcName)
 }
 
-func testAccCheckIBMTektonPipelineExists(n string, obj cdtektonpipelinev2.TektonPipeline) resource.TestCheckFunc {
+func testAccCheckIBMCdTektonPipelineConfig(nextBuildNumber string, enableNotifications string, enablePartialCloning string) string {
+	rgName := acc.CdResourceGroupName
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+		resource "ibm_cd_toolchain" "cd_toolchain" {
+			name = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
+		}
+		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+			parameters {
+				name = "pipeline-name"
+			}
+		}
+		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
+			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = %s
+			enable_notifications = %s
+			enable_partial_cloning = %s
+			worker {
+				id = "public"
+			}
+			depends_on = [
+				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
+			]
+		}
+	`, rgName, tcName, nextBuildNumber, enableNotifications, enablePartialCloning)
+}
+
+func testAccCheckIBMCdTektonPipelineExists(n string, obj cdtektonpipelinev2.TektonPipeline) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -93,7 +163,7 @@ func testAccCheckIBMTektonPipelineExists(n string, obj cdtektonpipelinev2.Tekton
 	}
 }
 
-func testAccCheckIBMTektonPipelineDestroy(s *terraform.State) error {
+func testAccCheckIBMCdTektonPipelineDestroy(s *terraform.State) error {
 	cdTektonPipelineClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return err
@@ -111,9 +181,9 @@ func testAccCheckIBMTektonPipelineDestroy(s *terraform.State) error {
 		_, response, err := cdTektonPipelineClient.GetTektonPipeline(getTektonPipelineOptions)
 
 		if err == nil {
-			return fmt.Errorf("tekton_pipeline still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("cd_tekton_pipeline still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for tekton_pipeline (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for cd_tekton_pipeline (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

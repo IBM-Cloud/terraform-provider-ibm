@@ -46,9 +46,9 @@ ibm_pi_volume_attach provides the following [timeouts](https://www.terraform.io/
 ## Argument reference 
 Review the argument references that you can specify for your resource. 
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_id` - (Required, String) The ID of the pvm instance to attach the volume to.
-- `pi_volume_id` - (Required, String) The ID of the volume to attach.
+- `pi_cloud_instance_id` - (Required, Forces new resource, String) The GUID of the service instance associated with an account.
+- `pi_instance_id` - (Required, Forces new resource, String) The ID of the pvm instance to attach the volume to.
+- `pi_volume_id` - (Required, Forces new resource, String) The ID of the volume to attach.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

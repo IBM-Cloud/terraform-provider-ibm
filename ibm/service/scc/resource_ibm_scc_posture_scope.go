@@ -13,17 +13,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 )
 
 func ResourceIBMSccPostureScopes() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMSccPostureScopesCreate,
-		ReadContext:   resourceIBMSccPostureScopesRead,
-		UpdateContext: resourceIBMSccPostureScopesUpdate,
-		DeleteContext: resourceIBMSccPostureScopesDelete,
-		Importer:      &schema.ResourceImporter{},
-
+		CreateContext:      resourceIBMSccPostureScopesCreate,
+		ReadContext:        resourceIBMSccPostureScopesRead,
+		UpdateContext:      resourceIBMSccPostureScopesUpdate,
+		DeleteContext:      resourceIBMSccPostureScopesDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "**Removal Notification** Resource Removal: Resource ibm_scc_posture_scope is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,

@@ -56,6 +56,7 @@ The `ibm_satellite_location` provides the following [Timeouts](https://www.terra
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `coreos_enabled` - (Optional, Bool) Enable Red Hat CoreOS features within the Satellite location.
 - `cos_config` - (Optional, List) The IBM Cloud Object Storage bucket configuration details. Nested cos_config blocks have the following structure.
 
   Nested scheme for `cos_config`:

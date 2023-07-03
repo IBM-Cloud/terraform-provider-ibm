@@ -89,10 +89,23 @@ Review the argument references that you can specify for your data source.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your data source is created.
-
+- `access_tags`  - (Array of Strings) Access management tags associated with the snapshot.
+- `backup_policy_plan` - (List) If present, the backup policy plan which created this snapshot.
+  
+   Nested scheme for `backup_policy_plan`:
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+   
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this backup policy plan.
+    - `id` - (String) The unique identifier for this backup policy plan.
+    - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
+    - `resource_type` - (String) The type of resource referenced.
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
+- `clones` - (List) The list of zones where clones of this snapshot exist.
 - `crn` - (String) The CRN for this snapshot.
 - `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed**.
+- `encryption_key` - (String) The CRN of the `Key Protect Root Key` or `Hyper Protect Crypto Services Root Key` for this resource. The root key used to wrap the data encryption key for the source volume. This property will be present for volumes with an encryption type of `user_managed`.
 - `href` - (String) The URL for this snapshot.
 - `lifecycle_state` - (String) The lifecycle state of this snapshot. Supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.
 - `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this sets to the capacity of the source_volume.
@@ -101,3 +114,4 @@ In addition to all argument reference list, you can access the following attribu
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
 - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.
 - `captured_at` - (String) The date and time that this snapshot was captured.
+- `tags` - (String) Tags associated with the snapshot.

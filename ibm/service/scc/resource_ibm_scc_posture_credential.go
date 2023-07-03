@@ -14,17 +14,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 )
 
 func ResourceIBMSccPostureCredentials() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMSccPostureCredentialsCreate,
-		ReadContext:   resourceIBMSccPostureCredentialsRead,
-		UpdateContext: resourceIBMSccPostureCredentialsUpdate,
-		DeleteContext: resourceIBMSccPostureCredentialsDelete,
-		Importer:      &schema.ResourceImporter{},
-
+		CreateContext:      resourceIBMSccPostureCredentialsCreate,
+		ReadContext:        resourceIBMSccPostureCredentialsRead,
+		UpdateContext:      resourceIBMSccPostureCredentialsUpdate,
+		DeleteContext:      resourceIBMSccPostureCredentialsDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "**Removal Notification** Resource Removal: Resource ibm_scc_posture_credential is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"enabled": {
 				Type:        schema.TypeBool,
@@ -61,27 +61,6 @@ func ResourceIBMSccPostureCredentials() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The IBM Cloud API Key. This is mandatory for IBM Credential Type ie when type=ibm_cloud.",
-						},
-					},
-				},
-			},
-			"group": {
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Required:    true,
-				Description: "Credential group details.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "credential group id.",
-						},
-						"passphrase": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "passphase of the credential.",
 						},
 					},
 				},
@@ -160,8 +139,6 @@ func resourceIBMSccPostureCredentialsCreate(context context.Context, d *schema.R
 	createCredentialOptions.SetDescription(d.Get("description").(string))
 	displayFields := resourceIBMSccPostureCredentialsMapToNewCredentialDisplayFields(d.Get("display_fields.0").(map[string]interface{}))
 	createCredentialOptions.SetDisplayFields(&displayFields)
-	group := resourceIBMSccPostureCredentialsMapToCredentialGroup(d.Get("group.0").(map[string]interface{}))
-	createCredentialOptions.SetGroup(&group)
 	createCredentialOptions.SetPurpose(d.Get("purpose").(string))
 
 	credential, response, err := postureManagementClient.CreateCredentialWithContext(context, createCredentialOptions)
@@ -193,15 +170,6 @@ func resourceIBMSccPostureCredentialsMapToUpdateCredentialDisplayFields(updateCr
 	}
 
 	return updateCredentialDisplayFields
-}
-
-func resourceIBMSccPostureCredentialsMapToCredentialGroup(credentialGroupMap map[string]interface{}) posturemanagementv2.CredentialGroup {
-	credentialGroup := posturemanagementv2.CredentialGroup{}
-
-	credentialGroup.ID = core.StringPtr(credentialGroupMap["id"].(string))
-	credentialGroup.Passphrase = core.StringPtr(credentialGroupMap["passphrase"].(string))
-
-	return credentialGroup
 }
 
 func resourceIBMSccPostureCredentialsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -241,15 +209,6 @@ func resourceIBMSccPostureCredentialsNewCredentialDisplayFieldsToMap(newCredenti
 	}
 
 	return newCredentialDisplayFieldsMap
-}
-
-func resourceIBMCredentialsCredentialGroupToMap(credentialGroup posturemanagementv2.CredentialGroup) map[string]interface{} {
-	credentialGroupMap := map[string]interface{}{}
-
-	credentialGroupMap["id"] = credentialGroup.ID
-	credentialGroupMap["passphrase"] = credentialGroup.Passphrase
-
-	return credentialGroupMap
 }
 
 func resourceIBMSccPostureCredentialsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

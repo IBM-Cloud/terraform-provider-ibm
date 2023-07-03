@@ -8,9 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"path/filepath"
 
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -19,6 +22,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
@@ -30,18 +34,27 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Resource instance name for example, my Database instance",
 				Type:        schema.TypeString,
 				Required:    true,
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database",
+					"name"),
 			},
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The id of the resource group in which the Database instance is present",
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database",
+					"resource_group_id"),
 			},
 
 			"location": {
 				Description: "The location or the region in which the Database instance exists",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database",
+					"location"),
 			},
 
 			"guid": {
@@ -96,8 +109,28 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"platform_options": {
 				Description: "Platform-specific options for this deployment.r",
-				Type:        schema.TypeMap,
+				Type:        schema.TypeSet,
 				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key_protect_key_id": {
+							Description: "Key protect key id",
+							Type:        schema.TypeString,
+							Computed:    true,
+							Deprecated:  "This field is deprecated and has been replaced by disk_encryption_key_crn",
+						},
+						"disk_encryption_key_crn": {
+							Description: "Disk encryption key crn",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"backup_encryption_key_crn": {
+							Description: "Backup encryption key crn",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -209,6 +242,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
+				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
 			},
 			"whitelist": {
 				Type:     schema.TypeSet,
@@ -217,6 +251,25 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"address": {
 							Description: "Whitelist IP address in CIDR notation",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"description": {
+							Description: "Unique white list description",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
+				Deprecated: "The whitelist field is deprecated please use allowlist",
+			},
+			"allowlist": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Description: "Allowlist IP address in CIDR notation",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -485,6 +538,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeList,
 							Description: "CPU Auto Scaling",
 							Computed:    true,
+							Deprecated:  "This field is deprecated, auto scaling cpu is unsupported by IBM Cloud Databases",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"rate_increase_percent": {
@@ -553,6 +607,37 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			},
 		},
 	}
+}
+
+func DataSourceIBMDatabaseInstanceValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "name",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "cloud-database",
+			CloudDataRange:             []string{"resolved_to:name"}})
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "resource_group_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "location",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "region",
+			Optional:                   true})
+
+	iBMDatabaseInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
+	return &iBMDatabaseInstanceValidator
 }
 
 func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
@@ -627,10 +712,12 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(instance.ID)
 
-	err = flex.GetTags(d, meta)
+	tags, err := flex.GetTagsUsingCRN(meta, d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error on get of resource instance (%s) tags: %s", d.Id(), err)
+		log.Printf(
+			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
 	}
+	d.Set("tags", tags)
 
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)
@@ -662,6 +749,11 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
 
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
 	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
@@ -678,12 +770,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("adminuser", cdb.AdminUser)
 	d.Set("version", cdb.Version)
 	if &cdb.PlatformOptions != nil {
-		platformOptions := map[string]interface{}{
-			"key_protect_key_id":        cdb.PlatformOptions.KeyProtectKey,
-			"disk_encryption_key_crn":   cdb.PlatformOptions.DiskENcryptionKeyCrn,
-			"backup_encryption_key_crn": cdb.PlatformOptions.BackUpEncryptionKeyCrn,
-		}
-		d.Set("platform_options", platformOptions)
+		d.Set("platform_options", flex.ExpandPlatformOptions(cdb.PlatformOptions))
 	}
 
 	groupList, err := icdClient.Groups().GetGroups(icdId)
@@ -694,17 +781,29 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
-	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
+	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
+		ID:      &instance.ID,
+		GroupID: core.StringPtr("member"),
 	}
-	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
-	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
+	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err)
 	}
-	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
+	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
+
+	alEntry := &clouddatabasesv5.GetAllowlistOptions{
+		ID: &instance.ID,
+	}
+
+	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
+
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database allowlist: %s", err)
+	}
+
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	connectionEndpoint := "public"
 	if instance.Parameters != nil {

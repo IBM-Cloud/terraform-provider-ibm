@@ -37,7 +37,7 @@ resource "ibm_is_subnet" "example" {
   total_ipv4_address_count = 256
 }
 
-// Create the resrved IP in the following ways
+// Create the reserved IP in the following ways
 
 // Only with Subnet ID
 resource "ibm_is_subnet_reserved_ip" "example" {
@@ -92,7 +92,9 @@ Review the argument references that you can specify for your resource.
 
 - `address` - (Optional, Forces new resource, String) The IP address.
 - `auto_delete`- (Optional, Bool)  If reserved IP is auto deleted.
-- `name` - (Optional, String) The name of the reserved IP. ~> **NOTE:** raise  error if name is given with a prefix `ibm- `.
+- `name` - (Optional, String) The name of the reserved IP. 
+  
+  ~> **NOTE:** raise  error if name is given with a prefix `ibm- `.
 - `subnet` - (Required, Forces new resource, String) The subnet ID for the reserved IP.
 - `target` - (Optional, string) The ID for the target endpoint gateway for the reserved IP.
 
@@ -101,12 +103,13 @@ In addition to all argument reference list, you can access the following attribu
 
 - `created_at` - (Timestamp) The date and time that the reserved IP was created.",
 - `href` - (String) The URL for this reserved IP.
-- `id` - (String) The combination of the subnet ID and reserved IP ID separated by **/**.
-- `lifecycle_state` - (String) TThe lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
+- `id` - (String) The combination of the subnet ID and reserved IP ID, separated by **/**.
+- `lifecycle_state` - (String) The lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
 - `owner` - (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
 - `reserved_ip` - (String) The reserved IP.
 - `resource_type` - (String) The resource type.
 - `target` - (String) The ID for the target for the reserved IP.
+- `target_crn` - (String) The crn of the target for the reserved IP.
 
 ## Import
 The `ibm_is_subnet_reserved_ip` and `ibm_is_subnet` resource can be imported by using subnet ID and reserved IP ID separated by **/**.

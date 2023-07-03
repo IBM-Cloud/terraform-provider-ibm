@@ -3,26 +3,26 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_keyprotect"
 description: |-
   Manages cd_toolchain_tool_keyprotect.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_keyprotect
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_keyprotect. This allows cd_toolchain_tool_keyprotect to be created, updated and deleted.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-keyprotect) page for more information.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_keyprotect" "cd_toolchain_tool_keyprotect" {
+resource "ibm_cd_toolchain_tool_keyprotect" "cd_toolchain_tool_keyprotect_instance" {
   parameters {
-		name = "name"
-		region = "region"
-		resource_group = "resource-group"
-		instance_name = "instance-name"
+		name = "kp_tool_01"
+		instance_name = "Key Protect-XX"
+		location = "us-south"
+		resource_group_name = "Default"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -30,16 +30,16 @@ resource "ibm_cd_toolchain_tool_keyprotect" "cd_toolchain_tool_keyprotect" {
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Name of tool.
+* `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `instance_name` - (Required, String) The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.
+	* `instance_name` - (Required, String) The name of the Key Protect service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `name` - (Required, String) Enter a name for this tool integration. This name is displayed on your toolchain.
-	* `region` - (Required, String) Region.
-	* `resource_group` - (Required, String) Resource group.
-* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind tool to.
+	* `location` - (Required, String) The IBM Cloud location where the Key Protect service instance is located.
+	* `name` - (Required, String) The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.
+	* `resource_group_name` - (Required, String) The name of the resource group where the Key Protect service instance is located.
+* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
 ## Attribute Reference
@@ -48,17 +48,17 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_toolchain_tool_keyprotect.
 * `crn` - (String) Tool CRN.
-* `tool_id` - (String) Tool ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
-* `resource_group_id` - (String) Resource group where tool can be found.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+* `tool_id` - (String) Tool ID.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `updated_at` - (String) Latest tool update timestamp.
 
 ## Provider Configuration
@@ -119,7 +119,7 @@ The `id` property can be formed from `toolchain_id`, and `tool_id` in the follow
 ```
 <toolchain_id>/<tool_id>
 ```
-* `toolchain_id`: A string. ID of the toolchain to bind tool to.
+* `toolchain_id`: A string. ID of the toolchain to bind the tool to.
 * `tool_id`: A string. ID of the tool bound to the toolchain.
 
 # Syntax

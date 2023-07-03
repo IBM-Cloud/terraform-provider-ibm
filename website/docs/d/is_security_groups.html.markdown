@@ -62,19 +62,20 @@ In addition to all argument references listed, you can access the following attr
 - `vpc_crn` - Filters the collection to resources in the VPC with the specified CRN
 - `resource_group` -  Filters the collection to resources in the resource group with the specified identifier
 - `security_groups` - (List) Collection of security groups.
-Nested scheme for `security_groups`:
+	Nested scheme for `security_groups`:
+	- `access_tags`  - (List) Access management tags associated for the security group.
 	- `created_at` - (String) The date and time that this security group was created.
 	- `crn` - (String) The security group's CRN.
 	- `href` - (String) The security group's canonical URL.
 	- `id` - (String) The unique identifier for this security group.
 	- `name` - (String) The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
-	- `resource_group` - (List) The resource group for this security group.
-	Nested scheme for `resource_group`:
+	- `resource_group` - (List) The resource group object, for this security group.
+		Nested scheme for `resource_group`:
 		- `href` - (String) The URL for this resource group.
 		- `id` - (String) The unique identifier for this resource group.
 		- `name` - (String) The user-defined name for this resource group.
 	- `rules` - (List) The rules for this security group. If no rules exist, all traffic will be denied.
-	Nested scheme for `rules`:
+		Nested scheme for `rules`:
 		- `code` - (Integer) The ICMP traffic code to allow.
 		- `direction` - (String) The direction of traffic to enforce, either `inbound` or `outbound`.
 		- `href` - (String) The URL for this security group rule.

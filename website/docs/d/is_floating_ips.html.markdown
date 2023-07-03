@@ -34,6 +34,7 @@ data "ibm_is_floating_ips" "example" {
 Review the argument reference that you can specify for your data source.
 
 - `name` - (Optional, String) The unique user-defined name for this floating IP.
+- `resource_group` - (String) The ID of the Resource group this floating ips belongs to.
 
 ## Attribute reference
 
@@ -43,13 +44,14 @@ In addition to all argument references listed, you can access the following attr
 - `floating_ips` - (List) Collection of floating IPs.
   
     Nested scheme for **floating_ips**:
+	- `access_tags`  - (String) Access management tags associated for the floating ip.
     - `address` - (String) The globally unique IP address.
     - `created_at` - (String) The date and time that the floating IP was created.
     - `crn` - (String) The CRN for this floating IP.
     - `href` - (String) The URL for this floating IP.
     - `id` - (String) The unique identifier for this floating IP.
     - `name` - (String) The unique user-defined name for this floating IP.
-    - `resource_group` - (List) The resource group for this floating IP.
+    - `resource_group` - (List) The resource group object, for this floating IP.
 	    
 		Nested scheme for **resource_group**:
       	- `href` - (String) The URL for this resource group.

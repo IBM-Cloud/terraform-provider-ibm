@@ -17,13 +17,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	//"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 )
 
 func DataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureGroupProfileDetailsRead,
-
+		ReadContext:        dataSourceIBMSccPostureGroupProfileDetailsRead,
+		DeprecationMessage: "**Removal Notification** Data Source Removal: Data Source ibm_scc_posture_group_profile is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).",
 		Schema: map[string]*schema.Schema{
 			"profile_id": {
 				Type:        schema.TypeString,

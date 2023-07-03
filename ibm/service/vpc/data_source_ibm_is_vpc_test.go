@@ -34,6 +34,10 @@ func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_network_acl_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_security_group_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_routing_table_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "cse_source_addresses.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "default_network_acl_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "default_security_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc_by_id", "default_routing_table_name"),
 				),
 			},
 		},
@@ -72,6 +76,9 @@ func testDSCheckIBMISVPCConfig(name string) string {
 		}
 		data "ibm_is_vpc" "ds_vpc" {
 		    name = "${ibm_is_vpc.testacc_vpc.name}"
+		}
+		data "ibm_is_vpc" "ds_vpc_by_id" {
+		    identifier = "${ibm_is_vpc.testacc_vpc.id}"
 		}`, name)
 }
 

@@ -74,6 +74,7 @@ func testAccCheckIBMEnFirefoxDestinationConfig(instanceName, name, description s
 		config {
 			params {
 				website_url = "https://testweb.com" 
+				pre_prod = false
 			}
 		}
 	}

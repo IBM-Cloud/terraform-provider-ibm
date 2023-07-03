@@ -51,3 +51,14 @@ variable "is_security_group_rules_security_group_id" {
   type        = string
   default     = "r134-4d5db1a7-ca45-4c29-80d1-2a90cf94d11a"
 }
+
+
+variable "is_certificate_crn" {
+  description = "The Certificate Crn for VPN Server."
+  type        = string
+}
+
+variable "is_client_ca" {
+  description = "The Client Ca for VPN Server."
+  type        = string
+}

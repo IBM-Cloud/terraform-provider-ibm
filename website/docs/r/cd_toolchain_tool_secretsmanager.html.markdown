@@ -3,26 +3,25 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_secretsmanager"
 description: |-
   Manages cd_toolchain_tool_secretsmanager.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_secretsmanager
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_secretsmanager. This allows cd_toolchain_tool_secretsmanager to be created, updated and deleted.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-secretsmanager) page for more information.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
+resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager_instance" {
   parameters {
-		name = "name"
-		region = "region"
-		resource_group = "resource-group"
-		instance_name = "instance-name"
+		name = "sm_tool_01"
+		instance_id_type = "instance-crn"
+		instance_crn = "crn:v1:bluemix:public:secrets-manager:us-south:a/00000000000000000000000000000000:00000000-0000-0000-0000-000000000000::"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -30,16 +29,20 @@ resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanage
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Name of tool.
+* `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `instance_name` - (Required, String) The name of your Secrets Manager instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Secrets Manager-01.
+	* `instance_crn` - (Optional, String) The Secrets Manager service instance CRN (Cloud Resource Name), only relevant when using `instance-crn` as the `instance_id_type`.
+	  * Constraints: The value must match regular expression `/^crn:v1:(?:bluemix|staging):public:secrets-manager:[a-zA-Z0-9-]*\\b:a\/[0-9a-fA-F]*\\b:[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}\\b::$/`.
+	* `instance_id_type` - (Optional, String) The type of service instance identifier. When absent defaults to `instance-name`.
+	  * Constraints: Allowable values are: `instance-name`, `instance-crn`.
+	* `instance_name` - (Optional, String) The name of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `name` - (Required, String) Enter a name for this tool integration. This name is displayed on your toolchain.
-	* `region` - (Required, String) Region.
-	* `resource_group` - (Required, String) Resource group.
-* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind tool to.
+	* `location` - (Optional, String) The IBM Cloud location of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.
+	* `name` - (Required, String) The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.
+	* `resource_group_name` - (Optional, String) The name of the resource group where the Secrets Manager service instance is located, only relevant when using `instance-name` as the `instance_id_type`.
+* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
 ## Attribute Reference
@@ -48,17 +51,17 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_toolchain_tool_secretsmanager.
 * `crn` - (String) Tool CRN.
-* `tool_id` - (String) Tool ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
-* `resource_group_id` - (String) Resource group where tool can be found.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+* `tool_id` - (String) Tool ID.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `updated_at` - (String) Latest tool update timestamp.
 
 ## Provider Configuration
@@ -119,7 +122,7 @@ The `id` property can be formed from `toolchain_id`, and `tool_id` in the follow
 ```
 <toolchain_id>/<tool_id>
 ```
-* `toolchain_id`: A string. ID of the toolchain to bind tool to.
+* `toolchain_id`: A string. ID of the toolchain to bind the tool to.
 * `tool_id`: A string. ID of the tool bound to the toolchain.
 
 # Syntax

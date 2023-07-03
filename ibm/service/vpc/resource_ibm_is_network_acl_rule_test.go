@@ -163,6 +163,48 @@ func TestNetworkACLRule_basicUDP(t *testing.T) {
 	})
 }
 
+func TestNetworkACLRule_basicBeforeRule(t *testing.T) {
+	var nwACLRule string
+	vpcName := fmt.Sprintf("tf-nacl-vpc-%d", acctest.RandIntRange(10, 100))
+	ruleName := fmt.Sprintf("tf-outbound-udp-%d", acctest.RandIntRange(10, 100))
+	ruleName1 := fmt.Sprintf("tf-outbound-udp1-%d", acctest.RandIntRange(10, 100))
+	updatedRuleName := fmt.Sprintf("%s-update", ruleName)
+	updatedRule1Name := fmt.Sprintf("%s-update", ruleName1)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISNetworkACLRuleBeforeConfig(vpcName, ruleName, ruleName1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "udp.0.source_port_max", "101"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "udp.0.source_port_min", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISNetworkACLRuleBeforeUpdateConfig(vpcName, updatedRuleName, updatedRule1Name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", updatedRuleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "udp.0.source_port_max", "101"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "udp.0.source_port_min", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "before", "null"),
+				),
+			},
+		},
+	})
+}
+
 func checkNetworkACLRuleDestroy(s *terraform.State) error {
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	for _, rs := range s.RootModule().Resources {
@@ -395,4 +437,77 @@ func testAccCheckIBMISNetworkACLRuleConfig4Update(vpcName, name string) string {
 	   		}
 		}
 	`, vpcName, name)
+}
+
+func testAccCheckIBMISNetworkACLRuleBeforeConfig(vpcName, name, name1 string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_network_acl_rule" "testacc_nacl" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		before = ibm_is_network_acl_rule.testacc_nacl_1.rule_id
+		udp {
+			source_port_max = 101
+			source_port_min = 1
+			port_min = 202
+			port_max = 220
+			}
+	}
+	resource "ibm_is_network_acl_rule" "testacc_nacl_1" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		udp {
+			source_port_max = 101
+			source_port_min = 1
+			port_min = 202
+			port_max = 220
+			}
+	}
+	`, vpcName, name, name1)
+}
+func testAccCheckIBMISNetworkACLRuleBeforeUpdateConfig(vpcName, name, name1 string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_network_acl_rule" "testacc_nacl" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		before = "null"
+		udp {
+			source_port_max = 101
+			source_port_min = 1
+			port_min = 202
+			port_max = 220
+			}
+	}
+	resource "ibm_is_network_acl_rule" "testacc_nacl_1" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		udp {
+			source_port_max = 101
+			source_port_min = 1
+			port_min = 202
+			port_max = 220
+			}
+	}
+	`, vpcName, name, name1)
 }

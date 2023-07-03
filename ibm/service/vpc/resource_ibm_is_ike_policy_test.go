@@ -30,11 +30,11 @@ func TestAccIBMISIKEPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "authentication_algorithm", "md5"),
+						"ibm_is_ike_policy.example", "authentication_algorithm", "sha256"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "encryption_algorithm", "triple_des"),
+						"ibm_is_ike_policy.example", "encryption_algorithm", "aes128"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "dh_group", "2"),
+						"ibm_is_ike_policy.example", "dh_group", "14"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "ike_version", "1"),
 				),
@@ -45,11 +45,11 @@ func TestAccIBMISIKEPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "authentication_algorithm", "sha1"),
+						"ibm_is_ike_policy.example", "authentication_algorithm", "sha384"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "encryption_algorithm", "aes128"),
+						"ibm_is_ike_policy.example", "encryption_algorithm", "aes256"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_ike_policy.example", "dh_group", "5"),
+						"ibm_is_ike_policy.example", "dh_group", "15"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_ike_policy.example", "ike_version", "2"),
 				),
@@ -107,9 +107,9 @@ func testAccCheckIBMISIKEPolicyConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ike_policy" "example" {
 			name = "%s"
-			authentication_algorithm = "md5"
-			encryption_algorithm = "triple_des"
-			dh_group = 2
+			authentication_algorithm = "sha256"
+			encryption_algorithm = "aes128"
+			dh_group = 14
 			ike_version = 1
 		}
 	`, name)
@@ -119,9 +119,9 @@ func testAccCheckIBMISIKEPolicyConfigUpdate(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ike_policy" "example" {
 			name = "%s"
-			authentication_algorithm = "sha1"
-			encryption_algorithm = "aes128"
-			dh_group = 5
+			authentication_algorithm = "sha384"
+			encryption_algorithm = "aes256"
+			dh_group = 15
 			ike_version = 2
 			key_lifetime = 1800
 		}

@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_domain_settings"
@@ -11,8 +10,9 @@ description: |-
 
 Customize the IBM Cloud Internet Services domain settings. For more information, about Internet Services domain settings, see [adding domains to your CIS instance](https://cloud.ibm.com/docs/cis?topic=cis-multi-domain-support).
 
-## Example usage
+## Example usage 1
 
+---
 ```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
   cis_id    = data.ibm_cis.cis.id
@@ -55,6 +55,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
     include_subdomains = false
     max_age            = 0
     nosniff            = false
+    preload            = false
   }
   mobile_redirect {
     status           = "on"
@@ -71,6 +72,71 @@ resource "ibm_cis_domain_settings" "test" {
   min_tls_version = "1.2"
 }
 ```
+---
+
+## Example usage 2 : For TLS v1.3
+
+---
+```terraform
+resource "ibm_cis_domain_settings" "test_domain_settings" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  dnssec                      = "disabled"
+  waf                         = "off"
+  ssl                         = "flexible"
+  min_tls_version             = "1.2"
+  cname_flattening            = "flatten_all"
+  opportunistic_encryption    = "off"
+  automatic_https_rewrites    = "on"
+  always_use_https            = "off"
+  ipv6                        = "off"
+  browser_check               = "off"
+  hotlink_protection          = "off"
+  http2                       = "on"
+  image_load_optimization     = "off"
+  image_size_optimization     = "lossless"
+  ip_geolocation              = "off"
+  origin_error_page_pass_thru = "off"
+  brotli                      = "off"
+  pseudo_ipv4                 = "off"
+  prefetch_preload            = "off"
+  response_buffering          = "off"
+  script_load_optimization    = "off"
+  server_side_exclude         = "off"
+  tls_client_auth             = "off"
+  true_client_ip_header       = "off"
+  websockets                  = "off"
+  challenge_ttl               = 31536000
+  max_upload                  = 300
+  cipher                      = []
+  minify {
+    css  = "off"
+    js   = "off"
+    html = "off"
+  }
+  security_header {
+    enabled            = false
+    include_subdomains = false
+    max_age            = 0
+    nosniff            = false
+    preload            = false
+  }
+  mobile_redirect {
+    status           = "on"
+    mobile_subdomain = "m.domain.com"
+    strip_uri        = true
+  }
+}
+
+resource "ibm_cis_domain_settings" "test" {
+  cis_id          = ibm_cis.instance.id
+  domain_id       = ibm_cis_domain.example.id
+  waf             = "on"
+  ssl             = "full"
+  min_tls_version = "1.3"
+}
+```
+---
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -80,7 +146,7 @@ Review the argument references that you can specify for your resource.
 - `browser_check` - (Optional, String) Enable a client browser check to look for common HTTP headers that are used by malicious users. If HTTP headers are found,  access to your website is blocked. Supported values are `off` and `on`.
 - `brotli` - (Optional, String) Supported values are `off` and `on`.
 - `challenge_ttl` - (Optional, String) Challenge TTL values are `300`, `900`, `1800`, `2700`, `3600`, `7200`, `10800`, `14400`, `28800`, `57600`, `86400`, `604800`, `2592000`, and `31536000`.
-- `cipher` - (Optional, String) Cipher setting values are  `ECDHE-ECDSA-AES128-GCM-SHA256`, `ECDHE-ECDSA-CHACHA20-POLY1305`,`ECDHE-RSA-AES128-GCM-SHA256`, `ECDHE-RSA-CHACHA20-POLY1305`, `ECDHE-ECDSA-AES128-SHA256`, `ECDHE-ECDSA-AES128-SHA`, `ECDHE-RSA-AES128-SHA256`, `ECDHE-RSA-AES128-SHA`, `AES128-GCM-SHA256`, `AES128-SHA256`, `AES128-SHA`, `ECDHE-ECDSA-AES256-GCM-SHA384`, `ECDHE-ECDSA-AES256-SHA384`, `ECDHE-RSA-AES256-GCM-SHA384`, `ECDHE-RSA-AES256-SHA384`, `ECDHE-RSA-AES256-SHA`, `AES256-GCM-SHA384`, `AES256-SHA256`, `AES256-SHA`, `DES-CBC3-SHA`, `AEAD-AES128-GCM-SHA256`, `AEAD-AES256-GCM-SHA384`, `AEAD-CHACHA20-POLY1305-SHA256`.
+- `cipher` - (Optional, List) Cipher setting values are  `ECDHE-ECDSA-AES128-GCM-SHA256`, `ECDHE-ECDSA-CHACHA20-POLY1305`,`ECDHE-RSA-AES128-GCM-SHA256`, `ECDHE-RSA-CHACHA20-POLY1305`, `ECDHE-ECDSA-AES128-SHA256`, `ECDHE-ECDSA-AES128-SHA`, `ECDHE-RSA-AES128-SHA256`, `ECDHE-RSA-AES128-SHA`, `AES128-GCM-SHA256`, `AES128-SHA256`, `AES128-SHA`, `ECDHE-ECDSA-AES256-GCM-SHA384`, `ECDHE-ECDSA-AES256-SHA384`, `ECDHE-RSA-AES256-GCM-SHA384`, `ECDHE-RSA-AES256-SHA384`, `ECDHE-RSA-AES256-SHA`, `AES256-GCM-SHA384`, `AES256-SHA256`, `AES256-SHA`, `DES-CBC3-SHA`. To use default cipher value, pass empty list `[]`. 
 - `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
 - `cname_flattening` - (Optional, String) Supported values are `flatten_at_root`, `flatten_all`, and `flatten_none`.
 - `domain_id` - (Required, String) The ID of the domain that you want to customize.
@@ -92,7 +158,7 @@ Review the argument references that you can specify for your resource.
 - `ipv6` - (Optional, String) Supported values are `off` and `on`.
 - `ip_geolocation` - (Optional, String) Supported values are `off` and `on`.
 - `max_upload` - (Optional, String) Maximum upload values are `100`, `125`, `150`, `175`, `200`, `225`, `250`, `275`, `300`, `325`, `350`, `375`, `400`, `425`, `450`, `475`, and `500`.
-- `min_tls_version` - (Optional, String) The minimum TLS version that you want to allow. Allowed values are `1.1`, `1.2`, or `1.3`.
+- `min_tls_version` - (Optional, String) The minimum TLS version that you want to allow. Allowed values are `1.1`, `1.2`, or `1.3`. `Note: When we set min_tls_version as 1.3 we can't customize which ciphers to use. The cipher needs to be set to empty list`.
 - `minify`  (Optional, List) Minify the setting as stated.
 
   Nested scheme for `minify`:
@@ -117,6 +183,7 @@ Review the argument references that you can specify for your resource.
 - `security_header.include_subdomains`- (Bool) Required-Supported values are **true** and **false**.
 - `security_header.max_age`- (Required, Integer) Maximum age of the security header.
 - `security_header.nosniff`- (Bool) Required-No sniff.
+- `security_header.preload`- (Required, Bool) Whether or not to permit browsers to preload security_header config.
 - `ssl` - (Optional, String) Allowed values: `off`, `flexible`, `full`, `strict`, `origin_pull`.
 - `tls_client_auth` - (Optional, String) Supported values are `off` and `on`.
 - `true_client_ip_header` - (Optional, String) Supported values are `off` and `on`.

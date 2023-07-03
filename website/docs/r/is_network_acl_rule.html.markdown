@@ -118,7 +118,7 @@ resource "ibm_is_network_acl_rule" "example1" {
 Review the argument references that you can specify for your resource.
 
 - `action` - (Required, String) Whether to **allow** or **deny** matching traffic.
-- `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If **absent**, this is the last rule. If **omitted**, this rule will be inserted after all existing rules.
+- `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If unspecified, this rule will be inserted after all existing rules. While modifying the resource, specify **"null"** (within double quotes) to move this rule after all existing rules.
 - `destination` - (Required, String) The destination IP address or CIDR block.
 - `direction` - (Required, String) Whether the traffic to be matched is **inbound** or **outbound**.
 - `icmp` - (Optional, List) The protocol ICMP.
@@ -149,14 +149,14 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the network ACL rule. The ID is composed of `\<network_acl\>/\<rule_id\>.`
+- `id` - (String) The ID of the network ACL rule. The ID is composed of `\network_acl\rule_id`.
 - `href` - (String) The URL for this network ACL rule.
 - `protocol` - (String) The protocol to enforce.
 - `rule_id` - (String) The unique identifier of the rule.
 
 
 ## Import
-The `ibm_is_network_acl_rule` can be imported using ID `\<network_acl\>/\<rule_id\>`
+The `ibm_is_network_acl_rule` can be imported using ID `\network_acl\rule_id`
 
 **Example**
 

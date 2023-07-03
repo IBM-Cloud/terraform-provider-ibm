@@ -23,6 +23,9 @@ Review the argument reference that you can specify for your data source.
 
 * `job_id` - (String) Job Id. Use `GET /v2/jobs` API to look up the Job Ids in your IBM Cloud account.
 
+* `location` - (Optional,String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+  * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
+
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
@@ -333,9 +336,6 @@ Nested scheme for **data**:
 					* `offering_id` - (String) Id of the offering the IBM Catalog.
 					* `offering_version_id` - (String) Id of the offering version the IBM Catalog.
 					* `offering_repo_url` - (String) Repo Url of the offering, in the IBM Catalog.
-				* `cos_bucket` - (List) Connection details to a IBM Cloud Object Storage bucket.
-				Nested scheme for **cos_bucket**:
-					* `cos_bucket_url` - (String) COS Bucket Url.
 			* `inputs` - (List) Input variables data for the workItem used in FlowJob.
 			Nested scheme for **inputs**:
 				* `name` - (String) Name of the variable.
@@ -480,8 +480,6 @@ Nested scheme for **job_inputs**:
 		* `source` - (String) Source of this meta-data.
 	* `link` - (String) Reference link to the variable value By default the expression will point to self.value.
 
-* `location` - (String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
-  * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 
 * `log_store_url` - (String) Job log store URL.
 

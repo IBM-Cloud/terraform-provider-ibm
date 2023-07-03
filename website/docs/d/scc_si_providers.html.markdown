@@ -6,6 +6,9 @@ description: |-
   Get information about scc_si_providers
 ---
 
+# DEPRECATED
+Security and Compliance Center - Security Insights has now deprecated, backend services are no longer available. The docs will be removed in next release.
+
 # ibm_scc_si_providers
 
 Provides a read-only data source for scc_si_providers. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.

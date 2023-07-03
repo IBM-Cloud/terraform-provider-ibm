@@ -325,9 +325,6 @@ Nested scheme for **data**:
 					* `offering_id` - (Optional, String) Id of the offering the IBM Catalog.
 					* `offering_version_id` - (Optional, String) Id of the offering version the IBM Catalog.
 					* `offering_repo_url` - (Optional, String) Repo Url of the offering, in the IBM Catalog.
-				* `cos_bucket` - (Optional, List) Connection details to a IBM Cloud Object Storage bucket. MaxItems: 1.
-				Nested scheme for **cos_bucket**:
-					* `cos_bucket_url` - (Optional, String) COS Bucket Url.
 			* `inputs` - (Optional, List) Input variables data for the workItem used in FlowJob.
 			Nested scheme for **inputs**:
 				* `name` - (Optional, String) Name of the variable.
@@ -461,7 +458,7 @@ Nested scheme for **job_inputs**:
 		* `group_by` - (Optional, String) Display name of the group this variable belongs to.
 		* `source` - (Optional, String) Source of this meta-data.
 	* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
-* `location` - (Optional, String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+* `location` - (Optional, String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
   * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 * `log_summary` - (Optional, List) Job log summary record.
 Nested scheme for **log_summary**:

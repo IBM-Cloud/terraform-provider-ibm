@@ -82,11 +82,20 @@ The `ibm_is_instance_group` resource provides the following [Timeouts](https://w
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the instance group.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `application_port` - (Optional, Integer) The instance group uses when scaling up instances to supply the port for the Load Balancer pool member. The `load_balancer` and `load_balancer_pool` arguments must be specified when configured.
 - `load_balancer` - (Optional, String) The load Balancer ID, the `application_port` and `load_balancer_pool` arguments must be specified when configured.
 - `load_balancer_pool` - (Optional, String) The load Balancer pool ID, the `application_port` and `load_balancer` arguments must be specified when configured.
 - `instance_template` - (Required, Forces new resource, String) The ID of the instance template to create the instance group.
-- `instance_count` - (Optional, Integer) The number of instances to create in the instance group. ~>**Note:** instance group manager must be in diables state to update the `instance_count`.
+- `instance_count` - (Optional, Integer) The number of instances to create in the instance group. 
+  
+  ~>**Note:** instance group manager must be in diables state to update the `instance_count`.
 - `name` - (Required, String) The instance  group name.
 - `resource_group` - (Optional, String) The resource group ID.
 - `subnets` - (Required, List) The list of subnet IDs used by the instances.

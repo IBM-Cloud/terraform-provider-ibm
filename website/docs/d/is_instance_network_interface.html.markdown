@@ -44,7 +44,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-vpc"
   image   = "a7a0626c-f97e-4180-afbe-0331ec62f32a"
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -108,7 +108,7 @@ In addition to all arguments above, the following attributes are exported:
 - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
     Nested scheme for `primary_ip`:
-    - `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+    - `address` - (String) The IP address of the reserved IP. Same as `primary_ipv4_address`
     - `href`- (String) The URL for this reserved IP
     - `name`- (String) The user-defined or system-provided name for this reserved IP
     - `reserved_ip`- (String) The unique identifier for this reserved IP

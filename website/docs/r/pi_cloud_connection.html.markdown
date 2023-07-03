@@ -10,6 +10,9 @@ description: |-
 
 Create, update, or delete for a Power Systems Virtual Server cloud connection. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
+**Note**
+
+`Cloud connection are not supported in new workspaces in DAL10 data center.`
 ## Example usage
 
 The following example enables you to create a cloud connection:
@@ -70,6 +73,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The unique identifier of cloud connection.
 - `cloud_connection_id` - (String) The cloud connection ID.
+- `connection_mode` - (String) Type of service the gateway is attached to.
 - `gre_source_address` - (String) The GRE auto-assigned source IP address.
 - `ibm_ip_address` - (String) The IBM IP address.
 - `port` - (String) Port.

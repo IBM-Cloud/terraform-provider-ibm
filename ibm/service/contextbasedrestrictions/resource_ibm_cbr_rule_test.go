@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 )
 
@@ -119,12 +118,17 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) st
     			}
     			attributes {
       				name = "serviceName"
-      				value = "user-management"
+      				value = "containers-kubernetes"
     			}
 				tags {
 					name = "name"
 					value = "value"
 					operator = "stringEquals"
+				}
+			}
+			operations {
+				api_types {
+					api_type_id = "crn:v1:bluemix:public:containers-kubernetes::::api-type:management"
 				}
 			}
 			enforcement_mode = "%s"

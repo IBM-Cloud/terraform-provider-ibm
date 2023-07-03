@@ -10,7 +10,7 @@ variable "app_name" {
 variable "region" {
 }
 
-variable "ibm_cloud_api_key" {
+variable "ibmcloud_api_key" {
 }
 
 variable "kp_integration_name" {
@@ -19,15 +19,18 @@ variable "kp_integration_name" {
 variable "app_repo" {
 }
 
+variable "app_repo_branch" {
+}
+
+variable "ibmcloud_api" {
+}
+
 variable "pipeline_repo" {
     type        = string
     description = "The repository url containing pipeline definitions for Simple Helm Toolchain."
 }
 
-variable "pipeline_branch" {
-  type        = string
-  description = "The branch within pipeline definitions repository for Simple Helm Toolchain."
-  default     = "main"
+variable "pipeline_repo_branch" {
 }
 
 variable "pipeline_path" {
@@ -39,6 +42,9 @@ variable "pipeline_path" {
 variable "tekton_tasks_catalog_repo" {
 }
 
+variable "definitions_branch" {
+}
+
 variable "pr_pipeline_scm_trigger_type" {
   type        = string
   description = "The type of SCM Trigger for PR Pipeline as defined in tekton definition."
@@ -48,7 +54,7 @@ variable "pr_pipeline_scm_trigger_type" {
 variable "pr_pipeline_scm_trigger_name" {
   type        = string
   description = "The name of SCM Trigger for PR Pipeline as defined in tekton definition."
-  default     = "SCM Trigger"
+  default     = "Git PR Trigger"
 }
 
 variable "pr_pipeline_scm_trigger_listener_name" {
@@ -57,10 +63,10 @@ variable "pr_pipeline_scm_trigger_listener_name" {
   default     = "gitlab-pr-listener"
 }
 
-variable "pr_pipeline_scm_trigger_disabled" {
+variable "pr_pipeline_scm_trigger_enabled" {
   type        = bool
-  description = "Flag to disable SCM CI Trigger"
-  default     = false
+  description = "Flag to enable or disable SCM CI Trigger"
+  default     = true
 }
 
 variable "pr_pipeline_max_concurrent_runs" {

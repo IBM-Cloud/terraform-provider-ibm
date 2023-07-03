@@ -59,11 +59,33 @@ Nested scheme for **shared_data**:
 * `tags` - (Optional, List) A list of tags that are associated with the workspace.
 * `template_env_settings` - (Optional, List) A list of environment variables that you want to apply during the execution of a bash script or Terraform job. This field must be provided as a list of key-value pairs, for example, **TF_LOG=debug**. Each entry will be a map with one entry where `key is the environment variable name and value is value`. You can define environment variables for IBM Cloud catalog offerings that are provisioned by using a bash script. See [example to use special environment variable](https://cloud.ibm.com/docs/schematics?topic=schematics-set-parallelism#parallelism-example)  that are supported by Schematics.
 * `template_git_folder` - (Optional, String) The subfolder in your GitHub or GitLab repository where your Terraform template is stored.
-* `template_init_state_file` - (Optional, String) The content of an existing Terraform statefile that you want to import in to your workspace. To get the content of a Terraform statefile for a specific Terraform template in an existing workspace, run `ibmcloud terraform state pull --id <workspace_id> --template <template_id>`.
-* `template_type` - (Required, String) The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. The Terraform config files are run with Terraform version 0.11. This is a required variable. Make sure that your Terraform config files are compatible with the Terraform version that you select.
+* `template_init_state_file` - (Optional, String) The content of an existing Terraform statefile that you want to import in to your workspace. To get the content of a Terraform statefile for a specific Terraform template in an existing workspace, run `ibmcloud schematics state pull --id <workspace_id> --template <template_id>`.
+* `template_type` - (Required, String) The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. The Terraform config files are run with Terraform version 0.11. This is a required variable. Make sure that your Terraform config files are compatible with the Terraform version that you select. See [terraform versions](https://cloud.ibm.com/docs/schematics?topic=schematics-migrating-terraform-version) that are supported by Schematics.
 * `template_uninstall_script_name` - (Optional, String) Uninstall script name.
 * `template_values` - (Optional, String) A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `"autoscaling: enabled: true minReplicas: 2"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.
 * `template_values_metadata` - (Optional, List) List of values metadata.
+Nested scheme for **template_values_metadata**:
+	* `aliases` - (Optional, List) The list of aliases for the variable name.
+	* `cloud_data_type` - (Optional, String) Cloud data type of the variable. eg. resource_group_id, region, vpc_id.
+	* `default_value` - (Optional, String) Default value for the variable only if the override value is not specified.
+	* `description` - (Optional, String) The description of the meta data.
+	* `group_by` - (Optional, String) The display name of the group this variable belongs to.
+	* `hidden` - (Optional, Boolean) If **true**, the variable is not displayed on UI or Command line.
+	* `immutable` - (Optional, Boolean) Is the variable readonly ?.
+	* `link_status` - (Optional, String) The status of the link.
+		* Constraints: Allowable values are: `normal`, `broken`.
+	* `matches` - (Optional, String) The regex for the variable value.
+	* `max_length` - (Optional, Integer) The maximum length of the variable value. Applicable for the string type.
+	* `max_value` - (Optional, Integer) The maximum value of the variable. Applicable for the integer type.
+	* `min_length` - (Optional, Integer) The minimum length of the variable value. Applicable for the string type.
+	* `min_value` - (Optional, Integer) The minimum value of the variable. Applicable for the integer type.
+	* `options` - (Optional, List) The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.
+	* `position` - (Optional, Integer) The relative position of this variable in a list.
+	* `required` - (Optional, Boolean) If the variable required?.
+	* `secure` - (Optional, Boolean) Is the variable secure or sensitive ?.
+	* `source` - (Optional, String) The source of this meta-data.
+	* `type` - (Optional, String) Type of the variable.
+		* Constraints: Allowable values are: `boolean`, `string`, `integer`, `date`, `array`, `list`, `map`, `complex`, `link`.
 * `template_inputs` - (Optional, List) VariablesRequest -.
 Nested scheme for **variablestore**:
 	* `description` - (Optional, String) The description of your input variable.

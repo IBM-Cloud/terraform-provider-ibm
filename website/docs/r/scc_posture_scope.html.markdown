@@ -8,7 +8,7 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_scope
 
-Provides a resource for scopes. This allows scopes to be created, updated and deleted.
+Provides a resource for scopes. This allows scopes to be created, updated and deleted. Before creation of the scope, we need to create credential and collector.
 
 ## Example Usage
 
@@ -60,3 +60,5 @@ $ terraform import ibm_scc_posture_scope.scopes <id>
 ```
 $ terraform import ibm_scc_posture_scope.scopes 1
 ```
+
+!> **Removal Notification** Resource Removal: Resource ibm_scc_posture_scope is deprecated and being removed.\n This resource will not be available from future release (v1.54.0).

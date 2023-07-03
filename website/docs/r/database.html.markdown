@@ -35,12 +35,12 @@ resource "ibm_database" "<your_database>" {
 
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 14336
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 20480
     }
 
@@ -54,14 +54,15 @@ resource "ibm_database" "<your_database>" {
     password = "password12"
     type     = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.1/32"
     description = "desc"
   }
 }
 
 output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.connectionstrings[0].composed}"
+  value  = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
 }
 
 ```
@@ -92,14 +93,15 @@ resource "ibm_database" "<your_database>" {
     password  = "password12"
     type      = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.1/32"
     description = "desc"
   }
 }
 
 output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.connectionstrings[0].composed}"
+  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
 }
 
 ```
@@ -143,14 +145,14 @@ resource "ibm_database" "<your_database>" {
     password = "password12"
   }
 
-  whitelist {
+  allowlist {
     address     = "172.168.1.1/32"
     description = "desc"
   }
 }
 
 output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.connectionstrings[0].composed}"
+  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
 }
 
 ```
@@ -187,12 +189,6 @@ resource "ibm_database" "autoscale" {
     location                     = "us-south"
     service_endpoints            = "private"
     auto_scaling {
-        cpu {
-            rate_increase_percent       = 20
-            rate_limit_count_per_member = 20
-            rate_period_seconds         = 900
-            rate_units                  = "count"
-        }
         disk {
             capacity_enabled             = true
             free_space_less_than_percent = 15
@@ -231,14 +227,15 @@ resource "ibm_database" "cassandra" {
   plan                         = "enterprise"
   location                     = "us-south"
   adminpassword                = "password12"
+
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 24576
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 368640
     }
 
@@ -246,12 +243,14 @@ resource "ibm_database" "cassandra" {
       allocation_count = 6
     }
   }
+
   users {
     name      = "user123"
     password  = "password12"
     type      = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.2/32"
     description = "desc1"
   }
@@ -283,12 +282,12 @@ resource "ibm_database" "mongodb" {
 
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 24576
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 122880
     }
 
@@ -298,21 +297,25 @@ resource "ibm_database" "mongodb" {
   }
 
   tags                         = ["one:two"]
+
   users {
     name      = "dbuser"
     password  = "password12"
     type      = "database"
   }
+
   users {
     name     = "opsmanageruser"
     password = "$ecurepa$$word12"
     type     = "ops_manager"
     role     = "group_read_only"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.2/32"
     description = "desc1"
   }
+
   timeouts {
     create = "120m"
     update = "120m"
@@ -322,7 +325,7 @@ resource "ibm_database" "mongodb" {
 ```
 
 ### Sample MongoDB Enterprise database instance with BI Connector and Analytics
-* To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`.
+* To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`. Read more about Analytics and BI Connector [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics)
 * MongoDB Enterprise provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 
 ```terraform
@@ -341,12 +344,12 @@ resource "ibm_database" "mongodb_enterprise" {
 
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 24576
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 122880
     }
 
@@ -354,23 +357,23 @@ resource "ibm_database" "mongodb_enterprise" {
       allocation_count = 6
     }
   }
-  
+
   group {
     group_id = "analytics"
-    
-    members { 
+
+    members {
       allocation_count = 1
     }
   }
-  
+
   group {
     group_id = "bi_connector"
-    
-    members { 
+
+    members {
       allocation_count = 1
     }
   }
-    
+
   timeouts {
     create = "120m"
     update = "120m"
@@ -412,14 +415,15 @@ resource "ibm_database" "edb" {
   plan                         = "standard"
   location                     = "us-south"
   adminpassword                = "password12"
+
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 12288
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 131072
     }
 
@@ -427,16 +431,67 @@ resource "ibm_database" "edb" {
       allocation_count = 3
     }
   }
+
   tags                         = ["one:two"]
+
   users {
     name      = "user123"
     password  = "password12"
     type      = "database"
   }
-  whitelist {
+
+  allowlist {
     address     = "172.168.1.2/32"
     description = "desc1"
   }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
+
+### Sample Elasticsearch Enterprise instance
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "es" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "es-enterprise"
+  service                      = "databases-for-elasticsearch"
+  plan                         = "enterprise"
+  location                     = "eu-gb"
+  adminpassword                = "password12"
+  version                      = "7.17"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    memory {
+      allocation_mb = 1024
+    }
+    disk {
+      allocation_mb = 5120
+    }
+    cpu {
+      allocation_count = 3
+    }
+  }
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  allowlist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+
   timeouts {
     create = "120m"
     update = "120m"
@@ -455,12 +510,12 @@ resource "ibm_database" "db" {
   location                     = "us-east"
   group {
     group_id = "member"
-    
-    memory { 
+
+    memory {
       allocation_mb = 12288
     }
-    
-    disk { 
+
+    disk {
       allocation_mb = 131072
     }
 
@@ -478,6 +533,40 @@ resource "ibm_database" "db" {
   CONFIGURATION
 }
 
+```
+
+### Creating logical replication slot for postgres database
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "db" {
+  name                         = "example-database"
+  service                      = "databases-for-postgresql"
+  plan                         = "standard"
+  location                     = "us-east"
+
+  users {
+    name     = "repl"
+    password = "repl123456"
+  }
+
+  configuration                = <<CONFIGURATION
+  {
+    "wal_level": "logical",
+    "max_replication_slots": 21,
+    "max_wal_senders": 21
+  }
+  CONFIGURATION
+
+  logical_replication_slot {
+    name = "wj123"
+    database_name = "ibmclouddb"
+    plugin_type = "wal2json"
+  }
+}
 ```
 
 **provider.tf**
@@ -510,74 +599,75 @@ Review the argument reference that you can specify for your resource.
 - `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
-  Nested scheme for `auto_scaling`:
-  - `cpu` (List , Optional) Single block of CPU is allowed at once by CPU autoscaling.
+   - Nested scheme for `auto_scaling`:
+     - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
+        - Nested scheme for `disk`:
+          - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
+          - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
+          - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+          - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
+          - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
+          - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
+          - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+          - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+          - `rate_units` - (Optional, String) Auto scaling rate in units.
 
-    Nested scheme for `cpu`:
-    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-    - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
-    - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
-    - `rate_units` - (Optional, String) Auto scaling rate in units.
-  - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
+     - `memory` (List , Optional) Memory Auto Scaling in single block of memory is allowed at once.
+       - Nested scheme for `memory`:
+         - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+         - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
+         - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
+         - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
+         - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+         - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+         - `rate_units` - (Optional, String) Auto scaling rate in units.
 
-    Nested scheme for `disk`:
-    - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
-    - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
-    -  `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
-    - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
-    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
-    - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
-    - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
-    - `rate_units` - (Optional, String) Auto scaling rate in units.
-  - `memory` (List , Optional) Memory Auto Scaling in single block of memory is allowed at once.
-
-    Nested scheme for `memory`:
-    - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
-    - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
-    - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
-    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-    - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
-    - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
-    - `rate_units` - (Optional, String) Auto scaling rate in units.
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services `databases-for-postgresql`, `databases-for-redis` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v4#setdatabaseconfiguration-request).
+- `logical_replication_slot` - (Optional, List of Objects) A list of logical replication slots that you want to create on the database. Multiple blocks are allowed. This is only available for `databases-for-postgresql`.
+
+  Nested scheme for `logical_replication_slot`:
+  - `name` - (Required, String) The name of the `logical_replication_slot`.
+  - `database_name` - (Required, String) The name of the database on which you want to create the `logical_replication_slot`.
+  - `plugin_type` - (Required, String) The plugin type that is used to create the `logical_replication_slot`. Only `wal2json` is supported.
+
+  Prereqs to creating a logical replication slot:
+  - Make sure the replication user's (`repl`) password has been changed.
+  - Make sure that your database is configured such that logical replication can be enabled. This means thats the `wal_level` needs to be set to `logical`. Also, `max_replication_slots` and `max_wal_senders` must be greater than 20.
+  - For more information on enabling logical replication slots please see [Configuring Wal2json](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-wal2json)
 - `guid` - (Optional, String) The unique identifier of the database instance.
 - `key_protect_key` - (Optional, Forces new resource, String) The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS)  that you want to use for disk encryption. A key CRN is in the format `crn:v1:<…>:key:`. You can specify the root key during the database creation only. After the database is created, you cannot update the root key. For more information, refer [Disk encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect#using-the-key-protect-key) documentation.
 - `key_protect_instance` - (Optional, Forces new resource, String) The instance CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. An instance CRN is in the format `crn:v1:<…>::`.
 - `location` - (Required, String) The location where you want to deploy your instance. The location must match the `region` parameter that you specify in the `provider` block of your  Terraform configuration file. The default value is `us-south`. Currently, supported regions are `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.
 - `group` - (Optional, Set) A set of group scaling values for the database. Multiple blocks are allowed. Can only be performed on is_adjustable=true groups. Values set are per-member. Values must be greater than or equal to the minimum size and must be a multiple of the step size.
+  - Nested scheme for `group`:
+    - `group_id` - (Optional, String) The ID of the scaling group. Scaling group ID allowed values:  `member`, `analytics`, `bi_connector` or `search`. Read more about `analytics` and `bi_connector` [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics). Read more about `search` [here](https://cloud.ibm.com/docs/databases-for-cassandra?topic=databases-for-cassandra-dse-search)
 
-  Nested scheme for `group`:
-  - `group_id` - (Optional, String) The ID of the scaling group.
 
-  - `members` (Set, Optional)
+    - `members` (Set, Optional)
+      - Nested scheme for `members`:
+        - `allocation_count` - (Optional, Integer) Allocated number of members.
 
-    Nested scheme for `members`:
-    - `allocation_count` - (Optional, Integer) Allocated number of members.
+    - `memory` (Set, Optional) Memory Auto Scaling in single block of memory is allowed at once.
+      - Nested scheme for `memory`:
+        - `allocation_mb` - (Optional, Integer) Allocated memory per-member.
 
-  - `memory` (Set, Optional) Memory Auto Scaling in single block of memory is allowed at once.
+    - `disk` (Set, Optional)
+      - Nested scheme for `disk`:
+        - `allocation_mb` - (Optional, Integer) Allocated disk per-member.
 
-    Nested scheme for `memory`:
-    - `allocation_mb` - (Optional, Integer) Allocated memory per-member.
-
-  - `disk` (Set, Optional)
-
-    Nested scheme for `disk`:
-    - `allocation_mb` - (Optional, Integer) Allocated disk per-member.
-
-  - `cpu` (Set, Optional)
-
-    Nested scheme for `cpu`:
-    - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
+    - `cpu` (Set, Optional)
+      - Nested scheme for `cpu`:
+        - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
 - `members_memory_allocation_mb` **Deprecated** - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
 - `members_disk_allocation_mb` **Deprecated** - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
 - `members_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment.
-- `node_count` **Deprecated** - (Optional, Integer) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
+- `node_count` **Deprecated** - (Optional, Integer) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/databases-for-postgresql?topic=cloud-databases-provisioning#provisioning-parameters
 - `node_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment per node.
 - `node_disk_allocation_mb` **Deprecated**  - (Optional, Integer) The disk size of the database per node. As above.
-- `node_memory_allocation_mb` **Deprecated** - (Optional,Integer) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
+- `node_memory_allocation_mb` **Deprecated** - (Optional,Integer) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/databases-for-postgresql?topic=cloud-databases-provisioning#provisioning-parameters
 
   ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb`. `group` conflicts with `node_` and `members_` arguments. Either members, node, or group arguments have to be provided.
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
@@ -595,23 +685,30 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for `users`:
   - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
-  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users 
+  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
   - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
 
-- `whitelist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
+- `allowlist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
+
+  Nested scheme for `allowlist`:
+  - `address` - (Optional, String) The IP address or range of database client addresses to be allowlisted in CIDR format. Example, `172.168.1.2/32`.
+  - `description` - (Optional, String) A description for the allowed IP addresses range.
+
+- `whitelist` **Deprecated** - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 
   Nested scheme for `whitelist`:
   - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
   - `description` - (Optional, String) A description for the allowed IP addresses range.
 
+  ~> **Note:** `whitelist` conflicts with `allowlist`. `whitelist` has been deprecated and replaced by `allowlist`
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
 - `configuration_schema` (String) Database Configuration Schema in JSON format.
-- `connectionstrings` - (Array) A list of connection strings for the database for each user ID. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
+- `connectionstrings` - **Deprecated** - (Array) A list of connection strings for the database for each user ID - replaced by `ibm_database_connection`. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
 - `id` - (String) The CRN of the database instance.
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.

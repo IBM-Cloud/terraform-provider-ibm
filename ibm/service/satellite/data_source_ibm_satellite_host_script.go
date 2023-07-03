@@ -35,6 +35,11 @@ func DataSourceIBMSatelliteAttachHostScript() *schema.Resource {
 				Computed:    true,
 				Description: "A unique name for the new Satellite location",
 			},
+			"coreos_host": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If true, returns a CoreOS ignition file for the host. Otherwise, returns a RHEL attach script",
+			},
 			"labels": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -126,55 +131,99 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 		}
 	}
 	scriptDir, _ = filepath.Abs(scriptDir)
-	scriptPath := filepath.Join(scriptDir, "addHost.sh")
+	var scriptPath string
 
 	//Generate script
 	createRegOptions := &kubernetesserviceapiv1.AttachSatelliteHostOptions{}
 	createRegOptions.Controller = locData.ID
 	createRegOptions.Labels = labels
 
+	//check to see if host attach is CoreOS or RHEL
+	var host_os string
+	var coreos_enabled bool
+	if _, ok := d.GetOk("coreos_host"); ok {
+		coreos_enabled = d.Get("coreos_host").(bool)
+		if coreos_enabled {
+			host_os = "RHCOS"
+			createRegOptions.OperatingSystem = &host_os
+			scriptPath = filepath.Join(scriptDir, "addHost.ign")
+		}
+	} else {
+		coreos_enabled = false
+		host_os = "RHEL"
+		createRegOptions.OperatingSystem = &host_os
+		scriptPath = filepath.Join(scriptDir, "addHost.sh")
+	}
+
 	resp, err := satClient.AttachSatelliteHost(createRegOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Generating Satellite Registration Script: %s\n%s", err, resp)
 	}
 
-	lines := strings.Split(string(resp), "\n")
-	for i, line := range lines {
-		if strings.Contains(line, "API_URL=") {
-			i = i + 1
-			if script, ok := d.GetOk("custom_script"); ok {
-				lines[i] = script.(string)
-			} else {
-				if strings.ToLower(hostProvider) == "aws" {
-					lines[i] = "yum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
-				} else if strings.ToLower(hostProvider) == "ibm" {
-					lines[i] = `subscription-manager refresh
-subscription-manager repos --enable rhel-server-rhscl-7-rpms
-subscription-manager repos --enable rhel-7-server-optional-rpms
-subscription-manager repos --enable rhel-7-server-rh-common-rpms
-subscription-manager repos --enable rhel-7-server-supplementary-rpms
-subscription-manager repos --enable rhel-7-server-extras-rpms`
-				} else if strings.ToLower(hostProvider) == "azure" {
-					lines[i] = fmt.Sprintf(`yum update --disablerepo=* --enablerepo="*microsoft*" -y
-yum-config-manager --enable '*'
-yum repolist all
-yum install container-selinux -y
-					`)
-				} else if strings.ToLower(hostProvider) == "google" {
-					lines[i] = fmt.Sprintf(`yum update --disablerepo=* --enablerepo="*" -y
-yum repolist all
-yum install container-selinux -y
-yum install subscription-manager -y
-	`)
-				} else {
-					lines[i] = "subscription-manager refresh\nyum update -y\n"
-				}
-			}
+	scriptContent := string(resp)
 
+	//if this is a RHEL host, find insert point for custom code
+	if !coreos_enabled {
+		lines := strings.Split(scriptContent, "\n")
+		var index int
+		for i, line := range lines {
+			if strings.Contains(line, `export OPERATING_SYSTEM`) {
+				index = i
+				break
+			}
 		}
+
+		var insertionText string
+
+		switch {
+		case strings.ToLower(hostProvider) == "aws":
+			insertionText = `
+yum-config-manager --enable '*'
+yum install container-selinux -y
+`
+		case strings.ToLower(hostProvider) == "ibm":
+			insertionText = `
+subscription-manager refresh
+if [[ "${OPERATING_SYSTEM}" == "RHEL7" ]]; then
+	subscription-manager repos --enable rhel-server-rhscl-7-rpms
+	subscription-manager repos --enable rhel-7-server-optional-rpms
+	subscription-manager repos --enable rhel-7-server-rh-common-rpms
+	subscription-manager repos --enable rhel-7-server-supplementary-rpms
+	subscription-manager repos --enable rhel-7-server-extras-rpms
+elif [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
+	subscription-manager release --set=8
+	subscription-manager repos --disable='*eus*'
+	subscription-manager repos --enable rhel-8-for-x86_64-baseos-rpms 
+	subscription-manager repos --enable rhel-8-for-x86_64-appstream-rpms;
+fi
+yum install container-selinux -y
+`
+		case strings.ToLower(hostProvider) == "azure":
+			insertionText = `
+#if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
+#	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+#	update-alternatives --set python3 /usr/bin/python3.8
+#fi
+yum install container-selinux -y
+`
+		case strings.ToLower(hostProvider) == "google":
+			insertionText = `
+#if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
+#	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+#	update-alternatives --set python3 /usr/bin/python3.8
+#fi
+yum install container-selinux -y
+`
+		default:
+			if script, ok := d.GetOk("custom_script"); ok {
+				insertionText = script.(string)
+			}
+		}
+
+		lines[index] = lines[index] + "\n" + insertionText
+		scriptContent = strings.Join(lines, "\n")
 	}
 
-	scriptContent := strings.Join(lines, "\n")
 	err = ioutil.WriteFile(scriptPath, []byte(scriptContent), 0644)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Creating Satellite Attach Host Script: %s", err)

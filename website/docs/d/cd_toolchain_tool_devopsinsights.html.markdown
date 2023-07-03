@@ -3,21 +3,21 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_devopsinsights"
 description: |-
   Get information about cd_toolchain_tool_devopsinsights
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_devopsinsights
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_devopsinsights. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-dra) page for more information.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -37,22 +37,22 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the cd_toolchain_tool_devopsinsights.
 * `crn` - (String) Tool CRN.
 
-
 * `href` - (String) URI representing the tool.
 
 * `name` - (String) Tool name.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+
 
 * `updated_at` - (String) Latest tool update timestamp.
 

@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMCbrRuleDataSourceBasic(t *testing.T) {
@@ -57,6 +57,7 @@ func TestAccIBMCbrRuleDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "contexts.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "resources.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "operations.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "enforcement_mode"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "created_at"),
@@ -113,12 +114,17 @@ func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleEnforcem
     			}
     			attributes {
       				name = "serviceName"
-      				value = "iam-groups"
+      				value = "containers-kubernetes"
     			}
 				tags {
 					name = "name"
 					value = "tag_name"
 					operator = "stringEquals"
+				}
+			}
+			operations {
+				api_types {
+					api_type_id = "crn:v1:bluemix:public:containers-kubernetes::::api-type:management"
 				}
 			}
 			enforcement_mode = "%s"

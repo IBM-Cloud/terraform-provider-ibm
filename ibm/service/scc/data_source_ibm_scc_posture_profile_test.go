@@ -21,11 +21,9 @@ func TestAccIBMSccPostureProfileDetailsDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "profile_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "version"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "modified_by"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "base_profile"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "type"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "no_of_controls"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "created_at"),

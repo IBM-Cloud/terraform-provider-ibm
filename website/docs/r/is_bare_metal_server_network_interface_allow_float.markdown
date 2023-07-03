@@ -103,6 +103,7 @@ Review the argument references that you can specify for your resource.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `allow_interface_to_float` - (Boolean) Indicates if the interface can float to any other server within the same resource_group. The interface will float automatically if the network detects a GARP or RARP on another bare metal server in the resource group. Applies only to vlan type interfaces.
+- `floating_bare_metal_server` - (String) Bare metal server id of the server to which the network interface is floating to. (Same as `bare_metal_server` if its not floating)
 - `floating_ips` - (List) The floating IPs associated with this network interface.
 
   Nested scheme for `floating_ips`:
@@ -115,7 +116,9 @@ In addition to the argument reference list, you can access the following attribu
 - `network_interface` - (String) The network interface id.
 - `port_speed` - (Integer) The network interface port speed in Mbps
 - `resource_type` - (String)The resource type [ **subnet_reserved_ip** ]
-- `status` - (String) The status of the network interface. Supported values are [ **available**, **deleting**, **failed**, **pending** ]
+- `status` - (String) The status of the network interface.
+
+  -> **Supported Status** &#x2022; available</br> &#x2022; deleting</br> &#x2022; failed</br> &#x2022; pending</br>
 - `type` - (String) The type of this bare metal server network interface. Supported values are [ **primary**, **secondary** ]
 
 

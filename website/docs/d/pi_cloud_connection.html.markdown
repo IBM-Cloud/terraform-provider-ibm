@@ -49,6 +49,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The unique identifier of the cloud connection.
 - `classic_enabled` - (Bool) Is classic endpoint destination enabled?
+- `connection_mode` - (String) Type of service the gateway is attached to.
 - `global_routing` - (String) Is global routing enabled for this cloud connection.
 - `gre_destination_address` - (String) The GRE destination IP address.
 - `gre_source_address` - (String) The GRE auto-assigned source IP address.
@@ -61,4 +62,3 @@ In addition to all argument reference list, you can access the following attribu
 - `user_ip_address` - (String) User IP address.
 - `vpc_crns` - (Set of String) Set of VPCs attached to this cloud connection.
 - `vpc_enabled` - (Bool) Is VPC enabled for this cloud connection?
-- `connection_mode` - (String) Type of service the gateway is attached to.

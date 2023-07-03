@@ -42,12 +42,12 @@ var crossRegionLocation = []string{
 }
 
 var storageClass = []string{
-	"standard", "vault", "cold", "smart",
+	"standard", "vault", "cold", "smart", "onerate_active",
 }
 
-var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
-var regionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z]{4,8}$")
-var crossRegionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{4,8}$")
+var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z_a-z]{4,14}$")
+var regionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z_a-z]{4,14}$")
+var crossRegionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z_a-z]{4,14}$")
 
 func TestAccIBMCosBucket_Basic(t *testing.T) {
 
@@ -82,6 +82,45 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccIBMCosBucket_AllowedIP(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	allowedIp1 := "103.208.71.79"
+	allowedIp2 := "172.30.8.121"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_allowedip(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, allowedIp1, allowedIp2),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "allowed_ip.#", "2"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_allowedipremoved(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "allowed_ip.#", "0"),
+				),
+			},
+		},
+	})
+
 }
 
 func TestAccIBMCosBucket_Direct(t *testing.T) {
@@ -631,7 +670,6 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 	})
 }
 
-//
 // Satellite location
 func TestAccIBMCosBucket_Satellite(t *testing.T) {
 
@@ -873,6 +911,116 @@ func TestAccIBMCosBucket_Satellite_Object_Versioning(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_OneRate_With_Storageclass(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "onerate_active"
+	bucketRegionType := "region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Onerate_With_Storageclass(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_OneRate_Without_Storage_class(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketRegionType := "region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName, bucketName, bucketRegionType, bucketRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_OneRate_With_Invalid_Storageclass(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "invalidstorageclass"
+	bucketRegionType := "region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Onerate_With_Invalid_Storageclass(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("\"storage_class\" must contain a value from \\[\\]string{\"standard\", \"vault\", \"cold\", \"smart\", \"flex\", \"onerate_active\"}, got \"invalidstorageclass\""),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_COS_Plan_Storageclass_Mismatch_Type1(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_COS_Plan_Storageclass_Mismatch_Type1(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("InvalidLocationConstraint: Storage class not allowed for one rate user"),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_COS_Plan_Storageclass_Mismatch_Type2(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "onerate_active"
+	bucketRegionType := "region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_COS_Plan_Storageclass_Mismatch_Type2(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("InvalidLocationConstraint: Storage class not allowed for standard or cloud lite user"),
+			},
+		},
+	})
+}
 func testAccCheckIBMCosBucketDestroy(s *terraform.State) error {
 
 	var s3Conf *aws.Config
@@ -988,7 +1136,7 @@ func testAccCheckIBMCosBucket_Satellite_Exists(resource string, bucket string, r
 	}
 }
 
-/// IBMCLOUD
+// / IBMCLOUD
 func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype string, region string, bucketname string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
@@ -1058,7 +1206,162 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 		return errors.New("bucket does not exist")
 	}
 }
+func TestAccIBMCOSKP(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
 
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKeyProtectRootkeyWithCOSBucket(instanceName, keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSHPCS(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMHPCSRootkeyWithCOSBucket(keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "key_protect", acc.HpcsRootKeyCrn),
+				),
+			},
+		},
+	})
+}
+
+//new hpcs
+func TestAccIBMCOSKPKmsParamValid(t *testing.T) {
+
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParam(instanceName, keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCOSKPKmsParamWithInvalidCRN(t *testing.T) {
+
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParamWithInvalidCRN(instanceName, keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("InvalidArgument: Invalid ibm-sse-kp-customer-root-key-crn: received only 7 of required 10 segments"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSHPCSKmsParam(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParam(keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "kms_key_crn", acc.HpcsRootKeyCrn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSHPCSKmsParamWithInvalidCRN(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParamWithInvalidCRN(keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("InvalidArgument: Invalid ibm-sse-kp-customer-root-key-crn: received only 7 of required 10 segments"),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSKMSBothParamProvided(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMHPCSRootkeyWithCOSBucketKMSBothParamProvided(keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				ExpectError: regexp.MustCompile("Error: Conflicting configuration arguments"),
+			},
+		},
+	})
+}
 func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
 
 	return fmt.Sprintf(`
@@ -1085,6 +1388,182 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 	`, serviceName, bucketName, storageClass, region)
 }
 
+func testAccCheckIBMCosBucket_Onerate_With_Storageclass(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	  
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "cos-one-rate-plan"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+	  
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		region_location = "%s"
+	}
+	  
+		  
+	`, serviceName, bucketName, storageClass, region)
+}
+
+func testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName string, bucketName string, regiontype string, region string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "cos-one-rate-plan"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location = "%s"
+	}
+
+	`, serviceName, bucketName, region)
+}
+
+func testAccCheckIBMCosBucket_Onerate_With_Invalid_Storageclass(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "cos-one-rate-plan"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		region_location = "%s"
+	}
+
+	`, serviceName, bucketName, storageClass, region)
+}
+
+func testAccCheckIBMCosBucket_COS_Plan_Storageclass_Mismatch_Type1(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "cos-one-rate-plan"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		region_location = "%s"
+	}
+
+	`, serviceName, bucketName, storageClass, region)
+}
+func testAccCheckIBMCosBucket_COS_Plan_Storageclass_Mismatch_Type2(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		region_location = "%s"
+	}
+
+	`, serviceName, bucketName, storageClass, region)
+}
+
+func testAccCheckIBMCosBucket_allowedip(serviceName string, bucketName string, regiontype string, region string, storageClass string, allowedIp1 string, allowedIp2 string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		cross_region_location = "%s"
+		allowed_ip = ["%s","%s"]
+	}
+	  
+	`, serviceName, bucketName, storageClass, region, allowedIp1, allowedIp2)
+}
+
+func testAccCheckIBMCosBucket_allowedipremoved(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	  
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+	  
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		cross_region_location = "%s"
+
+	}
+	  
+		  
+	`, serviceName, bucketName, storageClass, region)
+}
 func testAccCheckIBMCosBucket_direct(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
 
 	return fmt.Sprintf(`
@@ -2036,6 +2515,200 @@ func testAccCheckIBMCosBucket_update_expiredays_satellite(bucketName string, reg
 		satellite_location_id = "%s"
 	}
 	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
+}
+
+func testAccCheckIBMKeyProtectRootkeyWithCOSBucket(instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "kms_instance1" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+	  resource "ibm_iam_authorization_policy" "policy1" {
+		source_service_name = "cloud-object-storage"
+		target_service_name = "kms"
+		roles               = ["Reader"]
+	  }
+	  resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+		key_name = "%s"
+		standard_key =  false
+		force_delete = true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		depends_on           = [ibm_iam_authorization_policy.policy1]
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		cross_region_location = "%s"
+		storage_class        = "%s"
+		key_protect          = ibm_kms_key.test.id
+	}
+`, instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass)
+}
+
+func testAccCheckIBMHPCSRootkeyWithCOSBucket(KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_iam_authorization_policy" "policy1" {
+		source_service_name = "cloud-object-storage"
+		target_service_name = "hs-crypto"
+		roles               = ["Reader"]
+	  }
+
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		depends_on           = [ibm_iam_authorization_policy.policy1]
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location 	= "%s"
+		storage_class       = "%s"
+		key_protect			= "%s"
+	}
+`, serviceName, bucketName, bucketRegion, bucketClass, acc.HpcsRootKeyCrn)
+}
+func testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParam(instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "kms_instance1" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+
+	  resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance1.guid}"
+		key_name = "%s"
+		standard_key =  false
+		force_delete = true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		cross_region_location = "%s"
+		storage_class        = "%s"
+		kms_key_crn          = ibm_kms_key.test.id
+	}
+`, instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass)
+}
+func testAccCheckIBMKeyProtectRootkeyWithCOSBucketKmsParamWithInvalidCRN(instanceName, KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		cross_region_location = "%s"
+		storage_class        = "%s"
+		kms_key_crn          = "crn:v1:staging:public:kms:us-south:invalid"
+	}
+`, instanceName, bucketName, bucketRegion, bucketClass)
+}
+
+func testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParam(KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location 	= "%s"
+		storage_class       = "%s"
+		kms_key_crn			= "%s"
+	}
+`, serviceName, bucketName, bucketRegion, bucketClass, acc.HpcsRootKeyCrn)
+}
+
+func testAccCheckIBMHPCSRootkeyWithCOSBucketKMSBothParamProvided(KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location 	= "%s"
+		storage_class       = "%s"
+		kms_key_crn			= "%s"
+		key_protect 		= "%s"
+	}
+`, serviceName, bucketName, bucketRegion, bucketClass, acc.HpcsRootKeyCrn, acc.HpcsRootKeyCrn)
+}
+
+func testAccCheckIBMHPCSRootkeyWithCOSBucketKmsParamWithInvalidCRN(KeyName, serviceName, bucketName, bucketRegion, bucketClass string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	resource "ibm_resource_instance" "instance" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "standard"
+		location = "global"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location 	= "%s"
+		storage_class       = "%s"
+		kms_key_crn			= "crn:v1:staging:public:hs-crypto:us-south:invalid"
+	}
+`, serviceName, bucketName, bucketRegion, bucketClass)
 }
 
 func TestSingleSiteLocationRegex(t *testing.T) {

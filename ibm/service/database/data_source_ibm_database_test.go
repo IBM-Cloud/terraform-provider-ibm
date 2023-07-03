@@ -39,6 +39,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "members_memory_allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(dataName, "members_disk_allocation_mb", "10240"),
 					resource.TestCheckResourceAttr(dataName, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(dataName, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.name", "admin"),
 					resource.TestCheckResourceAttr(dataName, "connectionstrings.0.hosts.#", "1"),

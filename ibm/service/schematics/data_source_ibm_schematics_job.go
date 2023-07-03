@@ -317,6 +317,7 @@ func DataSourceIBMSchematicsJob() *schema.Resource {
 			},
 			"location": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
@@ -2069,20 +2070,20 @@ func DataSourceIBMSchematicsJob() *schema.Resource {
 																	},
 																},
 															},
-															"cos_bucket": {
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Connection details to a IBM Cloud Object Storage bucket.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"cos_bucket_url": {
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "COS Bucket Url.",
-																		},
-																	},
-																},
-															},
+															// "cos_bucket": {
+															// 	Type:        schema.TypeList,
+															// 	Computed:    true,
+															// 	Description: "Connection details to a IBM Cloud Object Storage bucket.",
+															// 	Elem: &schema.Resource{
+															// 		Schema: map[string]*schema.Schema{
+															// 			"cos_bucket_url": {
+															// 				Type:        schema.TypeString,
+															// 				Computed:    true,
+															// 				Description: "COS Bucket Url.",
+															// 			},
+															// 		},
+															// 	},
+															// },
 														},
 													},
 												},
@@ -2817,7 +2818,13 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	if r, ok := d.GetOk("location"); ok {
+		region := r.(string)
+		schematicsURL, updatedURL, _ := SchematicsEndpointURL(region, meta)
+		if updatedURL {
+			schematicsClient.Service.Options.URL = schematicsURL
+		}
+	}
 	getJobOptions := &schematicsv1.GetJobOptions{}
 
 	getJobOptions.SetJobID(d.Get("job_id").(string))
@@ -3953,17 +3960,17 @@ func dataSourceJobWorkitemsSourceToMap(sourceItem schematicsv1.ExternalSource) (
 		catalogList = append(catalogList, catalogMap)
 		sourceMap["catalog"] = catalogList
 	}
-	if sourceItem.CosBucket != nil {
-		cosBucketList := []map[string]interface{}{}
-		cosBucketMap := dataSourceJobSourceCosBucketToMap(*sourceItem.CosBucket)
-		cosBucketList = append(cosBucketList, cosBucketMap)
-		sourceMap["cos_bucket"] = cosBucketList
-	}
+	// if sourceItem.CosBucket != nil {
+	// 	cosBucketList := []map[string]interface{}{}
+	// 	cosBucketMap := dataSourceJobSourceCosBucketToMap(*sourceItem.CosBucket)
+	// 	cosBucketList = append(cosBucketList, cosBucketMap)
+	// 	sourceMap["cos_bucket"] = cosBucketList
+	// }
 
 	return sourceMap
 }
 
-func dataSourceJobSourceGitToMap(gitItem schematicsv1.ExternalSourceGit) (gitMap map[string]interface{}) {
+func dataSourceJobSourceGitToMap(gitItem schematicsv1.GitSource) (gitMap map[string]interface{}) {
 	gitMap = map[string]interface{}{}
 
 	if gitItem.ComputedGitRepoURL != nil {
@@ -3988,7 +3995,7 @@ func dataSourceJobSourceGitToMap(gitItem schematicsv1.ExternalSourceGit) (gitMap
 	return gitMap
 }
 
-func dataSourceJobSourceCatalogToMap(catalogItem schematicsv1.ExternalSourceCatalog) (catalogMap map[string]interface{}) {
+func dataSourceJobSourceCatalogToMap(catalogItem schematicsv1.CatalogSource) (catalogMap map[string]interface{}) {
 	catalogMap = map[string]interface{}{}
 
 	if catalogItem.CatalogName != nil {
@@ -4016,15 +4023,15 @@ func dataSourceJobSourceCatalogToMap(catalogItem schematicsv1.ExternalSourceCata
 	return catalogMap
 }
 
-func dataSourceJobSourceCosBucketToMap(cosBucketItem schematicsv1.ExternalSourceCosBucket) (cosBucketMap map[string]interface{}) {
-	cosBucketMap = map[string]interface{}{}
+// func dataSourceJobSourceCosBucketToMap(cosBucketItem schematicsv1.ExternalSourceCosBucket) (cosBucketMap map[string]interface{}) {
+// 	cosBucketMap = map[string]interface{}{}
 
-	if cosBucketItem.CosBucketURL != nil {
-		cosBucketMap["cos_bucket_url"] = cosBucketItem.CosBucketURL
-	}
+// 	if cosBucketItem.CosBucketURL != nil {
+// 		cosBucketMap["cos_bucket_url"] = cosBucketItem.CosBucketURL
+// 	}
 
-	return cosBucketMap
-}
+// 	return cosBucketMap
+// }
 
 func dataSourceJobWorkitemsInputsToMap(inputsItem schematicsv1.VariableData) (inputsMap map[string]interface{}) {
 	inputsMap = map[string]interface{}{}

@@ -83,8 +83,17 @@ You can access the following attribute references after your data source is crea
 	- `name` - (String) The name of the subnet.
 	- `network_acl` - (String) The access control list (ACL) that is attached to the subnet.
     - `public_gateway`- (Bool) If set to **true**, a public gateway is attached to the subnet. If set to **false**, no public gateway for this subnet exists.
-	- `resource_group` - (String) The resource group that the subnet belongs to.
+	- `resource_group` - (String) The resource group id, that the subnet belongs to.
     - `total_ipv4_address_count`- (Integer) The total number of IPv4 addresses in the subnet.
     - `status` - (String) The status of the subnet.
+  - `routing_table` -  (List) The routing table for this subnet. 
+    Nested scheme for `routing_table`:
+      - `deleted` -  (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+      Nested scheme for `deleted`:
+        - `more_info` -  (String) Link to documentation about deleted resources.
+      - `href` -  (String) The URL for this routing table.
+      - `id` -  (String) The unique identifier for this routing table.
+      - `name` -  (String) The user-defined name for this routing table.
+      - `resource_type` -  (String) The type of resource referenced.
 	- `vpc` - (String) The ID of the VPC that this subnet belongs to.
 	- `zone` - (String) The zone where the subnet was created.

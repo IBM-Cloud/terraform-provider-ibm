@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -26,10 +26,13 @@ func TestAccIBMIAMAccountSettingsDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "restrict_create_platform_apikey"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "mfa"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "user_mfa.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "history.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "session_expiration_in_seconds"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "session_invalidation_in_seconds"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "max_sessions_per_identity"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "system_access_token_expiration_in_seconds"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "system_refresh_token_expiration_in_seconds"),
 				),
 			},
 		},

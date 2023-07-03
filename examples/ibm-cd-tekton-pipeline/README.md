@@ -4,11 +4,11 @@ This example illustrates how to use the CdTektonPipelineV2
 
 These types of resources are supported:
 
-* tekton_pipeline_definition
-* tekton_pipeline_trigger_property
-* tekton_pipeline_property
-* tekton_pipeline_trigger
-* tekton_pipeline
+* cd_tekton_pipeline
+* cd_tekton_pipeline_definition
+* cd_tekton_pipeline_trigger_property
+* cd_tekton_pipeline_property
+* cd_tekton_pipeline_trigger
 
 ## Usage
 
@@ -22,170 +22,163 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-
 ## CdTektonPipelineV2 resources
 
-ibm_cd_tekton_pipeline_definition resource:
+cd_tekton_pipeline resource:
 
-```hcl
-resource "ibm_cdtekton_pipeline_definition" "tekton_pipeline_definition_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  scm_source = var.tekton_pipeline_definition_scm_source
+```terraform
+resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
+  pipeline_id = ibm_cd_toolchain_tool_pipeline.cd_pipeline.tool_id
+  enable_notifications = false
+  enable_partial_cloning = false
+  worker {
+    id = "public"
+  }
 }
 ```
-ibm_cd_tekton_pipeline_trigger_property resource:
 
-```hcl
-resource "ibm_cd_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger_id = var.tekton_pipeline_trigger_property_trigger_id
-  name = var.tekton_pipeline_trigger_property_name
-  value = var.tekton_pipeline_trigger_property_value
-  enum = var.tekton_pipeline_trigger_property_enum
-  default = var.tekton_pipeline_trigger_property_default
-  type = var.tekton_pipeline_trigger_property_type
-  path = var.tekton_pipeline_trigger_property_path
+cd_tekton_pipeline_definition resource:
+
+```terraform
+resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
+  source {
+    type = "git"
+    properties {
+      url = ibm_cd_toolchain_tool_hostedgit.tekton_repo.repo_url
+      branch = "master"
+      path = ".tekton"
+    }
+  }
 }
 ```
-ibm_cd_tekton_pipeline_property resource:
 
-```hcl
-resource "ibm_cd_tekton_pipeline_property" "tekton_pipeline_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  name = var.tekton_pipeline_property_name
-  value = var.tekton_pipeline_property_value
-  enum = var.tekton_pipeline_property_enum
-  default = var.tekton_pipeline_property_default
-  type = var.tekton_pipeline_property_type
-  path = var.tekton_pipeline_property_path
+cd_tekton_pipeline_property resource:
+
+```terraform
+resource "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
+  name = "env-prop-1"
+  value = "Environment text property 1"
+  type = "text"
 }
 ```
-ibm_cd_tekton_pipeline_trigger resource:
 
-```hcl
-resource "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger = var.tekton_pipeline_trigger_trigger
+cd_tekton_pipeline_trigger resource:
+
+```terraform
+resource "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
+  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
+  type = "manual"
+  name = "trigger1"
+  event_listener = "listener"
+  tags = [ "tag1", "tag2" ]
+  worker {
+    id = "public"
+  }
+  max_concurrent_runs = 1
 }
 ```
-ibm_cd_tekton_pipeline resource:
 
-```hcl
-resource "ibm_cd_tekton_pipeline" "tekton_pipeline_instance" {
-  worker = var.tekton_pipeline_worker
+cd_tekton_pipeline_trigger_property resource:
+
+```terraform
+resource "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
+  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
+  trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.trigger_id
+  name = "trig-prop-1"
+  value = "trigger 1 text property"
+  type = "text"
 }
 ```
 
 ## CdTektonPipelineV2 Data sources
 
-ibm_cd_tekton_pipeline_definition data source:
+cd_tekton_pipeline data source:
 
-```hcl
-data "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  definition_id = var.tekton_pipeline_definition_definition_id
+```terraform
+data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
+  id = var.cd_tekton_pipeline_id
 }
 ```
-ibm_cd_tekton_pipeline_trigger_property data source:
 
-```hcl
-data "ibm_cd_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger_id = var.tekton_pipeline_trigger_property_trigger_id
-  property_name = var.tekton_pipeline_trigger_property_property_name
+cd_tekton_pipeline_definition data source:
+
+```terraform
+data "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+  pipeline_id = var.cd_tekton_pipeline_definition_pipeline_id
+  definition_id = var.cd_tekton_pipeline_definition_definition_id
 }
 ```
-ibm_cd_tekton_pipeline_property data source:
 
-```hcl
-data "ibm_cd_tekton_pipeline_property" "tekton_pipeline_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  property_name = var.tekton_pipeline_property_property_name
+cd_tekton_pipeline_property data source:
+
+```terraform
+data "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+  pipeline_id = var.cd_tekton_pipeline_property_pipeline_id
+  property_name = var.cd_tekton_pipeline_property_property_name
 }
 ```
-ibm_cd_tekton_pipeline_trigger data source:
 
-```hcl
-data "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger_id = var.tekton_pipeline_trigger_trigger_id
+cd_tekton_pipeline_trigger data source:
+
+```terraform
+data "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
+  pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
+  trigger_id = var.cd_tekton_pipeline_trigger_trigger_id
 }
 ```
-ibm_cd_tekton_pipeline data source:
 
-```hcl
-data "ibm_cd_tekton_pipeline" "tekton_pipeline_instance" {
-  id = var.tekton_pipeline_id
+cd_tekton_pipeline_trigger_property data source:
+
+```terraform
+data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
+  pipeline_id = var.cd_tekton_pipeline_trigger_property_pipeline_id
+  trigger_id = var.cd_tekton_pipeline_trigger_property_trigger_id
+  property_name = var.cd_tekton_pipeline_trigger_property_property_name
 }
 ```
 
 ## Assumptions
 
-1. TODO
+1. Creating a Tekton Pipeline requires creating an IBM CD Toolchain (ibm_cd_toolchain) resource and a Tekton Pipeline tool resource instance (ibm_cd_toolchain_tool_pipeline) in that toolchain. These are included in the example in `main.tf`.
+2. The Tekton Pipeline resource also requires a repository to be included in the toolchain, which contains the Tekton Pipeline declaration. An example is included in the `main.tf`.
 
 ## Notes
 
-1. TODO
+1. Copy the `variables.tfvars.example` file to your own `terraform.tfvars` file and add values for the variables within.
+2. Use `terraform apply -var-file="terraform.tfvars"` to generate the toolchain and pipeline using your provided variables.
 
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 0.12 |
+| terraform | >=1.0.0, <2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| ibm | 1.13.1 |
+| ibm | >=1.48.0 |
 
 ## Inputs
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| scm_source | Scm source for tekton pipeline defintion. | `` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| trigger_id | The trigger ID. | `string` | true |
-| name | Property name. | `string` | false |
-| value | String format property value. | `string` | false |
-| enum | Options for SINGLE_SELECT property type. | `list(string)` | false |
-| default | Default option for SINGLE_SELECT property type. | `string` | false |
-| type | Property type. | `string` | false |
-| path | property path for INTEGRATION type properties. | `string` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| name | Property name. | `string` | false |
-| value | String format property value. | `string` | false |
-| enum | Options for SINGLE_SELECT property type. | `list(string)` | false |
-| default | Default option for SINGLE_SELECT property type. | `string` | false |
-| type | Property type. | `string` | false |
-| path | property path for INTEGRATION type properties. | `string` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| trigger | Tekton pipeline trigger object. | `` | false |
-| worker | Worker object with worker ID only. | `` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| definition_id | The definition ID. | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| trigger_id | The trigger ID. | `string` | true |
-| property_name | The property's name. | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| property_name | The property's name. | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| trigger_id | The trigger ID. | `string` | true |
-| id | ID of current instance. | `string` | true |
+| resource\_group | Resource group within which toolchain will be created | `string` | true |
+| region | IBM Cloud region where your toolchain will be created | `string` | true |
+| toolchain\_name | Name of the Toolchain | `string` | true |
+| toolchain\_description | Description for the Toolchain | `string` | true |
+| clone\_repo | URL of the tekton repo to clone, e.g. `https://github.com/open-toolchain/hello-tekton` | `string` | true |
+| repo\_name | Name of the new repo that will be created in the toolchain | `string` | true |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| tekton_pipeline_definition | tekton_pipeline_definition object |
-| tekton_pipeline_trigger_property | tekton_pipeline_trigger_property object |
-| tekton_pipeline_property | tekton_pipeline_property object |
-| tekton_pipeline_trigger | tekton_pipeline_trigger object |
-| tekton_pipeline | tekton_pipeline object |
-| tekton_pipeline_definition | tekton_pipeline_definition object |
-| tekton_pipeline_trigger_property | tekton_pipeline_trigger_property object |
-| tekton_pipeline_property | tekton_pipeline_property object |
-| tekton_pipeline_trigger | tekton_pipeline_trigger object |
-| tekton_pipeline | tekton_pipeline object |
+| cd_tekton_pipeline | cd_tekton_pipeline object |
+| cd_tekton_pipeline_definition | cd_tekton_pipeline_definition object |
+| cd_tekton_pipeline_property | cd_tekton_pipeline_property object |
+| cd_tekton_pipeline_trigger | cd_tekton_pipeline_trigger object |
+| cd_tekton_pipeline_trigger_property | cd_tekton_pipeline_trigger_property object |

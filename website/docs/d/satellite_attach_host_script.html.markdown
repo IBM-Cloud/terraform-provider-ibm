@@ -16,7 +16,7 @@ Retrieve information of an existing IBM Satellite location registration script a
 ```terraform
 data "ibm_satellite_attach_host_script" "script" {
   location          = var.location
-  labels            = var.labels
+  labels            = ["cpu:4"]
   host_provider     = "ibm"
 }
 ```
@@ -51,10 +51,11 @@ EOF
 ## Argument reference
 Review the argument references that you can specify for your data source.
 
-- `custom_script` - (Optional, String) The custom script that has to be appended to generated host script file. Either `custom_script` or `host_provider` is required. This `custom_script` will be appended to the downloaded host attach script. Find custom scripts for respective cloud providers [aws](https://cloud.ibm.com/docs/satellite?topic=satellite-aws#aws-host-attach), [google](https://cloud.ibm.com/docs/satellite?topic=satellite-gcp#gcp-host-attach), [azure](https://cloud.ibm.com/docs/satellite?topic=satellite-azure#azure-host-attach), [ibm](https://cloud.ibm.com/docs/satellite?topic=satellite-ibm#ibm-host-attach).
+- `coreos_host`	   = (Optional, Bool) True if attaching a CoreOS host to a CoreOS-enabled location. Host attach script will be in ignition file format. If attaching a RHEL host to a location, then the value is false.
+- `custom_script` - (Optional, String) RHEL hosts only. The custom script that has to be appended to generated host script file. Either `custom_script` or `host_provider` is required. This `custom_script` will be appended to the downloaded host attach script. Find custom scripts for respective cloud providers [aws](https://cloud.ibm.com/docs/satellite?topic=satellite-aws#aws-host-attach), [google](https://cloud.ibm.com/docs/satellite?topic=satellite-gcp#gcp-host-attach), [azure](https://cloud.ibm.com/docs/satellite?topic=satellite-azure#azure-host-attach), [ibm](https://cloud.ibm.com/docs/satellite?topic=satellite-ibm#ibm-host-attach).
 - `location` - (Required, String) The name or ID of the Satellite location.
 - `host_provider` - (Optional, String) The name of host provider, such as `ibm`, `aws` or `azure`.
-- `labels` - (Optional, Strings) The key-value pairs to label the host, such as `cpu=4` to describe the host capabilities.
+- `labels` - (Optional, Set(Strings)) The set of key-value pairs to label the host, such as `["cpu:4"]` to describe the host capabilities.
 - `script_dir` - (Optional, String) The directory path to store the generated script.
 
 ## Attributes reference
@@ -63,4 +64,3 @@ In addition to the argument reference list, you can access the following attribu
 - `id` - The unique identifier of the location.
 - `script_path` -  (String) Directory path to store the generated script.
 - `host_script` -  (String) The raw content of the script file that was read.
-

@@ -66,6 +66,15 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_gre_connection", "name", tgSecondConnectionName),
 				),
 			},
+			// tg unbound gre test
+			{
+				//Create test case
+				Config: testAccCheckIBMTransitGatewayUnboundGreConnectionConfig(gatewayName, tgConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_ibm_tg_unbound_gre_connection", tgConnection),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_ibm_tg_unbound_gre_connection", "base_network_type", "classic"),
+				),
+			},
 			// tg directlink test
 			{
 				//Create test case
@@ -154,6 +163,29 @@ resource "ibm_tg_connection" "test_ibm_tg_gre_connection"{
 }
 	   
 	  `, gatewayName, classicConnName, greConnName)
+}
+
+func testAccCheckIBMTransitGatewayUnboundGreConnectionConfig(gatewayName, greConnName string) string {
+	return fmt.Sprintf(`	 	
+resource "ibm_tg_gateway" "test_tg_gateway"{
+	name="%s"
+	location="us-south"
+	global=true
+}
+
+resource "ibm_tg_connection" "test_ibm_tg_unbound_gre_connection"{
+	gateway = "${ibm_tg_gateway.test_tg_gateway.id}"
+	network_type = "unbound_gre_tunnel"
+	name = "%s"
+	base_network_type = "classic"
+	local_gateway_ip = "192.168.100.1"
+	local_tunnel_ip = "192.168.101.1"
+	network_account_id = "%s"
+	remote_gateway_ip = "10.242.63.12"
+	remote_tunnel_ip = "192.168.101.2"
+	zone = "us-south-1"
+}
+	  `, gatewayName, greConnName, acc.Tg_cross_network_account_id)
 }
 
 func testAccCheckIBMTransitGatewayDirectlinkConnectionConfig(dlGatewayName, gatewayName, dlConnectionName string) string {

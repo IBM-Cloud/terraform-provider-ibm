@@ -49,6 +49,7 @@ In addition to the argument reference list, you can access the following attribu
 - `name` - (String) The name for the default routing table.
 - `resource_type` - (String) The resource type.
 - `route_direct_link_ingress`- (Bool)  Indicates the routing table is used to route traffic that originates from Direct Link to the VPC.
+- `route_internet_ingress` - (Bool) Indicates whether this routing table is used to route traffic that originates from the internet.
 - `route_transit_gateway_ingress`- (Bool) Indicates the routing table is used to route traffic that originates from Transit Gateway to the VPC.
 - `route_vpc_zone_ingress`- (Bool) Indicates the routing table is used to route traffic that originates from subnets in other zones in the VPC.
 - `routes` - (List) The routes for the default routing table.

@@ -3,22 +3,21 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain"
 description: |-
   Manages cd_toolchain.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain
-
-~> **Beta:** This resource is in Beta, and is subject to change.
 
 Provides a resource for cd_toolchain. This allows cd_toolchain to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain" "cd_toolchain" {
+resource "ibm_cd_toolchain" "cd_toolchain_instance" {
   description = "A sample toolchain to test the API"
   name = "TestToolchainV2"
   resource_group_id = "6a9a01f2cff54a7f966f803d92877123"
+  tags = ["tag1", "tag2"]
 }
 ```
 
@@ -32,6 +31,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `resource_group_id` - (Required, Forces new resource, String) Resource group where toolchain will be created.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-f]{32}$/`.
+* `tags` - (Optional, Array of Strings) Tags associated with the toolchain.
+
 
 ## Attribute Reference
 
@@ -44,7 +45,7 @@ In addition to all argument references listed, you can access the following attr
 * `crn` - (String) Toolchain CRN.
 * `href` - (String) URI that can be used to retrieve toolchain.
 * `location` - (String) Toolchain region.
-* `tags` - (List) Tags associated with the toolchain.
+* `ui_href` - (String) URL of a user-facing user interface for this toolchain.
 * `updated_at` - (String) Latest toolchain update timestamp.
 
 ## Provider Configuration

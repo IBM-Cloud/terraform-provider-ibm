@@ -37,7 +37,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "15360"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
@@ -55,7 +55,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "18432"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
@@ -71,6 +71,21 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "18432"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
+					resource.TestCheckResourceAttr(name, "users.#", "0"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -112,7 +127,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "5120"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 
-					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
@@ -132,7 +147,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
@@ -150,7 +165,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
@@ -167,7 +182,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
@@ -208,7 +223,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "5120"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 
-					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
@@ -232,7 +247,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
@@ -254,7 +269,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
@@ -275,7 +290,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "24576"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
@@ -347,7 +362,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 		  name     = "user123"
 		  password = "password12"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
@@ -385,11 +400,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 		  name     = "user124"
 		  password = "password12"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}
@@ -400,7 +415,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 			delete = "15m"
 		}
 	}
-	  
+
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
@@ -420,6 +435,41 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 18432
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
+	}
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
+		location                     = "%[3]s"
+		adminpassword                = "password12"
+
+		group {
+		  group_id = "member"
+
+		  memory {
+		    allocation_mb = 1024
+		  }
+		  disk {
+		    allocation_mb = 6144
+		  }
+		}
 
 		timeouts {
 			create = "120m"
@@ -453,7 +503,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 		  name     = "user123"
 		  password = "password12"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
@@ -493,11 +543,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 		  name     = "user124"
 		  password = "password12"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}
@@ -602,7 +652,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 		  name     = "user123"
 		  password = "password12"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
@@ -654,11 +704,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		  name     = "user124"
 		  password = "password12"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
-		whitelist {
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}

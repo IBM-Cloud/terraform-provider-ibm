@@ -24,7 +24,8 @@ In addition to all argument references listed, you can access the following attr
 
 - `id` - The unique identifier of the KeyCollection.
 - `keys` - (List) Collection of keys.
-Nested scheme for **keys**:
+	Nested scheme for **keys**:
+	- `access_tags`  - (List) Access management tags associated for the ssh key.
 	- `created_at` - (String) The date and time that the key was created.
 	- `crn` - (String) The CRN for this key.
 	- `fingerprint` - (String) The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always `SHA256`).
@@ -37,8 +38,8 @@ Nested scheme for **keys**:
 	- `name` - (String) The unique user-defined name for this key. If unspecified, the name will be a hyphenated list of randomly-selected words.
 	  - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$/`.
 	- `public_key` - (String) The public SSH key, consisting of two space-separated fields: the algorithm name, and the base64-encoded key.
-	- `resource_group` - (List) The resource group for this key.
-	Nested scheme for **resource_group**:
+	- `resource_group` - (List) The resource group object, for this key.
+		Nested scheme for **resource_group**:
 		- `href` - (String) The URL for this resource group.
 		  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		- `id` - (String) The unique identifier for this resource group.

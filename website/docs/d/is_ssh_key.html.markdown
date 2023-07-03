@@ -38,6 +38,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `access_tags`  - (List) Access management tags associated for the ssh key.
 - `crn` - (String) The CRN for this key.
 - `id` - (String) The ID of the SSH key.
 - `fingerprint`-  (String) The SHA256 fingerprint of the public key.

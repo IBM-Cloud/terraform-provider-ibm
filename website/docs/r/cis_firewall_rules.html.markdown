@@ -10,7 +10,7 @@ description: |-
 # ibm_cis_firewall_rules
 
 
-Create, update, or delete a firewall rules for a domain that you included in your IBM Cloud Internet Services instance and a CIS domain resource. For more information, about CIS firewall rules resource, see [using fields, functions, and expressions](https://cloud.ibm.com/docs/cis?topic=cis-fields-and-expressions).
+Create, update, or delete a firewall rules for a domain that you included in your IBM Cloud Internet Services instance and a CIS domain resource. For more information, about CIS firewall rules resource, see [using fields, functions, and expressions](https://cloud.ibm.com/docs/cis?topic=cis-fields-and-expressions). Note - Deletion of Firewall Rules will result in deletion of the respective Filter too.
 
 ## Example usage
 

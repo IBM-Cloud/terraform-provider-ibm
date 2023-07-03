@@ -21,26 +21,30 @@ func DataSourceIBMPIKey() *schema.Resource {
 		ReadContext: dataSourceIBMPIKeyRead,
 		Schema: map[string]*schema.Schema{
 
-			helpers.PIKeyName: {
+			// Arguments
+			Arg_KeyName: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "SSHKey Name to be used for pvminstances",
+				Description:  "SSH key name for a pcloud tenant",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			Arg_CloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			//Computed Attributes
-			PIKeyDate: {
-				Type:     schema.TypeString,
-				Computed: true,
+
+			// Attributes
+			Attr_KeyCreationDate: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Date of sshkey creation",
 			},
-			PIKey: {
-				Type:      schema.TypeString,
-				Sensitive: true,
-				Computed:  true,
+			Attr_Key: {
+				Type:        schema.TypeString,
+				Sensitive:   true,
+				Computed:    true,
+				Description: "SSH RSA key",
 			},
 			"sshkey": {
 				Type:       schema.TypeString,
@@ -53,25 +57,28 @@ func DataSourceIBMPIKey() *schema.Resource {
 }
 
 func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	// arguments
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
+	// get key
 	sshkeyC := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	// set attributes
 	d.SetId(*sshkeydata.Name)
-	d.Set(PIKeyDate, sshkeydata.CreationDate.String())
-	d.Set(PIKey, sshkeydata.SSHKey)
-	// TODO: deprecated, to remove
-	d.Set("sshkey", sshkeydata.SSHKey)
-	d.Set(helpers.PIKeyName, sshkeydata.Name)
+	d.Set(Attr_KeyCreationDate, sshkeydata.CreationDate.String())
+	d.Set(Attr_Key, sshkeydata.SSHKey)
+	d.Set("sshkey", sshkeydata.SSHKey) // TODO: deprecated, to remove
 
 	return nil
 }

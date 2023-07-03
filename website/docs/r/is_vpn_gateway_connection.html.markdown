@@ -60,6 +60,26 @@ resource "ibm_is_vpn_gateway_connection" "example" {
 }
 
 ```
+## Example usage ( policy mode with an active peer VPN gateway )
+The following example creates a VPN gateway:
+
+```terraform
+resource "ibm_is_vpn_gateway" "example" {
+  name   = "example-vpn-gateway"
+  subnet = ibm_is_subnet.example.id
+  mode   = "policy"
+}
+
+resource "ibm_is_vpn_gateway_connection" "example" {
+  name          = "example-vpn-gateway-connection"
+  vpn_gateway   = ibm_is_vpn_gateway.example.id
+  peer_address  = ibm_is_vpn_gateway.example.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.example.public_ip_address : ibm_is_vpn_gateway.example.public_ip_address2
+  preshared_key = "VPNDemoPassword"
+  local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
+  peer_cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block]
+}
+
+```
 
 ## Timeouts
 The `ibm_is_vpn_gateway_connection` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -72,9 +92,9 @@ Review the argument references that you can specify for your resource.
 
 - `action` - (Optional, String)  Dead peer detection actions. Supported values are **restart**, **clear**, **hold**, or **none**. Default value is `restart`.
 - `admin_state_up` - (Optional, Bool) The VPN gateway connection status. Default value is **false**. If set to false, the VPN gateway connection is shut down.
-- `ike_policy` - (Optional, String) The ID of the IKE policy.
+- `ike_policy` - (Optional, String) The ID of the IKE policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
 - `interval` - (Optional, Integer) Dead peer detection interval in seconds. Default value is 2.
-- `ipsec_policy` - (Optional, String) The ID of the IPSec policy.
+- `ipsec_policy` - (Optional, String) The ID of the IPSec policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
 - `local_cidrs` - (Optional, Forces new resource, List) List of local CIDRs for this resource.
 - `name` - (Required, String) The name of the VPN gateway connection.
 - `peer_cidrs` - (Optional, Forces new resource, List) List of peer CIDRs for this resource.

@@ -34,6 +34,36 @@ func TestAccIBMISImageDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISImageDataSource_catalog(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+	resName1 := "data.ibm_is_image.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISCatalogImageDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "name"),
+					resource.TestCheckResourceAttrSet(resName, "os"),
+					resource.TestCheckResourceAttrSet(resName, "architecture"),
+					resource.TestCheckResourceAttrSet(resName, "visibility"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttr(resName, "catalog_offering.0.managed", "true"),
+					resource.TestCheckResourceAttrSet(resName, "catalog_offering.0.version.0.crn"),
+					resource.TestCheckResourceAttrSet(resName1, "name"),
+					resource.TestCheckResourceAttrSet(resName1, "os"),
+					resource.TestCheckResourceAttrSet(resName1, "architecture"),
+					resource.TestCheckResourceAttrSet(resName1, "visibility"),
+					resource.TestCheckResourceAttrSet(resName1, "status"),
+					resource.TestCheckResourceAttr(resName1, "catalog_offering.0.managed", "true"),
+					resource.TestCheckResourceAttrSet(resName1, "catalog_offering.0.version.0.crn"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISImageDataSource_With_VisibiltyPublic(t *testing.T) {
 	resName := "data.ibm_is_image.test1"
@@ -88,6 +118,18 @@ func testAccCheckIBMISImageDataSourceConfig(imageName string) string {
 	data "ibm_is_image" "test1" {
 		name = ibm_is_image.isExampleImage.name
 	}`, acc.Image_cos_url, imageName, acc.Image_operating_system)
+}
+func testAccCheckIBMISCatalogImageDataSourceConfig() string {
+	return fmt.Sprintf(`
+	data "ibm_is_images" "test1" {
+		catalog_managed = true
+	}
+	data "ibm_is_image" "test1" {
+		name = data.ibm_is_images.test1.images.0.name
+	}
+	data "ibm_is_image" "test2" {
+		identifier = data.ibm_is_images.test1.images.0.id
+	}`)
 }
 
 func testAccCheckIBMISImageDataSourceWithVisibilityPublic(visibility string) string {

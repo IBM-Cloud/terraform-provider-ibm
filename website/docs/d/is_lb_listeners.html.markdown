@@ -33,6 +33,9 @@ In addition to all argument references listed, you can access the following attr
 	- `certificate_instance` - (List) The certificate instance used for SSL termination. It is applicable only to `https`protocol.
 		Nested scheme for `certificate_instance`:
 		- `crn` - (String) The CRN for this certificate instance.
+
+			!> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
+
     - `connection_limit` - (Integer) The connection limit of the listener.
     - `created_at` - (String) The date and time that this listener was created.
     - `default_pool` - (List) The default pool associated with the listener.
@@ -56,6 +59,7 @@ In addition to all argument references listed, you can access the following attr
         	- `id` - (String) The unique identifier for this load balancer listener.
     		- `uri` - (String) The redirect relative target URI.
 	- `id` - (String) The unique identifier for this load balancer listener.
+	- `idle_connection_timeout` - (Integer) The idle connection timeout of the listener in seconds. This property will be present for load balancers in the `application` family. Default value is `50`.
 	- `policies` - (List) The policies for this listener.
 		Nested scheme for `policies`:
 		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.

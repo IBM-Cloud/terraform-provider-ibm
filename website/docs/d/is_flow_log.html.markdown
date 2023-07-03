@@ -35,14 +35,13 @@ Review the argument reference that you can specify for your data source.
 
 - `identifier` - (Optional, String) The ID of the subnet, This is required when `name` is not specified.
 - `name` - (Optional, String) The name of the subnet,  This is required when `identifier` is not specified.
-- `identifier` - (Optional, String) The ID of the subnet, This is required when name is not specified.
-- `name` - (Optional, String) The name of the subnet,  This is required when identifier is not specified.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `identifier` - The unique identifier of the FlowLogCollector.
+- `access_tags` - (String) Access management tags associated for flow log.
 - `active` - (Boolean) Indicates whether this collector is active.
 - `auto_delete` - (Boolean) If set to `true`, this flow log collector will be automatically deleted when the target is deleted.
 - `created_at` - (String) The date and time that the flow log collector was created.
@@ -50,7 +49,7 @@ In addition to all argument references listed, you can access the following attr
 - `href` - (String) The URL for this flow log collector.
 - `lifecycle_state` - (String) The lifecycle state of the flow log collector.
 - `name` - (String) The unique user-defined name for this flow log collector.
-- `resource_group` - (List) The resource group for this flow log collector.
+- `resource_group` - (List) The resource group object, for this flow log collector.
 
 	Nested scheme for `resource_group`:
     - `href` - (Required, String) The URL for this resource group.
@@ -80,9 +79,9 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for `vpc`:
 	- `crn` - (String) The CRN for this VPC.
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-		
+
 		Nested scheme for `deleted`:
-  		-`more_info` - (String) Link to documentation about deleted resources.
+		 - `more_info` - (String) Link to documentation about deleted resources.
 	- `href` - (String) The URL for this VPC.
 	- `id` - (String) The unique identifier for this VPC.
 	- `name` - (String) The unique user-defined name for this VPC.
