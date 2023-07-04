@@ -915,12 +915,6 @@ Features
      - **Resources**
         - ibm_pi_shared_processor_pool
         - ibm_pi_spp_placement_group
-* Support Security and Compilance 
-    - **DataSources**
-        - ibm_scc_posture_profile_import
-        - ibm_scc_posture_scan_initiate_validation
-    - **Resources**
-        - ibm_scc_posture_scan_initiate_validation
 * Support App Configuration
     - **DataSources**
         - ibm_app_config_collection
@@ -973,12 +967,6 @@ Features
      - **Resources**
         - ibm_pi_shared_processor_pool
         - ibm_pi_shared_processor_pool
-* Support Security and Compilance 
-    - **DataSources**
-        - ibm_scc_posture_profile_import
-        - ibm_scc_posture_scan_initiate_validation
-    - **Resources**
-        - ibm_scc_posture_scan_initiate_validation
 * Support App Configuration
     - **DataSources**
         - ibm_app_config_collection
@@ -1135,13 +1123,6 @@ Features
     - **DataSources**
         - ibm_database_task
         - ibm_database_tasks
-* Support Security and Compilance 
-    - **DataSources**
-        - ibm_scc_posture_credential
-        - ibm_scc_posture_collector
-        - ibm_scc_posture_scope
-        - ibm_scc_posture_credentials
-        - ibm_scc_posture_collectors
 * Support Virtual Private Cloud
     - **DataSources**
         - ibm_is_backup_policy
@@ -1199,13 +1180,6 @@ Features
     - **DataSources**
         - ibm_database_task
         - ibm_database_tasks
-* Support Security and Compilance 
-    - **DataSources**
-        - ibm_scc_posture_credential
-        - ibm_scc_posture_collector
-        - ibm_scc_posture_scope
-        - ibm_scc_posture_credentials
-        - ibm_scc_posture_collectors
 * Support Virtual Private Cloud
     - **DataSources**
         - ibm_is_backup_policy
@@ -2061,15 +2035,6 @@ Features
         - ibm_pi_image_export
         - ibm_pi_placement_group
         - ibm_pi_capture
-* Support Security and Compliance Center
-    - **DataSources**
-        - ibm_scc_posture_profile
-        - ibm_scc_posture_group_profile
-        - ibm_scc_posture_scope_correlation
-    - **Resources**
-        - ibm_scc_posture_collector
-        - ibm_scc_posture_scope
-        - ibm_scc_posture_credential
 * Support IAM Authorization Policies
     - **Datasources**
         - ibm_iam_authorization_policies
@@ -2423,11 +2388,6 @@ FEATURES:
         - ibm_scc_si_note
         - ibm_scc_si_notes
         - ibm_scc_si_providers
-        - ibm_scc_posture_scopes
-        - ibm_scc_posture_latest_scans
-        - ibm_scc_posture_profiles
-        - ibm_scc_posture_scan_summary
-        -ibm_scc_posture_scan_summaries
 
 * Support Event Streams Schema
     - **Resources**
