@@ -144,7 +144,6 @@ func dataSourceIBMPrivateDNSGLBMonitorsRead(d *schema.ResourceData, meta interfa
 
 	dnsMonitors := make([]map[string]interface{}, 0)
 	for _, instance := range availableGLBMonitors.Monitors {
-		// fmt.Errorf("[ERROR] Error : Rahul debug msg")
 		dnsMonitor := map[string]interface{}{}
 		dnsMonitor[pdnsGlbMonitorID] = *instance.ID
 		dnsMonitor[pdnsGlbMonitorName] = *instance.Name
