@@ -154,3 +154,9 @@ In addition to the argument reference list, you can access the following attribu
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `vcpu_manufacturer` - (List) Nested `vcpu_manufacturer` blocks have the following structure:
+
+  Nested scheme for `vcpu_manufacturer`:
+  - `default` - (String) The default VCPU manufacturer for an instance with this profile.
+  - `type` - (String) The type for this profile field.
+  - `value` - (String) The VCPU manufacturer for an instance with this profile.
