@@ -344,8 +344,8 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 	d.Set(pdnsRecordName, recordName)
 	d.Set(pdnsRecordType, response.Type)
 	d.Set(pdnsRecordTTL, response.TTL)
-	d.Set(pdnsRecordCreatedOn, response.CreatedOn)
-	d.Set(pdnsRecordModifiedOn, response.ModifiedOn)
+	d.Set(pdnsRecordCreatedOn, response.CreatedOn.String())
+	d.Set(pdnsRecordModifiedOn, response.ModifiedOn.String())
 
 	if *response.Type == "SRV" {
 		data := response.Rdata
