@@ -1125,7 +1125,7 @@ func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
 	return sess.cisMtlsClient.Clone(), nil
 }
 
-//CIS Bot Management
+// CIS Bot Management
 func (sess clientSession) CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error) {
 	if sess.cisBotManagementErr != nil {
 		return sess.cisBotManagementClient, sess.cisBotManagementErr
@@ -2041,7 +2041,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// GLOBAL TAGGING Service
 	globalSearchEndpoint := "https://api.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		globalSearchEndpoint = ContructEndpoint("api.private", fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+		var globalSearchRegion string
+		if c.Region != "us-south" && c.Region != "au-syd" && c.Region != "eu-gb" {
+			globalSearchRegion = "us-south"
+		} else {
+			globalSearchRegion = c.Region
+		}
+		globalSearchEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s", globalSearchRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalSearchEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GS_API_ENDPOINT", c.Region, searchv2.DefaultServiceURL)
