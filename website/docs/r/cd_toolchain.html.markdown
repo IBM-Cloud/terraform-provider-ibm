@@ -17,6 +17,7 @@ resource "ibm_cd_toolchain" "cd_toolchain_instance" {
   description = "A sample toolchain to test the API"
   name = "TestToolchainV2"
   resource_group_id = "6a9a01f2cff54a7f966f803d92877123"
+  tags = ["tag1", "tag2"]
 }
 ```
 
@@ -30,6 +31,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `resource_group_id` - (Required, Forces new resource, String) Resource group where toolchain will be created.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-f]{32}$/`.
+* `tags` - (Optional, Array of Strings) Tags associated with the toolchain.
+
 
 ## Attribute Reference
 

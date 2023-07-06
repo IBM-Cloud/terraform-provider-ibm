@@ -485,6 +485,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Instance vCPU count",
 						},
+						// Added for AMD support, manufacturer details.
+						isInstanceCPUManufacturer: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Instance vCPU Manufacturer",
+						},
 					},
 				},
 			},
@@ -762,6 +768,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		currentCPU := map[string]interface{}{}
 		currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
 		currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
+		currentCPU[isInstanceCPUManufacturer] = *instance.Vcpu.Manufacturer // Added for AMD support, manufacturer details.
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)

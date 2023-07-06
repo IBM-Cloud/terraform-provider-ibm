@@ -31,6 +31,7 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
+	cisbotmanagementv1 "github.com/IBM/networking-go-sdk/botmanagementv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
@@ -73,6 +74,7 @@ import (
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
+	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	project "github.com/IBM/project-go-sdk/projectv1"
@@ -269,6 +271,7 @@ type ClientSession interface {
 	CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisMtlsSession() (*cismtlsv1.MtlsV1, error)
+	CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -291,6 +294,7 @@ type ClientSession interface {
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
+	MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
@@ -564,6 +568,10 @@ type clientSession struct {
 	cisMtlsClient *cismtlsv1.MtlsV1
 	cisMtlsErr    error
 
+	// Bot Management options
+	cisBotManagementClient *cisbotmanagementv1.BotManagementV1
+	cisBotManagementErr    error
+
 	// CIS Webhooks options
 	cisWebhooksClient *ciswebhooksv1.WebhooksV1
 	cisWebhooksErr    error
@@ -582,6 +590,10 @@ type clientSession struct {
 
 	atrackerClientV2    *atrackerv2.AtrackerV2
 	atrackerClientV2Err error
+
+	// Metrics Router
+	metricsRouterClient    *metricsrouterv3.MetricsRouterV3
+	metricsRouterClientErr error
 
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
@@ -1113,6 +1125,14 @@ func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
 	return sess.cisMtlsClient.Clone(), nil
 }
 
+//CIS Bot Management
+func (sess clientSession) CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error) {
+	if sess.cisBotManagementErr != nil {
+		return sess.cisBotManagementClient, sess.cisBotManagementErr
+	}
+	return sess.cisBotManagementClient.Clone(), nil
+}
+
 // CIS Webhooks
 func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
 	if sess.cisWebhooksErr != nil {
@@ -1144,6 +1164,11 @@ func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 
 func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
 	return session.atrackerClientV2, session.atrackerClientV2Err
+}
+
+// Metrics Router API Version 3
+func (session clientSession) MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error) {
+	return session.metricsRouterClient, session.metricsRouterClientErr
 }
 
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
@@ -1715,6 +1740,42 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client for Metrics Router
+	var metricsRouterClientURL string
+	var metricsRouterURLV3Err error
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion("private." + c.Region)
+		if metricsRouterURLV3Err != nil && c.Visibility == "public-and-private" {
+			metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion(c.Region)
+	}
+	if metricsRouterURLV3Err != nil {
+		metricsRouterClientURL = metricsrouterv3.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		metricsRouterClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_METRICS_ROUTING_API_ENDPOINT", c.Region, metricsRouterClientURL)
+	}
+	metricsRouterClientOptions := &metricsrouterv3.MetricsRouterV3Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_METRICS_ROUTING_API_ENDPOINT"}, metricsRouterClientURL),
+	}
+
+	// Construct the service client.
+	session.metricsRouterClient, err = metricsrouterv3.NewMetricsRouterV3(metricsRouterClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.metricsRouterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.metricsRouterClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.metricsRouterClientErr = fmt.Errorf("Error occurred while configuring Metrics Router API Version 3 service: %q", err)
 	}
 
 	// SCC ADMIN Service
@@ -2737,6 +2798,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisMtlsClient != nil && session.cisMtlsClient.Service != nil {
 		session.cisMtlsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisMtlsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Bot Management
+	cisBotManagementOpt := &cisbotmanagementv1.BotManagementV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisBotManagementClient, session.cisBotManagementErr = cisbotmanagementv1.NewBotManagementV1(cisBotManagementOpt)
+	if session.cisBotManagementErr != nil {
+		session.cisBotManagementErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Bot Management : %s",
+				session.cisBotManagementErr)
+	}
+	if session.cisBotManagementClient != nil && session.cisBotManagementClient.Service != nil {
+		session.cisBotManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisBotManagementClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}

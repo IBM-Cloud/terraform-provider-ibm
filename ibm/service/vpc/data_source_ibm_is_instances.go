@@ -558,6 +558,11 @@ func DataSourceIBMISInstances() *schema.Resource {
 										Computed:    true,
 										Description: "Instance vcpu count",
 									},
+									"manufacturer": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Instance vcpu manufacturer",
+									},
 								},
 							},
 						},
@@ -1049,6 +1054,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			currentCPU := map[string]interface{}{}
 			currentCPU["architecture"] = *instance.Vcpu.Architecture
 			currentCPU["count"] = *instance.Vcpu.Count
+			currentCPU["manufacturer"] = *instance.Vcpu.Manufacturer
 			cpuList = append(cpuList, currentCPU)
 		}
 		l["vcpu"] = cpuList

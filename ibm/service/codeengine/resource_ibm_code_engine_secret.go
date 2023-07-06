@@ -27,64 +27,138 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_secret", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"format": &schema.Schema{
+			"format": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_secret", "format"),
 				Description:  "Specify the format of the secret.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_secret", "name"),
 				Description:  "The name of the secret.",
 			},
-			"data": &schema.Schema{
-				Type:      schema.TypeMap,
-				Optional:  true,
-				Sensitive: true,
-				Elem:      &schema.Schema{Type: schema.TypeString},
+			"data": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each value field can consists of any character and must not be exceed a max length of 1048576 characters.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"created_at": &schema.Schema{
+			"service_access": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Properties for Service Access Secrets.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"resource_key": {
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
+							Required:    true,
+							Description: "The service credential associated with the secret.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "ID of the service credential associated with the secret.",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of the service credential associated with the secret.",
+									},
+								},
+							},
+						},
+						"role": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "A reference to the Role and Role CRN for service binding.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "CRN of the IAM Role for thise service access secret.",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Role of the service credential.",
+									},
+								},
+							},
+						},
+						"service_instance": {
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
+							Required:    true,
+							Description: "The IBM Cloud service instance associated with the secret.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "ID of the IBM Cloud service instance associated with the secret.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Type of IBM Cloud service associated with the secret.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the secret instance, which is used to achieve optimistic locking.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new secret,  a URL is created identifying the location of the instance.",
 			},
-			"id": &schema.Schema{
+			"id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the secret.",
 			},
-			"secret_id": &schema.Schema{
+			"secret_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"etag": &schema.Schema{
+			"etag": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -109,8 +183,8 @@ func ResourceIbmCodeEngineSecretValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "basic_auth, generic, registry, ssh_auth, tls",
-			Regexp:                     `^(generic|ssh_auth|basic_auth|tls|registry)$`,
+			AllowedValues:              "basic_auth, generic, registry, service_access, ssh_auth, tls",
+			Regexp:                     `^(generic|ssh_auth|basic_auth|tls|service_access|registry)$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "name",
@@ -144,6 +218,13 @@ func resourceIbmCodeEngineSecretCreate(context context.Context, d *schema.Resour
 			return diag.FromErr(err)
 		}
 		createSecretOptions.SetData(dataModel)
+	}
+	if _, ok := d.GetOk("service_access"); ok {
+		serviceAccessModel, err := resourceIbmCodeEngineSecretMapToServiceAccessSecretPrototypeProps(d.Get("service_access.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createSecretOptions.SetServiceAccess(serviceAccessModel)
 	}
 
 	secret, response, err := codeEngineClient.CreateSecretWithContext(context, createSecretOptions)
@@ -184,14 +265,15 @@ func resourceIbmCodeEngineSecretRead(context context.Context, d *schema.Resource
 	}
 
 	if err = d.Set("project_id", secret.ProjectID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project_id: %s", err))
+		return diag.FromErr(fmt.Errorf("error setting project_id: %s", err))
 	}
 	if err = d.Set("format", secret.Format); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting format: %s", err))
+		return diag.FromErr(fmt.Errorf("error setting format: %s", err))
 	}
 	if err = d.Set("name", secret.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(fmt.Errorf("error setting name: %s", err))
 	}
+
 	if !core.IsNil(secret.Data) {
 		data := make(map[string]string)
 		for k, v := range secret.Data {
@@ -199,6 +281,15 @@ func resourceIbmCodeEngineSecretRead(context context.Context, d *schema.Resource
 		}
 		if err = d.Set("data", data); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting data: %s", err))
+		}
+	}
+	if !core.IsNil(secret.ServiceAccess) {
+		serviceAccessMap, err := resourceIbmCodeEngineSecretServiceAccessSecretPropsToMap(secret.ServiceAccess)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("service_access", []map[string]interface{}{serviceAccessMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting service_access: %s", err))
 		}
 	}
 	if !core.IsNil(secret.CreatedAt) {
@@ -259,8 +350,16 @@ func resourceIbmCodeEngineSecretUpdate(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "format"))
 	}
+	if d.HasChange("project_id") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "project_id"))
+	}
 	if d.HasChange("name") {
-		replaceSecretOptions.SetName(d.Get("name").(string))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "name"))
+	}
+	if d.HasChange("if_match") {
+		replaceSecretOptions.SetIfMatch(d.Get("if_match").(string))
 		hasChange = true
 	}
 	if d.HasChange("data") {
@@ -321,4 +420,105 @@ func resourceIbmCodeEngineSecretMapToSecretData(modelMap map[string]interface{})
 		model.SetProperty(strKey, &strValue)
 	}
 	return model, nil
+}
+
+func resourceIbmCodeEngineSecretMapToServiceAccessSecretPrototypeProps(modelMap map[string]interface{}) (*codeenginev2.ServiceAccessSecretPrototypeProps, error) {
+	model := &codeenginev2.ServiceAccessSecretPrototypeProps{}
+	ResourceKeyModel, err := resourceIbmCodeEngineSecretMapToResourceKeyRefPrototype(modelMap["resource_key"].([]interface{})[0].(map[string]interface{}))
+	if err != nil {
+		return model, err
+	}
+	model.ResourceKey = ResourceKeyModel
+	if modelMap["role"] != nil && len(modelMap["role"].([]interface{})) > 0 {
+		RoleModel, err := resourceIbmCodeEngineSecretMapToRoleRefPrototype(modelMap["role"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Role = RoleModel
+	}
+	ServiceInstanceModel, err := resourceIbmCodeEngineSecretMapToServiceInstanceRefPrototype(modelMap["service_instance"].([]interface{})[0].(map[string]interface{}))
+	if err != nil {
+		return model, err
+	}
+	model.ServiceInstance = ServiceInstanceModel
+	return model, nil
+}
+
+func resourceIbmCodeEngineSecretMapToResourceKeyRefPrototype(modelMap map[string]interface{}) (*codeenginev2.ResourceKeyRefPrototype, error) {
+	model := &codeenginev2.ResourceKeyRefPrototype{}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	return model, nil
+}
+
+func resourceIbmCodeEngineSecretMapToRoleRefPrototype(modelMap map[string]interface{}) (*codeenginev2.RoleRefPrototype, error) {
+	model := &codeenginev2.RoleRefPrototype{}
+	if modelMap["crn"] != nil && modelMap["crn"].(string) != "" {
+		model.Crn = core.StringPtr(modelMap["crn"].(string))
+	}
+	return model, nil
+}
+
+func resourceIbmCodeEngineSecretMapToServiceInstanceRefPrototype(modelMap map[string]interface{}) (*codeenginev2.ServiceInstanceRefPrototype, error) {
+	model := &codeenginev2.ServiceInstanceRefPrototype{}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	return model, nil
+}
+
+func resourceIbmCodeEngineSecretServiceAccessSecretPropsToMap(model *codeenginev2.ServiceAccessSecretProps) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	resourceKeyMap, err := resourceIbmCodeEngineSecretResourceKeyRefToMap(model.ResourceKey)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["resource_key"] = []map[string]interface{}{resourceKeyMap}
+	if model.Role != nil {
+		roleMap, err := resourceIbmCodeEngineSecretRoleRefToMap(model.Role)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["role"] = []map[string]interface{}{roleMap}
+	}
+	serviceInstanceMap, err := resourceIbmCodeEngineSecretServiceInstanceRefToMap(model.ServiceInstance)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["service_instance"] = []map[string]interface{}{serviceInstanceMap}
+	return modelMap, nil
+}
+
+func resourceIbmCodeEngineSecretResourceKeyRefToMap(model *codeenginev2.ResourceKeyRef) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	return modelMap, nil
+}
+
+func resourceIbmCodeEngineSecretRoleRefToMap(model *codeenginev2.RoleRef) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Crn != nil {
+		modelMap["crn"] = model.Crn
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	return modelMap, nil
+}
+
+func resourceIbmCodeEngineSecretServiceInstanceRefToMap(model *codeenginev2.ServiceInstanceRef) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.Type != nil {
+		modelMap["type"] = model.Type
+	}
+	return modelMap, nil
 }

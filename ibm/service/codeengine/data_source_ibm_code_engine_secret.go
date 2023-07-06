@@ -68,6 +68,72 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 				Computed:    true,
 				Description: "The type of the secret.",
 			},
+			"service_access": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Properties for Service Access Secrets.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"resource_key": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The service credential associated with the secret.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of the service credential associated with the secret.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of the service credential associated with the secret.",
+									},
+								},
+							},
+						},
+						"role": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A reference to the Role and Role CRN for service binding.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "CRN of the IAM Role for thise service access secret.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Role of the service credential.",
+									},
+								},
+							},
+						},
+						"service_instance": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The IBM Cloud service instance associated with the secret.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of the IBM Cloud service instance associated with the secret.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Type of IBM Cloud service associated with the secret.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -124,5 +190,72 @@ func dataSourceIbmCodeEngineSecretRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
+	serviceAccess := []map[string]interface{}{}
+	if secret.ServiceAccess != nil {
+		modelMap, err := dataSourceIbmCodeEngineSecretServiceAccessSecretPropsToMap(secret.ServiceAccess)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		serviceAccess = append(serviceAccess, modelMap)
+	}
+	if err = d.Set("service_access", serviceAccess); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting service_access %s", err))
+	}
+
 	return nil
+}
+
+func dataSourceIbmCodeEngineSecretServiceAccessSecretPropsToMap(model *codeenginev2.ServiceAccessSecretProps) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	resourceKeyMap, err := dataSourceIbmCodeEngineSecretResourceKeyRefToMap(model.ResourceKey)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["resource_key"] = []map[string]interface{}{resourceKeyMap}
+	if model.Role != nil {
+		roleMap, err := dataSourceIbmCodeEngineSecretRoleRefToMap(model.Role)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["role"] = []map[string]interface{}{roleMap}
+	}
+	serviceInstanceMap, err := dataSourceIbmCodeEngineSecretServiceInstanceRefToMap(model.ServiceInstance)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["service_instance"] = []map[string]interface{}{serviceInstanceMap}
+	return modelMap, nil
+}
+
+func dataSourceIbmCodeEngineSecretResourceKeyRefToMap(model *codeenginev2.ResourceKeyRef) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmCodeEngineSecretRoleRefToMap(model *codeenginev2.RoleRef) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Crn != nil {
+		modelMap["crn"] = model.Crn
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmCodeEngineSecretServiceInstanceRefToMap(model *codeenginev2.ServiceInstanceRef) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.Type != nil {
+		modelMap["type"] = model.Type
+	}
+	return modelMap, nil
 }

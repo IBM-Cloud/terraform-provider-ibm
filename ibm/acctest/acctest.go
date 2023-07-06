@@ -62,6 +62,8 @@ var err error
 var placementGroupName string
 var CertCRN string
 var UpdatedCertCRN string
+var SecretCRN string
+var SecretCRN2 string
 var InstanceCRN string
 var SecretGroupID string
 var RegionName string
@@ -266,6 +268,8 @@ var COSApiKey string
 
 var CeResourceGroupID string
 var CeProjectId string
+var CeServiceInstanceID string
+var CeResourceKeyID string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -325,13 +329,25 @@ func init() {
 	CertCRN = os.Getenv("IBM_CERT_CRN")
 	if CertCRN == "" {
 		CertCRN = "crn:v1:bluemix:public:cloudcerts:us-south:a/52b2e14f385aca5da781baa1b9c28e53:6efac0c2-b955-49ca-939d-d7bc0cb8132f:certificate:e786b0ea2af8b5435603803ec2ff8118"
-		fmt.Println("[WARN] Set the environment variable IBM_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
+		fmt.Println("[WARN] Set the environment variable IBM_CERT_CRN for testing ibm_container_alb_cert or ibm_container_ingress_secret_tls resource else it is set to default value")
 	}
 
 	UpdatedCertCRN = os.Getenv("IBM_UPDATE_CERT_CRN")
 	if UpdatedCertCRN == "" {
 		UpdatedCertCRN = "crn:v1:bluemix:public:cloudcerts:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:certificate:1bf3d0c2b7764402dde25744218e6cba"
-		fmt.Println("[WARN] Set the environment variable IBM_UPDATE_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
+		fmt.Println("[WARN] Set the environment variable IBM_UPDATE_CERT_CRN for testing ibm_container_alb_cert or ibm_container_ingress_secret_tls resource else it is set to default value")
+	}
+
+	SecretCRN = os.Getenv("IBM_SECRET_CRN")
+	if SecretCRN == "" {
+		SecretCRN = "crn:v1:bluemix:public:secrets-manager:us-south:a/52b2e14f385aca5da781baa1b9c28e53:6efac0c2-b955-49ca-939d-d7bc0cb8132f:secret:e786b0ea2af8b5435603803ec2ff8118"
+		fmt.Println("[WARN] Set the environment variable IBM_SECRET_CRN for testing ibm_container_ingress_secret_opaque resource else it is set to default value")
+	}
+
+	SecretCRN2 = os.Getenv("IBM_SECRET_CRN_2")
+	if SecretCRN2 == "" {
+		SecretCRN2 = "crn:v1:bluemix:public:secrets-manager:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:secret:1bf3d0c2b7764402dde25744218e6cba"
+		fmt.Println("[WARN] Set the environment variable IBM_SECRET_CRN_2 for testing ibm_container_ingress_secret_opaque resource else it is set to default value")
 	}
 
 	InstanceCRN = os.Getenv("IBM_INGRESS_INSTANCE_CRN")
@@ -595,8 +611,8 @@ func init() {
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
 	if IsWinImage == "" {
 		//IsWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
-		IsWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
-		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
+		IsWinImage = "r006-d2e0d0e9-0a4f-4c45-afd7-cab787030776" // next gen windows machine: ibm-windows-server-2022-full-standard-amd64-8
+		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-d2e0d0e9-0a4f-4c45-afd7-cab787030776'")
 	}
 
 	IsCosBucketName = os.Getenv("IS_COS_BUCKET_NAME")
@@ -1418,6 +1434,18 @@ func init() {
 	if CeProjectId == "" {
 		CeProjectId = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_PROJECT_INSTANCE_ID with the ID of a Code Engine project instance")
+	}
+
+	CeServiceInstanceID = os.Getenv("IBM_CODE_ENGINE_SERVICE_INSTANCE_ID")
+	if CeServiceInstanceID == "" {
+		CeServiceInstanceID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_SERVICE_INSTANCE_ID with the ID of a IBM Cloud service instance, e.g. for COS")
+	}
+
+	CeResourceKeyID = os.Getenv("IBM_CODE_ENGINE_RESOURCE_KEY_ID")
+	if CeResourceKeyID == "" {
+		CeResourceKeyID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_KEY_ID with the ID of a resource key to access a service instance")
 	}
 
 }

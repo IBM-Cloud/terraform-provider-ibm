@@ -863,8 +863,8 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 	if _, ok := d.GetOk("ttl"); ok {
 		model.TTL = core.StringPtr(d.Get("ttl").(string))
 	}
-	if _, ok := d.GetOk("allow_localhost"); ok {
-		model.AllowLocalhost = core.BoolPtr(d.Get("ttl").(bool))
+	if _, ok := d.GetOkExists("allow_localhost"); ok {
+		model.AllowLocalhost = core.BoolPtr(d.Get("allow_localhost").(bool))
 	}
 	if _, ok := d.GetOk("allowed_domains"); ok {
 		allowedDomains := []string{}
@@ -891,10 +891,10 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 	if _, ok := d.GetOk("allow_any_name"); ok {
 		model.AllowAnyName = core.BoolPtr(d.Get("allow_any_name").(bool))
 	}
-	if _, ok := d.GetOk("enforce_hostnames"); ok {
+	if _, ok := d.GetOkExists("enforce_hostnames"); ok {
 		model.EnforceHostnames = core.BoolPtr(d.Get("enforce_hostnames").(bool))
 	}
-	if _, ok := d.GetOk("allow_ip_sans"); ok {
+	if _, ok := d.GetOkExists("allow_ip_sans"); ok {
 		model.AllowIpSans = core.BoolPtr(d.Get("allow_ip_sans").(bool))
 	}
 	if _, ok := d.GetOk("allowed_uri_sans"); ok {
@@ -911,10 +911,10 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 		}
 		model.AllowedOtherSans = allowedOtherSans
 	}
-	if _, ok := d.GetOk("server_flag"); ok {
+	if _, ok := d.GetOkExists("server_flag"); ok {
 		model.ServerFlag = core.BoolPtr(d.Get("server_flag").(bool))
 	}
-	if _, ok := d.GetOk("client_flag"); ok {
+	if _, ok := d.GetOkExists("client_flag"); ok {
 		model.ClientFlag = core.BoolPtr(d.Get("client_flag").(bool))
 	}
 	if _, ok := d.GetOk("code_signing_flag"); ok {
@@ -950,10 +950,10 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 		}
 		model.ExtKeyUsageOids = extKeyUsageOids
 	}
-	if _, ok := d.GetOk("use_csr_common_name"); ok {
+	if _, ok := d.GetOkExists("use_csr_common_name"); ok {
 		model.UseCsrCommonName = core.BoolPtr(d.Get("use_csr_common_name").(bool))
 	}
-	if _, ok := d.GetOk("use_csr_sans"); ok {
+	if _, ok := d.GetOkExists("use_csr_sans"); ok {
 		model.UseCsrSans = core.BoolPtr(d.Get("use_csr_sans").(bool))
 	}
 	if _, ok := d.GetOk("ou"); ok {
@@ -1008,7 +1008,7 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 	if _, ok := d.GetOk("serial_number"); ok {
 		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
-	if _, ok := d.GetOk("require_cn"); ok {
+	if _, ok := d.GetOkExists("require_cn"); ok {
 		model.RequireCn = core.BoolPtr(d.Get("require_cn").(bool))
 	}
 	if _, ok := d.GetOk("policy_identifiers"); ok {
