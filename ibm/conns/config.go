@@ -1139,7 +1139,7 @@ func (sess clientSession) CisBotManagementSession() (*cisbotmanagementv1.BotMana
 	return sess.cisBotManagementClient.Clone(), nil
 }
 
-//CIS Bot Analytics
+// CIS Bot Analytics
 func (sess clientSession) CisBotAnalyticsSession() (*cisbotanalyticsv1.BotAnalyticsV1, error) {
 	if sess.cisBotAnalyticsErr != nil {
 		return sess.cisBotAnalyticsClient, sess.cisBotAnalyticsErr
