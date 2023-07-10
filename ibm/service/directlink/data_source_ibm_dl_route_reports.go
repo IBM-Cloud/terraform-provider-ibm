@@ -230,7 +230,7 @@ func dataSourceIBMDLRouteReportsRead(d *schema.ResourceData, meta interface{}) e
 		}
 
 		log.Println("[Info] Length DL Route Reports advertised routes:", len(advRoutes))
-		d.Set(dlAdvertisedRoutes, advRoutes)
+		routeReport[dlAdvertisedRoutes] = advRoutes
 
 		// Build Gateway Routes
 		gatewayRoutes := make([]map[string]interface{}, 0)
