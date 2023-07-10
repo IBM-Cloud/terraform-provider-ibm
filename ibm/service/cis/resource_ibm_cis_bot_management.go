@@ -14,7 +14,10 @@ import (
 
 func ResourceIBMCISBotManagement() *schema.Resource {
 	return &schema.Resource{
+		Read:     dataSourceIBMCISBotAnalyticsRead,
+		Create:   ResourceIBMCISBotManagementCreate,
 		Update:   ResourceIBMCISBotManagementUpdate,
+		Delete:   ResourceIBMCISBotManagementDelete,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
@@ -57,6 +60,11 @@ func ResourceIBMCISBotManagement() *schema.Resource {
 			},
 		},
 	}
+}
+
+func ResourceIBMCISBotManagementCreate(d *schema.ResourceData, meta interface{}) error {
+
+	return ResourceIBMCISBotManagementUpdate(d, meta)
 }
 
 func ResourceIBMCISBotManagementUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -122,4 +130,8 @@ func ResourceIBMCISBotManagementValidator() *validate.ResourceValidator {
 
 	ibmCISBotManagementResourceValidator := validate.ResourceValidator{ResourceName: "ibm_cis_bot_management", Schema: validateSchema}
 	return &ibmCISBotManagementResourceValidator
+}
+
+func ResourceIBMCISBotManagementDelete(d *schema.ResourceData, meta interface{}) error {
+	return nil
 }

@@ -164,8 +164,8 @@ func resourceIBMDNSLinkedZoneRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(DnsLinkedZoneInstanceID, idSet[0])
 	d.Set(DnsLinkedZoneDescription, *resource.Description)
 	d.Set(DnsLinkedZoneLabel, *resource.Label)
-	d.Set(DnsLinkedZoneCreatedOn, resource.CreatedOn)
-	d.Set(DnsLinkedZoneModifiedOn, resource.ModifiedOn)
+	d.Set(DnsLinkedZoneCreatedOn, resource.CreatedOn.String())
+	d.Set(DnsLinkedZoneModifiedOn, resource.ModifiedOn.String())
 
 	return nil
 }
