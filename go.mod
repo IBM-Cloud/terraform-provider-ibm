@@ -58,12 +58,12 @@ require (
 
 require (
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
+	github.com/IBM/project-go-sdk v0.0.0-20230405195937-52b52b875b03 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
