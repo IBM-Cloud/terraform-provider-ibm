@@ -8,8 +8,8 @@ description: |-
 
 # ibm_cis_bot_managements
 
-Retrieve information about an IBM Cloud Internet Services Bot Management data sources for a zone. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
-
+Retrieve information about an IBM Cloud Internet Services Bot Management data sources for a zone. For more information, see [IBM Cloud Internet Services Bot Management](https://cloud.ibm.com/docs/cis?topic=cis-about-bot-mgmt).
+a
 ## Example usage
 
 ```terraform
