@@ -286,6 +286,44 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 	})
 }
 
+func TestAccIbmCodeEngineSecretServiceAccess(t *testing.T) {
+	var conf codeenginev2.Secret
+	format := "service_access"
+	name := fmt.Sprintf("tf-secret-service-access-%d", acctest.RandIntRange(10, 1000))
+
+	projectID := acc.CeProjectId
+	resourceKeyId := acc.CeResourceKeyID
+	serviceInstanceId := acc.CeServiceInstanceID
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmCodeEngineServiceAccessSecretConfig(projectID, format, name, resourceKeyId, serviceInstanceId),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
+					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "format", format),
+					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_service_access_v2"),
+					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.service_instance.0.id", serviceInstanceId),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.service_instance.0.type"),
+					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.resource_key.0.id", resourceKeyId),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.resource_key.0.name"),
+					resource.TestCheckResourceAttrSet("ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.role.0.name"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_code_engine_secret.code_engine_secret_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIbmCodeEngineSecretConfig(projectID string, format string, name string, data string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
@@ -299,6 +337,33 @@ func testAccCheckIbmCodeEngineSecretConfig(projectID string, format string, name
 			data = %s
 		}
 	`, projectID, format, name, data)
+}
+
+func testAccCheckIbmCodeEngineServiceAccessSecretConfig(projectID string, format string, name string, resourceKeyId string, serviceInstanceId string) string {
+	return fmt.Sprintf(`
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			project_id = "%s"
+		}
+
+		resource "ibm_code_engine_secret" "code_engine_secret_instance" {
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
+			format = "%s"
+			name = "%s"
+			service_access {
+				resource_key {
+					id = "%s"
+				}
+				service_instance {
+					id = "%s"
+				}
+			}
+			lifecycle {
+				ignore_changes = [
+					data, service_access
+				]
+			}
+		}
+	`, projectID, format, name, resourceKeyId, serviceInstanceId)
 }
 
 func testAccCheckIbmCodeEngineSecretExists(n string, obj codeenginev2.Secret) resource.TestCheckFunc {

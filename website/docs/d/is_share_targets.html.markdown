@@ -17,7 +17,8 @@ IBM Cloud® File Storage for VPC is available for customers with special approva
 ~> **NOTE**
 This is a Beta feature and it is subject to change in the GA release 
 
-
+~> **NOTE**
+This data source is being deprecated. Please use `ibm_is_share_mount_targets` instead
 
 ## Example Usage
 

@@ -1,3 +1,151 @@
+# 1.55.0-beta0(Jun 21, 2023)
+
+Features
+* Support VPC
+    - **Resources**
+        - ibm_is_share_mount_target
+    - **Datasources**
+        - ibm_is_share_mount_target
+        - ibm_is_share_mount_targets
+
+* Support DNS
+    - **Resources**
+        - ibm_dns_linked_zone
+       
+* Support IKS
+    - **Datasources**
+        - ibm_container_ingress_secret_tls
+        - ibm_container_ingress_secret_opaque
+    - **Resources**
+        - ibm_container_ingress_secret_tls
+        - ibm_container_ingress_secret_opaque
+
+* Support Metrics Router
+    - **Datasources**
+        - ibm_metrics_router_targets
+        - ibm_metrics_router_routes
+    - **Resources**
+        - ibm_metrics_router_route
+        - ibm_metrics_router_target
+        - ibm_metrics_router_settings
+
+* Support Code Engine
+    - **Datasources**
+        - ibm_code_engine_binding
+    - **Resources**
+        - ibm_code_engine_binding
+
+* Support CIS
+    - **Datasources**
+        - ibm_cis_bot_managements
+    - **Resources**
+        - ibm_cis_bot_management
+     
+Enhancements
+* Secrets Manager - Additional tests ([4613](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4613))
+* Tekton: Improved property type handling ([4595](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4595))
+* Tagging for CD Toolchains ([4607](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4607))
+* Support for ODF Worker Replace ([4600](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4600))
+* Documentation for ODF Add-on and Worker Replace ([4627](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4627))
+* Document private net DNS limit on PER workspaces ([4629](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4629))
+* added support for vcpu manufacturer(vsi, dh) ([4637](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4637))
+* Adding changes for replacement of key_protect parameter ([4618](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4618))
+
+BugFixes
+* fix(iam-service-api-key): added nil check on apikey *string ([4617](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4617))
+* update project_instance.html.markdown ([4621](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4621))
+* add import example of code engine ([4623](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4623))
+* Update pi_cloud_connection documentation ([4625](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4625))
+* Documenation correction instance group membership ([4632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4632))
+* CIS - Documentation Update for plan  ([4638](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4638))
+* Fix indentation  ([4633](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4633))
+* managed_addons fix for container_addons ([4606](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4606))
+* cos: importing a bucket does not import the key_protect attribute ([3394](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3394))
+
+
+# 1.54.0(Jun 07, 2023)
+
+Features
+* Support Project
+    - **Resources**
+        - ibm_project_instance
+    - **Datasources**
+        - ibm_project_event_notification
+
+* Support Event Notification
+    - **Resources**
+        - ibm_en_destination_cos
+        - ibm_en_subscription_cos
+    - **Datasources**
+        - ibm_en_destination_cos
+        - ibm_en_subscription_cos
+* Support Code Engine
+    - **Datasources**
+        - ibm_code_engine_app
+        - ibm_code_engine_build
+        - ibm_code_engine_config_map
+        - ibm_code_engine_job
+        - ibm_code_engine_job
+
+Enhancements
+* suppress resize for autoscaled workerpools for autoscale enabled cluster ([4533](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4533))
+* Feature(Image Export Jobs): Support for image export jobs ([4566](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4566))
+* feat(Enterprise):added support for destroy method ([4565](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4565))
+* ODF Terraform Documentation Updated ([4549](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4549))
+* CD Security Compliance param deprecation ([4581](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4581))
+* Remove weak ciphers support from ike and ipsec policies ([4584](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4584))
+* feat(Cloud Databases): Deprecate auto_scaling cpu attribute ([4599](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4599))
+
+
+BugFixes
+* disable creating new resource when endpoint type changes ([4554](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4554))
+* retry added for read authorization policy ([4554](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4413))
+* Update example for ibm_is_vpc_routing_table ([4564](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4564))
+* IBM Cloud Object destination resources and data sources and docs update ([4534](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4534))
+* updated docs to not include force new resource ([4577](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4577))
+* fix(doc): doc fix for vpc_routing_table_route next_hop ([4586](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4586))
+* addon doc corrected  ([4596](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4596)) 
+* fix(Cloud Databases): use correct redis maxmemory configuration ([4588](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4588))
+* corrected the argument repetation. ([4604](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4604))
+* fix(bm) : pci nic deletion change ([4532](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4532))
+
+# 1.54.0-beta0(May 13, 2023)
+
+Features
+* Support Project
+    - **Resources**
+        - ibm_project_instance
+    - **Datasources**
+        - ibm_project_event_notification
+
+* Support Event Notification
+    - **Resources**
+        - ibm_en_destination_cos
+        - ibm_en_subscription_cos
+    - **Datasources**
+        - ibm_en_destination_cos
+        - ibm_en_subscription_cos
+* Support Code Engine
+    - **Datasources**
+        - ibm_code_engine_app
+        - ibm_code_engine_build
+        - ibm_code_engine_config_map
+        - ibm_code_engine_job
+        - ibm_code_engine_job
+
+Enhancements
+* suppress resize for autoscaled workerpools for autoscale enabled cluster ([4533](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4533))
+* Feature(Image Export Jobs): Support for image export jobs ([4566](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4566))
+* feat(Enterprise):added support for destroy method ([4565](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4565))
+* ODF Terraform Documentation Updated ([4549](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4549))
+
+BugFixes
+* disable creating new resource when endpoint type changes ([4554](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4554))
+* retry added for read authorization policy ([4554](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4413))
+* Update example for ibm_is_vpc_routing_table ([4564](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4564))
+* IBM Cloud Object destination resources and data sources and docs update ([4534](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4534)) 
+
+
 # 1.53.0(May 04, 2023)
 Deprecation
 * Added V1 deprecation message for SCC Posture resources and datasources ([4459](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4459))

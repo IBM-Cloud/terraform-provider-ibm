@@ -215,7 +215,7 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(iAMCredentialsSecret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(iAMCredentialsSecret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -269,7 +269,7 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(iAMCredentialsSecret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(iAMCredentialsSecret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -309,7 +309,7 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting rotation %s", err))
 	}
 
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(iAMCredentialsSecret.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(iAMCredentialsSecret.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 

@@ -214,7 +214,7 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, resource, KeyN
 		resource_instance_id = ibm_resource_instance.cos_instance.id
 		region_location      = "us-south"
 		storage_class        = "smart"
-		key_protect          = ibm_kms_key.test.id
+		kms_key_crn          = ibm_kms_key.test.id
 	}
 `, instanceName, resource, KeyName, cosInstanceName, bucketName)
 }

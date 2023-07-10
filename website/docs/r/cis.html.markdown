@@ -12,6 +12,8 @@ Create, update, or delete an IBM Cloud Internet Services instance. The ibmcloud_
 
 If `resource_group_id` is not specified, the CIS instance is created in the default resource group. The API_KEY must have been assigned permissions for this group.
 
+**Note - Migrating from one plan to another is considered a modification of an existing resource, and not a destruction or creation of a resource.**
+
 ## Example usage
 
 ```terraform
@@ -21,7 +23,7 @@ data "ibm_resource_group" "group" {
 
 resource "ibm_cis" "cis_instance" {
   name              = "test"
-  plan              = "standard"
+  plan              = "standard-next"
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
   location          = "global"

@@ -282,7 +282,7 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(privateCertificate.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(privateCertificate.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -336,7 +336,7 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(privateCertificate.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(privateCertificate.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -360,7 +360,7 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(privateCertificate.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(privateCertificate.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 
@@ -372,7 +372,7 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting key_algorithm: %s", err))
 	}
 
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(privateCertificate.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(privateCertificate.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 
@@ -408,7 +408,7 @@ func dataSourceIbmSmPrivateCertificateRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting revocation_time_seconds: %s", err))
 	}
 
-	if err = d.Set("revocation_time_rfc3339", flex.DateTimeToString(privateCertificate.RevocationTimeRfc3339)); err != nil {
+	if err = d.Set("revocation_time_rfc3339", DateTimeToRFC3339(privateCertificate.RevocationTimeRfc3339)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting revocation_time_rfc3339: %s", err))
 	}
 

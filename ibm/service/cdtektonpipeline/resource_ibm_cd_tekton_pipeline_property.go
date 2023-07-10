@@ -44,6 +44,7 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "type"),
 				Description:  "Property type.",
 			},
@@ -252,8 +253,8 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 			" The resource must be re-created to update this property.", "name"))
 	}
 	if d.HasChange("type") {
-		replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
-		hasChange = true
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "type"))
 	}
 
 	if d.Get("type").(string) == "integration" {

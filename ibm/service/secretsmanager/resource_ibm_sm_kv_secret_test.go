@@ -16,8 +16,13 @@ import (
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
+var kvSecretName = "terraform-test-kv-secret"
+var modifiedKvSecretName = "modified-terraform-test-kv-secret"
+var kvSecretData = `{"secret_key":"secret_value"}`
+var modifiedKvSecretData = `{"modified_key":"modified_value"}`
+
 func TestAccIbmSmKvSecretBasic(t *testing.T) {
-	var conf secretsmanagerv2.KVSecret
+	resourceName := "ibm_sm_kv_secret.sm_kv_secret_basic"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -25,13 +30,20 @@ func TestAccIbmSmKvSecretBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSmKvSecretDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSmKvSecretConfigBasic(),
+				Config: kvSecretConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmKvSecretExists("ibm_sm_kv_secret.sm_kv_secret", conf),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_sm_kv_secret.sm_kv_secret",
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -39,50 +51,133 @@ func TestAccIbmSmKvSecretBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSmKvSecretConfigBasic() string {
-	return fmt.Sprintf(`
+func TestAccIbmSmKvSecretAllArgs(t *testing.T) {
+	resourceName := "ibm_sm_kv_secret.sm_kv_secret"
 
-		resource "ibm_sm_kv_secret" "sm_kv_secret" {
-			  instance_id   = "%s"
-       		  region        = "%s"
-  			  custom_metadata = {"key":"value"}
-  			  data = {"key":"value"}
-			  description = "Extended description for this secret."
-  			  labels = ["my-label"]
-  			  secret_group_id = "default"
-			  name = "kv-secret-terraform-test"
-		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmKvSecretDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: kvSecretConfigAllArgs(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmKvSecretCreated(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
+				),
+			},
+			{
+				Config: kvSecretConfigUpdated(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmKvSecretUpdated(resourceName),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
-func testAccCheckIbmSmKvSecretExists(n string, obj secretsmanagerv2.KVSecret) resource.TestCheckFunc {
+var kvSecretBasicConfigFormat = `
+		resource "ibm_sm_kv_secret" "sm_kv_secret_basic" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			data = %s
+		}`
 
+var kvSecretFullConfigFormat = `
+		resource "ibm_sm_kv_secret" "sm_kv_secret" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			description = "%s"
+  			labels = ["%s"]
+  			data = %s
+			custom_metadata = %s
+			secret_group_id = "default"
+		}`
+
+func kvSecretConfigBasic() string {
+	return fmt.Sprintf(kvSecretBasicConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		kvSecretName, kvSecretData)
+}
+
+func kvSecretConfigAllArgs() string {
+	return fmt.Sprintf(kvSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		kvSecretName, description, label, kvSecretData, customMetadata)
+}
+
+func kvSecretConfigUpdated() string {
+	return fmt.Sprintf(kvSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		modifiedKvSecretName, modifiedDescription, modifiedLabel, modifiedKvSecretData, modifiedCustomMetadata)
+}
+
+func testAccCheckIbmSmKvSecretCreated(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		secretsManagerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecretsManagerV2()
+		kvSecretIntf, err := getSecret(s, n)
 		if err != nil {
 			return err
 		}
+		secret := kvSecretIntf.(*secretsmanagerv2.KVSecret)
 
-		secretsManagerClient = getClientWithInstanceEndpointTest(secretsManagerClient)
+		if err := verifyAttr(*secret.Name, kvSecretName, "secret name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, description, "secret description"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], label, "label"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, customMetadata, "custom metadata"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.Data, kvSecretData, "secret data"); err != nil {
+			return err
+		}
+		return nil
+	}
+}
 
-		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-
-		id := strings.Split(rs.Primary.ID, "/")
-		secretId := id[2]
-		getSecretOptions.SetID(secretId)
-
-		kVSecretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
+func testAccCheckIbmSmKvSecretUpdated(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		kvSecretIntf, err := getSecret(s, n)
 		if err != nil {
 			return err
 		}
-
-		kVSecret := kVSecretIntf.(*secretsmanagerv2.KVSecret)
-		obj = *kVSecret
+		secret := kvSecretIntf.(*secretsmanagerv2.KVSecret)
+		if err := verifyAttr(*secret.Name, modifiedKvSecretName, "secret name after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, modifiedDescription, "secret description after update"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels after update: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], modifiedLabel, "label after update"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, modifiedCustomMetadata, "custom metadata after update"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.Data, modifiedKvSecretData, "payload after update"); err != nil {
+			return err
+		}
 		return nil
 	}
 }

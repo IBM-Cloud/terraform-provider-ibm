@@ -3,6 +3,11 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
+variable "ibmcloud_region" {
+  description = "IBM Cloud Region"
+  type        = string
+}
+
 // Resource arguments for code_engine_project
 variable "code_engine_project_name" {
   description = "The name of the project."
@@ -12,7 +17,7 @@ variable "code_engine_project_name" {
 
 // Resource arguments for code_engine_app
 variable "code_engine_app_image_reference" {
-  description = "The name of the image that is used for this app. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`."
+  description = "The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`."
   type        = string
   default     = "icr.io/codeengine/helloworld"
 }
@@ -65,7 +70,7 @@ variable "code_engine_config_map_data" {
 variable "code_engine_secret_name" {
   description = "The name of the secret. Use a name that is unique within the project."
   type        = string
-  default     = "my-secret"
+  default     = "my-generic-secret"
 }
 variable "code_engine_secret_format" {
   description = "The format of the secret. Use a name that is unique within the project."
@@ -88,6 +93,30 @@ variable "code_engine_job_name" {
   description = "The name of the job. Use a name that is unique within the project."
   type        = string
   default     = "my-job"
+}
+
+// Resource arguments for code_engine_secret with format service_access
+variable "code_engine_secret_service_access_name" {
+  description = "The name of the service access secret"
+  type        = string
+  default     = "my-service-access"
+}
+
+variable "code_engine_secret_service_access_resource_key" {
+  description = "The ID of a resource key to access a resource instance."
+  type        = string
+}
+
+variable "code_engine_secret_service_access_service_instance" {
+  description = "The ID of a service instance."
+  type        = string
+}
+
+// Resource arguments for code_engine_binding
+variable "code_engine_binding_prefix" {
+  description = "The name of the service access secret"
+  type        = string
+  default     = "MY_PREFIX"
 }
 
 // Data source arguments for code_engine_project
