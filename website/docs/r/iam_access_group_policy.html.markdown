@@ -265,6 +265,7 @@ resource "ibm_iam_access_group_policy" "policy" {
     value    = "IAM"
   }
 }
+```
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 

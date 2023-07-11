@@ -65,7 +65,7 @@ To avoid additional CIS service instance costs if the sample confifuration is ex
 resource "ibm_cis" "web_domain" {
   name              = "web_domain"
   resource_group_id = data.ibm_resource_group.web_group.id
-  plan              = "standard"
+  plan              = "standard-next"
   location          = "global"
 }
 ```
