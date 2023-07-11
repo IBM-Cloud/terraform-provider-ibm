@@ -1272,3 +1272,9 @@ data "ibm_is_share" "is_share" {
 
 data "ibm_is_shares" "is_shares" {
 }
+
+
+// vpc default security group
+resource "ibm_is_vpc_default_security_group" "sg" {
+	default_security_group = ibm_is_vpc.vpc1.default_security_group
+}
