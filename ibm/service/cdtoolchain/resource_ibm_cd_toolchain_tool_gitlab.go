@@ -48,7 +48,7 @@ func ResourceIBMCdToolchainToolGitlab() *schema.Resource {
 						},
 						"title": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The title of the server. e.g. My GitLab Enterprise Server.",
 						},
 						"api_root_url": &schema.Schema{
@@ -63,13 +63,12 @@ func ResourceIBMCdToolchainToolGitlab() *schema.Resource {
 						},
 						"root_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The Root URL of the server. e.g. https://gitlab.example.com.",
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
+							Computed:    true,
 							Description: "Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.",
 						},
 						"owner_id": &schema.Schema{
@@ -157,6 +156,25 @@ func ResourceIBMCdToolchainToolGitlab() *schema.Resource {
 							Optional:    true,
 							ForceNew:    true,
 							Description: "Set this value to 'gitlab' for gitlab.com, the GUID of an existing custom GitLab server, or 'gitlabcustom'.",
+						},
+						"title": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The title of the server. e.g. My GitLab Enterprise Server.",
+						},
+						"root_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The Root URL of the server. e.g. https://gitlab.example.com.",
+						},
+						"blind_connection": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							ForceNew:    true,
+							Description: "Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.",
 						},
 						"owner_id": &schema.Schema{
 							Type:        schema.TypeString,
