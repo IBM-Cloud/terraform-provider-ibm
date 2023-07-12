@@ -29,5 +29,5 @@ variable "project_instance_location" {
 variable "project_event_notification_id" {
   description = "The unique project ID."
   type        = string
-  default     = "project_id"
+  default     = "id"
 }
