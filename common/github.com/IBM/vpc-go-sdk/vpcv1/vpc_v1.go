@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -37,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: `2023-07-04`
+// API Version: 2023-07-11
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,7 +47,7 @@ type VpcV1 struct {
 	generation *int64
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-07-04`.
+	// and `2023-07-11`.
 	Version *string
 }
 
@@ -63,7 +64,7 @@ type VpcV1Options struct {
 	Authenticator core.Authenticator
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-07-04`.
+	// and `2023-07-11`.
 	Version *string
 }
 
@@ -121,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-06-27")
+		options.Version = core.StringPtr("2023-07-11")
 	}
 
 	service = &VpcV1{
@@ -3258,9 +3259,6 @@ func (vpc *VpcV1) UpdateSubnetReservedIPWithContext(ctx context.Context, updateS
 // ListImages : List all images
 // This request lists all images available in the region. An image provides source data for a volume. Images are either
 // system-provided, or created from another source, such as importing from Cloud Object Storage.
-//
-// The images will be sorted by their `created_at` property values, with the newest first. Images with identical
-// `created_at` values will be secondarily sorted by ascending `id` property values.
 func (vpc *VpcV1) ListImages(listImagesOptions *ListImagesOptions) (result *ImageCollection, response *core.DetailedResponse, err error) {
 	return vpc.ListImagesWithContext(context.Background(), listImagesOptions)
 }
@@ -3303,6 +3301,9 @@ func (vpc *VpcV1) ListImagesWithContext(ctx context.Context, listImagesOptions *
 	}
 	if listImagesOptions.Name != nil {
 		builder.AddQuery("name", fmt.Sprint(*listImagesOptions.Name))
+	}
+	if listImagesOptions.Status != nil {
+		builder.AddQuery("status", strings.Join(listImagesOptions.Status, ","))
 	}
 	if listImagesOptions.Visibility != nil {
 		builder.AddQuery("visibility", fmt.Sprint(*listImagesOptions.Visibility))
@@ -3586,6 +3587,128 @@ func (vpc *VpcV1) UpdateImageWithContext(ctx context.Context, updateImageOptions
 	return
 }
 
+// DeprecateImage : Deprecate an image
+// This request deprecates an image, resulting in its `status` becoming `deprecated` and
+// `deprecation_at` being set to the current date and time.
+//
+// The image must:
+// - have a `status` of `available`
+// - have `catalog_offering.managed` set to `false`
+// - not have `deprecation_at` set
+//
+// The image must not have `deprecation_at` set, must have `catalog_offering.managed` set to
+// `false`, and must have a `status` of `available`.
+//
+// A system-provided image is not allowed to be deprecated.
+func (vpc *VpcV1) DeprecateImage(deprecateImageOptions *DeprecateImageOptions) (response *core.DetailedResponse, err error) {
+	return vpc.DeprecateImageWithContext(context.Background(), deprecateImageOptions)
+}
+
+// DeprecateImageWithContext is an alternate form of the DeprecateImage method which supports a Context parameter
+func (vpc *VpcV1) DeprecateImageWithContext(ctx context.Context, deprecateImageOptions *DeprecateImageOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deprecateImageOptions, "deprecateImageOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deprecateImageOptions, "deprecateImageOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deprecateImageOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/images/{id}/deprecate`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deprecateImageOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeprecateImage")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// ObsoleteImage : Obsolete an image
+// This request obsoletes an image, resulting in its `status` becoming `obsolete` and
+// `obsolescence_at` being set to the current date and time.
+//
+// The image must:
+// - have a `status` of `available` or `deprecated`
+// - have `catalog_offering.managed` set to `false`
+// - not have `deprecation_at` set in the future
+// - not have `obsolescence_at` set
+//
+// A system-provided image is not allowed to be obsoleted.
+func (vpc *VpcV1) ObsoleteImage(obsoleteImageOptions *ObsoleteImageOptions) (response *core.DetailedResponse, err error) {
+	return vpc.ObsoleteImageWithContext(context.Background(), obsoleteImageOptions)
+}
+
+// ObsoleteImageWithContext is an alternate form of the ObsoleteImage method which supports a Context parameter
+func (vpc *VpcV1) ObsoleteImageWithContext(ctx context.Context, obsoleteImageOptions *ObsoleteImageOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(obsoleteImageOptions, "obsoleteImageOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(obsoleteImageOptions, "obsoleteImageOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *obsoleteImageOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/images/{id}/obsolete`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range obsoleteImageOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ObsoleteImage")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
 // ListImageExportJobs : List all image export jobs
 // This request lists all export jobs for an image. Each job tracks the exporting of the image to another location, such
 // as a bucket within cloud object storage.
@@ -3659,9 +3782,9 @@ func (vpc *VpcV1) ListImageExportJobsWithContext(ctx context.Context, listImageE
 
 // CreateImageExportJob : Create an image export job
 // This request creates and queues a new export job for the image specified in the URL using the image export job
-// prototype object. The image must be owned by the account and be in the `available`, `deprecated`, or `unusable`
-// state. The prototype object is structured in the same way as a retrieved image export job, and contains the
-// information necessary to create and queue the new image export job.
+// prototype object. The image must be owned by the account and be in the `available`, `deprecated`, `obsolete`, or
+// `unusable` state. The prototype object is structured in the same way as a retrieved image export job, and contains
+// the information necessary to create and queue the new image export job.
 func (vpc *VpcV1) CreateImageExportJob(createImageExportJobOptions *CreateImageExportJobOptions) (result *ImageExportJob, response *core.DetailedResponse, err error) {
 	return vpc.CreateImageExportJobWithContext(context.Background(), createImageExportJobOptions)
 }
@@ -34437,6 +34560,34 @@ func (options *DeleteVPNServerRouteOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
+// DeprecateImageOptions : The DeprecateImage options.
+type DeprecateImageOptions struct {
+	// The image identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeprecateImageOptions : Instantiate DeprecateImageOptions
+func (*VpcV1) NewDeprecateImageOptions(id string) *DeprecateImageOptions {
+	return &DeprecateImageOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *DeprecateImageOptions) SetID(id string) *DeprecateImageOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeprecateImageOptions) SetHeaders(param map[string]string) *DeprecateImageOptions {
+	options.Headers = param
+	return options
+}
+
 // DisconnectVPNClientOptions : The DisconnectVPNClient options.
 type DisconnectVPNClientOptions struct {
 	// The VPN server identifier.
@@ -39435,6 +39586,11 @@ type Image struct {
 	// The CRN for this image.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The deprecation date and time (UTC) for this image.
+	//
+	// If absent, no deprecation date and time has been set.
+	DeprecationAt *strfmt.DateTime `json:"deprecation_at,omitempty"`
+
 	// The type of encryption used on the image.
 	Encryption *string `json:"encryption" validate:"required"`
 
@@ -39461,6 +39617,11 @@ type Image struct {
 	// The name for this image. The name is unique across all images in the region.
 	Name *string `json:"name" validate:"required"`
 
+	// The obsolescence date and time (UTC) for this image.
+	//
+	// If absent, no obsolescence date and time has been set.
+	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
+
 	// The operating system included in this image.
 	OperatingSystem *OperatingSystem `json:"operating_system,omitempty"`
 
@@ -39479,8 +39640,9 @@ type Image struct {
 	// - available: image can be used (provisionable)
 	// - deleting: image is being deleted, and can no longer be used to provision new
 	//   resources
-	// - deprecated: image is administratively slated to be deleted
+	// - deprecated: image is administratively slated to become `obsolete`
 	// - failed: image is corrupt or did not pass validation
+	// - obsolete: image administratively set to not be used for new resources
 	// - pending: image is being imported and is not yet `available`
 	// - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
 	//
@@ -39531,8 +39693,9 @@ const (
 //   - available: image can be used (provisionable)
 //   - deleting: image is being deleted, and can no longer be used to provision new
 //     resources
-//   - deprecated: image is administratively slated to be deleted
+//   - deprecated: image is administratively slated to become `obsolete`
 //   - failed: image is corrupt or did not pass validation
+//   - obsolete: image administratively set to not be used for new resources
 //   - pending: image is being imported and is not yet `available`
 //   - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
 //
@@ -39544,6 +39707,7 @@ const (
 	ImageStatusDeletingConst   = "deleting"
 	ImageStatusDeprecatedConst = "deprecated"
 	ImageStatusFailedConst     = "failed"
+	ImageStatusObsoleteConst   = "obsolete"
 	ImageStatusPendingConst    = "pending"
 	ImageStatusUnusableConst   = "unusable"
 )
@@ -39572,6 +39736,10 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "deprecation_at", &obj.DeprecationAt)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "encryption", &obj.Encryption)
 	if err != nil {
 		return
@@ -39597,6 +39765,10 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "obsolescence_at", &obj.ObsolescenceAt)
 	if err != nil {
 		return
 	}
@@ -40124,15 +40296,56 @@ func UnmarshalImageIdentity(m map[string]json.RawMessage, result interface{}) (e
 
 // ImagePatch : ImagePatch struct
 type ImagePatch struct {
+	// The deprecation date and time to set for this image.
+	//
+	// This cannot be set if the image has a `status` of `failed` or `deleting`, or if
+	// `catalog_offering.managed` is `true`.
+	//
+	// The date and time must not be in the past, and must be earlier than `obsolescence_at`
+	// (if `obsolescence_at` is set). Additionally, if the image status is currently
+	// `deprecated`, the value cannot be changed (but may be removed).
+	//
+	// Specify `null` to remove an existing deprecation date and time. If the image status is currently `deprecated`, it
+	// will become `available`.
+	//
+	// If the deprecation date and time is reached while the image has a status of `pending`, the image's status will
+	// transition to `deprecated` upon its successful creation (or
+	// `obsolete` if the obsolescence date and time was also reached).
+	DeprecationAt *strfmt.DateTime `json:"deprecation_at,omitempty"`
+
 	// The name for this image. The name must not be used by another image in the region. Names starting with `ibm-` are
 	// reserved for system-provided images, and are not allowed.
 	Name *string `json:"name,omitempty"`
+
+	// The obsolescence date and time to set for this image.
+	//
+	// This cannot be set if the image has a `status` of `failed` or `deleting`, or if
+	// `catalog_offering.managed` is `true`.
+	//
+	// The date and time must not be in the past, and must be later than `deprecation_at` (if
+	// `deprecation_at` is set). Additionally, if the image status is currently `obsolete`, the value cannot be changed
+	// (but may be removed).
+	//
+	// Specify `null` to remove an existing obsolescence date and time. If the image status is currently `obsolete`, it
+	// will become `deprecated` if `deprecation_at` is in the past. Otherwise, it will become `available`.
+	//
+	// If the obsolescence date and time is reached while the image has a status of `pending`, the image's status will
+	// transition to `obsolete` upon its successful creation.
+	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
 }
 
 // UnmarshalImagePatch unmarshals an instance of ImagePatch from the specified map of raw messages.
 func UnmarshalImagePatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ImagePatch)
+	err = core.UnmarshalPrimitive(m, "deprecation_at", &obj.DeprecationAt)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "obsolescence_at", &obj.ObsolescenceAt)
 	if err != nil {
 		return
 	}
@@ -40155,10 +40368,33 @@ func (imagePatch *ImagePatch) AsPatch() (_patch map[string]interface{}, err erro
 // - ImagePrototypeImageByFile
 // - ImagePrototypeImageBySourceVolume
 type ImagePrototype struct {
+	// The deprecation date and time to set for this image.
+	//
+	// The date and time must not be in the past, and must be earlier than `obsolescence_at`
+	// (if `obsolescence_at` is set).
+	//
+	// If unspecified, no deprecation date and time will be set.
+	//
+	// If the deprecation date and time is reached while the image has a status of `pending`, the image's status will
+	// transition to `deprecated` upon its successful creation (or
+	// `obsolete` if the obsolescence date and time was also reached).
+	DeprecationAt *strfmt.DateTime `json:"deprecation_at,omitempty"`
+
 	// The name for this image. The name must not be used by another image in the region. Names starting with `ibm-` are
 	// reserved for system-provided images, and are not allowed. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// The obsolescence date and time to set for this image.
+	//
+	// The date and time must not be in the past, and must be later than `deprecation_at` (if
+	// `deprecation_at` is set).
+	//
+	// If unspecified, no obsolescence date and time will be set.
+	//
+	// If the obsolescence date and time is reached while the image has a status of
+	// `pending`, the image's status will transition to `obsolete` upon its successful creation.
+	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
@@ -40209,7 +40445,15 @@ type ImagePrototypeIntf interface {
 // UnmarshalImagePrototype unmarshals an instance of ImagePrototype from the specified map of raw messages.
 func UnmarshalImagePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ImagePrototype)
+	err = core.UnmarshalPrimitive(m, "deprecation_at", &obj.DeprecationAt)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "obsolescence_at", &obj.ObsolescenceAt)
 	if err != nil {
 		return
 	}
@@ -47461,12 +47705,26 @@ type ListImagesOptions struct {
 	// Filters the collection to resources with a `name` property matching the exact specified name.
 	Name *string `json:"name,omitempty"`
 
+	// Filters the collection to images with a `status` property matching one of the specified comma-separated values.
+	Status []string `json:"status,omitempty"`
+
 	// Filters the collection to images with a `visibility` property matching the specified value.
 	Visibility *string `json:"visibility,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
+
+// Constants associated with the ListImagesOptions.Status property.
+const (
+	ListImagesOptionsStatusAvailableConst  = "available"
+	ListImagesOptionsStatusDeletingConst   = "deleting"
+	ListImagesOptionsStatusDeprecatedConst = "deprecated"
+	ListImagesOptionsStatusFailedConst     = "failed"
+	ListImagesOptionsStatusObsoleteConst   = "obsolete"
+	ListImagesOptionsStatusPendingConst    = "pending"
+	ListImagesOptionsStatusUnusableConst   = "unusable"
+)
 
 // Constants associated with the ListImagesOptions.Visibility property.
 // Filters the collection to images with a `visibility` property matching the specified value.
@@ -47501,6 +47759,12 @@ func (_options *ListImagesOptions) SetResourceGroupID(resourceGroupID string) *L
 // SetName : Allow user to set Name
 func (_options *ListImagesOptions) SetName(name string) *ListImagesOptions {
 	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetStatus : Allow user to set Status
+func (_options *ListImagesOptions) SetStatus(status []string) *ListImagesOptions {
+	_options.Status = status
 	return _options
 }
 
@@ -55733,6 +55997,34 @@ func UnmarshalNetworkInterfaceUnpaginatedCollection(m map[string]json.RawMessage
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+// ObsoleteImageOptions : The ObsoleteImage options.
+type ObsoleteImageOptions struct {
+	// The image identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewObsoleteImageOptions : Instantiate ObsoleteImageOptions
+func (*VpcV1) NewObsoleteImageOptions(id string) *ObsoleteImageOptions {
+	return &ObsoleteImageOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *ObsoleteImageOptions) SetID(id string) *ObsoleteImageOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ObsoleteImageOptions) SetHeaders(param map[string]string) *ObsoleteImageOptions {
+	options.Headers = param
+	return options
 }
 
 // OperatingSystem : OperatingSystem struct
@@ -72933,10 +73225,33 @@ func UnmarshalImageIdentityByID(m map[string]json.RawMessage, result interface{}
 // ImagePrototypeImageByFile : ImagePrototypeImageByFile struct
 // This model "extends" ImagePrototype
 type ImagePrototypeImageByFile struct {
+	// The deprecation date and time to set for this image.
+	//
+	// The date and time must not be in the past, and must be earlier than `obsolescence_at`
+	// (if `obsolescence_at` is set).
+	//
+	// If unspecified, no deprecation date and time will be set.
+	//
+	// If the deprecation date and time is reached while the image has a status of `pending`, the image's status will
+	// transition to `deprecated` upon its successful creation (or
+	// `obsolete` if the obsolescence date and time was also reached).
+	DeprecationAt *strfmt.DateTime `json:"deprecation_at,omitempty"`
+
 	// The name for this image. The name must not be used by another image in the region. Names starting with `ibm-` are
 	// reserved for system-provided images, and are not allowed. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// The obsolescence date and time to set for this image.
+	//
+	// The date and time must not be in the past, and must be later than `deprecation_at` (if
+	// `deprecation_at` is set).
+	//
+	// If unspecified, no obsolescence date and time will be set.
+	//
+	// If the obsolescence date and time is reached while the image has a status of
+	// `pending`, the image's status will transition to `obsolete` upon its successful creation.
+	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
@@ -72983,7 +73298,15 @@ func (*ImagePrototypeImageByFile) isaImagePrototype() bool {
 // UnmarshalImagePrototypeImageByFile unmarshals an instance of ImagePrototypeImageByFile from the specified map of raw messages.
 func UnmarshalImagePrototypeImageByFile(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ImagePrototypeImageByFile)
+	err = core.UnmarshalPrimitive(m, "deprecation_at", &obj.DeprecationAt)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "obsolescence_at", &obj.ObsolescenceAt)
 	if err != nil {
 		return
 	}
@@ -73014,10 +73337,33 @@ func UnmarshalImagePrototypeImageByFile(m map[string]json.RawMessage, result int
 // ImagePrototypeImageBySourceVolume : ImagePrototypeImageBySourceVolume struct
 // This model "extends" ImagePrototype
 type ImagePrototypeImageBySourceVolume struct {
+	// The deprecation date and time to set for this image.
+	//
+	// The date and time must not be in the past, and must be earlier than `obsolescence_at`
+	// (if `obsolescence_at` is set).
+	//
+	// If unspecified, no deprecation date and time will be set.
+	//
+	// If the deprecation date and time is reached while the image has a status of `pending`, the image's status will
+	// transition to `deprecated` upon its successful creation (or
+	// `obsolete` if the obsolescence date and time was also reached).
+	DeprecationAt *strfmt.DateTime `json:"deprecation_at,omitempty"`
+
 	// The name for this image. The name must not be used by another image in the region. Names starting with `ibm-` are
 	// reserved for system-provided images, and are not allowed. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// The obsolescence date and time to set for this image.
+	//
+	// The date and time must not be in the past, and must be later than `deprecation_at` (if
+	// `deprecation_at` is set).
+	//
+	// If unspecified, no obsolescence date and time will be set.
+	//
+	// If the obsolescence date and time is reached while the image has a status of
+	// `pending`, the image's status will transition to `obsolete` upon its successful creation.
+	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
@@ -73051,7 +73397,15 @@ func (*ImagePrototypeImageBySourceVolume) isaImagePrototype() bool {
 // UnmarshalImagePrototypeImageBySourceVolume unmarshals an instance of ImagePrototypeImageBySourceVolume from the specified map of raw messages.
 func UnmarshalImagePrototypeImageBySourceVolume(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ImagePrototypeImageBySourceVolume)
+	err = core.UnmarshalPrimitive(m, "deprecation_at", &obj.DeprecationAt)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "obsolescence_at", &obj.ObsolescenceAt)
 	if err != nil {
 		return
 	}
