@@ -1,4 +1,4 @@
-
+---
 subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_connection"
@@ -11,7 +11,6 @@ Create, update and delete for the transit gateway's connection resource. For mor
 
 ## Example usage
 
----
 ```terraform
 resource "ibm_tg_connection" "test_ibm_tg_connection" {
   gateway      = ibm_tg_gateway.test_tg_gateway.id
@@ -21,7 +20,6 @@ resource "ibm_tg_connection" "test_ibm_tg_connection" {
 }
   
 ```
----
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -62,9 +60,7 @@ The `ibm_tg_connection` resource can be imported by using transit gateway ID and
 
 **Example**
 
----
 ```
 $ terraform import ibm_tg_connection.example 5ffda12064634723b079acdb018ef308/cea6651a-bd0a-4438-9f8a-a0770bbf3ebb
 
 ```
----
