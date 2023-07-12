@@ -39,7 +39,7 @@ project_event_notification data source:
 
 ```hcl
 data "project_event_notification" "project_event_notification_instance" {
-  project_id = var.project_event_notification_id
+  id = var.project_event_notification_id
 }
 ```
 
