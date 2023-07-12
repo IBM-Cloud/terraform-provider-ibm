@@ -63,7 +63,6 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
-	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
@@ -292,7 +291,6 @@ type ClientSession interface {
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
-	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
 	MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
@@ -585,9 +583,6 @@ type clientSession struct {
 	cisFirewallRulesErr    error
 
 	//Atracker
-	atrackerClient    *atrackerv1.AtrackerV1
-	atrackerClientErr error
-
 	atrackerClientV2    *atrackerv2.AtrackerV2
 	atrackerClientV2Err error
 
@@ -1125,7 +1120,7 @@ func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
 	return sess.cisMtlsClient.Clone(), nil
 }
 
-//CIS Bot Management
+// CIS Bot Management
 func (sess clientSession) CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error) {
 	if sess.cisBotManagementErr != nil {
 		return sess.cisBotManagementClient, sess.cisBotManagementErr
@@ -1158,10 +1153,6 @@ func (sess clientSession) CisFirewallRulesSession() (*cisfirewallrulesv1.Firewal
 }
 
 // Activity Tracker API
-func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
-	return session.atrackerClient, session.atrackerClientErr
-}
-
 func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
 	return session.atrackerClientV2, session.atrackerClientV2Err
 }
@@ -1667,43 +1658,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
-	// ATRACKER Service
-	var atrackerClientURL string
-	var atrackerURLErr error
-
-	atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion(c.Region)
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion("private." + c.Region)
-		if err != nil && c.Visibility == "public-and-private" {
-			atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion(c.Region)
-		}
-	}
-
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		atrackerClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ATRACKER_API_ENDPOINT", c.Region, atrackerClientURL)
-	}
-	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
-	}
-	// If we provide IBMCLOUD_ATRACKER_API_ENDPOINT, then ignore any missing region url
-	if atrackerURLErr != nil && len(atrackerClientOptions.URL) == 0 {
-		session.atrackerClientErr = atrackerURLErr
-	}
-	// Construct the service client.
-	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
-	if err != nil {
-		session.atrackerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Activity Tracker API service: %q", err)
-	}
-	if session.atrackerClient != nil && session.atrackerClient.Service != nil {
-		// Enable retries for API calls
-		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-	// Version 2 Atracker
+	// ATRACKER Version 2
 	var atrackerClientV2URL string
 	var atrackerURLV2Err error
 
@@ -1727,8 +1682,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// If we provide IBMCLOUD_ATRACKER_API_ENDPOINT, then ignore any missing region url, or should use the default.
 	// This should technically never happen as we default this for v2
-	if atrackerURLV2Err != nil && len(atrackerClientOptions.URL) == 0 {
-		session.atrackerClientErr = atrackerURLErr
+	if atrackerURLV2Err != nil && len(atrackerClientV2Options.URL) == 0 {
+		session.atrackerClientV2Err = atrackerURLV2Err
 	}
 	session.atrackerClientV2, err = atrackerv2.NewAtrackerV2(atrackerClientV2Options)
 	if err == nil {

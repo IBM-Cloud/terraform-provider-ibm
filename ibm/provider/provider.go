@@ -704,9 +704,8 @@ func Provider() *schema.Provider {
 			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
 
 			// // Atracker
-			"ibm_atracker_targets":   atracker.DataSourceIBMAtrackerTargets(),
-			"ibm_atracker_routes":    atracker.DataSourceIBMAtrackerRoutes(),
-			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
+			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
+			"ibm_atracker_routes":  atracker.DataSourceIBMAtrackerRoutes(),
 
 			//  Metrics Router
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
