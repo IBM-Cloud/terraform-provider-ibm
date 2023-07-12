@@ -14,7 +14,7 @@ Provides a read-only data source for Project definition. You can then reference 
 
 ```hcl
 data "ibm_project_event_notification" "project_event_notification" {
-	project_id = "072b70cb-4db7-4c5c-bf1b-8d93d422537d"
+	id = "072b70cb-4db7-4c5c-bf1b-8d93d422537d"
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_project_event_notification" "project_event_notification" {
 
 Review the argument reference that you can specify for your data source.
 
-* `project_id` - (Required, Forces new resource, String) The unique project ID.
+* `id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 
 ## Attribute Reference
