@@ -38,7 +38,7 @@ resource "ibm_cis_origin_pool" "example" {
 Review the argument references that you can specify for your resource. 
 
 - `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
-- `check_regions` - (Required, Set) A list of regions (specified by region code) from which to run health checks. If the list is empty, all regions are included, but you must use the enterprise plan. This is the default setting. Region codes can be found on our partner [Cloudflare's website](https://support.cloudflare.com/hc/en-us/articles/115000540888-Load-Balancing-Geographic-Regions).
+- `check_regions` - (Required, Set) A list of regions (specified by region code) from which to run health checks. If the list is empty, all regions are included, but you must use the enterprise plans. This is the default setting. Region codes can be found on our partner [Cloudflare's website](https://support.cloudflare.com/hc/en-us/articles/115000540888-Load-Balancing-Geographic-Regions).
 - `description` - (Optional, String) A description for your origin pool. 
 - `enabled`- (Bool) Required-If set to **true**, this pool is enabled and can receive incoming network traffic. Disabled pools do not receive network traffic and are excluded from health checks. Disabling a pool causes any load balancers that use the pool to failover to the next pool (if applicable).
 - `name` - (Required, String) A short name (tag) for the pool. Only alphanumeric characters, hyphens, and underscores are allowed.
