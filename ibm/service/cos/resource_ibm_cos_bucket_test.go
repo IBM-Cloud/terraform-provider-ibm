@@ -1255,7 +1255,7 @@ func TestAccIBMCOSHPCS(t *testing.T) {
 	})
 }
 
-// new hpcs
+//new hpcs
 func TestAccIBMCOSKPKmsParamValid(t *testing.T) {
 
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
