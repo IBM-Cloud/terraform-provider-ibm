@@ -72,7 +72,7 @@ The `ibm_cis_health_check` resource can be imported by using the `id`. The ID is
 
 The CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading.
 
-- **CRN** The CRN is a 120 digit character string of the format `crn:v1:bluemix:public:internet-svcs:global:a/1aa1111a1a1111aa1a111111111111aa:11aa111a-11a1-1a11-111a-111aaa11a1a1::` 
+- **CRN** The CRN is unique ID of the form: `crn:v1:bluemix:public:internet-svcs:global:a/{IBM-account}:{service-instance}::`
 
 - **Healthcheck ID** The health check ID is a 32 digit character string in the format 1aaaa111111aa11111111111a1a11a1. The ID of a health check is not available via the console. It can be retrieved programmatically via the CIS API or via the command line by running `ibmcloud cis glb-monitors`.
 
