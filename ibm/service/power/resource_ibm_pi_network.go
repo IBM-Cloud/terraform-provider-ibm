@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/apparentlymart/go-cidr/cidr"
@@ -80,6 +81,18 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Computed:    true,
 				Description: "PI network enable MTU Jumbo option",
 			},
+			helpers.PINetworkMtu: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "PI Maximum Transmission Unit",
+			},
+			helpers.PINetworkAccessConfig: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "PI network communication configuration",
+			},
 			helpers.PICloudInstanceId: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -142,8 +155,17 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
-		body.Jumbo = v.(bool)
+	if !strings.Contains(sess.Options.Region, helpers.PIStratos) {
+		if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
+			body.Jumbo = v.(bool)
+		}
+	} else {
+		if v, ok := d.GetOk(helpers.PINetworkMtu); ok {
+			body.Mtu = v.(int64)
+		}
+		if v, ok := d.GetOk(helpers.PINetworkAccessConfig); ok {
+			body.AccessConfig = v.(string)
+		}
 	}
 
 	if networktype == "vlan" {
@@ -215,7 +237,12 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("vlan_id", networkdata.VlanID)
 	d.Set(helpers.PINetworkName, networkdata.Name)
 	d.Set(helpers.PINetworkType, networkdata.Type)
-	d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
+	if !strings.Contains(sess.Options.Region, helpers.PIStratos) {
+		d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
+	} else {
+		d.Set(helpers.PINetworkMtu, networkdata.Mtu)
+		d.Set(helpers.PINetworkAccessConfig, networkdata.AccessConfig)
+	}
 	d.Set(helpers.PINetworkGateway, networkdata.Gateway)
 	ipRangesMap := []map[string]interface{}{}
 	if networkdata.IPAddressRanges != nil {

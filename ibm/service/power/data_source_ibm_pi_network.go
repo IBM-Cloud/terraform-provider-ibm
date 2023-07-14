@@ -7,6 +7,7 @@ import (
 	//"fmt"
 
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -39,12 +40,10 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"vlan_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -77,6 +76,14 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			"jumbo": {
 				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"mtu": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"access_config": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
@@ -123,7 +130,12 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if len(networkdata.DNSServers) > 0 {
 		d.Set("dns", networkdata.DNSServers)
 	}
-	d.Set("jumbo", networkdata.Jumbo)
+	if !strings.Contains(sess.Options.Region, helpers.PIStratos) {
+		d.Set("jumbo", networkdata.Jumbo)
+	} else {
+		d.Set("mtu", networkdata.Mtu)
+		d.Set("access_config", networkdata.AccessConfig)
+	}
 
 	return nil
 
