@@ -32,6 +32,26 @@ func DataSourceIBMDLRouteReports() *schema.Resource {
 							Computed:    true,
 							Description: "Id of the route report",
 						},
+
+						dlAdvertisedRoutes: {
+							Type:        schema.TypeList,
+							Description: "List of connection prefixes advertised to the on-prem network",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									dlAsPath: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The BGP AS path of the route",
+									},
+									dlPrefix: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Prefix for advertised routes",
+									},
+								},
+							},
+						},
 						dlGatewayRoutes: {
 							Type:        schema.TypeList,
 							Description: "List of gateway routes",
@@ -52,6 +72,11 @@ func DataSourceIBMDLRouteReports() *schema.Resource {
 							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									dlAsPath: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The BGP AS path of the route",
+									},
 									dlPrefix: {
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -128,7 +153,17 @@ func DataSourceIBMDLRouteReports() *schema.Resource {
 												dlPrefix: {
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Prefix for overlapping routes",
+													Description: "Prefix for virtual connection routes",
+												},
+												dlActive: {
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Indicates whether the route is the preferred path of the prefix",
+												},
+												dlLocalPreference: {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The local preference of the route. This attribute can manipulate the chosen path on routes",
 												},
 											},
 										},
@@ -183,6 +218,20 @@ func dataSourceIBMDLRouteReportsRead(d *schema.ResourceData, meta interface{}) e
 			routeReport[dlRouteReportStatus] = *instance.Status
 		}
 
+		// Build Advertised Routes
+		advRoutes := make([]map[string]interface{}, 0)
+		if instance.AdvertisedRoutes != nil {
+			for _, adRoute := range instance.AdvertisedRoutes {
+				route := map[string]interface{}{}
+				route[dlAsPath] = adRoute.AsPath
+				route[dlPrefix] = adRoute.Prefix
+				advRoutes = append(advRoutes, route)
+			}
+		}
+
+		log.Println("[Info] Length DL Route Reports advertised routes:", len(advRoutes))
+		routeReport[dlAdvertisedRoutes] = advRoutes
+
 		// Build Gateway Routes
 		gatewayRoutes := make([]map[string]interface{}, 0)
 		if instance.GatewayRoutes != nil {
@@ -203,9 +252,10 @@ func dataSourceIBMDLRouteReportsRead(d *schema.ResourceData, meta interface{}) e
 			for _, onPremRoute := range instance.OnPremRoutes {
 				route := map[string]interface{}{}
 				route[dlPrefix] = onPremRoute.Prefix
+				route[dlAsPath] = onPremRoute.AsPath
+				route[dlRouteReportNextHop] = onPremRoute.NextHop
 				onPremRoutes = append(onPremRoutes, route)
 			}
-
 		}
 
 		log.Println("[INFO] length DL Onprem routes", len(onPremRoutes))
@@ -249,6 +299,8 @@ func dataSourceIBMDLRouteReportsRead(d *schema.ResourceData, meta interface{}) e
 				for _, r := range c.Routes {
 					routes := map[string]interface{}{}
 					routes[dlPrefix] = r.Prefix
+					routes[dlLocalPreference] = r.LocalPreference
+					routes[dlActive] = r.Active
 					connectionRoutes = append(connectionRoutes, routes)
 				}
 
