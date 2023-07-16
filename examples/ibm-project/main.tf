@@ -10,22 +10,42 @@ resource "ibm_project" "project_instance" {
   description = var.project_description
   destroy_on_delete = var.project_destroy_on_delete
   configs {
-    id = "id"
     name = "name"
     labels = [ "labels" ]
     description = "description"
     authorizations {
-      method = "API_KEY"
-      api_key = "api_key_value"
+      trusted_profile {
+        id = "id"
+        target_iam_id = "target_iam_id"
+      }
+      method = "method"
+      api_key = "api_key"
+    }
+    compliance_profile {
+      id = "id"
+      instance_id = "instance_id"
+      instance_location = "instance_location"
+      attachment_id = "attachment_id"
+      profile_name = "profile_name"
     }
     locator_id = "locator_id"
+    type = "terraform_template"
     input {
-      name = "app_repo_name"
+      name = "name"
+      type = "array"
+      value = "anything as a string"
+      required = true
+    }
+    output {
+      name = "name"
+      description = "description"
+      value = "anything as a string"
     }
     setting {
-      name = "app_repo_name"
-      value = "static-website-dev-app-repo"
+      name = "name"
+      value = "value"
     }
+    id = "id"
   }
 }
 
@@ -33,28 +53,33 @@ resource "ibm_project" "project_instance" {
 resource "ibm_project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
   name = var.project_config_name
-  locator_id = var.project_config_locator_id
   labels = var.project_config_labels
   description = var.project_config_description
   authorizations {
     trusted_profile {
-      id = "Profile-047ef95f-2f90-4276-8ba3-92512cc4a6ae"
+      id = "id"
+      target_iam_id = "target_iam_id"
     }
-    method = "TRUSTED_PROFILE"
+    method = "method"
+    api_key = "api_key"
   }
   compliance_profile {
-    id = "compliance_profile_id"
+    id = "id"
     instance_id = "instance_id"
     instance_location = "instance_location"
     attachment_id = "attachment_id"
     profile_name = "profile_name"
   }
+  locator_id = var.project_config_locator_id
   input {
-    name = "app_repo_name"
+    name = "name"
+    type = "array"
+    value = "anything as a string"
+    required = true
   }
   setting {
-    name = "app_repo_name"
-    value = "static-website-dev-app-repo"
+    name = "name"
+    value = "value"
   }
 }
 
@@ -66,5 +91,5 @@ data "ibm_project" "project_instance" {
 // Create project_config data source
 data "ibm_project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
-  id = ibm_project_config.project_config_instance.project_config_id
+  id = ibm_project_config.project_config_instance.projectConfig_id
 }

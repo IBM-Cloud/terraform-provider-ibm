@@ -7,10 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -24,61 +22,51 @@ func ResourceIbmProject() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmProjectCreate,
 		ReadContext:   resourceIbmProjectRead,
+		UpdateContext: resourceIbmProjectUpdate,
 		DeleteContext: resourceIbmProjectDelete,
 		Importer:      &schema.ResourceImporter{},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(1 * time.Minute),
-			Delete: schema.DefaultTimeout(1 * time.Minute),
-		},
 
 		Schema: map[string]*schema.Schema{
 			"resource_group": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The resource group where the project's data and tools are created.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_project", "resource_group"),
+				Description:  "The resource group where the project's data and tools are created.",
 			},
 			"location": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The location where the project's data and tools are created.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
+				Description:  "The location where the project's data and tools are created.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The project name.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_project", "name"),
+				Description:  "The name of the project.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "A project's descriptive text.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_project", "description"),
+				Description:  "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
 			},
 			"destroy_on_delete": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				ForceNew:    true,
 				Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
 			},
 			"configs": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
-				Description: "The project configurations.",
+				Description: "The project configurations. These configurations are only included in the response of creating a project if a configs array is specified in the request payload.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
-						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The configuration name.",
+							Description: "The name of the configuration.",
 						},
 						"labels": &schema.Schema{
 							Type:        schema.TypeList,
@@ -89,13 +77,14 @@ func ResourceIbmProject() *schema.Resource {
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The project configuration description.",
+							Default:     "",
+							Description: "The description of the project configuration.",
 						},
 						"authorizations": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Description: "The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"trusted_profile": &schema.Schema{
@@ -171,16 +160,55 @@ func ResourceIbmProject() *schema.Resource {
 							Required:    true,
 							Description: "A dotted value of catalogID.versionID.",
 						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The type of a project configuration manual property.",
+						},
 						"input": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The inputs of a Schematics template property.",
+							Description: "The outputs of a Schematics template property.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "The variable name.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The variable type.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
+									"required": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Whether the variable is required or not.",
+									},
+								},
+							},
+						},
+						"output": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "The outputs of a Schematics template property.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The variable name.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A short explanation of the output value.",
 									},
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
@@ -193,7 +221,7 @@ func ResourceIbmProject() *schema.Resource {
 						"setting": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Schematics environment variables to use to deploy the configuration.",
+							Description: "Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -209,81 +237,67 @@ func ResourceIbmProject() *schema.Resource {
 								},
 							},
 						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The unique ID of a project.",
+						},
 					},
 				},
 			},
-			"metadata": &schema.Schema{
+			"crn": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
+			},
+			"created_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+			},
+			"cumulative_needs_attention_view": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The metadata of the project.",
+				Description: "The cumulative list of needs attention items for a project. If the view is successfully retrieved, an array which could be empty is returned.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
+						"event": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
+							Description: "The event name.",
 						},
-						"created_at": &schema.Schema{
+						"event_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+							Description: "A unique ID for that individual event.",
 						},
-						"cumulative_needs_attention_view": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The cumulative list of needs attention items for a project.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"event": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The event name.",
-									},
-									"event_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The unique ID of a project.",
-									},
-									"config_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The unique ID of a project.",
-									},
-									"config_version": &schema.Schema{
-										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "The version number of the configuration.",
-									},
-								},
-							},
-						},
-						"cumulative_needs_attention_view_err": &schema.Schema{
+						"config_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "True indicates that the fetch of the needs attention items failed.",
+							Description: "A unique ID for the configuration.",
 						},
-						"location": &schema.Schema{
-							Type:        schema.TypeString,
+						"config_version": &schema.Schema{
+							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "The IBM Cloud location where a resource is deployed.",
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The resource group where the project's data and tools are created.",
-						},
-						"state": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The project status value.",
-						},
-						"event_notifications_crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The CRN of the event notifications instance if one is connected to this project.",
+							Description: "The version number of the configuration.",
 						},
 					},
 				},
+			},
+			"cumulative_needs_attention_view_error": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True indicates that the fetch of the needs attention items failed. It only exists if there was an error while retrieving the cumulative needs attention view.",
+			},
+			"state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The project status value.",
+			},
+			"event_notifications_crn": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The CRN of the event notifications instance if one is connected to this project.",
 			},
 		},
 	}
@@ -297,7 +311,7 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^$|^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]*$`,
+			Regexp:                     `^$|^(?!\s)(?!.*\s$)[^'"` + "`" + `<>{}\x00-\x1F]*$`,
 			MinValueLength:             0,
 			MaxValueLength:             40,
 		},
@@ -315,7 +329,7 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^(?!\s)(?!.*\s$)[^'"<>{}\x00-\x1F]+$`,
+			Regexp:                     `^(?!\s)(?!.*\s$)[^'"` + "`" + `<>{}\x00-\x1F]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             64,
 		},
@@ -372,44 +386,7 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*project.ID)
 
-	_, err = waitForProjectInstanceCreate(d, meta)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create project instance (%s) to be succeeded: %s", d.Id(), err))
-	}
-
 	return resourceIbmProjectRead(context, d, meta)
-}
-
-func waitForProjectInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	projectClient, err := meta.(conns.ClientSession).ProjectV1()
-	if err != nil {
-		return false, err
-	}
-	instanceID := d.Id()
-	getProjectOptions := &projectv1.GetProjectOptions{}
-	getProjectOptions.SetID(instanceID)
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"not_exists"},
-		Target:  []string{"exists"},
-		Refresh: func() (interface{}, string, error) {
-			_, resp, err := projectClient.GetProject(getProjectOptions)
-			if err == nil {
-				if resp != nil && resp.StatusCode == 200 {
-					return resp, "exists", nil
-				} else {
-					return resp, "not_exists", nil
-				}
-			} else {
-				return nil, "", fmt.Errorf("[ERROR] Get the project instance %s failed with resp code: %d, err: %v", d.Id(), resp.StatusCode, err)
-			}
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      2 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -422,7 +399,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 
 	getProjectOptions.SetID(d.Id())
 
-	projectSummary, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
+	project, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -432,30 +409,108 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("name", projectSummary.Name); err != nil {
+	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+	}
+	if err = d.Set("location", project.Location); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
+	}
+	if err = d.Set("name", project.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if !core.IsNil(projectSummary.Description) {
-		if err = d.Set("description", projectSummary.Description); err != nil {
+	if !core.IsNil(project.Description) {
+		if err = d.Set("description", project.Description); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 		}
 	}
-	if !core.IsNil(projectSummary.DestroyOnDelete) {
-		if err = d.Set("destroy_on_delete", projectSummary.DestroyOnDelete); err != nil {
+	if !core.IsNil(project.DestroyOnDelete) {
+		if err = d.Set("destroy_on_delete", project.DestroyOnDelete); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting destroy_on_delete: %s", err))
 		}
 	}
-	if !core.IsNil(projectSummary.Metadata) {
-		metadataMap, err := resourceIbmProjectProjectMetadataToMap(projectSummary.Metadata)
-		if err != nil {
-			return diag.FromErr(err)
+	if !core.IsNil(project.Configs) {
+		configs := []map[string]interface{}{}
+		for _, configsItem := range project.Configs {
+			configsItemMap, err := resourceIbmProjectProjectConfigToMap(&configsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			configs = append(configs, configsItemMap)
 		}
-		if err = d.Set("metadata", []map[string]interface{}{metadataMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting metadata: %s", err))
+		if err = d.Set("configs", configs); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
+		}
+	}
+	if err = d.Set("crn", project.Crn); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+	}
+	if err = d.Set("created_at", flex.DateTimeToString(project.CreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+	}
+	if !core.IsNil(project.CumulativeNeedsAttentionView) {
+		cumulativeNeedsAttentionView := []map[string]interface{}{}
+		for _, cumulativeNeedsAttentionViewItem := range project.CumulativeNeedsAttentionView {
+			cumulativeNeedsAttentionViewItemMap, err := resourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			cumulativeNeedsAttentionView = append(cumulativeNeedsAttentionView, cumulativeNeedsAttentionViewItemMap)
+		}
+		if err = d.Set("cumulative_needs_attention_view", cumulativeNeedsAttentionView); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view: %s", err))
+		}
+	}
+	if !core.IsNil(project.CumulativeNeedsAttentionViewError) {
+		if err = d.Set("cumulative_needs_attention_view_error", project.CumulativeNeedsAttentionViewError); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view_error: %s", err))
+		}
+	}
+	if err = d.Set("state", project.State); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if !core.IsNil(project.EventNotificationsCrn) {
+		if err = d.Set("event_notifications_crn", project.EventNotificationsCrn); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting event_notifications_crn: %s", err))
 		}
 	}
 
 	return nil
+}
+
+func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	projectClient, err := meta.(conns.ClientSession).ProjectV1()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	updateProjectOptions := &projectv1.UpdateProjectOptions{}
+
+	updateProjectOptions.SetID(d.Id())
+
+	hasChange := false
+
+	if d.HasChange("name") {
+		updateProjectOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
+	if d.HasChange("description") {
+		updateProjectOptions.SetDescription(d.Get("description").(string))
+		hasChange = true
+	}
+	if d.HasChange("destroy_on_delete") {
+		updateProjectOptions.SetDestroyOnDelete(d.Get("destroy_on_delete").(bool))
+		hasChange = true
+	}
+
+	if hasChange {
+		_, response, err := projectClient.UpdateProjectWithContext(context, updateProjectOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateProjectWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateProjectWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	return resourceIbmProjectRead(context, d, meta)
 }
 
 func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -474,53 +529,13 @@ func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("DeleteProjectWithContext failed %s\n%s", err, response))
 	}
 
-	_, err = waitForProjectInstanceDelete(d, meta)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for delete project instance (%s) to be succeeded: %s", d.Id(), err))
-	}
-
 	d.SetId("")
 
 	return nil
 }
 
-func waitForProjectInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	projectClient, err := meta.(conns.ClientSession).ProjectV1()
-	if err != nil {
-		return false, err
-	}
-	instanceID := d.Id()
-	getProjectOptions := &projectv1.GetProjectOptions{}
-	getProjectOptions.SetID(instanceID)
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"exists"},
-		Target:  []string{"not_exists"},
-		Refresh: func() (interface{}, string, error) {
-			_, resp, err := projectClient.GetProject(getProjectOptions)
-			if err != nil {
-				if resp != nil && resp.StatusCode == 404 {
-					return resp, "not_exists", nil
-				} else {
-					return resp, "exists", nil
-				}
-			} else {
-				return resp, "exists", nil
-			}
-		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
-		Delay:      2 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
 func resourceIbmProjectMapToProjectConfigPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototype, error) {
 	model := &projectv1.ProjectConfigPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["labels"] != nil {
 		labels := []string{}
@@ -637,11 +652,8 @@ func resourceIbmProjectMapToProjectConfigSettingCollection(modelMap map[string]i
 	return model, nil
 }
 
-func resourceIbmProjectProjectConfigPrototypeToMap(model *projectv1.ProjectConfigPrototype) (map[string]interface{}, error) {
+func resourceIbmProjectProjectConfigToMap(model *projectv1.ProjectConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
 	modelMap["name"] = model.Name
 	if model.Labels != nil {
 		modelMap["labels"] = model.Labels
@@ -664,16 +676,28 @@ func resourceIbmProjectProjectConfigPrototypeToMap(model *projectv1.ProjectConfi
 		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
 	}
 	modelMap["locator_id"] = model.LocatorID
+	modelMap["type"] = model.Type
 	if model.Input != nil {
 		input := []map[string]interface{}{}
 		for _, inputItem := range model.Input {
-			inputItemMap, err := resourceIbmProjectProjectConfigInputVariableToMap(&inputItem)
+			inputItemMap, err := resourceIbmProjectInputVariableToMap(&inputItem)
 			if err != nil {
 				return modelMap, err
 			}
 			input = append(input, inputItemMap)
 		}
 		modelMap["input"] = input
+	}
+	if model.Output != nil {
+		output := []map[string]interface{}{}
+		for _, outputItem := range model.Output {
+			outputItemMap, err := resourceIbmProjectOutputValueToMap(&outputItem)
+			if err != nil {
+				return modelMap, err
+			}
+			output = append(output, outputItemMap)
+		}
+		modelMap["output"] = output
 	}
 	if model.Setting != nil {
 		setting := []map[string]interface{}{}
@@ -686,6 +710,7 @@ func resourceIbmProjectProjectConfigPrototypeToMap(model *projectv1.ProjectConfi
 		}
 		modelMap["setting"] = setting
 	}
+	modelMap["id"] = model.ID
 	return modelMap, nil
 }
 
@@ -738,9 +763,25 @@ func resourceIbmProjectProjectConfigComplianceProfileToMap(model *projectv1.Proj
 	return modelMap, nil
 }
 
-func resourceIbmProjectProjectConfigInputVariableToMap(model *projectv1.ProjectConfigInputVariable) (map[string]interface{}, error) {
+func resourceIbmProjectInputVariableToMap(model *projectv1.InputVariable) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
+	modelMap["type"] = model.Type
+	if model.Value != nil {
+		modelMap["value"] = model.Value
+	}
+	if model.Required != nil {
+		modelMap["required"] = model.Required
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectOutputValueToMap(model *projectv1.OutputValue) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = model.Name
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
@@ -751,43 +792,6 @@ func resourceIbmProjectProjectConfigSettingCollectionToMap(model *projectv1.Proj
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	modelMap["value"] = model.Value
-	return modelMap, nil
-}
-
-func resourceIbmProjectProjectMetadataToMap(model *projectv1.ProjectMetadata) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Crn != nil {
-		modelMap["crn"] = model.Crn
-	}
-	if model.CreatedAt != nil {
-		modelMap["created_at"] = model.CreatedAt.String()
-	}
-	if model.CumulativeNeedsAttentionView != nil {
-		cumulativeNeedsAttentionView := []map[string]interface{}{}
-		for _, cumulativeNeedsAttentionViewItem := range model.CumulativeNeedsAttentionView {
-			cumulativeNeedsAttentionViewItemMap, err := resourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
-			if err != nil {
-				return modelMap, err
-			}
-			cumulativeNeedsAttentionView = append(cumulativeNeedsAttentionView, cumulativeNeedsAttentionViewItemMap)
-		}
-		modelMap["cumulative_needs_attention_view"] = cumulativeNeedsAttentionView
-	}
-	if model.CumulativeNeedsAttentionViewErr != nil {
-		modelMap["cumulative_needs_attention_view_err"] = model.CumulativeNeedsAttentionViewErr
-	}
-	if model.Location != nil {
-		modelMap["location"] = model.Location
-	}
-	if model.ResourceGroup != nil {
-		modelMap["resource_group"] = model.ResourceGroup
-	}
-	if model.State != nil {
-		modelMap["state"] = model.State
-	}
-	if model.EventNotificationsCrn != nil {
-		modelMap["event_notifications_crn"] = model.EventNotificationsCrn
-	}
 	return modelMap, nil
 }
 
