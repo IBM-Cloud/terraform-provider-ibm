@@ -110,7 +110,6 @@ data "project_config" "project_config_instance" {
 | setting | Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created. | `list()` | false |
 | id | The unique project ID. | `string` | true |
 | project_id | The unique project ID. | `string` | true |
-| id | The unique config ID. | `string` | true |
 
 ## Outputs
 

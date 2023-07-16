@@ -34,7 +34,7 @@ variable "project_destroy_on_delete" {
 variable "project_config_project_id" {
   description = "The unique project ID."
   type        = string
-  default     = "project_id"
+  default     = "id"
 }
 variable "project_config_name" {
   description = "The name of the configuration."
