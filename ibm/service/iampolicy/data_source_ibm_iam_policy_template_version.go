@@ -214,7 +214,7 @@ func dataSourceIBMIAMPolicyTemplateVersionRead(context context.Context, d *schem
 
 	policy := []map[string]interface{}{}
 	if policyTemplate.Policy != nil {
-		modelMap, err := dataSourceIBMPolicyTemplateTemplatePolicyToMap(policyTemplate.Policy, iamPolicyManagementClient)
+		modelMap, err := flattenTemplatePolicy(policyTemplate.Policy, iamPolicyManagementClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

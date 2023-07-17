@@ -116,54 +116,35 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 							Optional:    true,
 							Description: "Indicates pattern of rule, either 'time-based-conditions:once', 'time-based-conditions:weekly:all-day', or 'time-based-conditions:weekly:custom-hours'.",
 						},
-						"rule": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
+						"rule_conditions": {
+							Type:        schema.TypeSet,
 							Optional:    true,
-							Description: "Additional access conditions associated with the policy.",
+							Description: "Rule conditions enforced by the policy",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"key": {
 										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The name of an attribute.",
+										Required:    true,
+										Description: "Key of the condition",
 									},
 									"operator": {
 										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The operator of an attribute.",
+										Required:    true,
+										Description: "Operator of the condition",
 									},
 									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.",
-									},
-									"conditions": {
 										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "List of conditions associated with a policy, e.g., time-based conditions that grant access over a certain time period.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"key": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The name of an attribute.",
-												},
-												"operator": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The operator of an attribute.",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.",
-												},
-											},
-										},
+										Required:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "Value of the condition",
 									},
 								},
 							},
+						},
+						"rule_operator": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Operator that multiple rule conditions are evaluated over",
 						},
 						"roles": {
 							Type:        schema.TypeList,
@@ -183,7 +164,7 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 			"committed": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Template vesrsion committed status.",
+				Description: "Template version committed status.",
 			},
 			"name": {
 				Type:     schema.TypeString,
@@ -254,13 +235,16 @@ func resourceIBMIAMPolicyTemplateVersionCreate(context context.Context, d *schem
 
 	createPolicyTemplateVersionOptions.SetPolicyTemplateID(d.Get("template_id").(string))
 
-	policyModel, err := resourceIBMPolicyTemplateMapToTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
+	policyModel, err := generateTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	createPolicyTemplateVersionOptions.SetPolicy(policyModel)
 	if _, ok := d.GetOk("description"); ok {
 		createPolicyTemplateVersionOptions.SetDescription(d.Get("description").(string))
+	}
+	if _, ok := d.GetOk("committed"); ok {
+		createPolicyTemplateVersionOptions.SetCommitted(d.Get("committed").(bool))
 	}
 
 	policyTemplate, response, err := iamPolicyManagementClient.CreatePolicyTemplateVersion(createPolicyTemplateVersionOptions)
@@ -307,7 +291,7 @@ func resourceIBMIAMPolicyTemplateVersionRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
 
-	policyMap, err := resourceIBMPolicyTemplateTemplatePolicyToMap(policyTemplate.Policy, iamPolicyManagementClient)
+	policyMap, err := flattenTemplatePolicy(policyTemplate.Policy, iamPolicyManagementClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -341,60 +325,58 @@ func resourceIBMIAMPolicyTemplateVersionRead(context context.Context, d *schema.
 }
 
 func resourceIBMIAMPolicyTemplateVersionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	replacePolicyTemplateOptions := &iampolicymanagementv1.ReplacePolicyTemplateOptions{}
-
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getPolicyTemplateVersionOptions := &iampolicymanagementv1.GetPolicyTemplateVersionOptions{
-		PolicyTemplateID: &parts[0],
-		Version:          &parts[1],
-	}
-
-	policyTemplate, response, err := iamPolicyManagementClient.GetPolicyTemplateVersionWithContext(context, getPolicyTemplateVersionOptions)
-
-	if err != nil || policyTemplate == nil {
-		if response != nil && response.StatusCode == 404 {
-			return nil
+	if d.HasChange("policy") || d.HasChange("description") || d.HasChange("committed") {
+		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving Policy Template: %s\n%s", err, response))
-	}
 
-	replacePolicyTemplateOptions.SetPolicyTemplateID(parts[0])
-	replacePolicyTemplateOptions.SetVersion(parts[1])
-	replacePolicyTemplateOptions.SetIfMatch(response.Headers.Get("ETag"))
+		replacePolicyTemplateOptions := &iampolicymanagementv1.ReplacePolicyTemplateOptions{}
 
-	hasChange := false
+		parts, err := flex.SepIdParts(d.Id(), "/")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	if d.HasChange("policy") {
-		replacePolicyTemplateOptions.SetVersion(d.Get("version").(string))
-		policy, err := resourceIBMPolicyTemplateMapToTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
+		getPolicyTemplateVersionOptions := &iampolicymanagementv1.GetPolicyTemplateVersionOptions{
+			PolicyTemplateID: &parts[0],
+			Version:          &parts[1],
+		}
+
+		policyTemplate, response, err := iamPolicyManagementClient.GetPolicyTemplateVersionWithContext(context, getPolicyTemplateVersionOptions)
+
+		if err != nil || policyTemplate == nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving Policy Template: %s\n%s", err, response))
+		}
+
+		replacePolicyTemplateOptions.SetPolicyTemplateID(parts[0])
+		replacePolicyTemplateOptions.SetVersion(parts[1])
+		replacePolicyTemplateOptions.SetIfMatch(response.Headers.Get("ETag"))
+
+		if description, ok := d.GetOk("description"); ok {
+			replacePolicyTemplateOptions.SetDescription(description.(string))
+		}
+
+		if committed, ok := d.GetOk("committed"); ok {
+			replacePolicyTemplateOptions.SetCommitted(committed.(bool))
+		}
+
+		policy, err := generateTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		replacePolicyTemplateOptions.SetPolicy(policy)
-		hasChange = true
-	}
-	if d.HasChange("description") {
-		replacePolicyTemplateOptions.SetDescription(d.Get("description").(string))
-		hasChange = true
-	}
 
-	if hasChange {
-		_, response, err := iamPolicyManagementClient.ReplacePolicyTemplateWithContext(context, replacePolicyTemplateOptions)
+		_, response, err = iamPolicyManagementClient.ReplacePolicyTemplateWithContext(context, replacePolicyTemplateOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ReplacePolicyTemplateWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ReplacePolicyTemplateWithContext failed %s\n%s", err, response))
 		}
 	}
-
 	return resourceIBMIAMPolicyTemplateVersionRead(context, d, meta)
 }
 

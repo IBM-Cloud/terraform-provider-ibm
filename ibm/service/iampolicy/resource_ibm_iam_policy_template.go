@@ -123,54 +123,36 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 							Optional:    true,
 							Description: "Indicates pattern of rule, either 'time-based-conditions:once', 'time-based-conditions:weekly:all-day', or 'time-based-conditions:weekly:custom-hours'.",
 						},
-						"rule": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
+						"rule_conditions": {
+							Type:        schema.TypeSet,
 							Optional:    true,
-							Description: "Additional access conditions associated with the policy.",
+							Description: "Rule conditions enforced by the policy",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"key": {
 										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The name of an attribute.",
+										Required:    true,
+										Description: "Key of the condition",
 									},
 									"operator": {
 										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The operator of an attribute.",
+										Required:    true,
+										Description: "Operator of the condition",
 									},
 									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.",
-									},
-									"conditions": {
 										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "List of conditions associated with a policy, e.g., time-based conditions that grant access over a certain time period.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"key": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The name of an attribute.",
-												},
-												"operator": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The operator of an attribute.",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.",
-												},
-											},
-										},
+										Required:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "Value of the condition",
 									},
 								},
 							},
+						},
+
+						"rule_operator": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Operator that multiple rule conditions are evaluated over",
 						},
 						"roles": {
 							Type:        schema.TypeList,
@@ -251,7 +233,7 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 	createPolicyTemplateOptions.SetName(d.Get("name").(string))
 	createPolicyTemplateOptions.SetAccountID(d.Get("account_id").(string))
 
-	policyModel, err := resourceIBMPolicyTemplateMapToTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
+	policyModel, err := generateTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -287,13 +269,13 @@ func resourceIBMIAMPolicyTemplateUpdate(context context.Context, d *schema.Resou
 	return resourceIBMIAMPolicyTemplateVersionUpdate(context, d, meta)
 }
 
-func resourceIBMPolicyTemplateMapToTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.TemplatePolicy, error) {
+func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.TemplatePolicy, error) {
 	model := &iampolicymanagementv1.TemplatePolicy{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	ResourceModel, roleList, err := resourceIBMPolicyTemplateMapToV2PolicyResource(modelMap["resource"].([]interface{})[0].(map[string]interface{}), iamPolicyManagementClient)
+	ResourceModel, roleList, err := generateTemplatePolicyResource(modelMap["resource"].([]interface{})[0].(map[string]interface{}), iamPolicyManagementClient)
 	if err != nil {
 		return model, err
 	}
@@ -301,17 +283,48 @@ func resourceIBMPolicyTemplateMapToTemplatePolicy(modelMap map[string]interface{
 	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
 		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
 	}
-	if modelMap["rule"] != nil && len(modelMap["rule"].([]interface{})) > 0 {
-		RuleModel, err := resourceIBMPolicyTemplateMapToV2PolicyRule(modelMap["rule"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
+
+	if modelMap["rule_conditions"] != nil && len(modelMap["rule_conditions"].(*schema.Set).List()) > 0 {
+		conditions := []iampolicymanagementv1.RuleAttribute{}
+		for _, condition := range modelMap["rule_conditions"].(*schema.Set).List() {
+			c := condition.(map[string]interface{})
+			key := c["key"].(string)
+			operator := c["operator"].(string)
+			r := iampolicymanagementv1.RuleAttribute{
+				Key:      &key,
+				Operator: &operator,
+			}
+
+			interfaceValues := c["value"].([]interface{})
+			values := make([]string, len(interfaceValues))
+			for i, v := range interfaceValues {
+				values[i] = fmt.Sprint(v)
+			}
+
+			if len(values) > 1 {
+				r.Value = &values
+			} else if operator == "stringExists" && values[0] == "true" {
+				r.Value = true
+			} else {
+				r.Value = &values[0]
+			}
+
+			conditions = append(conditions, r)
 		}
-		model.Rule = RuleModel
+		rule := new(iampolicymanagementv1.V2PolicyRule)
+		if len(conditions) == 1 {
+			rule.Key = conditions[0].Key
+			rule.Operator = conditions[0].Operator
+			rule.Value = conditions[0].Value
+		} else {
+			ruleOperator := modelMap["rule_operator"].(string)
+			rule.Operator = &ruleOperator
+			rule.Conditions = conditions
+		}
+		model.Rule = rule
 	}
 
-	controlModel, err := resourceIBMPolicyTemplateMapToControl(modelMap["roles"].([]interface{}), roleList)
-	fmt.Println("=======controlModel========", controlModel)
-	fmt.Println("=======roleList========", roleList)
+	controlModel, err := generateTemplatePolicyControl(modelMap["roles"].([]interface{}), roleList)
 	if err != nil {
 		return nil, err
 	}
@@ -320,14 +333,17 @@ func resourceIBMPolicyTemplateMapToTemplatePolicy(modelMap map[string]interface{
 	return model, nil
 }
 
-func resourceIBMPolicyTemplateMapToV2PolicyResource(modelMap map[string]interface{},
+func generateTemplatePolicyResource(modelMap map[string]interface{},
 	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.V2PolicyResource, *iampolicymanagementv1.RoleList, error) {
 	model := &iampolicymanagementv1.V2PolicyResource{}
 	attributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
 	roleList := &iampolicymanagementv1.RoleList{}
 	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{}
 	for _, attributesItem := range modelMap["attributes"].([]interface{}) {
-		attributesItemModel, err := resourceIBMPolicyTemplateMapToV2PolicyResourceAttribute(attributesItem.(map[string]interface{}))
+		attributesItemModel := &iampolicymanagementv1.V2PolicyResourceAttribute{}
+		attributesItemModel.Key = core.StringPtr(attributesItem.(map[string]interface{})["key"].(string))
+		attributesItemModel.Operator = core.StringPtr(attributesItem.(map[string]interface{})["operator"].(string))
+		attributesItemModel.Value = attributesItem.(map[string]interface{})["value"].(string)
 
 		if *attributesItemModel.Key == "serviceName" &&
 			(*attributesItemModel.Operator == "stringMatch" ||
@@ -357,7 +373,7 @@ func resourceIBMPolicyTemplateMapToV2PolicyResource(modelMap map[string]interfac
 	if modelMap["tags"] != nil {
 		tags := []iampolicymanagementv1.V2PolicyResourceTag{}
 		for _, tagsItem := range modelMap["tags"].([]interface{}) {
-			tagsItemModel, err := resourceIBMPolicyTemplateMapToV2PolicyResourceTag(tagsItem.(map[string]interface{}))
+			tagsItemModel, err := generateTemplatePolicyTag(tagsItem.(map[string]interface{}))
 			if err != nil {
 				return model, nil, err
 			}
@@ -368,15 +384,7 @@ func resourceIBMPolicyTemplateMapToV2PolicyResource(modelMap map[string]interfac
 	return model, roleList, nil
 }
 
-func resourceIBMPolicyTemplateMapToV2PolicyResourceAttribute(modelMap map[string]interface{}) (*iampolicymanagementv1.V2PolicyResourceAttribute, error) {
-	model := &iampolicymanagementv1.V2PolicyResourceAttribute{}
-	model.Key = core.StringPtr(modelMap["key"].(string))
-	model.Operator = core.StringPtr(modelMap["operator"].(string))
-	model.Value = modelMap["value"].(string)
-	return model, nil
-}
-
-func resourceIBMPolicyTemplateMapToV2PolicyResourceTag(modelMap map[string]interface{}) (*iampolicymanagementv1.V2PolicyResourceTag, error) {
+func generateTemplatePolicyTag(modelMap map[string]interface{}) (*iampolicymanagementv1.V2PolicyResourceTag, error) {
 	model := &iampolicymanagementv1.V2PolicyResourceTag{}
 	model.Key = core.StringPtr(modelMap["key"].(string))
 	model.Value = core.StringPtr(modelMap["value"].(string))
@@ -384,63 +392,7 @@ func resourceIBMPolicyTemplateMapToV2PolicyResourceTag(modelMap map[string]inter
 	return model, nil
 }
 
-func resourceIBMPolicyTemplateMapToV2PolicyRule(modelMap map[string]interface{}) (iampolicymanagementv1.V2PolicyRuleIntf, error) {
-	model := &iampolicymanagementv1.V2PolicyRule{}
-	if modelMap["key"] != nil && modelMap["key"].(string) != "" {
-		model.Key = core.StringPtr(modelMap["key"].(string))
-	}
-	if modelMap["operator"] != nil && modelMap["operator"].(string) != "" {
-		model.Operator = core.StringPtr(modelMap["operator"].(string))
-	}
-	if modelMap["value"] != nil {
-		model.Value = modelMap["value"].(string)
-	}
-	if modelMap["conditions"] != nil {
-		conditions := []iampolicymanagementv1.RuleAttribute{}
-		for _, conditionsItem := range modelMap["conditions"].([]interface{}) {
-			conditionsItemModel, err := resourceIBMPolicyTemplateMapToRuleAttribute(conditionsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			conditions = append(conditions, *conditionsItemModel)
-		}
-		model.Conditions = conditions
-	}
-	return model, nil
-}
-
-func resourceIBMPolicyTemplateMapToRuleAttribute(modelMap map[string]interface{}) (*iampolicymanagementv1.RuleAttribute, error) {
-	model := &iampolicymanagementv1.RuleAttribute{}
-	model.Key = core.StringPtr(modelMap["key"].(string))
-	model.Operator = core.StringPtr(modelMap["operator"].(string))
-	model.Value = modelMap["value"].(string)
-	return model, nil
-}
-
-func resourceIBMPolicyTemplateMapToV2PolicyRuleRuleAttribute(modelMap map[string]interface{}) (*iampolicymanagementv1.V2PolicyRuleRuleAttribute, error) {
-	model := &iampolicymanagementv1.V2PolicyRuleRuleAttribute{}
-	model.Key = core.StringPtr(modelMap["key"].(string))
-	model.Operator = core.StringPtr(modelMap["operator"].(string))
-	model.Value = modelMap["value"].(string)
-	return model, nil
-}
-
-func resourceIBMPolicyTemplateMapToV2PolicyRuleRuleWithConditions(modelMap map[string]interface{}) (*iampolicymanagementv1.V2PolicyRuleRuleWithConditions, error) {
-	model := &iampolicymanagementv1.V2PolicyRuleRuleWithConditions{}
-	model.Operator = core.StringPtr(modelMap["operator"].(string))
-	conditions := []iampolicymanagementv1.RuleAttribute{}
-	for _, conditionsItem := range modelMap["conditions"].([]interface{}) {
-		conditionsItemModel, err := resourceIBMPolicyTemplateMapToRuleAttribute(conditionsItem.(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		conditions = append(conditions, *conditionsItemModel)
-	}
-	model.Conditions = conditions
-	return model, nil
-}
-
-func resourceIBMPolicyTemplateMapToControl(roles []interface{}, roleList *iampolicymanagementv1.RoleList) (*iampolicymanagementv1.Control, error) {
+func generateTemplatePolicyControl(roles []interface{}, roleList *iampolicymanagementv1.RoleList) (*iampolicymanagementv1.Control, error) {
 	policyRoles := flex.MapRoleListToPolicyRoles(*roleList)
 
 	policyRoles, err := flex.GetRolesFromRoleNames(flex.ExpandStringList(roles), policyRoles)
@@ -456,34 +408,13 @@ func resourceIBMPolicyTemplateMapToControl(roles []interface{}, roleList *iampol
 	return policyControl, nil
 }
 
-func resourceIBMPolicyTemplateMapToGrant(modelMap map[string]interface{}, roleList *iampolicymanagementv1.RoleList) (*iampolicymanagementv1.Grant, error) {
-	model := &iampolicymanagementv1.Grant{}
-	roles := []iampolicymanagementv1.Roles{}
-
-	for _, rolesItem := range modelMap["roles"].([]interface{}) {
-		rolesItemModel, err := resourceIBMPolicyTemplateMapToRoles(rolesItem.(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		roles = append(roles, *rolesItemModel)
-	}
-	model.Roles = roles
-	return model, nil
-}
-
-func resourceIBMPolicyTemplateMapToRoles(modelMap map[string]interface{}) (*iampolicymanagementv1.Roles, error) {
-	model := &iampolicymanagementv1.Roles{}
-	model.RoleID = core.StringPtr(modelMap["role_id"].(string))
-	return model, nil
-}
-
-func resourceIBMPolicyTemplateTemplatePolicyToMap(model *iampolicymanagementv1.TemplatePolicy, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, error) {
+func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
-	resourceMap, roleList, err := resourceIBMPolicyTemplateV2PolicyResourceToMap(model.Resource, iamPolicyManagementClient)
+	resourceMap, roleList, err := flattenTemplatePolicyResource(model.Resource, iamPolicyManagementClient)
 
 	if err != nil {
 		return nil, err
@@ -506,17 +437,16 @@ func resourceIBMPolicyTemplateTemplatePolicyToMap(model *iampolicymanagementv1.T
 		modelMap["pattern"] = model.Pattern
 	}
 	if model.Rule != nil {
-		ruleMap, err := resourceIBMPolicyTemplateV2PolicyRuleToMap(model.Rule)
-		if err != nil {
-			return modelMap, err
+		modelMap["rule_conditions"] = flex.FlattenRuleConditions(*model.Rule.(*iampolicymanagementv1.V2PolicyRule))
+		if len(model.Rule.(*iampolicymanagementv1.V2PolicyRule).Conditions) > 0 {
+			modelMap["rule_operator"] = model.Rule.(*iampolicymanagementv1.V2PolicyRule).Operator
 		}
-		modelMap["rule"] = []map[string]interface{}{ruleMap}
 	}
 	modelMap["roles"] = roleNames
 	return modelMap, nil
 }
 
-func resourceIBMPolicyTemplateV2PolicyResourceToMap(model *iampolicymanagementv1.V2PolicyResource,
+func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource,
 	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, *iampolicymanagementv1.RoleList, error) {
 	modelMap := make(map[string]interface{})
 	attributes := []map[string]interface{}{}
@@ -546,7 +476,7 @@ func resourceIBMPolicyTemplateV2PolicyResourceToMap(model *iampolicymanagementv1
 			return nil, nil, err
 		}
 
-		attributesItemMap, err := resourceIBMPolicyTemplateV2PolicyResourceAttributeToMap(&attributesItem)
+		attributesItemMap, err := flattenTemplatePolicyResourceAttribute(&attributesItem)
 		if err != nil {
 			return modelMap, nil, err
 		}
@@ -556,7 +486,7 @@ func resourceIBMPolicyTemplateV2PolicyResourceToMap(model *iampolicymanagementv1
 	if model.Tags != nil {
 		tags := []map[string]interface{}{}
 		for _, tagsItem := range model.Tags {
-			tagsItemMap, err := resourceIBMPolicyTemplateV2PolicyResourceTagToMap(&tagsItem)
+			tagsItemMap, err := flattenTemplatePolicyResourceTag(&tagsItem)
 			if err != nil {
 				return modelMap, nil, err
 			}
@@ -567,7 +497,7 @@ func resourceIBMPolicyTemplateV2PolicyResourceToMap(model *iampolicymanagementv1
 	return modelMap, roles, nil
 }
 
-func resourceIBMPolicyTemplateV2PolicyResourceAttributeToMap(model *iampolicymanagementv1.V2PolicyResourceAttribute) (map[string]interface{}, error) {
+func flattenTemplatePolicyResourceAttribute(model *iampolicymanagementv1.V2PolicyResourceAttribute) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["key"] = model.Key
 	modelMap["operator"] = model.Operator
@@ -575,95 +505,10 @@ func resourceIBMPolicyTemplateV2PolicyResourceAttributeToMap(model *iampolicyman
 	return modelMap, nil
 }
 
-func resourceIBMPolicyTemplateV2PolicyResourceTagToMap(model *iampolicymanagementv1.V2PolicyResourceTag) (map[string]interface{}, error) {
+func flattenTemplatePolicyResourceTag(model *iampolicymanagementv1.V2PolicyResourceTag) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["key"] = model.Key
 	modelMap["value"] = model.Value
 	modelMap["operator"] = model.Operator
-	return modelMap, nil
-}
-
-func resourceIBMPolicyTemplateV2PolicyRuleToMap(model iampolicymanagementv1.V2PolicyRuleIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*iampolicymanagementv1.V2PolicyRuleRuleAttribute); ok {
-		return resourceIBMPolicyTemplateV2PolicyRuleRuleAttributeToMap(model.(*iampolicymanagementv1.V2PolicyRuleRuleAttribute))
-	} else if _, ok := model.(*iampolicymanagementv1.V2PolicyRuleRuleWithConditions); ok {
-		return resourceIBMPolicyTemplateV2PolicyRuleRuleWithConditionsToMap(model.(*iampolicymanagementv1.V2PolicyRuleRuleWithConditions))
-	} else if _, ok := model.(*iampolicymanagementv1.V2PolicyRule); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*iampolicymanagementv1.V2PolicyRule)
-		if model.Key != nil {
-			modelMap["key"] = model.Key
-		}
-		if model.Operator != nil {
-			modelMap["operator"] = model.Operator
-		}
-		if model.Value != nil {
-			modelMap["value"] = model.Value
-		}
-		if model.Conditions != nil {
-			conditions := []map[string]interface{}{}
-			for _, conditionsItem := range model.Conditions {
-				conditionsItemMap, err := resourceIBMPolicyTemplateRuleAttributeToMap(&conditionsItem)
-				if err != nil {
-					return modelMap, err
-				}
-				conditions = append(conditions, conditionsItemMap)
-			}
-			modelMap["conditions"] = conditions
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized iampolicymanagementv1.V2PolicyRuleIntf subtype encountered")
-	}
-}
-
-func resourceIBMPolicyTemplateRuleAttributeToMap(model *iampolicymanagementv1.RuleAttribute) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["key"] = model.Key
-	modelMap["operator"] = model.Operator
-	modelMap["value"] = model.Value
-	return modelMap, nil
-}
-
-func resourceIBMPolicyTemplateV2PolicyRuleRuleAttributeToMap(model *iampolicymanagementv1.V2PolicyRuleRuleAttribute) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["key"] = model.Key
-	modelMap["operator"] = model.Operator
-	modelMap["value"] = model.Value
-	return modelMap, nil
-}
-
-func resourceIBMPolicyTemplateV2PolicyRuleRuleWithConditionsToMap(model *iampolicymanagementv1.V2PolicyRuleRuleWithConditions) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["operator"] = model.Operator
-	conditions := []map[string]interface{}{}
-	for _, conditionsItem := range model.Conditions {
-		conditionsItemMap, err := resourceIBMPolicyTemplateRuleAttributeToMap(&conditionsItem)
-		if err != nil {
-			return modelMap, err
-		}
-		conditions = append(conditions, conditionsItemMap)
-	}
-	modelMap["conditions"] = conditions
-	return modelMap, nil
-}
-
-func resourceIBMPolicyTemplateGrantToMap(model *iampolicymanagementv1.Grant) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	roles := []map[string]interface{}{}
-	for _, rolesItem := range model.Roles {
-		rolesItemMap, err := resourceIBMPolicyTemplateRolesToMap(&rolesItem)
-		if err != nil {
-			return modelMap, err
-		}
-		roles = append(roles, rolesItemMap)
-	}
-	modelMap["roles"] = roles
-	return modelMap, nil
-}
-
-func resourceIBMPolicyTemplateRolesToMap(model *iampolicymanagementv1.Roles) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["role_id"] = model.RoleID
 	return modelMap, nil
 }
