@@ -187,18 +187,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 				ForceNew:    true,
 			},
-			"plan_validation": {
-				Description: "For elasticsearch and postgres perform database parameter validation during the plan phase. Otherwise, database parameter validation happens in apply phase.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if o == "" {
-						return true
-					}
-					return false
-				},
-			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
 				Type:         schema.TypeString,
@@ -958,28 +946,6 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 	}
 
 	return getDefaultScalingGroupsResponse.Groups, nil
-}
-
-func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group, error) {
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
-	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
-	}
-
-	var dbType string
-	if service == "databases-for-cassandra" {
-		dbType = "datastax_enterprise_full"
-	} else if strings.HasPrefix(service, "messages-for-") {
-		dbType = service[len("messages-for-"):]
-	} else {
-		dbType = service[len("databases-for-"):]
-	}
-
-	groupDefaults, err := icdClient.Groups().GetDefaultGroups(dbType)
-	if err != nil {
-		return nil, fmt.Errorf("ICD API is down for plan validation, set plan_validation=false %s", err)
-	}
-	return &groupDefaults.Groups[0], nil
 }
 
 func getInitialNodeCount(service string, plan string, meta interface{}) (int, error) {

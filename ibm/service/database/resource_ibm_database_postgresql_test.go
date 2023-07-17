@@ -57,8 +57,8 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "28672"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "20480"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "0"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
@@ -286,7 +286,7 @@ func TestAccIBMDatabaseInstancePostgresImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation"},
+					"wait_time_minutes"},
 			},
 		},
 	})

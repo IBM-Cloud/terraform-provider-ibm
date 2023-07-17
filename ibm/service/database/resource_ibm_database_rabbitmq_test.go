@@ -115,7 +115,7 @@ func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation"},
+					"wait_time_minutes"},
 			},
 		},
 	})
