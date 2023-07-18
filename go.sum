@@ -156,6 +156,8 @@ github.com/IBM/networking-go-sdk v0.42.2 h1:caqjx4jyFHi10Vlf3skHvlL6K3YJRVstsmCB
 github.com/IBM/networking-go-sdk v0.42.2/go.mod h1:lTUZwtUkMANMnrLHFIgRhHrkBfwASY/Iho1fabaPHxo=
 github.com/IBM/platform-services-go-sdk v0.38.1 h1:wyjn61SLcoCvdRMZu7wZIkScaVswXwjrTl8Gif/uESc=
 github.com/IBM/platform-services-go-sdk v0.38.1/go.mod h1:rb1IaHGwT8QI8pCYgNbf2VbkuKMgOowl91pZ2QWZuJ4=
+github.com/IBM/platform-services-go-sdk v0.41.0 h1:2aeHcLnQgat7UAKrtIF6jGyFW2hwq4oroO26fIX94kA=
+github.com/IBM/platform-services-go-sdk v0.41.0/go.mod h1:rb1IaHGwT8QI8pCYgNbf2VbkuKMgOowl91pZ2QWZuJ4=
 github.com/IBM/project-go-sdk v0.0.10 h1:vHSuemwZ4S4c6BEb22tzsEcPTs/5LnZ0yKpP3GG/GL8=
 github.com/IBM/project-go-sdk v0.0.10/go.mod h1:lqe0M4cKvABI1iHR1b+KfasVcxQL6nl2VJ8eOyQs8Ig=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
