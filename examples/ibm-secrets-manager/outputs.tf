@@ -26,6 +26,12 @@ output "ibm_sm_public_certificate" {
   description = "sm_public_certificate resource instance"
   sensitive   = true
 }
+// This allows sm_public_certificate_action_validate_manual_dns data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_public_certificate_action_validate_manual_dns" {
+  value       = ibm_sm_public_certificate_action_validate_manual_dns.sm_public_certificate_action_validate_manual_dns_instance
+  description = "sm_public_certificate_action_validate_manual_dns resource instance"
+}
 // This allows sm_kv_secret data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
 output "ibm_sm_kv_secret" {

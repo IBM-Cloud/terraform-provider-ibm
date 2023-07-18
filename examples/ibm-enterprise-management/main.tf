@@ -30,6 +30,7 @@ resource "ibm_enterprise_account" "enterprise_account_instance" {
   parent = var.enterprise_account_parent
   name = var.enterprise_account_name
   owner_iam_id = var.enterprise_account_owner_iam_id
+  traits = var.enterprise_account_traits
 }
 
 //Import standalone account into enterprise
@@ -51,6 +52,7 @@ resource "ibm_enterprise_account" "enterprise_account_instance_example_1" {
   parent = ibm_enterprise_account_group.enterprise_account_group_instance_example_1.crn
   name = var.enterprise_account_name
   owner_iam_id = ibm_enterprise_account_group.enterprise_account_group_instance_example_1.primary_contact_iam_id
+  traits = var.enterprise_account_traits
 }
 
 //Import standalone account into enterprise using data source
