@@ -34,75 +34,13 @@ resource "ibm_project" "project_instance" {
 			profile_name = "profile_name"
 		}
 		locator_id = "locator_id"
-		type = "terraform_template"
 		input {
 			name = "name"
-			type = "array"
-			value = "anything as a string"
-			required = true
-		}
-		output {
-			name = "name"
-			description = "description"
 			value = "anything as a string"
 		}
 		setting {
 			name = "name"
 			value = "value"
-		}
-		id = "id"
-		project_id = "project_id"
-		version = 1
-		is_draft = true
-		needs_attention_state = [ "anything as a string" ]
-		state = "deleted"
-		pipeline_state = "pipeline_failed"
-		update_available = true
-		created_at = "2021-01-31T09:44:12Z"
-		updated_at = "2021-01-31T09:44:12Z"
-		last_approved {
-			is_forced = true
-			comment = "comment"
-			timestamp = "2021-01-31T09:44:12Z"
-			user_id = "user_id"
-		}
-		last_save = "2021-01-31T09:44:12Z"
-		job_summary {
-			plan_summary = { "key" = "anything as a string" }
-			apply_summary = { "key" = "anything as a string" }
-			destroy_summary = { "key" = "anything as a string" }
-			message_summary = { "key" = "anything as a string" }
-			plan_messages = { "key" = "anything as a string" }
-			apply_messages = { "key" = "anything as a string" }
-			destroy_messages = { "key" = "anything as a string" }
-		}
-		cra_logs {
-			cra_version = "cra_version"
-			schema_version = "schema_version"
-			status = "status"
-			summary = { "key" = "anything as a string" }
-			timestamp = "2021-01-31T09:44:12Z"
-		}
-		cost_estimate {
-			version = "version"
-			currency = "currency"
-			total_hourly_cost = "total_hourly_cost"
-			total_monthly_cost = "total_monthly_cost"
-			past_total_hourly_cost = "past_total_hourly_cost"
-			past_total_monthly_cost = "past_total_monthly_cost"
-			diff_total_hourly_cost = "diff_total_hourly_cost"
-			diff_total_monthly_cost = "diff_total_monthly_cost"
-			time_generated = "2021-01-31T09:44:12Z"
-			user_id = "user_id"
-		}
-		last_deployment_job_summary {
-			plan_summary = { "key" = "anything as a string" }
-			apply_summary = { "key" = "anything as a string" }
-			destroy_summary = { "key" = "anything as a string" }
-			message_summary = { "key" = "anything as a string" }
-			plan_messages = { "key" = "anything as a string" }
-			apply_messages = { "key" = "anything as a string" }
-			destroy_messages = { "key" = "anything as a string" }
 		}
   }
   description = "A microservice to deploy on top of ACME infrastructure."
@@ -143,88 +81,20 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
 		* `profile_name` - (Optional, String) The name of the compliance profile.
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
-	* `cost_estimate` - (Optional, List) The cost estimate of the configuration.It only exists after the first configuration validation.
-	Nested schema for **cost_estimate**:
-		* `currency` - (Optional, String) The currency of the cost estimate of the configuration.
-		* `diff_total_hourly_cost` - (Optional, String) The difference between current and past total hourly cost estimates of the configuration.
-		* `diff_total_monthly_cost` - (Optional, String) The difference between current and past total monthly cost estimates of the configuration.
-		* `past_total_hourly_cost` - (Optional, String) The past total hourly cost estimate of the configuration.
-		* `past_total_monthly_cost` - (Optional, String) The past total monthly cost estimate of the configuration.
-		* `time_generated` - (Optional, String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-		* `total_hourly_cost` - (Optional, String) The total hourly cost estimate of the configuration.
-		* `total_monthly_cost` - (Optional, String) The total monthly cost estimate of the configuration.
-		* `user_id` - (Optional, String) The unique ID of a project.
-		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-		* `version` - (Optional, String) The version of the cost estimate of the configuration.
-	* `cra_logs` - (Optional, List) The Code Risk Analyzer logs of the configuration.
-	Nested schema for **cra_logs**:
-		* `cra_version` - (Optional, String) The version of the Code Risk Analyzer logs of the configuration.
-		* `schema_version` - (Optional, String) The schema version of Code Risk Analyzer logs of the configuration.
-		* `status` - (Optional, String) The status of the Code Risk Analyzer logs of the configuration.
-		* `summary` - (Optional, Map) The summary of the Code Risk Analyzer logs of the configuration.
-		* `timestamp` - (Optional, String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-	* `created_at` - (Optional, String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 	* `description` - (Optional, String) The description of the project configuration.
 	  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
-	* `id` - (Required, String) The unique ID of a project.
-	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `input` - (Optional, List) The outputs of a Schematics template property.
+	* `input` - (Optional, List) The inputs of a Schematics template property.
 	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
 	Nested schema for **input**:
 		* `name` - (Required, String) The variable name.
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-		* `required` - (Optional, Boolean) Whether the variable is required or not.
-		* `type` - (Required, String) The variable type.
-		  * Constraints: Allowable values are: `array`, `boolean`, `float`, `int`, `number`, `password`, `string`, `object`.
 		* `value` - (Optional, String) Can be any value - a string, number, boolean, array, or object.
-	* `is_draft` - (Optional, Boolean) The flag that indicates whether the version of the configuration is draft, or active.
-	* `job_summary` - (Optional, List) The summaries of jobs that were performed on the configuration.
-	Nested schema for **job_summary**:
-		* `apply_messages` - (Optional, Map) The messages of apply jobs on the configuration.
-		* `apply_summary` - (Optional, Map) The summary of the apply jobs on the configuration.
-		* `destroy_messages` - (Optional, Map) The messages of destroy jobs on the configuration.
-		* `destroy_summary` - (Optional, Map) The summary of the destroy jobs on the configuration.
-		* `message_summary` - (Optional, Map) The message summaries of jobs on the configuration.
-		* `plan_messages` - (Optional, Map) The messages of plan jobs on the configuration.
-		* `plan_summary` - (Optional, Map) The summary of the plan jobs on the configuration.
 	* `labels` - (Optional, List) A collection of configuration labels.
 	  * Constraints: The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.
-	* `last_approved` - (Optional, List) The last approved metadata of the configuration.
-	Nested schema for **last_approved**:
-		* `comment` - (Optional, String) The comment left by the user who approved the configuration.
-		  * Constraints: The default value is ``.
-		* `is_forced` - (Required, Boolean) The flag that indicates whether the approval was forced approved.
-		* `timestamp` - (Required, String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-		* `user_id` - (Required, String) The unique ID of a project.
-		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `last_deployment_job_summary` - (Optional, List) The summaries of jobs that were performed on the configuration.
-	Nested schema for **last_deployment_job_summary**:
-		* `apply_messages` - (Optional, Map) The messages of apply jobs on the configuration.
-		* `apply_summary` - (Optional, Map) The summary of the apply jobs on the configuration.
-		* `destroy_messages` - (Optional, Map) The messages of destroy jobs on the configuration.
-		* `destroy_summary` - (Optional, Map) The summary of the destroy jobs on the configuration.
-		* `message_summary` - (Optional, Map) The message summaries of jobs on the configuration.
-		* `plan_messages` - (Optional, Map) The messages of plan jobs on the configuration.
-		* `plan_summary` - (Optional, Map) The summary of the plan jobs on the configuration.
-	* `last_save` - (Optional, String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 	* `locator_id` - (Required, String) A dotted value of catalogID.versionID.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (Required, String) The name of the configuration.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
-	* `needs_attention_state` - (Optional, List) The needs attention state of a configuration.
-	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
-	* `output` - (Optional, List) The outputs of a Schematics template property.
-	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
-	Nested schema for **output**:
-		* `description` - (Optional, String) A short explanation of the output value.
-		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
-		* `name` - (Required, String) The variable name.
-		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-		* `value` - (Optional, String) Can be any value - a string, number, boolean, array, or object.
-	* `pipeline_state` - (Optional, String) The pipeline state of the configuration. It only exists after the first configuration validation.
-	  * Constraints: Allowable values are: `pipeline_failed`, `pipeline_running`, `pipeline_succeeded`.
-	* `project_id` - (Optional, String) The unique ID of a project.
-	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `setting` - (Optional, List) Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.
 	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
 	Nested schema for **setting**:
@@ -232,13 +102,6 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
 		* `value` - (Required, String) The value of the configuration setting.
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-	* `state` - (Optional, String) The state of the configuration.
-	  * Constraints: Allowable values are: `deleted`, `deleting`, `deleting_failed`, `installed`, `installed_failed`, `installing`, `not_installed`, `uninstalling`, `uninstalling_failed`, `active`.
-	* `type` - (Required, String) The type of a project configuration manual property.
-	  * Constraints: Allowable values are: `terraform_template`, `schematics_blueprint`.
-	* `update_available` - (Optional, Boolean) The flag that indicates whether a configuration update is available.
-	* `updated_at` - (Optional, String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-	* `version` - (Optional, Integer) The version of the configuration.
 * `description` - (Optional, String) A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
 * `destroy_on_delete` - (Optional, Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.

@@ -138,75 +138,13 @@ func testAccCheckIbmProjectConfig(resourceGroup string, location string, name st
 					profile_name = "profile_name"
 				}
 				locator_id = "locator_id"
-				type = "terraform_template"
 				input {
 					name = "name"
-					type = "array"
-					value = "anything as a string"
-					required = true
-				}
-				output {
-					name = "name"
-					description = "description"
 					value = "anything as a string"
 				}
 				setting {
 					name = "name"
 					value = "value"
-				}
-				id = "id"
-				project_id = "project_id"
-				version = 1
-				is_draft = true
-				needs_attention_state = [ "anything as a string" ]
-				state = "deleted"
-				pipeline_state = "pipeline_failed"
-				update_available = true
-				created_at = "2021-01-31T09:44:12Z"
-				updated_at = "2021-01-31T09:44:12Z"
-				last_approved {
-					is_forced = true
-					comment = "comment"
-					timestamp = "2021-01-31T09:44:12Z"
-					user_id = "user_id"
-				}
-				last_save = "2021-01-31T09:44:12Z"
-				job_summary {
-					plan_summary = { "key" = "anything as a string" }
-					apply_summary = { "key" = "anything as a string" }
-					destroy_summary = { "key" = "anything as a string" }
-					message_summary = { "key" = "anything as a string" }
-					plan_messages = { "key" = "anything as a string" }
-					apply_messages = { "key" = "anything as a string" }
-					destroy_messages = { "key" = "anything as a string" }
-				}
-				cra_logs {
-					cra_version = "cra_version"
-					schema_version = "schema_version"
-					status = "status"
-					summary = { "key" = "anything as a string" }
-					timestamp = "2021-01-31T09:44:12Z"
-				}
-				cost_estimate {
-					version = "version"
-					currency = "currency"
-					total_hourly_cost = "total_hourly_cost"
-					total_monthly_cost = "total_monthly_cost"
-					past_total_hourly_cost = "past_total_hourly_cost"
-					past_total_monthly_cost = "past_total_monthly_cost"
-					diff_total_hourly_cost = "diff_total_hourly_cost"
-					diff_total_monthly_cost = "diff_total_monthly_cost"
-					time_generated = "2021-01-31T09:44:12Z"
-					user_id = "user_id"
-				}
-				last_deployment_job_summary {
-					plan_summary = { "key" = "anything as a string" }
-					apply_summary = { "key" = "anything as a string" }
-					destroy_summary = { "key" = "anything as a string" }
-					message_summary = { "key" = "anything as a string" }
-					plan_messages = { "key" = "anything as a string" }
-					apply_messages = { "key" = "anything as a string" }
-					destroy_messages = { "key" = "anything as a string" }
 				}
 			}
 		}
