@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIbmProjectConfigBasic(t *testing.T) {
-	var conf projectv1.ProjectConfigDraftResponse
+	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -49,7 +49,7 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 }
 
 func TestAccIbmProjectConfigAllArgs(t *testing.T) {
-	var conf projectv1.ProjectConfigDraftResponse
+	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
@@ -147,7 +147,7 @@ func testAccCheckIbmProjectConfigConfig(name string, description string, locator
 	`, name, description, locatorID)
 }
 
-func testAccCheckIbmProjectConfigExists(n string, obj projectv1.ProjectConfigDraftResponse) resource.TestCheckFunc {
+func testAccCheckIbmProjectConfigExists(n string, obj projectv1.ProjectConfig) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
