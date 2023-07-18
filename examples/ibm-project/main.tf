@@ -14,19 +14,8 @@ resource "ibm_project" "project_instance" {
     labels = [ "labels" ]
     description = "description"
     authorizations {
-      trusted_profile {
-        id = "id"
-        target_iam_id = "target_iam_id"
-      }
-      method = "method"
-      api_key = "api_key"
-    }
-    compliance_profile {
-      id = "id"
-      instance_id = "instance_id"
-      instance_location = "instance_location"
-      attachment_id = "attachment_id"
-      profile_name = "profile_name"
+      method = "API_KEY"
+      api_key = var.ibmcloud_api_key
     }
     locator_id = "locator_id"
     input {
@@ -49,17 +38,8 @@ resource "ibm_project_config" "project_config_instance" {
   authorizations {
     trusted_profile {
       id = "id"
-      target_iam_id = "target_iam_id"
     }
-    method = "method"
-    api_key = "api_key"
-  }
-  compliance_profile {
-    id = "id"
-    instance_id = "instance_id"
-    instance_location = "instance_location"
-    attachment_id = "attachment_id"
-    profile_name = "profile_name"
+    method = "TRUSTED_PROFILE"
   }
   locator_id = var.project_config_locator_id
   input {
@@ -82,5 +62,5 @@ data "ibm_project" "project_instance" {
 // Create project_config data source
 data "ibm_project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
-  id = ibm_project_config.project_config_instance.projectConfig_id
+  id = ibm_project_config.project_config_instance.project_config_id
 }

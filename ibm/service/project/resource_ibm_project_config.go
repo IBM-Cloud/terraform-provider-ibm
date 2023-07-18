@@ -48,11 +48,11 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"description": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "",
-				ValidateFunc: validate.InvokeValidator("ibm_project_config", "description"),
-				Description:  "The description of the project configuration.",
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+				// ValidateFunc: validate.InvokeValidator("ibm_project_config", "description"),
+				Description: "The description of the project configuration.",
 			},
 			"authorizations": &schema.Schema{
 				Type:        schema.TypeList,
@@ -130,10 +130,10 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				},
 			},
 			"locator_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project_config", "locator_id"),
-				Description:  "A dotted value of catalogID.versionID.",
+				Type:     schema.TypeString,
+				Required: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_project_config", "locator_id"),
+				Description: "A dotted value of catalogID.versionID.",
 			},
 			"input": &schema.Schema{
 				Type:        schema.TypeList,
