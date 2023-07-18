@@ -1,3 +1,77 @@
+# 1.55.0 (Jul 10, 2023)
+
+Features
+* Support VPC
+    - **Resources**
+        - ibm_is_share_mount_target
+    - **Datasources**
+        - ibm_is_share_mount_target
+        - ibm_is_share_mount_targets
+
+* Support DNS
+    - **Resources**
+        - ibm_dns_linked_zone
+       
+* Support IKS
+    - **Datasources**
+        - ibm_container_ingress_secret_tls
+        - ibm_container_ingress_secret_opaque
+    - **Resources**
+        - ibm_container_ingress_secret_tls
+        - ibm_container_ingress_secret_opaque
+
+* Support Metrics Router
+    - **Datasources**
+        - ibm_metrics_router_targets
+        - ibm_metrics_router_routes
+    - **Resources**
+        - ibm_metrics_router_route
+        - ibm_metrics_router_target
+        - ibm_metrics_router_settings
+
+* Support Code Engine
+    - **Datasources**
+        - ibm_code_engine_binding
+    - **Resources**
+        - ibm_code_engine_binding
+
+* Support CIS
+    - **Datasources**
+        - ibm_cis_bot_managements
+        - ibm_cis_bot_analytics
+    - **Resources**
+        - ibm_cis_bot_management
+     
+Enhancements
+* Secrets Manager - Additional tests ([4613](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4613))
+* Tekton: Improved property type handling ([4595](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4595))
+* Tagging for CD Toolchains ([4607](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4607))
+* Support for ODF Worker Replace ([4600](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4600))
+* Documentation for ODF Add-on and Worker Replace ([4627](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4627))
+* Document private net DNS limit on PER workspaces ([4629](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4629))
+* added support for vcpu manufacturer(vsi, dh) ([4637](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4637))
+* Adding changes for replacement of key_protect parameter ([4618](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4618))
+* Adding more examples and test cases for Atracker ([4645](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4645))
+
+BugFixes
+* fix(iam-service-api-key): added nil check on apikey *string ([4617](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4617))
+* update project_instance.html.markdown ([4621](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4621))
+* add import example of code engine ([4623](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4623))
+* Update pi_cloud_connection documentation ([4625](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4625))
+* Documenation correction instance group membership ([4632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4632))
+* CIS - Documentation Update for plan  ([4638](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4638))
+* Fix indentation  ([4633](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4633))
+* managed_addons fix for container_addons ([4606](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4606))
+* cos: importing a bucket does not import the key_protect attribute ([3394](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3394))
+* Private cert attribute fixes ([4641](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4641))
+* auto_rotate fix ([4649](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4649))
+* Fix the private endpoint for global search API ([4666](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4666))
+* Fix dnssvcs module broken after SDK release ([4667](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4667))
+* DNS ut fix: strfmt to string conversion to fix broken UT ([4671](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4671))
+* fix: catalog management version resource patch fix to correct operation type ([4673](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4673))
+* Fix unclosed code block in r/iam_access_group_policy docs ([4659](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4659))
+
+
 # 1.55.0-beta0(Jun 21, 2023)
 
 Features
@@ -915,6 +989,12 @@ Features
      - **Resources**
         - ibm_pi_shared_processor_pool
         - ibm_pi_spp_placement_group
+* Support Security and Compilance 
+    - **DataSources**
+        - ibm_scc_posture_profile_import
+        - ibm_scc_posture_scan_initiate_validation
+    - **Resources**
+        - ibm_scc_posture_scan_initiate_validation
 * Support App Configuration
     - **DataSources**
         - ibm_app_config_collection
@@ -967,6 +1047,12 @@ Features
      - **Resources**
         - ibm_pi_shared_processor_pool
         - ibm_pi_shared_processor_pool
+* Support Security and Compilance 
+    - **DataSources**
+        - ibm_scc_posture_profile_import
+        - ibm_scc_posture_scan_initiate_validation
+    - **Resources**
+        - ibm_scc_posture_scan_initiate_validation
 * Support App Configuration
     - **DataSources**
         - ibm_app_config_collection
@@ -1123,6 +1209,13 @@ Features
     - **DataSources**
         - ibm_database_task
         - ibm_database_tasks
+* Support Security and Compilance 
+    - **DataSources**
+        - ibm_scc_posture_credential
+        - ibm_scc_posture_collector
+        - ibm_scc_posture_scope
+        - ibm_scc_posture_credentials
+        - ibm_scc_posture_collectors
 * Support Virtual Private Cloud
     - **DataSources**
         - ibm_is_backup_policy
@@ -1180,6 +1273,13 @@ Features
     - **DataSources**
         - ibm_database_task
         - ibm_database_tasks
+* Support Security and Compilance 
+    - **DataSources**
+        - ibm_scc_posture_credential
+        - ibm_scc_posture_collector
+        - ibm_scc_posture_scope
+        - ibm_scc_posture_credentials
+        - ibm_scc_posture_collectors
 * Support Virtual Private Cloud
     - **DataSources**
         - ibm_is_backup_policy
@@ -2035,6 +2135,15 @@ Features
         - ibm_pi_image_export
         - ibm_pi_placement_group
         - ibm_pi_capture
+* Support Security and Compliance Center
+    - **DataSources**
+        - ibm_scc_posture_profile
+        - ibm_scc_posture_group_profile
+        - ibm_scc_posture_scope_correlation
+    - **Resources**
+        - ibm_scc_posture_collector
+        - ibm_scc_posture_scope
+        - ibm_scc_posture_credential
 * Support IAM Authorization Policies
     - **Datasources**
         - ibm_iam_authorization_policies
@@ -2388,6 +2497,11 @@ FEATURES:
         - ibm_scc_si_note
         - ibm_scc_si_notes
         - ibm_scc_si_providers
+        - ibm_scc_posture_scopes
+        - ibm_scc_posture_latest_scans
+        - ibm_scc_posture_profiles
+        - ibm_scc_posture_scan_summary
+        -ibm_scc_posture_scan_summaries
 
 * Support Event Streams Schema
     - **Resources**
