@@ -9,8 +9,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 )
 
 var AppIDTenantID string
@@ -190,6 +191,9 @@ var IsCosBucketCRN string
 var Image_cos_url string
 var Image_cos_url_encrypted string
 var Image_operating_system string
+
+// Transit Gateway Power Virtual Server
+var Tg_power_vs_network_id string
 
 // Transit Gateway cross account
 var Tg_cross_network_account_id string
@@ -1111,6 +1115,10 @@ func init() {
 	Tg_cross_network_id = os.Getenv("IBM_TG_CROSS_NETWORK_ID")
 	if Tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
+	Tg_power_vs_network_id = os.Getenv("IBM_TG_POWER_VS_NETWORK_ID")
+	if Tg_power_vs_network_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_POWER_VS_NETWORK_ID for testing ibm_tg_connection resource else tests will fail if this is not set correctly")
 	}
 	Account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
 	if Account_to_be_imported == "" {

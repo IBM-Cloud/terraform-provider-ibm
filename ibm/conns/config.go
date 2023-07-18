@@ -31,6 +31,7 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
+	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
 	cisbotmanagementv1 "github.com/IBM/networking-go-sdk/botmanagementv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
@@ -272,6 +273,7 @@ type ClientSession interface {
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisMtlsSession() (*cismtlsv1.MtlsV1, error)
 	CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error)
+	CisBotAnalyticsSession() (*cisbotanalyticsv1.BotAnalyticsV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -571,6 +573,10 @@ type clientSession struct {
 	// Bot Management options
 	cisBotManagementClient *cisbotmanagementv1.BotManagementV1
 	cisBotManagementErr    error
+
+	//Bot Analytics options
+	cisBotAnalyticsClient *cisbotanalyticsv1.BotAnalyticsV1
+	cisBotAnalyticsErr    error
 
 	// CIS Webhooks options
 	cisWebhooksClient *ciswebhooksv1.WebhooksV1
@@ -1125,12 +1131,20 @@ func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
 	return sess.cisMtlsClient.Clone(), nil
 }
 
-//CIS Bot Management
+// CIS Bot Management
 func (sess clientSession) CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error) {
 	if sess.cisBotManagementErr != nil {
 		return sess.cisBotManagementClient, sess.cisBotManagementErr
 	}
 	return sess.cisBotManagementClient.Clone(), nil
+}
+
+// CIS Bot Analytics
+func (sess clientSession) CisBotAnalyticsSession() (*cisbotanalyticsv1.BotAnalyticsV1, error) {
+	if sess.cisBotAnalyticsErr != nil {
+		return sess.cisBotAnalyticsClient, sess.cisBotAnalyticsErr
+	}
+	return sess.cisBotAnalyticsClient.Clone(), nil
 }
 
 // CIS Webhooks
@@ -2041,7 +2055,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// GLOBAL TAGGING Service
 	globalSearchEndpoint := "https://api.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		globalSearchEndpoint = ContructEndpoint("api.private", fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+		var globalSearchRegion string
+		if c.Region != "us-south" && c.Region != "au-syd" && c.Region != "eu-gb" {
+			globalSearchRegion = "us-south"
+		} else {
+			globalSearchRegion = c.Region
+		}
+		globalSearchEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s", globalSearchRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalSearchEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GS_API_ENDPOINT", c.Region, searchv2.DefaultServiceURL)
@@ -2804,9 +2824,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// IBM Bot Management
 	cisBotManagementOpt := &cisbotmanagementv1.BotManagementV1Options{
-		URL:           cisEndPoint,
-		Crn:           core.StringPtr(""),
-		Authenticator: authenticator,
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
 	}
 	session.cisBotManagementClient, session.cisBotManagementErr = cisbotmanagementv1.NewBotManagementV1(cisBotManagementOpt)
 	if session.cisBotManagementErr != nil {
@@ -2817,6 +2838,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisBotManagementClient != nil && session.cisBotManagementClient.Service != nil {
 		session.cisBotManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisBotManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Bot Analytics
+	cisBotAnalyticsOpt := &cisbotanalyticsv1.BotAnalyticsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisBotAnalyticsClient, session.cisBotAnalyticsErr = cisbotanalyticsv1.NewBotAnalyticsV1(cisBotAnalyticsOpt)
+	if session.cisBotAnalyticsErr != nil {
+		session.cisBotAnalyticsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Bot Anaytics : %s",
+				session.cisBotAnalyticsErr)
+	}
+	if session.cisBotAnalyticsClient != nil && session.cisBotAnalyticsClient.Service != nil {
+		session.cisBotAnalyticsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisBotAnalyticsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
