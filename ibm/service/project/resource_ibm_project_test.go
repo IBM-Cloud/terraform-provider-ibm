@@ -18,11 +18,11 @@ import (
 
 func TestAccIbmProjectBasic(t *testing.T) {
 	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("Default")
+	location := fmt.Sprintf("us-south")
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	resourceGroupUpdate := fmt.Sprintf("Default")
+	locationUpdate := fmt.Sprintf("us-south")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -53,13 +53,13 @@ func TestAccIbmProjectBasic(t *testing.T) {
 
 func TestAccIbmProjectAllArgs(t *testing.T) {
 	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("Default")
+	location := fmt.Sprintf("us-south")
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	destroyOnDelete := "false"
-	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	resourceGroupUpdate := fmt.Sprintf("Default")
+	locationUpdate := fmt.Sprintf("us-south")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	destroyOnDeleteUpdate := "true"
@@ -123,21 +123,10 @@ func testAccCheckIbmProjectConfig(resourceGroup string, location string, name st
 				labels = [ "labels" ]
 				description = "description"
 				authorizations {
-					trusted_profile {
-						id = "id"
-						target_iam_id = "target_iam_id"
-					}
-					method = "method"
-					api_key = "api_key"
-				}
-				compliance_profile {
-					id = "id"
-					instance_id = "instance_id"
-					instance_location = "instance_location"
-					attachment_id = "attachment_id"
-					profile_name = "profile_name"
-				}
-				locator_id = "locator_id"
+                  method = "API_KEY"
+                  api_key = "xxx"
+                }
+				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 				input {
 					name = "name"
 					value = "anything as a string"

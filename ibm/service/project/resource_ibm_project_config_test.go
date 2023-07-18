@@ -20,9 +20,9 @@ import (
 func TestAccIbmProjectConfigBasic(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
+	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	locatorIDUpdate := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
+	locatorIDUpdate := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -52,10 +52,10 @@ func TestAccIbmProjectConfigAllArgs(t *testing.T) {
 	var conf projectv1.ProjectConfig
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	locatorID := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
+	locatorID := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	locatorIDUpdate := fmt.Sprintf("tf_locator_id_%d", acctest.RandIntRange(10, 100))
+	locatorIDUpdate := fmt.Sprintf("1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -115,23 +115,12 @@ func testAccCheckIbmProjectConfigConfig(name string, description string, locator
 		resource "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
 			name = "%s"
-			labels = "FIXME"
+			labels = [ "labels" ]
 			description = "%s"
 			authorizations {
-				trusted_profile {
-					id = "id"
-					target_iam_id = "target_iam_id"
-				}
-				method = "method"
-				api_key = "api_key"
-			}
-			compliance_profile {
-				id = "id"
-				instance_id = "instance_id"
-				instance_location = "instance_location"
-				attachment_id = "attachment_id"
-				profile_name = "profile_name"
-			}
+              method = "API_KEY"
+              api_key = "xxx"
+            }
 			locator_id = "%s"
 			input {
 				name = "name"
