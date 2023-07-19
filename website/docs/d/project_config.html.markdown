@@ -13,9 +13,9 @@ Provides a read-only data source to retrieve information about a project_config.
 ## Example Usage
 
 ```hcl
-data "ibm_project_config" "project_config" {
+data "ibm_project_config" "project_config_instance" {
 	id = ibm_project_config.project_config_instance.project_config_id
-	project_id = ibm_project_config.project_config.project_id
+	project_id = ibm_project_config.project_config_instance.project_id
 }
 ```
 
