@@ -32,7 +32,6 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "destroy_on_delete"),
 				),
 			},
@@ -45,7 +44,7 @@ func TestAccIbmProjectDataSourceAllArgs(t *testing.T) {
 	projectLocation := fmt.Sprintf("us-south")
 	projectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	projectDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	projectDestroyOnDelete := "false"
+	projectDestroyOnDelete := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -54,7 +53,6 @@ func TestAccIbmProjectDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectDataSourceConfig(projectResourceGroup, projectLocation, projectName, projectDescription, projectDestroyOnDelete),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "created_at"),
