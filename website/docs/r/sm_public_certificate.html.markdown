@@ -68,8 +68,8 @@ Nested scheme for **akamai**:
       * `config_section` - (Optional, Forces new resource, String) The section of the edgerc file to use. Default is `default`.
     * `config` - (Optional, Forces new resource, List) Directly using your Akamai's authentication credentials.
     Nested scheme for **config**:
-      * `host` - (Optional, Forces new resource, String) Akamai's authentication credentials.
       * `client_secret` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+      * `host` - (Optional, Forces new resource, String) Akamai's authentication credentials.
       * `access_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
       * `client_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
 
