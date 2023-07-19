@@ -95,6 +95,7 @@ var VSIUnattachedBootVolumeID string
 var VSIDataVolumeID string
 var ISRouteDestination string
 var ISRouteNextHop string
+var ISSnapshotCRN string
 var WorkspaceID string
 var TemplateID string
 var ActionID string
@@ -593,8 +594,8 @@ func init() {
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		//IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		IsImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
+		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
 	}
 
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
@@ -756,6 +757,12 @@ func init() {
 	if ISRouteNextHop == "" {
 		ISRouteNextHop = "10.240.0.0"
 		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP else it is set to default value '10.0.0.4'")
+	}
+
+	ISSnapshotCRN = os.Getenv("IS_SNAPSHOT_CRN")
+	if ISSnapshotCRN == "" {
+		ISSnapshotCRN = "crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx"
+		fmt.Println("[INFO] Set the environment variable ISSnapshotCRN for ibm_is_snapshot resource else it is set to default value 'crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx'")
 	}
 
 	IcdDbRegion = os.Getenv("ICD_DB_REGION")
