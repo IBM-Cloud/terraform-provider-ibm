@@ -1272,3 +1272,14 @@ data "ibm_is_share" "is_share" {
 
 data "ibm_is_shares" "is_shares" {
 }
+
+
+// image deprecate and obsolete
+
+resource "ibm_is_image_deprecate" "example" {
+  image     = ibm_is_image.image1.id
+}
+
+resource "ibm_is_image_obsolete" "example" {
+  image     = ibm_is_image.image1.id
+}

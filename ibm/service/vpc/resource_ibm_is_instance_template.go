@@ -693,7 +693,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceByCatalogOfferingInstanceTemplateContext{
+	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceTemplateByCatalogOffering{
 		Zone: &vpcv1.ZoneIdentity{
 			Name: &zone,
 		},
