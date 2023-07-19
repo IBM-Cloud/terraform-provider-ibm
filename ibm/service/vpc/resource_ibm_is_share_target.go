@@ -234,7 +234,7 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		}
 		shareMountTargetPrototype.VPC = vpc
 	} else if vniIntf, ok := d.GetOk("virtual_network_interface"); ok {
-		vniPrototype := vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext{}
+		vniPrototype := vpcbetav1.ShareMountTargetVirtualNetworkInterfacePrototype{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
 		vniPrototype, err = ShareMountTargetMapToShareMountTargetPrototype(d, vniMap)
 		if err != nil {
@@ -633,15 +633,15 @@ func isWaitForTargetDelete(context context.Context, vpcClient *vpcbetav1.Vpcbeta
 	return stateConf.WaitForState()
 }
 
-func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniMap map[string]interface{}) (vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext, error) {
-	vniPrototype := vpcbetav1.VirtualNetworkInterfacePrototypeShareMountTargetContext{}
+func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniMap map[string]interface{}) (vpcbetav1.ShareMountTargetVirtualNetworkInterfacePrototype, error) {
+	vniPrototype := vpcbetav1.ShareMountTargetVirtualNetworkInterfacePrototype{}
 	name, _ := vniMap["name"].(string)
 	if name != "" {
 		vniPrototype.Name = &name
 	}
 	primaryIp, ok := vniMap["primary_ip"]
 	if ok && len(primaryIp.([]interface{})) > 0 {
-		primaryIpPrototype := &vpcbetav1.VirtualNetworkInterfacePrimaryIPReservedIPPrototype{}
+		primaryIpPrototype := &vpcbetav1.VirtualNetworkInterfacePrimaryIPPrototype{}
 		primaryIpMap := primaryIp.([]interface{})[0].(map[string]interface{})
 
 		reservedIp := primaryIpMap["reserved_ip"].(string)
@@ -673,7 +673,7 @@ func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniM
 		}
 	}
 	if resourceGroup := vniMap["resource_group"].(string); resourceGroup != "" {
-		vniPrototype.ResourceGroup = &vpcbetav1.VirtualNetworkInterfacePrototypeTargetContextResourceGroup{
+		vniPrototype.ResourceGroup = &vpcbetav1.ResourceGroupIdentity{
 			ID: &resourceGroup,
 		}
 	}

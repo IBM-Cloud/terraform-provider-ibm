@@ -22,9 +22,10 @@ This is a Beta feature and it is subject to change in the GA release
 
 ```terraform
 resource "ibm_is_share" "example" {
+  access_control_mode = "security_group"
   name    = "my-share"
   size    = 200
-  profile = "tier-3iops"
+  profile = "dp2"
   zone    = "us-south-2"
 }
 ```
@@ -35,7 +36,7 @@ resource "ibm_is_share" "example-1" {
   zone                  = "us-south-3"
   source_share          = ibm_is_share.example.id
   name                  = "my-replica1"
-  profile               = "tier-3iops"
+  profile               = "dp2"
   replication_cron_spec = "0 */5 * * *"
 }
 ```
@@ -46,11 +47,11 @@ resource "ibm_is_share" "example-2" {
   zone    = "us-south-1"
   size    = 220
   name    = "my-share"
-  profile = "tier-3iops"
+  profile = "dp2"
   replica_share {
     name                  = "my-replica"
     replication_cron_spec = "0 */5 * * *"
-    profile               = "tier-3iops"
+    profile               = "dp2"
     zone                  = "us-south-3"
   }
 }
