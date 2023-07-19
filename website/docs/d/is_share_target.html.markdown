@@ -6,7 +6,7 @@ description: |-
 subcategory: "VPC infrastructure"
 ---
 
-# ibm\_is_share_target
+# ibm\is_share_mount_target
 
 Provides a read-only data source for ShareTarget. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
@@ -34,13 +34,13 @@ resource "ibm_is_share" "example" {
   zone    = "us-south-2"
 }
 
-resource "ibm_is_share_target" "example" {
+resource "ibm_is_share_mount_target" "example" {
   share = ibm_is_share.is_share.id
   vpc   = ibm_is_vpc.example.id
   name  = "example-share-target"
 }
 
-data "ibm_is_share_target" "example" {
+data "ibm_is_share_mount_target" "example" {
   share        = ibm_is_share.example.id
   share_target = ibm_is_share_target.example.share_target
 }
@@ -51,7 +51,7 @@ data "ibm_is_share_target" "example" {
 The following arguments are supported:
 
 - `share` - (Required, string) The file share identifier.
-- `share_target` - (Required, string) The share target identifier.
+- `mount_target` - (Required, string) The share target identifier.
 
 ## Attribute Reference
 

@@ -33,7 +33,7 @@ resource "ibm_is_share" "example" {
   zone    = "us-south-2"
 }
 
-data "ibm_is_share_targets" "example" {
+data "ibm_is_share_mount_targets" "example" {
   share = ibm_is_share.example.id
 }
 ```

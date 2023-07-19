@@ -34,12 +34,6 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 				ForceNew:    true,
 				Description: "The file share identifier.",
 			},
-			"vpc": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
-			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -52,6 +46,134 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 				ForceNew:    true,
 				Computed:    true,
 				Description: "The transit encryption mode.",
+			},
+			"access_control_mode": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The access control mode for the share",
+			},
+			"virtual_network_interface": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Computed:      true,
+				MinItems:      1,
+				MaxItems:      1,
+				ConflictsWith: []string{"vpc"},
+				ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
+				Description:   "VNI for mount target.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "href of virtual network interface",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of this VNI",
+						},
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "CRN of this VNI",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of this VNI",
+						},
+						"primary_ip": {
+							Type:        schema.TypeList,
+							MinItems:    0,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "VNI for mount target.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"reserved_ip": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										ForceNew:      true,
+										Computed:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										Description:   "ID of reserved IP",
+									},
+									"address": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										Computed:      true,
+										ForceNew:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										Description:   "The IP address to reserve, which must not already be reserved on the subnet.",
+									},
+									"auto_delete": {
+										Type:          schema.TypeBool,
+										Optional:      true,
+										Computed:      true,
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										Description:   "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
+									},
+									"name": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										Computed:      true,
+										ConflictsWith: []string{"virtual_network_interface.0.primary_ip.0.reserved_ip"},
+										AtLeastOneOf:  []string{"virtual_network_interface.0.primary_ip.0.reserved_ip", "virtual_network_interface.0.primary_ip.0.name", "virtual_network_interface.0.primary_ip.0.address", "virtual_network_interface.0.primary_ip.0.auto_delete"},
+										Description:   "Name for reserved IP",
+									},
+									"resource_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Resource type of primary ip",
+									},
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "href of primary ip",
+									},
+								},
+							},
+						},
+						"resource_group": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Resource group id",
+						},
+						"resource_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Resource type of VNI",
+						},
+						"security_groups": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "The security groups to use for this virtual network interface.",
+						},
+						"subnet": {
+							Type:     schema.TypeString,
+							Optional: true,
+							//ConflictsWith: []string{"virtual_network_interface.0.primary_ip"},
+							Description: "The associated subnet. Required if primary_ip is not specified.",
+						},
+					},
+				},
+			},
+			"vpc": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"virtual_network_interface"},
+				ExactlyOneOf:  []string{"virtual_network_interface", "vpc"},
+				Description:   "The unique identifier of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
 			},
 			"mount_target": {
 				Type:        schema.TypeString,
@@ -163,11 +285,21 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 
 	createShareMountTargetOptions.SetShareID(d.Get("share").(string))
 	shareMountTargetPrototype := &vpcbetav1.ShareMountTargetPrototype{}
-	vpcid := d.Get("vpc").(string)
-	vpc := &vpcbetav1.VPCIdentity{
-		ID: &vpcid,
+	if vpcIdIntf, ok := d.GetOk("vpc"); ok {
+		vpcId := vpcIdIntf.(string)
+		vpc := &vpcbetav1.VPCIdentity{
+			ID: &vpcId,
+		}
+		shareMountTargetPrototype.VPC = vpc
+	} else if vniIntf, ok := d.GetOk("virtual_network_interface"); ok {
+		vniPrototype := vpcbetav1.ShareMountTargetVirtualNetworkInterfacePrototype{}
+		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
+		vniPrototype, err = ShareMountTargetMapToShareMountTargetPrototype(d, vniMap)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		shareMountTargetPrototype.VirtualNetworkInterface = &vniPrototype
 	}
-	shareMountTargetPrototype.VPC = vpc
 	if nameIntf, ok := d.GetOk("name"); ok {
 		name := nameIntf.(string)
 		shareMountTargetPrototype.Name = &name
@@ -176,14 +308,20 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 		transitEncryption := transitEncryptionIntf.(string)
 		shareMountTargetPrototype.TransitEncryption = &transitEncryption
 	}
-	createShareMountTargetOptions.SetShareMountTargetPrototype(shareMountTargetPrototype)
+	createShareMountTargetOptions.ShareMountTargetPrototype = shareMountTargetPrototype
 	shareTarget, response, err := vpcClient.CreateShareMountTargetWithContext(context, createShareMountTargetOptions)
-	if err != nil {
+	if err != nil || shareTarget == nil {
 		log.Printf("[DEBUG] CreateShareMountTargetWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", *createShareMountTargetOptions.ShareID, *shareTarget.ID))
-	_, err = WaitForTargetAvailable(context, vpcClient, *createShareMountTargetOptions.ShareID, *shareTarget.ID, d, d.Timeout(schema.TimeoutCreate))
+	if shareTarget.VirtualNetworkInterface != nil {
+		_, err = WaitForVNIAvailable(vpcClient, *shareTarget.VirtualNetworkInterface.ID, d, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	_, err = WaitForMountTargetAvailable(context, vpcClient, *createShareMountTargetOptions.ShareID, *shareTarget.ID, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -218,12 +356,20 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+	d.Set("access_control_mode", *shareTarget.AccessControlMode)
 	d.Set("mount_target", *shareTarget.ID)
-
-	if err = d.Set("vpc", *shareTarget.VPC.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	if shareTarget.VPC != nil && shareTarget.VPC.ID != nil {
+		if err = d.Set("vpc", *shareTarget.VPC.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
 	}
-
+	if shareTarget.VirtualNetworkInterface != nil {
+		vniList, err := ShareMountTargetVirtualNetworkInterfaceToMap(context, vpcClient, d, *shareTarget.VirtualNetworkInterface.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		d.Set("virtual_network_interface", vniList)
+	}
 	if err = d.Set("name", *shareTarget.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -259,12 +405,14 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 	updateShareMountTargetOptions := &vpcbetav1.UpdateShareMountTargetOptions{}
 
 	parts, err := flex.IdParts(d.Id())
+	shareId := parts[0]
+	mountTargetId := parts[1]
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	updateShareMountTargetOptions.SetShareID(parts[0])
-	updateShareMountTargetOptions.SetID(parts[1])
+	updateShareMountTargetOptions.SetShareID(shareId)
+	updateShareMountTargetOptions.SetID(mountTargetId)
 
 	hasChange := false
 
@@ -274,6 +422,128 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 		name := d.Get("name").(string)
 		shareTargetPatchModel.Name = &name
 		hasChange = true
+	}
+
+	if d.HasChange("virtual_network_interface.0.name") {
+		vniName := d.Get("virtual_network_interface.0.name").(string)
+		vniPatchModel := &vpcbetav1.VirtualNetworkInterfacePatch{
+			Name: &vniName,
+		}
+		vniPatch, err := vniPatchModel.AsPatch()
+		if err != nil {
+			log.Printf("[DEBUG] Virtual network interface AsPatch failed %s", err)
+			return diag.FromErr(err)
+		}
+		shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+		shareTargetOptions.SetShareID(shareId)
+		shareTargetOptions.SetID(mountTargetId)
+		shareTarget, _, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
+		if err != nil {
+			diag.FromErr(err)
+		}
+		vniId := *shareTarget.VirtualNetworkInterface.ID
+		updateVNIOptions := &vpcbetav1.UpdateVirtualNetworkInterfaceOptions{
+			ID:                           &vniId,
+			VirtualNetworkInterfacePatch: vniPatch,
+		}
+		_, response, err := vpcClient.UpdateVirtualNetworkInterfaceWithContext(context, updateVNIOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateShareTargetWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		_, err = WaitForVNIAvailable(vpcClient, *shareTarget.VirtualNetworkInterface.ID, d, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("virtual_network_interface.0.security_groups") && !d.IsNewResource() {
+		ovs, nvs := d.GetChange("virtual_network_interface.0.security_groups")
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+		remove := flex.ExpandStringList(ov.Difference(nv).List())
+		add := flex.ExpandStringList(nv.Difference(ov).List())
+		networkID := d.Get("virtual_network_interface.0.id").(string)
+		if len(add) > 0 {
+
+			for i := range add {
+				createsgnicoptions := &vpcbetav1.CreateSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &add[i],
+					ID:              &networkID,
+				}
+				_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response))
+				}
+				_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
+		}
+		if len(remove) > 0 {
+			for i := range remove {
+				deletesgnicoptions := &vpcbetav1.DeleteSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &remove[i],
+					ID:              &networkID,
+				}
+				response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response))
+				}
+				_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				_, err = WaitForTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
+	if !d.IsNewResource() && (d.HasChange("virtual_network_interface.0.primary_ip.0.name") || d.HasChange("virtual_network_interface.0.primary_ip.0.auto_delete")) {
+		sess, err := meta.(conns.ClientSession).VpcV1API()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		subnetId := d.Get("virtual_network_interface.0.subnet").(string)
+		ripId := d.Get("virtual_network_interface.0.primary_ip.0.reserved_ip").(string)
+		updateripoptions := &vpcbetav1.UpdateSubnetReservedIPOptions{
+			SubnetID: &subnetId,
+			ID:       &ripId,
+		}
+		reservedIpPath := &vpcbetav1.ReservedIPPatch{}
+		if d.HasChange("virtual_network_interface.0.primary_ip.0.name") {
+			name := d.Get("virtual_network_interface.0.primary_ip.0.name").(string)
+			reservedIpPath.Name = &name
+		}
+		if d.HasChange("virtual_network_interface.0.primary_ip.0.auto_delete") {
+			auto := d.Get("virtual_network_interface.0.primary_ip.0.auto_delete").(bool)
+			reservedIpPath.AutoDelete = &auto
+		}
+		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err))
+		}
+		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
+		_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
+		}
+		_, err = isWaitForReservedIpAvailable(sess, subnetId, ripId, d.Timeout(schema.TimeoutUpdate), d)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err))
+		}
 	}
 
 	if hasChange {
@@ -286,6 +556,10 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 		_, response, err := vpcClient.UpdateShareMountTargetWithContext(context, updateShareMountTargetOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateShareMountTargetWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		_, err = WaitForMountTargetAvailable(context, vpcClient, shareId, mountTargetId, d, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}

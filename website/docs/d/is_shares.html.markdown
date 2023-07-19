@@ -82,13 +82,13 @@ The following attributes are exported:
 	- `zone` - The name of the zone this file share will reside in.
 	- `access_tags`  - (String) Access management tags associated to the share.
 	- `tags`  - (String) User tags associated for to the share.
-	- `source_share` - The source file share for this replica file share.This property will be present when the `replication_role` is `replica`. Nested `source_share` blocks have the following structure:
-      - `crn` - The CRN for this file share.
-      - `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-        - `more_info` - Link to documentation about deleted resources.
-      - `href` - The URL for this file share.
-      - `id` - The unique identifier for this file share.
-      - `name` - The unique user-defined name for this file share.
-      - `resource_type` - The resource type.
+	- `source_share` - (List) The source file share for this replica file share.This property will be present when the `replication_role` is `replica`. Nested `source_share` blocks have the following structure:
+      - `crn` - (String) The CRN for this file share.
+      - `deleted` - (List)  If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+        - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (String) The URL for this file share.
+      - `id` - (String) The unique identifier for this file share.
+      - `name` - (String) The unique user-defined name for this file share.
+      - `resource_type` - (String) The resource type.
 - `total_count` - The total number of resources across all pages.
 

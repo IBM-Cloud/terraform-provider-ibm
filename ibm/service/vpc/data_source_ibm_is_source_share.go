@@ -258,7 +258,7 @@ func DataSourceIbmIsSourceShare() *schema.Resource {
 					},
 				},
 			},
-			"share_targets": {
+			"mount_targets": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Mount targets for the file share.",
