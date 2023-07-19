@@ -160,7 +160,7 @@ func DataSourceIBMCdToolchainToolHostedgit() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.",
+							Description: "Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,

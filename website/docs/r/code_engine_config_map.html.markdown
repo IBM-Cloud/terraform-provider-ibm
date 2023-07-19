@@ -62,5 +62,5 @@ $ terraform import ibm_code_engine_config_map.code_engine_config_map <project_id
 
 # Example
 ```
-$ terraform import ibm_code_engine_project.code_engine_project "15314cc3-85b4-4338-903f-c28cdee6d005/my-config-map"
+$ terraform import ibm_code_engine_config_map.code_engine_config_map "15314cc3-85b4-4338-903f-c28cdee6d005/my-config-map"
 ```
