@@ -1084,10 +1084,13 @@ func configureAkamai(d *schema.ResourceData) (edgegrid.Config, diag.Diagnostics)
 	} else if len(akamaiData["config"].([]interface{})) > 0 && akamaiData["config"].([]interface{})[0] != nil {
 		akamaiDataConfig := akamaiData["config"].([]interface{})[0].(map[string]interface{})
 		if akamaiDataConfig["host"] != "" && akamaiDataConfig["client_secret"] != "" && akamaiDataConfig["access_token"] != "" && akamaiDataConfig["client_token"] != "" {
-			config.Host = akamaiDataConfig["host"].(string)
 			config.ClientSecret = akamaiDataConfig["client_secret"].(string)
+			config.Host = akamaiDataConfig["host"].(string)
 			config.AccessToken = akamaiDataConfig["access_token"].(string)
 			config.ClientToken = akamaiDataConfig["client_token"].(string)
+			if config.MaxBody == 0 {
+				config.MaxBody = 131072
+			}
 		} else {
 			return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
 		}
