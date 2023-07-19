@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -26,6 +28,10 @@ func ResourceIbmProjectConfig() *schema.Resource {
 		UpdateContext: resourceIbmProjectConfigUpdate,
 		DeleteContext: resourceIbmProjectConfigDelete,
 		Importer:      &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(1 * time.Minute),
+			Delete: schema.DefaultTimeout(1 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
@@ -606,7 +612,45 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(fmt.Sprintf("%s/%s", *createConfigOptions.ProjectID, *projectConfig.ID))
 
+	_, err = waitForProjectConfigInstanceCreate(d, meta)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create project config instance (%s) to be succeeded: %s", d.Id(), err))
+	}
+
 	return resourceIbmProjectConfigRead(context, d, meta)
+}
+
+func waitForProjectConfigInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	projectClient, err := meta.(conns.ClientSession).ProjectV1()
+	if err != nil {
+		return false, err
+	}
+	getConfigOptions := &projectv1.GetConfigOptions{}
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	getConfigOptions.SetProjectID(parts[0])
+	getConfigOptions.SetID(parts[1])
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"not_exists"},
+		Target:  []string{"exists"},
+		Refresh: func() (interface{}, string, error) {
+			_, resp, err := projectClient.GetConfig(getConfigOptions)
+			if err == nil {
+				if resp != nil && resp.StatusCode == 200 {
+					return resp, "exists", nil
+				} else {
+					return resp, "not_exists", nil
+				}
+			} else {
+				return nil, "", fmt.Errorf("[ERROR] Get the project config instance %s failed with resp code: %d, err: %v", d.Id(), resp.StatusCode, err)
+			}
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      2 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -922,9 +966,47 @@ func resourceIbmProjectConfigDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("DeleteConfigWithContext failed %s\n%s", err, response))
 	}
 
+	_, err = waitForProjectConfigInstanceDelete(d, meta)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for delete project config instance (%s) to be succeeded: %s", d.Id(), err))
+	}
+
 	d.SetId("")
 
 	return nil
+}
+
+func waitForProjectConfigInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	projectClient, err := meta.(conns.ClientSession).ProjectV1()
+	if err != nil {
+		return false, err
+	}
+	getConfigOptions := &projectv1.GetConfigOptions{}
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	getConfigOptions.SetProjectID(parts[0])
+	getConfigOptions.SetID(parts[1])
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"exists"},
+		Target:  []string{"not_exists"},
+		Refresh: func() (interface{}, string, error) {
+			_, resp, err := projectClient.GetConfig(getConfigOptions)
+			if err != nil {
+				if resp != nil && resp.StatusCode == 404 {
+					return resp, "not_exists", nil
+				} else {
+					return resp, "exists", nil
+				}
+			} else {
+				return resp, "exists", nil
+			}
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      2 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectConfigMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
