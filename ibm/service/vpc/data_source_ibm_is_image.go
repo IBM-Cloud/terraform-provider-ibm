@@ -90,6 +90,21 @@ func DataSourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "Source volume id of the image",
 			},
+			isImageCreatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time that the image was created",
+			},
+			isImageDeprecationAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The deprecation date and time (UTC) for this image. If absent, no deprecation date and time has been set.",
+			},
+			isImageObsolescenceAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The obsolescence date and time (UTC) for this image. If absent, no obsolescence date and time has been set.",
+			},
 			isImageCatalogOffering: {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -214,6 +229,15 @@ func imageGetByName(d *schema.ResourceData, meta interface{}, name, visibility s
 	}
 	if image.SourceVolume != nil {
 		d.Set("source_volume", *image.SourceVolume.ID)
+	}
+	if image.CreatedAt != nil {
+		d.Set(isImageCreatedAt, image.CreatedAt.String())
+	}
+	if image.DeprecationAt != nil {
+		d.Set(isImageDeprecationAt, image.DeprecationAt.String())
+	}
+	if image.ObsolescenceAt != nil {
+		d.Set(isImageObsolescenceAt, image.ObsolescenceAt.String())
 	}
 	if image.CatalogOffering != nil {
 		catalogOfferingList := []map[string]interface{}{}
