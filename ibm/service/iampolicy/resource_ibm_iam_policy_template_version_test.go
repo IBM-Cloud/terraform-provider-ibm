@@ -7,38 +7,33 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
 func TestAccIBMIAMPolicyTemplateVersionBasic(t *testing.T) {
-	var conf iampolicymanagementv1.PolicyTemplate
-	name := fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
-	accountID := "e3aa0adff348470f803d4b6e53d625cf"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyTemplateVersionConfigBasic(name, accountID),
+				Config: testAccCheckIBMPolicyTemplateVersionConfigBasic(name, accountID, serviceName, "iam-identity"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "account_id", accountID),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "policy.0.resource.0.attributes.0.value", "iam-identity"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPolicyTemplateVersionConfigBasic(name string, accountID string) string {
+func testAccCheckIBMPolicyTemplateVersionConfigBasic(name string, accountID string, serviceName string, updatedService string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_policy_template" "policy_template" {
 			name = "%s"
 			account_id = "%s"
@@ -49,7 +44,7 @@ func testAccCheckIBMPolicyTemplateVersionConfigBasic(name string, accountID stri
 					attributes {
 						key = "serviceName"
 						operator = "stringEquals"
-						value = "is"
+						value = "%s"
 					}
 				}
 				roles = ["Operator"]
@@ -65,13 +60,12 @@ func testAccCheckIBMPolicyTemplateVersionConfigBasic(name string, accountID stri
 					attributes {
 						key = "serviceName"
 						operator = "stringEquals"
-						value = "iam-identity"
+						value = "%s"
 					}
 				}
 				roles = ["Service ID creator", "Operator"]
 			}
 			description = "Template version"
 		}
-
-	`, name, accountID)
+	`, name, accountID, serviceName, updatedService)
 }
