@@ -1221,7 +1221,7 @@ resource "ibm_is_share" "share" {
   zone = "us-south-1"
   size = 30000
   name = "my-share"
-  profile = "tier-3iops"
+  profile = "dp2"
   tags        = ["share1", "share3"]
   access_tags = ["access:dev"]
 }
@@ -1229,7 +1229,7 @@ resource "ibm_is_share" "share" {
 resource "ibm_is_share" "sharereplica" {
   zone = "us-south-2"
   name = "my-share-replica"
-  profile = "tier-3iops"
+  profile = "dp2"
   replication_cron_spec = "0 */5 * * *"
   source_share = ibm_is_share.share.id
   tags        = ["share1", "share3"]

@@ -29,11 +29,11 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_share" "example" {
   name    = "example-share"
   size    = 200
-  profile = "tier-3iops"
+  profile = "dp2"
   zone    = "us-south-2"
 }
 
-data "ibm_is_share_mount_targets" "example" {
+data "ibm_is_share_targets" "example" {
   share = ibm_is_share.example.id
 }
 ```
