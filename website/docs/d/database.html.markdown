@@ -35,7 +35,6 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references list, you can access the following attribute references after your data source is created. 
 
 - `adminuser` - (String)  The user ID of the default administration user for the database, such as `admin` or `root`.
-- `cert_file_path` - (String)  The absolute path to certificate PEM file.
 - `configuration_schema` (String) Database Configuration Schema in JSON format.
 - `id` - (String) The CRN of the IBM Cloud Databases instance.
 - `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
