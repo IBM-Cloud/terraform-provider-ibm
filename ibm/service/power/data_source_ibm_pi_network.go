@@ -130,7 +130,7 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if len(networkdata.DNSServers) > 0 {
 		d.Set("dns", networkdata.DNSServers)
 	}
-	if !strings.Contains(sess.Options.Region, helpers.PIStratos) {
+	if !strings.Contains(sess.Options.Region, helpers.PIStratosRegionPrefix) {
 		d.Set("jumbo", networkdata.Jumbo)
 	} else {
 		d.Set("mtu", networkdata.Mtu)

@@ -155,7 +155,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	if !strings.Contains(sess.Options.Region, helpers.PIStratos) {
+	if !strings.Contains(sess.Options.Region, helpers.PIStratosRegionPrefix) {
 		if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
 			body.Jumbo = v.(bool)
 		}
@@ -237,7 +237,7 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("vlan_id", networkdata.VlanID)
 	d.Set(helpers.PINetworkName, networkdata.Name)
 	d.Set(helpers.PINetworkType, networkdata.Type)
-	if !strings.Contains(sess.Options.Region, helpers.PIStratos) {
+	if !strings.Contains(sess.Options.Region, helpers.PIStratosRegionPrefix) {
 		d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
 	} else {
 		d.Set(helpers.PINetworkMtu, networkdata.Mtu)
