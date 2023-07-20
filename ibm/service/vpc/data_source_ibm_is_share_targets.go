@@ -252,7 +252,7 @@ func dataSourceShareTargetCollectionTargetsToMap(targetsItem vpcbetav1.ShareMoun
 	}
 	if targetsItem.VPC.CRN != nil {
 		vpcList := []map[string]interface{}{}
-		vpcMap := dataSourceShareTargetCollectionTargetsVpcToMap(*targetsItem.VPC)
+		vpcMap := dataSourceShareMountTargetVpcToMap(*targetsItem.VPC)
 		vpcList = append(vpcList, vpcMap)
 		targetsMap["vpc"] = vpcList
 	}
