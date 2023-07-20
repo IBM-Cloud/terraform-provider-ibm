@@ -1273,6 +1273,18 @@ data "ibm_is_share" "is_share" {
 data "ibm_is_shares" "is_shares" {
 }
 
+// snapshot cross region
+
+provider "ibm" {
+  alias				       = "eu-de"
+  region             = "eu-de"
+}
+
+resource "ibm_is_snapshot" "b_snapshot_copy" {
+  provider            = ibm.eu-de
+  name                = "my-snapshot-boot-copy"
+  source_snapshot_crn = ibm_is_snapshot.b_snapshot.crn
+}
 
 // image deprecate and obsolete
 
