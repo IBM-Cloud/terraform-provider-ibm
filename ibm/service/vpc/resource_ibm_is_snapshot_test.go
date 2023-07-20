@@ -136,6 +136,35 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+func TestAccIBMISSnapshotSourceSnapshotCopy(t *testing.T) {
+	var snapshot string
+	copySnapshotName := "test-sourcesnapshot-name-copy"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISSnapshotConfigCRC(copySnapshotName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot_copy", snapshot),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot_copy", "source_snapshot_crn"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot_copy", "lifecycle_state", "stable"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot_copy", "bootable", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot_copy", "source_snapshot.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot_copy", "source_snapshot.0.name"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISSnapshotDestroy(s *terraform.State) error {
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	for _, rs := range s.RootModule().Resources {
@@ -383,6 +412,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 
 func testAccCheckIBMISSnapshotCloneConfig(vpcname, subnetname, sshname, publicKey, volname, name, sname string) string {
 	return fmt.Sprintf(`
+	
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	  }
@@ -419,5 +449,16 @@ func testAccCheckIBMISSnapshotCloneConfig(vpcname, subnetname, sshname, publicKe
 		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
 		clones			= ["%s", "%s"]
 }`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname, acc.ISZoneName, acc.ISZoneName2)
+
+}
+
+func testAccCheckIBMISSnapshotConfigCRC(copySnapshotName string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_is_snapshot" "testacc_snapshot_copy" {
+		name         	 	= "%s"
+		source_snapshot_crn = "%s"
+	}
+`, copySnapshotName, acc.ISSnapshotCRN)
 
 }

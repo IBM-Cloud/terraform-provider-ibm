@@ -113,6 +113,30 @@ func DataSourceIBMIsBackupPolicyPlan() *schema.Resource {
 					},
 				},
 			},
+			"remote_region_policy": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Policies for creating remote copies of this backup.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"delete_over_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum number of recent remote copies to keep in this region.",
+						},
+						"encryption_key": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
+						},
+						"region": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this region.",
+						},
+					},
+				},
+			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -215,6 +239,19 @@ func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Reso
 	if err = d.Set("name", backupPolicyPlan.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
 	}
+	remoteRegionPolicies := []map[string]interface{}{}
+	if backupPolicyPlan.RemoteRegionPolicies != nil {
+		for _, remoteCopyPolicy := range backupPolicyPlan.RemoteRegionPolicies {
+			remoteRegionPoliciesMap, err := dataSourceIBMIsVPCBackupPolicyPlanRemoteCopyPolicyItemToMap(&remoteCopyPolicy)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error setting remote copy policies: %s", err))
+			}
+			remoteRegionPolicies = append(remoteRegionPolicies, remoteRegionPoliciesMap)
+		}
+	}
+	if err = d.Set("remote_region_policy", remoteRegionPolicies); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting remote_region_policy %s", err))
+	}
 	if err = d.Set("resource_type", backupPolicyPlan.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
 	}
@@ -241,4 +278,18 @@ func dataSourceBackupPolicyPlanDeletionTriggerToMap(deletionTriggerItem vpcv1.Ba
 	}
 
 	return deletionTriggerMap
+}
+
+func dataSourceIBMIsVPCBackupPolicyPlanRemoteCopyPolicyItemToMap(remoteCopyPolicyItem *vpcv1.BackupPolicyPlanRemoteRegionPolicy) (map[string]interface{}, error) {
+	remoteCopyPolicyItemMap := make(map[string]interface{})
+	if remoteCopyPolicyItem.DeleteOverCount != nil {
+		remoteCopyPolicyItemMap["delete_over_count"] = *remoteCopyPolicyItem.DeleteOverCount
+	}
+	if remoteCopyPolicyItem.EncryptionKey != nil {
+		remoteCopyPolicyItemMap["encryption_key"] = *remoteCopyPolicyItem.EncryptionKey.CRN
+	}
+	if remoteCopyPolicyItem.Region.Name != nil {
+		remoteCopyPolicyItemMap["region"] = *remoteCopyPolicyItem.Region.Name
+	}
+	return remoteCopyPolicyItemMap, nil
 }

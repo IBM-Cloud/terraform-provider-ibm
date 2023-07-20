@@ -170,8 +170,8 @@ github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0 h1:Lx4Bvim/MfoHEYR+n312bty5DirAJ
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0/go.mod h1:jagqWmjZ0zUEqh5jdGB42ApSQS40fu2LWw6pdg8JJko=
 github.com/IBM/vpc-beta-go-sdk v0.4.0 h1:OxABcc2GeclCMN/bpcQfM2cmNB2GuajwuocsPJSFdl0=
 github.com/IBM/vpc-beta-go-sdk v0.4.0/go.mod h1:fzHDAQIqH/5yJmYsKodKHLcqxMDT+yfH6vZjdiw8CQA=
-github.com/IBM/vpc-go-sdk v0.38.0 h1:iB2/ukDciK6s2VBnMmNQeZqenOaUXJSt+V2M4fMjAnM=
-github.com/IBM/vpc-go-sdk v0.38.0/go.mod h1:MgZrbITC067AlcE5oy4hwylasFvrePL4RVxeF6GTdKQ=
+github.com/IBM/vpc-go-sdk v0.40.0 h1:p4E1dIQc6+WmqLwRTzgWA2udqFw6nypOg+8R0WxTgX0=
+github.com/IBM/vpc-go-sdk v0.40.0/go.mod h1:MgZrbITC067AlcE5oy4hwylasFvrePL4RVxeF6GTdKQ=
 github.com/Jeffail/gabs v1.1.1 h1:V0uzR08Hj22EX8+8QMhyI9sX2hwRu+/RJhJUmnwda/E=
 github.com/Jeffail/gabs v1.1.1/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
