@@ -247,114 +247,19 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
-	// if shareTarget.Subnet != nil {
-	// 	err = d.Set("subnet", dataSourceShareTargetFlattenSubnet(*shareTarget.Subnet))
-	// 	if err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
-	// 	}
-	// }
+	if shareTarget.Subnet != nil {
+		err = d.Set("subnet", dataSourceShareMountTargetFlattenSubnet(*shareTarget.Subnet))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
+		}
+	}
 
 	if shareTarget.VPC != nil {
-		err = d.Set("vpc", dataSourceShareTargetFlattenVpc(*shareTarget.VPC))
+		err = d.Set("vpc", dataSourceShareMountTargetFlattenVpc(*shareTarget.VPC))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
 		}
 	}
 
 	return nil
-}
-
-// func dataSourceShareTargetFlattenSubnet(result vpcbetav1.SubnetReference) (finalList []map[string]interface{}) {
-// 	finalList = []map[string]interface{}{}
-// 	finalMap := dataSourceShareTargetSubnetToMap(result)
-// 	finalList = append(finalList, finalMap)
-
-// 	return finalList
-// }
-
-func dataSourceShareTargetSubnetToMap(subnetItem vpcbetav1.SubnetReference) (subnetMap map[string]interface{}) {
-	subnetMap = map[string]interface{}{}
-
-	if subnetItem.CRN != nil {
-		subnetMap["crn"] = subnetItem.CRN
-	}
-	if subnetItem.Deleted != nil {
-		deletedList := []map[string]interface{}{}
-		deletedMap := dataSourceShareTargetSubnetDeletedToMap(*subnetItem.Deleted)
-		deletedList = append(deletedList, deletedMap)
-		subnetMap["deleted"] = deletedList
-	}
-	if subnetItem.Href != nil {
-		subnetMap["href"] = subnetItem.Href
-	}
-	if subnetItem.ID != nil {
-		subnetMap["id"] = subnetItem.ID
-	}
-	if subnetItem.Name != nil {
-		subnetMap["name"] = subnetItem.Name
-	}
-	/*
-		if subnetItem.ResourceType != nil {
-			subnetMap["resource_type"] = subnetItem.ResourceType
-		}
-	*/
-	return subnetMap
-}
-
-func dataSourceShareTargetSubnetDeletedToMap(deletedItem vpcbetav1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
-	deletedMap = map[string]interface{}{}
-
-	if deletedItem.MoreInfo != nil {
-		deletedMap["more_info"] = deletedItem.MoreInfo
-	}
-
-	return deletedMap
-}
-
-func dataSourceShareTargetFlattenVpc(result vpcbetav1.VPCReference) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceShareTargetVpcToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
-}
-
-func dataSourceShareTargetVpcToMap(vpcItem vpcbetav1.VPCReference) (vpcMap map[string]interface{}) {
-	vpcMap = map[string]interface{}{}
-
-	if vpcItem.CRN != nil {
-		vpcMap["crn"] = vpcItem.CRN
-	}
-	if vpcItem.Deleted != nil {
-		deletedList := []map[string]interface{}{}
-		deletedMap := dataSourceShareTargetVpcDeletedToMap(*vpcItem.Deleted)
-		deletedList = append(deletedList, deletedMap)
-		vpcMap["deleted"] = deletedList
-	}
-	if vpcItem.Href != nil {
-		vpcMap["href"] = vpcItem.Href
-	}
-	if vpcItem.ID != nil {
-		vpcMap["id"] = vpcItem.ID
-	}
-	if vpcItem.Name != nil {
-		vpcMap["name"] = vpcItem.Name
-	}
-	/*
-		if vpcItem.ResourceType != nil {
-			vpcMap["resource_type"] = vpcItem.ResourceType
-		}
-	*/
-
-	return vpcMap
-}
-
-func dataSourceShareTargetVpcDeletedToMap(deletedItem vpcbetav1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
-	deletedMap = map[string]interface{}{}
-
-	if deletedItem.MoreInfo != nil {
-		deletedMap["more_info"] = deletedItem.MoreInfo
-	}
-
-	return deletedMap
 }

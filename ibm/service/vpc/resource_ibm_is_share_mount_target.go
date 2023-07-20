@@ -345,8 +345,9 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 		log.Printf("[DEBUG] GetShareMountTargetWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-
-	d.Set("access_control_mode", *shareTarget.AccessControlMode)
+	if shareTarget.AccessControlMode != nil {
+		d.Set("access_control_mode", *shareTarget.AccessControlMode)
+	}
 	d.Set("mount_target", *shareTarget.ID)
 	if shareTarget.VPC != nil && shareTarget.VPC.ID != nil {
 		if err = d.Set("vpc", *shareTarget.VPC.ID); err != nil {
