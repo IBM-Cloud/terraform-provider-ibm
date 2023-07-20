@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_domain_settings"
@@ -13,6 +12,7 @@ Customize the IBM Cloud Internet Services domain settings. For more information,
 
 ## Example usage 1
 
+---
 ```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
   cis_id    = data.ibm_cis.cis.id
@@ -55,6 +55,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
     include_subdomains = false
     max_age            = 0
     nosniff            = false
+    preload            = false
   }
   mobile_redirect {
     status           = "on"
@@ -71,9 +72,11 @@ resource "ibm_cis_domain_settings" "test" {
   min_tls_version = "1.2"
 }
 ```
+---
 
 ## Example usage 2 : For TLS v1.3
 
+---
 ```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
   cis_id    = data.ibm_cis.cis.id
@@ -116,6 +119,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
     include_subdomains = false
     max_age            = 0
     nosniff            = false
+    preload            = false
   }
   mobile_redirect {
     status           = "on"
@@ -132,6 +136,7 @@ resource "ibm_cis_domain_settings" "test" {
   min_tls_version = "1.3"
 }
 ```
+---
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -178,6 +183,7 @@ Review the argument references that you can specify for your resource.
 - `security_header.include_subdomains`- (Bool) Required-Supported values are **true** and **false**.
 - `security_header.max_age`- (Required, Integer) Maximum age of the security header.
 - `security_header.nosniff`- (Bool) Required-No sniff.
+- `security_header.preload`- (Required, Bool) Whether or not to permit browsers to preload security_header config.
 - `ssl` - (Optional, String) Allowed values: `off`, `flexible`, `full`, `strict`, `origin_pull`.
 - `tls_client_auth` - (Optional, String) Supported values are `off` and `on`.
 - `true_client_ip_header` - (Optional, String) Supported values are `off` and `on`.

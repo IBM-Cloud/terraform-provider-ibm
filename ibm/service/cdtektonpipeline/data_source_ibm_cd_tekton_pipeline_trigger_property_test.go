@@ -78,6 +78,7 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(trigger
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}
@@ -151,6 +152,7 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPrope
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}

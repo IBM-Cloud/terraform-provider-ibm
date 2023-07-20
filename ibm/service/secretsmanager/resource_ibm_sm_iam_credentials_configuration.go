@@ -13,9 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmIamCredentialsConfiguration() *schema.Resource {
@@ -42,7 +41,7 @@ func ResourceIbmSmIamCredentialsConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.",
+				Description: "An IBM Cloud API key that can create and manage service IDs. The API key must be assigned the Editor platform role on the Access Groups Service and the Operator platform role on the IAM Identity Service. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-configure-iam-engine).",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -105,6 +104,9 @@ func resourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *sc
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import IAM credentials configuration use the format `<region>/<instance_id>/<name>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
@@ -140,10 +142,10 @@ func resourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *sc
 	if err = d.Set("created_by", configuration.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(configuration.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(configuration.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(configuration.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(configuration.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("api_key", configuration.ApiKey); err != nil {

@@ -31,13 +31,19 @@ func ResourceIBMTransitGatewayConnectionAction() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					// Allow reusing the resource block to approve a new connection
+					if diff.HasChange(tgConnectionId) {
+						return nil
+					}
 					if diff.HasChange(tgConnectionAction) {
-						if diff.HasChange(tgGatewayId) || diff.HasChange(tgConnectionId) {
-							return nil
-						}
 						o, n := diff.GetChange(tgConnectionAction)
 						oldAction := o.(string)
 						newAction := n.(string)
+						if oldAction == "" {
+							// oldAction is empty when performing an action on a connection for the first time
+							// We are only concerned with checking if the action changes for existing action/connection resource
+							return nil
+						}
 						return fmt.Errorf("The action for the transit gateway connection has already been performed and cannot be changed from %s to %s", oldAction, newAction)
 					}
 					return nil
@@ -113,11 +119,6 @@ func resourceIBMTransitGatewayConnectionActionCreate(d *schema.ResourceData, met
 }
 
 func resourceIBMTransitGatewayConnectionActionRead(d *schema.ResourceData, meta interface{}) error {
-
-	client, err := transitgatewayClient(meta)
-	if err != nil {
-		return err
-	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return err
@@ -126,19 +127,7 @@ func resourceIBMTransitGatewayConnectionActionRead(d *schema.ResourceData, meta 
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	getTransitGatewayConnectionOptions := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
-	getTransitGatewayConnectionOptions.SetTransitGatewayID(gatewayId)
-	getTransitGatewayConnectionOptions.SetID(ID)
-	instance, response, err := client.GetTransitGatewayConnection(getTransitGatewayConnectionOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
-	}
-
-	d.Set(tgConnectionId, *instance.ID)
+	d.Set(tgConnectionId, ID)
 	d.Set(tgGatewayId, gatewayId)
 
 	return nil

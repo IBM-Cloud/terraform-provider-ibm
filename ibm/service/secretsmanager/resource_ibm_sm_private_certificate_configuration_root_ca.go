@@ -16,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
@@ -220,10 +220,8 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			},
 			"serial_number": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.",
+				Description: "The unique serial number that was assigned to a certificate by the issuing certificate authority.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -356,6 +354,9 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a root CA use the format `<region>/<instance_id>/<name>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
@@ -393,10 +394,10 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	if err = d.Set("created_by", configuration.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(configuration.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(configuration.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(configuration.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(configuration.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("max_ttl_seconds", flex.IntValue(configuration.MaxTtlSeconds)); err != nil {
@@ -511,7 +512,7 @@ func resourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Cont
 	if err = d.Set("status", configuration.Status); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(configuration.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(configuration.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if configuration.Data != nil {
@@ -667,10 +668,10 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 		model.KeyType = core.StringPtr(d.Get("key_type").(string))
 	}
 	if _, ok := d.GetOk("key_bits"); ok {
-		model.KeyBits = core.Int64Ptr(d.Get("key_bits").(int64))
+		model.KeyBits = core.Int64Ptr(int64(d.Get("key_bits").(int)))
 	}
 	if _, ok := d.GetOk("max_path_length"); ok {
-		model.MaxPathLength = core.Int64Ptr(d.Get("max_path_length").(int64))
+		model.MaxPathLength = core.Int64Ptr(int64(d.Get("max_path_length").(int)))
 	}
 	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
 		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))
@@ -738,9 +739,6 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 			postalCodeParsed[i] = fmt.Sprint(v)
 		}
 		model.PostalCode = postalCodeParsed
-	}
-	if _, ok := d.GetOk("serial_number"); ok {
-		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
 
 	return model, nil

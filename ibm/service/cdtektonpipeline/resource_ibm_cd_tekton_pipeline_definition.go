@@ -190,8 +190,10 @@ func resourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *schem
 	if err = d.Set("source", []map[string]interface{}{sourceMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source: %s", err))
 	}
-	if err = d.Set("href", definition.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	if !core.IsNil(definition.Href) {
+		if err = d.Set("href", definition.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
 	}
 	if err = d.Set("definition_id", definition.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting definition_id: %s", err))

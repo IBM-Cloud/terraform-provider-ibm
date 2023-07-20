@@ -9,6 +9,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/pkg/errors"
 	"log"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
@@ -46,7 +47,6 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			"expiration_date": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The date a secret is expired. The date format follows RFC 3339.",
 			},
 			"labels": &schema.Schema{
@@ -99,16 +99,18 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
 						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The length of the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The units for the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 					},
 				},
@@ -255,6 +257,9 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
@@ -287,7 +292,7 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -325,7 +330,7 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -338,10 +343,10 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	if err = d.Set("rotation", []map[string]interface{}{rotationMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rotation: %s", err))
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(secret.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(secret.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 	if err = d.Set("username", secret.Username); err != nil {
@@ -403,6 +408,21 @@ func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schem
 		}
 		patchVals.Rotation = RotationModel
 		hasChange = true
+	}
+
+	if d.HasChange("expiration_date") {
+		if _, ok := d.GetOk("expiration_date"); ok {
+			layout := time.RFC3339
+			parseToTime, err := time.Parse(layout, d.Get("expiration_date").(string))
+			if err != nil {
+				return diag.FromErr(errors.New(`Failed to get "expiration_date". Error: ` + err.Error()))
+			}
+			parseToDateTime := strfmt.DateTime(parseToTime)
+			patchVals.ExpirationDate = &parseToDateTime
+			hasChange = true
+		} else {
+			return diag.FromErr(errors.New(`The "expiration_date" field cannot be removed. To disable expiration set expiration date to a far future date'`))
+		}
 	}
 
 	if hasChange {
@@ -502,7 +522,9 @@ func resourceIbmSmUsernamePasswordSecretMapToRotationPolicy(modelMap map[string]
 	if modelMap["auto_rotate"] != nil {
 		model.AutoRotate = core.BoolPtr(modelMap["auto_rotate"].(bool))
 	}
-	if modelMap["interval"] != nil {
+	if modelMap["interval"].(int) == 0 {
+		model.Interval = nil
+	} else {
 		model.Interval = core.Int64Ptr(int64(modelMap["interval"].(int)))
 	}
 	if modelMap["unit"] != nil && modelMap["unit"].(string) != "" {
@@ -542,4 +564,13 @@ func resourceIbmSmUsernamePasswordSecretCommonRotationPolicyToMap(model *secrets
 		modelMap["unit"] = model.Unit
 	}
 	return modelMap, nil
+}
+
+func rotationAttributesDiffSuppress(key, oldValue, newValue string, d *schema.ResourceData) bool {
+	autoRotate := d.Get("rotation").([]interface{})[0].(map[string]interface{})["auto_rotate"].(bool)
+	if autoRotate == false {
+		return true
+	}
+
+	return oldValue == newValue
 }

@@ -693,7 +693,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceByCatalogOffering{
+	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceTemplateByCatalogOffering{
 		Zone: &vpcv1.ZoneIdentity{
 			Name: &zone,
 		},
@@ -756,7 +756,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 	}
 	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
 		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &availablePolicyHostFailure,
 		}
 	}
@@ -1179,7 +1179,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	}
 	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
 		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
 			HostFailure: &availablePolicyHostFailure,
 		}
 	}
@@ -1277,7 +1277,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volIdStr := vol[isInstanceTemplateVolAttVol].(string)
 
 			if volIdStr != "" {
-				volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeVolume{
+				volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeVolumeVolumeIdentity{
 					ID: &volIdStr,
 				}
 			} else {

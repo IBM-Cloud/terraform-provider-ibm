@@ -8,13 +8,13 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_private_certificate_configuration_intermediate_ca
 
-Provides a read-only data source for PrivateCertificateConfigurationIntermediateCA. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for the configuraion of an intermediate CA. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_sm_private_certificate_configuration_intermediate_ca" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+data "ibm_sm_private_certificate_configuration_intermediate_ca" "intermediate_ca" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name = "configuration-name"
 }
@@ -24,6 +24,10 @@ data "ibm_sm_private_certificate_configuration_intermediate_ca" {
 
 Review the argument reference that you can specify for your data source.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
 * `name` - (Required, String) The name of the configuration.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
 
@@ -31,7 +35,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the PrivateCertificateConfigurationIntermediateCA.
+* `id` - The unique identifier of the data source.
 * `alt_names` - (List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
   * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
 

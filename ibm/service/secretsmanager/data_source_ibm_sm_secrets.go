@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmSecrets() *schema.Resource {
@@ -358,7 +358,7 @@ func DataSourceIbmSmSecrets() *schema.Resource {
 						"reuse_api_key": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.",
+							Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. The value is always `true` for IAM credentials secrets managed by Terraform.",
 						},
 						"certificate_authority": &schema.Schema{
 							Type:        schema.TypeString,

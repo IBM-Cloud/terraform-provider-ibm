@@ -272,6 +272,47 @@ func TestAccIBMIsBackupPolicyPlanImport(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsBackupPolicyPlanCRC(t *testing.T) {
+	var conf vpcv1.BackupPolicyPlan
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	bakupPolicyName := fmt.Sprintf("tfbakuppolicyname%d", acctest.RandIntRange(10, 100))
+	bakupPolicyPlanName := fmt.Sprintf("tfbakuppolicyplanname%d", acctest.RandIntRange(10, 100))
+	cronSpec := strings.TrimSpace(strconv.Itoa(time.Now().UTC().Minute()) + " " + strconv.Itoa(time.Now().UTC().Hour()) + " " + "*" + " " + "*" + " " + "*")
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsBackupPolicyPlanDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsBackupPolicyPlanConfigRemoteCopyPolicies(bakupPolicyName, vpcname, subnetname, sshname, volname, name, cronSpec, bakupPolicyPlanName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsBackupPolicyPlanExists("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", conf),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "name", bakupPolicyPlanName+"-1"),
+					resource.TestCheckResourceAttr("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "cron_spec", cronSpec),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "backup_policy_id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "backup_policy_plan_id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "active"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "copy_user_tags"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "deletion_trigger.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "resource_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "version"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "remote_region_policy.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "remote_region_policy.0.delete_over_count"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "remote_region_policy.0.encryption_key"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy_plan.is_backup_policy_plan_crc", "remote_region_policy.0.region"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIsBackupPolicyPlanConfigBasic(backupPolicyName, vpcname, subnetname, sshname, volName, name, cronSpec, bakupPolicyPlanName string) string {
 
 	return testAccCheckIBMIsBackupPolicyConfigBasic(backupPolicyName, vpcname, subnetname, sshname, volName, name) + fmt.Sprintf(`
@@ -323,6 +364,22 @@ func testAccCheckIBMIsBackupPolicyPlanConfigImport(backupPolicyName, vpcname, su
 			cron_spec = "%s"
 		}
 	`, bakupPolicyPlanName, cronSpec)
+}
+
+func testAccCheckIBMIsBackupPolicyPlanConfigRemoteCopyPolicies(backupPolicyName, vpcname, subnetname, sshname, volName, name, cronSpec, bakupPolicyPlanName string) string {
+	return testAccCheckIBMIsBackupPolicyConfigBasic(backupPolicyName, vpcname, subnetname, sshname, volName, name) + fmt.Sprintf(`
+	
+	  resource "ibm_is_backup_policy_plan" "is_backup_policy_plan_crc" {
+		depends_on  	= [ibm_is_instance.testacc_instance]
+		match_user_tags = ["tag-0"]
+		name            = "%s"
+		cron_spec 		= "%s"
+		remote_region_policy {
+			delete_over_count 	= 1
+			encryption_key 		= "%s"
+			region 				= "us-south"
+		}
+	}`, bakupPolicyPlanName, cronSpec, acc.BaasEncryptionkeyCRN)
 }
 
 func testAccCheckIBMIsBackupPolicyPlanExists(n string, obj vpcv1.BackupPolicyPlan) resource.TestCheckFunc {

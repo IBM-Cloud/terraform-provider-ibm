@@ -14,7 +14,7 @@ Provides a resource for NotificationsRegistrationPrototype. This allows Notifica
 
 ```hcl
 resource "ibm_sm_en_registration" "sm_en_registration" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   event_notifications_instance_crn = "crn:v1:bluemix:public:event-notifications:us-south:a/22018f3c34ff4ff193698d15ca316946:578ad1a4-2fd8-4e66-95d5-79a842ba91f8::"
   event_notifications_source_description = "Optional description of this source in an Event Notifications instance."
@@ -26,11 +26,15 @@ resource "ibm_sm_en_registration" "sm_en_registration" {
 
 Review the argument reference that you can specify for your resource.
 
-* `event_notifications_instance_crn` - (Required, String) A CRN that uniquely identifies an IBM Cloud resource.
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+  * Constraints: Allowable values are: `private`, `public`.
+* `event_notifications_instance_crn` - (Required, Forces new resource, String) A CRN that uniquely identifies an IBM Cloud resource.
   * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
-* `event_notifications_source_description` - (Optional, String) An optional description for the source  that is in your Event Notifications instance.
+* `event_notifications_source_description` - (Optional, Forces new resource, String) An optional description for the source  that is in your Event Notifications instance.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
-* `event_notifications_source_name` - (Required, String) The name that is displayed as a source that is in your Event Notifications instance.
+* `event_notifications_source_name` - (Required, Forces new resource, String) The name that is displayed as a source that is in your Event Notifications instance.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/(.*?)/`.
 
 ## Attribute Reference
@@ -91,15 +95,19 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_sm_en_registration` resource by using `region` and `instance_id`. A CRN that uniquely identifies an IBM Cloud resource.
-For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
+You can import the `ibm_sm_en_registration` resource by using `region` and `instance_id`. Note that after the import, the value of the property `event_notifications_source_name`
+is `null` in the Terraform state file. Since this is a required property, you need to provide a value for it in
+the corresponding configuration block in your Terraform configuration file. If you don't know the actual name of the event notification source, 
+you can put any value. The value is ignored when Terraform updates the resource, because the Secrets Manager API does not modify
+the source name after the registration resource is created.
+For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager).
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_en_registration.sm_en_registration <region>/<instance_id>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_en_registration.sm_en_registration us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175
 ```

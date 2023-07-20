@@ -44,7 +44,18 @@ variable "sm_secret_group_description" {
   default     = "Extended description for this group."
 }
 
+variable "sm_secret_group_name" {
+  description = "The name of your existing secret group."
+  type        = string
+  default     = "my-group-name"
+}
+
 // Resource arguments for sm_imported_certificate
+variable "sm_imported_certificate_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-imported-cert-secret"
+}
 variable "sm_imported_certificate_custom_metadata" {
   description = "The secret metadata that a user can customize."
   type        = any
@@ -70,11 +81,6 @@ variable "sm_imported_certificate_secret_group_id" {
   type        = string
   default     = "default"
 }
-variable "sm_imported_certificate_secret_type" {
-  description = "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials."
-  type        = string
-  default     = "arbitrary"
-}
 variable "sm_imported_certificate_certificate" {
   description = "The PEM-encoded contents of your certificate."
   type        = string
@@ -92,6 +98,11 @@ variable "sm_imported_certificate_private_key" {
 }
 
 // Resource arguments for sm_public_certificate
+variable "sm_public_certificate_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-public-cert-secret"
+}
 variable "sm_public_certificate_custom_metadata" {
   description = "The secret metadata that a user can customize."
   type        = any
@@ -117,13 +128,20 @@ variable "sm_public_certificate_secret_group_id" {
   type        = string
   default     = "default"
 }
-variable "sm_public_certificate_secret_type" {
-  description = "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials."
+
+// Resource arguments for sm_public_certificate_action_validate_manual_dns
+variable "sm_public_certificate_action_validate_manual_dns_secret_id" {
+  description = "The ID of the secret."
   type        = string
-  default     = "arbitrary"
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 
 // Resource arguments for sm_kv_secret
+variable "sm_kv_secret_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-kv-secret"
+}
 variable "sm_kv_secret_custom_metadata" {
   description = "The secret metadata that a user can customize."
   type        = any
@@ -144,11 +162,6 @@ variable "sm_kv_secret_secret_group_id" {
   type        = string
   default     = "default"
 }
-variable "sm_kv_secret_secret_type" {
-  description = "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials."
-  type        = string
-  default     = "arbitrary"
-}
 variable "sm_kv_secret_data" {
   description = "The payload data of a key-value secret."
   type        = any
@@ -156,6 +169,11 @@ variable "sm_kv_secret_data" {
 }
 
 // Resource arguments for sm_iam_credentials_secret
+variable "sm_iam_credentials_secret_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-iam-credentials-secret"
+}
 variable "sm_iam_credentials_secret_custom_metadata" {
   description = "The secret metadata that a user can customize."
   type        = any
@@ -176,11 +194,6 @@ variable "sm_iam_credentials_secret_secret_group_id" {
   type        = string
   default     = "default"
 }
-variable "sm_iam_credentials_secret_secret_type" {
-  description = "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials."
-  type        = string
-  default     = "arbitrary"
-}
 variable "sm_iam_credentials_secret_ttl" {
   description = "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days."
   type        = string
@@ -191,11 +204,6 @@ variable "sm_iam_credentials_secret_access_groups" {
   type        = list(string)
   default     = [ "AccessGroupId-45884031-54be-4dd7-86ff-112511e92699" ]
 }
-variable "sm_iam_credentials_secret_service_id" {
-  description = "The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter."
-  type        = string
-  default     = "ServiceId-bb4ccc31-bd31-493a-bb58-52ec399800be"
-}
 variable "sm_iam_credentials_secret_reuse_api_key" {
   description = "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed."
   type        = bool
@@ -203,6 +211,11 @@ variable "sm_iam_credentials_secret_reuse_api_key" {
 }
 
 // Resource arguments for sm_arbitrary_secret
+variable "sm_arbitrary_secret_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-arbitrary-secret"
+}
 variable "sm_arbitrary_secret_custom_metadata" {
   description = "The secret metadata that a user can customize."
   type        = any
@@ -228,11 +241,6 @@ variable "sm_arbitrary_secret_secret_group_id" {
   type        = string
   default     = "default"
 }
-variable "sm_arbitrary_secret_secret_type" {
-  description = "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials."
-  type        = string
-  default     = "arbitrary"
-}
 variable "sm_arbitrary_secret_payload" {
   description = "The arbitrary secret's data payload."
   type        = string
@@ -240,6 +248,11 @@ variable "sm_arbitrary_secret_payload" {
 }
 
 // Resource arguments for sm_username_password_secret
+variable "sm_username_password_secret_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-username-password-secret"
+}
 variable "sm_username_password_secret_custom_metadata" {
   description = "The secret metadata that a user can customize."
   type        = any
@@ -265,11 +278,6 @@ variable "sm_username_password_secret_secret_group_id" {
   type        = string
   default     = "default"
 }
-variable "sm_username_password_secret_secret_type" {
-  description = "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials."
-  type        = string
-  default     = "arbitrary"
-}
 variable "sm_username_password_secret_username" {
   description = "The username that is assigned to the secret."
   type        = string
@@ -281,24 +289,12 @@ variable "sm_username_password_secret_password" {
   default     = "password"
 }
 
-// Resource arguments for sm_arbitrary_secret_version
-variable "sm_arbitrary_secret_version_payload" {
-  description = "The arbitrary secret's data payload."
-  type        = string
-  default     = "secret-credentials"
-}
-variable "sm_arbitrary_secret_version_version_custom_metadata" {
-  description = "The secret version metadata that a user can customize."
-  type        = any
-  default     = "anything as a string"
-}
-variable "sm_arbitrary_secret_version_secret_id" {
-  description = "The ID of the secret."
-  type        = string
-  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
-}
-
 // Resource arguments for sm_private_certificate
+variable "sm_private_certificate_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-private-certificate-secret"
+}
 variable "sm_private_certificate_custom_metadata" {
   description = "The secret metadata that a user can customize."
   type        = any
@@ -324,11 +320,6 @@ variable "sm_private_certificate_secret_group_id" {
   type        = string
   default     = "default"
 }
-variable "sm_private_certificate_secret_type" {
-  description = "The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials."
-  type        = string
-  default     = "arbitrary"
-}
 variable "sm_private_certificate_certificate_template" {
   description = "The name of the certificate template."
   type        = string
@@ -336,10 +327,10 @@ variable "sm_private_certificate_certificate_template" {
 }
 
 // Resource arguments for sm_private_certificate_configuration_root_ca
-variable "sm_private_certificate_configuration_root_ca_config_type" {
-  description = "The configuration type."
+variable "sm_private_certificate_configuration_root_ca_name" {
+  description = "A human-readable unique name to assign to your configuration."
   type        = string
-  default     = "public_cert_configuration_ca_lets_encrypt"
+  default     = "my_root_ca"
 }
 variable "sm_private_certificate_configuration_root_ca_crl_disable" {
   description = "Disables or enables certificate revocation list (CRL) building.If CRL building is disabled, a signed but zero-length CRL is returned when downloading the CRL. If CRL building is enabled, it will rebuild the CRL."
@@ -363,10 +354,10 @@ variable "sm_private_certificate_configuration_root_ca_ttl" {
 }
 
 // Resource arguments for sm_private_certificate_configuration_intermediate_ca
-variable "sm_private_certificate_configuration_intermediate_ca_config_type" {
-  description = "The configuration type."
+variable "sm_private_certificate_configuration_intermediate_ca_name" {
+  description = "A human-readable unique name to assign to your configuration."
   type        = string
-  default     = "public_cert_configuration_ca_lets_encrypt"
+  default     = "my_intermediate_ca"
 }
 variable "sm_private_certificate_configuration_intermediate_ca_crl_disable" {
   description = "Disables or enables certificate revocation list (CRL) building.If CRL building is disabled, a signed but zero-length CRL is returned when downloading the CRL. If CRL building is enabled, it will rebuild the CRL."
@@ -390,10 +381,10 @@ variable "sm_private_certificate_configuration_intermediate_ca_signing_method" {
 }
 
 // Resource arguments for sm_private_certificate_configuration_template
-variable "sm_private_certificate_configuration_template_config_type" {
-  description = "The configuration type."
+variable "sm_private_certificate_configuration_template_name" {
+  description = "A human-readable unique name to assign to your configuration."
   type        = string
-  default     = "public_cert_configuration_ca_lets_encrypt"
+  default     = "my_template"
 }
 variable "sm_private_certificate_configuration_template_certificate_authority" {
   description = "The name of the intermediate certificate authority."
@@ -521,11 +512,35 @@ variable "sm_private_certificate_configuration_template_basic_constraints_valid_
   default     = true
 }
 
-// Resource arguments for sm_public_certificate_configuration_ca_lets_encrypt
-variable "sm_public_certificate_configuration_ca_lets_encrypt_config_type" {
-  description = "Th configuration type."
+// Resource arguments for sm_private_certificate_configuration_action_sign_csr
+variable "sm_private_certificate_configuration_action_sign_csr_name" {
+  description = "The name that uniquely identifies a configuration."
   type        = string
-  default     = "public_cert_configuration_ca_lets_encrypt"
+  default     = "my_root_ca"
+}
+variable "sm_private_certificate_configuration_action_sign_csr_csr" {
+  description = "The certificate signing request."
+  type        = string
+  default     = "csr"
+}
+
+// Resource arguments for sm_private_certificate_configuration_action_set_signed
+variable "sm_private_certificate_configuration_action_set_signed_name" {
+  description = "The name that uniquely identifies a configuration."
+  type        = string
+  default     = "my_intermediate_ca"
+}
+variable "sm_private_certificate_configuration_action_set_signed_certificate" {
+  description = "The PEM-encoded certificate."
+  type        = string
+  default     = "certificate"
+}
+
+// Resource arguments for sm_public_certificate_configuration_ca_lets_encrypt
+variable "sm_public_certificate_configuration_ca_lets_encrypt_name" {
+  description = "A human-readable unique name to assign to your configuration."
+  type        = string
+  default     = "my-ca-lets-encrypt-config"
 }
 variable "sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_environment" {
   description = "The configuration of the Let's Encrypt CA environment."
@@ -544,10 +559,10 @@ variable "sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_prefe
 }
 
 // Resource arguments for sm_public_certificate_configuration_dns_cis
-variable "sm_public_certificate_configuration_dns_cis_config_type" {
-  description = "Th configuration type."
+variable "sm_public_certificate_configuration_dns_cis_cloud_internet_services_name" {
+  description = "A human-readable unique name to assign to your configuration."
   type        = string
-  default     = "public_cert_configuration_ca_lets_encrypt"
+  default     = "my-dns-cis-cloud-internet-services-config"
 }
 variable "sm_public_certificate_configuration_dns_cis_cloud_internet_services_apikey" {
   description = "An IBM Cloud API key that can to list domains in your Cloud Internet Services instance.To grant Secrets Manager the ability to view the Cloud Internet Services instance and all of its domains, the API key must be assigned the Reader service role on Internet Services (`internet-svcs`).If you need to manage specific domains, you can assign the Manager role. For production environments, it is recommended that you assign the Reader access role, and then use the[IAM Policy Management API](https://cloud.ibm.com/apidocs/iam-policy-management#create-policy) to control specific domains. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates#authorize-specific-domains)."
@@ -561,10 +576,10 @@ variable "sm_public_certificate_configuration_dns_cis_cloud_internet_services_cr
 }
 
 // Resource arguments for sm_public_certificate_configuration_dns_classic_infrastructure
-variable "sm_public_certificate_configuration_dns_classic_infrastructure_config_type" {
-  description = "Th configuration type."
+variable "sm_public_certificate_configuration_dns_classic_infrastructure_name" {
+  description = "A human-readable unique name to assign to your configuration."
   type        = string
-  default     = "public_cert_configuration_ca_lets_encrypt"
+  default     = "my-dns-classic-infrastructure-config"
 }
 variable "sm_public_certificate_configuration_dns_classic_infrastructure_classic_infrastructure_username" {
   description = "The username that is associated with your classic infrastructure account.In most cases, your classic infrastructure username is your `<account_id>_<email_address>`. For more information, see the [docs](https://cloud.ibm.com/docs/account?topic=account-classic_keys)."

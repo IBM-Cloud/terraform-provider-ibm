@@ -2,11 +2,13 @@ package secretsmanager
 
 import (
 	"fmt"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func getRegion(originalClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) string {
@@ -106,4 +108,11 @@ func StringIsIntBetween(min, max int) schema.SchemaValidateFunc {
 
 		return warnings, errors
 	}
+}
+
+func DateTimeToRFC3339(dt *strfmt.DateTime) (s string) {
+	if dt != nil {
+		s = time.Time(*dt).Format(time.RFC3339)
+	}
+	return
 }

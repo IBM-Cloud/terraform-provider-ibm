@@ -19,9 +19,9 @@ import (
 func TestAccIBMCmObjectSimpleArgs(t *testing.T) {
 	var conf catalogmanagementv1.CatalogObject
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	parentID := "us-south"
 	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
 	shortDescription := fmt.Sprintf("tf_short_description_%d", acctest.RandIntRange(10, 100))
-	parentID := "us-south"
 	kind := "vpe"
 
 	resource.Test(t, resource.TestCase{
@@ -51,16 +51,7 @@ func testAccCheckIBMCmObjectConfig(name string, parentID string, label string, s
 
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "test_preset_catalog_tf_test"
-			kind = "vpe"
-		}
-		
-		locals {
-			catalog_object_data = {
-				dns_domain = "test"
-				endpoint_type = "test"
-				fully_qualified_domain_names = ["test1.com", "test2.com", "test3.com"]
-				service_crn = "test"
-			}
+			kind = "%s"
 		}
 
 		resource "ibm_cm_object" "cm_object" {
@@ -73,7 +64,7 @@ func testAccCheckIBMCmObjectConfig(name string, parentID string, label string, s
 			tags = ["test1", "test2"]
 			data = jsonencode(local.catalog_object_data)
 		}
-	`, name, parentID, label, shortDescription, kind)
+	`, kind, name, parentID, label, shortDescription, kind)
 }
 
 func testAccCheckIBMCmObjectExists(n string, obj catalogmanagementv1.CatalogObject) resource.TestCheckFunc {

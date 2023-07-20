@@ -54,6 +54,12 @@ In addition to all argument reference list, you can access the following attribu
 
 - `access_tags`  - (String) Access management tags associated for the load balancer.
 - `crn` - (String) The CRN for this load balancer.
+- `dns` - (List) The DNS configuration for this load balancer.
+
+  Nested scheme for `dns`:
+  - `instance_crn` - (String) The CRN of the DNS instance associated with the DNS zone
+  - `zone_id` - (String) The unique identifier of the DNS zone.
+
 - `hostname` - (String) Fully qualified domain name assigned to this load balancer.
 - `id` - (String) The ID of the load balancer.
 - `listeners` - (String) The ID of the listeners attached to this load balancer.

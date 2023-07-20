@@ -485,6 +485,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Instance vCPU count",
 						},
+						// Added for AMD support, manufacturer details.
+						isInstanceCPUManufacturer: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Instance vCPU Manufacturer",
+						},
 					},
 				},
 			},
@@ -762,6 +768,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		currentCPU := map[string]interface{}{}
 		currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
 		currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
+		currentCPU[isInstanceCPUManufacturer] = *instance.Vcpu.Manufacturer // Added for AMD support, manufacturer details.
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)
@@ -1169,7 +1176,7 @@ func dataSourceInstanceDisksToMap(disksItem vpcv1.InstanceDisk) (disksMap map[st
 
 	return disksMap
 }
-func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.LifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
+func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.InstanceLifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
 	lifecycleReasonsList = make([]map[string]interface{}, 0)
 	for _, lr := range lifecycleReasons {
 		currentLR := map[string]interface{}{}

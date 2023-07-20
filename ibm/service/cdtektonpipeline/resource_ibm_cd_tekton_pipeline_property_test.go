@@ -21,8 +21,6 @@ func TestAccIBMCdTektonPipelinePropertyBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.Property
 	name := "property1"
 	typeVar := "text"
-	typeVarUpdate := "text"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -36,13 +34,6 @@ func TestAccIBMCdTektonPipelinePropertyBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVar),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelinePropertyConfigBasic("", name, typeVarUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVarUpdate),
-				),
-			},
 		},
 	})
 }
@@ -53,7 +44,6 @@ func TestAccIBMCdTektonPipelinePropertyAllArgs(t *testing.T) {
 	typeVar := "text"
 	value := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	path := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
-	typeVarUpdate := "text"
 	valueUpdate := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	pathUpdate := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
@@ -72,10 +62,10 @@ func TestAccIBMCdTektonPipelinePropertyAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelinePropertyConfig("", name, typeVarUpdate, valueUpdate, pathUpdate),
+				Config: testAccCheckIBMCdTektonPipelinePropertyConfig("", name, typeVar, valueUpdate, pathUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVarUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property", "value", valueUpdate),
 				),
 			},
@@ -107,6 +97,7 @@ func testAccCheckIBMCdTektonPipelinePropertyConfigBasic(pipelineID string, name 
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}
@@ -145,6 +136,7 @@ func testAccCheckIBMCdTektonPipelinePropertyConfig(pipelineID string, name strin
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}

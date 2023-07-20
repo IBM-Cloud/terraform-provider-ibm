@@ -14,7 +14,7 @@ Provides a resource for IAMCredentialsConfiguration. This allows IAMCredentialsC
 
 ```hcl
 resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration_instance" {
-	instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+	instance_id   = ibm_resource_instance.sm_instance.guid
 	region        = "us-south"
 	name = "my-example-engine-config"
 	api_key = "my-api-key"
@@ -25,8 +25,12 @@ resource "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuratio
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+    * Constraints: Allowable values are: `private`, `public`.
 * `name` - (Required, String) A human-readable unique name to assign to your IAM Credentials configuration.
-* `api_key` - (Required, String) The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.
+* `api_key` - (Required, String) An IBM Cloud API key that can create and manage service IDs. The API key must be assigned the Editor platform role on the Access Groups Service and the Operator platform role on the IAM Identity Service. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-configure-iam-engine).
 	* Constraints: The maximum length is `60` characters. The minimum length is `5` characters. The value must match regular expression `/^(?:[A-Za-z0-9_\\-]{4})*(?:[A-Za-z0-9_\\-]{2}==|[A-Za-z0-9_\\-]{3}=)?$/`.
 
 ## Attribute Reference
@@ -99,11 +103,11 @@ You can import the `ibm_sm_iam_credentials_configuration` resource by using `reg
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/my-secret-engine-config
 ```

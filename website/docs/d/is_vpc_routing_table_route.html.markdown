@@ -94,6 +94,7 @@ Nested scheme for **creator**:
 
 - `origin` - (String) The origin of this route:- `service`: route was directly created by a service- `user`: route was directly created by a userThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
   - Constraints: Allowable values are: `learned`, `service`, `user`.
+- `priority` - (Integer) The route's priority. Smaller values have higher priority. If a routing table contains routes with the same destination, the route with the highest priority (smallest value) is selected. For Example (2), supports values from 0 to 4. Default is 2.
 - `zone` - (List) The zone the route applies to. (Traffic from subnets in this zone will be subject to this route).
 	Nested scheme for **zone**:
 	- `href` - (String) The URL for this zone.

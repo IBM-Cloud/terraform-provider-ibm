@@ -5,7 +5,8 @@ provider "ibm" {
 
 // Provision sm_secret_group resource instance
 resource "ibm_sm_secret_group" "sm_secret_group_instance" {
-  description = var.sm_secret_group_description
+  name          = var.sm_secret_group_name
+  description   = var.sm_secret_group_description
 }
 
 // Provision sm_imported_certificate resource instance
@@ -13,12 +14,12 @@ resource "ibm_sm_imported_certificate" "sm_imported_certificate_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name 			= var.sm_imported_certificate_name
   custom_metadata = { my_key = jsonencode(var.sm_imported_certificate_custom_metadata) }
   description = var.sm_imported_certificate_description
   expiration_date = var.sm_imported_certificate_expiration_date
   labels = var.sm_imported_certificate_labels
   secret_group_id = var.sm_imported_certificate_secret_group_id
-  secret_type = var.sm_imported_certificate_secret_type
   certificate = var.sm_imported_certificate_certificate
   intermediate = var.sm_imported_certificate_intermediate
   private_key = var.sm_imported_certificate_private_key
@@ -29,17 +30,23 @@ resource "ibm_sm_public_certificate" "sm_public_certificate_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name 			= var.sm_public_certificate_name
   custom_metadata = { my_key = jsonencode(var.sm_public_certificate_custom_metadata) }
   description = var.sm_public_certificate_description
   expiration_date = var.sm_public_certificate_expiration_date
   labels = var.sm_public_certificate_labels
   secret_group_id = var.sm_public_certificate_secret_group_id
-  secret_type = var.sm_public_certificate_secret_type
   rotation {
     auto_rotate = true
-    interval = 1
-    unit = "day"
+    rotate_keys = false
   }
+}
+
+resource "ibm_sm_public_certificate_action_validate_manual_dns" "sm_public_certificate_action_validate_manual_dns_instance" {
+  instance_id      = var.secrets_manager_instance_id
+  region           = var.region
+  endpoint_type    = var.endpoint_type
+  secret_id 	   = var.sm_public_certificate_action_validate_manual_dns_secret_id
 }
 
 // Provision sm_kv_secret resource instance
@@ -47,11 +54,11 @@ resource "ibm_sm_kv_secret" "sm_kv_secret_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name 			= var.sm_kv_secret_name
   custom_metadata = { my_key = jsonencode(var.sm_kv_secret_custom_metadata) }
   description = var.sm_kv_secret_description
   labels = var.sm_kv_secret_labels
   secret_group_id = var.sm_kv_secret_secret_group_id
-  secret_type = var.sm_kv_secret_secret_type
   data = { my_key = jsonencode(var.sm_kv_secret_data) }
 }
 
@@ -60,15 +67,13 @@ resource "ibm_sm_iam_credentials_secret"  "sm_iam_credentials_secret_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name 			= var.sm_iam_credentials_secret_name
   custom_metadata = { my_key = jsonencode(var.sm_iam_credentials_secret_custom_metadata) }
   description = var.sm_iam_credentials_secret_description
   labels = var.sm_iam_credentials_secret_labels
   secret_group_id = var.sm_iam_credentials_secret_secret_group_id
-  secret_type = var.sm_iam_credentials_secret_secret_type
   ttl = var.sm_iam_credentials_secret_ttl
   access_groups = var.sm_iam_credentials_secret_access_groups
-  service_id = var.sm_iam_credentials_secret_service_id
-  reuse_api_key = var.sm_iam_credentials_secret_reuse_api_key
   rotation {
     auto_rotate = true
     interval = 1
@@ -81,12 +86,12 @@ resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name 			= var.sm_arbitrary_secret_name
   custom_metadata = { my_key = jsonencode(var.sm_arbitrary_secret_custom_metadata) }
   description = var.sm_arbitrary_secret_description
   expiration_date = var.sm_arbitrary_secret_expiration_date
   labels = var.sm_arbitrary_secret_labels
   secret_group_id = var.sm_arbitrary_secret_secret_group_id
-  secret_type = var.sm_arbitrary_secret_secret_type
   payload = var.sm_arbitrary_secret_payload
 }
 
@@ -95,12 +100,12 @@ resource "ibm_sm_username_password_secret" "sm_username_password_secret_instance
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name 			= var.sm_username_password_secret_name
   custom_metadata = { my_key = jsonencode(var.sm_username_password_secret_custom_metadata) }
   description = var.sm_username_password_secret_description
   expiration_date = var.sm_username_password_secret_expiration_date
   labels = var.sm_username_password_secret_labels
   secret_group_id = var.sm_username_password_secret_secret_group_id
-  secret_type = var.sm_username_password_secret_secret_type
   rotation {
     auto_rotate = true
     interval = 1
@@ -115,12 +120,12 @@ resource "ibm_sm_private_certificate" "sm_private_certificate_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name 			= var.sm_private_certificate_name
   custom_metadata = { my_key = jsonencode(var.sm_private_certificate_custom_metadata) }
   description = var.sm_private_certificate_description
   expiration_date = var.sm_private_certificate_expiration_date
   labels = var.sm_private_certificate_labels
   secret_group_id = var.sm_private_certificate_secret_group_id
-  secret_type = var.sm_private_certificate_secret_type
   rotation {
     auto_rotate = true
     interval = 1
@@ -134,6 +139,7 @@ resource "ibm_sm_private_certificate_configuration_root_ca" "sm_private_certific
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name          = var.sm_private_certificate_configuration_root_ca_name
   crl_disable = var.sm_private_certificate_configuration_root_ca_crl_disable
   crl_distribution_points_encoded = var.sm_private_certificate_configuration_root_ca_crl_distribution_points_encoded
   issuing_certificates_urls_encoded = var.sm_private_certificate_configuration_root_ca_issuing_certificates_urls_encoded
@@ -145,6 +151,7 @@ resource "ibm_sm_private_certificate_configuration_intermediate_ca" "sm_private_
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name           = var.sm_private_certificate_configuration_intermediate_ca_name
   crl_disable = var.sm_private_certificate_configuration_intermediate_ca_crl_disable
   crl_distribution_points_encoded = var.sm_private_certificate_configuration_intermediate_ca_crl_distribution_points_encoded
   issuing_certificates_urls_encoded = var.sm_private_certificate_configuration_intermediate_ca_issuing_certificates_urls_encoded
@@ -156,6 +163,7 @@ resource "ibm_sm_private_certificate_configuration_template" "sm_private_certifi
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name                  = var.sm_private_certificate_configuration_template_name
   certificate_authority = var.sm_private_certificate_configuration_template_certificate_authority
   allowed_secret_groups = var.sm_private_certificate_configuration_template_allowed_secret_groups
   allow_localhost = var.sm_private_certificate_configuration_template_allow_localhost
@@ -183,11 +191,30 @@ resource "ibm_sm_private_certificate_configuration_template" "sm_private_certifi
   basic_constraints_valid_for_non_ca = var.sm_private_certificate_configuration_template_basic_constraints_valid_for_non_ca
 }
 
+// Provision ibm_sm_private_certificate_configuration_action_sign_csr resource instance
+resource "ibm_sm_private_certificate_configuration_action_sign_csr" "sm_private_certificate_configuration_action_sign_csr_instance" {
+  instance_id           = var.secrets_manager_instance_id
+  region                = var.region
+  endpoint_type         = var.endpoint_type
+  name                  = var.sm_private_certificate_configuration_action_sign_csr_name
+  csr                   = var.sm_private_certificate_configuration_action_sign_csr_csr
+}
+
+// Provision ibm_sm_private_certificate_configuration_action_set_signed resource instance
+resource "ibm_sm_private_certificate_configuration_action_set_signed" "sm_private_certificate_configuration_action_set_signed_instance" {
+  instance_id           = var.secrets_manager_instance_id
+  region                = var.region
+  endpoint_type         = var.endpoint_type
+  name                  = var.sm_private_certificate_configuration_action_set_signed_name
+  certificate           = var.sm_private_certificate_configuration_action_set_signed_certificate
+}
+
 // Provision sm_public_certificate_configuration_ca_lets_encrypt resource instance
 resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt_instance" {
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name          = var.sm_public_certificate_configuration_ca_lets_encrypt_name
   lets_encrypt_environment = var.sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_environment
   lets_encrypt_private_key = var.sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_private_key
   lets_encrypt_preferred_chain = var.sm_public_certificate_configuration_ca_lets_encrypt_lets_encrypt_preferred_chain
@@ -198,6 +225,7 @@ resource "ibm_sm_public_certificate_configuration_dns_cis" "sm_public_certificat
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name          = var.sm_public_certificate_configuration_dns_cis_cloud_internet_services_name
   cloud_internet_services_apikey = var.sm_public_certificate_configuration_dns_cis_cloud_internet_services_apikey
   cloud_internet_services_crn = var.sm_public_certificate_configuration_dns_cis_cloud_internet_services_crn
 }
@@ -207,6 +235,7 @@ resource "ibm_sm_public_certificate_configuration_dns_classic_infrastructure" "s
   instance_id   = var.secrets_manager_instance_id
   region        = var.region
   endpoint_type    = var.endpoint_type
+  name          = var.sm_public_certificate_configuration_dns_classic_infrastructure_name
   classic_infrastructure_username = var.sm_public_certificate_configuration_dns_classic_infrastructure_classic_infrastructure_username
   classic_infrastructure_password = var.sm_public_certificate_configuration_dns_classic_infrastructure_classic_infrastructure_password
 }

@@ -13,9 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmSecretGroup() *schema.Resource {
@@ -66,7 +65,7 @@ func ResourceIbmSmSecretGroupValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[A-Za-z][A-Za-z0-9]*(?:_?-?.?[A-Za-z0-9]+)*$`,
+			Regexp:                     `[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`,
 			MinValueLength:             2,
 			MaxValueLength:             64,
 		},
@@ -121,6 +120,9 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret group use the format `<region>/<instance_id>/<secret_group_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretGroupId := id[2]
@@ -155,10 +157,10 @@ func resourceIbmSmSecretGroupRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("description", secretGroup.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secretGroup.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secretGroup.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secretGroup.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secretGroup.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

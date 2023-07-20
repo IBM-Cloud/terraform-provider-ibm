@@ -165,7 +165,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 									"pattern": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.",
+										Description: "The pattern of Git branch or tag to which to listen. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository. The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. One of branch or pattern must be specified, but only one or the other.",
 									},
 									"blind_connection": &schema.Schema{
 										Type:        schema.TypeBool,
@@ -381,23 +381,19 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 
 func dataSourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model *cdtektonpipelinev2.TriggerProperty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
+	modelMap["name"] = model.Name
 	if model.Value != nil {
-		modelMap["value"] = *model.Value
+		modelMap["value"] = model.Value
 	}
 	if model.Href != nil {
-		modelMap["href"] = *model.Href
+		modelMap["href"] = model.Href
 	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
-	if model.Type != nil {
-		modelMap["type"] = *model.Type
-	}
+	modelMap["type"] = model.Type
 	if model.Path != nil {
-		modelMap["path"] = *model.Path
+		modelMap["path"] = model.Path
 	}
 	return modelMap, nil
 }
@@ -405,83 +401,69 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model *cdtektonpip
 func dataSourceIBMCdTektonPipelineTriggerWorkerToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
-		modelMap["name"] = *model.Name
+		modelMap["name"] = model.Name
 	}
 	if model.Type != nil {
-		modelMap["type"] = *model.Type
+		modelMap["type"] = model.Type
 	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
+	modelMap["id"] = model.ID
 	return modelMap, nil
 }
 
 func dataSourceIBMCdTektonPipelineTriggerTriggerSourceToMap(model *cdtektonpipelinev2.TriggerSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Type != nil {
-		modelMap["type"] = *model.Type
+	modelMap["type"] = model.Type
+	propertiesMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model.Properties)
+	if err != nil {
+		return modelMap, err
 	}
-	if model.Properties != nil {
-		propertiesMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model.Properties)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["properties"] = []map[string]interface{}{propertiesMap}
-	}
+	modelMap["properties"] = []map[string]interface{}{propertiesMap}
 	return modelMap, nil
 }
 
 func dataSourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model *cdtektonpipelinev2.TriggerSourceProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.URL != nil {
-		modelMap["url"] = *model.URL
-	}
+	modelMap["url"] = model.URL
 	if model.Branch != nil {
-		modelMap["branch"] = *model.Branch
+		modelMap["branch"] = model.Branch
 	}
 	if model.Pattern != nil {
-		modelMap["pattern"] = *model.Pattern
+		modelMap["pattern"] = model.Pattern
 	}
-	if model.BlindConnection != nil {
-		modelMap["blind_connection"] = *model.BlindConnection
-	}
+	modelMap["blind_connection"] = model.BlindConnection
 	if model.HookID != nil {
-		modelMap["hook_id"] = *model.HookID
+		modelMap["hook_id"] = model.HookID
 	}
-	if model.Tool != nil {
-		toolMap, err := dataSourceIBMCdTektonPipelineTriggerToolToMap(model.Tool)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["tool"] = []map[string]interface{}{toolMap}
+	toolMap, err := dataSourceIBMCdTektonPipelineTriggerToolToMap(model.Tool)
+	if err != nil {
+		return modelMap, err
 	}
+	modelMap["tool"] = []map[string]interface{}{toolMap}
 	return modelMap, nil
 }
 
 func dataSourceIBMCdTektonPipelineTriggerToolToMap(model *cdtektonpipelinev2.Tool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
+	modelMap["id"] = model.ID
 	return modelMap, nil
 }
 
 func dataSourceIBMCdTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelinev2.GenericSecret) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
-		modelMap["type"] = *model.Type
+		modelMap["type"] = model.Type
 	}
 	if model.Value != nil {
-		modelMap["value"] = *model.Value
+		modelMap["value"] = model.Value
 	}
 	if model.Source != nil {
-		modelMap["source"] = *model.Source
+		modelMap["source"] = model.Source
 	}
 	if model.KeyName != nil {
-		modelMap["key_name"] = *model.KeyName
+		modelMap["key_name"] = model.KeyName
 	}
 	if model.Algorithm != nil {
-		modelMap["algorithm"] = *model.Algorithm
+		modelMap["algorithm"] = model.Algorithm
 	}
 	return modelMap, nil
 }

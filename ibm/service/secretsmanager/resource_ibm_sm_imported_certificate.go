@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmImportedCertificate() *schema.Resource {
@@ -78,6 +78,7 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 			"version_custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The secret version metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -96,7 +97,6 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 			"intermediate": &schema.Schema{
 				Type:      schema.TypeString,
 				Optional:  true,
-				Computed:  true,
 				Sensitive: true,
 				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					if removeNewLineFromCertificate(oldValue) == removeNewLineFromCertificate(newValue) {
@@ -109,7 +109,6 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 			"private_key": &schema.Schema{
 				Type:      schema.TypeString,
 				Optional:  true,
-				Computed:  true,
 				Sensitive: true,
 				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					if removeNewLineFromCertificate(oldValue) == removeNewLineFromCertificate(newValue) {
@@ -213,12 +212,12 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"not_before": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 						"not_after": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 					},
@@ -306,6 +305,9 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
@@ -338,7 +340,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -376,7 +378,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -393,7 +395,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	if err = d.Set("common_name", secret.CommonName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if err = d.Set("intermediate_included", secret.IntermediateIncluded); err != nil {
@@ -426,6 +428,24 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	}
 	if err = d.Set("private_key", secret.PrivateKey); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting private_key: %s", err))
+	}
+
+	// Call get version metadata API to get the current version_custom_metadata
+	getVersionMetdataOptions := &secretsmanagerv2.GetSecretVersionMetadataOptions{}
+	getVersionMetdataOptions.SetSecretID(secretId)
+	getVersionMetdataOptions.SetID("current")
+
+	versionMetadataIntf, response, err := secretsManagerClient.GetSecretVersionMetadataWithContext(context, getVersionMetdataOptions)
+	if err != nil {
+		log.Printf("[DEBUG] GetSecretVersionMetadataWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response))
+	}
+
+	versionMetadata := versionMetadataIntf.(*secretsmanagerv2.ImportedCertificateVersionMetadata)
+	if versionMetadata.VersionCustomMetadata != nil {
+		if err = d.Set("version_custom_metadata", versionMetadata.VersionCustomMetadata); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version_custom_metadata: %s", err))
+		}
 	}
 
 	return nil
@@ -473,6 +493,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 		hasChange = true
 	}
 
+	// Apply change in metadata (if changed)
 	if hasChange {
 		updateSecretMetadataOptions.SecretMetadataPatch, _ = patchVals.AsPatch()
 		_, response, err := secretsManagerClient.UpdateSecretMetadataWithContext(context, updateSecretMetadataOptions)
@@ -482,6 +503,56 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 		}
 	}
 
+	// Apply change in secret data (if changed)
+	if d.HasChange("certificate") || d.HasChange("intermediate") || d.HasChange("private_key") {
+		versionModel := &secretsmanagerv2.ImportedCertificateVersionPrototype{}
+		versionModel.Certificate = core.StringPtr(d.Get("certificate").(string))
+		if _, ok := d.GetOk("intermediate"); ok {
+			versionModel.Intermediate = core.StringPtr(formatCertificate(d.Get("intermediate").(string)))
+		}
+		if _, ok := d.GetOk("private_key"); ok {
+			versionModel.PrivateKey = core.StringPtr(formatCertificate(d.Get("private_key").(string)))
+		}
+		if _, ok := d.GetOk("version_custom_metadata"); ok {
+			versionModel.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
+		}
+		if _, ok := d.GetOk("custom_metadata"); ok {
+			versionModel.CustomMetadata = d.Get("custom_metadata").(map[string]interface{})
+		}
+
+		createSecretVersionOptions := &secretsmanagerv2.CreateSecretVersionOptions{}
+		createSecretVersionOptions.SetSecretID(secretId)
+		createSecretVersionOptions.SetSecretVersionPrototype(versionModel)
+		_, response, err := secretsManagerClient.CreateSecretVersionWithContext(context, createSecretVersionOptions)
+		if err != nil {
+			if hasChange {
+				// Before returning an error, call the read function to update the Terraform state with the change
+				// that was already applied to the metadata
+				resourceIbmSmImportedCertificateRead(context, d, meta)
+			}
+			log.Printf("[DEBUG] CreateSecretVersionWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("CreateSecretVersionWithContext failed %s\n%s", err, response))
+		}
+	} else if d.HasChange("version_custom_metadata") {
+		// Apply change to version_custom_metadata in current version
+		secretVersionMetadataPatchModel := new(secretsmanagerv2.SecretVersionMetadataPatch)
+		secretVersionMetadataPatchModel.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
+		secretVersionMetadataPatchModelAsPatch, _ := secretVersionMetadataPatchModel.AsPatch()
+
+		updateSecretVersionOptions := &secretsmanagerv2.UpdateSecretVersionMetadataOptions{}
+		updateSecretVersionOptions.SetSecretID(secretId)
+		updateSecretVersionOptions.SetID("current")
+		updateSecretVersionOptions.SetSecretVersionMetadataPatch(secretVersionMetadataPatchModelAsPatch)
+		_, response, err := secretsManagerClient.UpdateSecretVersionMetadataWithContext(context, updateSecretVersionOptions)
+		if err != nil {
+			if hasChange {
+				// Call the read function to update the Terraform state with the change already applied to the metadata
+				resourceIbmSmImportedCertificateRead(context, d, meta)
+			}
+			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))
+		}
+	}
 	return resourceIbmSmImportedCertificateRead(context, d, meta)
 }
 

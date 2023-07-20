@@ -10,15 +10,6 @@ resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
 	is_default  = true
 }
 
-resource "ibm_is_vpc_route" "route1" {
-  name        = "route1"
-  vpc         = ibm_is_vpc.vpc1.id
-  zone        = var.zone1
-  destination = "192.168.4.0/24"
-  next_hop    = "10.240.0.4"
-  depends_on  = [ibm_is_subnet.subnet1]
-}
-
 resource "ibm_is_subnet" "subnet1" {
   name            = "subnet1"
   vpc             = ibm_is_vpc.vpc1.id
@@ -83,6 +74,17 @@ resource "ibm_is_instance_template" "instancetemplate2" {
 // datasource for instance template
 data "ibm_is_instance_template" "instancetemplates" {
 	identifier = ibm_is_instance_template.instancetemplate2.id
+}
+
+// Load balancer with private DNS
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.subnet1.id]
+  profile = "network-fixed"
+  dns   {
+    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
+    zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  }
 }
 
 resource "ibm_is_lb" "lb2" {
@@ -304,16 +306,16 @@ resource "ibm_is_subnet" "subnet2" {
 
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "test-ipsec"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
   pfs                      = "disabled"
 }
 
 resource "ibm_is_ike_policy" "example" {
   name                     = "test-ike"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
-  dh_group                 = 2
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
+  dh_group                 = 14
   ike_version              = 1
 }
 
@@ -1195,4 +1197,101 @@ data "ibm_is_vpn_server_clients" "is_vpn_server_clients" {
 data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
+}
+resource "ibm_is_image_export_job" "example" {
+  image = ibm_is_image.image1.id
+  name = "my-image-export"
+  storage_bucket {
+    name = "bucket-27200-lwx4cfvcue"
+  }
+}
+
+data "ibm_is_image_export_jobs" "example" {
+  image = ibm_is_image_export_job.example.image
+}
+
+data "ibm_is_image_export_job" "example" {
+  image = ibm_is_image_export_job.example.image
+  image_export_job = ibm_is_image_export_job.example.image_export_job
+}
+resource "ibm_is_vpc" "vpc" {
+  name = "my-vpc"
+}
+resource "ibm_is_share" "share" {
+  zone = "us-south-1"
+  size = 30000
+  name = "my-share"
+  profile = "tier-3iops"
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share" "sharereplica" {
+  zone = "us-south-2"
+  name = "my-share-replica"
+  profile = "tier-3iops"
+  replication_cron_spec = "0 */5 * * *"
+  source_share = ibm_is_share.share.id
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share_target" "is_share_target" {
+  share = ibm_is_share.is_share.id
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target"
+}
+
+data "ibm_is_share_target" "is_share_target" {
+  share        = ibm_is_share.is_share.id
+  share_target = ibm_is_share_target.is_share_target.share_target
+}
+
+data "ibm_is_share_targets" "is_share_targets" {
+  share = ibm_is_share.is_share.id
+}
+
+resource "ibm_is_share_mount_target" "is_share_mount_target" {
+  share = ibm_is_share.is_share.id
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target-1"
+}
+
+data "ibm_is_share_mount_target" "is_share_mount_target" {
+  share        = ibm_is_share.is_share.id
+  mount_target = ibm_is_share_mount_target.is_share_target.mount_target
+}
+
+data "ibm_is_share_mount_targets" "is_share_mount_targets" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_share" "is_share" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_shares" "is_shares" {
+}
+
+// snapshot cross region
+
+provider "ibm" {
+  alias				       = "eu-de"
+  region             = "eu-de"
+}
+
+resource "ibm_is_snapshot" "b_snapshot_copy" {
+  provider            = ibm.eu-de
+  name                = "my-snapshot-boot-copy"
+  source_snapshot_crn = ibm_is_snapshot.b_snapshot.crn
+}
+
+// image deprecate and obsolete
+
+resource "ibm_is_image_deprecate" "example" {
+  image     = ibm_is_image.image1.id
+}
+
+resource "ibm_is_image_obsolete" "example" {
+  image     = ibm_is_image.image1.id
 }

@@ -14,7 +14,7 @@ Provides a resource for PublicCertificateConfigurationCALetsEncrypt. This allows
 
 ```hcl
 resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name          = "lets-encrypt-config"
   lets_encrypt_environment = "production"
@@ -26,6 +26,10 @@ resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_ce
 
 Review the argument reference that you can specify for your resource.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+  * Constraints: Allowable values are: `private`, `public`.
 * `lets_encrypt_environment` - (Required, String) The configuration of the Let's Encrypt CA environment.
   * Constraints: Allowable values are: `production`, `staging`.
 * `lets_encrypt_preferred_chain` - (Optional, String) Prefer the chain with an issuer matching this Subject Common Name.
@@ -104,11 +108,11 @@ You can import the `ibm_sm_public_certificate_configuration_ca_lets_encrypt` res
 For more information, see [the documentation](https://cloud.ibm.com/docs/secrets-manager)
 
 # Syntax
-```
+```bash
 $ terraform import ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt <region>/<instance_id>/<name>
 ```
 
 # Example
-```
+```bash
 $ terraform import ibm_sm_public_certificate_configuration_ca_lets_encrypt.sm_public_certificate_configuration_ca_lets_encrypt us-east/6ebc4224-e983-496a-8a54-f40a0bfa9175/lets-encrypt-config
 ```

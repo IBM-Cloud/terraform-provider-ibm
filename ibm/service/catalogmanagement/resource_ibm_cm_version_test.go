@@ -59,6 +59,50 @@ func TestAccIBMCmVersionSimpleArgs(t *testing.T) {
 	})
 }
 
+func TestAccIBMCmVersionComplexArgs(t *testing.T) {
+	var conf catalogmanagementv1.Version
+	zipurl := "https://github.com/IBM-Cloud/terraform-sample/archive/refs/tags/v1.1.0.tar.gz"
+	targetVersion := "1.0.0"
+	usageText := "example usage text"
+	installInstructions := "example install instructions"
+	iamPermissionServiceNameOne := "iam-identity"
+	iamPermissionsRoleCRNsOne := "[\"crn:v1:bluemix:public:iam::::role:Administrator\"]"
+	iamPermissionServiceNameTwo := "is.vpc"
+	iamPermissionsRoleCRNsTwo := "[\"crn:v1:bluemix:public:iam::::serviceRole:Manager\", \"crn:v1:bluemix:public:iam::::role:Administrator\"]"
+	featureTitleOne := "RAM"
+	featureDescriptionOne := "8GB"
+	featureTitleTwo := "Storage"
+	featureDescriptionTwo := "500GB"
+	archDiagDesc := "diagram 1 description"
+	archDiagCaption := "diagram 1 caption"
+	archDiagType := "image/svg+xml"
+	archDiagURL := "https://raw.githubusercontent.com/gmendel/landing-zone-vpc/main/.docs/vpc-standard.svg"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCmVersionDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCmVersionComplexConfig(zipurl, targetVersion, usageText, installInstructions, iamPermissionServiceNameOne, iamPermissionsRoleCRNsOne, iamPermissionServiceNameTwo, iamPermissionsRoleCRNsTwo, featureTitleOne, featureDescriptionOne, featureTitleTwo, featureDescriptionTwo, archDiagDesc, archDiagCaption, archDiagType, archDiagURL),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCmVersionExists("ibm_cm_version.cm_version", conf),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "zipurl", zipurl),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "target_version", targetVersion),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "usage", usageText),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "install.0.instructions", installInstructions),
+					resource.TestCheckResourceAttrSet("ibm_cm_version.cm_version", "iam_permissions.0.service_name"),
+					resource.TestCheckResourceAttrSet("ibm_cm_version.cm_version", "iam_permissions.0.role_crns.0"),
+					resource.TestCheckResourceAttrSet("ibm_cm_version.cm_version", "iam_permissions.1.service_name"),
+					resource.TestCheckResourceAttrSet("ibm_cm_version.cm_version", "iam_permissions.1.role_crns.0"),
+					resource.TestCheckResourceAttrSet("ibm_cm_version.cm_version", "flavor.#"),
+					resource.TestCheckResourceAttrSet("ibm_cm_version.cm_version", "solution_info.#"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCmVersionVSI(t *testing.T) {
 	var conf catalogmanagementv1.Version
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -136,6 +180,68 @@ func testAccCheckIBMCmVersionSimpleConfig(zipurl string, targetVersion string, i
 			install {}
 		}
 	`, zipurl, targetVersion, includeConfig)
+}
+
+func testAccCheckIBMCmVersionComplexConfig(zipurl string, targetVersion string, usageText string, installInstructions string, iamPermissionServiceNameOne string, iamPermissionsRoleCRNsOne string, iamPermissionServiceNameTwo string, iamPermissionsRoleCRNsTwo string, featureTitleOne string, featureDescriptionOne string, featureTitleTwo string, featureDescriptionTwo string, archDiagDesc string, archDiagCaption string, archDiagType string, archDiagURL string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "test_tf_catalog_label_2"
+			kind = "offering"
+		}
+
+		resource "ibm_cm_offering" "cm_offering" {
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			label = "test_tf_offering_label_2"
+			name = "test_tf_offering_name_2"
+			offering_icon_url = "test.url.2"
+			tags = ["dev_ops"]
+			product_kind = "solution"
+		}
+
+		resource "ibm_cm_version" "cm_version" {
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			offering_id = ibm_cm_offering.cm_offering.id
+			zipurl = "%s"
+			target_version = "%s"
+			include_config = true
+			usage = "%s"
+			flavor {
+				name = "standard"
+				label = "Standard"
+				index = 1
+			}
+			install {
+				instructions = "%s"
+			}
+			iam_permissions {
+				service_name = "%s"
+				role_crns = %s
+			}
+			iam_permissions {
+				service_name = "%s"
+				role_crns = %s
+			}
+			solution_info {
+				features {
+					title = "%s"
+					description = "%s"
+				}
+				features {
+					title = "%s"
+					description = "%s"
+				}
+				architecture_diagrams {
+					description = "%s"
+					diagram {
+						caption = "%s"
+						type = "%s"
+						url = "%s"
+					}
+				}
+			}
+		}
+	`, zipurl, targetVersion, usageText, installInstructions, iamPermissionServiceNameOne, iamPermissionsRoleCRNsOne, iamPermissionServiceNameTwo, iamPermissionsRoleCRNsTwo, featureTitleOne, featureDescriptionOne, featureTitleTwo, featureDescriptionTwo, archDiagDesc, archDiagCaption, archDiagType, archDiagURL)
 }
 
 func testAccCheckIBMCmVersionVSIConfig(name string, label string, installKind string, sha string, targetVersion string) string {

@@ -18,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
@@ -81,9 +81,9 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			},
 			"reuse_api_key": &schema.Schema{
 				Type:        schema.TypeBool,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret.If it is set to `true`, the service reuses the current credentials. If it is set to `false`, a new service ID and API key are generated each time that the secret is read or accessed.",
+				Optional:    true,
+				Default:     true,
+				Description: "Determines whether to use the same service ID and API key for future read operations on an`iam_credentials` secret. Must be set to `true` for IAM credentials secrets managed with Terraform.",
 			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
@@ -100,16 +100,18 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
 						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The length of the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The units for the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -203,7 +205,7 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.",
+				Description: "The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically.",
 			},
 		},
 	}
@@ -221,6 +223,9 @@ func resourceIbmSmIamCredentialsSecretCreate(context context.Context, d *schema.
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
+	if !d.Get("reuse_api_key").(bool) {
+		return diag.Errorf("IAM credentials secrets managed by Terraform must have reuse_api_key set to true")
+	}
 	secretPrototypeModel, err := resourceIbmSmIamCredentialsSecretMapToSecretPrototype(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -287,6 +292,9 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	}
 
 	id := strings.Split(d.Id(), "/")
+	if len(id) != 3 {
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
+	}
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
@@ -320,7 +328,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -358,7 +366,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -381,8 +389,14 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("service_id_is_static", secret.ServiceIdIsStatic); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting service_id_is_static: %s", err))
 	}
-	if err = d.Set("reuse_api_key", secret.ReuseApiKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting reuse_api_key: %s", err))
+
+	// Prevent import of secrets with reuse_api_key = false into Terraform
+	if !*secret.ReuseApiKey {
+		return diag.Errorf("IAM credentials secrets with Reuse IAM credentials turned off (reuse_api_key = false) cannot be managed by Terraform")
+	} else {
+		if err = d.Set("reuse_api_key", true); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting reuse_api_key: %s", err))
+		}
 	}
 	rotationMap, err := resourceIbmSmIamCredentialsSecretRotationPolicyToMap(secret.Rotation)
 	if err != nil {
@@ -393,7 +407,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 			return diag.FromErr(fmt.Errorf("Error setting rotation: %s", err))
 		}
 	}
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(secret.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(secret.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 	if err = d.Set("api_key", secret.ApiKey); err != nil {
@@ -532,7 +546,7 @@ func resourceIbmSmIamCredentialsSecretMapToSecretPrototype(d *schema.ResourceDat
 	if _, ok := d.GetOk("service_id"); ok {
 		model.ServiceID = core.StringPtr(d.Get("service_id").(string))
 	}
-	model.ReuseApiKey = core.BoolPtr(d.Get("reuse_api_key").(bool))
+	model.ReuseApiKey = core.BoolPtr(true) // Always true for IAM credentials secrets in Terraform
 	if _, ok := d.GetOk("rotation"); ok {
 		RotationModel, err := resourceIbmSmIamCredentialsSecretMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -554,7 +568,9 @@ func resourceIbmSmIamCredentialsSecretMapToRotationPolicy(modelMap map[string]in
 	if modelMap["auto_rotate"] != nil {
 		model.AutoRotate = core.BoolPtr(modelMap["auto_rotate"].(bool))
 	}
-	if modelMap["interval"] != nil {
+	if modelMap["interval"].(int) == 0 {
+		model.Interval = nil
+	} else {
 		model.Interval = core.Int64Ptr(int64(modelMap["interval"].(int)))
 	}
 	if modelMap["unit"] != nil && modelMap["unit"].(string) != "" {

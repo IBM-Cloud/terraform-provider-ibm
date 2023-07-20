@@ -141,9 +141,10 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 			},
 
 			"worker_count": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The number of workers",
+				Type:             schema.TypeInt,
+				Required:         true,
+				Description:      "The number of workers",
+				DiffSuppressFunc: SuppressResizeForAutoscaledWorkerpool,
 			},
 
 			"entitlement": {
@@ -197,6 +198,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Root Key ID for boot volume encryption",
 				RequiredWith:     []string{"kms_instance_id"},
 			},
+
 			"kms_account_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -204,9 +206,24 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Account ID of kms instance holder - if not provided, defaults to the account in use",
 				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
+
+			"autoscale_enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Autoscaling is enabled on the workerpool",
+			},
 		},
 	}
 }
+
+func SuppressResizeForAutoscaledWorkerpool(key, oldValue, newValue string, d *schema.ResourceData) bool {
+	var autoscaleEnabled bool = false
+	if v, ok := d.GetOk("autoscale_enabled"); ok {
+		autoscaleEnabled = v.(bool)
+	}
+	return autoscaleEnabled
+}
+
 func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 	tainteffects := "NoSchedule,PreferNoSchedule,NoExecute"
 	validateSchema := make([]validate.ValidateSchema, 0)
@@ -322,12 +339,20 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 		return fmt.Errorf("[ERROR] Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
 	}
 
-	return resourceIBMContainerVpcWorkerPoolUpdate(d, meta)
+	if taintRes, ok := d.GetOk("taints"); ok {
+		if err := updateWorkerpoolTaints(d, meta, clusterNameorID, params.Name, taintRes.(*schema.Set).List()); err != nil {
+			return err
+		}
+	}
+
+	return resourceIBMContainerVpcWorkerPoolRead(d, meta)
 }
 
 func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
+	clusterNameOrID := d.Get("cluster").(string)
+	workerPoolName := d.Get("worker_pool_name").(string)
 
-	if d.HasChange("labels") && !d.IsNewResource() {
+	if d.HasChange("labels") {
 		clusterNameOrID := d.Get("cluster").(string)
 		workerPoolName := d.Get("worker_pool_name").(string)
 
@@ -353,22 +378,14 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 			return fmt.Errorf("[ERROR] Error updating the labels: %s", err)
 		}
 	}
-	if d.HasChange("taints") {
-		clusterNameOrID := d.Get("cluster").(string)
-		workerPoolName := d.Get("worker_pool_name").(string)
-		taintParam := expandWorkerPoolTaints(d, meta, clusterNameOrID, workerPoolName)
 
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
-		if err != nil {
-			return err
+	if d.HasChange("taints") {
+		var taints []interface{}
+		if taintRes, ok := d.GetOk("taints"); ok {
+			taints = taintRes.(*schema.Set).List()
 		}
-		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-		if err != nil {
+		if err := updateWorkerpoolTaints(d, meta, clusterNameOrID, workerPoolName, taints); err != nil {
 			return err
-		}
-		err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
 		}
 	}
 
@@ -392,7 +409,7 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 		}
 	}
 
-	if d.HasChange("zones") && !d.IsNewResource() {
+	if d.HasChange("zones") {
 		clusterID := d.Get("cluster").(string)
 		workerPoolName := d.Get("worker_pool_name").(string)
 		targetEnv, err := getVpcClusterTargetHeader(d, meta)
@@ -453,21 +470,39 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 			}
 		}
 	}
+
 	return resourceIBMContainerVpcWorkerPoolRead(d, meta)
 }
 
-func expandWorkerPoolTaints(d *schema.ResourceData, meta interface{}, clusterNameOrID, workerPoolName string) v2.WorkerPoolTaintRequest {
-	taintBody := make(map[string]string)
-	if res, ok := d.GetOk("taints"); ok {
-		taints := res.(*schema.Set).List()
-		for _, t := range taints {
-			r, _ := t.(map[string]interface{})
-			key := r["key"].(string)
-			value := r["value"].(string)
-			effect := r["effect"].(string)
-			taintBody[key] = fmt.Sprintf("%s:%s", value, effect)
-		}
+func updateWorkerpoolTaints(d *schema.ResourceData, meta interface{}, clusterNameOrID string, workerPoolName string, taints []interface{}) error {
+
+	taintParam := expandWorkerPoolTaints(clusterNameOrID, workerPoolName, taints)
+
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
 	}
+	ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return err
+	}
+	err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
+	}
+	return nil
+}
+
+func expandWorkerPoolTaints(clusterNameOrID, workerPoolName string, taints []interface{}) v2.WorkerPoolTaintRequest {
+	taintBody := make(map[string]string)
+	for _, t := range taints {
+		r, _ := t.(map[string]interface{})
+		key := r["key"].(string)
+		value := r["value"].(string)
+		effect := r["effect"].(string)
+		taintBody[key] = fmt.Sprintf("%s:%s", value, effect)
+	}
+
 	taintParam := v2.WorkerPoolTaintRequest{
 		Cluster:    clusterNameOrID,
 		WorkerPool: workerPoolName,
@@ -475,6 +510,7 @@ func expandWorkerPoolTaints(d *schema.ResourceData, meta interface{}, clusterNam
 	}
 	return taintParam
 }
+
 func flattenWorkerPoolTaints(taints v2.GetWorkerPoolResponse) []map[string]interface{} {
 	taintslist := make([]map[string]interface{}, 0)
 	for k, v := range taints.Taints {
@@ -551,6 +587,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
 		}
 	}
+	d.Set("autoscale_enabled", workerPool.AutoscaleEnabled)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -613,7 +650,7 @@ func resourceIBMContainerVpcWorkerPoolExists(d *schema.ResourceData, meta interf
 	workerPool, err := workerPoolsAPI.GetWorkerPool(cluster, workerPoolID, targetEnv)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified worker pool could not be found") {
+			if apiErr.StatusCode() == 404 && (strings.Contains(apiErr.Description(), "The specified worker pool could not be found") || strings.Contains(apiErr.Description(), "The specified cluster could not be found")) {
 				return false, nil
 			}
 		}

@@ -9,12 +9,14 @@ subcategory: "Secrets Manager"
 
 # ibm_sm_iam_credentials_configuration
 
-Provides a read-only data source for IAMCredentialsConfiguration. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for IAM Credentials configuration properties. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration" {
+    instance_id   = ibm_resource_instance.sm_instance.guid
+    region        = "us-south"
 	name = "configuration-name"
 }
 ```
@@ -23,6 +25,10 @@ data "ibm_sm_iam_credentials_configuration" "sm_iam_credentials_configuration" {
 
 Review the argument reference that you can specify for your data source.
 
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
+* `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
+  * Constraints: Allowable values are: `private`, `public`.
 * `name` - (Required, Forces new resource, String) The name of the configuration.
   * Constraints: The maximum length is `128` characters. The minimum length is `2` characters. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9]*(?:_?-?\\.?[A-Za-z0-9]+)*$/`.
 
@@ -30,8 +36,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the IAMCredentialsConfiguration.
-* `api_key` - (String) The API key that is generated for this secret.After the secret reaches the end of its lease (see the `ttl` field), the API key is deleted automatically. If you want to continue to use the same API key for future read operations, see the `reuse_api_key` field.
+* `api_key` - (String) An IBM Cloud API key that can create and manage service IDs. The API key must be assigned the Editor platform role on the Access Groups Service and the Operator platform role on the IAM Identity Service. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-configure-iam-engine).
   * Constraints: The maximum length is `60` characters. The minimum length is `5` characters. The value must match regular expression `/^(?:[A-Za-z0-9_\\-]{4})*(?:[A-Za-z0-9_\\-]{2}==|[A-Za-z0-9_\\-]{3}=)?$/`.
 
 * `config_type` - (String) The configuration type.

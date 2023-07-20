@@ -50,7 +50,9 @@ configuration options:
 
 Review the argument reference that you can specify for your resource:
 
-* `capacity` - (Optional, Number) A number of blocks of throughput units. For more information, about throughput capacity, see [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter. The default value is `1`. Capacity modification is not supported for `lite` plan.
+* `capacity` - (Optional, Number) A number of blocks of throughput units. The default value is `1`. Capacity modification is not supported for `lite` plan.
+
+Capacity changes are reflected immediately, but are applied asynchronously over time by the service. Large capacity jumps are not fully available for some time after modification, but typically complete within 12 hours. For more information, about throughput capacity, see [`blocks`](https://cloud.ibm.com/apidocs/cloudant#putcapacitythroughputconfiguration) parameter.
 * `cors_config` - (Optional, Block List) Configuration for CORS.
 
   Nested scheme for `cors_config`:
