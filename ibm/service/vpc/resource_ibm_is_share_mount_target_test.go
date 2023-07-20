@@ -49,17 +49,20 @@ func TestAccIBMIsShareMountTargetTransitEncryptionBasic(t *testing.T) {
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tf-fs-vni-%d", acctest.RandIntRange(10, 100))
+	primaryIPName := fmt.Sprintf("tf-fs-pipname-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-fs-subnetn-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmIsShareTargetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcname, sname, targetName),
+				Config: testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcname, sname, vniName, subnetName, primaryIPName, targetName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmIsShareTargetExists("ibm_is_share_target.is_share_target", conf),
-					resource.TestCheckResourceAttr("ibm_is_share_target.is_share_target", "name", targetName),
-					resource.TestCheckResourceAttr("ibm_is_share_target.is_share_target", "transit_encryption", "user_managed"),
+					testAccCheckIbmIsShareTargetExists("ibm_is_share_mount_target.is_share_target", conf),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetName),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "transit_encryption", "user_managed"),
 				),
 			},
 		},
@@ -71,6 +74,7 @@ func testAccCheckIbmIsShareTargetConfig(vpcName, sname, targetName string) strin
 		is_default = "true"
 	}
 	resource "ibm_is_share" "is_share" {
+		access_control_mode = "vpc"
 		zone = "us-south-2"
 		size = 200
 		name = "%s"
@@ -86,12 +90,13 @@ func testAccCheckIbmIsShareTargetConfig(vpcName, sname, targetName string) strin
 	}
 	`, sname, acc.ShareProfileName, vpcName, targetName)
 }
-func testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcName, sname, targetName string) string {
+func testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcName, sname, vniName, subnetName, primaryIPName, targetName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
 		is_default = "true"
 	}
 	resource "ibm_is_share" "is_share" {
+		access_control_mode = "security_group"
 		zone = "us-south-2"
 		size = 200
 		name = "%s"
@@ -100,13 +105,25 @@ func testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcName, sname, ta
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	resource "ibm_is_share_target" "is_share_target" {
-		share = ibm_is_share.is_share.id
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
 		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-2"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_share_mount_target" "is_share_target" {
+		share = ibm_is_share.is_share.id
 		transit_encryption = "user_managed"
+		virtual_network_interface {
+			name = "%s"
+			primary_ip {
+				name = "%s"
+			}
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
 		name = "%s"
 	}
-	`, sname, acc.ShareProfileName, vpcName, targetName)
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, primaryIPName, targetName)
 }
 func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcbetav1.ShareMountTarget) resource.TestCheckFunc {
 

@@ -302,6 +302,9 @@ func dataSourceShareMountTargetCollectionTargetsToMap(targetsItem vpcbetav1.Shar
 	if targetsItem.ResourceType != nil {
 		targetsMap["resource_type"] = targetsItem.ResourceType
 	}
+	if targetsItem.TransitEncryption != nil {
+		targetsMap["transit_encryption"] = *targetsItem.TransitEncryption
+	}
 
 	if targetsItem.VPC != nil {
 		targetsMap["vpc"] = dataSourceShareMountTargetFlattenVpc(*targetsItem.VPC)

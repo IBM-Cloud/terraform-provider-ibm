@@ -80,7 +80,7 @@ func TestAccIbmIsShareTargetVNI(t *testing.T) {
 		},
 	})
 }
-func TestAccIbmIsShareMountTargetTransitEncryptionBasic(t *testing.T) {
+func TestAccIbmIsShareTargetTransitEncryptionBasic(t *testing.T) {
 	var conf vpcbetav1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))

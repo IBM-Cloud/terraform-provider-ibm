@@ -371,12 +371,6 @@ func ResourceIbmIsShare() *schema.Resource {
 										Computed:    true,
 										Description: "ID of this share target.",
 									},
-									"transit_encryption": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The transit encryption mode.",
-									},
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
@@ -1470,13 +1464,19 @@ func ShareMountTargetToMap(context context.Context, vpcClient *vpcbetav1.Vpcbeta
 	mountTarget["id"] = *shareMountTarget.ID
 	mountTarget["href"] = *shareMountTarget.Href
 	mountTarget["resource_type"] = *shareMountTarget.ResourceType
-	mountTarget["transit_encryption"] = *shareMountTarget.TransitEncryption
-	vni, err := ShareMountTargetVirtualNetworkInterfaceToMap(context, vpcClient, d, *shareMountTarget.VirtualNetworkInterface.ID)
-	if err != nil {
-		return nil, err
+	if shareMountTarget.TransitEncryption != nil {
+		mountTarget["transit_encryption"] = *shareMountTarget.TransitEncryption
 	}
-	mountTarget["virtual_network_interface"] = vni
-	mountTarget["vpc"] = *shareMountTarget.VPC.ID
+	if shareMountTarget.VirtualNetworkInterface != nil {
+		vni, err := ShareMountTargetVirtualNetworkInterfaceToMap(context, vpcClient, d, *shareMountTarget.VirtualNetworkInterface.ID)
+		if err != nil {
+			return nil, err
+		}
+		mountTarget["virtual_network_interface"] = vni
+	}
+	if shareMountTarget.VPC != nil {
+		mountTarget["vpc"] = *shareMountTarget.VPC.ID
+	}
 	return mountTarget, nil
 }
 

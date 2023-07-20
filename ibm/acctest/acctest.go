@@ -744,11 +744,6 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_VIRTUAL_NETWORK_INTERFACE for testing ibm_is_virtual_network_interface else it is set to default value 'c93dc4c6-e85a-4da2-9ea6-f24576256122'")
 	}
 
-	ISRouteDestination = os.Getenv("SL_ROUTE_DESTINATION")
-	if ISRouteDestination == "" {
-		ISRouteDestination = "192.168.4.0/24"
-		fmt.Println("[INFO] Set the environment variable SL_ROUTE_DESTINATION for testing ibm_is_vpc_route else it is set to default value '192.168.4.0/24'")
-	}
 	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
 	if VSIUnattachedBootVolumeID == "" {
 		VSIUnattachedBootVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"

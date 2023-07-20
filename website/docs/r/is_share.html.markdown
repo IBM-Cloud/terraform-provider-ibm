@@ -92,6 +92,10 @@ The following arguments are supported:
       Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
 
   - `vpc` - (Optional, string) The VPC in which instances can mount the file share using this share target. Required if the share's `access_control_mode` is vpc.
+  - `transit_encryption` - (Optional, String) The transit encryption mode for this share target. Supported values are **none**, **user_managed**. Default is **none**
+
+~> **Note**
+  `transit_encryption` can only be provided to create mount target for a share with `access_control_mode` `security_group`. It is not supported with shares that has `access_control_mode` `vpc`
   ~> **Note**
     `virtual_network_interface` and `vpc` are mutually exclusive and one of them must be provided.
 - `name` - (Required, string) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
