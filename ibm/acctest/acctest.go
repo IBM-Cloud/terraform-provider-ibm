@@ -142,6 +142,7 @@ var IcdDbTaskId string
 var KmsInstanceID string
 var CrkID string
 var KmsAccountID string
+var BaasEncryptionkeyCRN string
 
 // for snapshot encryption
 var IsKMSInstanceId string
@@ -633,6 +634,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_ID for testing ibm_is_backup_policy_jobs datasource")
 	}
 
+	BaasEncryptionkeyCRN = os.Getenv("IS_REMOTE_CP_BAAS_ENCRYPTION_KEY_CRN")
+	if BaasEncryptionkeyCRN == "" {
+		BaasEncryptionkeyCRN = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
+		fmt.Println("[INFO] Set the environment variable IS_REMOTE_CP_BAAS_ENCRYPTION_KEY_CRN for testing remote_copies_policy with Baas plans, else it is set to default value, 'crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179'")
+	}
+
 	InstanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
 	if InstanceProfileName == "" {
 		//InstanceProfileName = "bc1-2x8" // for classic infrastructure
@@ -1012,7 +1019,7 @@ func init() {
 	IsImageName = os.Getenv("IS_IMAGE_NAME")
 	if IsImageName == "" {
 		//IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
-		IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
+		IsImageName = "ibm-ubuntu-22-04-1-minimal-amd64-4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")

@@ -102,6 +102,10 @@ Review the argument references that you can specify for your resource.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
 - `image` - (Required, String) ID of the image.
 - `keys` - (Required, List) Comma separated IDs of ssh keys.  
+
+  ~> **Note:**
+  **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
+  **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>
 - `name` - (Optional, String) The bare metal server name.
 
   -> **NOTE:**

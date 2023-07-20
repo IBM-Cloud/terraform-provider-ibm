@@ -1285,3 +1285,13 @@ resource "ibm_is_snapshot" "b_snapshot_copy" {
   name                = "my-snapshot-boot-copy"
   source_snapshot_crn = ibm_is_snapshot.b_snapshot.crn
 }
+
+// image deprecate and obsolete
+
+resource "ibm_is_image_deprecate" "example" {
+  image     = ibm_is_image.image1.id
+}
+
+resource "ibm_is_image_obsolete" "example" {
+  image     = ibm_is_image.image1.id
+}
