@@ -65,8 +65,11 @@ The following arguments are supported:
 - `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **vpc**
 - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
-- `initial_owner_gid` - (Optional, Integer) The initial group identifier for the file share.
-- `initial_owner_uid` - (Optional, Integer) The initial user identifier for the file share.
+- `initial_owner` - (Optional, List) The initial owner for the file share.
+
+  Nested scheme for `initial_owner`:
+  - `gid` - (Optional, Integer) The initial group identifier for the file share.
+  - `uid` - (Optional, Integer) The initial user identifier for the file share.
 - `iops` - (Optional, Integer) The maximum input/output operation performance bandwidth per second for the file share.
 - `mount_targets` - (Optional, List) Share targets for the file share.
   - `name` - (Required, string) The user-defined name for this share target. Names must be unique within the share the share target resides in.
@@ -218,3 +221,20 @@ The following attributes are exported:
   - `message` - An explanation of the status reason.
   - `more_info` - Link to documentation about this status reason.
 - `tags`  - (String) User tags associated for to the share.
+
+
+## Import
+
+The `ibm_is_share` can be imported using ID.
+
+**Syntax**
+
+```
+$ terraform import ibm_is_share.example <id>
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_share.example d7bec597-4726-451f-8a63-e62e6f19c32c
+```

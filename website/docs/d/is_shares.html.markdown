@@ -72,7 +72,7 @@ The following attributes are exported:
 	- `resource_group` - The ID of the resource group for this file share.
 	- `resource_type` - The type of resource referenced.
 	- `size` - The size of the file share rounded up to the next gigabyte.
-	- `share_targets` - Mount targets for the file share. Nested `targets` blocks have the following structure:
+	- `mount_targets` - Mount targets for the file share. Nested `targets` blocks have the following structure:
     	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
     		- `more_info` - Link to documentation about deleted resources.
     	- `href` - The URL for this share target.

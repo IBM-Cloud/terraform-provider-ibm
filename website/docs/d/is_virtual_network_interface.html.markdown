@@ -26,7 +26,7 @@ resource "ibm_is_share" "example" {
   name = "my-share"
   access_control_mode = "security_group"
   size = 200
-  profile = "tier-3iops"
+  profile = "dp2"
   zone = "us-south-2"
 }
 resource "ibm_is_share_target" "example" {
