@@ -130,6 +130,33 @@ func ResourceIBMIsBackupPolicyPlan() *schema.Resource {
 				Computed:    true,
 				Description: "The lifecycle state of this backup policy plan.",
 			},
+			"remote_region_policy": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Backup policy plan cross region rule.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"delete_over_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The maximum number of recent remote copies to keep in this region.",
+						},
+						"encryption_key": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
+						},
+						"region": {
+							Type: schema.TypeString,
+							// Computed:    true,
+							Required:    true,
+							Description: "The globally unique name for this region.",
+						},
+					},
+				},
+			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -235,6 +262,18 @@ func resourceIBMIsBackupPolicyPlanCreate(context context.Context, d *schema.Reso
 		}
 		createBackupPolicyPlanOptions.SetDeletionTrigger(&backupPolicyPlanDeletionTriggerPrototype)
 	}
+	if _, ok := d.GetOk("remote_region_policy"); ok {
+		var remoteCopyPolicies []vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype
+		for _, policy := range d.Get("remote_region_policy").([]interface{}) {
+			value := policy.(map[string]interface{})
+			remoteCopyPoliciesItem, err := resourceIBMIsVPCBackupPolicyPlanMapToBackupPolicyPlanRemoteCopyPolicyPrototype(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			remoteCopyPolicies = append(remoteCopyPolicies, *remoteCopyPoliciesItem)
+		}
+		createBackupPolicyPlanOptions.SetRemoteRegionPolicies(remoteCopyPolicies)
+	}
 	if _, ok := d.GetOk("name"); ok {
 		createBackupPolicyPlanOptions.SetName(d.Get("name").(string))
 	}
@@ -336,7 +375,19 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting deletion_trigger: %s", err))
 		}
 	}
-
+	if backupPolicyPlan.RemoteRegionPolicies != nil {
+		remoteCopyPolicies := []map[string]interface{}{}
+		for _, remoteCopyPoliciesItem := range backupPolicyPlan.RemoteRegionPolicies {
+			remoteCopyPoliciesItemMap, err := dataSourceIBMIsVPCBackupPolicyPlanRemoteCopyPolicyItemToMap(&remoteCopyPoliciesItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			remoteCopyPolicies = append(remoteCopyPolicies, remoteCopyPoliciesItemMap)
+		}
+		if err = d.Set("remote_region_policy", remoteCopyPolicies); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting remote_region_policy %s", err))
+		}
+	}
 	if backupPolicyPlan.Name != nil {
 		if err = d.Set("name", backupPolicyPlan.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
@@ -471,6 +522,19 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 		patchVals.Name = core.StringPtr(d.Get("name").(string))
 		hasChange = true
 	}
+	if d.HasChange("remote_region_policy") {
+		var remoteCopyPolicies []vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype
+		for _, policy := range d.Get("remote_region_policy").([]interface{}) {
+			value := policy.(map[string]interface{})
+			remoteCopyPoliciesItem, err := resourceIBMIsVPCBackupPolicyPlanMapToBackupPolicyPlanRemoteCopyPolicyPrototype(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			remoteCopyPolicies = append(remoteCopyPolicies, *remoteCopyPoliciesItem)
+		}
+		patchVals.RemoteRegionPolicies = remoteCopyPolicies
+		hasChange = true
+	}
 	updateBackupPolicyPlanOptions.SetIfMatch(d.Get("version").(string))
 
 	if hasChange {
@@ -524,4 +588,26 @@ func resourceIBMIsBackupPolicyPlanDelete(context context.Context, d *schema.Reso
 	d.SetId("")
 
 	return nil
+}
+
+func resourceIBMIsVPCBackupPolicyPlanMapToBackupPolicyPlanRemoteCopyPolicyPrototype(backupPolicyPlanRemoteCopyPolicyMap map[string]interface{}) (*vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype, error) {
+	BackupPolicyPlanRemoteCopyPolicy := &vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype{}
+	if backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"] != nil {
+		BackupPolicyPlanRemoteCopyPolicy.DeleteOverCount = core.Int64Ptr(int64(backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"].(int)))
+	}
+	if backupPolicyPlanRemoteCopyPolicyMap["encryption_key"] != nil && backupPolicyPlanRemoteCopyPolicyMap["encryption_key"] != "" {
+		encCrn := backupPolicyPlanRemoteCopyPolicyMap["encryption_key"].(string)
+		BackupPolicyPlanRemoteCopyPolicy.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+			CRN: &encCrn,
+		}
+	}
+
+	if backupPolicyPlanRemoteCopyPolicyMap["region"] != nil {
+		region := backupPolicyPlanRemoteCopyPolicyMap["region"].(string)
+		BackupPolicyPlanRemoteCopyPolicy.Region = &vpcv1.RegionIdentity{
+			Name: &region,
+		}
+	}
+
+	return BackupPolicyPlanRemoteCopyPolicy, nil
 }

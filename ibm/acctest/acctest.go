@@ -95,6 +95,7 @@ var VSIUnattachedBootVolumeID string
 var VSIDataVolumeID string
 var ISRouteDestination string
 var ISRouteNextHop string
+var ISSnapshotCRN string
 var WorkspaceID string
 var TemplateID string
 var ActionID string
@@ -141,6 +142,7 @@ var IcdDbTaskId string
 var KmsInstanceID string
 var CrkID string
 var KmsAccountID string
+var BaasEncryptionkeyCRN string
 
 // for snapshot encryption
 var IsKMSInstanceId string
@@ -593,8 +595,8 @@ func init() {
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		//IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		IsImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
+		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
 	}
 
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
@@ -630,6 +632,12 @@ func init() {
 	BackupPolicyID = os.Getenv("IS_BACKUP_POLICY_ID")
 	if BackupPolicyID == "" {
 		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_ID for testing ibm_is_backup_policy_jobs datasource")
+	}
+
+	BaasEncryptionkeyCRN = os.Getenv("IS_REMOTE_CP_BAAS_ENCRYPTION_KEY_CRN")
+	if BaasEncryptionkeyCRN == "" {
+		BaasEncryptionkeyCRN = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
+		fmt.Println("[INFO] Set the environment variable IS_REMOTE_CP_BAAS_ENCRYPTION_KEY_CRN for testing remote_copies_policy with Baas plans, else it is set to default value, 'crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179'")
 	}
 
 	InstanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
@@ -756,6 +764,12 @@ func init() {
 	if ISRouteNextHop == "" {
 		ISRouteNextHop = "10.240.0.0"
 		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP else it is set to default value '10.0.0.4'")
+	}
+
+	ISSnapshotCRN = os.Getenv("IS_SNAPSHOT_CRN")
+	if ISSnapshotCRN == "" {
+		ISSnapshotCRN = "crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx"
+		fmt.Println("[INFO] Set the environment variable ISSnapshotCRN for ibm_is_snapshot resource else it is set to default value 'crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx'")
 	}
 
 	IcdDbRegion = os.Getenv("ICD_DB_REGION")
@@ -1005,7 +1019,7 @@ func init() {
 	IsImageName = os.Getenv("IS_IMAGE_NAME")
 	if IsImageName == "" {
 		//IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
-		IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
+		IsImageName = "ibm-ubuntu-22-04-1-minimal-amd64-4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
