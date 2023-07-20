@@ -728,7 +728,7 @@ func init() {
 
 	ShareProfileName = os.Getenv("IS_SHARE_PROFILE")
 	if ShareProfileName == "" {
-		ShareProfileName = "tier-3iops" // for next gen infrastructure
+		ShareProfileName = "dp2" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
 	}
 
