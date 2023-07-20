@@ -100,16 +100,18 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
 						},
 						"interval": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The length of the secret rotation time interval.",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The length of the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 						"unit": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The units for the secret rotation time interval.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The units for the secret rotation time interval.",
+							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -326,7 +328,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -364,7 +366,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -405,7 +407,7 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 			return diag.FromErr(fmt.Errorf("Error setting rotation: %s", err))
 		}
 	}
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(secret.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(secret.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 	if err = d.Set("api_key", secret.ApiKey); err != nil {
@@ -566,7 +568,9 @@ func resourceIbmSmIamCredentialsSecretMapToRotationPolicy(modelMap map[string]in
 	if modelMap["auto_rotate"] != nil {
 		model.AutoRotate = core.BoolPtr(modelMap["auto_rotate"].(bool))
 	}
-	if modelMap["interval"] != nil {
+	if modelMap["interval"].(int) == 0 {
+		model.Interval = nil
+	} else {
 		model.Interval = core.Int64Ptr(int64(modelMap["interval"].(int)))
 	}
 	if modelMap["unit"] != nil && modelMap["unit"].(string) != "" {

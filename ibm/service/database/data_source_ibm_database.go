@@ -18,7 +18,6 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -113,12 +112,6 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key_protect_key_id": {
-							Description: "Key protect key id",
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "This field is deprecated and has been replaced by disk_encryption_key_crn",
-						},
 						"disk_encryption_key_crn": {
 							Description: "Disk encryption key crn",
 							Type:        schema.TypeString,
@@ -538,6 +531,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Type:        schema.TypeList,
 							Description: "CPU Auto Scaling",
 							Computed:    true,
+							Deprecated:  "This field is deprecated, auto scaling cpu is unsupported by IBM Cloud Databases",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"rate_increase_percent": {
@@ -759,17 +753,25 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	icdId := flex.EscapeUrlParm(instance.ID)
-	cdb, err := icdClient.Cdbs().GetCdb(icdId)
+	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
+		ID: core.StringPtr(instance.ID),
+	}
+	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+		if response.StatusCode == 404 {
 			return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 		}
-		return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, err)
+		return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instance.ID, err)
 	}
-	d.Set("adminuser", cdb.AdminUser)
-	d.Set("version", cdb.Version)
-	if &cdb.PlatformOptions != nil {
-		d.Set("platform_options", flex.ExpandPlatformOptions(cdb.PlatformOptions))
+
+	deployment := getDeploymentInfoResponse.Deployment
+	adminUser := deployment.AdminUsernames["database"]
+
+	d.Set("adminuser", adminUser)
+	d.Set("version", deployment.Version)
+
+	if deployment.PlatformOptions != nil {
+		d.Set("platform_options", flex.ExpandPlatformOptions(*deployment))
 	}
 
 	groupList, err := icdClient.Groups().GetGroups(icdId)
@@ -819,7 +821,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	tfusers := d.Get("users").(*schema.Set)
 	users := flex.ExpandUsers(tfusers)
 	user := icdv4.User{
-		UserName: cdb.AdminUser,
+		UserName: adminUser,
 	}
 	users = append(users, user)
 	for _, user := range users {

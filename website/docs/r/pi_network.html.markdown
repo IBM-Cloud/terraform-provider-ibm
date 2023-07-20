@@ -62,7 +62,7 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_network_name` - (Required, String) The name of the network.
 - `pi_network_type` - (Required, String) The type of network that you want to create, such as `pub-vlan` or `vlan`.
-- `pi_dns` - (Optional, Set of String) The DNS Servers for the network. If not specified, default is 127.0.0.1 for 'vlan' (private network) and 9.9.9.9 for 'pub-vlan' (public network)
+- `pi_dns` - (Optional, Set of String) The DNS Servers for the network. If not specified, default is 127.0.0.1 for 'vlan' (private network) and 9.9.9.9 for 'pub-vlan' (public network). A maximum of one DNS server can be specified for private networks in Power Edge Router workspaces.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
 - `pi_gateway` - (Optional, String) The gateway ip address.
 - `pi_ipaddress_range` - (Optional, List of Map) List of one or more ip address range. The `pi_ipaddress_range` object structure is documented below.

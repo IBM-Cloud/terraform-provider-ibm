@@ -21,11 +21,12 @@ import (
 
 func ResourceIbmIsShareMountTarget() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmIsShareMountTargetCreate,
-		ReadContext:   resourceIbmIsShareMountTargetRead,
-		UpdateContext: resourceIbmIsShareMountTargetUpdate,
-		DeleteContext: resourceIbmIsShareMountTargetDelete,
-		Importer:      &schema.ResourceImporter{},
+		CreateContext:      resourceIbmIsShareMountTargetCreate,
+		ReadContext:        resourceIbmIsShareMountTargetRead,
+		UpdateContext:      resourceIbmIsShareMountTargetUpdate,
+		DeleteContext:      resourceIbmIsShareMountTargetDelete,
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use ibm_is_share_mount_target instead",
+		Importer:           &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"share": {

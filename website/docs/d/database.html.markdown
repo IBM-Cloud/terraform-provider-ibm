@@ -47,21 +47,12 @@ In addition to all argument references list, you can access the following attrib
 - `platform_options`-  (String) The CRN of key protect key.
    
    Nested scheme for `platform_options`:
-   - `key_protect_key_id`-  **Deprecated** - (String) The CRN of key protect key. - replaced by `disk_encryption_key_crn`
    - `disk_encryption_key_crn`-  (String) The CRN of disk encryption key.
    - `backup_encryption_key_crn`-  (String) The CRN of backup encryption key.
    
 - `auto_scaling` (List)Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
   Nested scheme for `auto_scaling`:
-  - `cpu` (List)Autoscaling CPU.
-  
-     Nested scheme for `cpu`:
-     - `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
-     - `rate_limit_count_per_member`- (Integer) Auto scaling rate limit in count per number.
-     - `rate_period_seconds`- (Integer) Auto scaling rate in period seconds.
-     - `rate_units` - (String) Auto scaling rate in units.
-  
   - `disk` (List) Disk auto scaling.
   
     Nested scheme for `disk`:

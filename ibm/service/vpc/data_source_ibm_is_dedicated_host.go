@@ -54,7 +54,12 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 							Computed:    true,
 							Description: "The VCPU architecture.",
 						},
-						"count": {
+						"manufacturer": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer.",
+						},
+						"count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The number of VCPUs assigned.",
@@ -314,7 +319,12 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 							Computed:    true,
 							Description: "The VCPU architecture.",
 						},
-						"count": {
+						"manufacturer": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer.",
+						},
+						"count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The number of VCPUs assigned.",
@@ -493,6 +503,10 @@ func dataSourceDedicatedHostAvailableVcpuToMap(availableVcpuItem vpcv1.Vcpu) (av
 	if availableVcpuItem.Architecture != nil {
 		availableVcpuMap["architecture"] = availableVcpuItem.Architecture
 	}
+	// Added AMD Support for the manufacturer.
+	if availableVcpuItem.Manufacturer != nil {
+		availableVcpuMap["manufacturer"] = availableVcpuItem.Manufacturer
+	}
 	if availableVcpuItem.Count != nil {
 		availableVcpuMap["count"] = availableVcpuItem.Count
 	}
@@ -644,6 +658,10 @@ func dataSourceDedicatedHostVcpuToMap(vcpuItem vpcv1.Vcpu) (vcpuMap map[string]i
 
 	if vcpuItem.Architecture != nil {
 		vcpuMap["architecture"] = vcpuItem.Architecture
+	}
+	// Added AMD Support for the manufacturer.
+	if vcpuItem.Manufacturer != nil {
+		vcpuMap["manufacturer"] = vcpuItem.Manufacturer
 	}
 	if vcpuItem.Count != nil {
 		vcpuMap["count"] = vcpuItem.Count

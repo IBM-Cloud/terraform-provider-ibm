@@ -1828,12 +1828,11 @@ func FlattenAllowlist(allowlist []clouddatabasesv5.AllowlistEntry) []map[string]
 	return entries
 }
 
-func ExpandPlatformOptions(platformOptions icdv4.PlatformOptions) []map[string]interface{} {
+func ExpandPlatformOptions(deployment clouddatabasesv5.Deployment) []map[string]interface{} {
 	pltOptions := make([]map[string]interface{}, 0, 1)
 	pltOption := make(map[string]interface{})
-	pltOption["key_protect_key_id"] = platformOptions.KeyProtectKey
-	pltOption["disk_encryption_key_crn"] = platformOptions.DiskENcryptionKeyCrn
-	pltOption["backup_encryption_key_crn"] = platformOptions.BackUpEncryptionKeyCrn
+	pltOption["disk_encryption_key_crn"] = deployment.PlatformOptions["disk_encryption_key_crn"]
+	pltOption["backup_encryption_key_crn"] = deployment.PlatformOptions["backup_encryption_key_crn"]
 	pltOptions = append(pltOptions, pltOption)
 	return pltOptions
 }
@@ -3222,6 +3221,22 @@ func FlattenNlbConfigs(nlbData []containerv2.NlbVPCListConfig) []map[string]inte
 	}
 
 	return nlbConfigList
+}
+
+func FlattenOpaqueSecret(fields containerv2.Fields) []map[string]interface{} {
+	flattenedOpaqueSecret := make([]map[string]interface{}, 0)
+
+	for _, field := range fields {
+		opaqueSecretField := map[string]interface{}{
+			"name":                   field.Name,
+			"crn":                    field.CRN,
+			"expires_on":             field.ExpiresOn,
+			"last_updated_timestamp": field.LastUpdatedTimestamp,
+		}
+		flattenedOpaqueSecret = append(flattenedOpaqueSecret, opaqueSecretField)
+	}
+
+	return flattenedOpaqueSecret
 }
 
 // flattenHostLabels ..

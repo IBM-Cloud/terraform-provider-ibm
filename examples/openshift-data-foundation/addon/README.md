@@ -22,20 +22,20 @@ For more information, about
 │   │   ├── createcrd.sh
 │   │   ├── updatecrd.sh
 │   │   ├── updateodf.sh
+│   │   ├── deleteaddon.sh
+│   │   ├── deletecrd.sh
 │   │   ├── main.tf
 │   │   ├── variables.tf
-│   │   ├── input.tfvars
+│   │   ├── schematics.tfvars
 ```
 
 * `ibm-odf-addon` - This folder is used to deploy a specific Version of Openshift-Data-Foundation with the `odfDeploy` parameter set to false i.e the add-on is installed without the ocscluster using the IBM-Cloud Terraform Provider.
-
-* `ocscluster` - This folder is used to deploy the `OcsCluster` CRD with the given parameters set in the `input.tfvars` file.
-
+* `ocscluster` - This folder is used to deploy the `OcsCluster` CRD with the given parameters set in the `schematics.tfvars` file.
 * `addon` - This folder contains scripts to create the CRD and deploy the ODF add-on on your cluster. `The main.tf` file contains the `null_resource` to internally call the above two folders, and perform the required actions.
 
 #### Note
 
-You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folders. You just have to input the required parameters in the `input.tfvars` file under the `addon` folder, and run terraform.
+You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folders. You just have to input the required parameters in the `schematics.tfvars` file under the `addon` folder, and run terraform.
 
 ## Usage
 
@@ -49,11 +49,11 @@ $ cd addon
 
 ```bash
 $ terraform init
-$ terraform plan --var-file input.tfvars
-$ terraform apply --var-file input.tfvars
+$ terraform plan --var-file schematics.tfvars
+$ terraform apply --var-file schematics.tfvars
 ```
 
-Run `terraform destroy --var-file input.tfvars` when you don't need these resources.
+Run `terraform destroy --var-file schematics.tfvars` when you don't need these resources.
 
 ### Option 2 - IBM Cloud Schematics
 
@@ -61,11 +61,13 @@ To Deploy & Manage the Openshift-Data-Foundation add-on using `IBM Cloud Schemat
 
 https://cloud.ibm.com/docs/schematics?topic=schematics-get-started-terraform
 
+Please note you have to change the `terraform` keyword in the scripts to `terraform1.x` where `x` is the version of terraform you use in IBM Schematics, for example if you're using terraform version 1.3 in schematics make sure to change `terraform` -> `terraform1.3` in the .sh files.
+
 ## Example usage
 
 ### Deployment of ODF
 
-The default input.tfvars is given below, the user should just change the value of the parameters in accorandance to their requirment.
+The default schematics.tfvars is given below, the user should just change the value of the parameters in accorandance to their requirment.
 
 ```hcl
 ibmcloud_api_key = "" # Enter your API Key
@@ -96,7 +98,7 @@ workerNodes = null
 
 ### Scale-Up of ODF
 
-The following variables in the `input.tfvars` file can be edited
+The following variables in the `schematics.tfvars` file can be edited
 
 * numOfOsd - To scale your storage
 * workerNodes - To increase the number of Worker Nodes with ODF
@@ -109,7 +111,7 @@ workerNodes = null -> "worker_1_ID,worker_2_ID"
 
 ### Upgrade of ODF
 
-The following variables in the `input.tfvars` file should be changed in order to upgrade the ODF add-on and the Ocscluster CRD.
+The following variables in the `schematics.tfvars` file should be changed in order to upgrade the ODF add-on and the Ocscluster CRD.
 
 * odfVersion - Specify the version you wish to upgrade to
 * ocsUpgrade - Must be set to `true` to upgrade the CRD
@@ -148,7 +150,7 @@ ocsUpgrade = "false" -> "true"
 | ibmcloud_api_key | IBM Cloud API Key | `string` | yes | -
 | cluster | Name of the cluster. | `string` | yes | -
 | region | Region of the cluster | `string` | yes | -
-| odfVersion | Version of the ODF add-on | `string` | yes | 4.11
+| odfVersion | Version of the ODF add-on | `string` | yes | 4.12.0
 | osdSize | Enter the size for the storage devices that you want to provision for the Object Storage Daemon (OSD) pods | `string` | yes | 250Gi
 | numOfOsd | The Number of OSD | `string` | yes | 1
 | osdStorageClassName | Enter the storage class to be used to provision block volumes for Object Storage Daemon (OSD) pods | `string` | yes | ibmc-vpc-block-metro-10iops-tier
@@ -172,5 +174,6 @@ Refer - https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&inte
 
 * Users should only change the values of the variables within quotes, variables should be left untouched with the default values if they are not set.
 * `workerNodes` takes a string containing comma separated values of the names of the worker nodes you wish to enable ODF on.
-* On `terraform apply --var-file=input.tfvars`, the add-on is enabled and the custom resource is created.
+* On `terraform apply --var-file=schematics.tfvars`, the add-on is enabled and the custom resource is created.
 * During ODF update, please do not tamper with the `ocsUpgrade` variable, just change the value to true within quotation, without changing the format of the variable.
+* During the `Upgrade of Odf` scenario on IBM Schematics, please make sure to change the value of `ocsUpgrade` to `false` after. Locally this is automatically handled using `sed`.
