@@ -102,7 +102,6 @@ func ResourceIbmIsShare() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"size"},
-				ForceNew:     true,
 				Computed:     true,
 				Description:  "The access control mode for the share:",
 			},
@@ -317,7 +316,6 @@ func ResourceIbmIsShare() *schema.Resource {
 						"replication_cron_spec": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "The cron specification for the file share replication schedule.Replication of a share can be scheduled to occur at most once per hour.",
 						},
 						"replication_role": &schema.Schema{
@@ -525,7 +523,7 @@ func ResourceIbmIsShare() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressCronSpecDiff,
-				ForceNew:         true,
+				Computed:         true,
 				RequiredWith:     []string{"source_share"},
 				ConflictsWith:    []string{"replica_share", "size"},
 				Description:      "The cron specification for the file share replication schedule.Replication of a share can be scheduled to occur at most once per hour.",
@@ -1500,6 +1498,8 @@ func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *sch
 	shareMountTargetSchema := ""
 	accessTagsSchema := ""
 	shareCRN := ""
+	replicationCronSpec := ""
+
 	if shareType == "share" {
 		shareNameSchema = "name"
 		shareIopsSchema = "iops"
@@ -1508,6 +1508,7 @@ func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *sch
 		shareMountTargetSchema = "mount_targets"
 		accessTagsSchema = "access_tags"
 		shareCRN = "crn"
+		replicationCronSpec = "replication_cron_spec"
 	} else {
 		shareNameSchema = "replica_share.0.name"
 		shareIopsSchema = "replica_share.0.iops"
@@ -1516,6 +1517,7 @@ func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *sch
 		shareMountTargetSchema = "replica_share.0.mount_targets"
 		accessTagsSchema = "replica_share.0.access_tags"
 		shareCRN = "replica_share.0.crn"
+		replicationCronSpec = "replica_share.0.replication_cron_spec"
 	}
 	if d.HasChange(shareNameSchema) {
 		name := d.Get(shareNameSchema).(string)
@@ -1529,6 +1531,23 @@ func shareUpdate(vpcClient *vpcbetav1.VpcbetaV1, context context.Context, d *sch
 			sharePatchModel.Size = &size
 			hasChange = true
 		}
+	}
+	if shareType == "share" {
+		if d.HasChange("access_control_mode") {
+			accessControlMode := d.Get("access_control_mode").(string)
+			if accessControlMode != "" {
+				sharePatchModel.AccessControlMode = &accessControlMode
+				hasChange = true
+			}
+		}
+	}
+	if d.HasChange(replicationCronSpec) {
+		replicationCronSpecStr := d.Get(replicationCronSpec).(string)
+		if replicationCronSpecStr != "" {
+			sharePatchModel.ReplicationCronSpec = &replicationCronSpecStr
+			hasChange = true
+		}
+
 	}
 
 	if d.HasChange(shareIopsSchema) {
