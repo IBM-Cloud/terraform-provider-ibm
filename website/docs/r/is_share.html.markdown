@@ -18,7 +18,7 @@ IBM Cloud® File Storage for VPC is available for customers with special approva
 This is a Beta feature and it is subject to change in the GA release 
 
 ~> **NOTE**
-  Old IOPS tier profiles will not be supported moving forward. New shares should be created with profile `dp2` 
+  New shares should be created with profile `dp2`. Old Tiered profiles will be deprecated soon.
 
 ## Example Usage
 

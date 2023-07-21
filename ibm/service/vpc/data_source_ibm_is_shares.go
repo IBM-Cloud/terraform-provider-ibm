@@ -38,6 +38,11 @@ func DataSourceIbmIsShares() *schema.Resource {
 				Description: "Collection of file shares.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"access_control_mode": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The access control mode for the share",
+						},
 						"created_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -467,6 +472,9 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcbetav1
 	}
 	if sharesItem.ReplicationCronSpec != nil {
 		sharesMap["replication_cron_spec"] = *sharesItem.ReplicationCronSpec
+	}
+	if sharesItem.AccessControlMode != nil {
+		sharesMap["access_control_mode"] = *&sharesItem.AccessControlMode
 	}
 	sharesMap["replication_role"] = *sharesItem.ReplicationRole
 	sharesMap["replication_status"] = *sharesItem.ReplicationStatus

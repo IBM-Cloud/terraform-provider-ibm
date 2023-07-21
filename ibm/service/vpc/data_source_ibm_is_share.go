@@ -315,6 +315,11 @@ func DataSourceIbmIsShare() *schema.Resource {
 				Computed:    true,
 				Description: "The globally unique name of the zone this file share will reside in.",
 			},
+			"access_control_mode": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The access control mode for the share",
+			},
 			isFileShareAccessTags: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -419,7 +424,9 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("name", share.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-
+	if share.AccessControlMode != nil {
+		d.Set("access_control_mode", *share.AccessControlMode)
+	}
 	if share.Profile != nil {
 		err = d.Set("profile", *share.Profile.Name)
 		if err != nil {
