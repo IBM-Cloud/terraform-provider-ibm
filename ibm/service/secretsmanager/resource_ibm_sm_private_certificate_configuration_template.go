@@ -113,7 +113,8 @@ func ResourceIbmSmPrivateCertificateConfigurationTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.",
+				Description: "Unused field.",
+				Deprecated:  "This field is deprecated.",
 			},
 			"certificate_authority": &schema.Schema{
 				Type:        schema.TypeString,
@@ -521,9 +522,6 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.Co
 			return diag.FromErr(fmt.Errorf("Error setting postal_code: %s", err))
 		}
 	}
-	if err = d.Set("serial_number", configuration.SerialNumber); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting serial_number: %s", err))
-	}
 	if err = d.Set("require_cn", configuration.RequireCn); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting require_cn: %s", err))
 	}
@@ -775,11 +773,6 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateUpdate(context context.
 		hasChange = true
 	}
 
-	if d.HasChange("serial_number") {
-		patchVals.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
-		hasChange = true
-	}
-
 	if d.HasChange("not_before_duration") {
 		patchVals.NotBeforeDuration = core.StringPtr(d.Get("not_before_duration").(string))
 		hasChange = true
@@ -1004,9 +997,6 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 			postalCode = append(postalCode, postalCodeItem.(string))
 		}
 		model.PostalCode = postalCode
-	}
-	if _, ok := d.GetOk("serial_number"); ok {
-		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
 	if _, ok := d.GetOkExists("require_cn"); ok {
 		model.RequireCn = core.BoolPtr(d.Get("require_cn").(bool))

@@ -47,10 +47,12 @@ Nested scheme for **parameters**:
 	* `api_token` - (String) Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.
 	* `auth_type` - (String) Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.
 	  * Constraints: Allowable values are: `oauth`, `pat`.
+	* `blind_connection` - (Boolean) Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.
+	  * Constraints: The default value is `false`.
 	* `default_branch` - (String) The default branch of the git repository.
 	* `enable_traceability` - (Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
-	* `git_id` - (String) Set this value to 'gitlab' for gitlab.com, or to the GUID of a custom GitLab server.
+	* `git_id` - (String) Set this value to 'gitlab' for gitlab.com, the GUID of an existing custom GitLab server, or 'gitlabcustom'.
 	* `integration_owner` - (String) Select the user which git operations will be performed as.
 	* `owner_id` - (String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
@@ -58,7 +60,9 @@ Nested scheme for **parameters**:
 	* `repo_id` - (String) The ID of the GitLab project.
 	* `repo_name` - (String) The name of the new GitLab repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `repo_url` - (String) The URL of the GitLab repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
+	* `root_url` - (String) The Root URL of the server. e.g. https://gitlab.example.com.
 	* `source_repo_url` - (String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
+	* `title` - (String) The title of the server. e.g. My GitLab Enterprise Server.
 	* `token_url` - (String) The token URL used for authorizing with the GitLab server.
 	* `toolchain_issues_enabled` - (Boolean) Setting this value to true will enable issues on the GitLab repository and add an issues tool card to the toolchain.  Setting the value to false will remove the tool card from the toolchain, but will not impact whether or not issues are enabled on the GitLab repository itself.
 	  * Constraints: The default value is `true`.

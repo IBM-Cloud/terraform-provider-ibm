@@ -1,6 +1,6 @@
-# Example for AtrackerV1
+# Example for AtrackerV2
 
-This example illustrates how to use the AtrackerV1
+This example illustrates how to use the AtrackerV2
 
 These types of resources are supported:
 
@@ -21,7 +21,7 @@ $ terraform apply
 Run `terraform destroy` when you don't need these resources.
 
 
-## AtrackerV1 resources
+## AtrackerV2 resources
 
 atracker_target resource:
 
@@ -53,7 +53,7 @@ resource "atracker_settings" "atracker_settings_instance" {
 }
 ```
 
-## AtrackerV1 Data sources
+## AtrackerV2 Data sources
 
 atracker_targets data source:
 
@@ -67,12 +67,6 @@ atracker_routes data source:
 ```hcl
 data "atracker_routes" "atracker_routes_instance" {
   name = var.atracker_routes_name
-}
-```
-atracker_endpoints data source:
-
-```hcl
-data "atracker_endpoints" "atracker_endpoints_instance" {
 }
 ```
 
@@ -118,5 +112,4 @@ data "atracker_endpoints" "atracker_endpoints_instance" {
 | atracker_route | atracker_route object |
 | atracker_targets | atracker_targets object |
 | atracker_routes | atracker_routes object |
-| atracker_endpoints | atracker_endpoints object |
 | atracker_settings | atracker_settings object |
