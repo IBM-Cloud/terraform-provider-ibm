@@ -41,6 +41,10 @@ func TestAccIBMISInstanceDataSource_basic(t *testing.T) {
 						resName, "lifecycle_state"),
 					resource.TestCheckResourceAttr(
 						resName, "lifecycle_reasons.#", "0"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.0.manufacturer"),
 				),
 			},
 		},

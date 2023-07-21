@@ -10,7 +10,7 @@ resource "null_resource" "customResourceGroup" {
     provisioner "local-exec" {
       
        when = destroy
-       command = "cd ocscluster && terraform destroy --auto-approve -var-file input.tfvars"
+       command = "sh ./deletecrd.sh"
 
     }
 
@@ -34,7 +34,7 @@ resource "null_resource" "addOn" {
     provisioner "local-exec" {
 
         when = destroy
-        command = "cd ibm_odf_addon && terraform destroy --auto-approve -var-file input.tfvars"
+        command = "sh ./deleteaddon.sh"
       
     }
  
@@ -47,6 +47,7 @@ resource "null_resource" "updateCRD" {
         numOfOsd = var.numOfOsd
         ocsUpgrade = var.ocsUpgrade
         workerNodes = var.workerNodes
+        osdDevicePaths = var.osdDevicePaths
     }
     
 
@@ -65,7 +66,9 @@ resource "null_resource" "updateCRD" {
 resource "null_resource" "upgradeODF" {
 
     triggers = {
+
       odfVersion = var.odfVersion
+
     }
 
     provisioner "local-exec" {

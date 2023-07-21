@@ -42,6 +42,7 @@ func TestAccIbmIsDedicatedHostsDSBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "dedicated_hosts.0.memory"),
 					resource.TestCheckResourceAttrSet(resName, "dedicated_hosts.0.host_group"),
 					resource.TestCheckResourceAttrSet(resName, "dedicated_hosts.0.zone"),
+					resource.TestCheckResourceAttrSet(resName, "dedicated_hosts.0.vcpu.0.manufacturer"),
 				),
 			},
 		},

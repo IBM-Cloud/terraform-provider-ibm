@@ -273,7 +273,7 @@ func ResourceIBMAtrackerTargetValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMAtrackerTargetCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, atrackerClient, err := getAtrackerClients(meta)
+	atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -319,7 +319,7 @@ func resourceIBMAtrackerTargetCreate(context context.Context, d *schema.Resource
 }
 
 func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, atrackerClient, err := getAtrackerClients(meta)
+	atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -432,7 +432,7 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, atrackerClient, err := getAtrackerClients(meta)
+	atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -487,7 +487,7 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 }
 
 func resourceIBMAtrackerTargetDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, atrackerClient, err := getAtrackerClients(meta)
+	atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

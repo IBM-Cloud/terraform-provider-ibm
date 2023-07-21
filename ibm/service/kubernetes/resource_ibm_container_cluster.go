@@ -852,7 +852,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			d.Set("private_vlan_id", workersByPool[0].PrivateVlan)
 		}
 		d.Set("machine_type", strings.Split(workersByPool[0].MachineType, ".encrypted")[0])
-		d.Set("datacenter", cls.DataCenter)
 		if workersByPool[0].MachineType != "free" {
 			if strings.HasSuffix(workersByPool[0].MachineType, ".encrypted") {
 				d.Set("disk_encryption", true)
@@ -901,6 +900,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("ingress_hostname", cls.IngressHostname)
 	d.Set("ingress_secret", cls.IngressSecretName)
 	d.Set("region", cls.Region)
+	d.Set("datacenter", cls.DataCenter)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))

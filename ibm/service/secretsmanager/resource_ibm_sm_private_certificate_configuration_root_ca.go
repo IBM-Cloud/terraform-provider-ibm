@@ -220,10 +220,8 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			},
 			"serial_number": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.",
+				Description: "The unique serial number that was assigned to a certificate by the issuing certificate authority.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -741,9 +739,6 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 			postalCodeParsed[i] = fmt.Sprint(v)
 		}
 		model.PostalCode = postalCodeParsed
-	}
-	if _, ok := d.GetOk("serial_number"); ok {
-		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
 
 	return model, nil

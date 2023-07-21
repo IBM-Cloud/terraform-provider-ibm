@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_secret
 
-Provides a read-only data source for code_engine_secret. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source to retrieve information about a code_engine_secret. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -21,7 +21,7 @@ data "ibm_code_engine_secret" "code_engine_secret" {
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your data source.
+You can specify the following arguments for this data source.
 
 * `name` - (Required, Forces new resource, String) The name of your secret.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
@@ -30,7 +30,7 @@ Review the argument reference that you can specify for your data source.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your data source is created.
+After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the code_engine_secret.
 * `created_at` - (String) The timestamp when the resource was created.
@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 
 * `format` - (Forces new resource, String) Specify the format of the secret.
-  * Constraints: Allowable values are: `generic`, `ssh_auth`, `basic_auth`, `tls`, `service_access`, `registry`, `other`. The value must match regular expression `/^(generic|ssh_auth|basic_auth|tls|service_access|registry|other)$/`.
+  * Constraints: Allowable values are: `generic`, `ssh_auth`, `basic_auth`, `tls`, `service_access`, `registry`. The value must match regular expression `/^(generic|ssh_auth|basic_auth|tls|service_access|registry)$/`.
 
 * `href` - (String) When you provision a new secret,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -50,4 +50,24 @@ In addition to all argument references listed, you can access the following attr
 
 * `secret_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+
+* `service_access` - (Forces new resource, List) Properties for Service Access Secrets.
+Nested scheme for **service_access**:
+	* `resource_key` - (List) The service credential associated with the secret.
+	Nested scheme for **resource_key**:
+		* `id` - (String) ID of the service credential associated with the secret.
+		  * Constraints: The maximum length is `36` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-z0-9][\\-a-z0-9]*[a-z0-9]$/`.
+		* `name` - (String) Name of the service credential associated with the secret.
+	* `role` - (List) A reference to the Role and Role CRN for service binding.
+	Nested scheme for **role**:
+		* `crn` - (String) CRN of the IAM Role for thise service access secret.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Z][a-zA-Z() ]*[a-z)]$|^crn\\:v1\\:[a-zA-Z0-9]*\\:(public|dedicated|local)\\:[\\-a-z0-9]*\\:([a-z][\\-a-z0-9_]*[a-z0-9])?\\:((a|o|s)\/[\\-a-z0-9]+)?\\:[\\-a-z0-9\/]*\\:[\\-a-zA-Z0-9]*(\\:[\\-a-zA-Z0-9\/.]*)?$/`.
+		* `name` - (String) Role of the service credential.
+		  * Constraints: The default value is `Writer`.
+	* `service_instance` - (List) The IBM Cloud service instance associated with the secret.
+	Nested scheme for **service_instance**:
+		* `id` - (String) ID of the IBM Cloud service instance associated with the secret.
+		  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-z0-9][\\-a-z0-9]*[a-z0-9]$/`.
+		* `type` - (String) Type of IBM Cloud service associated with the secret.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 

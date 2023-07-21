@@ -34,7 +34,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -]/`.
 * `metadata_region_primary` - (Required, String) To store all your meta data in a single region.
   * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -_]/`.
-* `metadata_region_primary` - (Optional, String) To store all your meta data in a backup region.
+* `metadata_region_backup` - (Optional, String) To store all your meta data in a backup region.
   * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -_]/`.
 * `permitted_target_regions` - (Optional, List) If present then only these regions may be used to define a target.
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -_]/`.

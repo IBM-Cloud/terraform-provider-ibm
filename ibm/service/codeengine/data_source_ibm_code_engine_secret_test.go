@@ -158,6 +158,36 @@ func TestAccIbmCodeEngineSecretDataSourceTls(t *testing.T) {
 	})
 }
 
+func TestAccIbmCodeEngineSecretDataSourceServiceAccess(t *testing.T) {
+	secretFormat := "service_access"
+	secretName := fmt.Sprintf("tf-secret-service-access-%d", acctest.RandIntRange(10, 1000))
+
+	projectID := acc.CeProjectId
+	resourceKeyId := acc.CeResourceKeyID
+	serviceInstanceId := acc.CeServiceInstanceID
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmCodeEngineServiceAccessSecretDataSourceConfigBasic(projectID, secretFormat, secretName, resourceKeyId, serviceInstanceId),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "format", secretFormat),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "name", secretName),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_service_access_v2"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.service_instance.0.id", serviceInstanceId),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.service_instance.0.type"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.resource_key.0.id", resourceKeyId),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.resource_key.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.role.0.name"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID string, secretFormat string, secretName string, secretData string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
@@ -176,4 +206,36 @@ func testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID string, secr
 			name = ibm_code_engine_secret.code_engine_secret_instance.name
 		}
 	`, projectID, secretFormat, secretName, secretData)
+}
+
+func testAccCheckIbmCodeEngineServiceAccessSecretDataSourceConfigBasic(projectID string, format string, name string, resourceKeyId string, serviceInstanceId string) string {
+	return fmt.Sprintf(`
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			project_id = "%s"
+		}
+
+		resource "ibm_code_engine_secret" "code_engine_secret_instance" {
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
+			format = "%s"
+			name = "%s"
+			service_access {
+				resource_key {
+					id = "%s"
+				}
+				service_instance {
+					id = "%s"
+				}
+			}
+			lifecycle {
+				ignore_changes = [
+					data, service_access
+				]
+			}
+		}
+
+		data "ibm_code_engine_secret" "code_engine_secret_instance" {
+			project_id = ibm_code_engine_secret.code_engine_secret_instance.project_id
+			name = ibm_code_engine_secret.code_engine_secret_instance.name
+		}
+	`, projectID, format, name, resourceKeyId, serviceInstanceId)
 }

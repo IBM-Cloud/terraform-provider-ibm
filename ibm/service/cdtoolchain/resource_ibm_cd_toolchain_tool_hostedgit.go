@@ -118,7 +118,7 @@ func ResourceIBMCdToolchainToolHostedgit() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.",
+							Description:      "Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
