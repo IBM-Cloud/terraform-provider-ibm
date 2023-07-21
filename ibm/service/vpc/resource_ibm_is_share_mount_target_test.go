@@ -93,7 +93,7 @@ func TestAccIbmIsShareMountTargetVNISubnet(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmIsShareMountTargetConfigVNISubnet(vpcname, sname, targetName, subnetName, vniNameUpdated),
+				Config: testAccCheckIbmIsShareMountTargetConfigVNISubnet(vpcname, sname, targetNameUpdate, subnetName, vniNameUpdated),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetNameUpdate),
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.name", vniNameUpdated),
@@ -124,12 +124,12 @@ func TestAccIbmIsShareMountTargetVNISubnetPrimaryIPID(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareTargetExists("ibm_is_share_mount_target.is_share_target", conf),
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetName),
-					resource.TestCheckResourceAttrSet("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.subnet.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.subnet"),
 					resource.TestCheckResourceAttrSet("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.primary_ip.0.address"),
 				),
 			},
 			{
-				Config: testAccCheckIbmIsShareMountTargetConfigVNIPrimaryIPID(vpcname, sname, targetName, subnetName, vniNameUpdated, resIPName),
+				Config: testAccCheckIbmIsShareMountTargetConfigVNIPrimaryIPID(vpcname, sname, targetNameUpdate, subnetName, vniNameUpdated, resIPName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetNameUpdate),
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.name", vniNameUpdated),
@@ -166,7 +166,7 @@ func TestAccIbmIsShareMountTargetVNI(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmIsShareMountTargetConfigVNI(vpcname, sname, targetName, subnetName, vniNameUpdated, pIpName),
+				Config: testAccCheckIbmIsShareMountTargetConfigVNI(vpcname, sname, targetNameUpdate, subnetName, vniNameUpdated, pIpName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetNameUpdate),
 					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.name", vniNameUpdated),
@@ -237,8 +237,9 @@ func testAccCheckIbmIsShareMountTargetConfigVNIPrimaryIPID(vpcName, sname, targe
 		virtual_network_interface {
 			name = "%s"
 			primary_ip {
-				reserved_ip = ibm_is_subnet_reserved_ip.resIP1.id
+				reserved_ip = ibm_is_subnet_reserved_ip.resIP1.reserved_ip
 			}
+			subnet = ibm_is_subnet.testacc_subnet.id
 		}
 		name = "%s"
 	}
