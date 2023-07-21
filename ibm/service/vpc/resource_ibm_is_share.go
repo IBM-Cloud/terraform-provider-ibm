@@ -980,7 +980,11 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting encryption_key: %s", err))
 		}
 	}
-
+	if share.AccessControlMode != nil {
+		if err = d.Set("access_control_mode", *share.AccessControlMode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting access_control_mode: %s", err))
+		}
+	}
 	if err = d.Set("iops", flex.IntValue(share.Iops)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting iops: %s", err))
 	}

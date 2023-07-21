@@ -749,7 +749,7 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 	}
 	vniMap["subnet"] = vni.Subnet.ID
 	vniMap["resource_type"] = vni.ResourceType
-	vniMap["resource_group"] = vni.ResourceGroup.Name
+	vniMap["resource_group"] = vni.ResourceGroup.ID
 	if len(vni.SecurityGroups) != 0 {
 		secgrpList := []string{}
 		for i := 0; i < len(vni.SecurityGroups); i++ {

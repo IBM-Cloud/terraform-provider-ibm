@@ -62,7 +62,7 @@ resource "ibm_is_share" "example-2" {
 
 The following arguments are supported:
 
-- `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **vpc**
+- `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **security_group**
 - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 - `initial_owner` - (Optional, List) The initial owner for the file share.

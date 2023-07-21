@@ -305,9 +305,12 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("resource_type", shareTarget.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
-	if err = d.Set("transit_encryption", *shareTarget.TransitEncryption); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting transit_encryption: %s", err))
+	if shareTarget.TransitEncryption != nil {
+		if err = d.Set("transit_encryption", *shareTarget.TransitEncryption); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting transit_encryption: %s", err))
+		}
 	}
+
 	if shareTarget.VPC != nil {
 		err = d.Set("vpc", dataSourceShareMountTargetFlattenVpc(*shareTarget.VPC))
 		if err != nil {
