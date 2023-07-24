@@ -4,7 +4,15 @@
 package provider
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -52,6 +60,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/google/uuid"
+	hclog "github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -1285,7 +1297,7 @@ func Provider() *schema.Provider {
 			"ibm_project_instance": project.ResourceIbmProjectInstance(),
 		},
 
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
@@ -1615,7 +1627,7 @@ func Validator() validate.ValidatorDict {
 	return globalValidatorDict
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	var bluemixAPIKey string
 	var bluemixTimeout int
 	var iamToken, iamRefreshToken, iamTrustedProfileId string
@@ -1685,7 +1697,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
-		return nil, err
+		return nil, diag.FromErr(err)
 	}
 	//Set environment variable to be used in DiffSupressFunction
 	if wskEnvVal.(string) == "" {
@@ -1713,5 +1725,159 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		IAMTrustedProfileID:  iamTrustedProfileId,
 	}
 
-	return config.ClientSession()
+	ctx = tflog.NewSubsystem(ctx, "ibm-api", tflog.WithLevel(getLogLevel()))
+
+	client := http.Client{
+		Transport: IBMLoggingTransport{http.DefaultTransport, ctx},
+	}
+
+	clientSession, err := config.ClientSession(&client)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	return clientSession, diag.Diagnostics{}
+}
+
+func getLogLevel() (logLevel hclog.Level) {
+	logLevelString := os.Getenv("TF_LOG_IBM_API")
+
+	logLevel = hclog.LevelFromString(logLevelString)
+
+	if logLevel == hclog.NoLevel {
+		logLevel = hclog.Error
+	}
+
+	return logLevel
+}
+
+type IBMLoggingTransport struct {
+	ProxiedTransport http.RoundTripper
+	configContext    context.Context
+}
+
+func (transport IBMLoggingTransport) RoundTrip(req *http.Request) (res *http.Response, e error) {
+	requestID := req.Header.Get("X-Request-ID")
+
+	if requestID == "" {
+		requestID = uuid.New().String()
+		req.Header.Set("X-Request-ID", requestID)
+	}
+
+	tflog.SubsystemInfo(transport.configContext, "ibm-api", "IBM Cloud API request", map[string]interface{}{
+		"ibm_provider_event": "api_request_sent",
+		"ibm_host":           req.URL.Host,
+		"ibm_path":           req.URL.Path,
+		"ibm_method":         req.Method,
+		"ibm_request_id":     requestID,
+	})
+
+	res, err := transport.ProxiedTransport.RoundTrip(req)
+	if err != nil {
+		return res, err
+	}
+
+	receivedRequestID := res.Header.Get("X-Request-ID")
+
+	if receivedRequestID != requestID {
+		tflog.SubsystemWarn(transport.configContext, "ibm-api", "IBM Cloud API request ID mismatch", map[string]interface{}{
+			"ibm_provider_event":      "api-request-id-mismatch",
+			"ibm_request_id_sent":     requestID,
+			"ibm_request_id_received": receivedRequestID,
+		})
+	}
+
+	responseInfo := map[string]interface{}{
+		"ibm_provider_event": "api-response-received",
+		"ibm_host":           req.URL.Host,
+		"ibm_path":           req.URL.Path,
+		"ibm_method":         req.Method,
+		"ibm_status_code":    res.StatusCode,
+		"ibm_request_id":     requestID,
+	}
+
+	if res.StatusCode < 400 {
+		tflog.SubsystemInfo(transport.configContext, "ibm-api", "IBM Cloud API response", responseInfo)
+	} else {
+		responseInfo["ibm_provider_event"] = "api-error-received"
+		responseInfo["ibm_error_codes"] = getErrorCodes(res)
+		tflog.SubsystemError(transport.configContext, "ibm-api", "IBM Cloud API error", responseInfo)
+	}
+
+	return res, nil
+}
+
+func getErrorCodes(res *http.Response) (codes []string) {
+	statusCodeText := strings.ToLower(http.StatusText(res.StatusCode))
+	statusCodeText = strings.Replace(statusCodeText, " ", "_", -1)
+	statusCodeText = strings.Replace(statusCodeText, "-", "_", -1)
+
+	codes = []string{statusCodeText}
+
+	if isJSON(res) {
+		if res.Body != nil {
+			responseBody, err := io.ReadAll(res.Body)
+			res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+			if err == nil && len(responseBody) > 0 {
+				var responseMap map[string]interface{}
+				err = json.Unmarshal([]byte(responseBody), &responseMap)
+				if err == nil {
+					codes = collectErrorCodes(responseMap, codes)
+				}
+			}
+		}
+	}
+
+	return codes
+}
+
+func collectErrorCodes(response interface{}, codesIn []string) (codesOut []string) {
+	searchKeys := []string{"code", "type", "error_code", "errorCode", "error", "errors"}
+	codesOut = codesIn
+
+	responseMap, mapOK := response.(map[string]interface{})
+	if mapOK {
+		for key, value := range responseMap {
+			if contains(searchKeys, key) {
+				codesOut = collectErrorCodes(value, codesOut)
+			}
+		}
+	} else {
+		responseSlice, sliceOK := response.([]interface{})
+
+		if sliceOK {
+			for _, value := range responseSlice {
+				codesOut = collectErrorCodes(value, codesOut)
+			}
+		} else {
+			errorCode, stringOK := response.(string)
+
+			if stringOK {
+				matched, _ := regexp.MatchString("^[a-zA-Z0-9_\\-\\/]+$", errorCode)
+
+				if matched {
+					codesOut = append(codesOut, errorCode)
+				}
+			}
+		}
+	}
+
+	return codesOut
+}
+
+func isJSON(res *http.Response) (isJSON bool) {
+	contentType := res.Header.Get("Content-Type")
+	matched, _ := regexp.MatchString("(?i)^application\\/([a-z-]\\+)?json(\\s*;.*)?$", contentType)
+
+	return matched
+}
+
+func contains(searchSlice []string, searchValue interface{}) (sliceContains bool) {
+	for _, value := range searchSlice {
+		if value == searchValue {
+			return true
+		}
+	}
+
+	return false
 }
