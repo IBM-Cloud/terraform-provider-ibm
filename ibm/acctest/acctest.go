@@ -90,6 +90,7 @@ var InstanceDiskProfileName string
 var DedicatedHostGroupFamily string
 var DedicatedHostGroupClass string
 var ShareProfileName string
+var VNIId string
 var VolumeProfileName string
 var VSIUnattachedBootVolumeID string
 var VSIDataVolumeID string
@@ -740,7 +741,7 @@ func init() {
 
 	ShareProfileName = os.Getenv("IS_SHARE_PROFILE")
 	if ShareProfileName == "" {
-		ShareProfileName = "tier-3iops" // for next gen infrastructure
+		ShareProfileName = "dp2" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
 	}
 
@@ -749,6 +750,13 @@ func init() {
 		VolumeProfileName = "general-purpose"
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
 	}
+
+	VNIId = os.Getenv("IS_VIRTUAL_NETWORK_INTERFACE")
+	if VNIId == "" {
+		VNIId = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
+		fmt.Println("[INFO] Set the environment variable IS_VIRTUAL_NETWORK_INTERFACE for testing ibm_is_virtual_network_interface else it is set to default value 'c93dc4c6-e85a-4da2-9ea6-f24576256122'")
+	}
+
 	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
 	if VSIUnattachedBootVolumeID == "" {
 		VSIUnattachedBootVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
