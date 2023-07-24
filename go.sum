@@ -119,8 +119,8 @@ github.com/IBM/cloudant-go-sdk v0.0.43 h1:YxTy4RpAEezX32YIWnds76hrBREmO4u6IkBz1W
 github.com/IBM/cloudant-go-sdk v0.0.43/go.mod h1:WeYrJPaHTw19943ndWnVfwMIlZ5z0XUM2uEXNBrwZ1M=
 github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918 h1:RfHezAVs3HegiGOcMmTXqsBPqZqfwZZHqje1EMriHBQ=
 github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918/go.mod h1:IP6U/1NxgxzPeYdyiEwMaZyzelTw82JGHWl7bY78eQM=
-github.com/IBM/container-registry-go-sdk v0.0.15 h1:sfEXm4qNj9ZCwTlFOsdjF5P/lvajU/Sc22yNlzg0F9I=
-github.com/IBM/container-registry-go-sdk v0.0.15/go.mod h1:KqSZFO4VIK9QAyF8O1JW6jkyzkfE/BNKUIo+OdzIDk4=
+github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
+github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
 github.com/IBM/continuous-delivery-go-sdk v1.1.1 h1:bYrK0+rJgoWfBmIJAlAfo/AxI5vOr8DSLJPrM3iEOzQ=
 github.com/IBM/continuous-delivery-go-sdk v1.1.1/go.mod h1:A9rI1HPbccBBFgwJxXB999yXXpj1l+MnlE+rsxKtxw0=
 github.com/IBM/event-notifications-go-admin-sdk v0.2.2 h1:Aww+OUcKgsbXyY7a/nlMH7nvZGn0sBTr6p6rUjOyy1Y=
@@ -133,7 +133,6 @@ github.com/IBM/go-sdk-core/v3 v3.2.4/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QC
 github.com/IBM/go-sdk-core/v5 v5.0.0/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
 github.com/IBM/go-sdk-core/v5 v5.5.1/go.mod h1:Sn+z+qTDREQvCr+UFa22TqqfXNxx3o723y8GsfLV8e0=
 github.com/IBM/go-sdk-core/v5 v5.6.3/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
-github.com/IBM/go-sdk-core/v5 v5.6.5/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
 github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
 github.com/IBM/go-sdk-core/v5 v5.9.2/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
@@ -1599,8 +1598,8 @@ go.mongodb.org/mongo-driver v1.7.0/go.mod h1:Q4oFMbo1+MSNqICAdYMlC/zSTrwCogR4R8N
 go.mongodb.org/mongo-driver v1.7.3/go.mod h1:NqaYOwnXWr5Pm7AOpO5QFxKJ503nbMse/R79oO62zWg=
 go.mongodb.org/mongo-driver v1.7.5/go.mod h1:VXEWRZ6URJIkUq2SCAyapmhH0ZLRBP+FT4xhp5Zvxng=
 go.mongodb.org/mongo-driver v1.10.0/go.mod h1:wsihk0Kdgv8Kqu1Anit4sfK+22vSFbUrAVEYRhCXrA8=
-go.mongodb.org/mongo-driver v1.11.3 h1:Ql6K6qYHEzB6xvu4+AU0BoRoqf9vFPcc4o7MUIdPW8Y=
-go.mongodb.org/mongo-driver v1.11.3/go.mod h1:PTSz5yu21bkT/wXpkS7WR5f0ddqw5quethTUn9WM+2g=
+go.mongodb.org/mongo-driver v1.11.6 h1:XM7G6PjiGAO5betLF13BIa5TlLUUE3uJ/2Ox3Lz1K+o=
+go.mongodb.org/mongo-driver v1.11.6/go.mod h1:G9TgswdsWjX4tmDA5zfs2+6AEPpYJwqblyjsfuh8oXY=
 go.opencensus.io v0.19.1/go.mod h1:gug0GbSHa8Pafr0d2urOSgoXHZ6x/RUlaiT0d9pqb4A=
 go.opencensus.io v0.19.2/go.mod h1:NO/8qkisMZLZ1FCsKNqtJPwc8/TaclWyY0B6wcYNg9M=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=
