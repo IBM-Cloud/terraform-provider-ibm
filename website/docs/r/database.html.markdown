@@ -708,7 +708,6 @@ In addition to all argument references list, you can access the following attrib
 
 - `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
 - `configuration_schema` (String) Database Configuration Schema in JSON format.
-- `connectionstrings` - **Deprecated** - (Array) A list of connection strings for the database for each user ID - replaced by `ibm_database_connection`. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
 - `id` - (String) The CRN of the database instance.
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
