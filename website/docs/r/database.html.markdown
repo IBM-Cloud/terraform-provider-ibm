@@ -695,14 +695,6 @@ Review the argument reference that you can specify for your resource.
   - `address` - (Optional, String) The IP address or range of database client addresses to be allowlisted in CIDR format. Example, `172.168.1.2/32`.
   - `description` - (Optional, String) A description for the allowed IP addresses range.
 
-- `whitelist` **Deprecated** - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
-
-  Nested scheme for `whitelist`:
-  - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
-  - `description` - (Optional, String) A description for the allowed IP addresses range.
-
-  ~> **Note:** `whitelist` conflicts with `allowlist`. `whitelist` has been deprecated and replaced by `allowlist`
-
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 

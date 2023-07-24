@@ -164,7 +164,7 @@ func TestAccIBMDatabaseInstancePostgresAllowlistMigration(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstancePostgresWhitelistDeprecated(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstancePostgresAllowlistDeprecated(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -176,7 +176,7 @@ func TestAccIBMDatabaseInstancePostgresAllowlistMigration(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "10240"),
 					resource.TestCheckResourceAttr(name, "members_cpu_allocation_count", "0"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 				),
 			},
@@ -749,7 +749,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupMigrated(databaseResourceGroup 
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstancePostgresWhitelistDeprecated(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgresAllowlistDeprecated(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -769,7 +769,7 @@ func testAccCheckIBMDatabaseInstancePostgresWhitelistDeprecated(databaseResource
 			name     = "user123"
 			password = "password12"
 		}
-		whitelist {
+		allowlist {
 			address     = "172.168.1.2/32"
 			description = "desc1"
 		}
