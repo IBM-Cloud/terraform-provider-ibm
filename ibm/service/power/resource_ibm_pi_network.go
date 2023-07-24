@@ -146,7 +146,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	client := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	var body = &models.NetworkCreate{
 		Type: &networktype,
-		Name: networkname,
+		Name: &networkname,
 	}
 	if v, ok := d.GetOk(helpers.PINetworkDNS); ok {
 		networkdns := flex.ExpandStringList((v.(*schema.Set)).List())
@@ -161,7 +161,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	} else {
 		if v, ok := d.GetOk(helpers.PINetworkMtu); ok {
-			body.Mtu = v.(int64)
+			body.Mtu = (v.(*int64))
 		}
 		if v, ok := d.GetOk(helpers.PINetworkAccessConfig); ok {
 			body.AccessConfig = v.(string)
