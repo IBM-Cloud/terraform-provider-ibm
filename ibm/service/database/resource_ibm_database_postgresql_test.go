@@ -150,57 +150,6 @@ func TestAccIBMDatabaseInstancePostgresGroupMigration(t *testing.T) {
 	})
 }
 
-func TestAccIBMDatabaseInstancePostgresAllowlistMigration(t *testing.T) {
-	t.Parallel()
-	databaseResourceGroup := "default"
-	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
-	testName := rnd
-	name := "ibm_database." + testName
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresAllowlistDeprecated(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "10240"),
-					resource.TestCheckResourceAttr(name, "members_cpu_allocation_count", "0"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
-					resource.TestCheckResourceAttr(name, "users.#", "1"),
-				),
-			},
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresAllowlistMigrated(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "10240"),
-					resource.TestCheckResourceAttr(name, "members_cpu_allocation_count", "0"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
-					resource.TestCheckResourceAttr(name, "users.#", "1"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIBMDatabaseInstancePostgresNode(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
@@ -744,62 +693,6 @@ func testAccCheckIBMDatabaseInstancePostgresGroupMigrated(databaseResourceGroup 
 			members {
 				allocation_count = 2
 			}
-		}
-	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
-}
-
-func testAccCheckIBMDatabaseInstancePostgresAllowlistDeprecated(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		name = "%[1]s"
-	}
-
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-postgresql"
-		plan                         = "standard"
-		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 2048
-		members_disk_allocation_mb   = 10240
-		tags                         = ["one:two"]
-		users {
-			name     = "user123"
-			password = "password12"
-		}
-		allowlist {
-			address     = "172.168.1.2/32"
-			description = "desc1"
-		}
-	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
-}
-
-func testAccCheckIBMDatabaseInstancePostgresAllowlistMigrated(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		name = "%[1]s"
-	}
-
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-postgresql"
-		plan                         = "standard"
-		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 2048
-		members_disk_allocation_mb   = 10240
-		tags                         = ["one:two"]
-		users {
-			name     = "user123"
-			password = "password12"
-		}
-		allowlist {
-			address     = "172.168.1.3/32"
-			description = "desc2"
 		}
 	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
