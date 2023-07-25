@@ -189,12 +189,6 @@ resource "ibm_database" "autoscale" {
     location                     = "us-south"
     service_endpoints            = "private"
     auto_scaling {
-        cpu {
-            rate_increase_percent       = 20
-            rate_limit_count_per_member = 20
-            rate_period_seconds         = 900
-            rate_units                  = "count"
-        }
         disk {
             capacity_enabled             = true
             free_space_less_than_percent = 15
@@ -458,6 +452,53 @@ resource "ibm_database" "edb" {
   }
 }
 ```
+
+### Sample Elasticsearch Enterprise instance
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "es" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "es-enterprise"
+  service                      = "databases-for-elasticsearch"
+  plan                         = "enterprise"
+  location                     = "eu-gb"
+  adminpassword                = "password12"
+  version                      = "7.17"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    memory {
+      allocation_mb = 1024
+    }
+    disk {
+      allocation_mb = 5120
+    }
+    cpu {
+      allocation_count = 3
+    }
+  }
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  allowlist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
 ### Updating configuration for postgres database
 
 ```terraform
@@ -559,19 +600,13 @@ Review the argument reference that you can specify for your resource.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
    - Nested scheme for `auto_scaling`:
-     - `cpu` (List , Optional) Single block of CPU is allowed at once by CPU autoscaling.
-       - Nested scheme for `cpu`:
-         - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-         - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
-         - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
-         - `rate_units` - (Optional, String) Auto scaling rate in units.
-
      - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
         - Nested scheme for `disk`:
           - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
           - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
           - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
           - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
+          - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
           - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
           - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
           - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
@@ -673,7 +708,6 @@ In addition to all argument references list, you can access the following attrib
 
 - `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
 - `configuration_schema` (String) Database Configuration Schema in JSON format.
-- `connectionstrings` - **Deprecated** - (Array) A list of connection strings for the database for each user ID - replaced by `ibm_database_connection`. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
 - `id` - (String) The CRN of the database instance.
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.

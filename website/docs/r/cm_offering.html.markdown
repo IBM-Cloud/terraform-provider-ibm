@@ -33,9 +33,38 @@ Review the argument reference that you can specify for your resource.
 * `long_description` - (Optional, String) Long description in the requested language.
 * `name` - (Optional, String) The programmatic name of this offering.
 * `offering_icon_url` - (Optional, String) URL for an icon associated with this offering.
+* `offering_docs_url` - (Optional, String) URL for additional docs of this offering.
 * `product_kind` - (Optional, String) The kind of the product.  Valid values are "solution" and "software"
+* `provider_info` - (Optional, List) Information on the provider of this offering.
+Nested scheme for **provider_info**:
+	* `id` - (Optional, String) The provider ID.
+	* `name` - (Optional, String) The provider name.
+* `features` - (Optional, List) List of features associated with this offering.
+Nested scheme for **features**:
+	* `description` - (Optional, String) Feature description.
+	* `description_i18n` - (Optional, Map) A map of translated strings, by language code.
+	* `title` - (Optional, String) Heading.
+	* `title_i18n` - (Optional, Map) A map of translated strings, by language code.
+* `media` - (Optional, List) A list of media items related to this offering.
+Nested scheme for **media**:
+	* `api_url` - (Optional, String) CM API specific URL of the specified media item.
+	* `caption` - (Optional, String) Caption for this media item.
+	* `caption_i18n` - (Optional, Map) A map of translated strings, by language code.
+	* `thumbnail_url` - (Optional, String) Thumbnail URL for this media item.
+	* `type` - (Optional, String) Type of this media item.
+	* `url` - (Optional, String) URL of the specified media item.
+	* `url_proxy` - (Optional, List) Offering URL proxy information.
+	Nested scheme for **url_proxy**:
+		* `sha` - (Optional, String) SHA256 fingerprint of image.
+		* `url` - (Optional, String) URL of the specified media item being proxied.
 * `short_description` - (Optional, String) Short description in the requested language.
 * `tags` - (Optional, List) List of tags associated with this catalog.
+* `keywords` - (Optional, List) List of keywords associated with an offering, typically used to search for it.
+* `deprecate` - (Optional, Boolean) Specify if this offering should be deprecated.
+* `share_with_access_list` - (Optional, List) List of account, enterprise, or enterprise group IDs.  Enterprise IDs should be prefixed with `-ent-` and enterpries group IDs should be prefixed with `-entgrp-`.
+* `share_with_all` - (Optional, Boolean) Denotes public availability of an Offering - if share_enabled is true.
+* `share_with_ibm` - (Optional, Boolean) Denotes IBM employee availability of an Offering - if share_enabled is true.
+* `share_enabled` - (Optional, Boolean) Denotes sharing including access list availability of an Offering is enabled.
 
 ## Attribute Reference
 

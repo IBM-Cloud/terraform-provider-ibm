@@ -240,6 +240,8 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 			"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
 		resource.TestCheckResourceAttr(
 			"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "taints.#", "1"),
 	}
 	if acc.CrkID != "" {
 		testChecks = append(testChecks,
@@ -262,6 +264,15 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 			{
 				Config: testAccCheckIBMVpcContainerWorkerPoolEnvvar(name),
 				Check:  resource.ComposeTestCheckFunc(testChecks...),
+			},
+			{
+				Config: testAccCheckIBMVpcContainerWorkerPoolEnvvarUpdate(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "worker_count", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "taints.#", "0"),
+				),
 			},
 			{
 				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
@@ -332,6 +343,30 @@ func testAccCheckIBMVpcContainerWorkerPoolEnvvar(name string) string {
 	  flavor            = "bx2.4x16"
 	  vpc_id            = "%[2]s"
 	  worker_count      = 1
+	  zones {
+		subnet_id = "%[3]s"
+		name      = "us-south-1"
+	  }
+	  kms_instance_id = "%[4]s"
+	  crk = "%[5]s"
+	  secondary_storage = "%[6]s"
+	  taints {
+		key    = "key1"
+		value  = "value1"
+		effect = "NoSchedule"
+	  }
+	}
+		`, name, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.WorkerPoolSecondaryStorage)
+}
+
+func testAccCheckIBMVpcContainerWorkerPoolEnvvarUpdate(name string) string {
+	return fmt.Sprintf(testAccCheckIBMContainerVpcClusterEnvvar(name)+`
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = ibm_container_vpc_cluster.cluster.id
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "bx2.4x16"
+	  vpc_id            = "%[2]s"
+	  worker_count      = 2
 	  zones {
 		subnet_id = "%[3]s"
 		name      = "us-south-1"

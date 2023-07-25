@@ -46,7 +46,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
   metadata_service_enabled  = false
 
   boot_volume {
@@ -189,7 +189,7 @@ resource "ibm_is_security_group_rule" "example3" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet          = ibm_is_subnet.example.id
@@ -327,8 +327,61 @@ resource "ibm_is_instance" "example" {
     name   = "eth1"
   }
 }
-```
 
+// Example for provisioning instance from an existing boot volume
+
+resource "ibm_is_volume" "example" {
+  name            = "example-volume"
+  profile         = "10iops-tier"
+  zone            = "us-south-1"
+  source_snapshot = ibm_is_snapshot.example.id
+}
+
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi-restore"
+  profile = "cx2-2x4"
+  boot_volume {
+    volume_id = ibm_is_volume.example.id
+  }
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+  network_interfaces {
+    subnet = ibm_is_subnet.example.id
+    name   = "eth1"
+  }
+}
+```
+### Example to create an instance with metadata service configuration ###
+
+```terraform
+
+resource "ibm_is_instance" "example" {
+  metadata_service {
+    enabled = true
+    protocol = "https"
+    response_hop_limit = 5
+  }
+  name    = "example-vsi-catalog"
+  profile = "cx2-2x4"
+  catalog_offering {
+    version_crn = data.ibm_is_images.example.images.0.catalog_offering.0.version.0.crn
+  }
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+  network_interfaces {
+    subnet = ibm_is_subnet.example.id
+    name   = "eth1"
+  }
+}
+```
 ## Timeouts
 
 The `ibm_is_instance` resource provides the following [[Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -368,7 +421,11 @@ Review the argument references that you can specify for your resource.
   - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the volume to be used for creating boot volume attachment
     
     ~> **Note:**
-    `snapshot` conflicts with `image` id, `instance_template` and `catalog_offering`
+    `snapshot` conflicts with `image` id, `instance_template` , `catalog_offering` and `boot_volume.volume_id`
+  - `volume_id` - (Optional, Forces new resource, String) The ID of the volume to be used for creating boot volume attachment
+    ~> **Note:** 
+
+     - `volume_id` conflicts with `image` id, `instance_template` ,`boot_volume.snapshot`, `catalog_offering`, 
   - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `catalog_offering` - (Optional, List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
   Nested scheme for `catalog_offering`:
@@ -395,6 +452,10 @@ Review the argument references that you can specify for your resource.
   ~> **Note:**
   `image` conflicts with `boot_volume.0.snapshot` and `catalog_offering`, not required when creating instance using `instance_template` or `catalog_offering`
 - `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+
+  ~> **Note:**
+  **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
+  **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>
 - `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
 
   Nested scheme for `lifecycle_reasons`:
@@ -403,11 +464,19 @@ Review the argument references that you can specify for your resource.
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Optional, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance. Default value : **false**
+
+  ~> **NOTE**
+  `metadata_service_enabled` is deprecated and will be removed in the future. Use `metadata_service` instead
+- `metadata_service` - (Optional, List) The metadata service configuration. 
+
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Optional, Bool) Indicates whether the metadata service endpoint will be available to the virtual server instance. Default is **false**
+  - `protocol` - (Optional, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
+  - `response_hop_limit` - (Optional, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
-    -> **Allowed vNIC per profile.** 
-    **&#x2022;** 2-16 vCPUs: Up to 5 vNICs </br> **&#x2022;** 17-48 vCPUs: Up to 10 vNICs </br> **&#x2022;** 49+ vCPUs: Up to 15 vNICs
+    -> **Allowed vNIC per profile.** Follow the vNIC count as per the instance profile's `network_interface_count`. For details see  [`is_instance_profile`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profile) or [`is_instance_profiles`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profiles).
 
   Nested scheme for `network_interfaces`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
@@ -568,6 +637,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `vcpu`:
   - `architecture` - (String) The architecture of the CPU.
   - `count`- (Integer) The number of virtual CPUS that are assigned to the instance.
+  - `manufacturer`- (String) The VCPU manufacturer.
 
 
 ## Import

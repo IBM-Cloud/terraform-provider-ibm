@@ -123,9 +123,28 @@ Nested scheme for **licenses**:
 
 * `long_description_i18n` - (Map) A map of translated strings, by language code.
 
-* `metadata` - (Forces new resource, List) Generic data to be included with content being onboarded. Required for virtual server image for VPC.
+* `metadata` - (List) Generic data to be included with content being onboarded. Required for virtual server image for VPC.
 Nested scheme for **metadata**:
 	* `source_url` - (String) Source URL for the version.
+    * `working_directory` - (String) Working directory of source files.
+	* `example_name` - (String) Name of example directory that contains source files in existing examples directory.
+	* `start_deploy_time` - (String) The time validation starts.
+	* `end_deploy_time` - (String) The time validation ends.
+	* `est_deploy_time` - (String) The estimated time validation takes.
+	* `usage` - (String) Usage text for the version.
+	* `usage_template` - (String) Usage text for the version.
+	Nested scheme for **modules**:
+		* `name` - (String) Name of the module.
+		* `source` - (String) Source of the module.
+		Nested scheme for **offering_reference**:
+			* `name` (String) Name of the offering.
+			* `id` (String) ID of the offering.
+			* `kind` (String) Kind of the offering.
+			* `version` (String) Version of the offering.
+			* `flavor` (String) Flavor of the offering.
+			* `flavors` (List) Flavors of the offering.
+			* `catalog_id` (String) Catalog ID of the offering.
+			* `metadata` (String) Metadata of the offering.
 	* `terraform_version` - (String) Version's terraform version.
 	* `validated_terraform_version` - (String) Version's validated terraform version.
 	* `version_name` - (String) Name of the version.

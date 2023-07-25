@@ -613,15 +613,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 
 		//if d.GetOkExists("reboot_for_resource_change")
 
-		if mem > maxMemLpar || procs > maxCPULpar {
+		instanceState := d.Get("status")
+		log.Printf("the instance state is %s", instanceState)
 
+		if (mem > maxMemLpar || procs > maxCPULpar) && instanceState != "SHUTOFF" {
 			err = performChangeAndReboot(ctx, client, instanceID, cloudInstanceID, mem, procs)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else {
-
 			body := &models.PVMInstanceUpdate{
 				Memory:     mem,
 				Processors: procs,
@@ -641,9 +642,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			if err != nil {
 				return diag.Errorf("failed to update the lpar with the change %v", err)
 			}
-			_, err = isWaitforPIInstanceUpdate(ctx, client, instanceID)
-			if err != nil {
-				return diag.FromErr(err)
+			if instanceState == "SHUTOFF" {
+				_, err = isWaitforPIInstanceUpdate(ctx, client, instanceID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			} else {
+				_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}

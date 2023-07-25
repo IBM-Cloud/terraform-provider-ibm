@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,7 +69,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "ID of the worker.",
 						},
 					},
@@ -167,7 +167,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 									"pattern": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.",
+										Description: "The pattern of Git branch or tag to which to listen. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository. The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. One of branch or pattern must be specified, but only one or the other.",
 									},
 								},
 							},
@@ -176,10 +176,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				},
 			},
 			"events": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:             schema.TypeList,
+				Optional:         true,
+				DiffSuppressFunc: flex.SuppressTriggerEvents,
+				Description:      "Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.",
+				Elem:             &schema.Schema{Type: schema.TypeString},
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -218,6 +219,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "Property type.",
 						},
 						"path": &schema.Schema{
@@ -266,7 +268,7 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$`,
+			Regexp:                     `^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\(\)\[\]]{1,251}[a-zA-Z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
@@ -284,7 +286,7 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$`,
+			Regexp:                     `^[-0-9a-zA-Z,\*\/ ]{5,253}$`,
 			MinValueLength:             5,
 			MaxValueLength:             253,
 		},
@@ -361,6 +363,7 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 		for i, v := range eventsInterface {
 			events[i] = fmt.Sprint(v)
 		}
+		sort.Strings(events)
 		createTektonPipelineTriggerOptions.SetEvents(events)
 	}
 
@@ -415,12 +418,12 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	if err = d.Set("event_listener", trigger.EventListener); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting event_listener: %s", err))
 	}
-	if trigger.Tags != nil {
+	if !core.IsNil(trigger.Tags) {
 		if err = d.Set("tags", trigger.Tags); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 		}
 	}
-	if trigger.Worker != nil {
+	if !core.IsNil(trigger.Worker) {
 		workerMap, err := resourceIBMCdTektonPipelineTriggerWorkerIdentityToMap(trigger.Worker)
 		if err != nil {
 			return diag.FromErr(err)
@@ -429,13 +432,17 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 			return diag.FromErr(fmt.Errorf("Error setting worker: %s", err))
 		}
 	}
-	if err = d.Set("max_concurrent_runs", flex.IntValue(trigger.MaxConcurrentRuns)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting max_concurrent_runs: %s", err))
+	if !core.IsNil(trigger.MaxConcurrentRuns) {
+		if err = d.Set("max_concurrent_runs", flex.IntValue(trigger.MaxConcurrentRuns)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting max_concurrent_runs: %s", err))
+		}
 	}
-	if err = d.Set("enabled", trigger.Enabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
+	if !core.IsNil(trigger.Enabled) {
+		if err = d.Set("enabled", trigger.Enabled); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
+		}
 	}
-	if trigger.Secret != nil {
+	if !core.IsNil(trigger.Secret) {
 		secretMap, err := resourceIBMCdTektonPipelineTriggerGenericSecretToMap(trigger.Secret)
 		if err != nil {
 			return diag.FromErr(err)
@@ -444,13 +451,17 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 			return diag.FromErr(fmt.Errorf("Error setting secret: %s", err))
 		}
 	}
-	if err = d.Set("cron", trigger.Cron); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting cron: %s", err))
+	if !core.IsNil(trigger.Cron) {
+		if err = d.Set("cron", trigger.Cron); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting cron: %s", err))
+		}
 	}
-	if err = d.Set("timezone", trigger.Timezone); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting timezone: %s", err))
+	if !core.IsNil(trigger.Timezone) {
+		if err = d.Set("timezone", trigger.Timezone); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting timezone: %s", err))
+		}
 	}
-	if trigger.Source != nil {
+	if !core.IsNil(trigger.Source) {
 		sourceMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypeToMap(trigger.Source)
 		if err != nil {
 			return diag.FromErr(err)
@@ -459,16 +470,18 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 			return diag.FromErr(fmt.Errorf("Error setting source: %s", err))
 		}
 	}
-	if trigger.Events != nil {
+	if !core.IsNil(trigger.Events) {
 		if err = d.Set("events", trigger.Events); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting events: %s", err))
 		}
 	}
-	if err = d.Set("href", trigger.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	if !core.IsNil(trigger.Href) {
+		if err = d.Set("href", trigger.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
 	}
-	properties := []map[string]interface{}{}
-	if trigger.Properties != nil {
+	if !core.IsNil(trigger.Properties) {
+		properties := []map[string]interface{}{}
 		for _, propertiesItem := range trigger.Properties {
 			propertiesItemMap, err := resourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(&propertiesItem)
 			if err != nil {
@@ -476,15 +489,19 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 			}
 			properties = append(properties, propertiesItemMap)
 		}
+		if err = d.Set("properties", properties); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
+		}
 	}
-	if err = d.Set("properties", properties); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
+	if !core.IsNil(trigger.WebhookURL) {
+		if err = d.Set("webhook_url", trigger.WebhookURL); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting webhook_url: %s", err))
+		}
 	}
-	if err = d.Set("webhook_url", trigger.WebhookURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting webhook_url: %s", err))
-	}
-	if err = d.Set("trigger_id", trigger.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting trigger_id: %s", err))
+	if !core.IsNil(trigger.ID) {
+		if err = d.Set("trigger_id", trigger.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting trigger_id: %s", err))
+		}
 	}
 
 	return nil
@@ -580,6 +597,7 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		for _, eventsItem := range d.Get("events").([]interface{}) {
 			events = append(events, eventsItem.(string))
 		}
+		sort.Strings(events)
 		patchVals.Events = events
 		hasChange = true
 	}

@@ -71,6 +71,16 @@ You can access the following attribute references after your data source is crea
 - `image` - (String) The ID of the image to create the template.
 - `keys` - (String) List of SSH key IDs used to allow log in user to the instances.
 - `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+	
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+	- `metadata_service` - (List) The metadata service configuration. 
+
+       Nested scheme for `metadata_service`:
+       - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+       - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+       - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+       
 - `name` - (String) The name of the instance template.
 - `network_interfaces` - (List) A nested block describes the network interfaces for the template.
 

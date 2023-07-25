@@ -102,6 +102,16 @@ In addition to all argument reference list, you can access the following attribu
 	- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 	- `memory`- (Integer) The amount of memory that was allocated to the instance.
 	- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+	
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+	- `metadata_service` - (List) The metadata service configuration. 
+
+       Nested scheme for `metadata_service`:
+       - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+       - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+       - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+       
 	- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
 	  Nested scheme for `network_interfaces`:
@@ -166,6 +176,7 @@ In addition to all argument reference list, you can access the following attribu
 
 	  Nested scheme for `vcpu`:
 		- `architecture` - (String) The architecture of the virtual CPU.
+		- `manufacturer` - (String) The manufacturer of the virtual CPU.
 		- `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
 	- `vpc` - (String) The ID of the VPC that the instance belongs to.
 	- `zone` - (String) The zone where the instance was created.

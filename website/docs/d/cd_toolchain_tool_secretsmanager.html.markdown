@@ -43,11 +43,15 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `instance_name` - (String) The name of the Secrets Manager service instance.
+	* `instance_crn` - (String) The Secrets Manager service instance CRN (Cloud Resource Name), only relevant when using `instance-crn` as the `instance_id_type`.
+	  * Constraints: The value must match regular expression `/^crn:v1:(?:bluemix|staging):public:secrets-manager:[a-zA-Z0-9-]*\\b:a\/[0-9a-fA-F]*\\b:[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}\\b::$/`.
+	* `instance_id_type` - (String) The type of service instance identifier. When absent defaults to `instance-name`.
+	  * Constraints: Allowable values are: `instance-name`, `instance-crn`.
+	* `instance_name` - (String) The name of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `location` - (String) The IBM Cloud location where the Secrets Manager service instance is located.
+	* `location` - (String) The IBM Cloud location of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.
 	* `name` - (String) The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.
-	* `resource_group_name` - (String) The name of the resource group where the Secrets Manager service instance is located.
+	* `resource_group_name` - (String) The name of the resource group where the Secrets Manager service instance is located, only relevant when using `instance-name` as the `instance_id_type`.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
