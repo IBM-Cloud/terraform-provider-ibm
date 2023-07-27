@@ -449,7 +449,7 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 		createVirtualNetworkInterfaceOptions.SetEnableInfrastructureNat(d.Get("enable_infrastructure_nat").(bool))
 	}
 	if _, ok := d.GetOk("ips"); ok {
-		var ips []vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeIntf
+		var ips []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf
 		for _, v := range d.Get("ips").([]interface{}) {
 			value := v.(map[string]interface{})
 			ipsItem, err := resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototype(value)
@@ -715,8 +715,8 @@ func resourceIBMIsVirtualNetworkInterfaceDelete(context context.Context, d *sche
 	return nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeIntf, error) {
-	model := &vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototype{}
+func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfaceIPPrototypeIntf, error) {
+	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
@@ -735,45 +735,8 @@ func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReserved
 	return model, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextIntf, error) {
-	model := &vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContext{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
-		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityByID(modelMap map[string]interface{}) (*vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityByID, error) {
-	model := &vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityByID{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityByHref(modelMap map[string]interface{}) (*vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityByHref, error) {
-	model := &vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityVirtualNetworkInterfaceIPsContextReservedIPIdentityByHref{}
-	model.Href = core.StringPtr(modelMap["href"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext(modelMap map[string]interface{}) (*vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext, error) {
-	model := &vpcv1.VirtualNetworkInterfaceIPsReservedIPPrototypeReservedIPPrototypeVirtualNetworkInterfaceIPsContext{}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeIntf, error) {
-	model := &vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototype{}
+func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeIntf, error) {
+	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
@@ -792,54 +755,11 @@ func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPRe
 	return model, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextIntf, error) {
-	model := &vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContext{}
+func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrototypeResourceGroup(modelMap map[string]interface{}) (vpcv1.ResourceGroupIdentityIntf, error) {
+	model := &vpcv1.ResourceGroupIdentity{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
-		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityByID(modelMap map[string]interface{}) (*vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityByID, error) {
-	model := &vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityByID{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityByHref(modelMap map[string]interface{}) (*vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityByHref, error) {
-	model := &vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityVirtualNetworkInterfacePrimaryIPContextReservedIPIdentityByHref{}
-	model.Href = core.StringPtr(modelMap["href"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext(modelMap map[string]interface{}) (*vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext, error) {
-	model := &vpcv1.VirtualNetworkInterfacePrimaryIPReservedIPPrototypeReservedIPPrototypeVirtualNetworkInterfacePrimaryIPContext{}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrototypeResourceGroup(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrototypeResourceGroupIntf, error) {
-	model := &vpcv1.VirtualNetworkInterfacePrototypeResourceGroup{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrototypeResourceGroupResourceGroupIdentityByID(modelMap map[string]interface{}) (*vpcv1.VirtualNetworkInterfacePrototypeResourceGroupResourceGroupIdentityByID, error) {
-	model := &vpcv1.VirtualNetworkInterfacePrototypeResourceGroupResourceGroupIdentityByID{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
 	return model, nil
 }
 

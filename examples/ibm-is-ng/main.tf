@@ -1309,3 +1309,16 @@ resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instan
     id = "7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
   }
 }
+resource "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
+  virtual_network_interface = <vni_id>
+  floating_ip 				= <fip_id>
+}
+
+data "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
+  virtual_network_interface = <vni_id>
+  floating_ip 				= <fip_id>
+}
+
+data "ibm_is_virtual_network_interface_floating_ips" "vni_fips" {
+  virtual_network_interface = <vni_id>
+}
