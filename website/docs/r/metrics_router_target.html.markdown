@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_metrics_router_target"
 description: |-
   Manages metrics_router_target
-subcategory: "IBM Cloud Metrics Routing API Version 3"
+subcategory: "IBM Cloud Metrics Routing"
 ---
 
 # ibm_metrics_router_target

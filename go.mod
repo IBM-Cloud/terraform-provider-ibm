@@ -12,9 +12,9 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.3.2
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918
-	github.com/IBM/container-registry-go-sdk v0.0.15
+	github.com/IBM/container-registry-go-sdk v1.1.0
 	github.com/IBM/continuous-delivery-go-sdk v1.1.1
-	github.com/IBM/event-notifications-go-admin-sdk v0.2.2
+	github.com/IBM/event-notifications-go-admin-sdk v0.2.4
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.13.4
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
@@ -29,7 +29,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
-	github.com/IBM/vpc-beta-go-sdk v0.4.0
+	github.com/IBM/vpc-beta-go-sdk v0.5.0
 	github.com/IBM/vpc-go-sdk v0.40.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
@@ -50,7 +50,7 @@ require (
 	github.com/openshift/api v0.0.0-20230329202819-04d4fb776982
 	github.com/openshift/client-go v0.0.0-20230324103026-3f1513df25e0
 	github.com/softlayer/softlayer-go v1.0.3
-	go.mongodb.org/mongo-driver v1.11.3 // indirect
+	go.mongodb.org/mongo-driver v1.11.6 // indirect
 	golang.org/x/crypto v0.7.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.26.3

@@ -479,6 +479,8 @@ func Provider() *schema.Provider {
 			"ibm_is_share_profiles":                  vpc.DataSourceIbmIsShareProfiles(),
 			"ibm_is_share_target":                    vpc.DataSourceIbmIsShareTarget(),
 			"ibm_is_share_targets":                   vpc.DataSourceIbmIsShareTargets(),
+			"ibm_is_virtual_network_interface":       vpc.DataSourceIBMIsVirtualNetworkInterface(),
+			"ibm_is_virtual_network_interfaces":      vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
 			"ibm_is_share_mount_target":              vpc.DataSourceIBMIsShareTarget(),
 			"ibm_is_share_mount_targets":             vpc.DataSourceIBMIsShareTargets(),
 			"ibm_is_volume":                          vpc.DataSourceIBMISVolume(),
@@ -706,9 +708,8 @@ func Provider() *schema.Provider {
 			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
 
 			// // Atracker
-			"ibm_atracker_targets":   atracker.DataSourceIBMAtrackerTargets(),
-			"ibm_atracker_routes":    atracker.DataSourceIBMAtrackerRoutes(),
-			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
+			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
+			"ibm_atracker_routes":  atracker.DataSourceIBMAtrackerRoutes(),
 
 			//  Metrics Router
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
@@ -760,6 +761,9 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ce":        eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_cos":        eventnotification.DataSourceIBMEnCOSDestination(),
 			"ibm_en_subscription_cos":       eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_huawei":     eventnotification.DataSourceIBMEnHuaweiDestination(),
+			"ibm_en_subscription_huawei":    eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_sources":                eventnotification.DataSourceIBMEnSources(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1241,6 +1245,9 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ce":        eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_cos":        eventnotification.ResourceIBMEnCOSDestination(),
 			"ibm_en_subscription_cos":       eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_huawei":     eventnotification.ResourceIBMEnHuaweiDestination(),
+			"ibm_en_subscription_huawei":    eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_ibmsource":              eventnotification.ResourceIBMEnIBMSource(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
