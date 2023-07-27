@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -235,17 +234,14 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("storage_type", powervmdata.StorageType)
 	d.Set("storage_pool", powervmdata.StoragePool)
 	d.Set("storage_pool_affinity", powervmdata.StoragePoolAffinity)
+	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
 	d.Set("networks", flattenPvmInstanceNetworks(powervmdata.Networks))
 	d.Set("deployment_type", powervmdata.DeploymentType)
 	if *powervmdata.PlacementGroup != "none" {
 		d.Set(PIPlacementGroupID, powervmdata.PlacementGroup)
 	}
-
-	if !strings.Contains(sess.Options.Zone, helpers.PIStratosRegionPrefix) {
-		d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
-		d.Set(Attr_PIInstanceSharedProcessorPool, powervmdata.SharedProcessorPool)
-		d.Set(Attr_PIInstanceSharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
-	}
+	d.Set(Attr_PIInstanceSharedProcessorPool, powervmdata.SharedProcessorPool)
+	d.Set(Attr_PIInstanceSharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))

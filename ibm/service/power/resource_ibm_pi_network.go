@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/apparentlymart/go-cidr/cidr"
@@ -88,7 +87,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Description: "PI Maximum Transmission Unit",
 			},
 			helpers.PINetworkAccessConfig: {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "PI network communication configuration",
@@ -155,17 +154,15 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	if !strings.Contains(sess.Options.Zone, helpers.PIStratosRegionPrefix) {
-		if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
-			body.Jumbo = v.(bool)
-		}
-	} else {
-		if v, ok := d.GetOk(helpers.PINetworkMtu); ok {
-			body.Mtu = (v.(*int64))
-		}
-		if v, ok := d.GetOk(helpers.PINetworkAccessConfig); ok {
-			body.AccessConfig = v.(string)
-		}
+	if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
+		body.Jumbo = v.(bool)
+	}
+	if v, ok := d.GetOk(helpers.PINetworkMtu); ok {
+		var mtu int64 = int64(v.(int))
+		body.Mtu = &mtu
+	}
+	if v, ok := d.GetOk(helpers.PINetworkAccessConfig); ok {
+		body.AccessConfig = v.(string)
 	}
 
 	if networktype == "vlan" {
@@ -237,12 +234,9 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("vlan_id", networkdata.VlanID)
 	d.Set(helpers.PINetworkName, networkdata.Name)
 	d.Set(helpers.PINetworkType, networkdata.Type)
-	if !strings.Contains(sess.Options.Zone, helpers.PIStratosRegionPrefix) {
-		d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
-	} else {
-		d.Set(helpers.PINetworkMtu, networkdata.Mtu)
-		d.Set(helpers.PINetworkAccessConfig, networkdata.AccessConfig)
-	}
+	d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
+	d.Set(helpers.PINetworkMtu, networkdata.Mtu)
+	d.Set(helpers.PINetworkAccessConfig, networkdata.AccessConfig)
 	d.Set(helpers.PINetworkGateway, networkdata.Gateway)
 	ipRangesMap := []map[string]interface{}{}
 	if networkdata.IPAddressRanges != nil {
