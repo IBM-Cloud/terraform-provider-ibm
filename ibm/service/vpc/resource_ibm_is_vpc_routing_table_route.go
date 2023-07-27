@@ -337,29 +337,27 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 	}
 
 	idSet := strings.Split(d.Id(), "/")
-	if d.HasChange(rName) || d.HasChange("advertise") {
-		routePatch := make(map[string]interface{})
-		updateVpcRoutingTableRouteOptions := sess.NewUpdateVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2], routePatch)
-
-		// Construct an instance of the RoutePatch model
-		routePatchModel := new(vpcv1.RoutePatch)
-		if d.HasChange(rName) {
-			name := d.Get(rName).(string)
-			routePatchModel.Name = &name
-		}
-
-		if d.HasChange("advertise") {
-			advertiseVal := d.Get("advertise").(bool)
-			routePatchModel.Advertise = &advertiseVal
-		}
-
-		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
 	hasChange := false
 	routePatch := make(map[string]interface{})
 	updateVpcRoutingTableRouteOptions := sess.NewUpdateVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2], routePatch)
 
 	// Construct an instance of the RoutePatch model
 	routePatchModel := new(vpcv1.RoutePatch)
+	if d.HasChange(rName) || d.HasChange("advertise") {
+		// Construct an instance of the RoutePatch model
+		routePatchModel := new(vpcv1.RoutePatch)
+		if d.HasChange(rName) {
+			name := d.Get(rName).(string)
+			routePatchModel.Name = &name
+			hasChange = true
+		}
+
+		if d.HasChange("advertise") {
+			advertiseVal := d.Get("advertise").(bool)
+			routePatchModel.Advertise = &advertiseVal
+			hasChange = true
+		}
+	}
 	if d.HasChange(rName) {
 		name := d.Get(rName).(string)
 		routePatchModel.Name = &name
