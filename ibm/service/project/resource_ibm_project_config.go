@@ -5,13 +5,10 @@ package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -28,10 +25,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 		UpdateContext: resourceIbmProjectConfigUpdate,
 		DeleteContext: resourceIbmProjectConfigDelete,
 		Importer:      &schema.ResourceImporter{},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(1 * time.Minute),
-			Delete: schema.DefaultTimeout(1 * time.Minute),
-		},
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
@@ -56,7 +49,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "",
 				// ValidateFunc: validate.InvokeValidator("ibm_project_config", "description"),
 				Description: "The description of the project configuration.",
 			},
@@ -144,7 +136,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 			"input": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The outputs of a Schematics template property.",
+				Description: "The inputs of a Schematics template property.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -152,20 +144,10 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Required:    true,
 							Description: "The variable name.",
 						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The variable type.",
-						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Can be any value - a string, number, boolean, array, or object.",
-						},
-						"required": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Whether the variable is required or not.",
 						},
 					},
 				},
@@ -185,35 +167,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The value of the configuration setting.",
-						},
-					},
-				},
-			},
-			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of a project configuration manual property.",
-			},
-			"output": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The outputs of a Schematics template property.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The variable name.",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "A short explanation of the output value.",
-						},
-						"value": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Can be any value - a string, number, boolean, array, or object.",
 						},
 					},
 				},
@@ -273,7 +226,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 						"comment": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     "",
 							Description: "The comment left by the user who approved the configuration.",
 						},
 						"timestamp": &schema.Schema{
@@ -294,203 +246,242 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
-			"job_summary": &schema.Schema{
+			"type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of a project configuration manual property.",
+			},
+			"output": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The summaries of jobs that were performed on the configuration.",
+				Description: "The outputs of a Schematics template property.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"plan_summary": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The summary of the plan jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The variable name.",
 						},
-						"apply_summary": &schema.Schema{
-							Type:        schema.TypeMap,
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The summary of the apply jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "A short explanation of the output value.",
 						},
-						"destroy_summary": &schema.Schema{
-							Type:        schema.TypeMap,
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The summary of the destroy jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"message_summary": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The message summaries of jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"plan_messages": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The messages of plan jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"apply_messages": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The messages of apply jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"destroy_messages": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The messages of destroy jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Can be any value - a string, number, boolean, array, or object.",
 						},
 					},
 				},
 			},
-			"cra_logs": &schema.Schema{
+			"active_draft": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The Code Risk Analyzer logs of the configuration.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cra_version": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The version of the Code Risk Analyzer logs of the configuration.",
-						},
-						"schema_version": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The schema version of Code Risk Analyzer logs of the configuration.",
-						},
-						"status": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The status of the Code Risk Analyzer logs of the configuration.",
-						},
-						"summary": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The summary of the Code Risk Analyzer logs of the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"timestamp": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
-						},
-					},
-				},
-			},
-			"cost_estimate": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The cost estimate of the configuration.It only exists after the first configuration validation.",
+				Description: "The project configuration version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The version of the cost estimate of the configuration.",
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "The version number of the configuration.",
 						},
-						"currency": &schema.Schema{
+						"state": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The currency of the cost estimate of the configuration.",
+							Required:    true,
+							Description: "The state of the configuration draft.",
 						},
-						"total_hourly_cost": &schema.Schema{
+						"pipeline_state": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The total hourly cost estimate of the configuration.",
+							Description: "The pipeline state of the configuration. It only exists after the first configuration validation.",
 						},
-						"total_monthly_cost": &schema.Schema{
+						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The total monthly cost estimate of the configuration.",
-						},
-						"past_total_hourly_cost": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The past total hourly cost estimate of the configuration.",
-						},
-						"past_total_monthly_cost": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The past total monthly cost estimate of the configuration.",
-						},
-						"diff_total_hourly_cost": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The difference between current and past total hourly cost estimates of the configuration.",
-						},
-						"diff_total_monthly_cost": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The difference between current and past total monthly cost estimates of the configuration.",
-						},
-						"time_generated": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
-						},
-						"user_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The unique ID of a project.",
+							Description: "A relative URL.",
 						},
 					},
 				},
 			},
-			"last_deployment_job_summary": &schema.Schema{
+			"definition": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The summaries of jobs that were performed on the configuration.",
+				Description: "The project configuration definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"plan_summary": &schema.Schema{
-							Type:        schema.TypeMap,
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the configuration.",
+						},
+						"labels": &schema.Schema{
+							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The summary of the plan jobs on the configuration.",
+							Description: "A collection of configuration labels.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
-						"apply_summary": &schema.Schema{
-							Type:        schema.TypeMap,
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The summary of the apply jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The description of the project configuration.",
 						},
-						"destroy_summary": &schema.Schema{
-							Type:        schema.TypeMap,
+						"authorizations": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
 							Optional:    true,
-							Description: "The summary of the destroy jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"trusted_profile": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "The trusted profile for authorizations.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID of a project.",
+												},
+												"target_iam_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID of a project.",
+												},
+											},
+										},
+									},
+									"method": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+									},
+									"api_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The IBM Cloud API Key.",
+									},
+								},
+							},
 						},
-						"message_summary": &schema.Schema{
-							Type:        schema.TypeMap,
+						"compliance_profile": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
 							Optional:    true,
-							Description: "The message summaries of jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The profile required for compliance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique ID of a project.",
+									},
+									"instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique ID of a project.",
+									},
+									"instance_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The location of the compliance instance.",
+									},
+									"attachment_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique ID of a project.",
+									},
+									"profile_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The name of the compliance profile.",
+									},
+								},
+							},
 						},
-						"plan_messages": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The messages of plan jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+						"locator_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A dotted value of catalogID.versionID.",
 						},
-						"apply_messages": &schema.Schema{
-							Type:        schema.TypeMap,
+						"input": &schema.Schema{
+							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The messages of apply jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The inputs of a Schematics template property.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The variable name.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
+								},
+							},
 						},
-						"destroy_messages": &schema.Schema{
-							Type:        schema.TypeMap,
+						"setting": &schema.Schema{
+							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The messages of destroy jobs on the configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The name of the configuration setting.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The value of the configuration setting.",
+									},
+								},
+							},
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The type of a project configuration manual property.",
+						},
+						"output": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "The outputs of a Schematics template property.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The variable name.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A short explanation of the output value.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
+								},
+							},
 						},
 					},
 				},
 			},
-			"project_config_id": &schema.Schema{
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A relative URL.",
+			},
+			"project_config_canonical_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
@@ -604,53 +595,15 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 		createConfigOptions.SetSetting(setting)
 	}
 
-	projectConfig, response, err := projectClient.CreateConfigWithContext(context, createConfigOptions)
+	projectConfigCanonical, response, err := projectClient.CreateConfigWithContext(context, createConfigOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateConfigWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateConfigWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createConfigOptions.ProjectID, *projectConfig.ID))
-
-	_, err = waitForProjectConfigInstanceCreate(d, meta)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for create project config instance (%s) to be succeeded: %s", d.Id(), err))
-	}
+	d.SetId(fmt.Sprintf("%s/%s", *createConfigOptions.ProjectID, *projectConfigCanonical.ID))
 
 	return resourceIbmProjectConfigRead(context, d, meta)
-}
-
-func waitForProjectConfigInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	projectClient, err := meta.(conns.ClientSession).ProjectV1()
-	if err != nil {
-		return false, err
-	}
-	getConfigOptions := &projectv1.GetConfigOptions{}
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	getConfigOptions.SetProjectID(parts[0])
-	getConfigOptions.SetID(parts[1])
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"not_exists"},
-		Target:  []string{"exists"},
-		Refresh: func() (interface{}, string, error) {
-			_, resp, err := projectClient.GetConfig(getConfigOptions)
-			if err == nil {
-				if resp != nil && resp.StatusCode == 200 {
-					return resp, "exists", nil
-				} else {
-					return resp, "not_exists", nil
-				}
-			} else {
-				return nil, "", fmt.Errorf("[ERROR] Get the project config instance %s failed with resp code: %d, err: %v", d.Id(), resp.StatusCode, err)
-			}
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      2 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -669,7 +622,7 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 	getConfigOptions.SetProjectID(parts[0])
 	getConfigOptions.SetID(parts[1])
 
-	projectConfig, response, err := projectClient.GetConfigWithContext(context, getConfigOptions)
+	projectConfigCanonical, response, err := projectClient.GetConfigWithContext(context, getConfigOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -679,24 +632,24 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("GetConfigWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("project_id", projectConfig.ProjectID); err != nil {
+	if err = d.Set("project_id", projectConfigCanonical.ProjectID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting project_id: %s", err))
 	}
-	if err = d.Set("name", projectConfig.Name); err != nil {
+	if err = d.Set("name", projectConfigCanonical.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if !core.IsNil(projectConfig.Labels) {
-		if err = d.Set("labels", projectConfig.Labels); err != nil {
+	if !core.IsNil(projectConfigCanonical.Labels) {
+		if err = d.Set("labels", projectConfigCanonical.Labels); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.Description) {
-		if err = d.Set("description", projectConfig.Description); err != nil {
+	if !core.IsNil(projectConfigCanonical.Description) {
+		if err = d.Set("description", projectConfigCanonical.Description); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.Authorizations) {
-		authorizationsMap, err := resourceIbmProjectConfigProjectConfigAuthToMap(projectConfig.Authorizations)
+	if !core.IsNil(projectConfigCanonical.Authorizations) {
+		authorizationsMap, err := resourceIbmProjectConfigProjectConfigAuthToMap(projectConfigCanonical.Authorizations)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -704,8 +657,8 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting authorizations: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.ComplianceProfile) {
-		complianceProfileMap, err := resourceIbmProjectConfigProjectConfigComplianceProfileToMap(projectConfig.ComplianceProfile)
+	if !core.IsNil(projectConfigCanonical.ComplianceProfile) {
+		complianceProfileMap, err := resourceIbmProjectConfigProjectConfigComplianceProfileToMap(projectConfigCanonical.ComplianceProfile)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -713,13 +666,13 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting compliance_profile: %s", err))
 		}
 	}
-	if err = d.Set("locator_id", projectConfig.LocatorID); err != nil {
+	if err = d.Set("locator_id", projectConfigCanonical.LocatorID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting locator_id: %s", err))
 	}
-	if !core.IsNil(projectConfig.Input) {
+	if !core.IsNil(projectConfigCanonical.Input) {
 		input := []map[string]interface{}{}
-		for _, inputItem := range projectConfig.Input {
-			inputItemMap, err := resourceIbmProjectConfigInputVariableToMap(&inputItem)
+		for _, inputItem := range projectConfigCanonical.Input {
+			inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -729,9 +682,9 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting input: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.Setting) {
+	if !core.IsNil(projectConfigCanonical.Setting) {
 		setting := []map[string]interface{}{}
-		for _, settingItem := range projectConfig.Setting {
+		for _, settingItem := range projectConfigCanonical.Setting {
 			settingItemMap, err := resourceIbmProjectConfigProjectConfigSettingCollectionToMap(&settingItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -742,12 +695,72 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting setting: %s", err))
 		}
 	}
-	if err = d.Set("type", projectConfig.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+	if !core.IsNil(projectConfigCanonical.Version) {
+		if err = d.Set("version", flex.IntValue(projectConfigCanonical.Version)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		}
 	}
-	if !core.IsNil(projectConfig.Output) {
+	if !core.IsNil(projectConfigCanonical.IsDraft) {
+		if err = d.Set("is_draft", projectConfigCanonical.IsDraft); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting is_draft: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.NeedsAttentionState) {
+		needsAttentionState := []interface{}{}
+		for _, needsAttentionStateItem := range projectConfigCanonical.NeedsAttentionState {
+			needsAttentionState = append(needsAttentionState, needsAttentionStateItem)
+		}
+		if err = d.Set("needs_attention_state", needsAttentionState); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting needs_attention_state: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.State) {
+		if err = d.Set("state", projectConfigCanonical.State); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.PipelineState) {
+		if err = d.Set("pipeline_state", projectConfigCanonical.PipelineState); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting pipeline_state: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.UpdateAvailable) {
+		if err = d.Set("update_available", projectConfigCanonical.UpdateAvailable); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting update_available: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.CreatedAt) {
+		if err = d.Set("created_at", flex.DateTimeToString(projectConfigCanonical.CreatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.UpdatedAt) {
+		if err = d.Set("updated_at", flex.DateTimeToString(projectConfigCanonical.UpdatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.LastApproved) {
+		lastApprovedMap, err := resourceIbmProjectConfigProjectConfigMetadataLastApprovedToMap(projectConfigCanonical.LastApproved)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("last_approved", []map[string]interface{}{lastApprovedMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting last_approved: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.LastSave) {
+		if err = d.Set("last_save", flex.DateTimeToString(projectConfigCanonical.LastSave)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting last_save: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.Type) {
+		if err = d.Set("type", projectConfigCanonical.Type); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		}
+	}
+	if !core.IsNil(projectConfigCanonical.Output) {
 		output := []map[string]interface{}{}
-		for _, outputItem := range projectConfig.Output {
+		for _, outputItem := range projectConfigCanonical.Output {
 			outputItemMap, err := resourceIbmProjectConfigOutputValueToMap(&outputItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -758,90 +771,33 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting output: %s", err))
 		}
 	}
-	if err = d.Set("version", flex.IntValue(projectConfig.Version)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
-	}
-	if err = d.Set("is_draft", projectConfig.IsDraft); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_draft: %s", err))
-	}
-	if !core.IsNil(projectConfig.NeedsAttentionState) {
-		needsAttentionState := []interface{}{}
-		for _, needsAttentionStateItem := range projectConfig.NeedsAttentionState {
-			needsAttentionState = append(needsAttentionState, needsAttentionStateItem)
-		}
-		if err = d.Set("needs_attention_state", needsAttentionState); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting needs_attention_state: %s", err))
-		}
-	}
-	if err = d.Set("state", projectConfig.State); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
-	}
-	if !core.IsNil(projectConfig.PipelineState) {
-		if err = d.Set("pipeline_state", projectConfig.PipelineState); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting pipeline_state: %s", err))
-		}
-	}
-	if err = d.Set("update_available", projectConfig.UpdateAvailable); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting update_available: %s", err))
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(projectConfig.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("updated_at", flex.DateTimeToString(projectConfig.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-	}
-	if !core.IsNil(projectConfig.LastApproved) {
-		lastApprovedMap, err := resourceIbmProjectConfigProjectConfigMetadataLastApprovedToMap(projectConfig.LastApproved)
+	if !core.IsNil(projectConfigCanonical.ActiveDraft) {
+		activeDraftMap, err := resourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfigCanonical.ActiveDraft)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("last_approved", []map[string]interface{}{lastApprovedMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_approved: %s", err))
+		if err = d.Set("active_draft", []map[string]interface{}{activeDraftMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting active_draft: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.LastSave) {
-		if err = d.Set("last_save", flex.DateTimeToString(projectConfig.LastSave)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_save: %s", err))
-		}
-	}
-	if !core.IsNil(projectConfig.JobSummary) {
-		jobSummaryMap, err := resourceIbmProjectConfigProjectConfigMetadataJobSummaryToMap(projectConfig.JobSummary)
+	if !core.IsNil(projectConfigCanonical.Definition) {
+		definitionMap, err := resourceIbmProjectConfigProjectConfigDefinitionToMap(projectConfigCanonical.Definition)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("job_summary", []map[string]interface{}{jobSummaryMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting job_summary: %s", err))
+		if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.CraLogs) {
-		craLogsMap, err := resourceIbmProjectConfigProjectConfigMetadataCraLogsToMap(projectConfig.CraLogs)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("cra_logs", []map[string]interface{}{craLogsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting cra_logs: %s", err))
+	if !core.IsNil(projectConfigCanonical.Href) {
+		if err = d.Set("href", projectConfigCanonical.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.CostEstimate) {
-		costEstimateMap, err := resourceIbmProjectConfigProjectConfigMetadataCostEstimateToMap(projectConfig.CostEstimate)
-		if err != nil {
-			return diag.FromErr(err)
+	if !core.IsNil(projectConfigCanonical.ID) {
+		if err = d.Set("project_config_canonical_id", projectConfigCanonical.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting project_config_canonical_id: %s", err))
 		}
-		if err = d.Set("cost_estimate", []map[string]interface{}{costEstimateMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting cost_estimate: %s", err))
-		}
-	}
-	if !core.IsNil(projectConfig.LastDeploymentJobSummary) {
-		lastDeploymentJobSummaryMap, err := resourceIbmProjectConfigProjectConfigMetadataJobSummaryToMap(projectConfig.LastDeploymentJobSummary)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("last_deployment_job_summary", []map[string]interface{}{lastDeploymentJobSummaryMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_deployment_job_summary: %s", err))
-		}
-	}
-	if err = d.Set("project_config_id", projectConfig.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project_config_id: %s", err))
 	}
 
 	return nil
@@ -966,47 +922,9 @@ func resourceIbmProjectConfigDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("DeleteConfigWithContext failed %s\n%s", err, response))
 	}
 
-	_, err = waitForProjectConfigInstanceDelete(d, meta)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for delete project config instance (%s) to be succeeded: %s", d.Id(), err))
-	}
-
 	d.SetId("")
 
 	return nil
-}
-
-func waitForProjectConfigInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	projectClient, err := meta.(conns.ClientSession).ProjectV1()
-	if err != nil {
-		return false, err
-	}
-	getConfigOptions := &projectv1.GetConfigOptions{}
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	getConfigOptions.SetProjectID(parts[0])
-	getConfigOptions.SetID(parts[1])
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"exists"},
-		Target:  []string{"not_exists"},
-		Refresh: func() (interface{}, string, error) {
-			_, resp, err := projectClient.GetConfig(getConfigOptions)
-			if err != nil {
-				if resp != nil && resp.StatusCode == 404 {
-					return resp, "not_exists", nil
-				} else {
-					return resp, "exists", nil
-				}
-			} else {
-				return resp, "exists", nil
-			}
-		},
-		Timeout:    d.Timeout(schema.TimeoutDelete),
-		Delay:      2 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
 }
 
 func resourceIbmProjectConfigMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
@@ -1123,15 +1041,11 @@ func resourceIbmProjectConfigProjectConfigComplianceProfileToMap(model *projectv
 	return modelMap, nil
 }
 
-func resourceIbmProjectConfigInputVariableToMap(model *projectv1.InputVariable) (map[string]interface{}, error) {
+func resourceIbmProjectConfigProjectConfigInputVariableToMap(model *projectv1.ProjectConfigInputVariable) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
-	modelMap["type"] = model.Type
 	if model.Value != nil {
 		modelMap["value"] = model.Value
-	}
-	if model.Required != nil {
-		modelMap["required"] = model.Required
 	}
 	return modelMap, nil
 }
@@ -1140,6 +1054,17 @@ func resourceIbmProjectConfigProjectConfigSettingCollectionToMap(model *projectv
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	modelMap["value"] = model.Value
+	return modelMap, nil
+}
+
+func resourceIbmProjectConfigProjectConfigMetadataLastApprovedToMap(model *projectv1.ProjectConfigMetadataLastApproved) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["is_forced"] = model.IsForced
+	if model.Comment != nil {
+		modelMap["comment"] = model.Comment
+	}
+	modelMap["timestamp"] = model.Timestamp.String()
+	modelMap["user_id"] = model.UserID
 	return modelMap, nil
 }
 
@@ -1155,158 +1080,78 @@ func resourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map
 	return modelMap, nil
 }
 
-func resourceIbmProjectConfigProjectConfigMetadataLastApprovedToMap(model *projectv1.ProjectConfigMetadataLastApproved) (map[string]interface{}, error) {
+func resourceIbmProjectConfigProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["is_forced"] = model.IsForced
-	if model.Comment != nil {
-		modelMap["comment"] = model.Comment
+	modelMap["version"] = flex.IntValue(model.Version)
+	modelMap["state"] = model.State
+	if model.PipelineState != nil {
+		modelMap["pipeline_state"] = model.PipelineState
 	}
-	modelMap["timestamp"] = model.Timestamp.String()
-	modelMap["user_id"] = model.UserID
-	return modelMap, nil
-}
-
-func resourceIbmProjectConfigProjectConfigMetadataJobSummaryToMap(model *projectv1.ProjectConfigMetadataJobSummary) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.PlanSummary != nil {
-		planSummary := make(map[string]interface{})
-		for k, v := range model.PlanSummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			planSummary[k] = string(bytes)
-		}
-		modelMap["plan_summary"] = planSummary
-	}
-	if model.ApplySummary != nil {
-		applySummary := make(map[string]interface{})
-		for k, v := range model.ApplySummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			applySummary[k] = string(bytes)
-		}
-		modelMap["apply_summary"] = applySummary
-	}
-	if model.DestroySummary != nil {
-		destroySummary := make(map[string]interface{})
-		for k, v := range model.DestroySummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			destroySummary[k] = string(bytes)
-		}
-		modelMap["destroy_summary"] = destroySummary
-	}
-	if model.MessageSummary != nil {
-		messageSummary := make(map[string]interface{})
-		for k, v := range model.MessageSummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			messageSummary[k] = string(bytes)
-		}
-		modelMap["message_summary"] = messageSummary
-	}
-	if model.PlanMessages != nil {
-		planMessages := make(map[string]interface{})
-		for k, v := range model.PlanMessages {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			planMessages[k] = string(bytes)
-		}
-		modelMap["plan_messages"] = planMessages
-	}
-	if model.ApplyMessages != nil {
-		applyMessages := make(map[string]interface{})
-		for k, v := range model.ApplyMessages {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			applyMessages[k] = string(bytes)
-		}
-		modelMap["apply_messages"] = applyMessages
-	}
-	if model.DestroyMessages != nil {
-		destroyMessages := make(map[string]interface{})
-		for k, v := range model.DestroyMessages {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			destroyMessages[k] = string(bytes)
-		}
-		modelMap["destroy_messages"] = destroyMessages
+	if model.Href != nil {
+		modelMap["href"] = model.Href
 	}
 	return modelMap, nil
 }
 
-func resourceIbmProjectConfigProjectConfigMetadataCraLogsToMap(model *projectv1.ProjectConfigMetadataCraLogs) (map[string]interface{}, error) {
+func resourceIbmProjectConfigProjectConfigDefinitionToMap(model *projectv1.ProjectConfigDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.CraVersion != nil {
-		modelMap["cra_version"] = model.CraVersion
+	modelMap["name"] = model.Name
+	if model.Labels != nil {
+		modelMap["labels"] = model.Labels
 	}
-	if model.SchemaVersion != nil {
-		modelMap["schema_version"] = model.SchemaVersion
+	if model.Description != nil {
+		modelMap["description"] = model.Description
 	}
-	if model.Status != nil {
-		modelMap["status"] = model.Status
+	if model.Authorizations != nil {
+		authorizationsMap, err := resourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
 	}
-	if model.Summary != nil {
-		summary := make(map[string]interface{})
-		for k, v := range model.Summary {
-			bytes, err := json.Marshal(v)
+	if model.ComplianceProfile != nil {
+		complianceProfileMap, err := resourceIbmProjectConfigProjectConfigComplianceProfileToMap(model.ComplianceProfile)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+	}
+	modelMap["locator_id"] = model.LocatorID
+	if model.Input != nil {
+		input := []map[string]interface{}{}
+		for _, inputItem := range model.Input {
+			inputItemMap, err := resourceIbmProjectConfigProjectConfigInputVariableToMap(&inputItem)
 			if err != nil {
 				return modelMap, err
 			}
-			summary[k] = string(bytes)
+			input = append(input, inputItemMap)
 		}
-		modelMap["summary"] = summary
+		modelMap["input"] = input
 	}
-	if model.Timestamp != nil {
-		modelMap["timestamp"] = model.Timestamp.String()
+	if model.Setting != nil {
+		setting := []map[string]interface{}{}
+		for _, settingItem := range model.Setting {
+			settingItemMap, err := resourceIbmProjectConfigProjectConfigSettingCollectionToMap(&settingItem)
+			if err != nil {
+				return modelMap, err
+			}
+			setting = append(setting, settingItemMap)
+		}
+		modelMap["setting"] = setting
 	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectConfigProjectConfigMetadataCostEstimateToMap(model *projectv1.ProjectConfigMetadataCostEstimate) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Version != nil {
-		modelMap["version"] = model.Version
+	if model.Type != nil {
+		modelMap["type"] = model.Type
 	}
-	if model.Currency != nil {
-		modelMap["currency"] = model.Currency
-	}
-	if model.TotalHourlyCost != nil {
-		modelMap["total_hourly_cost"] = model.TotalHourlyCost
-	}
-	if model.TotalMonthlyCost != nil {
-		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
-	}
-	if model.PastTotalHourlyCost != nil {
-		modelMap["past_total_hourly_cost"] = model.PastTotalHourlyCost
-	}
-	if model.PastTotalMonthlyCost != nil {
-		modelMap["past_total_monthly_cost"] = model.PastTotalMonthlyCost
-	}
-	if model.DiffTotalHourlyCost != nil {
-		modelMap["diff_total_hourly_cost"] = model.DiffTotalHourlyCost
-	}
-	if model.DiffTotalMonthlyCost != nil {
-		modelMap["diff_total_monthly_cost"] = model.DiffTotalMonthlyCost
-	}
-	if model.TimeGenerated != nil {
-		modelMap["time_generated"] = model.TimeGenerated.String()
-	}
-	if model.UserID != nil {
-		modelMap["user_id"] = model.UserID
+	if model.Output != nil {
+		output := []map[string]interface{}{}
+		for _, outputItem := range model.Output {
+			outputItemMap, err := resourceIbmProjectConfigOutputValueToMap(&outputItem)
+			if err != nil {
+				return modelMap, err
+			}
+			output = append(output, outputItemMap)
+		}
+		modelMap["output"] = output
 	}
 	return modelMap, nil
 }

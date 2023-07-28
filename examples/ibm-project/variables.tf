@@ -39,22 +39,22 @@ variable "project_config_project_id" {
 variable "project_config_name" {
   description = "The name of the configuration."
   type        = string
-  default     = "env-stage"
+  default     = "name"
 }
 variable "project_config_labels" {
   description = "A collection of configuration labels."
   type        = list(string)
-  default     = ["env:stage","governance:test","build:0"]
+  default     = [ "labels" ]
 }
 variable "project_config_description" {
   description = "The description of the project configuration."
   type        = string
-  default     = "Stage environment configuration, which includes services common to all the environment regions. There must be a blueprint configuring all the services common to the stage regions. It is a terraform_template type of configuration that points to a Github repo hosting the terraform modules that can be deployed by a Schematics Workspace."
+  default     = "description"
 }
 variable "project_config_locator_id" {
   description = "A dotted value of catalogID.versionID."
   type        = string
-  default     = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.018edf04-e772-4ca2-9785-03e8e03bef72-global"
+  default     = "locator_id"
 }
 
 // Data source arguments for project

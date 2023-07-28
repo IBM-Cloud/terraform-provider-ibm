@@ -17,12 +17,12 @@ import (
 )
 
 func TestAccIbmProjectBasic(t *testing.T) {
-	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("Default")
-	location := fmt.Sprintf("us-south")
+	var conf projectv1.ProjectCanonical
+	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	resourceGroupUpdate := fmt.Sprintf("Default")
-	locationUpdate := fmt.Sprintf("us-south")
+	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	locationUpdate := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -52,14 +52,14 @@ func TestAccIbmProjectBasic(t *testing.T) {
 }
 
 func TestAccIbmProjectAllArgs(t *testing.T) {
-	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("Default")
-	location := fmt.Sprintf("us-south")
+	var conf projectv1.ProjectCanonical
+	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	destroyOnDelete := "false"
-	resourceGroupUpdate := fmt.Sprintf("Default")
-	locationUpdate := fmt.Sprintf("us-south")
+	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	locationUpdate := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	destroyOnDeleteUpdate := "true"
@@ -119,14 +119,42 @@ func testAccCheckIbmProjectConfig(resourceGroup string, location string, name st
 			description = "%s"
 			destroy_on_delete = %s
 			configs {
+				id = "id"
+				project_id = "project_id"
+				version = 1
+				is_draft = true
+				needs_attention_state = [ "anything as a string" ]
+				state = "approved"
+				pipeline_state = "pipeline_failed"
+				update_available = true
+				created_at = "2021-01-31T09:44:12Z"
+				updated_at = "2021-01-31T09:44:12Z"
+				last_approved {
+					is_forced = true
+					comment = "comment"
+					timestamp = "2021-01-31T09:44:12Z"
+					user_id = "user_id"
+				}
+				last_save = "2021-01-31T09:44:12Z"
 				name = "name"
 				labels = [ "labels" ]
 				description = "description"
 				authorizations {
-                  method = "API_KEY"
-                  api_key = "xxx"
-                }
-				locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
+					trusted_profile {
+						id = "id"
+						target_iam_id = "target_iam_id"
+					}
+					method = "method"
+					api_key = "api_key"
+				}
+				compliance_profile {
+					id = "id"
+					instance_id = "instance_id"
+					instance_location = "instance_location"
+					attachment_id = "attachment_id"
+					profile_name = "profile_name"
+				}
+				locator_id = "locator_id"
 				input {
 					name = "name"
 					value = "anything as a string"
@@ -135,12 +163,60 @@ func testAccCheckIbmProjectConfig(resourceGroup string, location string, name st
 					name = "name"
 					value = "value"
 				}
+				type = "terraform_template"
+				output {
+					name = "name"
+					description = "description"
+					value = "anything as a string"
+				}
+				active_draft {
+					version = 1
+					state = "discarded"
+					pipeline_state = "pipeline_failed"
+					href = "href"
+				}
+				definition {
+					name = "name"
+					labels = [ "labels" ]
+					description = "description"
+					authorizations {
+						trusted_profile {
+							id = "id"
+							target_iam_id = "target_iam_id"
+						}
+						method = "method"
+						api_key = "api_key"
+					}
+					compliance_profile {
+						id = "id"
+						instance_id = "instance_id"
+						instance_location = "instance_location"
+						attachment_id = "attachment_id"
+						profile_name = "profile_name"
+					}
+					locator_id = "locator_id"
+					input {
+						name = "name"
+						value = "anything as a string"
+					}
+					setting {
+						name = "name"
+						value = "value"
+					}
+					type = "terraform_template"
+					output {
+						name = "name"
+						description = "description"
+						value = "anything as a string"
+					}
+				}
+				href = "href"
 			}
 		}
 	`, resourceGroup, location, name, description, destroyOnDelete)
 }
 
-func testAccCheckIbmProjectExists(n string, obj projectv1.Project) resource.TestCheckFunc {
+func testAccCheckIbmProjectExists(n string, obj projectv1.ProjectCanonical) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -157,12 +233,12 @@ func testAccCheckIbmProjectExists(n string, obj projectv1.Project) resource.Test
 
 		getProjectOptions.SetID(rs.Primary.ID)
 
-		project, _, err := projectClient.GetProject(getProjectOptions)
+		projectCanonical, _, err := projectClient.GetProject(getProjectOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *project
+		obj = *projectCanonical
 		return nil
 	}
 }

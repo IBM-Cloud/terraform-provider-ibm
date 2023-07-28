@@ -64,7 +64,7 @@ project_config data source:
 ```hcl
 data "project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
-  id = ibm_project_config.project_config_instance.project_config_id
+  id = ibm_project_config.project_config_instance.projectConfigCanonical_id
 }
 ```
 
@@ -106,7 +106,7 @@ data "project_config" "project_config_instance" {
 | authorizations | The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager. | `` | false |
 | compliance_profile | The profile required for compliance. | `` | false |
 | locator_id | A dotted value of catalogID.versionID. | `string` | true |
-| input | The outputs of a Schematics template property. | `list()` | false |
+| input | The inputs of a Schematics template property. | `list()` | false |
 | setting | Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created. | `list()` | false |
 | id | The unique project ID. | `string` | true |
 | project_id | The unique project ID. | `string` | true |
