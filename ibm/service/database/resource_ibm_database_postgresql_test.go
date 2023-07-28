@@ -444,6 +444,46 @@ func TestAccIBMDatabaseInstancePostgresImport(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstancePostgresPITR(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	var databaseInstanceTwo string
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	//serviceName := "test_acc"
+	pitrServiceName := serviceName + "-pitr"
+	resourceName := "ibm_database." + serviceName
+	pitrResource := "ibm_database." + pitrServiceName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(pitrResource, &databaseInstanceTwo),
+					resource.TestCheckResourceAttr(pitrResource, "name", pitrServiceName),
+					resource.TestCheckResourceAttr(pitrResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(pitrResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(pitrResource, "location", acc.IcdDbRegion),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -532,7 +572,6 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 }
 
 func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseID *string) resource.TestCheckFunc {
-
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -1092,5 +1131,49 @@ func testAccCheckIBMDatabaseInstancePostgresImport(databaseResourceGroup string,
 		plan              = "standard"
 		location          = "%[3]s"
 	  }
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[3]s"
+	}
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[3]s"
+	}
+
+	resource "ibm_database" "%[2]s-pitr" {
+		resource_group_id                     = data.ibm_resource_group.test_acc.id
+		name                                  = "%[2]s-pitr"
+		service                               = "databases-for-postgresql"
+		plan                                  = "standard"
+		location                              = "%[3]s"
+		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
+		point_in_time_recovery_time           = ""
+	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
