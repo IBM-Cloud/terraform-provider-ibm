@@ -1221,7 +1221,7 @@ resource "ibm_is_share" "share" {
   zone = "us-south-1"
   size = 30000
   name = "my-share"
-  profile = "tier-3iops"
+  profile = "dp2"
   tags        = ["share1", "share3"]
   access_tags = ["access:dev"]
 }
@@ -1229,26 +1229,11 @@ resource "ibm_is_share" "share" {
 resource "ibm_is_share" "sharereplica" {
   zone = "us-south-2"
   name = "my-share-replica"
-  profile = "tier-3iops"
+  profile = "dp2"
   replication_cron_spec = "0 */5 * * *"
   source_share = ibm_is_share.share.id
   tags        = ["share1", "share3"]
   access_tags = ["access:dev"]
-}
-
-resource "ibm_is_share_target" "is_share_target" {
-  share = ibm_is_share.is_share.id
-  vpc   = ibm_is_vpc.vpc1.id
-  name  = "my-share-target"
-}
-
-data "ibm_is_share_target" "is_share_target" {
-  share        = ibm_is_share.is_share.id
-  share_target = ibm_is_share_target.is_share_target.share_target
-}
-
-data "ibm_is_share_targets" "is_share_targets" {
-  share = ibm_is_share.is_share.id
 }
 
 resource "ibm_is_share_mount_target" "is_share_mount_target" {
@@ -1271,4 +1256,27 @@ data "ibm_is_share" "is_share" {
 }
 
 data "ibm_is_shares" "is_shares" {
+}
+
+// snapshot cross region
+
+provider "ibm" {
+  alias				       = "eu-de"
+  region             = "eu-de"
+}
+
+resource "ibm_is_snapshot" "b_snapshot_copy" {
+  provider            = ibm.eu-de
+  name                = "my-snapshot-boot-copy"
+  source_snapshot_crn = ibm_is_snapshot.b_snapshot.crn
+}
+
+// image deprecate and obsolete
+
+resource "ibm_is_image_deprecate" "example" {
+  image     = ibm_is_image.image1.id
+}
+
+resource "ibm_is_image_obsolete" "example" {
+  image     = ibm_is_image.image1.id
 }

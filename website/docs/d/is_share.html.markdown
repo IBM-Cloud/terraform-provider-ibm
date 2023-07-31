@@ -27,7 +27,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_share" "example" {
   name    = "example-share"
   size    = 200
-  profile = "tier-3iops"
+  profile = "dp2"
   zone    = "us-south-2"
 }
 

@@ -66,4 +66,10 @@ In addition to all argument reference list, you can access the following attribu
 	- `id` - (String) The unique identifier for this backup policy plan.
 	- `lifecycle_state` - (String) The lifecycle state of this backup policy plan.
 	- `name` - (String) The unique user-defined name for this backup policy plan.
+	- `remote_region_policy` - (List) Policies for creating remote copies of this backup.
+
+		Nested scheme for `remote_region_policy`:
+		- `delete_over_count` - (Integer) The maximum number of recent remote copies to keep in this region.
+		- `encryption_key` - (String) The root key to use to rewrap the data encryption key for the snapshot. The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+		- `region` - (String) The globally unique name for this region.
 	- `resource_type` - (String) The type of resource referenced.
