@@ -566,11 +566,13 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion, endpointType)
 	d.SetId(bucketID)
-	if *head.IBMSSEKPEnabled == true {
-		if keyProtectFlag == true {
-			d.Set("key_protect", head.IBMSSEKPCrkId)
-		} else {
-			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+	if head.IBMSSEKPEnabled != nil {
+		if *head.IBMSSEKPEnabled == true {
+			if keyProtectFlag == true {
+				d.Set("key_protect", head.IBMSSEKPCrkId)
+			} else {
+				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+			}
 		}
 	}
 
