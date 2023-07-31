@@ -1169,11 +1169,13 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if *head.IBMSSEKPEnabled == true {
-		if keyProtectFlag == true {
-			d.Set("key_protect", head.IBMSSEKPCrkId)
-		} else {
-			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+	if head.IBMSSEKPEnabled != nil {
+		if *head.IBMSSEKPEnabled == true {
+			if keyProtectFlag == true {
+				d.Set("key_protect", head.IBMSSEKPCrkId)
+			} else {
+				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+			}
 		}
 	}
 
