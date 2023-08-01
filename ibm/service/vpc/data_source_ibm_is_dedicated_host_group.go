@@ -127,6 +127,25 @@ func DataSourceIbmIsDedicatedHostGroup() *schema.Resource {
 					},
 				},
 			},
+			"vcpu": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The dedicated host group VCPU configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"architecture": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU architecture",
+						},
+						"manufacturer": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer",
+						},
+					},
+				},
+			},
 			"zone": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -175,6 +194,14 @@ func dataSourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.Re
 				return diag.FromErr(fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err))
 			}
 		}
+
+		if dedicatedHostGroup.Vcpu != nil {
+			err = d.Set("vcpu", dataSourceDedicatedHostGroupFlattenVcpu(dedicatedHostGroup.Vcpu))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu: %s", err))
+			}
+		}
+
 		if err = d.Set("family", dedicatedHostGroup.Family); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting family: %s", err))
 		}
@@ -209,6 +236,21 @@ func dataSourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.Re
 
 	}
 	return diag.FromErr(fmt.Errorf("[ERROR] No Dedicated Host Group found with name %s", name))
+}
+
+func dataSourceDedicatedHostGroupFlattenVcpu(result *vpcv1.DedicatedHostGroupVcpu) []map[string]interface{} {
+	vCpus := make([]map[string]interface{}, 0)
+
+	vCpu := map[string]interface{}{}
+	if result.Architecture != nil {
+		vCpu["architecture"] = result.Architecture
+	}
+	if result.Manufacturer != nil {
+		vCpu["manufacturer"] = result.Manufacturer
+	}
+	vCpus = append(vCpus, vCpu)
+
+	return vCpus
 }
 
 func dataSourceDedicatedHostGroupFlattenDedicatedHosts(result []vpcv1.DedicatedHostReference) (dedicatedHosts []map[string]interface{}) {

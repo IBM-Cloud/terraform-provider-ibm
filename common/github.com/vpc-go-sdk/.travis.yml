@@ -1,0 +1,26 @@
+language: go
+
+dist: xenial
+
+notifications:
+  email: true
+
+go:
+- 1.16.x
+
+env:
+  global:
+  - GO111MODULE=on
+
+before_install:
+- sudo apt-get update
+- sudo apt-get install python
+- nvm install 12
+- npm install -g npm@6.x
+
+install:
+- curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.21.0
+
+script:
+- make travis-ci
+- golangci-lint run

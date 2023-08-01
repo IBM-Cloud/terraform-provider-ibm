@@ -155,6 +155,25 @@ func DataSourceIbmIsDedicatedHostGroups() *schema.Resource {
 								},
 							},
 						},
+						"vcpu": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The dedicated host group VCPU configuration",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"architecture": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The VCPU architecture",
+									},
+									"manufacturer": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The VCPU manufacturer",
+									},
+								},
+							},
+						},
 						"zone": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -293,11 +312,27 @@ func dataSourceDedicatedHostGroupCollectionGroupsToMap(groupsItem vpcv1.Dedicate
 		}
 		groupsMap["supported_instance_profiles"] = supportedInstanceProfilesList
 	}
+	if groupsItem.Vcpu != nil {
+		vCpuList := []map[string]interface{}{}
+		vCpuList = append(vCpuList, dataSourceDedicatedHostGroupCollectionGroupsVcpuToMap(groupsItem.Vcpu))
+		groupsMap["vcpu"] = vCpuList
+	}
 	if groupsItem.Zone != nil {
 		groupsMap["zone"] = *groupsItem.Zone.Name
 	}
 
 	return groupsMap
+}
+
+func dataSourceDedicatedHostGroupCollectionGroupsVcpuToMap(result *vpcv1.DedicatedHostGroupVcpu) (vCpu map[string]interface{}) {
+	vCpu = map[string]interface{}{}
+	if result.Architecture != nil {
+		vCpu["architecture"] = result.Architecture
+	}
+	if result.Manufacturer != nil {
+		vCpu["manufacturer"] = result.Manufacturer
+	}
+	return
 }
 
 func dataSourceDedicatedHostGroupCollectionDedicatedHostsDeletedToMap(deletedItem vpcv1.DedicatedHostReferenceDeleted) (deletedMap map[string]interface{}) {

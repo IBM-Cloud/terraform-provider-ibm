@@ -127,6 +127,25 @@ func ResourceIbmIsDedicatedHostGroup() *schema.Resource {
 				Computed:    true,
 				Description: "The type of resource referenced.",
 			},
+			"vcpu": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The dedicated host group VCPU configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"architecture": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU architecture",
+						},
+						"manufacturer": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer",
+						},
+					},
+				},
+			},
 			"supported_instance_profiles": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -296,6 +315,17 @@ func resourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.Reso
 	}
 	if err = d.Set("resource_type", dedicatedHostGroup.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+	}
+	vCpus := make([]map[string]interface{}, 0)
+	if dedicatedHostGroup.Vcpu != nil {
+		vCpu := map[string]interface{}{
+			"architecture": dedicatedHostGroup.Vcpu.Architecture,
+			"manufacturer": dedicatedHostGroup.Vcpu.Manufacturer,
+		}
+		vCpus = append(vCpus, vCpu)
+	}
+	if err = d.Set("vcpu", vCpus); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu: %s", err))
 	}
 	supportedInstanceProfiles := []map[string]interface{}{}
 	for _, supportedInstanceProfilesItem := range dedicatedHostGroup.SupportedInstanceProfiles {
