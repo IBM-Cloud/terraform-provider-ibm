@@ -53,6 +53,6 @@ In addition to all argument reference list, you can access the following attribu
 - `used_ip_count` - (Float) The number of used IP addresses.
 - `used_ip_percent` - (Float) The percentage of IP addresses used.
 - `vlan_id` - (String) The VLAN ID that the network is connected to.
-- `jumbo` - (Bool) MTU Jumbo option of the network.
-- `mtu` - (Bool) Maximum Transmission Unit option of the network.
-- `access_config` - (String) The network communication configuration option of the network.
+- `jumbo` - (Bool) MTU Jumbo option of the network (for multi-zone locations only).
+- `mtu` - (Bool) Maximum Transmission Unit option of the network (for satellite locations only).
+- `access_config` - (String) The network communication configuration option of the network (for satellite locations only).
