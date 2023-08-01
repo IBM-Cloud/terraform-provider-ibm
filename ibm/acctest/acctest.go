@@ -267,11 +267,17 @@ var CeProjectId string
 var CeServiceInstanceID string
 var CeResourceKeyID string
 
+// for IAM Identity
+
+var IamIdentityAssignmentTargetAccountId string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
 	}
+
+	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
 
 	AppIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if AppIDTenantID == "" {
@@ -1463,7 +1469,12 @@ func TestAccPreCheckEnterprise(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
+}
 
+func TestAccPreCheckAssignmentTargetAccount(t *testing.T) {
+	if v := os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT"); v == "" {
+		t.Fatal("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT must be set for IAM identity assignment tests")
+	}
 }
 
 func TestAccPreCheckEnterpriseAccountImport(t *testing.T) {
