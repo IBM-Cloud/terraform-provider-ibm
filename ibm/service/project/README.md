@@ -6,6 +6,6 @@ This area is primarily for IBM provider contributors and maintainers. For inform
 ## Handy Links
 * [Find out about contributing](../../../CONTRIBUTING.md) to the IBM provider!
 * IBM Provider Docs: [Home](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs)
-* IBM Provider Docs: [One of the  resources](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/project)
-* IBM API Docs: [IBM API Docs for ]()
-* IBM  SDK: [IBM SDK for ](https://github.com/IBM/appconfiguration-go-admin-sdk/tree/master/projectv1)
+* IBM Provider Docs: [One of the  resources](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/project_instance)
+* IBM API Docs: [IBM API Docs for project](https://test.cloud.ibm.com/apidocs/projects)
+* IBM  SDK: [IBM SDK for project](https://github.com/IBM/project-go-sdk)
