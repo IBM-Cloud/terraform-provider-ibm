@@ -16,7 +16,7 @@ In the following example, you can configure a add-ons:
 
 ```terraform
 resource "ibm_container_addons" "addons" {
-  depends_on = ibm_container_vpc_cluster.cluster
+  depends_on = [ ibm_container_vpc_cluster.cluster ]
   cluster = ibm_container_vpc_cluster.cluster.name
   addons {
     name    = "istio"
