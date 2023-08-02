@@ -84,6 +84,31 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Basic_Single_Site_Location(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "ams03"
+	bucketClass := "standard"
+	bucketRegionType := "single_site_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_basic_ssl(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "single_site_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMCosBucket_AllowedIP(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
@@ -1385,6 +1410,30 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 	}
 	  
 		  
+	`, serviceName, bucketName, storageClass, region)
+}
+
+func testAccCheckIBMCosBucket_basic_ssl(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		single_site_location = "%s"
+	}
 	`, serviceName, bucketName, storageClass, region)
 }
 
