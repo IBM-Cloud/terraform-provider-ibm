@@ -137,10 +137,11 @@ func ResourceIBMIsBackupPolicyPlan() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"delete_over_count": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The maximum number of recent remote copies to keep in this region.",
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_backup_policy_plan", "delete_over_count"),
+							Description:  "The maximum number of recent remote copies to keep in this region.",
 						},
 						"encryption_key": {
 							Type:        schema.TypeString,
@@ -191,6 +192,13 @@ func ResourceIBMIsBackupPolicyPlanValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$`,
 			MinValueLength:             1,
 			MaxValueLength:             63,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "delete_over_count",
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "100",
 		},
 	)
 
