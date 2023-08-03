@@ -593,7 +593,10 @@ func resourceIBMIsBackupPolicyPlanDelete(context context.Context, d *schema.Reso
 func resourceIBMIsVPCBackupPolicyPlanMapToBackupPolicyPlanRemoteCopyPolicyPrototype(backupPolicyPlanRemoteCopyPolicyMap map[string]interface{}) (*vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype, error) {
 	BackupPolicyPlanRemoteCopyPolicy := &vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype{}
 	if backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"] != nil {
-		BackupPolicyPlanRemoteCopyPolicy.DeleteOverCount = core.Int64Ptr(int64(backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"].(int)))
+		deleteOverCount := int64(backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"].(int))
+		if deleteOverCount != int64(0) {
+			BackupPolicyPlanRemoteCopyPolicy.DeleteOverCount = core.Int64Ptr(deleteOverCount)
+		}
 	}
 	if backupPolicyPlanRemoteCopyPolicyMap["encryption_key"] != nil && backupPolicyPlanRemoteCopyPolicyMap["encryption_key"] != "" {
 		encCrn := backupPolicyPlanRemoteCopyPolicyMap["encryption_key"].(string)
