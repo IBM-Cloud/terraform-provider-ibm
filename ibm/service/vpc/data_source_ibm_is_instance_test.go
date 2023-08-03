@@ -180,7 +180,7 @@ func testAccCheckIBMISInstanceDataSourcePKCS8SSHConfig(vpcname, subnetname, sshn
 
 	resource "ibm_is_ssh_key" "testacc_sshkey" {
 		name       = "%s"
-		public_key = file("./test-fixtures/.ssh/pkcs8_rsa.pub")
+		public_key = file("%s")
 	}
 
 	resource "ibm_is_instance" "testacc_instance" {
@@ -201,9 +201,9 @@ func testAccCheckIBMISInstanceDataSourcePKCS8SSHConfig(vpcname, subnetname, sshn
 	}
 	data "ibm_is_instance" "ds_instance" {
 		name        = ibm_is_instance.testacc_instance.name
-		private_key = file("./test-fixtures/.ssh/pkcs8_rsa")
+		private_key = file("%s")
 		passphrase  = ""
-	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName)
+	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, acc.ISPublicSSHKeyFilePath, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName, acc.ISPrivateSSHKeyFilePath)
 }
 
 func testAccCheckIBMISInstanceDataSourceReservedIpConfig(vpcname, subnetname, sshname, publicKey, instanceName string) string {
