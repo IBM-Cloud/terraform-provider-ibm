@@ -18,16 +18,16 @@ resource "ibm_enterprise_account" "enterprise_account" {
   parent = "parent"
   name = "name"
   owner_iam_id = "owner_iam_id"
+  traits {
+    mfa = "NONE"
+    enterprise_iam_managed = true
+  }
 }
 
 resource "ibm_enterprise_account" "enterprise_import_account"{
   parent = "parent"
   enterprise_id = "enterprise_id"
   account_id = "account_id"
-  traits {
-    mfa = "NONE"
-    enterprise_iam_managed = true
-  }
 }
 ```
 
