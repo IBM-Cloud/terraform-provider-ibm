@@ -61,6 +61,7 @@ const (
 	isVPCAccessTags                 = "access_tags"
 	isVPCUserTagType                = "user"
 	isVPCAccessTagType              = "access"
+	isVPCNoSgAclRules               = "no_sg_acl_rules"
 )
 
 func ResourceIBMISVPC() *schema.Resource {
@@ -118,6 +119,14 @@ func ResourceIBMISVPC() *schema.Resource {
 				Default:     false,
 				Optional:    true,
 				Description: "Set to true if classic access needs to enabled to VPC",
+			},
+
+			isVPCNoSgAclRules: {
+				Type:             schema.TypeBool,
+				Default:          false,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Optional:         true,
+				Description:      "Delete all rules attached with default security group and default acl",
 			},
 
 			isVPCName: {
@@ -526,6 +535,14 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 	if err != nil {
 		return err
 	}
+
+	if sgAclRules, ok := d.GetOk(isVPCNoSgAclRules); ok {
+		sgAclRules := sgAclRules.(bool)
+		if sgAclRules {
+			deleteDefaultNetworkACLRules(sess, *vpc.ID)
+			deleteDefaultSecurityGroupRules(sess, *vpc.ID)
+		}
+	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPCTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVPCTags)
@@ -559,6 +576,78 @@ func isWaitForVPCAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (
 	}
 
 	return stateConf.WaitForState()
+}
+
+func deleteDefaultNetworkACLRules(sess *vpcv1.VpcV1, vpcID string) error {
+	getVPCDefaultNetworkACLOptions := sess.NewGetVPCDefaultNetworkACLOptions(vpcID)
+	result, detail, err := sess.GetVPCDefaultNetworkACL(getVPCDefaultNetworkACLOptions)
+	if err != nil || result == nil {
+		log.Printf("Error reading details of VPC Default Network ACL:%s", detail)
+		return err
+	}
+
+	if result.Rules != nil {
+		for _, sourceRule := range result.Rules {
+			sourceRuleVal := sourceRule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
+			if sourceRuleVal.ID != nil {
+				getNetworkAclRuleOptions := &vpcv1.GetNetworkACLRuleOptions{
+					NetworkACLID: result.ID,
+					ID:           sourceRuleVal.ID,
+				}
+				_, response, err := sess.GetNetworkACLRule(getNetworkAclRuleOptions)
+
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error Getting Network ACL Rule  (%s): %s\n%s", *sourceRuleVal.ID, err, response)
+				}
+
+				deleteNetworkAclRuleOptions := &vpcv1.DeleteNetworkACLRuleOptions{
+					NetworkACLID: result.ID,
+					ID:           sourceRuleVal.ID,
+				}
+				response, err = sess.DeleteNetworkACLRule(deleteNetworkAclRuleOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error Deleting Network ACL Rule : %s\n%s", err, response)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func deleteDefaultSecurityGroupRules(sess *vpcv1.VpcV1, vpcID string) error {
+	getVPCDefaultSecurityGroupOptions := sess.NewGetVPCDefaultSecurityGroupOptions(vpcID)
+	result, detail, err := sess.GetVPCDefaultSecurityGroup(getVPCDefaultSecurityGroupOptions)
+	if err != nil || result == nil {
+		log.Printf("Error reading details of VPC Default Security Group:%s", detail)
+		return err
+	}
+
+	if result.Rules != nil {
+		for _, sourceRule := range result.Rules {
+			sourceRuleVal := sourceRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+			if sourceRuleVal.ID != nil {
+				getSecurityGroupRuleOptions := &vpcv1.GetSecurityGroupRuleOptions{
+					SecurityGroupID: result.ID,
+					ID:              sourceRuleVal.ID,
+				}
+				_, response, err := sess.GetSecurityGroupRule(getSecurityGroupRuleOptions)
+
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error Getting Security Group Rule  (%s): %s\n%s", *sourceRuleVal.ID, err, response)
+				}
+
+				deleteSecurityGroupRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
+					SecurityGroupID: result.ID,
+					ID:              sourceRuleVal.ID,
+				}
+				response, err = sess.DeleteSecurityGroupRule(deleteSecurityGroupRuleOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error Deleting Security Group Rule : %s\n%s", err, response)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func isVPCRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
