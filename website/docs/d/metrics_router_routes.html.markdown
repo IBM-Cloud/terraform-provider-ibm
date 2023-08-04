@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_metrics_router_routes"
 description: |-
   Get information about metrics_router_routes
-subcategory: "IBM Cloud Metrics Routing API Version 3"
+subcategory: "IBM Cloud Metrics Routing"
 ---
 
 # ibm_metrics_router_routes
