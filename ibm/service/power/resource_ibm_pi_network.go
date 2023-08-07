@@ -162,7 +162,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.Mtu = &mtu
 	}
 	if v, ok := d.GetOk(helpers.PINetworkAccessConfig); ok {
-		body.AccessConfig = v.(string)
+		body.AccessConfig = models.AccessConfig(v.(string))
 	}
 
 	if networktype == "vlan" {
