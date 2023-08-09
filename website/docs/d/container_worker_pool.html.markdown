@@ -44,3 +44,4 @@ Review the attribute references that are exported.
 - `crk` - Root Key ID for boot volume encryption.
 - `kms_instance_id` - Instance ID for boot volume encryption.
 - `kms_account_id` - Account ID for boot volume encryption, if other account is providing the kms.
+- `autoscale_enabled` - (Bool) Autoscaling is enabled on the workerpool

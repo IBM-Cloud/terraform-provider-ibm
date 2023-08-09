@@ -326,11 +326,11 @@ func dataSourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(privateCertificateConfigurationTemplate.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(privateCertificateConfigurationTemplate.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(privateCertificateConfigurationTemplate.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(privateCertificateConfigurationTemplate.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

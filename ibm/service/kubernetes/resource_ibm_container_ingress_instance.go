@@ -141,15 +141,15 @@ func resourceIBMContainerIngressInstanceRead(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	clusterID := parts[0]
+	clusterIDOrName := parts[0]
 	instanceName := parts[1]
 
 	ingressAPI := ingressClient.Ingresses()
-	ingressInstanceConfig, err := ingressAPI.GetIngressInstance(clusterID, instanceName)
+	ingressInstanceConfig, err := ingressAPI.GetIngressInstance(clusterIDOrName, instanceName)
 	if err != nil {
 		return err
 	}
-	d.Set("cluster", ingressInstanceConfig.Cluster)
+	d.Set("cluster", clusterIDOrName)
 	d.Set("instance_name", ingressInstanceConfig.Name)
 	d.Set("instance_crn", ingressInstanceConfig.CRN)
 	d.Set("is_default", ingressInstanceConfig.IsDefault)
@@ -208,18 +208,27 @@ func resourceIBMContainerIngressInstanceUpdate(d *schema.ResourceData, meta inte
 		Name:    instanceName,
 	}
 
-	if v, ok := d.GetOk("is_default"); ok {
-		params.IsDefault = v.(bool)
+	hasChange := false
+	if d.HasChange("is_default") {
+		if v, ok := d.GetOk("is_default"); ok {
+			params.IsDefault = v.(bool)
+		}
+		hasChange = true
 	}
 
-	if v, ok := d.GetOk("secret_group_id"); ok {
-		params.SecretGroupID = v.(string)
+	if d.HasChange("secret_group_id") {
+		if v, ok := d.GetOk("secret_group_id"); ok {
+			params.SecretGroupID = v.(string)
+		}
+		hasChange = true
 	}
 
-	ingressAPI := ingressClient.Ingresses()
-	err = ingressAPI.UpdateIngressInstance(params)
-	if err != nil {
-		return err
+	if hasChange {
+		ingressAPI := ingressClient.Ingresses()
+		err = ingressAPI.UpdateIngressInstance(params)
+		if err != nil {
+			return err
+		}
 	}
 
 	return resourceIBMContainerIngressInstanceRead(d, meta)
@@ -250,5 +259,5 @@ func resourceIBMContainerIngressInstanceExists(d *schema.ResourceData, meta inte
 		return false, fmt.Errorf("[ERROR] Error getting ingress instance: %s", err)
 	}
 
-	return ingressInstanceConfig.Cluster == clusterID && ingressInstanceConfig.Name == instanceName, nil
+	return ingressInstanceConfig.Name == instanceName, nil
 }

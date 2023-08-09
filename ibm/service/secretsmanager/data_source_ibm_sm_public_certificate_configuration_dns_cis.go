@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
@@ -105,11 +104,11 @@ func dataSourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Con
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(publicCertificateConfigurationDNSCloudInternetServices.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(publicCertificateConfigurationDNSCloudInternetServices.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(publicCertificateConfigurationDNSCloudInternetServices.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(publicCertificateConfigurationDNSCloudInternetServices.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

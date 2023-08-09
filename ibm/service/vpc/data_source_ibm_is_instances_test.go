@@ -57,6 +57,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(resName, "instances.0.availability_policy_host_failure"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.lifecycle_state"),
 					resource.TestCheckResourceAttr(resName, "instances.0.lifecycle_reasons.#", "0"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.vcpu.0.manufacturer"),
 				),
 			},
 		},

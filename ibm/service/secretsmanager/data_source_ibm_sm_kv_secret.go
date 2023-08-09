@@ -152,7 +152,7 @@ func dataSourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(kVSecret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(kVSecret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -206,7 +206,7 @@ func dataSourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(kVSecret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(kVSecret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

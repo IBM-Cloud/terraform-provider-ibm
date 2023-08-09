@@ -18,7 +18,7 @@ data "ibm_resource_group" "web_group" {
 resource "ibm_cis" "web_domain" {
   name              = "web_domain"
   resource_group_id = data.ibm_resource_group.web_group.id
-  plan              = "standard"
+  plan              = "standard-next"
   location          = "global"
 }
 
@@ -481,6 +481,31 @@ data "ibm_cis_mtlss" "test" {
 data "ibm_cis_mtls_apps" "test" {
   cis_id    = data.ibm_cis.cis.id
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}
+
+# CIS Bot Management data source
+data "ibm_cis_bot_managements" "tests" {
+  cis_id    = data.ibm_cis.cis.id
+  domain = data.ibm_cis_domain.cis_domain.domain
+}
+# CIS Bot Management resource
+resource "ibm_cis_bot_management" "test" {
+    cis_id                          = data.ibm_cis.cis.id
+    domain = data.ibm_cis_domain.cis_domain.domain
+    fight_mode				= false
+    session_score			= false
+    enable_js				= false
+    auth_id_logging			= false
+    use_latest_model 		= false
+}
+
+# CIS Bot Analytics data source
+data "ibm_cis_bot_analytics" "tests" {
+  cis_id    = data.ibm_cis.cis.id
+  domain = data.ibm_cis_domain.cis_domain.domain
+  since = "2023-06-12T00:00:00Z"
+  until = "2023-06-13T00:00:00Z"
+  type = "score_source"
 }
 
 # CIS Logpush Job

@@ -101,5 +101,10 @@ Review the argument references that you can specify for your data source.
 	  - `type` - (String) The type for this profile field.
 	  - `value` - (String) The value for this profile field.
 	  - `values` - (String) The permitted values for this profile field.
+	- `vcpu_manufacturer` - (List)  Nested `vcpu_manufacturer` blocks have the following structure:
+
+	  Nested scheme for `vcpu_manufacturer`:
+	  - `type` - (String) The type for this profile field.
+	  - `value` - (String) The VCPU manufacturer for a dedicated host with this profile.
 - `total_count` - (String) The total number of resources across all pages.
 

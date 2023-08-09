@@ -44,7 +44,7 @@ In addition to all argument references listed, you can access the following attr
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `service_id` - (String) The service ID of the PagerDuty service.
-	* `service_key` - (String) The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page.
+	* `service_key` - (String) The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `service_url` - (String) The URL of the PagerDuty service to post alerts to.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.

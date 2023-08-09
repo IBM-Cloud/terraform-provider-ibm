@@ -55,7 +55,7 @@ Nested scheme for **initialization**:
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Computed, String) The API root URL for the GitLab server.
-	* `api_token` - (Optional, String) Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.
+	* `api_token` - (Optional, String) Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.
 	* `auth_type` - (Optional, String) Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.
 	  * Constraints: Allowable values are: `oauth`, `pat`.
 	* `default_branch` - (Computed, String) The default branch of the git repository.

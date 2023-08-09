@@ -18,7 +18,7 @@ resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
   region        = "us-south"
   custom_metadata = {"key":"value"}
   description = "Extended description for this secret."
-  expiration_date = "2022-04-12T23:20:50.520Z"
+  expiration_date = "2022-04-12T23:20:50Z"
   labels = ["my-label"]
   payload = "secret-credentials"
   secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id

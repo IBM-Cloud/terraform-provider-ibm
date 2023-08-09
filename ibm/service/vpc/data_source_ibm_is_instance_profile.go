@@ -12,6 +12,8 @@ const (
 	isInstanceProfileName         = "name"
 	isInstanceProfileFamily       = "family"
 	isInstanceProfileArchitecture = "architecture"
+	isInstanceVCPUArchitecture    = "vcpu_architecture"
+	isInstanceVCPUManufacturer    = "vcpu_manufacturer"
 )
 
 func DataSourceIBMISInstanceProfile() *schema.Resource {
@@ -502,7 +504,7 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
-			"vcpu_architecture": {
+			isInstanceVCPUArchitecture: &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -525,7 +527,30 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
-			"vcpu_count": {
+			isInstanceVCPUManufacturer: &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default VCPU manufacturer for an instance with this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer for an instance with this profile.",
+						},
+					},
+				},
+			},
+			"vcpu_count": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -679,7 +704,15 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	}
 
 	if profile.VcpuArchitecture != nil {
-		err = d.Set("vcpu_architecture", dataSourceInstanceProfileFlattenVcpuArchitecture(*profile.VcpuArchitecture))
+		err = d.Set(isInstanceVCPUArchitecture, dataSourceInstanceProfileFlattenVcpuArchitecture(*profile.VcpuArchitecture))
+		if err != nil {
+			return err
+		}
+	}
+
+	// Manufacturer details added.
+	if profile.VcpuManufacturer != nil {
+		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenVcpuManufacture(*profile.VcpuManufacturer))
 		if err != nil {
 			return err
 		}
@@ -946,6 +979,31 @@ func dataSourceInstanceProfileVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.I
 	}
 
 	return vcpuArchitectureMap
+}
+
+/* Changes for the AMD Support VCPU Manufacturer */
+func dataSourceInstanceProfileFlattenVcpuManufacture(result vpcv1.InstanceProfileVcpuManufacturer) (fl []map[string]interface{}) {
+	fl = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileVcpuManufacturerToMap(result)
+	fl = append(fl, finalMap)
+
+	return fl
+}
+
+func dataSourceInstanceProfileVcpuManufacturerToMap(vcpuManufacutererItem vpcv1.InstanceProfileVcpuManufacturer) (vcpuManufacturerMap map[string]interface{}) {
+	vcpuManufacturerMap = map[string]interface{}{}
+
+	if vcpuManufacutererItem.Default != nil {
+		vcpuManufacturerMap["default"] = vcpuManufacutererItem.Default
+	}
+	if vcpuManufacutererItem.Type != nil {
+		vcpuManufacturerMap["type"] = vcpuManufacutererItem.Type
+	}
+	if vcpuManufacutererItem.Value != nil {
+		vcpuManufacturerMap["value"] = vcpuManufacutererItem.Value
+	}
+
+	return vcpuManufacturerMap
 }
 
 func dataSourceInstanceProfileFlattenVcpuCount(result vpcv1.InstanceProfileVcpu) (finalList []map[string]interface{}) {

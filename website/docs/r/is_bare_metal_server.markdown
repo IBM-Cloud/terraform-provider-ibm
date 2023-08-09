@@ -102,6 +102,10 @@ Review the argument references that you can specify for your resource.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
 - `image` - (Required, String) ID of the image.
 - `keys` - (Required, List) Comma separated IDs of ssh keys.  
+
+  ~> **Note:**
+  **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
+  **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>
 - `name` - (Optional, String) The bare metal server name.
 
   -> **NOTE:**
@@ -136,11 +140,10 @@ Review the argument references that you can specify for your resource.
     - `enable_infrastructure_nat` - (Optional, Boolean) If true, the VPC infrastructure performs any needed NAT operations. If false, the packet is passed unmodified to/from the network interface, allowing the workload to perform any needed NAT operations. [default : `true`]
 
     - `name` - (Optional, String) The name of the network interface.
-    - `interface_type` - (Optional, String) The type of the network interface.[**pci**, **hipersocket**]. `allowed_vlans` is required for `pci` type.
+    - `interface_type` - (Optional, String) The type of the network interface.[**pci**]. `allowed_vlans` is required for `pci` type.
 
       The network interface type:
 
-          - `hipersocket`: a virtual network device that provides high-speed TCP/IP connectivity within a s390x based system. Not supported on bare metal servers with a cpu architecture of amd64
           - `pci`: a physical PCI device which can only be created or deleted when the bare metal server is stopped. Has an allowed_vlans property which controls the VLANs that will be permitted to use the PCI interface. Cannot directly use an IEEE 802.1q VLAN tag. Not supported on bare metal servers with a cpu architecture of s390x
 
     - `primary_ip` - (Optional, List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
