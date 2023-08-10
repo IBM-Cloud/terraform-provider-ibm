@@ -19,7 +19,6 @@ resource "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securityc
   parameters {
 		name = "compliance"
 		evidence_namespace = "cd"
-		instance_crn = "crn:v1:bluemix:public:compliance:us-south:a/00000000000000000000000000000000:00000000-0000-0000-0000-000000000000::"
 		evidence_repo_url = "https://github.example.com/<username>/compliance-evidence-<datestamp>"
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
