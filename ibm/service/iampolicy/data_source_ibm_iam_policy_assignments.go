@@ -238,7 +238,7 @@ func dataSourceIBMIAMPolicyAssignmentsRead(context context.Context, d *schema.Re
 		listPolicyAssignmentsOptions.SetTemplateVersion(d.Get("template_version").(string))
 	}
 
-	polcyTemplateAssignmentCollection, response, err := iamPolicyManagementClient.ListPolicyAssignmentsWithContext(context, listPolicyAssignmentsOptions)
+	policyTemplateAssignmentCollection, response, err := iamPolicyManagementClient.ListPolicyAssignmentsWithContext(context, listPolicyAssignmentsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListPolicyAssignmentsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListPolicyAssignmentsWithContext failed %s\n%s", err, response))
@@ -247,8 +247,8 @@ func dataSourceIBMIAMPolicyAssignmentsRead(context context.Context, d *schema.Re
 	d.SetId(dataSourceIBMPolicyAssignmentID(d))
 
 	policyAssignments := []map[string]interface{}{}
-	if polcyTemplateAssignmentCollection.PolicyAssignments != nil {
-		for _, modelItem := range polcyTemplateAssignmentCollection.PolicyAssignments {
+	if policyTemplateAssignmentCollection.Assignments != nil {
+		for _, modelItem := range policyTemplateAssignmentCollection.Assignments {
 			modelMap, err := dataSourceIBMPolicyAssignmentPolicyAssignmentRecordToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -268,7 +268,7 @@ func dataSourceIBMPolicyAssignmentID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMPolicyAssignmentPolicyAssignmentRecordToMap(model *iampolicymanagementv1.PolicyAssignmentRecord) (map[string]interface{}, error) {
+func dataSourceIBMPolicyAssignmentPolicyAssignmentRecordToMap(model *iampolicymanagementv1.PolicyAssignment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["template_id"] = model.TemplateID
 	modelMap["template_version"] = model.TemplateVersion

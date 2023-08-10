@@ -15,7 +15,7 @@ import (
 
 func TestAccIBMPolicyTemplateVersionDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
-	accountID := "e3aa0adff348470f803d4b6e53d625cf"
+	var accountID string = acc.IAMAccountId
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

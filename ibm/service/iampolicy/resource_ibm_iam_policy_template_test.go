@@ -73,6 +73,26 @@ func TestAccIBMIAMPolicyTemplateBasicUpdate(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMPolicyTemplateBasicWithTags(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyTemplateConfigBasicWithTags(name, accountID, serviceName, "testing_tags"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "account_id", accountID),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.tags.0.value", "testing_tags"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMPolicyTemplateBasicCommit(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -223,4 +243,31 @@ func testAccCheckIBMPolicyTemplateConfigBasicCommit(name string, accountID strin
 			committed = true
 		}
 	`, name, accountID, serviceName)
+}
+
+func testAccCheckIBMPolicyTemplateConfigBasicWithTags(name string, accountID string, serviceName string, tagValue string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			account_id = "%s"
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+					tags {
+						key = "terraform"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Operator"]
+			}
+		}
+	`, name, accountID, serviceName, tagValue)
 }

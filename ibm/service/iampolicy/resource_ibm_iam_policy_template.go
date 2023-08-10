@@ -334,10 +334,10 @@ func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagement
 }
 
 func generateTemplatePolicyResource(modelMap map[string]interface{},
-	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.V2PolicyResource, *iampolicymanagementv1.RoleList, error) {
+	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.V2PolicyResource, *iampolicymanagementv1.RoleCollection, error) {
 	model := &iampolicymanagementv1.V2PolicyResource{}
 	attributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
-	roleList := &iampolicymanagementv1.RoleList{}
+	roleList := &iampolicymanagementv1.RoleCollection{}
 	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{}
 	for _, attributesItem := range modelMap["attributes"].([]interface{}) {
 		attributesItemModel := &iampolicymanagementv1.V2PolicyResourceAttribute{}
@@ -392,7 +392,7 @@ func generateTemplatePolicyTag(modelMap map[string]interface{}) (*iampolicymanag
 	return model, nil
 }
 
-func generateTemplatePolicyControl(roles []interface{}, roleList *iampolicymanagementv1.RoleList) (*iampolicymanagementv1.Control, error) {
+func generateTemplatePolicyControl(roles []interface{}, roleList *iampolicymanagementv1.RoleCollection) (*iampolicymanagementv1.Control, error) {
 	policyRoles := flex.MapRoleListToPolicyRoles(*roleList)
 
 	policyRoles, err := flex.GetRolesFromRoleNames(flex.ExpandStringList(roles), policyRoles)
@@ -447,11 +447,11 @@ func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolic
 }
 
 func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource,
-	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, *iampolicymanagementv1.RoleList, error) {
+	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, *iampolicymanagementv1.RoleCollection, error) {
 	modelMap := make(map[string]interface{})
 	attributes := []map[string]interface{}{}
 	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{}
-	var roles *iampolicymanagementv1.RoleList
+	var roles *iampolicymanagementv1.RoleCollection
 
 	for _, attributesItem := range model.Attributes {
 		if *attributesItem.Key == "serviceName" &&
@@ -475,40 +475,24 @@ func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource
 		if err != nil {
 			return nil, nil, err
 		}
+		attributesItemMap := make(map[string]interface{})
+		attributesItemMap["key"] = *attributesItem.Key
+		attributesItemMap["operator"] = *attributesItem.Operator
+		attributesItemMap["value"] = *&attributesItem.Value
 
-		attributesItemMap, err := flattenTemplatePolicyResourceAttribute(&attributesItem)
-		if err != nil {
-			return modelMap, nil, err
-		}
 		attributes = append(attributes, attributesItemMap)
 	}
 	modelMap["attributes"] = attributes
 	if model.Tags != nil {
 		tags := []map[string]interface{}{}
 		for _, tagsItem := range model.Tags {
-			tagsItemMap, err := flattenTemplatePolicyResourceTag(&tagsItem)
-			if err != nil {
-				return modelMap, nil, err
-			}
+			tagsItemMap := make(map[string]interface{})
+			tagsItemMap["key"] = *tagsItem.Key
+			tagsItemMap["operator"] = *tagsItem.Operator
+			tagsItemMap["value"] = *tagsItem.Value
 			tags = append(tags, tagsItemMap)
 		}
 		modelMap["tags"] = tags
 	}
 	return modelMap, roles, nil
-}
-
-func flattenTemplatePolicyResourceAttribute(model *iampolicymanagementv1.V2PolicyResourceAttribute) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["key"] = model.Key
-	modelMap["operator"] = model.Operator
-	modelMap["value"] = model.Value
-	return modelMap, nil
-}
-
-func flattenTemplatePolicyResourceTag(model *iampolicymanagementv1.V2PolicyResourceTag) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["key"] = model.Key
-	modelMap["value"] = model.Value
-	modelMap["operator"] = model.Operator
-	return modelMap, nil
 }

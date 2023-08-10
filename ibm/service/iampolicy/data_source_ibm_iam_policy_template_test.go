@@ -13,12 +13,13 @@ import (
 )
 
 func TestAccIBMPolicyTemplateDataSourceBasic(t *testing.T) {
+	var accountID string = acc.IAMAccountId
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyTemplateDataSourceConfigBasic(),
+				Config: testAccCheckIBMPolicyTemplateDataSourceConfigBasic(accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_template.policy_template", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_template.policy_template", "account_id"),
@@ -29,10 +30,10 @@ func TestAccIBMPolicyTemplateDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPolicyTemplateDataSourceConfigBasic() string {
+func testAccCheckIBMPolicyTemplateDataSourceConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
 		data "ibm_iam_policy_template" "policy_template" {
-			account_id = "e3aa0adff348470f803d4b6e53d625cf"
+			account_id = "%s"
 		}
-	`)
+	`, accountID)
 }
