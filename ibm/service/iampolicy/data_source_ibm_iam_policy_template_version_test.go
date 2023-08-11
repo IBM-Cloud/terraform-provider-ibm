@@ -51,9 +51,9 @@ func testAccCheckIBMPolicyTemplateVersionDataSourceConfigBasic(name string, acco
 		}
 	}
 
-		data "ibm_iam_policy_template_version" "policy_template" {
-			policy_template_id = ibm_iam_policy_template.policy_template.template_id
-			version = ibm_iam_policy_template.policy_template.version
-		}
+	data "ibm_iam_policy_template_version" "policy_template" {
+		policy_template_id = ibm_iam_policy_template.policy_template.template_id
+		version = ibm_iam_policy_template.policy_template.version
+	}
 	`, name, accountID)
 }
