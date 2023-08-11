@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -181,12 +181,12 @@ func DataSourceIbmIsShareTargets() *schema.Resource {
 }
 
 func dataSourceIbmIsShareTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listShareTargetsOptions := &vpcbetav1.ListShareMountTargetsOptions{}
+	listShareTargetsOptions := &vpcv1.ListShareMountTargetsOptions{}
 
 	listShareTargetsOptions.SetShareID(d.Get("share").(string))
 	if name, ok := d.GetOk("name"); ok {
@@ -215,7 +215,7 @@ func dataSourceIbmIsShareTargetsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceShareTargetCollectionFlattenTargets(result []vpcbetav1.ShareMountTarget) (targets []map[string]interface{}) {
+func dataSourceShareTargetCollectionFlattenTargets(result []vpcv1.ShareMountTarget) (targets []map[string]interface{}) {
 	for _, targetsItem := range result {
 		targets = append(targets, dataSourceShareTargetCollectionTargetsToMap(targetsItem))
 	}
@@ -223,7 +223,7 @@ func dataSourceShareTargetCollectionFlattenTargets(result []vpcbetav1.ShareMount
 	return targets
 }
 
-func dataSourceShareTargetCollectionTargetsToMap(targetsItem vpcbetav1.ShareMountTarget) (targetsMap map[string]interface{}) {
+func dataSourceShareTargetCollectionTargetsToMap(targetsItem vpcv1.ShareMountTarget) (targetsMap map[string]interface{}) {
 	targetsMap = map[string]interface{}{}
 
 	if targetsItem.CreatedAt != nil {
@@ -260,7 +260,7 @@ func dataSourceShareTargetCollectionTargetsToMap(targetsItem vpcbetav1.ShareMoun
 	return targetsMap
 }
 
-func dataSourceShareTargetCollectionTargetsSubnetToMap(subnetItem vpcbetav1.SubnetReference) (subnetMap map[string]interface{}) {
+func dataSourceShareTargetCollectionTargetsSubnetToMap(subnetItem vpcv1.SubnetReference) (subnetMap map[string]interface{}) {
 	subnetMap = map[string]interface{}{}
 
 	if subnetItem.CRN != nil {
@@ -285,7 +285,7 @@ func dataSourceShareTargetCollectionTargetsSubnetToMap(subnetItem vpcbetav1.Subn
 	return subnetMap
 }
 
-func dataSourceShareTargetCollectionSubnetDeletedToMap(deletedItem vpcbetav1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetCollectionSubnetDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -295,7 +295,7 @@ func dataSourceShareTargetCollectionSubnetDeletedToMap(deletedItem vpcbetav1.Sub
 	return deletedMap
 }
 
-func dataSourceShareTargetCollectionTargetsVpcToMap(vpcItem vpcbetav1.VPCReference) (vpcMap map[string]interface{}) {
+func dataSourceShareTargetCollectionTargetsVpcToMap(vpcItem vpcv1.VPCReference) (vpcMap map[string]interface{}) {
 	vpcMap = map[string]interface{}{}
 
 	if vpcItem.CRN != nil {
@@ -320,7 +320,7 @@ func dataSourceShareTargetCollectionTargetsVpcToMap(vpcItem vpcbetav1.VPCReferen
 	return vpcMap
 }
 
-func dataSourceShareTargetCollectionVpcDeletedToMap(deletedItem vpcbetav1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetCollectionVpcDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
