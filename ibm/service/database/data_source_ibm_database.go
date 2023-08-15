@@ -156,7 +156,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 						},
 						"description": {
-							Description: "Unique white list description",
+							Description: "Unique allowlist description",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
