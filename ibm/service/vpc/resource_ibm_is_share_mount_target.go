@@ -254,6 +254,33 @@ func resourceIBMIsShareMountTargetCreate(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	//Temporary code to fix concurrent mount target issues.
+	listShareMountTargetOptions := &vpcbetav1.ListShareMountTargetsOptions{}
+	shareId := d.Get("share").(string)
+	vpcId := d.Get("vpc").(string)
+	listShareMountTargetOptions.SetShareID(shareId)
+
+	shareTargets, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareMountTargetOptions)
+	if err != nil || shareTargets == nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] ListShareMountTargetsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(err)
+	}
+	for _, mountTargets := range shareTargets.MountTargets {
+		if mountTargets.VPC != nil && *mountTargets.VPC.ID == vpcId {
+			isWaitForOldTargetDelete(context, vpcClient, d, shareId, *mountTargets.ID)
+			if *mountTargets.LifecycleState == "deleting" {
+				_, err = isWaitForTargetDelete(context, vpcClient, d, shareId, *mountTargets.ID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
 	createShareMountTargetOptions := &vpcbetav1.CreateShareMountTargetOptions{}
 
 	createShareMountTargetOptions.SetShareID(d.Get("share").(string))
