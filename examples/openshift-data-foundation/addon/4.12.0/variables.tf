@@ -142,4 +142,3 @@ variable "hpcsTokenUrl" {
     default = null
     description = "Please provide HPCS token URL"
 }
-
