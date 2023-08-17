@@ -12,9 +12,14 @@ Provides a read-only data source for iam_trusted_profile_identities. You can the
 
 ## Example Usage
 
-```hcl
+```terraform
+resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+  name = "test"
+}
+
+
 data "ibm_iam_trusted_profile_identities" "iam_trusted_profile_identities" {
-	profile_id = "profile_id"
+	profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 }
 ```
 
@@ -22,13 +27,14 @@ data "ibm_iam_trusted_profile_identities" "iam_trusted_profile_identities" {
 
 Review the argument reference that you can specify for your data source.
 
-* `profile_id` - (Required, Forces new resource, String) ID of the trusted profile.
+* `profile_id` - (Required, String) ID of the trusted profile.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the iam_trusted_profile_identities.
+
 * `entity_tag` - (String) Entity tag of the profile identities response.
 
 * `identities` - (List) List of identities.

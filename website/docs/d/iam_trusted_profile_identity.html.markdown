@@ -12,11 +12,15 @@ Provides a read-only data source for iam_trusted_profile_identity. You can then 
 
 ## Example Usage
 
-```hcl
+```terraform
+resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+  name = "test"
+}
+
 data "ibm_iam_trusted_profile_identity" "iam_trusted_profile_identity" {
-	identifier_id = "identifier_id"
+	identifier_id = "IBMid-1234567898"
 	identity_type = "user"
-	profile_id = "profile_id"
+	profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 }
 ```
 
@@ -24,16 +28,17 @@ data "ibm_iam_trusted_profile_identity" "iam_trusted_profile_identity" {
 
 Review the argument reference that you can specify for your data source.
 
-* `identifier_id` - (Required, Forces new resource, String) Identifier of the identity that can assume the trusted profiles.
-* `identity_type` - (Required, Forces new resource, String) Type of the identity.
+* `identifier_id` - (Required, String) Identifier of the identity that can assume the trusted profiles.
+* `identity_type` - (Required, String) Type of the identity.
   * Constraints: Allowable values are: `user`, `serviceid`, `crn`.
-* `profile_id` - (Required, Forces new resource, String) ID of the trusted profile.
+* `profile_id` - (Required, String) ID of the trusted profile.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the iam_trusted_profile_identity.
+
 * `accounts` - (List) Only valid for the type user. Accounts from which a user can assume the trusted profile.
 
 * `description` - (String) Description of the identity that can assume the trusted profile. This is optional field for all the types of identities. When this field is not set for the identity type 'serviceid' then the description of the service id is used. Description is recommended for the identity type 'crn' E.g. 'Instance 1234 of IBM Cloud Service project'.
