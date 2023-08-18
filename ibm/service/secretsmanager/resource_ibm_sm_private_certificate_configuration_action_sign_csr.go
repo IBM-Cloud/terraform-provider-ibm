@@ -299,7 +299,7 @@ func resourceIbmSmPrivateCertificateConfigurationActionSignCsrMapToConfiguration
 		model.Format = core.StringPtr(d.Get("format").(string))
 	}
 	if _, ok := d.GetOk("max_path_length"); ok {
-		model.MaxPathLength = core.Int64Ptr(d.Get("max_path_length").(int64))
+		model.MaxPathLength = core.Int64Ptr(int64(d.Get("max_path_length").(int)))
 	}
 	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
 		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))

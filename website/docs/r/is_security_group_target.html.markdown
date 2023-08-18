@@ -46,6 +46,7 @@ Review the argument references that you can specify for your resource.
    &#x2022; `application load balancer` identifier. </br>
    &#x2022; `endpoint gateway` identifier. </br>
    &#x2022; `VPN Server` identifier. </br>
+   &#x2022; `Virtual network interface` identifier. </br>
 
 
 ## Attribute reference

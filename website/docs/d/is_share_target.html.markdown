@@ -17,6 +17,8 @@ IBM Cloud® File Storage for VPC is available for customers with special approva
 ~> **NOTE**
 This is a Beta feature and it is subject to change in the GA release 
 
+~> **NOTE**
+This data source is being deprecated. Please use `ibm_is_share_mount_target` instead
 
 
 ## Example Usage
@@ -28,7 +30,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_share" "example" {
   name    = "example-share"
   size    = 200
-  profile = "tier-3iops"
+  profile = "dp2"
   zone    = "us-south-2"
 }
 
@@ -69,6 +71,7 @@ The following attributes are exported:
 	- `id` - The unique identifier for this subnet.
 	- `name` - The user-defined name for this subnet.
 	- `resource_type` - The resource type.
+- `transit_encryption` - (String) The transit encryption mode for this share target.
 - `vpc` - The VPC to which this share target is allowing to mount the file share. Nested `vpc` blocks have the following structure:
 	- `crn` - The CRN for this VPC.
 	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:

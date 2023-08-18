@@ -14,7 +14,7 @@ Retrieve information about all DHCP Servers. For more information, see [getting 
 ## Example usage
 
 ```terraform
-data "ibm_pi_dhcp" "example" {
+data "ibm_pi_dhcps" "example" {
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```

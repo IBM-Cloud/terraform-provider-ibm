@@ -17,7 +17,8 @@ import (
 
 func DataSourceIbmIsShareTargets() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmIsShareTargetsRead,
+		ReadContext:        dataSourceIbmIsShareTargetsRead,
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use ibm_is_share_mount_targets instead",
 
 		Schema: map[string]*schema.Schema{
 			"share": {
@@ -120,6 +121,10 @@ func DataSourceIbmIsShareTargets() *schema.Resource {
 								},
 							},
 						},
+						"transit_encryption": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"vpc": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -195,8 +200,8 @@ func dataSourceIbmIsShareTargetsRead(context context.Context, d *schema.Resource
 
 	d.SetId(dataSourceIbmIsShareTargetsID(d))
 
-	if shareTargetCollection.Targets != nil {
-		err = d.Set("share_targets", dataSourceShareTargetCollectionFlattenTargets(shareTargetCollection.Targets))
+	if shareTargetCollection.MountTargets != nil {
+		err = d.Set("share_targets", dataSourceShareTargetCollectionFlattenTargets(shareTargetCollection.MountTargets))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
 		}
@@ -239,13 +244,15 @@ func dataSourceShareTargetCollectionTargetsToMap(targetsItem vpcbetav1.ShareMoun
 	if targetsItem.Name != nil {
 		targetsMap["name"] = targetsItem.Name
 	}
+	if targetsItem.TransitEncryption != nil {
+		targetsMap["transit_encryption"] = *targetsItem.TransitEncryption
+	}
 	if targetsItem.ResourceType != nil {
 		targetsMap["resource_type"] = targetsItem.ResourceType
 	}
-
-	if targetsItem.VPC.CRN != nil {
+	if targetsItem.VPC != nil {
 		vpcList := []map[string]interface{}{}
-		vpcMap := dataSourceShareTargetCollectionTargetsVpcToMap(*targetsItem.VPC)
+		vpcMap := dataSourceShareMountTargetVpcToMap(*targetsItem.VPC)
 		vpcList = append(vpcList, vpcMap)
 		targetsMap["vpc"] = vpcList
 	}

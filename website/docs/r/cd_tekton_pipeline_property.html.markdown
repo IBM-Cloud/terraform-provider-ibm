@@ -33,7 +33,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^[-0-9a-zA-Z_.]*$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `type` - (Required, String) Property type.
+* `type` - (Required, Forces new resource, String) Property type.
   * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 * `value` - (Optional, String) Property value. Any string value is valid.
   * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.

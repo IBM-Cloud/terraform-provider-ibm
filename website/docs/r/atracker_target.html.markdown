@@ -40,9 +40,9 @@ resource "ibm_atracker_target" "atracker_eventstreams_target" {
   target_type = "event_streams"
   eventstreams_endpoint {
     target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-    "brokers": ["xxxxx.cloud.ibm.com:9093","yyyyy.cloud.ibm.com:9093"]
-    "topic": "my-topic"
-    "api_key": "api-key"  // pragma: allowlist secret
+    brokers = ["xxxxx.cloud.ibm.com:9093","yyyyy.cloud.ibm.com:9093"]
+    topic = "my-topic"
+    api_key = "api-key"  // pragma: allowlist secret
   }
   name = "my-eventstreams-target"
   target_type = "event_streams"

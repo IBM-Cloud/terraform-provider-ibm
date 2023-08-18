@@ -220,10 +220,8 @@ func ResourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 			},
 			"serial_number": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.",
+				Description: "The unique serial number that was assigned to a certificate by the issuing certificate authority.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -670,10 +668,10 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 		model.KeyType = core.StringPtr(d.Get("key_type").(string))
 	}
 	if _, ok := d.GetOk("key_bits"); ok {
-		model.KeyBits = core.Int64Ptr(d.Get("key_bits").(int64))
+		model.KeyBits = core.Int64Ptr(int64(d.Get("key_bits").(int)))
 	}
 	if _, ok := d.GetOk("max_path_length"); ok {
-		model.MaxPathLength = core.Int64Ptr(d.Get("max_path_length").(int64))
+		model.MaxPathLength = core.Int64Ptr(int64(d.Get("max_path_length").(int)))
 	}
 	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
 		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))
@@ -741,9 +739,6 @@ func resourceIbmSmPrivateCertificateConfigurationRootCAMapToConfigurationPrototy
 			postalCodeParsed[i] = fmt.Sprint(v)
 		}
 		model.PostalCode = postalCodeParsed
-	}
-	if _, ok := d.GetOk("serial_number"); ok {
-		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
 
 	return model, nil

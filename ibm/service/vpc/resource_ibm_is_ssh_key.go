@@ -17,6 +17,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -73,9 +74,11 @@ func ResourceIBMISSSHKey() *schema.Resource {
 			},
 
 			isKeyType: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Key type",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"ed25519", "rsa"}, false),
+				Description:  "Key type",
 			},
 
 			isKeyFingerprint: {
@@ -212,6 +215,11 @@ func keyCreate(d *schema.ResourceData, meta interface{}, name, publickey string)
 		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
 		}
+	}
+
+	if keytype, ok := d.GetOk(isKeyType); ok {
+		kt := keytype.(string)
+		options.Type = &kt
 	}
 
 	key, response, err := sess.CreateKey(options)
@@ -466,11 +474,11 @@ func parseKey(s string) (ssh.PublicKey, error) {
 
 	// Accepts formats of PublicKey:
 	// - <base64 key>
-	// - ssh-rsa <base64 key>
-	// - ssh-rsa <base64 key> <comment>
-	// if PublicKey provides other than just base64 key, then first part must be "ssh-rsa"
-	if subStrs := strings.Split(s, " "); len(subStrs) > 1 && subStrs[0] != "ssh-rsa" {
-		return nil, errors.New("not an RSA key")
+	// - ssh-rsa/ssh-ed25519 <base64 key>
+	// - ssh-rsa/ssh-ed25519 <base64 key> <comment>
+	// if PublicKey provides other than just base64 key, then first part must be "ssh-rsa" or "ssh-ed25519"
+	if subStrs := strings.Split(s, " "); len(subStrs) > 1 && subStrs[0] != "ssh-rsa" && subStrs[0] != "ssh-ed25519" {
+		return nil, errors.New("not an RSA key OR ED25519 key")
 	}
 
 	pk, _, _, _, e := ssh.ParseAuthorizedKey(keyBytes)

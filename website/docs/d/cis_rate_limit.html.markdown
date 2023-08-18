@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_cis_rate_limit
-Retrieve information for a rate limiting rule of an IBM Cloud Internet Services domain. To retrieve information about a rate limiting rule, you must have the enterprise plan for an IBM Cloud Internet Services. For more information, about rate limits, see [Rate limiting](https://cloud.ibm.com/docs/cis?topic=cis-cis-rate-limiting).
+Retrieve information for a rate limiting rule of an IBM Cloud Internet Services domain. To retrieve information about a rate limiting rule, you must have the enterprise plans for an IBM Cloud Internet Services. For more information, about rate limits, see [Rate limiting](https://cloud.ibm.com/docs/cis?topic=cis-cis-rate-limiting).
 
 ## Example usage
 
