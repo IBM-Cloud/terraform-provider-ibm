@@ -1,3 +1,9 @@
+# 1.56.1 (Aug 21, 2023)
+
+BugFixes
+* Fix adding of schematics tags if they are service/access tags ([4755](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4755))
+* allow workspace type 1.4 for schematic ([4756](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4756))
+
 # 1.56.0 (Aug 08, 2023)
 
 Removal
