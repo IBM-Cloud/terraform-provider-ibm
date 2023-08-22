@@ -46,3 +46,28 @@ func testAccCheckIBMIsShareTargetDataSourceConfigBasic(sname, vpcName, targetNam
 		}
 	`)
 }
+
+func testAccCheckIbmIsShareTargetsDataSourceConfigBasic(sname, vpcName, targetName string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_share" "is_share" {
+			zone = "us-south-2"
+			size = 200
+			name = "%s"
+			profile = "%s"
+		}
+
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_share_mount_target" "is_share_target" {
+			share = ibm_is_share.is_share.id
+			name = "%s"
+			vpc = ibm_is_vpc.testacc_vpc.id
+		}
+
+		data "ibm_is_share_mount_targets" "is_share_targets" {
+			share = ibm_is_share_mount_target.is_share_target.share
+		}
+	`, sname, acc.ShareProfileName, vpcName, targetName)
+}
