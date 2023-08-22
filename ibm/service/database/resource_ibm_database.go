@@ -929,7 +929,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, enterprise, sharding",
+			AllowedValues:              "standard, enterprise, enterprise-sharding",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1007,7 +1007,7 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 		service = "mongodbee"
 	}
 
-	if service == "mongodb" && _plan == "sharding" {
+	if service == "mongodb" && _plan == "enterprise-sharding" {
 		service = "mongodbees"
 	}
 
@@ -1333,7 +1333,12 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		fmt.Printf("service name %s plan is %s", serviceName, plan)
+		if serviceName == "databases-for-mongodb" && plan == "enterprise-sharding" {
+			return diag.FromErr(fmt.Errorf("%s %s is not available yet in this region", serviceName, plan))
+		} else {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		}
 	}
 	if len(deployments) == 0 {
 		return diag.FromErr(fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan))

@@ -33,7 +33,7 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
-					resource.TestCheckResourceAttr(name, "plan", "sharding"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "43008"),
@@ -54,7 +54,7 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
-					resource.TestCheckResourceAttr(name, "plan", "sharding"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
@@ -78,7 +78,7 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
-					resource.TestCheckResourceAttr(name, "plan", "sharding"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "43008"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
@@ -118,7 +118,7 @@ func TestAccIBMMongoDBShardingDatabaseInstanceGroupBasic(t *testing.T) {
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
-					resource.TestCheckResourceAttr(name, "plan", "sharding"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "43008"),
@@ -148,7 +148,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
-		plan                         = "sharding"
+		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_disk_allocation_mb   = 61440
@@ -182,7 +182,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
-		plan                         = "sharding"
+		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 86016
@@ -226,7 +226,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
-		plan                         = "sharding"
+		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_disk_allocation_mb   = 122880
@@ -252,7 +252,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingGroupBasic(databaseResourceGr
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
-		plan                         = "sharding"
+		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
 		tags                         = ["one:two"]
