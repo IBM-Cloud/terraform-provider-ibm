@@ -262,7 +262,7 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 			break
 		}
 	}
-	d.SetId(dataSourceIbmIsShareTargetsID(d))
+	d.SetId(dataSourceIBMIsShareTargetsID(d))
 
 	if len(allrecs) > 0 {
 		err = d.Set("mount_targets", dataSourceShareMountTargetCollectionFlattenTargets(allrecs))

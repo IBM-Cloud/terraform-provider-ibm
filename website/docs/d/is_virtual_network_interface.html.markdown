@@ -29,7 +29,7 @@ resource "ibm_is_share" "example" {
   profile = "dp2"
   zone = "us-south-2"
 }
-resource "ibm_is_share_target" "example" {
+resource "ibm_is_share_mount_target" "example" {
   share = ibm_is_share.example.id
   virtual_network_interface {
     name = "my-virtual_network_interface"
@@ -43,7 +43,7 @@ resource "ibm_is_share_target" "example" {
 }
 
 data "ibm_is_virtual_network_interface" "example" {
-	virtual_network_interface = ibm_is_share_target.example.virtual_network_interface.0.id
+	virtual_network_interface = ibm_is_share_mount_target.example.virtual_network_interface.0.id
 }
 ```
 

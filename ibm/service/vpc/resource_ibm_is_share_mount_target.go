@@ -668,3 +668,230 @@ func isWaitForMountTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1,
 
 	return stateConf.WaitForState()
 }
+
+func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, vniId string) ([]map[string]interface{}, error) {
+
+	vniSlice := make([]map[string]interface{}, 0)
+	vniMap := map[string]interface{}{}
+	vniOptions := &vpcbetav1.GetVirtualNetworkInterfaceOptions{
+		ID: &vniId,
+	}
+	vni, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, vniOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil, err
+		}
+		log.Printf("[DEBUG] GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
+		return nil, err
+	}
+	vniMap["id"] = vni.ID
+	vniMap["crn"] = vni.CRN
+	vniMap["name"] = vni.Name
+	vniMap["href"] = vni.Href
+
+	primaryIpList := make([]map[string]interface{}, 0)
+	currentPrimIp := map[string]interface{}{}
+	if vni.PrimaryIP != nil {
+		if vni.PrimaryIP.Address != nil {
+			currentPrimIp["address"] = vni.PrimaryIP.Address
+		}
+		if vni.PrimaryIP.Name != nil {
+			currentPrimIp["name"] = *vni.PrimaryIP.Name
+		}
+		if vni.PrimaryIP.ID != nil {
+			currentPrimIp["reserved_ip"] = *vni.PrimaryIP.ID
+		}
+		if vni.PrimaryIP.Href != nil {
+			currentPrimIp["href"] = *vni.PrimaryIP.Href
+		}
+
+		if vni.PrimaryIP.ResourceType != nil {
+			currentPrimIp["resource_type"] = *vni.PrimaryIP.ResourceType
+		}
+
+		rIpOptions := &vpcbetav1.GetSubnetReservedIPOptions{
+			SubnetID: vni.Subnet.ID,
+			ID:       vni.PrimaryIP.ID,
+		}
+		rIp, response, err := vpcClient.GetSubnetReservedIP(rIpOptions)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the virtual instance network interface(%s): %s\n%s", *vni.PrimaryIP.ID, *vni.ID, err, response)
+		}
+		currentPrimIp["auto_delete"] = rIp.AutoDelete
+
+		primaryIpList = append(primaryIpList, currentPrimIp)
+		vniMap["primary_ip"] = primaryIpList
+	}
+	vniMap["subnet"] = vni.Subnet.ID
+	vniMap["resource_type"] = vni.ResourceType
+	vniMap["resource_group"] = vni.ResourceGroup.ID
+	if len(vni.SecurityGroups) != 0 {
+		secgrpList := []string{}
+		for i := 0; i < len(vni.SecurityGroups); i++ {
+			secgrpList = append(secgrpList, string(*(vni.SecurityGroups[i].ID)))
+		}
+		vniMap["security_groups"] = flex.NewStringSet(schema.HashString, secgrpList)
+	}
+	vniSlice = append(vniSlice, vniMap)
+	return vniSlice, nil
+}
+
+func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniMap map[string]interface{}) (vpcbetav1.ShareMountTargetVirtualNetworkInterfacePrototype, error) {
+	vniPrototype := vpcbetav1.ShareMountTargetVirtualNetworkInterfacePrototype{}
+	name, _ := vniMap["name"].(string)
+	if name != "" {
+		vniPrototype.Name = &name
+	}
+	primaryIp, ok := vniMap["primary_ip"]
+	if ok && len(primaryIp.([]interface{})) > 0 {
+		primaryIpPrototype := &vpcbetav1.VirtualNetworkInterfacePrimaryIPPrototype{}
+		primaryIpMap := primaryIp.([]interface{})[0].(map[string]interface{})
+
+		reservedIp := primaryIpMap["reserved_ip"].(string)
+		reservedIpAddress := primaryIpMap["address"].(string)
+		reservedIpName := primaryIpMap["name"].(string)
+
+		if reservedIp != "" && (reservedIpAddress != "" || reservedIpName != "") {
+			return vniPrototype, fmt.Errorf("[ERROR] Error creating instance, virtual_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+		}
+		if reservedIp != "" {
+			primaryIpPrototype.ID = &reservedIp
+		}
+		if reservedIpAddress != "" {
+			primaryIpPrototype.Address = &reservedIpAddress
+		}
+
+		if reservedIpName != "" {
+			primaryIpPrototype.Name = &reservedIpName
+		}
+		if autoDeleteIntf, ok := d.GetOkExists("virtual_network_interface.0.primary_ip.0.auto_delete"); ok {
+			reservedIpAutoDelete := autoDeleteIntf.(bool)
+			primaryIpPrototype.AutoDelete = &reservedIpAutoDelete
+		}
+		vniPrototype.PrimaryIP = primaryIpPrototype
+	}
+	if subnet := vniMap["subnet"].(string); subnet != "" {
+		vniPrototype.Subnet = &vpcbetav1.SubnetIdentity{
+			ID: &subnet,
+		}
+	}
+	if resourceGroup := vniMap["resource_group"].(string); resourceGroup != "" {
+		vniPrototype.ResourceGroup = &vpcbetav1.ResourceGroupIdentity{
+			ID: &resourceGroup,
+		}
+	}
+	if secGrpIntf, ok := vniMap["security_groups"]; ok {
+		secGrpSet := secGrpIntf.(*schema.Set)
+		if secGrpSet.Len() != 0 {
+			var secGroups = make([]vpcbetav1.SecurityGroupIdentityIntf, secGrpSet.Len())
+			for i, secGrpIntf := range secGrpSet.List() {
+				secGrp := secGrpIntf.(string)
+				secGroups[i] = &vpcbetav1.SecurityGroupIdentity{
+					ID: &secGrp,
+				}
+			}
+			vniPrototype.SecurityGroups = secGroups
+		}
+	}
+	return vniPrototype, nil
+}
+
+func isWaitForTargetDelete(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"deleting", "stable"},
+		Target:  []string{"done"},
+		Refresh: func() (interface{}, string, error) {
+			shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+			shareTargetOptions.SetShareID(shareid)
+			shareTargetOptions.SetID(targetid)
+
+			target, response, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return target, "done", nil
+				}
+				return nil, "", fmt.Errorf("Error Getting Target: %s\n%s", err, response)
+			}
+			if *target.LifecycleState == isInstanceFailed {
+				return target, *target.LifecycleState, fmt.Errorf("The  target %s failed to delete: %v", targetid, err)
+			}
+			return target, "deleting", nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutDelete),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func WaitForVNIAvailable(vpcClient *vpcbetav1.VpcbetaV1, vniId string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for VNI (%s) to be available.", vniId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"updating", "pending", "waiting"},
+		Target:     []string{"stable", "failed"},
+		Refresh:    VNIRefreshFunc(vpcClient, vniId, d),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func VNIRefreshFunc(vpcClient *vpcbetav1.VpcbetaV1, vniId string, d *schema.ResourceData) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getVNIOptions := &vpcbetav1.GetVirtualNetworkInterfaceOptions{
+			ID: &vniId,
+		}
+		vni, response, err := vpcClient.GetVirtualNetworkInterface(getVNIOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error Getting virtual network interface : %s\n%s", err, response)
+		}
+
+		if *vni.LifecycleState == "failed" {
+			return vni, *vni.LifecycleState, fmt.Errorf(" Virtualk Network Interface creating failed with status %s ", *vni.LifecycleState)
+		}
+		return vni, *vni.LifecycleState, nil
+	}
+}
+
+func WaitForTargetAvailable(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for target (%s) to be available.", targetid)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"updating", "pending", "waiting"},
+		Target:     []string{"stable", "failed"},
+		Refresh:    mountTargetRefreshFunc(context, vpcClient, shareid, targetid, d),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func mountTargetRefreshFunc(context context.Context, vpcClient *vpcbetav1.VpcbetaV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		shareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+		shareTargetOptions.SetShareID(shareid)
+		shareTargetOptions.SetID(targetid)
+
+		target, response, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("Error Getting target: %s\n%s", err, response)
+		}
+		d.Set("lifecycle_state", *target.LifecycleState)
+		if *target.LifecycleState == "stable" || *target.LifecycleState == "failed" {
+
+			return target, *target.LifecycleState, nil
+
+		}
+		return target, "pending", nil
+	}
+}
