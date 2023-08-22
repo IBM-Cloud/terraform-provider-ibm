@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about an account_settin
 
 ```hcl
 data "ibm_iam_account_settings_template_assignment" "account_settings_template_assignment" {
-	assignment_id = "assignment_id"
+	assignment_id = "${var.assignment_id}"
 }
 ```
 

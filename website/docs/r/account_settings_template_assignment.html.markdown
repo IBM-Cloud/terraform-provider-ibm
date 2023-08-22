@@ -14,10 +14,10 @@ Create, update, and delete account_settings_template_assignments with this resou
 
 ```hcl
 resource "ibm_iam_account_settings_template_assignment" "account_settings_template_assignment_instance" {
-	template_id = "template_id"
-	template_version = 1
-	target = "target"
-	target_type = "Account"
+	template_id = "${var.template_id}"
+	template_version = "${var.template_version}"
+	target = "${var.target_account}"
+	target_type = "${var.account_type}"
 }
 ```
 

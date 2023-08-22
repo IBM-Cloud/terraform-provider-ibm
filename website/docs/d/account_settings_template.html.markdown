@@ -14,8 +14,8 @@ Provides a read-only data source to retrieve information about an account_settin
 
 ```hcl
 data "ibm_iam_account_settings_template" "account_settings_template" {
-	template_id = "template_id"
-	version = "version"
+	template_id = "${var.template_id}"
+	version = "${var.version}"
 }
 ```
 

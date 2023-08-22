@@ -14,10 +14,10 @@ Create, update, and delete trusted_profile_template_assignments with this resour
 
 ```hcl
 resource "ibm_iam_trusted_profile_template_assignment" "trusted_profile_template_assignment_instance" {
-  target = "target account or account group"
-  target_type = "Account or AccountGroup"
-  template_id = "template_id"
-  template_version = 1
+	template_id = "${var.template_id}"
+	template_version = "${var.template_version}"
+	target = "${var.target_account}"
+	target_type = "${var.account_type}"
 }
 ```
 

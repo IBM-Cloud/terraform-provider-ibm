@@ -69,6 +69,10 @@ func testAccCheckIBMTrustedProfileTemplateAssignmentDataSourceConfigBasic(name s
 			depends_on = [
 				ibm_iam_trusted_profile_template.trusted_profile_template
 			]
+
+		 	timeouts {
+				create = "5m"
+			}
 		}
 
 		data "ibm_iam_trusted_profile_template_assignment" "trusted_profile_template_assignment_instance" {
