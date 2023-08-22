@@ -89,7 +89,7 @@ func ResourceIbmIsShareReplicaOperationsValidator() *validate.ResourceValidator 
 }
 
 func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}

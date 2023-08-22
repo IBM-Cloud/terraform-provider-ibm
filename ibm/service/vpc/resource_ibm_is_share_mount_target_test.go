@@ -348,7 +348,7 @@ func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcv1.ShareMountTarge
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
 		}
@@ -374,7 +374,7 @@ func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcv1.ShareMountTarge
 }
 
 func testAccCheckIbmIsShareMountTargetDestroy(s *terraform.State) error {
-	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return err
 	}
@@ -407,7 +407,7 @@ func testAccCheckIbmIsShareMountTargetDestroy(s *terraform.State) error {
 }
 
 func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
-	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return err
 	}
@@ -416,7 +416,7 @@ func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
@@ -439,7 +439,7 @@ func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIbmIsShareTargetExists(n string, obj vpcbetav1.ShareMountTarget) resource.TestCheckFunc {
+func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareMountTarget) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -447,12 +447,12 @@ func testAccCheckIbmIsShareTargetExists(n string, obj vpcbetav1.ShareMountTarget
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
 		}
 
-		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {

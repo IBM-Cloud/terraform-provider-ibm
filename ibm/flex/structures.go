@@ -2629,7 +2629,7 @@ func ResourceSharesValidateHelper(diff *schema.ResourceDiff, sizeStr, profileStr
 		}
 	}
 
-	if profile != "custom-iops" {
+	if profile != "custom-iops" && profile != "dp2" {
 		if iops != 0 && diff.NewValueKnown(iopsStr) && diff.HasChange(iopsStr) {
 			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")
 		}

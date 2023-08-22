@@ -259,7 +259,7 @@ func testAccCheckIbmIsShareExists(n string, obj vpcv1.Share) resource.TestCheckF
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
 		}
@@ -279,7 +279,7 @@ func testAccCheckIbmIsShareExists(n string, obj vpcv1.Share) resource.TestCheckF
 }
 
 func testAccCheckIbmIsShareDestroy(s *terraform.State) error {
-	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return err
 	}
