@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a trusted_profile
 
 ```hcl
 data "ibm_iam_trusted_profile_template_assignment" "trusted_profile_template_assignment" {
-	assignment_id = "assignment_id"
+	assignment_id = "${var.assignment_id}"
 }
 ```
 

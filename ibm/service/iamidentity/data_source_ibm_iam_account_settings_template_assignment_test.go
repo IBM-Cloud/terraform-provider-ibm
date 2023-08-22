@@ -63,6 +63,10 @@ func testAccCheckIBMAccountSettingsTemplateAssignmentDataSourceConfigBasic(name 
 			template_version = ibm_iam_account_settings_template.account_settings_template.version
 		  	target_type = "Account"
 		  	target = "%s"
+
+		 	timeouts {
+				create = "5m"
+			}
 		}
 
 		data "ibm_iam_account_settings_template_assignment" "account_settings_template_assignment_instance" {

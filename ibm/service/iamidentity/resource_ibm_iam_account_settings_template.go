@@ -34,19 +34,22 @@ func ResourceIBMAccountSettingsTemplate() *schema.Resource {
 				Description: "ID of the account where the template resides.",
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the trusted profile template. This is visible only in the enterprise account.",
+				Type:         schema.TypeString,
+				AtLeastOneOf: []string{"name", "description", "account_settings"},
+				Optional:     true,
+				Description:  "The name of the trusted profile template. This is visible only in the enterprise account.",
 			},
 			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the trusted profile template. Describe the template for enterprise account users.",
+				Type:         schema.TypeString,
+				AtLeastOneOf: []string{"name", "description", "account_settings"},
+				Optional:     true,
+				Description:  "The description of the trusted profile template. Describe the template for enterprise account users.",
 			},
 			"account_settings": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:         schema.TypeList,
+				AtLeastOneOf: []string{"name", "description", "account_settings"},
+				MaxItems:     1,
+				Optional:     true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"restrict_create_service_id": {
@@ -145,33 +148,33 @@ func ResourceIBMAccountSettingsTemplate() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"timestamp": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Timestamp when the action was triggered.",
 						},
 						"iam_id": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "IAM ID of the identity which triggered the action.",
 						},
 						"iam_id_account": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Account of the identity which triggered the action.",
 						},
 						"action": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Action of the history entry.",
 						},
 						"params": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Computed:    true,
 							Description: "Params of the history entry.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"message": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Message which summarizes the executed action.",
 						},
 					},

@@ -14,11 +14,11 @@ Create, update, commit, and delete trusted profile templates with this resource.
 
 ```hcl
 resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
-	name = var.trusted_profile_template_name
-	description = var.trusted_profile_template_description
+	name = "${var.trusted_profile_template_name}"
+	description = "${var.trusted_profile_template_description}"
 	profile {
-		name = "name"
-		description = "description"
+		name = "profile from template"
+		description = "description of profile from template"
 		rules {
 			name = "name"
 			type = "Profile-SAML"

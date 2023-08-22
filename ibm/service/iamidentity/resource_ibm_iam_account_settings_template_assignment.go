@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,6 +27,12 @@ func ResourceIBMAccountSettingsTemplateAssignment() *schema.Resource {
 		UpdateContext: resourceIBMAccountSettingsTemplateAssignmentUpdate,
 		DeleteContext: resourceIBMAccountSettingsTemplateAssignmentDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"template_id": {
@@ -57,57 +64,57 @@ func ResourceIBMAccountSettingsTemplateAssignment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"transaction_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The transaction ID of the inbound REST request.",
 						},
 						"operation": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The operation of the inbound REST request.",
 						},
 						"user_agent": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The user agent of the inbound REST request.",
 						},
 						"url": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The URL of that cluster.",
 						},
 						"instance_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The instance ID of the server instance processing the request.",
 						},
 						"thread_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The thread ID of the server instance processing the request.",
 						},
 						"host": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The host of the server instance processing the request.",
 						},
 						"start_time": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The start time of the request.",
 						},
 						"end_time": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The finish time of the request.",
 						},
 						"elapsed_time": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The elapsed time in msec.",
 						},
 						"cluster_name": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The cluster name.",
 						},
 					},
@@ -136,20 +143,18 @@ func ResourceIBMAccountSettingsTemplateAssignment() *schema.Resource {
 						},
 						"account_settings": {
 							Type:     schema.TypeList,
-							MaxItems: 1,
-							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"resource_created": {
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Body parameters for created resource.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Id of the created resource.",
 												},
 											},
@@ -157,29 +162,28 @@ func ResourceIBMAccountSettingsTemplateAssignment() *schema.Resource {
 									},
 									"error_message": {
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Body parameters for assignment error.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Name of the error.",
 												},
 												"error_code": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Internal error code.",
 												},
 												"message": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Error message detailing the nature of the error.",
 												},
 												"status_code": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "Internal status code for the error.",
 												},
 											},
@@ -187,7 +191,7 @@ func ResourceIBMAccountSettingsTemplateAssignment() *schema.Resource {
 									},
 									"status": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Status for the target account's assignment.",
 									},
 								},
@@ -204,33 +208,33 @@ func ResourceIBMAccountSettingsTemplateAssignment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"timestamp": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Timestamp when the action was triggered.",
 						},
 						"iam_id": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "IAM ID of the identity which triggered the action.",
 						},
 						"iam_id_account": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Account of the identity which triggered the action.",
 						},
 						"action": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Action of the history entry.",
 						},
 						"params": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Computed:    true,
 							Description: "Params of the history entry.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"message": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Message which summarizes the executed action.",
 						},
 					},
@@ -313,7 +317,7 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 
 	d.SetId(*templateAssignmentResponse.ID)
 
-	_, err = waitForAssignment(meta, d, isAccountSettingsTemplateAssigned)
+	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccountSettingsTemplateAssigned)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error assigning %s", err))
 	}
@@ -442,7 +446,7 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 			return diag.FromErr(fmt.Errorf("UpdateAccountSettingsAssignmentWithContext failed %s\n%s", err, response))
 		}
 
-		_, err = waitForAssignment(meta, d, isAccountSettingsTemplateAssigned)
+		_, err = waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccountSettingsTemplateAssigned)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error assigning %s", err))
 		}
@@ -467,7 +471,7 @@ func resourceIBMAccountSettingsTemplateAssignmentDelete(context context.Context,
 		return diag.FromErr(fmt.Errorf("DeleteAccountSettingsAssignmentWithContext failed %s\n%s", err, response))
 	}
 
-	_, err = waitForAssignment(meta, d, isAccountSettingsAssignmentRemoved)
+	_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccountSettingsAssignmentRemoved)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error removing assignment %s", err))
 	}

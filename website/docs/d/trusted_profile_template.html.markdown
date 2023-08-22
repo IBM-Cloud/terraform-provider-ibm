@@ -14,8 +14,8 @@ Provides a read-only data source to retrieve information about a trusted_profile
 
 ```hcl
 data "ibm_trusted_profile_template" "trusted_profile_template" {
-	template_id = "template_id"
-	version = "version"
+	template_id = "${var.template_id}"
+	version = "${var.version}"
 }
 ```
 

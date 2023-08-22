@@ -93,6 +93,11 @@ func testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name string, ver
 				ibm_iam_trusted_profile_template.trusted_profile_template,
 				ibm_iam_trusted_profile_template.trusted_profile_template_v2
 			]
+
+		 	timeouts {
+				create = "5m"
+				update = "5m"
+			}
 		}
 	`, name, name, version, acc.IamIdentityAssignmentTargetAccountId)
 }

@@ -73,6 +73,14 @@ func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(name string) st
 			template_version = ibm_iam_account_settings_template.account_settings_template.version
 		  	target_type = "Account"
 		  	target = "%s"
+
+			depends_on = [
+				ibm_iam_account_settings_template.account_settings_template
+			]
+
+		 	timeouts {
+				create = "5m"
+			}
 		}
 	`, name, acc.IamIdentityAssignmentTargetAccountId)
 }
@@ -92,6 +100,14 @@ func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasicUpdate(name stri
 			template_version = 2
 		  	target_type = "Account"
 		  	target = "%s"
+
+			depends_on = [
+				ibm_iam_account_settings_template.account_settings_template
+			]
+
+		 	timeouts {
+				update = "5m"
+			}
 		}
 	`, name, acc.IamIdentityAssignmentTargetAccountId)
 }
