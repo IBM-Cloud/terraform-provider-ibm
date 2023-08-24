@@ -19,19 +19,19 @@ import (
 
 var versionAGName string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 
-func TestAccIBMIamAccessGroupTemplateVersion(t *testing.T) {
+func TestAccIBMIAMAccessGroupTemplateVersion(t *testing.T) {
 	var conf iamaccessgroupsv2.TemplateVersionResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIamAccessGroupTemplateVersionDestroy,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateVersionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateVersionConfigBasic(name, accountID, agName, versionAGName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasic(name, agName, versionAGName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template_version.template", conf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template_version.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "group.0.name", versionAGName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "name", name),
@@ -42,19 +42,19 @@ func TestAccIBMIamAccessGroupTemplateVersion(t *testing.T) {
 	})
 }
 
-func TestAccIBMIamAccessGroupTemplateVersionUpdateWithCommit(t *testing.T) {
+func TestAccIBMIAMAccessGroupTemplateVersionUpdateWithCommit(t *testing.T) {
 	var conf iamaccessgroupsv2.TemplateVersionResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIamAccessGroupTemplateVersionDestroy,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateVersionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateVersionConfigBasic(name, accountID, agName, versionAGName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasic(name, agName, versionAGName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template_version.template", conf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template_version.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "group.0.name", versionAGName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "name", name),
@@ -62,9 +62,9 @@ func TestAccIBMIamAccessGroupTemplateVersionUpdateWithCommit(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateVersionUpdateWithCommit(name, accountID, agName, versionAGName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateVersionUpdateWithCommit(name, agName, versionAGName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template_version.template", conf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template_version.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "group.0.name", versionAGName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_version.template", "name", name),
@@ -77,12 +77,11 @@ func TestAccIBMIamAccessGroupTemplateVersionUpdateWithCommit(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamAccessGroupTemplateVersionConfigBasic(name string, accountID string, agName string, versionAGName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasic(name string, agName string, versionAGName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
 		description = "Test Terraform Description"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
@@ -103,15 +102,14 @@ func testAccCheckIBMIamAccessGroupTemplateVersionConfigBasic(name string, accoun
 			}
 		}
 	}
-	`, name, accountID, agName, versionAGName)
+	`, name, agName, versionAGName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateVersionUpdateWithCommit(name string, accountID string, agName string, versionAGName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateVersionUpdateWithCommit(name string, agName string, versionAGName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
 		description = "Test Terraform Description"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
@@ -133,10 +131,10 @@ func testAccCheckIBMIamAccessGroupTemplateVersionUpdateWithCommit(name string, a
 		}
 		committed = true
 	}
-	`, name, accountID, agName, versionAGName)
+	`, name, agName, versionAGName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateVersionExists(n string, obj iamaccessgroupsv2.TemplateVersionResponse) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupTemplateVersionExists(n string, obj iamaccessgroupsv2.TemplateVersionResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -169,7 +167,7 @@ func testAccCheckIBMIamAccessGroupTemplateVersionExists(n string, obj iamaccessg
 	}
 }
 
-func testAccCheckIBMIamAccessGroupTemplateVersionDestroy(s *terraform.State) error {
+func testAccCheckIBMIAMAccessGroupTemplateVersionDestroy(s *terraform.State) error {
 	iamAccessGroupsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err

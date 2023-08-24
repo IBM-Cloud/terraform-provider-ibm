@@ -7,8 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -30,11 +28,17 @@ const (
 
 func ResourceIBMIAMAccessGroupTemplateAssignment() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMIamAccessGroupTemplateAssignmentCreate,
-		ReadContext:   resourceIBMIamAccessGroupTemplateAssignmentRead,
-		UpdateContext: resourceIBMIamAccessGroupTemplateAssignmentUpdate,
-		DeleteContext: resourceIBMIamAccessGroupTemplateAssignmentDelete,
+		CreateContext: resourceIBMIAMAccessGroupTemplateAssignmentCreate,
+		ReadContext:   resourceIBMIAMAccessGroupTemplateAssignmentRead,
+		UpdateContext: resourceIBMIAMAccessGroupTemplateAssignmentUpdate,
+		DeleteContext: resourceIBMIAMAccessGroupTemplateAssignmentDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"transaction_id": {
@@ -170,7 +174,7 @@ func ResourceIBMIAMAccessGroupTemplateAssignmentValidator() *validate.ResourceVa
 	return &resourceValidator
 }
 
-func resourceIBMIamAccessGroupTemplateAssignmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIAMAccessGroupTemplateAssignmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -194,15 +198,15 @@ func resourceIBMIamAccessGroupTemplateAssignmentCreate(context context.Context, 
 
 	d.SetId(*templateAssignmentResponse.ID)
 
-	_, err = waitForAssignment(meta, d, isAccountSettingsTemplateAssigned)
+	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccountSettingsTemplateAssigned)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error assigning %s", err))
 	}
 
-	return resourceIBMIamAccessGroupTemplateAssignmentRead(context, d, meta)
+	return resourceIBMIAMAccessGroupTemplateAssignmentRead(context, d, meta)
 }
 
-func resourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -265,8 +269,7 @@ func resourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, d 
 	return nil
 }
 
-func resourceIBMIamAccessGroupTemplateAssignmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fmt.Println("==========update===================")
+func resourceIBMIAMAccessGroupTemplateAssignmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -296,7 +299,6 @@ func resourceIBMIamAccessGroupTemplateAssignmentUpdate(context context.Context, 
 	hasChange := false
 
 	if d.HasChange("template_version") {
-		fmt.Println("==========update1===================")
 		updateAssignmentOptions.SetTemplateVersion(d.Get("template_version").(string))
 		hasChange = true
 	}
@@ -307,13 +309,13 @@ func resourceIBMIamAccessGroupTemplateAssignmentUpdate(context context.Context, 
 			log.Printf("[DEBUG] UpdateAssignmentWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateAssignmentWithContext failed %s\n%s", err, response))
 		}
-		waitForAssignment(meta, d, isAccountSettingsTemplateAssigned)
+		waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccountSettingsTemplateAssigned)
 	}
 
-	return resourceIBMIamAccessGroupTemplateAssignmentRead(context, d, meta)
+	return resourceIBMIAMAccessGroupTemplateAssignmentRead(context, d, meta)
 }
 
-func resourceIBMIamAccessGroupTemplateAssignmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIAMAccessGroupTemplateAssignmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -329,28 +331,14 @@ func resourceIBMIamAccessGroupTemplateAssignmentDelete(context context.Context, 
 		return diag.FromErr(fmt.Errorf("DeleteAssignmentWithContext failed %s\n%s", err, response))
 	}
 
-	waitForAssignment(meta, d, isAccountSettingsTemplateAssigned)
+	waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccountSettingsTemplateAssigned)
 
 	d.SetId("")
 
 	return nil
 }
 
-func waitForAssignment(meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
-	log.Printf("Waiting for  (%s) to complete...", d.Id())
-	timeoutStr, isSet := os.LookupEnv(envAGAssignmentTimeoutDurationKey)
-	if !isSet || len(timeoutStr) == 0 {
-		log.Printf("Setting default timeout to 2 minutes. For a longer timeout, set environment variable '%s'", envAGAssignmentTimeoutDurationKey)
-		timeoutStr = "120"
-	} else {
-		log.Printf("Using environment refresh timeout duration: %s seconds", timeoutStr)
-	}
-
-	var timeoutInt, err = strconv.Atoi(timeoutStr)
-	if err != nil {
-		log.Printf("Environment variable %s has a value that cannot be converted to an integer", envAGAssignmentTimeoutDurationKey)
-		return nil, err
-	}
+func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
 
 	stateConf := &resource.StateChangeConf{
 		Pending:      []string{InProgress},
@@ -358,7 +346,7 @@ func waitForAssignment(meta interface{}, d *schema.ResourceData, refreshFn func(
 		Refresh:      refreshFn(d.Id(), meta),
 		Delay:        30 * time.Second,
 		PollInterval: time.Minute,
-		Timeout:      time.Duration(timeoutInt) * time.Second,
+		Timeout:      timeout,
 	}
 
 	return stateConf.WaitForState()

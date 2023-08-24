@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_access_group_template_assignment"
 description: |-
   Get information about iam_access_group_template_assignment
-subcategory: "IAM Access Groups"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_access_group_template_assignment

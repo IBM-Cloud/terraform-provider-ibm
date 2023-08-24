@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_access_group_template_version"
 description: |-
   Get information about ibm_iam_access_group_template_version
-subcategory: "IAM Access Groups"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_access_group_template_version
@@ -13,8 +13,8 @@ Provides a read-only data source to retrieve information about an ibm_iam_access
 ## Example Usage
 
 ```hcl
-data "ibm_iam_access_group_template_versions" "ibm_iam_access_group_template_versions" {
-	template_id = "template_id"
+data "ibm_iam_access_group_template_versions" "iam_access_group_template_version_instance" {
+	template_id = ibm_iam_access_group_template_versions.iam_access_group_template_version_instance.template_id
 }
 ```
 

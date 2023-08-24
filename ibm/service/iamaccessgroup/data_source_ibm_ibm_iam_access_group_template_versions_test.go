@@ -13,14 +13,14 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMIBMIamAccessGroupTemplateVersionsDataSourceBasic(t *testing.T) {
+func TestAccIBMIAMAccessGroupTemplateVersionsDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIBMIamAccessGroupTemplateVersionDataSourceConfigBasic(name, accountID, agName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateVersionDataSourceConfigBasic(name, agName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_access_group_template_versions.template", "group_template_versions.#"),
 				),
@@ -29,13 +29,12 @@ func TestAccIBMIBMIamAccessGroupTemplateVersionsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIBMIamAccessGroupTemplateVersionDataSourceConfigBasic(name string, accountID string, agName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateVersionDataSourceConfigBasic(name string, agName string) string {
 	return fmt.Sprintf(`
 
 	resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
 		description = "Testing4"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
@@ -43,5 +42,5 @@ func testAccCheckIBMIBMIamAccessGroupTemplateVersionDataSourceConfigBasic(name s
 		data "ibm_iam_access_group_template_versions" "template" {
 			template_id = ibm_iam_access_group_template.template.template_id
 		}
-	`, name, accountID, agName)
+	`, name, agName)
 }

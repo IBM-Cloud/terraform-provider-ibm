@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_access_group_template"
 description: |-
   Manages iam_access_group_template.
-subcategory: "IAM Access Groups"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_access_group_template
@@ -155,5 +155,5 @@ You can import the `ibm_iam_access_group_template` resource by using `id`. The I
 
 # Syntax
 ```
-$ terraform import ibm_iam_access_group_template.iam_access_group_template <id>
+$ terraform import ibm_iam_access_group_template.iam_access_group_template_instance <template_id>/<version>
 ```

@@ -19,12 +19,12 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 )
 
-func ResourceIBMIamAccessGroupTemplate() *schema.Resource {
+func ResourceIBMIAMAccessGroupTemplate() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMIamAccessGroupTemplateCreate,
-		ReadContext:   resourceIBMIamAccessGroupTemplateVersionRead,
-		UpdateContext: resourceIBMIamAccessGroupTemplateVersionUpdate,
-		DeleteContext: resourceIBMIamAccessGroupTemplateVersionDelete,
+		CreateContext: resourceIBMIAMAccessGroupTemplateCreate,
+		ReadContext:   resourceIBMIAMAccessGroupTemplateVersionRead,
+		UpdateContext: resourceIBMIAMAccessGroupTemplateVersionUpdate,
+		DeleteContext: resourceIBMIAMAccessGroupTemplateVersionDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -50,10 +50,9 @@ func ResourceIBMIamAccessGroupTemplate() *schema.Resource {
 			},
 			"account_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 
-				ValidateFunc: validate.InvokeValidator("ibm_iam_access_group_template", "account_id"),
-				Description:  "The ID of the account to which the access group template is assigned.",
+				Description: "The ID of the account to which the access group template is assigned.",
 			},
 			"group": {
 				Type:        schema.TypeList,
@@ -313,7 +312,7 @@ func ResourceIBMIamAccessGroupTemplate() *schema.Resource {
 	}
 }
 
-func ResourceIBMIamAccessGroupTemplateValidator() *validate.ResourceValidator {
+func ResourceIBMIAMAccessGroupTemplateValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -343,22 +342,13 @@ func ResourceIBMIamAccessGroupTemplateValidator() *validate.ResourceValidator {
 			MinValueLength:             0,
 			MaxValueLength:             250,
 		},
-		validate.ValidateSchema{
-			Identifier:                 "account_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9_-]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             50,
-		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_iam_access_group_template", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIBMIamAccessGroupTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIAMAccessGroupTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -367,12 +357,19 @@ func resourceIBMIamAccessGroupTemplateCreate(context context.Context, d *schema.
 	createTemplateOptions := &iamaccessgroupsv2.CreateTemplateOptions{}
 
 	createTemplateOptions.SetName(d.Get("name").(string))
-	createTemplateOptions.SetAccountID(d.Get("account_id").(string))
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	createTemplateOptions.SetAccountID(userDetails.UserAccount)
+
 	if _, ok := d.GetOk("description"); ok {
 		createTemplateOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("group"); ok {
-		groupModel, err := resourceIBMIamAccessGroupTemplateMapToAccessGroupRequest(d.Get("group.0").(map[string]interface{}))
+		groupModel, err := resourceIBMIAMAccessGroupTemplateMapToAccessGroupRequest(d.Get("group.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -382,7 +379,7 @@ func resourceIBMIamAccessGroupTemplateCreate(context context.Context, d *schema.
 		var policyTemplateReferences []iamaccessgroupsv2.PolicyTemplates
 		for _, v := range d.Get("policy_template_references").([]interface{}) {
 			value := v.(map[string]interface{})
-			policyTemplateReferencesItem, err := resourceIBMIamAccessGroupTemplateMapToPolicyTemplates(value)
+			policyTemplateReferencesItem, err := resourceIBMIAMAccessGroupTemplateMapToPolicyTemplates(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -403,31 +400,31 @@ func resourceIBMIamAccessGroupTemplateCreate(context context.Context, d *schema.
 
 	d.SetId(fmt.Sprintf("%s/%d", *templateResponse.ID, version))
 
-	return resourceIBMIamAccessGroupTemplateVersionRead(context, d, meta)
+	return resourceIBMIAMAccessGroupTemplateVersionRead(context, d, meta)
 }
 
-func resourceIBMIamAccessGroupTemplateMapToAccessGroupRequest(modelMap map[string]interface{}) (*iamaccessgroupsv2.AccessGroupRequest, error) {
+func resourceIBMIAMAccessGroupTemplateMapToAccessGroupRequest(modelMap map[string]interface{}) (*iamaccessgroupsv2.AccessGroupRequest, error) {
 	model := &iamaccessgroupsv2.AccessGroupRequest{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["members"] != nil && len(modelMap["members"].([]interface{})) > 0 {
-		MembersModel, err := resourceIBMIamAccessGroupTemplateMapToMembers(modelMap["members"].([]interface{})[0].(map[string]interface{}))
+		MembersModel, err := resourceIBMIAMAccessGroupTemplateMapToMembers(modelMap["members"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Members = MembersModel
 	}
 	if modelMap["assertions"] != nil && len(modelMap["assertions"].([]interface{})) > 0 {
-		AssertionsModel, err := resourceIBMIamAccessGroupTemplateMapToAssertions(modelMap["assertions"].([]interface{})[0].(map[string]interface{}))
+		AssertionsModel, err := resourceIBMIAMAccessGroupTemplateMapToAssertions(modelMap["assertions"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Assertions = AssertionsModel
 	}
 	if modelMap["action_controls"] != nil && len(modelMap["action_controls"].([]interface{})) > 0 {
-		ActionControlsModel, err := resourceIBMIamAccessGroupTemplateMapToGroupActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
+		ActionControlsModel, err := resourceIBMIAMAccessGroupTemplateMapToGroupActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -436,7 +433,7 @@ func resourceIBMIamAccessGroupTemplateMapToAccessGroupRequest(modelMap map[strin
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToMembers(modelMap map[string]interface{}) (*iamaccessgroupsv2.Members, error) {
+func resourceIBMIAMAccessGroupTemplateMapToMembers(modelMap map[string]interface{}) (*iamaccessgroupsv2.Members, error) {
 	model := &iamaccessgroupsv2.Members{}
 	if modelMap["users"] != nil {
 		users := []string{}
@@ -453,7 +450,7 @@ func resourceIBMIamAccessGroupTemplateMapToMembers(modelMap map[string]interface
 		model.Services = services
 	}
 	if modelMap["action_controls"] != nil && len(modelMap["action_controls"].([]interface{})) > 0 {
-		ActionControlsModel, err := resourceIBMIamAccessGroupTemplateMapToMembersActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
+		ActionControlsModel, err := resourceIBMIAMAccessGroupTemplateMapToMembersActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -462,7 +459,7 @@ func resourceIBMIamAccessGroupTemplateMapToMembers(modelMap map[string]interface
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToMembersActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.MembersActionControls, error) {
+func resourceIBMIAMAccessGroupTemplateMapToMembersActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.MembersActionControls, error) {
 	model := &iamaccessgroupsv2.MembersActionControls{}
 	if modelMap["add"] != nil {
 		model.Add = core.BoolPtr(modelMap["add"].(bool))
@@ -473,12 +470,12 @@ func resourceIBMIamAccessGroupTemplateMapToMembersActionControls(modelMap map[st
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToAssertions(modelMap map[string]interface{}) (*iamaccessgroupsv2.Assertions, error) {
+func resourceIBMIAMAccessGroupTemplateMapToAssertions(modelMap map[string]interface{}) (*iamaccessgroupsv2.Assertions, error) {
 	model := &iamaccessgroupsv2.Assertions{}
 	if modelMap["rules"] != nil {
 		rules := []iamaccessgroupsv2.AssertionsRule{}
 		for _, rulesItem := range modelMap["rules"].([]interface{}) {
-			rulesItemModel, err := resourceIBMIamAccessGroupTemplateMapToAssertionsRule(rulesItem.(map[string]interface{}))
+			rulesItemModel, err := resourceIBMIAMAccessGroupTemplateMapToAssertionsRule(rulesItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -487,7 +484,7 @@ func resourceIBMIamAccessGroupTemplateMapToAssertions(modelMap map[string]interf
 		model.Rules = rules
 	}
 	if modelMap["action_controls"] != nil && len(modelMap["action_controls"].([]interface{})) > 0 {
-		ActionControlsModel, err := resourceIBMIamAccessGroupTemplateMapToAssertionsActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
+		ActionControlsModel, err := resourceIBMIAMAccessGroupTemplateMapToAssertionsActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -496,7 +493,7 @@ func resourceIBMIamAccessGroupTemplateMapToAssertions(modelMap map[string]interf
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToAssertionsRule(modelMap map[string]interface{}) (*iamaccessgroupsv2.AssertionsRule, error) {
+func resourceIBMIAMAccessGroupTemplateMapToAssertionsRule(modelMap map[string]interface{}) (*iamaccessgroupsv2.AssertionsRule, error) {
 	model := &iamaccessgroupsv2.AssertionsRule{}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
@@ -510,7 +507,7 @@ func resourceIBMIamAccessGroupTemplateMapToAssertionsRule(modelMap map[string]in
 	if modelMap["conditions"] != nil {
 		conditions := []iamaccessgroupsv2.Conditions{}
 		for _, conditionsItem := range modelMap["conditions"].([]interface{}) {
-			conditionsItemModel, err := resourceIBMIamAccessGroupTemplateMapToConditions(conditionsItem.(map[string]interface{}))
+			conditionsItemModel, err := resourceIBMIAMAccessGroupTemplateMapToConditions(conditionsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -519,7 +516,7 @@ func resourceIBMIamAccessGroupTemplateMapToAssertionsRule(modelMap map[string]in
 		model.Conditions = conditions
 	}
 	if modelMap["action_controls"] != nil && len(modelMap["action_controls"].([]interface{})) > 0 {
-		ActionControlsModel, err := resourceIBMIamAccessGroupTemplateMapToRuleActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
+		ActionControlsModel, err := resourceIBMIAMAccessGroupTemplateMapToRuleActionControls(modelMap["action_controls"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -528,7 +525,7 @@ func resourceIBMIamAccessGroupTemplateMapToAssertionsRule(modelMap map[string]in
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToConditions(modelMap map[string]interface{}) (*iamaccessgroupsv2.Conditions, error) {
+func resourceIBMIAMAccessGroupTemplateMapToConditions(modelMap map[string]interface{}) (*iamaccessgroupsv2.Conditions, error) {
 	model := &iamaccessgroupsv2.Conditions{}
 	if modelMap["claim"] != nil && modelMap["claim"].(string) != "" {
 		model.Claim = core.StringPtr(modelMap["claim"].(string))
@@ -542,7 +539,7 @@ func resourceIBMIamAccessGroupTemplateMapToConditions(modelMap map[string]interf
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToRuleActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.RuleActionControls, error) {
+func resourceIBMIAMAccessGroupTemplateMapToRuleActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.RuleActionControls, error) {
 	model := &iamaccessgroupsv2.RuleActionControls{}
 	if modelMap["remove"] != nil {
 		model.Remove = core.BoolPtr(modelMap["remove"].(bool))
@@ -553,7 +550,7 @@ func resourceIBMIamAccessGroupTemplateMapToRuleActionControls(modelMap map[strin
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToAssertionsActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.AssertionsActionControls, error) {
+func resourceIBMIAMAccessGroupTemplateMapToAssertionsActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.AssertionsActionControls, error) {
 	model := &iamaccessgroupsv2.AssertionsActionControls{}
 	if modelMap["add"] != nil {
 		model.Add = core.BoolPtr(modelMap["add"].(bool))
@@ -567,10 +564,10 @@ func resourceIBMIamAccessGroupTemplateMapToAssertionsActionControls(modelMap map
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToGroupActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.GroupActionControls, error) {
+func resourceIBMIAMAccessGroupTemplateMapToGroupActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.GroupActionControls, error) {
 	model := &iamaccessgroupsv2.GroupActionControls{}
 	if modelMap["access"] != nil && len(modelMap["access"].([]interface{})) > 0 {
-		AccessModel, err := resourceIBMIamAccessGroupTemplateMapToAccessActionControls(modelMap["access"].([]interface{})[0].(map[string]interface{}))
+		AccessModel, err := resourceIBMIAMAccessGroupTemplateMapToAccessActionControls(modelMap["access"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -579,7 +576,7 @@ func resourceIBMIamAccessGroupTemplateMapToGroupActionControls(modelMap map[stri
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToAccessActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.AccessActionControls, error) {
+func resourceIBMIAMAccessGroupTemplateMapToAccessActionControls(modelMap map[string]interface{}) (*iamaccessgroupsv2.AccessActionControls, error) {
 	model := &iamaccessgroupsv2.AccessActionControls{}
 	if modelMap["add"] != nil {
 		model.Add = core.BoolPtr(modelMap["add"].(bool))
@@ -587,7 +584,7 @@ func resourceIBMIamAccessGroupTemplateMapToAccessActionControls(modelMap map[str
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMapToPolicyTemplates(modelMap map[string]interface{}) (*iamaccessgroupsv2.PolicyTemplates, error) {
+func resourceIBMIAMAccessGroupTemplateMapToPolicyTemplates(modelMap map[string]interface{}) (*iamaccessgroupsv2.PolicyTemplates, error) {
 	model := &iamaccessgroupsv2.PolicyTemplates{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
@@ -598,28 +595,28 @@ func resourceIBMIamAccessGroupTemplateMapToPolicyTemplates(modelMap map[string]i
 	return model, nil
 }
 
-func resourceIBMIamAccessGroupTemplateAccessGroupResponseToMap(model *iamaccessgroupsv2.AccessGroupResponse) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateAccessGroupResponseToMap(model *iamaccessgroupsv2.AccessGroupResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
 	if model.Members != nil {
-		membersMap, err := resourceIBMIamAccessGroupTemplateMembersToMap(model.Members)
+		membersMap, err := resourceIBMIAMAccessGroupTemplateMembersToMap(model.Members)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["members"] = []map[string]interface{}{membersMap}
 	}
 	if model.Assertions != nil {
-		assertionsMap, err := resourceIBMIamAccessGroupTemplateAssertionsToMap(model.Assertions)
+		assertionsMap, err := resourceIBMIAMAccessGroupTemplateAssertionsToMap(model.Assertions)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["assertions"] = []map[string]interface{}{assertionsMap}
 	}
 	if model.ActionControls != nil {
-		actionControlsMap, err := resourceIBMIamAccessGroupTemplateGroupActionControlsToMap(model.ActionControls)
+		actionControlsMap, err := resourceIBMIAMAccessGroupTemplateGroupActionControlsToMap(model.ActionControls)
 		if err != nil {
 			return modelMap, err
 		}
@@ -628,7 +625,7 @@ func resourceIBMIamAccessGroupTemplateAccessGroupResponseToMap(model *iamaccessg
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMembersToMap(model *iamaccessgroupsv2.Members) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateMembersToMap(model *iamaccessgroupsv2.Members) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Users != nil {
 		modelMap["users"] = model.Users
@@ -637,7 +634,7 @@ func resourceIBMIamAccessGroupTemplateMembersToMap(model *iamaccessgroupsv2.Memb
 		modelMap["services"] = model.Services
 	}
 	if model.ActionControls != nil {
-		actionControlsMap, err := resourceIBMIamAccessGroupTemplateMembersActionControlsToMap(model.ActionControls)
+		actionControlsMap, err := resourceIBMIAMAccessGroupTemplateMembersActionControlsToMap(model.ActionControls)
 		if err != nil {
 			return modelMap, err
 		}
@@ -646,7 +643,7 @@ func resourceIBMIamAccessGroupTemplateMembersToMap(model *iamaccessgroupsv2.Memb
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateMembersActionControlsToMap(model *iamaccessgroupsv2.MembersActionControls) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateMembersActionControlsToMap(model *iamaccessgroupsv2.MembersActionControls) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Add != nil {
 		modelMap["add"] = model.Add
@@ -657,12 +654,12 @@ func resourceIBMIamAccessGroupTemplateMembersActionControlsToMap(model *iamacces
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateAssertionsToMap(model *iamaccessgroupsv2.Assertions) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateAssertionsToMap(model *iamaccessgroupsv2.Assertions) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Rules != nil {
 		rules := []map[string]interface{}{}
 		for _, rulesItem := range model.Rules {
-			rulesItemMap, err := resourceIBMIamAccessGroupTemplateAssertionsRuleToMap(&rulesItem)
+			rulesItemMap, err := resourceIBMIAMAccessGroupTemplateAssertionsRuleToMap(&rulesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -671,7 +668,7 @@ func resourceIBMIamAccessGroupTemplateAssertionsToMap(model *iamaccessgroupsv2.A
 		modelMap["rules"] = rules
 	}
 	if model.ActionControls != nil {
-		actionControlsMap, err := resourceIBMIamAccessGroupTemplateAssertionsActionControlsToMap(model.ActionControls)
+		actionControlsMap, err := resourceIBMIAMAccessGroupTemplateAssertionsActionControlsToMap(model.ActionControls)
 		if err != nil {
 			return modelMap, err
 		}
@@ -680,7 +677,7 @@ func resourceIBMIamAccessGroupTemplateAssertionsToMap(model *iamaccessgroupsv2.A
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateAssertionsRuleToMap(model *iamaccessgroupsv2.AssertionsRule) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateAssertionsRuleToMap(model *iamaccessgroupsv2.AssertionsRule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = model.Name
@@ -694,7 +691,7 @@ func resourceIBMIamAccessGroupTemplateAssertionsRuleToMap(model *iamaccessgroups
 	if model.Conditions != nil {
 		conditions := []map[string]interface{}{}
 		for _, conditionsItem := range model.Conditions {
-			conditionsItemMap, err := resourceIBMIamAccessGroupTemplateConditionsToMap(&conditionsItem)
+			conditionsItemMap, err := resourceIBMIAMAccessGroupTemplateConditionsToMap(&conditionsItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -703,7 +700,7 @@ func resourceIBMIamAccessGroupTemplateAssertionsRuleToMap(model *iamaccessgroups
 		modelMap["conditions"] = conditions
 	}
 	if model.ActionControls != nil {
-		actionControlsMap, err := resourceIBMIamAccessGroupTemplateRuleActionControlsToMap(model.ActionControls)
+		actionControlsMap, err := resourceIBMIAMAccessGroupTemplateRuleActionControlsToMap(model.ActionControls)
 		if err != nil {
 			return modelMap, err
 		}
@@ -712,7 +709,7 @@ func resourceIBMIamAccessGroupTemplateAssertionsRuleToMap(model *iamaccessgroups
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateConditionsToMap(model *iamaccessgroupsv2.Conditions) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateConditionsToMap(model *iamaccessgroupsv2.Conditions) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Claim != nil {
 		modelMap["claim"] = model.Claim
@@ -726,7 +723,7 @@ func resourceIBMIamAccessGroupTemplateConditionsToMap(model *iamaccessgroupsv2.C
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateRuleActionControlsToMap(model *iamaccessgroupsv2.RuleActionControls) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateRuleActionControlsToMap(model *iamaccessgroupsv2.RuleActionControls) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Remove != nil {
 		modelMap["remove"] = model.Remove
@@ -737,7 +734,7 @@ func resourceIBMIamAccessGroupTemplateRuleActionControlsToMap(model *iamaccessgr
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateAssertionsActionControlsToMap(model *iamaccessgroupsv2.AssertionsActionControls) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateAssertionsActionControlsToMap(model *iamaccessgroupsv2.AssertionsActionControls) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Add != nil {
 		modelMap["add"] = model.Add
@@ -751,10 +748,10 @@ func resourceIBMIamAccessGroupTemplateAssertionsActionControlsToMap(model *iamac
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateGroupActionControlsToMap(model *iamaccessgroupsv2.GroupActionControls) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateGroupActionControlsToMap(model *iamaccessgroupsv2.GroupActionControls) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Access != nil {
-		accessMap, err := resourceIBMIamAccessGroupTemplateAccessActionControlsToMap(model.Access)
+		accessMap, err := resourceIBMIAMAccessGroupTemplateAccessActionControlsToMap(model.Access)
 		if err != nil {
 			return modelMap, err
 		}
@@ -763,7 +760,7 @@ func resourceIBMIamAccessGroupTemplateGroupActionControlsToMap(model *iamaccessg
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplateAccessActionControlsToMap(model *iamaccessgroupsv2.AccessActionControls) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplateAccessActionControlsToMap(model *iamaccessgroupsv2.AccessActionControls) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Add != nil {
 		modelMap["add"] = model.Add
@@ -771,7 +768,7 @@ func resourceIBMIamAccessGroupTemplateAccessActionControlsToMap(model *iamaccess
 	return modelMap, nil
 }
 
-func resourceIBMIamAccessGroupTemplatePolicyTemplatesToMap(model *iamaccessgroupsv2.PolicyTemplates) (map[string]interface{}, error) {
+func resourceIBMIAMAccessGroupTemplatePolicyTemplatesToMap(model *iamaccessgroupsv2.PolicyTemplates) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID

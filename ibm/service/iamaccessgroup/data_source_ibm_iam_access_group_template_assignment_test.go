@@ -12,14 +12,14 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMIamAccessGroupTemplateAssignmentDataSourceBasic(t *testing.T) {
+func TestAccIBMIAMAccessGroupTemplateAssignmentDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIamAccessGroupTemplateAssignmentDestroy,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateAssignmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIAMAccessGroupTemplateAssignmentDataSourceConfig(accountID),
+				Config: testAccCheckIBMIAMAccessGroupTemplateAssignmentDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_access_group_template_assignment.template", "assignments.#"),
 				),
@@ -28,11 +28,10 @@ func TestAccIBMIamAccessGroupTemplateAssignmentDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIAMAccessGroupTemplateAssignmentDataSourceConfig(accountID string) string {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_iam_access_group_template_assignment" "template" {
-			account_id          = "%s"
 		}
-	  `, accountID)
+	  `)
 
 }

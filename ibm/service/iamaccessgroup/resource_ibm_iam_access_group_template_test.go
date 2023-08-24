@@ -17,25 +17,23 @@ import (
 )
 
 var (
-	accountID string = acc.IAMAccountId
-	agName    string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
+	agName string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
 )
 
-func TestAccIBMIamAccessGroupTemplateBasic(t *testing.T) {
+func TestAccIBMIAMAccessGroupTemplateBasic(t *testing.T) {
 	var conf iamaccessgroupsv2.TemplateVersionResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIamAccessGroupTemplateVersionDestroy,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateVersionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateConfigBasic(name, accountID, agName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateConfigBasic(name, agName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 				),
 			},
@@ -43,30 +41,28 @@ func TestAccIBMIamAccessGroupTemplateBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIamAccessGroupTemplateBasicWithCommit(t *testing.T) {
+func TestAccIBMIAMAccessGroupTemplateBasicWithCommit(t *testing.T) {
 	var conf iamaccessgroupsv2.TemplateVersionResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIamAccessGroupTemplateVersionDestroy,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateVersionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateConfigBasic(name, accountID, agName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateConfigBasic(name, agName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 				),
 			},
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateConfigBasicWithCommit(name, accountID, agName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateConfigBasicWithCommit(name, agName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "committed", "true"),
 				),
@@ -75,7 +71,7 @@ func TestAccIBMIamAccessGroupTemplateBasicWithCommit(t *testing.T) {
 	})
 }
 
-func TestAccIBMIamAccessGroupTemplateBasicWithAssertionAndActionControl(t *testing.T) {
+func TestAccIBMIAMAccessGroupTemplateBasicWithAssertionAndActionControl(t *testing.T) {
 	var conf iamaccessgroupsv2.TemplateVersionResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -83,15 +79,14 @@ func TestAccIBMIamAccessGroupTemplateBasicWithAssertionAndActionControl(t *testi
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIamAccessGroupTemplateDestroy,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateConfig(name, description, accountID, agName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateConfig(name, description, agName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "description", description),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 				),
 			},
@@ -104,38 +99,35 @@ func TestAccIBMIamAccessGroupTemplateBasicWithAssertionAndActionControl(t *testi
 	})
 }
 
-func testAccCheckIBMIamAccessGroupTemplateConfigBasic(name string, accountID string, agName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateConfigBasic(name string, agName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_access_group_template" "template" {
 			name = "%s"
-			account_id = "%s"
 			group {
 				name = "%s"
 			}
 		}
-	`, name, accountID, agName)
+	`, name, agName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateConfigBasicWithCommit(name string, accountID string, agName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateConfigBasicWithCommit(name string, agName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_access_group_template" "template" {
 			name = "%s"
-			account_id = "%s"
 			group {
 				name = "%s"
 			}
 			committed = true
 		}
-	`, name, accountID, agName)
+	`, name, agName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateConfig(name string, description string, accountID string, agName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateConfig(name string, description string, agName string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_access_group_template" "template" {
 			name = "%s"
 			description = "%s"
-			account_id = "%s"
 			group {
 				name = "%s"
 				description = "description"
@@ -153,10 +145,10 @@ func testAccCheckIBMIamAccessGroupTemplateConfig(name string, description string
 				}
 			}
 		}
-	`, name, description, accountID, agName)
+	`, name, description, agName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateDestroy(s *terraform.State) error {
+func testAccCheckIBMIAMAccessGroupTemplateDestroy(s *terraform.State) error {
 	iamAccessGroupsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err

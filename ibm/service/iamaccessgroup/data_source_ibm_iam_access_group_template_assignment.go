@@ -17,14 +17,14 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 )
 
-func DataSourceIBMIamAccessGroupTemplateAssignment() *schema.Resource {
+func DataSourceIBMIAMAccessGroupTemplateAssignment() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMIamAccessGroupTemplateAssignmentRead,
+		ReadContext: dataSourceIBMIAMAccessGroupTemplateAssignmentRead,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "Enterprise account ID.",
 			},
 			"template_id": {
@@ -173,7 +173,7 @@ func DataSourceIBMIamAccessGroupTemplateAssignment() *schema.Resource {
 	}
 }
 
-func dataSourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMIAMAccessGroupTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -181,7 +181,12 @@ func dataSourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, 
 
 	listAssignmentsOptions := &iamaccessgroupsv2.ListAssignmentsOptions{}
 
-	listAssignmentsOptions.SetAccountID(d.Get("account_id").(string))
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	listAssignmentsOptions.SetAccountID(userDetails.UserAccount)
 	if _, ok := d.GetOk("template_id"); ok {
 		listAssignmentsOptions.SetTemplateID(d.Get("template_id").(string))
 	}
@@ -204,7 +209,7 @@ func dataSourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, 
 		return diag.FromErr(fmt.Errorf("ListAssignmentsWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIBMIamAccessGroupTemplateAssignmentID(d))
+	d.SetId(dataSourceIBMIAMAccessGroupTemplateAssignmentID(d))
 
 	if err = d.Set("limit", flex.IntValue(listTemplateAssignmentResponse.Limit)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
@@ -220,7 +225,7 @@ func dataSourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, 
 
 	first := []map[string]interface{}{}
 	if listTemplateAssignmentResponse.First != nil {
-		modelMap, err := dataSourceIBMIamAccessGroupTemplateAssignmentHrefStructToMap(listTemplateAssignmentResponse.First)
+		modelMap, err := dataSourceIBMIAMAccessGroupTemplateAssignmentHrefStructToMap(listTemplateAssignmentResponse.First)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -232,7 +237,7 @@ func dataSourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, 
 
 	last := []map[string]interface{}{}
 	if listTemplateAssignmentResponse.Last != nil {
-		modelMap, err := dataSourceIBMIamAccessGroupTemplateAssignmentHrefStructToMap(listTemplateAssignmentResponse.Last)
+		modelMap, err := dataSourceIBMIAMAccessGroupTemplateAssignmentHrefStructToMap(listTemplateAssignmentResponse.Last)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -245,7 +250,7 @@ func dataSourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, 
 	assignments := []map[string]interface{}{}
 	if listTemplateAssignmentResponse.Assignments != nil {
 		for _, modelItem := range listTemplateAssignmentResponse.Assignments {
-			modelMap, err := dataSourceIBMIamAccessGroupTemplateAssignmentTemplateAssignmentResponseToMap(&modelItem)
+			modelMap, err := dataSourceIBMIAMAccessGroupTemplateAssignmentTemplateAssignmentResponseToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -259,12 +264,12 @@ func dataSourceIBMIamAccessGroupTemplateAssignmentRead(context context.Context, 
 	return nil
 }
 
-// dataSourceIBMIamAccessGroupTemplateAssignmentID returns a reasonable ID for the list.
-func dataSourceIBMIamAccessGroupTemplateAssignmentID(d *schema.ResourceData) string {
+// dataSourceIBMIAMAccessGroupTemplateAssignmentID returns a reasonable ID for the list.
+func dataSourceIBMIAMAccessGroupTemplateAssignmentID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMIamAccessGroupTemplateAssignmentHrefStructToMap(model *iamaccessgroupsv2.HrefStruct) (map[string]interface{}, error) {
+func dataSourceIBMIAMAccessGroupTemplateAssignmentHrefStructToMap(model *iamaccessgroupsv2.HrefStruct) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Href != nil {
 		modelMap["href"] = model.Href
@@ -272,7 +277,7 @@ func dataSourceIBMIamAccessGroupTemplateAssignmentHrefStructToMap(model *iamacce
 	return modelMap, nil
 }
 
-func dataSourceIBMIamAccessGroupTemplateAssignmentTemplateAssignmentResponseToMap(model *iamaccessgroupsv2.TemplateAssignmentResponse) (map[string]interface{}, error) {
+func dataSourceIBMIAMAccessGroupTemplateAssignmentTemplateAssignmentResponseToMap(model *iamaccessgroupsv2.TemplateAssignmentResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	modelMap["account_id"] = model.AccountID

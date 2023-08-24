@@ -26,19 +26,19 @@ func TestAccIBMIAMAccessGroupTemplateAssignmentBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIamAccessGroupTemplateAssignmentDestroy,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupTemplateAssignmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateAssignmentConfigBasic(name, accountID, agName),
+				Config: testAccCheckIBMIAMAccessGroupTemplateAssignmentConfigBasic(name, agName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", versionConf),
+					testAccCheckIBMIAMAccessGroupTemplateVersionExists("ibm_iam_access_group_template.template", versionConf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template.template", "group.0.name", agName),
 				),
 			},
 			{
-				Config: testAccCheckIBMIamAccessGroupTemplateAssignmentConfigUpdateCommit(name, accountID, agName, target),
+				Config: testAccCheckIBMIAMAccessGroupTemplateAssignmentConfigUpdateCommit(name, agName, target),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamAccessGroupTemplateAssignmentExists("ibm_iam_access_group_template_assignment.assignment", conf),
+					testAccCheckIBMIAMAccessGroupTemplateAssignmentExists("ibm_iam_access_group_template_assignment.assignment", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_template_assignment.assignment", "target", target),
 				),
 			},
@@ -46,23 +46,21 @@ func TestAccIBMIAMAccessGroupTemplateAssignmentBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamAccessGroupTemplateAssignmentConfigBasic(name string, accountID string, agName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentConfigBasic(name string, agName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
 	}
-	`, name, accountID, agName)
+	`, name, agName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateAssignmentVersionUpdate(name string, accountID string, agName string) string {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentVersionUpdate(name string, agName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
@@ -84,14 +82,13 @@ func testAccCheckIBMIamAccessGroupTemplateAssignmentVersionUpdate(name string, a
 		  }
 	  }
 
-	`, name, accountID, agName)
+	`, name, agName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateAssignmentConfigVersionUpdateCommit(name string, accountID string, agName string, target string) string {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentConfigVersionUpdateCommit(name string, agName string, target string) string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
@@ -121,10 +118,10 @@ func testAccCheckIBMIamAccessGroupTemplateAssignmentConfigVersionUpdateCommit(na
 		target_type = "AccountGroup"
 		target = "%s"
 	}
-	`, name, accountID, agName, target)
+	`, name, agName, target)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateAssignmentUpdate(accountID string, agName string, target string, name string) string {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentUpdate(agName string, target string, name string) string {
 	return fmt.Sprintf(`
 	resource ibm_iam_access_group_template_assignment "assignment" {
 		template_id = ibm_iam_access_group_template.template.template_id
@@ -135,7 +132,6 @@ func testAccCheckIBMIamAccessGroupTemplateAssignmentUpdate(accountID string, agN
 	
 	resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
@@ -158,14 +154,13 @@ func testAccCheckIBMIamAccessGroupTemplateAssignmentUpdate(accountID string, agN
 		  }
 		  committed = true
 	  }
-	`, target, name, accountID, agName)
+	`, target, name, agName)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateAssignmentConfigUpdateCommit(name string, accountID string, agName string, target string) string {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentConfigUpdateCommit(name string, agName string, target string) string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_access_group_template" "template" {
 		name = "%s"
-		account_id = "%s"
 		group {
 			name = "%s"
 		}
@@ -178,10 +173,10 @@ func testAccCheckIBMIamAccessGroupTemplateAssignmentConfigUpdateCommit(name stri
 		target_type = "AccountGroup"
 		target = "%s"
 	}
-	`, name, accountID, agName, target)
+	`, name, agName, target)
 }
 
-func testAccCheckIBMIamAccessGroupTemplateAssignmentExists(n string, obj iamaccessgroupsv2.TemplateAssignmentVerboseResponse) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentExists(n string, obj iamaccessgroupsv2.TemplateAssignmentVerboseResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -208,7 +203,7 @@ func testAccCheckIBMIamAccessGroupTemplateAssignmentExists(n string, obj iamacce
 	}
 }
 
-func testAccCheckIBMIamAccessGroupTemplateAssignmentDestroy(s *terraform.State) error {
+func testAccCheckIBMIAMAccessGroupTemplateAssignmentDestroy(s *terraform.State) error {
 	iamAccessGroupsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
 		return err
