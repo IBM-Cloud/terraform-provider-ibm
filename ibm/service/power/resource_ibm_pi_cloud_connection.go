@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,6 +21,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+)
+
+var (
+	vpcUnavailable = regexp.MustCompile("503|service unavailable|server is down for maintenance or overloaded")
 )
 
 func ResourceIBMPICloudConnection() *schema.Resource {
@@ -224,10 +229,24 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	client := st.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
+	retryCount := 2
 	cloudConnection, cloudConnectionJob, err := client.Create(body)
 	if err != nil {
-		log.Printf("[DEBUG] create cloud connection failed %v", err)
-		return diag.FromErr(err)
+		for count := retryCount; count >= 0; count-- {
+			if err == nil {
+				break
+			}
+			if vpcUnavailable.Match([]byte(err.Error())) {
+				log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", err)
+				time.Sleep(time.Minute)
+				log.Printf("[DEBUG] retrying cloud connection create, retry #%v", (retryCount-count)+1)
+				cloudConnection, cloudConnectionJob, err = client.Create(body)
+			}
+		}
+		if err != nil {
+			log.Printf("[DEBUG] create cloud connection failed %v", err)
+			return diag.FromErr(err)
+		}
 	}
 
 	if cloudConnection != nil {
@@ -266,6 +285,7 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 
 	client := st.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
 	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
+	retryCount := 2
 
 	if d.HasChangesExcept(helpers.PICloudConnectionNetworks) {
 
@@ -333,7 +353,21 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 
 		_, cloudConnectionJob, err := client.Update(cloudConnectionID, body)
 		if err != nil {
-			return diag.FromErr(err)
+			for count := retryCount; count >= 0; count-- {
+				if err == nil {
+					break
+				}
+				if vpcUnavailable.Match([]byte(err.Error())) {
+					log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", err)
+					time.Sleep(time.Minute)
+					log.Printf("[DEBUG] retrying cloud connection update, retry #%v", (retryCount-count)+1)
+					_, cloudConnectionJob, err = client.Update(cloudConnectionID, body)
+				}
+			}
+			if err != nil {
+				log.Printf("[DEBUG] update cloud connection failed %v", err)
+				return diag.FromErr(err)
+			}
 		}
 		if cloudConnectionJob != nil {
 			_, err = waitForIBMPIJobCompleted(ctx, jobClient, *cloudConnectionJob.ID, d.Timeout(schema.TimeoutCreate))
