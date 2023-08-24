@@ -186,7 +186,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 86016
 		members_disk_allocation_mb   = 122880
-		members_cpu_allocation_count = 27
+		members_cpu_allocation_count = 36
 		users {
 		  name     = "user123"
 		  password = "password12"
