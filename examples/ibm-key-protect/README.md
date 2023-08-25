@@ -4,9 +4,15 @@ This example shows how to Create a Key protect instance, generate a key and inte
 
 This sample configuration will create the key protect instance, cos-bucket instance, root key, and integrate the key with a cos bucket after creating the bucket.
 
+## Deprecation Notice
+
+  The resource `ibm_kp_key` is deprecated and replaced with `ibm_kms_key`. 
+
+  Please refer to [https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-kms](examples/ibm-kms) for examples. 
+
   **Note:**
   
- `key_protect` attribute to associate a kms_key with a COS bucket has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing custom
+ `key_protect` attribute to associate a kms_key with a COS bucket has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`. Although the support for older attribute name `key_protect` will be continued for existing custom
 
 To run, configure your IBM Cloud provider
 
