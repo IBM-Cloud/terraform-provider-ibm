@@ -32,6 +32,27 @@ func TestAccIBMKMSKeyDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMKMSKeyDataSource_description(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	customDescription := "I am a custom description for the key"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKmsKeyDataSourceConfigAndDescription(instanceName, keyName, customDescription),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "description", customDescription),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMKMSKeyDataSource_Key(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
@@ -151,6 +172,28 @@ func testAccCheckIBMKmsKeyDataSourceConfig(instanceName, keyName string) string 
 		key_name = "${ibm_kms_key.test.key_name}"
 	}
 `, instanceName, keyName)
+}
+
+func testAccCheckIBMKmsKeyDataSourceConfigAndDescription(instanceName, keyName string, description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "kms_instance" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+	  resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "%s"
+		standard_key =  true
+		description  = "%s"
+		force_delete = true
+	}
+	data "ibm_kms_key" "test" {
+		instance_id = "${ibm_kms_key.test.instance_id}"
+		key_name = "${ibm_kms_key.test.key_name}"
+	}
+`, instanceName, keyName, description)
 }
 
 func testAccCheckIBMKmsKeyDataSourceHpcsConfig(hpcsInstanceID string, KeyName string) string {

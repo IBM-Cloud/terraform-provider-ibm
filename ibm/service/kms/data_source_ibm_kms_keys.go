@@ -77,6 +77,10 @@ func DataSourceIBMKMSkeys() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"key_ring_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -199,6 +203,7 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 		keyInstance["name"] = key.Name
 		keyInstance["crn"] = key.CRN
 		keyInstance["standard_key"] = key.Extractable
+		keyInstance["description"] = key.Description
 		keyInstance["aliases"] = key.Aliases
 		keyInstance["key_ring_id"] = key.KeyRingID
 		keyMap = append(keyMap, keyInstance)
@@ -215,6 +220,7 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 		keyInstance["name"] = key.Name
 		keyInstance["crn"] = key.CRN
 		keyInstance["standard_key"] = key.Extractable
+		keyInstance["description"] = key.Description
 		keyInstance["aliases"] = key.Aliases
 		keyInstance["key_ring_id"] = key.KeyRingID
 		policies, err := api.GetPolicies(context.Background(), key.ID)
@@ -303,6 +309,7 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 			keyInstance["name"] = key.Name
 			keyInstance["crn"] = key.CRN
 			keyInstance["standard_key"] = key.Extractable
+			keyInstance["description"] = key.Description
 			keyInstance["aliases"] = key.Aliases
 			keyInstance["key_ring_id"] = key.KeyRingID
 			keyMap = append(keyMap, keyInstance)

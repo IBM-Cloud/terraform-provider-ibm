@@ -11,8 +11,7 @@ description: |-
 
 Create, or delete a Key Protect standard or root key. To use the `ibm_kp_key` resource, the region parameter in the `provider.tf` file must be set to the same region that your Key Protect service instance. If region parameter is not specified, `us-south` is used as default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by  Terraform and the  Terraform action fails.
 
-**Note**
-
+~>**Deprecated:**
 The `ibm_kp_key` resource will be deprecated shortly, as a replacement, you can use `ibm_kms_key` resource.
 
 
