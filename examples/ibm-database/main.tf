@@ -28,7 +28,7 @@ resource "ibm_database" "test_acc" {
   location          = "eu-gb"
   adminpassword     = "adminpassword"
 
-  whitelist {
+  allowlist {
     address     = "${ibm_compute_vm_instance.webapp1[0].ipv4_address}/32"
     description = ibm_compute_vm_instance.webapp1[0].hostname
   }

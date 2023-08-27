@@ -405,3 +405,69 @@ func testAccCheckIbmIsShareMountTargetDestroy(s *terraform.State) error {
 
 	return nil
 }
+
+func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+	if err != nil {
+		return err
+	}
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_share_mount_target" {
+			continue
+		}
+
+		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+		parts, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		getShareTargetOptions.SetShareID(parts[0])
+		getShareTargetOptions.SetID(parts[1])
+
+		// Try to find the key
+		_, response, err := vpcClient.GetShareMountTarget(getShareTargetOptions)
+
+		if err == nil {
+			return fmt.Errorf("ShareTarget still exists: %s", rs.Primary.ID)
+		} else if response.StatusCode != 404 {
+			return fmt.Errorf("Error checking for ShareTarget (%s) has been destroyed: %s", rs.Primary.ID, err)
+		}
+	}
+
+	return nil
+}
+
+func testAccCheckIbmIsShareTargetExists(n string, obj vpcbetav1.ShareMountTarget) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+		if err != nil {
+			return err
+		}
+
+		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+
+		parts, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		getShareTargetOptions.SetShareID(parts[0])
+		getShareTargetOptions.SetID(parts[1])
+
+		shareTarget, _, err := vpcClient.GetShareMountTarget(getShareTargetOptions)
+		if err != nil {
+			return err
+		}
+
+		obj = *shareTarget
+		return nil
+	}
+}

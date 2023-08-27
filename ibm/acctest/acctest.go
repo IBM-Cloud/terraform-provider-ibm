@@ -33,6 +33,8 @@ var Ibmid1 string
 var Ibmid2 string
 var IAMUser string
 var IAMAccountId string
+var IAMServiceId string
+var IAMTrustedProfileID string
 var Datacenter string
 var MachineType string
 var trustedMachineType string
@@ -74,6 +76,8 @@ var ISZoneName3 string
 var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
+var ISPublicSSHKeyFilePath string
+var ISPrivateSSHKeyFilePath string
 var ISAddressPrefixCIDR string
 var InstanceName string
 var InstanceProfileName string
@@ -305,6 +309,16 @@ func init() {
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
 	if IAMAccountId == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing ibm_iam_trusted_profile resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMServiceId = os.Getenv("IBM_IAM_SERVICE_ID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_SERVICE_ID for testing ibm_iam_trusted_profile_identity resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMTrustedProfileID = os.Getenv("IBM_IAM_TRUSTED_PROFILE_ID")
+	if IAMTrustedProfileID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_TRUSTED_PROFILE_ID for testing ibm_iam_trusted_profile_identity resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	Datacenter = os.Getenv("IBM_DATACENTER")
@@ -581,10 +595,22 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
 	}
 
-	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
-	if ISAddressPrefixCIDR == "" {
-		ISAddressPrefixCIDR = "10.120.0.0/24"
-		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	ISCIDR2 = os.Getenv("SL_CIDR_2")
+	if ISCIDR2 == "" {
+		ISCIDR2 = "10.240.64.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
+	}
+
+	ISPublicSSHKeyFilePath = os.Getenv("IS_PUBLIC_SSH_KEY_PATH")
+	if ISPublicSSHKeyFilePath == "" {
+		ISPublicSSHKeyFilePath = "./test-fixtures/.ssh/pkcs8_rsa.pub"
+		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_instance datasource else it is set to default value './test-fixtures/.ssh/pkcs8_rsa.pub'")
+	}
+
+	ISPrivateSSHKeyFilePath = os.Getenv("IS_PRIVATE_SSH_KEY_PATH")
+	if ISPrivateSSHKeyFilePath == "" {
+		ISPrivateSSHKeyFilePath = "./test-fixtures/.ssh/pkcs8_rsa"
+		fmt.Println("[INFO] Set the environment variable IS_PRIVATE_SSH_KEY_PATH for testing ibm_is_instance datasource else it is set to default value './test-fixtures/.ssh/pkcs8_rsa'")
 	}
 
 	IsResourceGroupID = os.Getenv("SL_RESOURCE_GROUP_ID")

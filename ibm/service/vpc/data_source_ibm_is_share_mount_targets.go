@@ -250,7 +250,7 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(dataSourceIbmIsShareTargetsID(d))
+	d.SetId(dataSourceIBMIsShareTargetsID(d))
 
 	if shareTargetCollection.MountTargets != nil {
 		err = d.Set("mount_targets", dataSourceShareMountTargetCollectionFlattenTargets(shareTargetCollection.MountTargets))

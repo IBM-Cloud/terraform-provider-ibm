@@ -428,28 +428,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
 			},
-			"whitelist": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"address": {
-							Description:  "Whitelist IP address in CIDR notation",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validate.ValidateCIDR,
-						},
-						"description": {
-							Description:  "Unique white list description",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringLenBetween(1, 32),
-						},
-					},
-				},
-				Deprecated:    "Whitelist is deprecated please use allowlist",
-				ConflictsWith: []string{"allowlist"},
-			},
 			"allowlist": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -469,7 +447,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				ConflictsWith: []string{"whitelist"},
 			},
 			"logical_replication_slot": {
 				Type:     schema.TypeSet,
@@ -1594,16 +1571,12 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	_, hasWhitelist := d.GetOk("whitelist")
 	_, hasAllowlist := d.GetOk("allowlist")
 
-	if hasWhitelist || hasAllowlist {
+	if hasAllowlist {
 		var ipAddresses *schema.Set
-		if hasWhitelist {
-			ipAddresses = d.Get("whitelist").(*schema.Set)
-		} else {
-			ipAddresses = d.Get("allowlist").(*schema.Set)
-		}
+
+		ipAddresses = d.Get("allowlist").(*schema.Set)
 
 		entries := flex.ExpandAllowlist(ipAddresses)
 
@@ -1904,8 +1877,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
-	_, hasWhitelist := d.GetOk("whitelist")
-
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
 		ID: &instanceID,
 	}
@@ -1916,11 +1887,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
 	}
 
-	if hasWhitelist {
-		d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	} else {
-		d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	}
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
@@ -2257,15 +2224,12 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChange("whitelist") || d.HasChange("allowlist") {
+	if d.HasChange("allowlist") {
 		_, hasAllowlist := d.GetOk("allowlist")
-		_, hasWhitelist := d.GetOk("whitelist")
 
 		var entries interface{}
 
-		if hasWhitelist {
-			_, entries = d.GetChange("whitelist")
-		} else if hasAllowlist {
+		if hasAllowlist {
 			_, entries = d.GetChange("allowlist")
 		}
 
@@ -2290,7 +2254,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", instanceID, err))
+				"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
 		}
 	}
 
