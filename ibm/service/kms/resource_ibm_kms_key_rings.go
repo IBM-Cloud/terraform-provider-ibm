@@ -39,7 +39,7 @@ func ResourceIBMKmskeyRings() *schema.Resource {
 			"force_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "set to true to force delete this key ring. This allows key ring deletion as long as all keys inside are in a delete state",
+				Description: "set to true to force delete this key ring. This allows key ring deletion as long as all keys inside have status equals to 5 (destroyed)",
 				ForceNew:    false,
 				Default:     false,
 			},

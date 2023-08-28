@@ -33,8 +33,7 @@ resource "ibm_kms_key" "key" {
 }
 ```
 
-Sample example of deleting a key ring containing keys in a deleted state
-
+Sample example of deleting a key ring where all keys inside have status equals to 5 (destroyed)
 ```
 resource "ibm_kms_key_rings" "key_ring" {
   instance_id = ibm_resource_instance.kms_instance.guid
