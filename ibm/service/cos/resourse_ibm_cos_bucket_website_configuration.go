@@ -1,6 +1,7 @@
 package cos
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
@@ -51,13 +53,14 @@ func ResourceIBMCOSBucketWebsiteConfiguration() *schema.Resource {
 				Type:        schema.TypeList,
 				Required:    true,
 				MaxItems:    1,
-				Description: "description",
+				Description: "Configuration for Hosting a static website on COS with public access.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"error_document": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "This is returned when an error occurs.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"key": {
@@ -68,9 +71,10 @@ func ResourceIBMCOSBucketWebsiteConfiguration() *schema.Resource {
 							},
 						},
 						"index_document": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Home or the default page of the website.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"suffix": {
@@ -84,7 +88,8 @@ func ResourceIBMCOSBucketWebsiteConfiguration() *schema.Resource {
 							Type:          schema.TypeList,
 							Optional:      true,
 							MaxItems:      1,
-							ConflictsWith: []string{"website_configuration.0.error_document", "website_configuration.0.index_document", "website_configuration.0.routing_rule"},
+							Description:   "Redirect requests can be set to specific page documents, individual routing rules, or redirect all requests globally to one bucket or domain.",
+							ConflictsWith: []string{"website_configuration.0.error_document", "website_configuration.0.index_document", "website_configuration.0.routing_rule", "website_configuration.0.routing_rules"},
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"host_name": {
@@ -100,54 +105,64 @@ func ResourceIBMCOSBucketWebsiteConfiguration() *schema.Resource {
 							},
 						},
 						"routing_rule": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "Rules that define when a redirect is applied and the redirect behavior.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": {
-										Type:     schema.TypeList,
-										Optional: true,
-										MaxItems: 1,
+										Type:        schema.TypeList,
+										Optional:    true,
+										MaxItems:    1,
+										Description: "A condition that must be met for the specified redirect to be applie.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"http_error_code_returned_equals": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The HTTP error code when the redirect is applied. Valid codes are 4XX or 5XX..",
 												},
 												"key_prefix_equals": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The object key name prefix when the redirect is applied..",
 												},
 											},
 										},
 									},
 									"redirect": {
-										Type:     schema.TypeList,
-										Required: true,
-										MaxItems: 1,
+										Type:        schema.TypeList,
+										Required:    true,
+										MaxItems:    1,
+										Description: ".",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"host_name": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The host name the request should be redirected to.",
 												},
 												"http_redirect_code": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The HTTP redirect code to use on the response. Valid codes are 3XX except 300..",
 												},
 												"protocol": {
 													Type:         schema.TypeString,
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice(s3.Protocol_Values(), false),
+													Description:  "Protocol to be used in the Location header that is returned in the response.",
 												},
 												"replace_key_prefix_with": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The prefix of the object key name that replaces the value of KeyPrefixEquals in the redirect request.",
 												},
 												"replace_key_with": {
-													Type:     schema.TypeString,
-													Optional: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The object key to be used in the Location header that is returned in the response.",
 												},
 											},
 										},
@@ -155,8 +170,24 @@ func ResourceIBMCOSBucketWebsiteConfiguration() *schema.Resource {
 								},
 							},
 						},
+						"routing_rules": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Computed:      true,
+							Description:   "Rules that define when a redirect is applied and the redirect behavior.",
+							ConflictsWith: []string{"website_configuration.0.routing_rule"},
+							ValidateFunc:  validation.StringIsJSON,
+							StateFunc: func(v interface{}) string {
+								json, _ := structure.NormalizeJsonString(v)
+								return json
+							},
+						},
 					},
 				},
+			},
+			"website_endpoint": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -312,7 +343,7 @@ func routingRuleSetFunction(routingRuleSet []interface{}) []*s3.RoutingRule {
 	return rules
 }
 
-func websiteConfigurationSet(websiteConfigurationList []interface{}) *s3.WebsiteConfiguration {
+func websiteConfigurationSet(websiteConfigurationList []interface{}) (*s3.WebsiteConfiguration, error) {
 	var websiteConfig *s3.WebsiteConfiguration
 
 	website_configuration := s3.WebsiteConfiguration{}
@@ -342,8 +373,17 @@ func websiteConfigurationSet(websiteConfigurationList []interface{}) *s3.Website
 		website_configuration.RoutingRules = routingRuleSetFunction(routingRulesSet.([]interface{}))
 
 	}
+	// if json routing routes are provided
+	if routingRulesJsonSet, exist := configurationMap["routing_rules"]; exist {
+
+		var unmarshalledRules []*s3.RoutingRule
+		if err := json.Unmarshal([]byte(routingRulesJsonSet.(string)), &unmarshalledRules); err != nil {
+			return nil, fmt.Errorf("failed to update the json routing rules in the website configuration : %v", err)
+		}
+		websiteConfig.RoutingRules = unmarshalledRules
+	}
 	websiteConfig = &website_configuration
-	return websiteConfig
+	return websiteConfig, nil
 }
 
 func resourceIBMCOSBucketWebsiteConfigurationCreate(d *schema.ResourceData, meta interface{}) error {
@@ -364,8 +404,11 @@ func resourceIBMCOSBucketWebsiteConfigurationCreate(d *schema.ResourceData, meta
 	var websiteConfiguration *s3.WebsiteConfiguration
 	configuration, ok := d.GetOk("website_configuration")
 	if ok {
-		websiteConfiguration = websiteConfigurationSet(configuration.([]interface{}))
+		websiteConfiguration, err = websiteConfigurationSet(configuration.([]interface{}))
 
+	}
+	if err != nil {
+		return fmt.Errorf("failed to read website configuration for COS bucket %s, %v", bucketName, err)
 	}
 	putBucketWebsiteConfigurationInput := s3.PutBucketWebsiteInput{
 		Bucket:               aws.String(bucketName),
@@ -403,8 +446,11 @@ func resourceIBMCOSBucketWebsiteConfigurationUpdate(d *schema.ResourceData, meta
 		var websiteConfiguration *s3.WebsiteConfiguration
 		configuration, ok := d.GetOk("website_configuration")
 		if ok {
-			websiteConfiguration = websiteConfigurationSet(configuration.([]interface{}))
+			websiteConfiguration, err = websiteConfigurationSet(configuration.([]interface{}))
 
+		}
+		if err != nil {
+			return fmt.Errorf("failed to read website configuration for COS bucket %s, %v", bucketName, err)
 		}
 		putBucketWebsiteConfigurationInput := s3.PutBucketWebsiteInput{
 			Bucket:               aws.String(bucketName),
@@ -459,6 +505,10 @@ func resourceIBMCOSBucketWebsiteConfigurationRead(d *schema.ResourceData, meta i
 		if len(websiteConfiguration) > 0 {
 			d.Set("website_configuration", websiteConfiguration)
 		}
+		websiteEndpoint := getWebsiteEndpoint(bucketName, bucketLocation)
+		if websiteEndpoint != "" {
+			d.Set("website_endpoint", websiteEndpoint)
+		}
 
 	}
 	return nil
@@ -512,4 +562,11 @@ func parseWebsiteId(id string, info string) string {
 	}
 
 	return parseBucketId(bucketCRN, info)
+}
+
+func getWebsiteEndpoint(bucketName string, bucketLocation string) string {
+	return fmt.Sprintf("https://%s.s3-web.%s.cloud-object-storage.appdomain.cloud", bucketName, bucketLocation)
+
+	//https://newstaticwebhostingbucket0102.s3-web.us-south.cloud-object-storage.appdomain.cloud
+
 }

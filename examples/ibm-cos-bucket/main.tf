@@ -396,3 +396,47 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
     }
   }
 }
+
+
+
+#COS static webhosting
+
+
+# Create a bucket
+resource "ibm_cos_bucket" "cos_bucket_website_configuration" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+# Give public access to above mentioned bucket
+ 
+resource "ibm_iam_access_group_policy" "policy" { 
+  depends_on = [ibm_cos_bucket.cos_bucket_website_configuration] 
+  access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id 
+  roles = ["Object Reader"] 
+
+  resources { 
+    service = "cloud-object-storage" 
+    resource_type = "bucket" 
+    resource_instance_id = "COS instance guid" 
+    resource = data.ibm_cos_bucket.cos_bucket_website_configuration.bucket_name 
+  } 
+} 
+
+# Add website configuration
+
+resource ibm_cos_bucket_website_configuration "website" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index2.html"
+    }
+  }
+}
+
