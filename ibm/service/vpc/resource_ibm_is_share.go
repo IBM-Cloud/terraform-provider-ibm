@@ -58,12 +58,11 @@ func ResourceIbmIsShare() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"encryption_key": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				RequiredWith: []string{"size"},
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The CRN of the key to use for encrypting this file share.If no encryption key is provided, the share will not be encrypted.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The CRN of the key to use for encrypting this file share.If no encryption key is provided, the share will not be encrypted.",
 			},
 			"initial_owner": {
 				Type:         schema.TypeList,
@@ -822,10 +821,13 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			sharePrototype.ReplicaShare = replicaShare
 		}
 	} else {
-		sourceShare := d.Get("source_share").(string)
-		if sourceShare != "" {
-			sharePrototype.SourceShare = &vpcbetav1.ShareIdentity{
-				ID: &sourceShare,
+		sourceShareStr := d.Get("source_share").(string)
+		sourceShare := &vpcbetav1.ShareIdentity{}
+		if sourceShareStr != "" {
+			if strings.HasPrefix(sourceShareStr, "crn") {
+				sourceShare.CRN = &sourceShareStr
+			} else {
+				sourceShare.ID = &sourceShareStr
 			}
 		}
 		replicationCronSpec := d.Get("replication_cron_spec").(string)

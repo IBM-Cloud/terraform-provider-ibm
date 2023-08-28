@@ -136,7 +136,7 @@ The following arguments are supported:
 - `resource_group` - (Optional, String) The unique identifier for this resource group.
 - `replication_cron_spec` - (Optional, String) The cron specification for the file share replication schedule.
 - `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte.
-- `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
+- `source_share` - (Optional, String) The ID or CRN of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
 - `zone` - (Required, string) The globally unique name for this zone.
 
