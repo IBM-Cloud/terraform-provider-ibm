@@ -132,8 +132,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "The input variables for the configuration definition.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-					},
+					Schema: map[string]*schema.Schema{},
 				},
 			},
 			"setting": &schema.Schema{
@@ -141,8 +140,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-					},
+					Schema: map[string]*schema.Schema{},
 				},
 			},
 			"project_config_canonical_id": &schema.Schema{
@@ -599,6 +597,155 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "The type of a project configuration manual property.",
 			},
+			"definition": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The Schematics template property.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"output": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The outputs of a Schematics template property.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The variable name.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A short explanation of the output value.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
+								},
+							},
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of a project configuration manual property.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the configuration.",
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The description of the project configuration.",
+						},
+						"labels": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A collection of configuration labels.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"authorizations": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"trusted_profile": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The trusted profile for authorizations.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID.",
+												},
+												"target_iam_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID.",
+												},
+											},
+										},
+									},
+									"method": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+									},
+									"api_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IBM Cloud API Key.",
+									},
+								},
+							},
+						},
+						"compliance_profile": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The profile required for compliance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID.",
+									},
+									"instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID.",
+									},
+									"instance_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The location of the compliance instance.",
+									},
+									"attachment_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID.",
+									},
+									"profile_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the compliance profile.",
+									},
+								},
+							},
+						},
+						"locator_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A dotted value of catalogID.versionID.",
+						},
+						"input": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The input variables for the configuration definition.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{},
+							},
+						},
+						"setting": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -629,7 +776,6 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("description", projectConfigCanonical.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-
 
 	authorizations := []map[string]interface{}{}
 	if projectConfigCanonical.Authorizations != nil {
@@ -793,7 +939,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	output := []map[string]interface{}{}
 	if projectConfigCanonical.Output != nil {
-		for _, modelItem := range projectConfigCanonical.Output { 
+		for _, modelItem := range projectConfigCanonical.Output {
 			modelMap, err := dataSourceIbmProjectConfigOutputValueToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -807,6 +953,18 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	if err = d.Set("type", projectConfigCanonical.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+	}
+
+	definition := []map[string]interface{}{}
+	if projectConfigCanonical.Definition != nil {
+		modelMap, err := dataSourceIbmProjectConfigProjectConfigDefinitionResponseTerraformToMap(projectConfigCanonical.Definition)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		definition = append(definition, modelMap)
+	}
+	if err = d.Set("definition", definition); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting definition %s", err))
 	}
 
 	return nil
@@ -1053,6 +1211,65 @@ func dataSourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (m
 	}
 	if model.Value != nil {
 		modelMap["value"] = model.Value
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectConfigProjectConfigDefinitionResponseTerraformToMap(model *projectv1.ProjectConfigDefinitionResponseTerraform) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Output != nil {
+		output := []map[string]interface{}{}
+		for _, outputItem := range model.Output {
+			outputItemMap, err := dataSourceIbmProjectConfigOutputValueToMap(&outputItem)
+			if err != nil {
+				return modelMap, err
+			}
+			output = append(output, outputItemMap)
+		}
+		modelMap["output"] = output
+	}
+	if model.Type != nil {
+		modelMap["type"] = model.Type
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Labels != nil {
+		modelMap["labels"] = model.Labels
+	}
+	if model.Authorizations != nil {
+		authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
+	}
+	if model.ComplianceProfile != nil {
+		complianceProfileMap, err := dataSourceIbmProjectConfigProjectConfigComplianceProfileToMap(model.ComplianceProfile)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+	}
+	if model.LocatorID != nil {
+		modelMap["locator_id"] = model.LocatorID
+	}
+	if model.Input != nil {
+		inputMap, err := dataSourceIbmProjectConfigInputVariableToMap(model.Input)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["input"] = []map[string]interface{}{inputMap}
+	}
+	if model.Setting != nil {
+		settingMap, err := dataSourceIbmProjectConfigProjectConfigSettingToMap(model.Setting)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["setting"] = []map[string]interface{}{settingMap}
 	}
 	return modelMap, nil
 }

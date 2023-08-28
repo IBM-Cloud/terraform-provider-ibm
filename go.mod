@@ -24,7 +24,7 @@ require (
 	github.com/IBM/keyprotect-go-client v0.10.0
 	github.com/IBM/networking-go-sdk v0.42.2
 	github.com/IBM/platform-services-go-sdk v0.41.0
-	github.com/IBM/project-go-sdk v0.0.26-51
+	github.com/IBM/project-go-sdk v0.0.26-53
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
 	github.com/IBM/scc-go-sdk/v4 v4.0.2

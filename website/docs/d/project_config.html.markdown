@@ -99,6 +99,55 @@ Nested schema for **cra_logs**:
 
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 
+* `definition` - (List) The Schematics template property.
+Nested schema for **definition**:
+	* `authorizations` - (List) The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.
+	Nested schema for **authorizations**:
+		* `api_key` - (String) The IBM Cloud API Key.
+		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+		* `method` - (String) The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
+		* `trusted_profile` - (List) The trusted profile for authorizations.
+		Nested schema for **trusted_profile**:
+			* `id` - (String) The unique ID.
+			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+			* `target_iam_id` - (String) The unique ID.
+			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+	* `compliance_profile` - (List) The profile required for compliance.
+	Nested schema for **compliance_profile**:
+		* `attachment_id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `instance_id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `instance_location` - (String) The location of the compliance instance.
+		  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
+		* `profile_name` - (String) The name of the compliance profile.
+		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+	* `description` - (String) The description of the project configuration.
+	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
+	* `input` - (List) The input variables for the configuration definition.
+	Nested schema for **input**:
+	* `labels` - (List) A collection of configuration labels.
+	  * Constraints: The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.
+	* `locator_id` - (String) A dotted value of catalogID.versionID.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
+	* `name` - (String) The name of the configuration.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
+	* `output` - (List) The outputs of a Schematics template property.
+	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+	Nested schema for **output**:
+		* `description` - (String) A short explanation of the output value.
+		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
+		* `name` - (String) The variable name.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
+		* `value` - (String) Can be any value - a string, number, boolean, array, or object.
+	* `setting` - (List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
+	Nested schema for **setting**:
+	* `type` - (String) The type of a project configuration manual property.
+	  * Constraints: Allowable values are: `terraform_template`, `schematics_blueprint`.
+
 * `description` - (String) The description of the project configuration.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
 
