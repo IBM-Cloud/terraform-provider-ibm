@@ -3262,37 +3262,6 @@ func FlattenSatelliteZones(zones *schema.Set) []string {
 	return zoneList
 }
 
-// error object
-type ServiceErrorResponse struct {
-	Message    string
-	StatusCode int
-	Result     interface{}
-}
-
-func BeautifyError(err error, response *core.DetailedResponse) *ServiceErrorResponse {
-	var (
-		statusCode int
-		result     interface{}
-	)
-	if response != nil {
-		statusCode = response.StatusCode
-		result = response.Result
-	}
-	return &ServiceErrorResponse{
-		Message:    err.Error(),
-		StatusCode: statusCode,
-		Result:     result,
-	}
-}
-
-func (response *ServiceErrorResponse) String() string {
-	output, err := json.MarshalIndent(response, "", "    ")
-	if err == nil {
-		return fmt.Sprintf("%+v\n", string(output))
-	}
-	return fmt.Sprintf("Error : %#v", response)
-}
-
 // IAM Policy Management
 func GetResourceAttribute(name string, r iampolicymanagementv1.PolicyResource) *string {
 	for _, a := range r.Attributes {

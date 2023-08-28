@@ -514,7 +514,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 
 	vpc, response, err := sess.CreateVPC(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating VPC %s ", flex.BeautifyError(err, response))
+		return fmt.Errorf("[ERROR] Error while creating VPC \n%w\n%s", err, response)
 	}
 	d.SetId(*vpc.ID)
 

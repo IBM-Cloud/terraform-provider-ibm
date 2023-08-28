@@ -1231,7 +1231,7 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
-func (c *Config) ClientSession() (interface{}, error) {
+func (c *Config) ClientSession(client *gohttp.Client) (interface{}, error) {
 	sess, err := newSession(c)
 	if err != nil {
 		return nil, err
@@ -1822,6 +1822,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vpcErr = fmt.Errorf("[ERROR] Error occured while configuring vpc service: %q", err)
 	}
 	if vpcclient != nil && vpcclient.Service != nil {
+		vpcclient.Service.SetHTTPClient(client)
 		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		vpcclient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},

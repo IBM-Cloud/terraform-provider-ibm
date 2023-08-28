@@ -42,7 +42,7 @@ docker pull ibmterraform/terraform-provider-ibm-docker
 
 Complete the following steps to configure the IBM Cloud provider plug-in for Terraform v0.13 and newer versions.
 
-1. [Download and install Terraform for your system](https://www.terraform.io/intro/getting-started/install.html). 
+1. [Download and install Terraform for your system](https://www.terraform.io/intro/getting-started/install.html).
 
 2. Create a `versions.tf` file in in your Terraform module folder and add a `terraform` block using the syntax below. Note, you must be using Terraform v0.13.x or a newer version.
 ```
@@ -62,7 +62,7 @@ Complete the following steps to configure the IBM Cloud provider plug-in for Ter
 
 If you want to run Terraform with the IBM Cloud provider plugin on your system, complete the following steps:
 
-1. [Download and install Terraform for your system](https://www.terraform.io/intro/getting-started/install.html). 
+1. [Download and install Terraform for your system](https://developer.hashicorp.com/terraform/downloads).
 
 2. [Download the IBM Cloud provider plugin for Terraform](https://github.com/IBM-Bluemix/terraform-provider-ibm/releases).
 
@@ -127,7 +127,7 @@ You will also need to export the following environment variables for running the
 * `IAAS_CLASSIC_API_KEY` - The IBM Cloud Classic Infrastructure API Key
 * `IAAS_CLASSIC_USERNAME` - The IBM Cloud Classic Infrastructure username associated with the Classic InfrastAPI Key.
 
-Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables. 
+Additional environment variables may be required depending on the tests being run. Check console log for warning messages about required variables.
 
 
 # IBM Cloud Ansible Modules
