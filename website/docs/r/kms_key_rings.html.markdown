@@ -33,6 +33,16 @@ resource "ibm_kms_key" "key" {
 }
 ```
 
+Sample example of deleting a key ring containing keys in a deleted state
+
+```
+resource "ibm_kms_key_rings" "key_ring" {
+  instance_id = ibm_resource_instance.kms_instance.guid
+  key_ring_id = "key-ring-id"
+  force_delete = true
+}
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
