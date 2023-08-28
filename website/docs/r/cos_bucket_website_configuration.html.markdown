@@ -163,10 +163,12 @@ Review the argument references that you can specify for your resource.
   
   Nested scheme for `website_configuration`:
   - `error_document`- (Optional , Conflicts with `redirect_all_requests_to`) When a static website bucket error occurs, an HTML page of the error provided by the configured `error_document` will be returned.
+  
   Nested scheme for `error_document`:
   - `key`- (Required,String) Object key name to use when a 4XX class error occurs.
 
   - `index_document`- (Optional , Required if `redirect_all_requests_to` is not specified) This is the home or default page of the website.
+  
   Nested scheme for `index_document`:
   - `suffix`- (Required,String)- This suffix is the document that will be returned for requests made to the root of the website .For example, if the suffix is `index.html` and you make a request to `mywebsitedomain.s3-web.us-east.cloud-object-storage.appdomain.cloud`, the data that is returned will be for `mywebsitedomain.s3-web.us-east.cloud-object-storage.appdomain.cloud/index.html`.
   **Note:**
@@ -193,7 +195,7 @@ Review the argument references that you can specify for your resource.
    - `replace_key_prefix_with` - (Optional, Conflicts with `replace_key_with`) Object key prefix to use in the redirect request. For example, to redirect requests for all pages with prefix docs/ (objects in the docs/ folder) to documents/, you can set a condition block with key_prefix_equals set to docs/ and in the redirect set replace_key_prefix_with to /documents.
   - `replace_key_with` - (Optional, Conflicts with `replace_key_prefix_with`) Specific object key to use in the redirect request. For example, redirect request to error.html
 
- - `routing_rules` - (Optional, Conflicts with `routing_rule` and `redirect_all_requests_to`) JSON array containing routing rules describing redirect behavior and when redirects are applied. Use this parameter when your routing rules contain empty String values ("") as seen in the example above.
+  - `routing_rules` - (Optional, Conflicts with `routing_rule` and `redirect_all_requests_to`) JSON array containing routing rules describing redirect behavior and when redirects are applied. Use this parameter when your routing rules contain empty String values ("") as seen in the example above.
   
 **Note:**
  There is a limitation of 50 routing rules per website configuration.
