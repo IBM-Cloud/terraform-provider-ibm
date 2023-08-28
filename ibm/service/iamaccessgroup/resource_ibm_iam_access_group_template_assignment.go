@@ -198,7 +198,7 @@ func resourceIBMIAMAccessGroupTemplateAssignmentCreate(context context.Context, 
 
 	d.SetId(*templateAssignmentResponse.ID)
 
-	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccountSettingsTemplateAssigned)
+	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessGroupTemplateAssigned)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error assigning %s", err))
 	}
@@ -309,7 +309,7 @@ func resourceIBMIAMAccessGroupTemplateAssignmentUpdate(context context.Context, 
 			log.Printf("[DEBUG] UpdateAssignmentWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateAssignmentWithContext failed %s\n%s", err, response))
 		}
-		waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccountSettingsTemplateAssigned)
+		waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccessGroupTemplateAssigned)
 	}
 
 	return resourceIBMIAMAccessGroupTemplateAssignmentRead(context, d, meta)
@@ -331,7 +331,7 @@ func resourceIBMIAMAccessGroupTemplateAssignmentDelete(context context.Context, 
 		return diag.FromErr(fmt.Errorf("DeleteAssignmentWithContext failed %s\n%s", err, response))
 	}
 
-	waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccountSettingsTemplateAssigned)
+	waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccessGroupTemplateAssignmentDeleted)
 
 	d.SetId("")
 
@@ -352,7 +352,7 @@ func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.Resour
 	return stateConf.WaitForState()
 }
 
-func isAccountSettingsTemplateAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccessGroupTemplateAssigned(id string, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 		if err != nil {
@@ -386,5 +386,31 @@ func isAccountSettingsTemplateAssigned(id string, meta interface{}) resource.Sta
 		}
 
 		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+	}
+}
+
+func isAccessGroupTemplateAssignmentDeleted(id string, meta interface{}) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
+		if err != nil {
+			return nil, failed, err
+		}
+
+		getAssignmentOptions := &iamaccessgroupsv2.GetAssignmentOptions{}
+
+		getAssignmentOptions.SetAssignmentID(id)
+
+		assignment, response, err := iamAccessGroupsClient.GetAssignment(getAssignmentOptions)
+
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return assignment, complete, nil
+			}
+
+			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
+		} else {
+			log.Printf("Assignment removal still in progress\n")
+		}
+		return assignment, InProgress, nil
 	}
 }

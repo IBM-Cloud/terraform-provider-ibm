@@ -66,11 +66,15 @@ resource "ibm_iam_access_group_template" "iam_access_group_template_instance" {
 
 You can specify the following arguments for this resource.
 
-* `account_id` - (Required, Forces new resource, String) The ID of the account to which the access group template is assigned.
-  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_-]+$/`.
-* `description` - (Optional, Forces new resource, String) The description of the access group template.
+* `name` - (Required, String) The name of the access group template.
+  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9!@#$%^&*()_+{}:;"'<>,.?\/|\\-\\s]+$/`.
+    
+  **Note:** "Name" will be out of sync when anyone of the version resource updates this parameter. Please update this parameter with the latest version name 
+* `description` - (Optional, String) The description of the access group template.
   * Constraints: The maximum length is `250` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9!@#$%^&*()_+{}:;"'<>,.?\/|\\-\\s]+$/`.
-* `group` - (Optional, Forces new resource, List) Access Group Component.
+* `account_id` - (Required, String) The ID of the account to which the access group template is assigned.
+  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_-]+$/`.
+* `group` - (Optional, List) Access Group Component.
 Nested schema for **group**:
 	* `action_controls` - (Optional, List) Access group action controls component.
 	Nested schema for **action_controls**:
@@ -119,16 +123,14 @@ Nested schema for **group**:
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9!@#$%^&*()_+{}:;"'<>,.?\/|\\-\\s]+$/`. The maximum length is `50` items. The minimum length is `0` items.
 	* `name` - (Required, String) Give the access group a unique name that doesn't conflict with other templates access group name in the given account. This is shown in child accounts.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9!@#$%^&*()_+{}:;"'<>,.?\/|\\-\\s]+$/`.
-* `name` - (Required, Forces new resource, String) The name of the access group template.
-  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9!@#$%^&*()_+{}:;"'<>,.?\/|\\-\\s]+$/`.
-* `policy_template_references` - (Optional, Forces new resource, List) References to policy templates assigned to the access group template.
+* `policy_template_references` - (Optional, List) References to policy templates assigned to the access group template.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **policy_template_references**:
 	* `id` - (Optional, String) Policy template ID.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_-]+$/`.
 	* `version` - (Optional, String) Policy template version.
 	  * Constraints: The maximum length is `2` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]+$/`.
-* `transaction_id` - (Optional, Forces new resource, String) An optional transaction id for the request.
+* `transaction_id` - (Optional, String) An optional transaction id for the request.
   * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_-]+$/`.
 
 ## Attribute Reference
