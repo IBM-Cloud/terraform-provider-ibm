@@ -175,13 +175,18 @@ Review the argument references that you can specify for your resource.
     The suffix must not be empty and must not include a slash character.
 
   - `redirec_all_requests_to`- (Optional , Required if `index_document` is not specified) Specifies the redirect behavior for every request to the bucket's website endpoint.Conflicts with `error_document`, `index_document`, and `routing_rule`.
+  
   Nested scheme for `redirec_all_requests_to`:
    - `host_name`- (Required,String) Name of the host where requests are redirected.
    - `protocol`- (Optional,String) Protocol to use when redirecting requests. The default is the protocol that is used in the original request. Valid values: http, https.
 
   - `routing_rule`- (Optional , Conflicts with `redirect_all_requests_to` is not specified) List of rules that define when a redirect is applied and the redirect behavior.
-  Nested scheme for `redirec_all_requests_to`:
+
+
+  Nested scheme for `routing_rule`:
    - `condition`- (Optional) Configuration block for a condition to be satisfied for the redirect behaviour to be applied.
+
+
   Nested scheme for `condition`:
 
    - `http_error_code_returned_equals` - (Optional, Required if key_prefix_equals is not specified) HTTP error code when the redirect is applied. If specified with `key_prefix_equals`, then both must be true for the redirect to be applied.
