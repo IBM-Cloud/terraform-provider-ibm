@@ -20,34 +20,34 @@ import (
 
 func ResourceIbmProject() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmProjectCreate,
-		ReadContext:     resourceIbmProjectRead,
-		UpdateContext:   resourceIbmProjectUpdate,
-		DeleteContext:   resourceIbmProjectDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmProjectCreate,
+		ReadContext:   resourceIbmProjectRead,
+		UpdateContext: resourceIbmProjectUpdate,
+		DeleteContext: resourceIbmProjectDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"resource_group": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:     schema.TypeString,
+				Required: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_project", "resource_group"),
 				Description: "The resource group where the project's data and tools are created.",
 			},
 			"location": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
-				Description: "The location where the project's data and tools are created.",
+				Description:  "The location where the project's data and tools are created.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:     schema.TypeString,
+				Optional: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_project", "name"),
 				Description: "The name of the project.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:     schema.TypeString,
+				Optional: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_project", "description"),
 				Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
 			},

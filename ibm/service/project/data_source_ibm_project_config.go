@@ -132,8 +132,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "The input variables for the configuration definition.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-					},
+					Schema: map[string]*schema.Schema{},
 				},
 			},
 			"setting": &schema.Schema{
@@ -141,8 +140,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-					},
+					Schema: map[string]*schema.Schema{},
 				},
 			},
 			"project_config_canonical_id": &schema.Schema{
@@ -734,8 +732,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "The input variables for the configuration definition.",
 							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-								},
+								Schema: map[string]*schema.Schema{},
 							},
 						},
 						"setting": &schema.Schema{
@@ -743,8 +740,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.",
 							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-								},
+								Schema: map[string]*schema.Schema{},
 							},
 						},
 					},
@@ -780,7 +776,6 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("description", projectConfigCanonical.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-
 
 	authorizations := []map[string]interface{}{}
 	if projectConfigCanonical.Authorizations != nil {
@@ -944,7 +939,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	output := []map[string]interface{}{}
 	if projectConfigCanonical.Output != nil {
-		for _, modelItem := range projectConfigCanonical.Output { 
+		for _, modelItem := range projectConfigCanonical.Output {
 			modelMap, err := dataSourceIbmProjectConfigOutputValueToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)

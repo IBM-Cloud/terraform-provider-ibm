@@ -5,6 +5,7 @@ package project
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -20,29 +21,29 @@ import (
 
 func ResourceIbmProjectConfig() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmProjectConfigCreate,
-		ReadContext:     resourceIbmProjectConfigRead,
-		UpdateContext:   resourceIbmProjectConfigUpdate,
-		DeleteContext:   resourceIbmProjectConfigDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmProjectConfigCreate,
+		ReadContext:   resourceIbmProjectConfigRead,
+		UpdateContext: resourceIbmProjectConfigUpdate,
+		DeleteContext: resourceIbmProjectConfigDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project_config", "project_id"),
-				Description: "The unique project ID.",
+				Description:  "The unique project ID.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project_config", "name"),
-				Description: "The name of the configuration.",
+				Description:  "The name of the configuration.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:     schema.TypeString,
+				Optional: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_project_config", "description"),
 				Description: "The description of the project configuration.",
 			},
@@ -128,8 +129,8 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				},
 			},
 			"locator_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:     schema.TypeString,
+				Optional: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_project_config", "locator_id"),
 				Description: "A dotted value of catalogID.versionID.",
 			},
@@ -139,8 +140,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Optional:    true,
 				Description: "The input variables for the configuration definition.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-					},
+					Schema: map[string]*schema.Schema{},
 				},
 			},
 			"setting": &schema.Schema{
@@ -149,8 +149,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Optional:    true,
 				Description: "Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-					},
+					Schema: map[string]*schema.Schema{},
 				},
 			},
 			"version": &schema.Schema{
@@ -248,7 +247,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Type:        schema.TypeMap,
 							Optional:    true,
 							Description: "The summary of the Code Risk Analyzer logs of the configuration.",
-							Elem: &schema.Schema{Type: schema.TypeString},
+							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"timestamp": &schema.Schema{
 							Type:        schema.TypeString,
@@ -344,43 +343,43 @@ func ResourceIbmProjectConfig() *schema.Resource {
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the plan jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"apply_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the apply jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"destroy_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the destroy jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"message_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The message summaries of jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"plan_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of plan jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"apply_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of apply jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"destroy_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of destroy jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},
 							},
@@ -415,43 +414,43 @@ func ResourceIbmProjectConfig() *schema.Resource {
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the plan jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"apply_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the apply jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"destroy_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the destroy jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"message_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The message summaries of jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"plan_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of plan jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"apply_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of apply jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"destroy_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of destroy jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},
 							},
@@ -486,43 +485,43 @@ func ResourceIbmProjectConfig() *schema.Resource {
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the plan jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"apply_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the apply jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"destroy_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The summary of the destroy jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"message_summary": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The message summaries of jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"plan_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of plan jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"apply_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of apply jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									"destroy_messages": &schema.Schema{
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Description: "The messages of destroy jobs on the configuration.",
-										Elem: &schema.Schema{Type: schema.TypeString},
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},
 							},
@@ -696,8 +695,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Optional:    true,
 							Description: "The input variables for the configuration definition.",
 							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-								},
+								Schema: map[string]*schema.Schema{},
 							},
 						},
 						"setting": &schema.Schema{
@@ -706,8 +704,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Optional:    true,
 							Description: "Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.",
 							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-								},
+								Schema: map[string]*schema.Schema{},
 							},
 						},
 					},
@@ -1070,8 +1067,8 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 	hasChange := false
 
 	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "project_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "project_id"))
 	}
 	if d.HasChange("name") {
 		updateConfigOptions.SetName(d.Get("name").(string))

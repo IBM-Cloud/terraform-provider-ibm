@@ -348,7 +348,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	cumulativeNeedsAttentionView := []map[string]interface{}{}
 	if projectCanonical.CumulativeNeedsAttentionView != nil {
-		for _, modelItem := range projectCanonical.CumulativeNeedsAttentionView { 
+		for _, modelItem := range projectCanonical.CumulativeNeedsAttentionView {
 			modelMap, err := dataSourceIbmProjectCumulativeNeedsAttentionToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -406,7 +406,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	configs := []map[string]interface{}{}
 	if projectCanonical.Configs != nil {
-		for _, modelItem := range projectCanonical.Configs { 
+		for _, modelItem := range projectCanonical.Configs {
 			modelMap, err := dataSourceIbmProjectProjectConfigCollectionMemberTerraformToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
