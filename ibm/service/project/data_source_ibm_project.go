@@ -143,7 +143,7 @@ func DataSourceIbmProject() *schema.Resource {
 						"project_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The unique ID.",
+							Description: "The unique ID of a project.",
 						},
 						"version": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -168,61 +168,242 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "The state of the configuration.",
 						},
-						"approved_version": &schema.Schema{
+						"pipeline_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The pipeline state of the configuration. It only exists after the first configuration validation.",
+						},
+						"update_available": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The flag that indicates whether a configuration update is available.",
+						},
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"updated_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"last_approved": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The project configuration version.",
+							Description: "The last approved metadata of the configuration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"needs_attention_state": &schema.Schema{
-										Type:        schema.TypeList,
+									"is_forced": &schema.Schema{
+										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "The needs attention state of a configuration.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+										Description: "The flag that indicates whether the approval was forced approved.",
 									},
-									"state": &schema.Schema{
+									"comment": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The state of the configuration.",
+										Description: "The comment left by the user who approved the configuration.",
 									},
-									"version": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "The version number of the configuration.",
-									},
-									"href": &schema.Schema{
+									"timestamp": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A relative URL.",
+										Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+									},
+									"user_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID of a project.",
 									},
 								},
 							},
 						},
-						"installed_version": &schema.Schema{
+						"last_save": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the configuration.",
+						},
+						"labels": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A collection of configuration labels.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The description of the project configuration.",
+						},
+						"authorizations": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"trusted_profile": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The trusted profile for authorizations.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID of a project.",
+												},
+												"target_iam_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID of a project.",
+												},
+											},
+										},
+									},
+									"method": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+									},
+									"api_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IBM Cloud API Key.",
+									},
+								},
+							},
+						},
+						"compliance_profile": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The profile required for compliance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID of a project.",
+									},
+									"instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID of a project.",
+									},
+									"instance_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The location of the compliance instance.",
+									},
+									"attachment_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID of a project.",
+									},
+									"profile_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the compliance profile.",
+									},
+								},
+							},
+						},
+						"locator_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A dotted value of catalogID.versionID.",
+						},
+						"input": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The inputs of a Schematics template property.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The variable name.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
+								},
+							},
+						},
+						"setting": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the configuration setting.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The value of the configuration setting.",
+									},
+								},
+							},
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of a project configuration manual property.",
+						},
+						"output": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The outputs of a Schematics template property.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The variable name.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A short explanation of the output value.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Can be any value - a string, number, boolean, array, or object.",
+									},
+								},
+							},
+						},
+						"active_draft": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The project configuration version.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"needs_attention_state": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The needs attention state of a configuration.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"state": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The state of the configuration.",
-									},
 									"version": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The version number of the configuration.",
+									},
+									"state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The state of the configuration draft.",
+									},
+									"pipeline_state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The pipeline state of the configuration. It only exists after the first configuration validation.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
@@ -235,7 +416,7 @@ func DataSourceIbmProject() *schema.Resource {
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The project configuration definition summary.",
+							Description: "The project configuration definition.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -243,67 +424,162 @@ func DataSourceIbmProject() *schema.Resource {
 										Computed:    true,
 										Description: "The name of the configuration.",
 									},
+									"labels": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "A collection of configuration labels.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
 									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The description of the project configuration.",
 									},
-								},
-							},
-						},
-						"check_job": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The action job performed on the project configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
+									"authorizations": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The unique ID.",
+										Description: "The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"trusted_profile": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The trusted profile for authorizations.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique ID of a project.",
+															},
+															"target_iam_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique ID of a project.",
+															},
+														},
+													},
+												},
+												"method": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+												},
+												"api_key": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IBM Cloud API Key.",
+												},
+											},
+										},
 									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
+									"compliance_profile": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "A relative URL.",
+										Description: "The profile required for compliance.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID of a project.",
+												},
+												"instance_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID of a project.",
+												},
+												"instance_location": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The location of the compliance instance.",
+												},
+												"attachment_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID of a project.",
+												},
+												"profile_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the compliance profile.",
+												},
+											},
+										},
 									},
-								},
-							},
-						},
-						"install_job": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The action job performed on the project configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
+									"locator_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The unique ID.",
+										Description: "A dotted value of catalogID.versionID.",
 									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
+									"input": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "A relative URL.",
+										Description: "The inputs of a Schematics template property.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The variable name.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Can be any value - a string, number, boolean, array, or object.",
+												},
+											},
+										},
 									},
-								},
-							},
-						},
-						"uninstall_job": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The action job performed on the project configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
+									"setting": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The unique ID.",
+										Description: "Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the configuration setting.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The value of the configuration setting.",
+												},
+											},
+										},
 									},
-									"href": &schema.Schema{
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A relative URL.",
+										Description: "The type of a project configuration manual property.",
+									},
+									"output": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The outputs of a Schematics template property.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The variable name.",
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A short explanation of the output value.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Can be any value - a string, number, boolean, array, or object.",
+												},
+											},
+										},
 									},
 								},
 							},
@@ -394,7 +670,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	definition := []map[string]interface{}{}
 	if projectCanonical.Definition != nil {
-		modelMap, err := dataSourceIbmProjectProjectDefinitionTerraformToMap(projectCanonical.Definition)
+		modelMap, err := dataSourceIbmProjectProjectDefinitionResponseToMap(projectCanonical.Definition)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -407,7 +683,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	configs := []map[string]interface{}{}
 	if projectCanonical.Configs != nil {
 		for _, modelItem := range projectCanonical.Configs {
-			modelMap, err := dataSourceIbmProjectProjectConfigCollectionMemberTerraformToMap(&modelItem)
+			modelMap, err := dataSourceIbmProjectProjectConfigCanonicalToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -438,21 +714,15 @@ func dataSourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulati
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectDefinitionTerraformToMap(model *projectv1.ProjectDefinitionTerraform) (map[string]interface{}, error) {
+func dataSourceIbmProjectProjectDefinitionResponseToMap(model *projectv1.ProjectDefinitionResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
-	if model.Description != nil {
-		modelMap["description"] = model.Description
-	}
-	if model.DestroyOnDelete != nil {
-		modelMap["destroy_on_delete"] = model.DestroyOnDelete
-	}
+	modelMap["name"] = model.Name
+	modelMap["description"] = model.Description
+	modelMap["destroy_on_delete"] = model.DestroyOnDelete
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigCollectionMemberTerraformToMap(model *projectv1.ProjectConfigCollectionMemberTerraform) (map[string]interface{}, error) {
+func dataSourceIbmProjectProjectConfigCanonicalToMap(model *projectv1.ProjectConfigCanonical) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID
@@ -472,83 +742,266 @@ func dataSourceIbmProjectProjectConfigCollectionMemberTerraformToMap(model *proj
 	if model.State != nil {
 		modelMap["state"] = model.State
 	}
-	if model.ApprovedVersion != nil {
-		approvedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
+	if model.PipelineState != nil {
+		modelMap["pipeline_state"] = model.PipelineState
 	}
-	if model.InstalledVersion != nil {
-		installedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.InstalledVersion)
+	if model.UpdateAvailable != nil {
+		modelMap["update_available"] = model.UpdateAvailable
+	}
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.LastApproved != nil {
+		lastApprovedMap, err := dataSourceIbmProjectProjectConfigMetadataLastApprovedToMap(model.LastApproved)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["installed_version"] = []map[string]interface{}{installedVersionMap}
+		modelMap["last_approved"] = []map[string]interface{}{lastApprovedMap}
+	}
+	if model.LastSave != nil {
+		modelMap["last_save"] = model.LastSave.String()
+	}
+	modelMap["name"] = model.Name
+	if model.Labels != nil {
+		modelMap["labels"] = model.Labels
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Authorizations != nil {
+		authorizationsMap, err := dataSourceIbmProjectProjectConfigAuthToMap(model.Authorizations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
+	}
+	if model.ComplianceProfile != nil {
+		complianceProfileMap, err := dataSourceIbmProjectProjectConfigComplianceProfileToMap(model.ComplianceProfile)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+	}
+	modelMap["locator_id"] = model.LocatorID
+	if model.Input != nil {
+		input := []map[string]interface{}{}
+		for _, inputItem := range model.Input {
+			inputItemMap, err := dataSourceIbmProjectProjectConfigInputVariableToMap(&inputItem)
+			if err != nil {
+				return modelMap, err
+			}
+			input = append(input, inputItemMap)
+		}
+		modelMap["input"] = input
+	}
+	if model.Setting != nil {
+		setting := []map[string]interface{}{}
+		for _, settingItem := range model.Setting {
+			settingItemMap, err := dataSourceIbmProjectProjectConfigSettingCollectionToMap(&settingItem)
+			if err != nil {
+				return modelMap, err
+			}
+			setting = append(setting, settingItemMap)
+		}
+		modelMap["setting"] = setting
+	}
+	if model.Type != nil {
+		modelMap["type"] = model.Type
+	}
+	if model.Output != nil {
+		output := []map[string]interface{}{}
+		for _, outputItem := range model.Output {
+			outputItemMap, err := dataSourceIbmProjectOutputValueToMap(&outputItem)
+			if err != nil {
+				return modelMap, err
+			}
+			output = append(output, outputItemMap)
+		}
+		modelMap["output"] = output
+	}
+	if model.ActiveDraft != nil {
+		activeDraftMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.ActiveDraft)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["active_draft"] = []map[string]interface{}{activeDraftMap}
 	}
 	if model.Definition != nil {
-		definitionMap, err := dataSourceIbmProjectProjectConfigDefinitionSummaryToMap(model.Definition)
+		definitionMap, err := dataSourceIbmProjectProjectConfigDefinitionToMap(model.Definition)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["definition"] = []map[string]interface{}{definitionMap}
 	}
-	if model.CheckJob != nil {
-		checkJobMap, err := dataSourceIbmProjectActionJobWithIdAndHrefToMap(model.CheckJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["check_job"] = []map[string]interface{}{checkJobMap}
-	}
-	if model.InstallJob != nil {
-		installJobMap, err := dataSourceIbmProjectActionJobWithIdAndHrefToMap(model.InstallJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["install_job"] = []map[string]interface{}{installJobMap}
-	}
-	if model.UninstallJob != nil {
-		uninstallJobMap, err := dataSourceIbmProjectActionJobWithIdAndHrefToMap(model.UninstallJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["uninstall_job"] = []map[string]interface{}{uninstallJobMap}
-	}
 	if model.Href != nil {
 		modelMap["href"] = model.Href
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectProjectConfigMetadataLastApprovedToMap(model *projectv1.ProjectConfigMetadataLastApproved) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["is_forced"] = model.IsForced
+	if model.Comment != nil {
+		modelMap["comment"] = model.Comment
+	}
+	modelMap["timestamp"] = model.Timestamp.String()
+	modelMap["user_id"] = model.UserID
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TrustedProfile != nil {
+		trustedProfileMap, err := dataSourceIbmProjectProjectConfigAuthTrustedProfileToMap(model.TrustedProfile)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["trusted_profile"] = []map[string]interface{}{trustedProfileMap}
+	}
+	if model.Method != nil {
+		modelMap["method"] = model.Method
+	}
+	if model.ApiKey != nil {
+		modelMap["api_key"] = model.ApiKey
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectProjectConfigAuthTrustedProfileToMap(model *projectv1.ProjectConfigAuthTrustedProfile) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.TargetIamID != nil {
+		modelMap["target_iam_id"] = model.TargetIamID
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectProjectConfigComplianceProfileToMap(model *projectv1.ProjectConfigComplianceProfile) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.InstanceID != nil {
+		modelMap["instance_id"] = model.InstanceID
+	}
+	if model.InstanceLocation != nil {
+		modelMap["instance_location"] = model.InstanceLocation
+	}
+	if model.AttachmentID != nil {
+		modelMap["attachment_id"] = model.AttachmentID
+	}
+	if model.ProfileName != nil {
+		modelMap["profile_name"] = model.ProfileName
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectProjectConfigInputVariableToMap(model *projectv1.ProjectConfigInputVariable) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = model.Name
+	if model.Value != nil {
+		modelMap["value"] = model.Value
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectProjectConfigSettingCollectionToMap(model *projectv1.ProjectConfigSettingCollection) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = model.Name
+	modelMap["value"] = model.Value
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectOutputValueToMap(model *projectv1.OutputValue) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = model.Name
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Value != nil {
+		modelMap["value"] = model.Value
 	}
 	return modelMap, nil
 }
 
 func dataSourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.NeedsAttentionState != nil {
-		modelMap["needs_attention_state"] = model.NeedsAttentionState
-	}
-	modelMap["state"] = model.State
 	modelMap["version"] = flex.IntValue(model.Version)
+	modelMap["state"] = model.State
+	if model.PipelineState != nil {
+		modelMap["pipeline_state"] = model.PipelineState
+	}
 	if model.Href != nil {
 		modelMap["href"] = model.Href
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigDefinitionSummaryToMap(model *projectv1.ProjectConfigDefinitionSummary) (map[string]interface{}, error) {
+func dataSourceIbmProjectProjectConfigDefinitionToMap(model *projectv1.ProjectConfigDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
+	if model.Labels != nil {
+		modelMap["labels"] = model.Labels
+	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProjectActionJobWithIdAndHrefToMap(model *projectv1.ActionJobWithIdAndHref) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
+	if model.Authorizations != nil {
+		authorizationsMap, err := dataSourceIbmProjectProjectConfigAuthToMap(model.Authorizations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
 	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
+	if model.ComplianceProfile != nil {
+		complianceProfileMap, err := dataSourceIbmProjectProjectConfigComplianceProfileToMap(model.ComplianceProfile)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+	}
+	modelMap["locator_id"] = model.LocatorID
+	if model.Input != nil {
+		input := []map[string]interface{}{}
+		for _, inputItem := range model.Input {
+			inputItemMap, err := dataSourceIbmProjectProjectConfigInputVariableToMap(&inputItem)
+			if err != nil {
+				return modelMap, err
+			}
+			input = append(input, inputItemMap)
+		}
+		modelMap["input"] = input
+	}
+	if model.Setting != nil {
+		setting := []map[string]interface{}{}
+		for _, settingItem := range model.Setting {
+			settingItemMap, err := dataSourceIbmProjectProjectConfigSettingCollectionToMap(&settingItem)
+			if err != nil {
+				return modelMap, err
+			}
+			setting = append(setting, settingItemMap)
+		}
+		modelMap["setting"] = setting
+	}
+	if model.Type != nil {
+		modelMap["type"] = model.Type
+	}
+	if model.Output != nil {
+		output := []map[string]interface{}{}
+		for _, outputItem := range model.Output {
+			outputItemMap, err := dataSourceIbmProjectOutputValueToMap(&outputItem)
+			if err != nil {
+				return modelMap, err
+			}
+			output = append(output, outputItemMap)
+		}
+		modelMap["output"] = output
 	}
 	return modelMap, nil
 }

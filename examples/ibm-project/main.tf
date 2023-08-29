@@ -16,33 +16,90 @@ resource "ibm_project" "project_instance" {
     is_draft = true
     needs_attention_state = [ "anything as a string" ]
     state = "approved"
-    approved_version {
-      needs_attention_state = [ "anything as a string" ]
-      state = "approved"
-      version = 1
-      href = "href"
+    pipeline_state = "pipeline_failed"
+    update_available = true
+    created_at = "2021-01-31T09:44:12Z"
+    updated_at = "2021-01-31T09:44:12Z"
+    last_approved {
+      is_forced = true
+      comment = "comment"
+      timestamp = "2021-01-31T09:44:12Z"
+      user_id = "user_id"
     }
-    installed_version {
-      needs_attention_state = [ "anything as a string" ]
-      state = "approved"
+    last_save = "2021-01-31T09:44:12Z"
+    name = "name"
+    labels = [ "labels" ]
+    description = "description"
+    authorizations {
+      trusted_profile {
+        id = "id"
+        target_iam_id = "target_iam_id"
+      }
+      method = "method"
+      api_key = "api_key"
+    }
+    compliance_profile {
+      id = "id"
+      instance_id = "instance_id"
+      instance_location = "instance_location"
+      attachment_id = "attachment_id"
+      profile_name = "profile_name"
+    }
+    locator_id = "locator_id"
+    input {
+      name = "name"
+      value = "anything as a string"
+    }
+    setting {
+      name = "name"
+      value = "value"
+    }
+    type = "terraform_template"
+    output {
+      name = "name"
+      description = "description"
+      value = "anything as a string"
+    }
+    active_draft {
       version = 1
+      state = "discarded"
+      pipeline_state = "pipeline_failed"
       href = "href"
     }
     definition {
       name = "name"
+      labels = [ "labels" ]
       description = "description"
-    }
-    check_job {
-      id = "id"
-      href = "href"
-    }
-    install_job {
-      id = "id"
-      href = "href"
-    }
-    uninstall_job {
-      id = "id"
-      href = "href"
+      authorizations {
+        trusted_profile {
+          id = "id"
+          target_iam_id = "target_iam_id"
+        }
+        method = "method"
+        api_key = "api_key"
+      }
+      compliance_profile {
+        id = "id"
+        instance_id = "instance_id"
+        instance_location = "instance_location"
+        attachment_id = "attachment_id"
+        profile_name = "profile_name"
+      }
+      locator_id = "locator_id"
+      input {
+        name = "name"
+        value = "anything as a string"
+      }
+      setting {
+        name = "name"
+        value = "value"
+      }
+      type = "terraform_template"
+      output {
+        name = "name"
+        description = "description"
+        value = "anything as a string"
+      }
     }
     href = "href"
   }
@@ -52,8 +109,8 @@ resource "ibm_project" "project_instance" {
 resource "ibm_project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
   name = var.project_config_name
-  description = var.project_config_description
   labels = var.project_config_labels
+  description = var.project_config_description
   authorizations {
     trusted_profile {
       id = "id"
@@ -71,8 +128,12 @@ resource "ibm_project_config" "project_config_instance" {
   }
   locator_id = var.project_config_locator_id
   input {
+    name = "name"
+    value = "anything as a string"
   }
   setting {
+    name = "name"
+    value = "value"
   }
 }
 
