@@ -31,7 +31,6 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 			"template_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The policy template ID and Version.",
 			},
 			"policy": {
@@ -169,6 +168,7 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
 			"account_id": {
 				Type:     schema.TypeString,
@@ -187,37 +187,12 @@ func ResourceIBMIAMPolicyTemplateVersionValidator() *validate.ResourceValidator 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "name",
+			Identifier:                 "template_id",
 			ValidateFunctionIdentifier: validate.StringLenBetween,
 			Type:                       validate.TypeString,
 			Required:                   true,
 			MinValueLength:             1,
-			MaxValueLength:             300,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "account_id",
-			ValidateFunctionIdentifier: validate.StringLenBetween,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			MinValueLength:             1,
-			MaxValueLength:             300,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "version",
-			ValidateFunctionIdentifier: validate.StringLenBetween,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			MinValueLength:             1,
-			MaxValueLength:             30,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "description",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^.*$`,
-			MinValueLength:             1,
-			MaxValueLength:             300,
+			MaxValueLength:             51,
 		},
 	)
 
@@ -245,6 +220,9 @@ func resourceIBMIAMPolicyTemplateVersionCreate(context context.Context, d *schem
 	}
 	if _, ok := d.GetOk("committed"); ok {
 		createPolicyTemplateVersionOptions.SetCommitted(d.Get("committed").(bool))
+	}
+	if _, ok := d.GetOk("name"); ok {
+		createPolicyTemplateVersionOptions.SetName(d.Get("name").(string))
 	}
 
 	policyTemplate, response, err := iamPolicyManagementClient.CreatePolicyTemplateVersion(createPolicyTemplateVersionOptions)
@@ -326,7 +304,7 @@ func resourceIBMIAMPolicyTemplateVersionRead(context context.Context, d *schema.
 
 func resourceIBMIAMPolicyTemplateVersionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	if d.HasChange("policy") || d.HasChange("description") || d.HasChange("committed") {
+	if d.HasChange("policy") || d.HasChange("description") || d.HasChange("committed") || d.HasChange("name") {
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 		if err != nil {
 			return diag.FromErr(err)
@@ -363,6 +341,10 @@ func resourceIBMIAMPolicyTemplateVersionUpdate(context context.Context, d *schem
 
 		if committed, ok := d.GetOk("committed"); ok {
 			replacePolicyTemplateOptions.SetCommitted(committed.(bool))
+		}
+
+		if name, ok := d.GetOk("name"); ok {
+			replacePolicyTemplateOptions.SetName(name.(string))
 		}
 
 		policy, err := generateTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)

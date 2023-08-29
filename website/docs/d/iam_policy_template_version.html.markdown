@@ -2,8 +2,8 @@
 layout: "ibm"
 page_title: "IBM : ibm_iam_policy_template_version"
 description: |-
-  Get information about policy_template
-subcategory: "IAM Policy Management"
+  Get information about policy_template_version
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_policy_template_version

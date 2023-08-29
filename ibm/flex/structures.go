@@ -3463,7 +3463,7 @@ func MapRolesToPolicyRoles(roles []iampolicymanagementv1.Roles) []iampolicymanag
 	return policyRoles
 }
 
-func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2Policy, d *schema.ResourceData, meta interface{}) ([]string, error) {
+func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplateMetaData, d *schema.ResourceData, meta interface{}) ([]string, error) {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return []string{}, err

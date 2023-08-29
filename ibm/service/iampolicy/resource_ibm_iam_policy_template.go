@@ -23,7 +23,7 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMIAMPolicyTemplateCreate,
 		ReadContext:   resourceIBMIAMPolicyTemplateVersionRead,
-		UpdateContext: resourceIBMIAMPolicyTemplateUpdate,
+		UpdateContext: resourceIBMIAMPolicyTemplateVersionUpdate,
 		DeleteContext: resourceIBMIAMPolicyTemplateVersionDelete,
 		Exists:        resourceIBMIAMPolicyTemplateVersionExists,
 		Importer:      &schema.ResourceImporter{},
@@ -34,12 +34,6 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_iam_policy_template", "name"),
 				Description:  "name of template.",
-			},
-			"account_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_iam_policy_template", "account_id"),
-				Description:  "account id where this template will be created.",
 			},
 			"policy": {
 				Type:        schema.TypeList,
@@ -184,6 +178,10 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 				Computed:    true,
 				Description: "Template Version.",
 			},
+			"account_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -193,14 +191,6 @@ func ResourceIBMIAMPolicyTemplateValidator() *validate.ResourceValidator {
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "name",
-			ValidateFunctionIdentifier: validate.StringLenBetween,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			MinValueLength:             1,
-			MaxValueLength:             300,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "account_id",
 			ValidateFunctionIdentifier: validate.StringLenBetween,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -227,11 +217,17 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Failed to fetch BluemixUserDetails %s", err))
+	}
+
+	accountID := userDetails.UserAccount
 
 	createPolicyTemplateOptions := &iampolicymanagementv1.CreatePolicyTemplateOptions{}
 
 	createPolicyTemplateOptions.SetName(d.Get("name").(string))
-	createPolicyTemplateOptions.SetAccountID(d.Get("account_id").(string))
+	createPolicyTemplateOptions.SetAccountID(accountID)
 
 	policyModel, err := generateTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
 	if err != nil {
@@ -254,19 +250,6 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 	version, _ := strconv.Atoi(*policyTemplate.Version)
 	d.SetId(fmt.Sprintf("%s/%d", *policyTemplate.ID, version))
 	return resourceIBMIAMPolicyTemplateVersionRead(context, d, meta)
-}
-
-func resourceIBMIAMPolicyTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if d.HasChange("name") || d.HasChange("account_id") {
-		return diag.FromErr(fmt.Errorf("Update failed. Reason: Name and accountId can't be updated"))
-	}
-
-	return resourceIBMIAMPolicyTemplateVersionUpdate(context, d, meta)
 }
 
 func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.TemplatePolicy, error) {

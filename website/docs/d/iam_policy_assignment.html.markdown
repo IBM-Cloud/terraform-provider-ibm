@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_policy_assignment"
 description: |-
   Get information about policy_assignments
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_policy_assignment
@@ -19,12 +19,6 @@ data "ibm_iam_policy_assignments" "policy_assignment" {
 ```
 
 ## Argument Reference
-
-You can specify the following arguments for this data source.
-
-* `accept_language` - (Optional, String) Language code for translations* `default` - English* `de` -  German (Standard)* `en` - English* `es` - Spanish (Spain)* `fr` - French (Standard)* `it` - Italian (Standard)* `ja` - Japanese* `ko` - Korean* `pt-br` - Portuguese (Brazil)* `zh-cn` - Chinese (Simplified, PRC)* `zh-tw` - (Chinese, Taiwan).
-  * Constraints: The default value is `default`. The minimum length is `1` character.
-* `account_id` - (Required, String) The account GUID in which the policies belong to.
 
 
 ## Attribute Reference
@@ -43,6 +37,14 @@ Nested schema for **policy_assignments**:
 	* `id` - (String) Policy assignment ID.
 	* `last_modified_at` - (String) The UTC timestamp when the policy assignment was last modified.
 	* `last_modified_by_id` - (String) The iam ID of the entity that last modified the policy assignment.
+	* `options` - (List) List of objects with required properties for a policy assignment.
+  		* Constraints: The maximum length is `5` items. The minimum length is `1` item.
+	Nested schema for **options**:
+        * `root_requester_id` - (String) The policy assignment requester id.
+        * `root_template_id` - (String) The template id where this policy is being assigned from.
+        * `root_template_version` - (String) The template version where this policy is being assigned from.
+        * `subject_id` - (String) The policy subject id.
+        * `subject_type` - (String) The policy subject type; either 'iam_id' or 'access_group_id'.
 	* `resources` - (List) Object for each account assigned.
 	  * Constraints: The minimum length is `1` item.
 	Nested schema for **resources**:

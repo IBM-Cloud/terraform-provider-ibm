@@ -21,11 +21,6 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 		ReadContext: dataSourceIBMIAMPolicyAssignmentsRead,
 
 		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The account GUID in which the policies belong to.",
-			},
 			"template_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -215,6 +210,40 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 								},
 							},
 						},
+						"options": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of objects with required properties for a policy assignment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"subject_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The policy subject type; either 'iam_id' or 'access_group_id'.",
+									},
+									"subject_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The policy subject id.",
+									},
+									"root_requester_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The policy assignment requester id.",
+									},
+									"root_template_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The template id where this policy is being assigned from.",
+									},
+									"root_template_version": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The template version where this policy is being assigned from.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -228,9 +257,16 @@ func dataSourceIBMIAMPolicyAssignmentsRead(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Failed to fetch BluemixUserDetails %s", err))
+	}
+
+	accountID := userDetails.UserAccount
+
 	listPolicyAssignmentsOptions := &iampolicymanagementv1.ListPolicyAssignmentsOptions{}
 
-	listPolicyAssignmentsOptions.SetAccountID(d.Get("account_id").(string))
+	listPolicyAssignmentsOptions.SetAccountID(accountID)
 	if _, ok := d.GetOk("template_id"); ok {
 		listPolicyAssignmentsOptions.SetTemplateID(d.Get("template_id").(string))
 	}
@@ -293,6 +329,18 @@ func dataSourceIBMPolicyAssignmentPolicyAssignmentRecordToMap(model *iampolicyma
 	if model.LastModifiedByID != nil {
 		modelMap["last_modified_by_id"] = model.LastModifiedByID
 	}
+
+	if model.Options != nil {
+		options := []map[string]interface{}{}
+		for _, modelItem := range model.Options {
+			modelMap, err := dataSourceIBMAssignmentPolicyAssignmentOptionsToMap(&modelItem)
+			if err != nil {
+				return modelMap, err
+			}
+			options = append(options, modelMap)
+		}
+		modelMap["options"] = options
+	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
 		for _, resourcesItem := range model.Resources {
@@ -303,6 +351,20 @@ func dataSourceIBMPolicyAssignmentPolicyAssignmentRecordToMap(model *iampolicyma
 			resources = append(resources, resourcesItemMap)
 		}
 		modelMap["resources"] = resources
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMAssignmentPolicyAssignmentOptionsToMap(model *iampolicymanagementv1.PolicyAssignmentOptions) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["subject_type"] = model.SubjectType
+	modelMap["subject_id"] = model.SubjectID
+	modelMap["root_requester_id"] = model.RootRequesterID
+	if model.RootTemplateID != nil {
+		modelMap["root_template_id"] = model.RootTemplateID
+	}
+	if model.RootTemplateVersion != nil {
+		modelMap["root_template_version"] = model.RootTemplateVersion
 	}
 	return modelMap, nil
 }

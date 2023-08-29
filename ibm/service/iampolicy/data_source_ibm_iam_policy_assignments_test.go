@@ -13,16 +13,14 @@ import (
 )
 
 func TestAccIBMIAMPolicyAssignmentsDataSourceBasic(t *testing.T) {
-	var accountID string = acc.IAMAccountId
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyAssignmentDataSourceConfigBasic(accountID),
+				Config: testAccCheckIBMPolicyAssignmentDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "policy_assignments.#"),
 				),
 			},
@@ -30,10 +28,8 @@ func TestAccIBMIAMPolicyAssignmentsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPolicyAssignmentDataSourceConfigBasic(accountID string) string {
+func testAccCheckIBMPolicyAssignmentDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_iam_policy_assignments" "policy_assignment" {
-			account_id = "%s"
-		}
-	`, accountID)
+		}`)
 }

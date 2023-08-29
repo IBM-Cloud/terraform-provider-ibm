@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_policy_template"
 description: |-
   Get information about policy_templates for an enterprise account_id
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_policy_template

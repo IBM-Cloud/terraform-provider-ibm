@@ -23,7 +23,6 @@ var (
 	serviceName             string = "is"
 	beforeUpdateServiceName string = "conversation"
 	updatedServiceName      string = "kms"
-	accountID               string = acc.IAMAccountId
 )
 
 func TestAccIBMIAMPolicyTemplateBasic(t *testing.T) {
@@ -33,11 +32,10 @@ func TestAccIBMIAMPolicyTemplateBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyTemplateConfigBasic(name, accountID, serviceName),
+				Config: testAccCheckIBMPolicyTemplateConfigBasic(name, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
 				),
 			},
@@ -52,20 +50,18 @@ func TestAccIBMIAMPolicyTemplateBasicUpdate(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyTemplateConfigBasic(name, accountID, beforeUpdateServiceName),
+				Config: testAccCheckIBMPolicyTemplateConfigBasic(name, beforeUpdateServiceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", beforeUpdateServiceName),
 				),
 			},
 			{
-				Config: testAccCheckIBMPolicyTemplateConfigBasicUpdate(name, accountID, updatedServiceName),
+				Config: testAccCheckIBMPolicyTemplateConfigBasicUpdate(name, updatedServiceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", updatedServiceName),
 				),
 			},
@@ -80,11 +76,10 @@ func TestAccIBMIAMPolicyTemplateBasicWithTags(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyTemplateConfigBasicWithTags(name, accountID, serviceName, "testing_tags"),
+				Config: testAccCheckIBMPolicyTemplateConfigBasicWithTags(name, serviceName, "testing_tags"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.tags.0.value", "testing_tags"),
 				),
@@ -100,11 +95,10 @@ func TestAccIBMIAMPolicyTemplateBasicCommit(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyTemplateConfigBasicCommit(name, accountID, serviceName),
+				Config: testAccCheckIBMPolicyTemplateConfigBasicCommit(name, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "committed", "true"),
 				),
@@ -178,12 +172,11 @@ func testAccCheckIBMPolicyTemplateDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMPolicyTemplateConfigBasic(name string, accountID string, serviceName string) string {
+func testAccCheckIBMPolicyTemplateConfigBasic(name string, serviceName string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_policy_template" "policy_template" {
 			name = "%s"
-			account_id = "%s"
 			policy {
 				type = "access"
 				description = "description"
@@ -197,15 +190,14 @@ func testAccCheckIBMPolicyTemplateConfigBasic(name string, accountID string, ser
 				roles = ["Operator"]
 			}
 		}
-	`, name, accountID, serviceName)
+	`, name, serviceName)
 }
 
-func testAccCheckIBMPolicyTemplateConfigBasicUpdate(name string, accountID string, serviceName string) string {
+func testAccCheckIBMPolicyTemplateConfigBasicUpdate(name string, serviceName string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_policy_template" "policy_template" {
 			name = "%s"
-			account_id = "%s"
 			policy {
 				type = "access"
 				description = "description"
@@ -219,15 +211,14 @@ func testAccCheckIBMPolicyTemplateConfigBasicUpdate(name string, accountID strin
 				roles = ["Operator", "KeyPurge"]
 			}
 		}
-	`, name, accountID, serviceName)
+	`, name, serviceName)
 }
 
-func testAccCheckIBMPolicyTemplateConfigBasicCommit(name string, accountID string, serviceName string) string {
+func testAccCheckIBMPolicyTemplateConfigBasicCommit(name string, serviceName string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_policy_template" "policy_template" {
 			name = "%s"
-			account_id = "%s"
 			policy {
 				type = "access"
 				description = "description"
@@ -242,15 +233,14 @@ func testAccCheckIBMPolicyTemplateConfigBasicCommit(name string, accountID strin
 			}
 			committed = true
 		}
-	`, name, accountID, serviceName)
+	`, name, serviceName)
 }
 
-func testAccCheckIBMPolicyTemplateConfigBasicWithTags(name string, accountID string, serviceName string, tagValue string) string {
+func testAccCheckIBMPolicyTemplateConfigBasicWithTags(name string, serviceName string, tagValue string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_policy_template" "policy_template" {
 			name = "%s"
-			account_id = "%s"
 			policy {
 				type = "access"
 				description = "description"
@@ -269,5 +259,5 @@ func testAccCheckIBMPolicyTemplateConfigBasicWithTags(name string, accountID str
 				roles = ["Operator"]
 			}
 		}
-	`, name, accountID, serviceName, tagValue)
+	`, name, serviceName, tagValue)
 }

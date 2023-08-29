@@ -22,7 +22,7 @@ func DataSourceIBMIAMPolicyTemplate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "The account GUID that the policy templates belong to.",
 			},
 			"policy_templates": {
@@ -192,9 +192,16 @@ func dataSourceIBMPolicyTemplateRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Failed to fetch BluemixUserDetails %s", err))
+	}
+
+	accountID := userDetails.UserAccount
+
 	listPolicyTemplatesOptions := &iampolicymanagementv1.ListPolicyTemplatesOptions{}
 
-	listPolicyTemplatesOptions.SetAccountID(d.Get("account_id").(string))
+	listPolicyTemplatesOptions.SetAccountID(accountID)
 
 	policyTemplateCollection, response, err := iamPolicyManagementClient.ListPolicyTemplatesWithContext(context, listPolicyTemplatesOptions)
 	if err != nil {

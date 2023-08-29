@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_policy_template"
 description: |-
   Manages policy_template.
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_policy_template
@@ -48,7 +48,9 @@ resource "ibm_iam_policy_template" "policy_template_instance" {
 You can specify the following arguments for this resource.
 
 * `name` - (String) Required field when creating a new template. Otherwise this field is optional. If the field is included it will change the name value for all existing versions of the template.
-  * Constraints: The maximum length is `30` characters. The minimum length is `1` character.
+  * Constraints: The maximum length is `100` characters. The minimum length is `1` character.
+
+	**Note** "Name" will be out of sync when anyone of the version resource updates this parameter. Please update this parameter with the latest version name
 * `account_id` - (Required, String) Enterprise account ID where this template will be created.
 * `committed` - (Optional, Boolean) Committed status of the template version.
 * `description` - (Optional, String) Description of the policy template. This is shown to users in the enterprise account. Use this to describe the purpose or context of the policy for enterprise users managing IAM templates.

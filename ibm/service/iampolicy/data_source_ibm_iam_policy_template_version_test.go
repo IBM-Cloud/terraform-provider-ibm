@@ -15,13 +15,12 @@ import (
 
 func TestAccIBMPolicyTemplateVersionDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
-	var accountID string = acc.IAMAccountId
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyTemplateVersionDataSourceConfigBasic(name, accountID),
+				Config: testAccCheckIBMPolicyTemplateVersionDataSourceConfigBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_template_version.policy_template", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_template_version.policy_template", "account_id"),
@@ -31,12 +30,11 @@ func TestAccIBMPolicyTemplateVersionDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPolicyTemplateVersionDataSourceConfigBasic(name string, accountID string) string {
+func testAccCheckIBMPolicyTemplateVersionDataSourceConfigBasic(name string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_iam_policy_template" "policy_template" {
 		name = "%s"
-		account_id = "%s"
 		policy {
 			type = "access"
 			description = "description"
@@ -55,5 +53,5 @@ func testAccCheckIBMPolicyTemplateVersionDataSourceConfigBasic(name string, acco
 		policy_template_id = ibm_iam_policy_template.policy_template.template_id
 		version = ibm_iam_policy_template.policy_template.version
 	}
-	`, name, accountID)
+	`, name)
 }
