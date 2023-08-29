@@ -238,6 +238,7 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	start := ""
 	allrecs := []vpcv1.ShareMountTarget{}
 	listShareTargetsOptions := &vpcv1.ListShareMountTargetsOptions{}
