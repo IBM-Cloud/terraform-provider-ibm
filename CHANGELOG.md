@@ -1,3 +1,8 @@
+# 1.56.2 (Aug 29, 2023)
+
+BugFixes
+* upgrades to new beta SDK version which has updated version date for vpc api ([4770](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4770))
+
 # 1.56.1 (Aug 21, 2023)
 
 BugFixes
