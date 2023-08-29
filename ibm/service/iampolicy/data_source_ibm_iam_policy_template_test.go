@@ -21,7 +21,6 @@ func TestAccIBMPolicyTemplateDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMPolicyTemplateDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_template.policy_template", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_template.policy_template", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_template.policy_template", "policy_templates.#"),
 				),
 			},

@@ -20,11 +20,6 @@ func DataSourceIBMIAMPolicyTemplate() *schema.Resource {
 		ReadContext: dataSourceIBMPolicyTemplateRead,
 
 		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The account GUID that the policy templates belong to.",
-			},
 			"policy_templates": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -209,7 +204,7 @@ func dataSourceIBMPolicyTemplateRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("ListPolicyTemplatesWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(d.Get("account_id").(string))
+	d.SetId(accountID)
 
 	policyTemplates := []map[string]interface{}{}
 	if policyTemplateCollection.PolicyTemplates != nil {
