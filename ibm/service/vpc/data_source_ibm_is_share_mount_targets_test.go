@@ -23,14 +23,14 @@ func TestAccIBMIsShareTargetsDataSource(t *testing.T) {
 			{
 				Config: testAccCheckIBMIsShareTargetsDataSourceConfigBasic(shareName, vpcName, targetName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.0.created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.0.href"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.0.lifecycle_state"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.0.mount_path"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "share_targets.0.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.0.lifecycle_state"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.0.mount_path"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_mount_targets.is_share_targets", "mount_targets.0.resource_type"),
 				),
 			},
 		},
@@ -40,6 +40,7 @@ func TestAccIBMIsShareTargetsDataSource(t *testing.T) {
 func testAccCheckIBMIsShareTargetsDataSourceConfigBasic(sname, vpcName, targetName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_share" "is_share" {
+			access_control_mode = "vpc"
 			zone = "us-south-2"
 			size = 200
 			name = "%s"

@@ -29,7 +29,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
-	github.com/IBM/vpc-beta-go-sdk v0.5.0
+	github.com/IBM/vpc-beta-go-sdk v0.6.0
 	github.com/IBM/vpc-go-sdk v0.40.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1

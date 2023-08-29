@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -238,22 +239,35 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	start := ""
+	allrecs := []vpcbetav1.ShareMountTarget{}
 	listShareTargetsOptions := &vpcbetav1.ListShareMountTargetsOptions{}
 
 	listShareTargetsOptions.SetShareID(d.Get("share").(string))
 	if name, ok := d.GetOk("name"); ok {
 		listShareTargetsOptions.SetName(name.(string))
 	}
-	shareTargetCollection, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareTargetsOptions)
-	if err != nil {
-		log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+	for {
+		if start != "" {
+			listShareTargetsOptions.Start = &start
+		}
+		shareTargetCollection, response, err := vpcClient.ListShareMountTargetsWithContext(context, listShareTargetsOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ListShareTargetsWithContext failed %s\n%s", err, response)
+			return diag.FromErr(err)
+		}
+		start = flex.GetNext(shareTargetCollection.Next)
+		allrecs = append(allrecs, shareTargetCollection.MountTargets...)
+
+		if start == "" {
+			break
+		}
 	}
 
 	d.SetId(dataSourceIBMIsShareTargetsID(d))
 
-	if shareTargetCollection.MountTargets != nil {
-		err = d.Set("mount_targets", dataSourceShareMountTargetCollectionFlattenTargets(shareTargetCollection.MountTargets))
+	if len(allrecs) > 0 {
+		err = d.Set("mount_targets", dataSourceShareMountTargetCollectionFlattenTargets(allrecs))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
 		}
