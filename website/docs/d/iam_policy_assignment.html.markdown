@@ -14,7 +14,6 @@ Provides a read-only data source to retrieve information about policy_assignment
 
 ```hcl
 data "ibm_iam_policy_assignments" "policy_assignment" {
-	account_id = "account_id"
 }
 ```
 
@@ -53,13 +52,10 @@ Nested schema for **policy_assignments**:
 			* `error_message` - (List) The error response from API.
 			Nested schema for **error_message**:
 				* `errors` - (List) The errors encountered during the response.
-				  * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 				Nested schema for **errors**:
 					* `code` - (String) The API error code for the error.
-					  * Constraints: Allowable values are: `insufficent_permissions`, `invalid_body`, `invalid_token`, `missing_required_query_parameter`, `not_found`, `policy_conflict_error`, `policy_not_found`, `request_not_processed`, `role_conflict_error`, `role_not_found`, `too_many_requests`, `unable_to_process`, `unsupported_content_type`, `policy_template_conflict_error`, `policy_template_not_found`, `policy_assignment_not_found`, `policy_assignment_conflict_error`.
 					* `details` - (List) Additional error details.
 					Nested schema for **details**:
-						* `conflicts_with` - (List) Details of conflicting resource.
 						Nested schema for **conflicts_with**:
 							* `etag` - (String) The revision number of the resource.
 							* `policy` - (String) The conflicting policy id.
@@ -72,14 +68,9 @@ Nested schema for **policy_assignments**:
 			Nested schema for **resource_created**:
 				* `id` - (String) policy id.
 			* `status` - (String) The policy assignment status.
-			  * Constraints: Allowable values are: `in_progress`, `succeeded`, `succeed_with_errors`, `failed`.
 		* `target` - (String) Account ID where resources are assigned.
-		  * Constraints: The minimum length is `1` character.
 	* `target` - (String) assignment target id.
-	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character.
 	* `target_type` - (String) Assignment target type.
-	  * Constraints: Allowable values are: `Account`. The maximum length is `30` characters. The minimum length is `1` character.
 	* `template_id` - (String) policy template id.
-	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character.
 	* `template_version` - (String) policy template version.
-	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character.
+	* `account_id` - (String) Enterprise account ID where template will be created.

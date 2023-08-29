@@ -33,6 +33,8 @@ var Ibmid1 string
 var Ibmid2 string
 var IAMUser string
 var IAMAccountId string
+var IAMServiceId string
+var IAMTrustedProfileID string
 var Datacenter string
 var MachineType string
 var trustedMachineType string
@@ -265,11 +267,17 @@ var CeProjectId string
 var CeServiceInstanceID string
 var CeResourceKeyID string
 
+// for IAM Identity
+
+var IamIdentityAssignmentTargetAccountId string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
 	}
+
+	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
 
 	AppIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if AppIDTenantID == "" {
@@ -307,6 +315,16 @@ func init() {
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
 	if IAMAccountId == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing ibm_iam_trusted_profile resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMServiceId = os.Getenv("IBM_IAM_SERVICE_ID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_SERVICE_ID for testing ibm_iam_trusted_profile_identity resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMTrustedProfileID = os.Getenv("IBM_IAM_TRUSTED_PROFILE_ID")
+	if IAMTrustedProfileID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_TRUSTED_PROFILE_ID for testing ibm_iam_trusted_profile_identity resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	Datacenter = os.Getenv("IBM_DATACENTER")
@@ -1451,7 +1469,12 @@ func TestAccPreCheckEnterprise(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
+}
 
+func TestAccPreCheckAssignmentTargetAccount(t *testing.T) {
+	if v := os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT"); v == "" {
+		t.Fatal("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT must be set for IAM identity assignment tests")
+	}
 }
 
 func TestAccPreCheckEnterpriseAccountImport(t *testing.T) {

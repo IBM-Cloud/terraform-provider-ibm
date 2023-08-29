@@ -46,32 +46,22 @@ After your data source is created, you can read values from the following attrib
 Nested schema for **policy**:
 	* `roles` - (List) A set of displayNames.
 	* `description` - (String) Description of the policy. This is shown in child accounts when an access group or trusted profile template uses the policy template to assign access.
-	  * Constraints: The maximum length is `300` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 	* `pattern` - (String) Indicates pattern of rule, either 'time-based-conditions:once', 'time-based-conditions:weekly:all-day', or 'time-based-conditions:weekly:custom-hours'.
-	  * Constraints: The maximum length is `42` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z:-]*$/`.
 	* `resource` - (List) The resource attributes to which the policy grants access.
 	Nested schema for **resource**:
 		* `attributes` - (List) List of resource attributes to which the policy grants access.
-		  * Constraints: The minimum length is `1` item.
 		Nested schema for **attributes**:
 			* `key` - (String) The name of a resource attribute.
-			  * Constraints: The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_]*$/`.
 			* `operator` - (String) The operator of an attribute.
-			  * Constraints: Allowable values are: `stringEquals`, `stringExists`, `stringMatch`. The minimum length is `1` character.
 			* `value` - (String) The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.
 		* `tags` - (List) Optional list of resource tags to which the policy grants access.
-		  * Constraints: The minimum length is `1` item.
 		Nested schema for **tags**:
 			* `key` - (String) The name of an access management tag.
-			  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 _.-]*$/`.
 			* `operator` - (String) The operator of an access management tag.
-			  * Constraints: Allowable values are: `stringEquals`, `stringMatch`. The minimum length is `1` character.
 			* `value` - (String) The value of an access management tag.
-			  * Constraints: The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 _*?.-]*$/`.
 	* `rule` - (List) Additional access conditions associated with the policy.
 	Nested schema for **rule**:
 		* `conditions` - (List) List of conditions associated with a policy, e.g., time-based conditions that grant access over a certain time period.
-		  * Constraints: The maximum length is `10` items. The minimum length is `2` items.
 		Nested schema for **conditions**:
 			* `key` - (String) The name of an attribute.
 			  * Constraints: The minimum length is `1` character.
@@ -79,10 +69,6 @@ Nested schema for **policy**:
 			  * Constraints: Allowable values are: `timeLessThan`, `timeLessThanOrEquals`, `timeGreaterThan`, `timeGreaterThanOrEquals`, `dateTimeLessThan`, `dateTimeLessThanOrEquals`, `dateTimeGreaterThan`, `dateTimeGreaterThanOrEquals`, `dayOfWeekEquals`, `dayOfWeekAnyOf`. The minimum length is `1` character.
 			* `value` - (String) The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.
 		* `key` - (String) The name of an attribute.
-		  * Constraints: The minimum length is `1` character.
 		* `operator` - (String) The operator of an attribute.
-		  * Constraints: Allowable values are: `timeLessThan`, `timeLessThanOrEquals`, `timeGreaterThan`, `timeGreaterThanOrEquals`, `dateTimeLessThan`, `dateTimeLessThanOrEquals`, `dateTimeGreaterThan`, `dateTimeGreaterThanOrEquals`, `dayOfWeekEquals`, `dayOfWeekAnyOf`. The minimum length is `1` character.
 		* `value` - (String) The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.
-	* `type` - (String) The policy type; either 'access' or 'authorization'.
-	  * Constraints: Allowable values are: `access`, `authorization`.
-
+	* `type` - (String) The policy type: 'access'.

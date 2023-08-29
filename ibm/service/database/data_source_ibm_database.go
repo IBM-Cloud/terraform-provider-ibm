@@ -145,25 +145,6 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
-			"whitelist": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"address": {
-							Description: "Whitelist IP address in CIDR notation",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"description": {
-							Description: "Unique white list description",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-					},
-				},
-				Deprecated: "The whitelist field is deprecated please use allowlist",
-			},
 			"allowlist": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -175,7 +156,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 						},
 						"description": {
-							Description: "Unique white list description",
+							Description: "Unique allowlist description",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -712,7 +693,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	return nil
 }

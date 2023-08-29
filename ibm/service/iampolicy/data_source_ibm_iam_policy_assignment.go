@@ -228,6 +228,11 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 					},
 				},
 			},
+			"account_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Enterprise accountID.",
+			},
 		},
 	}
 }
@@ -288,6 +293,10 @@ func dataSourceIBMIAMPolicyAssignmentRead(context context.Context, d *schema.Res
 
 	if err = d.Set("last_modified_by_id", policyAssignmentRecord.LastModifiedByID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
+	}
+
+	if err = d.Set("account_id", policyAssignmentRecord.AccountID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
 
 	resources := []map[string]interface{}{}

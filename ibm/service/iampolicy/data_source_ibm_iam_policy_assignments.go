@@ -244,6 +244,11 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 								},
 							},
 						},
+						"account_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Enterprise accountID.",
+						},
 					},
 				},
 			},
@@ -328,6 +333,9 @@ func dataSourceIBMPolicyAssignmentPolicyAssignmentRecordToMap(model *iampolicyma
 	}
 	if model.LastModifiedByID != nil {
 		modelMap["last_modified_by_id"] = model.LastModifiedByID
+	}
+	if model.AccountID != nil {
+		modelMap["account_id"] = model.AccountID
 	}
 
 	if model.Options != nil {
