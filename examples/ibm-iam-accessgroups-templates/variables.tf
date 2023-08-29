@@ -19,11 +19,6 @@ variable "iam_access_group_template_description" {
   type        = string
   default     = "This access group template allows admin access to all IAM platform services in the account."
 }
-variable "iam_access_group_template_account_id" {
-  description = "The ID of the account to which the access group template is assigned."
-  type        = string
-  default     = "accountID-123"
-}
 
 // Resource arguments for iam_access_group_template_version
 variable "iam_access_group_template_version_template_id" {
@@ -75,11 +70,6 @@ variable "iam_access_group_template_assignment_target" {
 }
 
 // Data source arguments for iam_access_group_template
-variable "iam_access_group_template_account_id" {
-  description = "Enterprise account ID."
-  type        = string
-  default     = "accountID-123"
-}
 variable "iam_access_group_template_transaction_id" {
   description = "An optional transaction id for the request."
   type        = string
@@ -99,11 +89,6 @@ variable "ibm_iam_access_group_template_version_template_id" {
 }
 
 // Data source arguments for iam_access_group_template_assignment
-variable "iam_access_group_template_assignment_account_id" {
-  description = "Enterprise account ID."
-  type        = string
-  default     = "accountID-123"
-}
 variable "iam_access_group_template_assignment_template_id" {
   description = "Filter results by Template Id."
   type        = string

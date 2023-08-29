@@ -7,7 +7,6 @@ resource "ibm_iam_access_group_template" "iam_access_group_template_instance" {
   transaction_id = var.iam_access_group_template_transaction_id
   name = var.iam_access_group_template_name
   description = var.iam_access_group_template_description
-  account_id = var.iam_access_group_template_account_id
   group {
     name = "name"
     description = "description"
@@ -116,7 +115,6 @@ resource "ibm_iam_access_group_template_assignment" "iam_access_group_template_a
 /*
 // Create iam_access_group_template data source
 data "ibm_iam_access_group_template" "iam_access_group_template_instance" {
-  account_id = var.iam_access_group_template_account_id
   transaction_id = var.iam_access_group_template_transaction_id
   verbose = var.iam_access_group_template_verbose
 }
@@ -136,7 +134,6 @@ data "ibm_ibm_iam_access_group_template_version" "ibm_iam_access_group_template_
 /*
 // Create iam_access_group_template_assignment data source
 data "ibm_iam_access_group_template_assignment" "iam_access_group_template_assignment_instance" {
-  account_id = var.iam_access_group_template_assignment_account_id
   template_id = var.iam_access_group_template_assignment_template_id
   template_version = var.iam_access_group_template_assignment_template_version
   target = var.iam_access_group_template_assignment_target
