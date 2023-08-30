@@ -34,6 +34,16 @@ Review the argument reference that you can specify for your resource.
 * `resource_group_id` - (Optional, String) Resource group id the catalog is owned by.
 * `short_description` - (Optional, String) Description in the requested language.
 * `tags` - (Optional, List) List of tags associated with this catalog.
+* `target_account_contexts` - (Optional, List) List of target account contexts for this catalog. Can only be configured on an update, not on a create.
+Nested scheme for **target_account_contexts**:
+	* `api_key` - (Optional, String) API key of the target account.
+	* `name` - (Optional, String) Unique name/identifier for this target account context.
+	* `label` - (Optional, String) Label for this target account context.
+	* `project_id` - (Optional, String) Project ID.
+	* `trusted_profile` - (Optional, List) Trusted profile information.
+	Nested scheme for **trusted_profile**:
+		* `trusted_profile_id` - (Optional, String) Trusted profile ID.
+		* `target_service_id` - (Optional, String) Target service ID.
 
 ## Attribute Reference
 
@@ -53,6 +63,18 @@ In addition to all argument references listed, you can access the following attr
 * `rev` - (String) Cloudant revision.
 * `short_description` - (String) Description in the requested language.
 * `tags` - (List) List of tags associated with this catalog.
+* `target_account_contexts` - (List) List of target account contexts for this catalog.
+Nested scheme for **target_account_contexts**:
+	* `api_key` - (String) API key of the target account.
+	* `name` - (String) Unique name/identifier for this target account context.
+	* `label` - (String) Label for this target account context.
+	* `project_id` - (String) Project ID.
+	* `trusted_profile` - (List) Trusted profile information.
+	Nested scheme for **trusted_profile**:
+		* `trusted_profile_id` - (String) Trusted profile ID.
+		* `catalog_crn` - (String) CRN of this catalog.
+		* `catalog_name` - (String) Name of this catalog.
+		* `target_service_id` - (String) Target service ID.
 * `updated` - (String) The date-time this catalog was last updated.
 * `url` - (String) The url for this specific catalog.
 

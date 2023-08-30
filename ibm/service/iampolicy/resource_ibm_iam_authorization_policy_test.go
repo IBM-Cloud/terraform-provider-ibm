@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -39,7 +39,7 @@ func TestAccIBMIAMAuthorizationPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_authorization_policy.policy"
 	resource.Test(t, resource.TestCase{
@@ -67,7 +67,7 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 
 // TODO: Invalid authorizatoin header
 func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 	sResourceGroup := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	tResourceGroup := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_authorization_policy.policy"
@@ -94,7 +94,7 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -114,7 +114,7 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
 	})
 }
 func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -134,7 +134,7 @@ func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
 }
 
 func TestAccIBMIAMAuthorizationPolicy_ResourceAttributes(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 	sServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	tServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
@@ -155,7 +155,7 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceAttributes(t *testing.T) {
 }
 
 func TestAccIBMIAMAuthorizationPolicy_With_Transaction_id(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -202,7 +202,7 @@ func testAccCheckIBMIAMAuthorizationPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAuthorizationPolicyExists(n string, obj iampolicymanagementv1.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMAuthorizationPolicyExists(n string, obj iampolicymanagementv1.PolicyTemplateMetaData) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
