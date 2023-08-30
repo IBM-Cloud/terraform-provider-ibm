@@ -30,7 +30,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_vpc_routing_table" "example" {
   vpc                           = ibm_is_vpc.example.id
   name                          = "example-routing-table"
-  route_direct_link_ingress     = true
+  route_direct_link_ingress     = false
   route_transit_gateway_ingress = false
   route_vpc_zone_ingress        = false
 }
@@ -65,7 +65,7 @@ Review the argument references that you can specify for your resource.
 - `action` - (Optional, String) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
 - `destination` - (Required, Forces new resource, String) The destination of the route. 
 - `name` - (Optional, String) The user-defined name of the route. If unspecified, the name will be a hyphenated list of randomly selected words. You need to provide unique name within the VPC routing table the route resides in.
-- `next_hop` - (Required, String) The next hop of the route. It accepts IP address or a VPN connection ID. For `action` other than `deliver`, you must specify `0.0.0.0`. 
+- `next_hop` - (Required, String) The next hop of the route. It accepts IP address or a VPN gateway connection ID (`ibm_is_vpn_gateway_connection`) of a VPN Gateway (`ibm_is_vpn_gateway`) with the `mode = "route"` argument and in the same VPC as the route table for this route for an egress route. For action other than deliver, you must specify `0.0.0.0`.
 - `routing_table` - (Required, String) The routing table ID.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String)  Name of the zone. 

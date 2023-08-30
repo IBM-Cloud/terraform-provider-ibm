@@ -212,12 +212,12 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"not_before": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 						"not_after": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 					},
@@ -340,7 +340,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -378,7 +378,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -395,7 +395,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	if err = d.Set("common_name", secret.CommonName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if err = d.Set("intermediate_included", secret.IntermediateIncluded); err != nil {
@@ -528,7 +528,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 			if hasChange {
 				// Before returning an error, call the read function to update the Terraform state with the change
 				// that was already applied to the metadata
-				resourceIbmSmArbitrarySecretRead(context, d, meta)
+				resourceIbmSmImportedCertificateRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] CreateSecretVersionWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("CreateSecretVersionWithContext failed %s\n%s", err, response))
@@ -547,7 +547,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 		if err != nil {
 			if hasChange {
 				// Call the read function to update the Terraform state with the change already applied to the metadata
-				resourceIbmSmArbitrarySecretRead(context, d, meta)
+				resourceIbmSmImportedCertificateRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))

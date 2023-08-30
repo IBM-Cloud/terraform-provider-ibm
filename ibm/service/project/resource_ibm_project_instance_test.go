@@ -20,6 +20,8 @@ func TestAccIbmProjectInstanceBasic(t *testing.T) {
 	var conf projectv1.Project
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_update_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("Default")
+	location := fmt.Sprintf("us-south")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,15 +29,19 @@ func TestAccIbmProjectInstanceBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmProjectInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProjectInstanceConfigBasic(name),
+				Config: testAccCheckIbmProjectInstanceConfigBasic(resourceGroup, location, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmProjectInstanceExists("ibm_project_instance.project_instance", conf),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "resource_group", resourceGroup),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "location", location),
 					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmProjectInstanceConfigBasic(nameUpdate),
+				Config: testAccCheckIbmProjectInstanceConfigBasic(resourceGroup, location, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "resource_group", resourceGroup),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "location", location),
 					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "name", nameUpdate),
 				),
 			},
@@ -47,6 +53,10 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 	var conf projectv1.Project
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("Default")
+	location := fmt.Sprintf("us-south")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -54,16 +64,22 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmProjectInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProjectInstanceConfig(name),
+				Config: testAccCheckIbmProjectInstanceConfig(name, description, resourceGroup, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmProjectInstanceExists("ibm_project_instance.project_instance", conf),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "resource_group", resourceGroup),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "location", location),
 					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "description", description),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmProjectInstanceConfig(nameUpdate),
+				Config: testAccCheckIbmProjectInstanceConfig(nameUpdate, descriptionUpdate, resourceGroup, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "resource_group", resourceGroup),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "location", location),
 					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_project_instance.project_instance", "description", descriptionUpdate),
 				),
 			},
 			resource.TestStep{
@@ -80,22 +96,26 @@ func TestAccIbmProjectInstanceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmProjectInstanceConfigBasic(name string) string {
+func testAccCheckIbmProjectInstanceConfigBasic(resourceGroup string, location string, name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_project_instance" "project_instance" {
+			resource_group = "%s"
+			location = "%s"
+			name = "%s"
+		}
+	`, resourceGroup, location, name)
+}
+
+func testAccCheckIbmProjectInstanceConfig(name string, description string, resourceGroup string, location string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_project_instance" "project_instance" {
 			name = "%s"
-		}
-	`, name)
-}
-
-func testAccCheckIbmProjectInstanceConfig(name string) string {
-	return fmt.Sprintf(`
-
-        resource "ibm_project_instance" "project_instance" {
-            name = "%s"
+			description = "%s"
+			resource_group = "%s"
+            location = "%s"
             configs {
-                id = "id"
                 name = "name"
                 labels = [ "labels" ]
                 description = "description"
@@ -108,8 +128,8 @@ func testAccCheckIbmProjectInstanceConfig(name string) string {
                     value = "value"
                 }
             }
-        }
-    `, name)
+		}
+	`, name, description, resourceGroup, location)
 }
 
 func testAccCheckIbmProjectInstanceExists(n string, obj projectv1.Project) resource.TestCheckFunc {

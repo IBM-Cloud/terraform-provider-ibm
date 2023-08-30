@@ -45,6 +45,11 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `bandwidth`:
     - `type` - (String) The type for this profile field.
     - `value` - (Integer) The value for this profile field.
+- `console_types` - (List) The console type configuration for a bare metal server with this profile.
+  
+  Nested schema for  `console_types`:
+	- `type` - (String) The type for this profile field.
+	- `values` - (List) The console types for a bare metal server with this profile.
 - `cpu_architecture` - (List) The CPU architecture for a bare metal server with this profile.
   
   Nested scheme for `cpu_architecture`:
@@ -89,6 +94,12 @@ In addition to all argument reference list, you can access the following attribu
     - `type` - (String) The type for this profile field.
     - `value` - (String) The value for this profile field.
 - `name` - (String) The name of the profile.
+- `network_interface_count` - (List) 
+  
+  Nested schema for **network_interface_count**:
+	- `max` - (Integer) The maximum value for this profile field.
+	- `min` - (Integer) The minimum value for this profile field.
+	- `type` - (String) The type for this profile field.
 - `os_architecture` - (List) The supported OS architecture(s) for a bare metal server with this profile.
   Nested scheme for `os_architecture`:
     - `default` - (String) The default OS architecture for a bare metal server with this profile

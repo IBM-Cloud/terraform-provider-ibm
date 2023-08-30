@@ -38,7 +38,7 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 - `id` - (String) The unique identifier of the `en_source`.
-- `source_id` - (String) The unique identifier of the created destination.
+- `source_id` - (String) The unique identifier of the created source.
 - `updated_at` - (String) Last updated time.
 
 ## Import
@@ -53,10 +53,10 @@ The `id` property can be formed from `instance_guid`, and `source_id` in the fol
 
 - `instance_guid`: A string. Unique identifier for IBM Cloud Event Notifications instance.
 
-- `source_id`: A string. Unique identifier for Destination.
+- `source_id`: A string. Unique identifier for Source.
 
 **Example**
 
 ```
-$ terraform import ibm_en_source.en_source <instance_guid>/<destination_id>
+$ terraform import ibm_en_source.en_source <instance_guid>/<source_id>
 ```

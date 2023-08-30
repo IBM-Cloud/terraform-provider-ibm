@@ -42,6 +42,13 @@ resource "ibm_sm_public_certificate" "sm_public_certificate_instance" {
   }
 }
 
+resource "ibm_sm_public_certificate_action_validate_manual_dns" "sm_public_certificate_action_validate_manual_dns_instance" {
+  instance_id      = var.secrets_manager_instance_id
+  region           = var.region
+  endpoint_type    = var.endpoint_type
+  secret_id 	   = var.sm_public_certificate_action_validate_manual_dns_secret_id
+}
+
 // Provision sm_kv_secret resource instance
 resource "ibm_sm_kv_secret" "sm_kv_secret_instance" {
   instance_id   = var.secrets_manager_instance_id
@@ -182,6 +189,24 @@ resource "ibm_sm_private_certificate_configuration_template" "sm_private_certifi
   require_cn = var.sm_private_certificate_configuration_template_require_cn
   policy_identifiers = var.sm_private_certificate_configuration_template_policy_identifiers
   basic_constraints_valid_for_non_ca = var.sm_private_certificate_configuration_template_basic_constraints_valid_for_non_ca
+}
+
+// Provision ibm_sm_private_certificate_configuration_action_sign_csr resource instance
+resource "ibm_sm_private_certificate_configuration_action_sign_csr" "sm_private_certificate_configuration_action_sign_csr_instance" {
+  instance_id           = var.secrets_manager_instance_id
+  region                = var.region
+  endpoint_type         = var.endpoint_type
+  name                  = var.sm_private_certificate_configuration_action_sign_csr_name
+  csr                   = var.sm_private_certificate_configuration_action_sign_csr_csr
+}
+
+// Provision ibm_sm_private_certificate_configuration_action_set_signed resource instance
+resource "ibm_sm_private_certificate_configuration_action_set_signed" "sm_private_certificate_configuration_action_set_signed_instance" {
+  instance_id           = var.secrets_manager_instance_id
+  region                = var.region
+  endpoint_type         = var.endpoint_type
+  name                  = var.sm_private_certificate_configuration_action_set_signed_name
+  certificate           = var.sm_private_certificate_configuration_action_set_signed_certificate
 }
 
 // Provision sm_public_certificate_configuration_ca_lets_encrypt resource instance

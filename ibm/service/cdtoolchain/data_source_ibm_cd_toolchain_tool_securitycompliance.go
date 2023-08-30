@@ -99,28 +99,32 @@ func DataSourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						"trigger_scan": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Set to `enabled` to indicate that a DevSecOps pipeline task should trigger a Security and Compliance Center run of a Hybrid cloud validation scan. Note, each scan may incur charges. When enabled, other parameters become relevant that are needed to trigger that scan; `api_key`, `scope`, `profile`.",
+							Deprecated:  "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Description: "Set to `enabled` to indicate that a DevSecOps pipeline task should trigger a Security and Compliance Center run of a Hybrid cloud validation scan. Note, each scan may incur charges. When enabled, other parameters become relevant that are needed to trigger that scan; `api_key`, `scope`, `profile`. Hybrid cloud scans are deprecated and are planned to be removed. This option will stop working at that time. For more information see the [Security and Compliance Center Release Notes](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-release-notes#security-compliance-march312023).",
 						},
 						"api_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The IBM Cloud API key used to access the Security and Compliance Center API. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
+							Deprecated:  "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Description: "The IBM Cloud API key used to access the Security and Compliance Center API. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. For information about the deprecation see the `trigger_scan` parameter. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"scope": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of a Security and Compliance Center scope, which has previously been created in that service. When `trigger_scan` parameter is set to `enabled`, then the Validation scan will scan all the resources in that scope. Select a scope that contains this toolchain, so that the scan will find the evidence that has been recently updated by the DevSecOps pipeline-run. This parameter is only relevant when the `trigger_scan` parameter is `enabled`.",
+							Deprecated:  "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Description: "The name of a Security and Compliance Center scope, which has previously been created in that service. When the `trigger_scan` parameter is set to `enabled`, then the Validation scan will scan all the resources in that scope. Select a scope that contains this toolchain, so that the scan will find the evidence that has been recently updated by the DevSecOps pipeline-run. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. For information about the deprecation see the `trigger_scan` parameter.",
 						},
 						"profile": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of a Security and Compliance Center profile. Usually, use the predefined profile \"IBM Cloud Security Best Practices v1.0.0\", which contains the DevSecOps toolchain goals. Or use a user-authored customized profile that has been configured to contain those goals. When the `trigger_scan` parameter is set to `enabled`, then the Validation scan will use the controls and goals in the configured profile. If configured with a profile that does not check the DevSecOps toolchain goals, it might incorrectly indicate that the toolchain status is passed even though some of the DevSecOps scans had actually failed. This parameter is only relevant when the `trigger_scan` parameter is `enabled`.",
+							Deprecated:  "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Description: "The name of a Security and Compliance Center, Hybrid cloud profile. Usually, use the predefined profile \"IBM Cloud Security Best Practices v1.0.0\", which contains the DevSecOps toolchain goals. Or use a user-authored customized profile that has been configured to contain those goals. When the `trigger_scan` parameter is set to `enabled`, then the Validation scan will use the controls and goals in the configured profile. If configured with a profile that does not check the DevSecOps toolchain goals, it might incorrectly indicate that the toolchain status is passed even though some of the DevSecOps scans had actually failed. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. For information about the deprecation see the `trigger_scan` parameter.",
 						},
 						"use_profile_attachment": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Set to `enabled` to enable use profile with attachment, so that the scripts in the pipeline can interact with the Security and Compliance Center service. When enabled, other parameters become relevant; `scc_api_key`, `profile_name`, `profile_version`, `attachment_id`.",
+							Description: "Set to `enabled` to enable use profile with attachment, so that the scripts in the pipeline can interact with the Security and Compliance Center service. When enabled, other parameters become relevant; `scc_api_key`, `instance_crn`, `profile_name`, `profile_version`, `attachment_id`.",
 						},
 						"scc_api_key": &schema.Schema{
 							Type:        schema.TypeString,
@@ -128,10 +132,15 @@ func DataSourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 							Sensitive:   true,
 							Description: "The IBM Cloud API key used to access the Security and Compliance Center service, for the use profile with attachment setting. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
+						"instance_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Security and Compliance Center service instance CRN (Cloud Resource Name). It is recommended to provide an instance CRN, but when absent, the oldest service instance will be used. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+						},
 						"profile_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of a Security and Compliance Center profile. Usually, use the predefined profile \"IBM Cloud Security Best Practices\", which contains the DevSecOps Toolchain rules. Or use a user-authored customized profile that has been configured to contain those rules. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+							Description: "The name of a Security and Compliance Center profile. Usually, use one of the predefined profiles \"IBM Cloud Security Best Practices\" or \"IBM Cloud for Financial Services\", which contain the DevSecOps Toolchain rules. Or use a user-authored customized profile that has been configured to contain those rules. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
 						},
 						"profile_version": &schema.Schema{
 							Type:        schema.TypeString,
@@ -141,7 +150,7 @@ func DataSourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						"attachment_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "An attachment ID. An attachment is configured under a profile to define how a scan will be run. To find the attachment ID, in the browser, edit the attachment and the attachment ID is at the end of the URL. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+							Description: "An attachment ID. An attachment is configured under a profile to define how a scan will be run. To find the attachment ID, in the browser, in the attachments list, click on the attachment link, and a panel appears with a button to copy the attachment ID. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
 						},
 						"evidence_repo_url": &schema.Schema{
 							Type:        schema.TypeString,

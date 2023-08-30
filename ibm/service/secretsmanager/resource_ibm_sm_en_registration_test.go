@@ -70,6 +70,11 @@ func testAccCheckIbmSmEnRegistrationExists(n string, obj secretsmanagerv2.Notifi
 		}
 
 		obj = *notificationsRegistration
+
+		if err := verifyAttr(*notificationsRegistration.EventNotificationsInstanceCrn, acc.SecretsManagerENInstanceCrn, "snotification instance CRN"); err != nil {
+			return err
+		}
+
 		return nil
 	}
 }

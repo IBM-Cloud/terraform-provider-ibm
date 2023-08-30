@@ -57,15 +57,27 @@ Nested scheme for **rotation**:
 	* `rotate_keys` - (Optional, Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
+* `alt_names` - (Optional, Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
+  * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
+* `bundle_certs` - (Optional, Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
+* `akamai` - (Optional, List) The data required in order to use Akamai as the manual DNS provider. You can choose between two authentication methods: using .edgerc file or directly providing your Akamai's credentials. For more information see [here](https://techdocs.akamai.com/developer/docs/set-up-authentication-credentials)
+Nested scheme for **akamai**:
+    * `edgerc` - (Optional, Forces new resource, List) Using .edgerc file as the authentication method.
+    Nested scheme for **edgerc**:
+      * `path_to_edgerc` - (Optional, Forces new resource, String) Path to Akamai's configuration file.
+      * `config_section` - (Optional, Forces new resource, String) The section of the edgerc file to use. Default is `default`.
+    * `config` - (Optional, Forces new resource, List) Directly using your Akamai's authentication credentials.
+    Nested scheme for **config**:
+      * `client_secret` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+      * `host` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+      * `access_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
+      * `client_token` - (Optional, Forces new resource, String) Akamai's authentication credentials.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `secret_id` - The unique identifier of the PublicCertificate.
-* `alt_names` - (Forces new resource, List) With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.
-  * Constraints: The list items must match regular expression `/^(.*?)$/`. The maximum length is `99` items. The minimum length is `0` items.
-* `bundle_certs` - (Boolean) Indicates whether the issued certificate is bundled with intermediate certificates.
 * `certificate` - (Forces new resource, String) The PEM-encoded contents of your certificate.
   * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.

@@ -27,23 +27,24 @@ The argument reference that you need to specify for the data source.
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your data source is created.
 - `route_reports` - (String) List of all route reports for the transit gateway
-    
     Nested scheme for `route_reports`
     - `created_at` - (String) The date and time resource created.
+    - `advertised_routes` - (List) List of connection prefixes advertised to the on-prem network.
+        Nested scheme for `advertised_routes`:
+        - `as_path` - (String) The BGP AS path of the route.
+        - `prefix` - (String) The prefix used in the route.
     - `gateway_routes` - (List) List of local/direct routes.
-
         Nested scheme for `gateway_routes`:
         - `prefix` - (String) The prefix used in the route.
     - `id` - (String) Route report identifier.
     - `on_prem_routes` - (List) List of on premises routes
-    
         Nested scheme for `on_prem_routes`:
+        - `as_path` - (String) The BGP AS path of the route.
+        - `next_hop` - (String) Next hop address.
         - `prefix` - (String) The prefix used in the route.
     - `overlapping_routes` - (List) List of overlapping routes.
-
         Nested scheme for `overlapping_routes`:
         - `routes` - (List) List of overlapping connection/prefix pairs.
-
             Nested scheme for `routes`:
             - `prefix` - (String) The overlapping prefix.
             - `type` - (String) The type of route.
@@ -51,11 +52,11 @@ In addition to all argument references list, you can access the following attrib
     - `status` - (String) The route report status.
     - `updated_at` - (String) The date and time resource was updated.
     - `virtual_connection_routes` - (List) List of routes on virtual connections.
-
         Nested scheme for `virtual_connection_routes`
-        - `routes` - (List) List of connection routes.
-        
+        - `routes` - (List) List of virtual connection routes.
             Nested scheme for `routes`:
+            - `active` - (Bool) Indicates whether the route is the preferred path of the prefix.
+            - `local_preference` - (String) The local preference of the route. This attribute can manipulate the chosen path on routes.
             - `prefix` - (String) The prefix used in the route.
         - `virtual_connection_id` - (String) Virtual Connection ID
         - `virtual_connection_name` - (String) Virtual Connection name

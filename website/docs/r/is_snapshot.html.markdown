@@ -81,6 +81,14 @@ resource "ibm_is_snapshot" "example_clones" {
 }  
  ``` 
 
+## Example usage (Source snasphot - cross region snapshot crn)
+```terraform
+resource "ibm_is_snapshot" "example_copy" {
+  name                = "example-snapshot"
+  source_snapshot_crn = "crn:v1:bluemix:public:is:us-south:a/xxxxxxxxxxxxxxxxxxxxxxxx::snapshot:r006-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+}  
+ ``` 
+
 ## Timeouts
 The `ibm_is_snapshot` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -99,9 +107,14 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `clones` - (Optional, List) The list of zones to create a clone of this snapshot.
+- `encryption_key` - (String) A reference CRN to the root key used to wrap the data encryption key for the source snapshot.
 - `name` - (Optional, String) The name of the snapshot.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID where the snapshot is to be created
-- `source_volume` - (Required, Forces new resource, String) The unique identifier for the volume for which snapshot is to be created. 
+- `source_volume` - (Optional, Forces new resource, String) The unique identifier for the volume for which snapshot is to be created.
+- `source_snapshot_crn` - (Optional, Forces new resource, String) The CRN for source snapshot.
+
+  -> **Note** `source_volume` and `source_snapshot_crn` are mutually exclusive, you can create snapshot either by a source volume or using another snapshot as a source.
+
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your snapshot. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 
 
@@ -119,6 +132,23 @@ In addition to all argument reference list, you can access the following attribu
     - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
     - `resource_type` - (String) The type of resource referenced.
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
+- `copies` - (List) The copies of this snapshot in other regions.
+
+    Nested scheme for `copies`:
+    - `crn` - (String) The CRN for the copied snapshot.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+    
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for the copied snapshot.
+    - `id` - (String) The unique identifier for the copied snapshot.
+    - `name` - (String) The name for the copied snapshot. The name is unique across all snapshots in the copied snapshot's native region.
+    - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region.
+      Nested scheme for `remote`:
+      - `href` - (String) The URL for this region.
+      - `name` - (String) The globally unique name for this region.
+    - `resource_type` - (String) The resource type.
+    - `crn` - (String) The CRN for this snapshot.
 - `crn` - (String) The CRN for this snapshot.
 - `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed**.
 - `encryption_key` - (String) The CRN of the `Key Protect Root Key` or `Hyper Protect Crypto Services Root Key` for this resource. The root key used to wrap the data encryption key for the source volume. This property will be present for volumes with an encryption type of `user_managed`.
@@ -130,6 +160,22 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_type` - (String) The resource type.
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
 - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.
+- `source_snapshot` - (String) If present, the source snapshot this snapshot was created from.
+
+  Nested scheme for `source_snapshot`:
+  - `crn` - (String) The CRN of the source snapshot.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+   
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for the source snapshot.
+  - `id` - (String) The unique identifier for the source snapshot.
+  - `name` - (String) The name for the source snapshot. The name is unique across all snapshots in the source snapshot's native region.
+  - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region.
+      Nested scheme for `remote`:
+      - `href` - (String) The URL for this region.
+      - `name` - (String) The globally unique name for this region.
+  - `resource_type` - (String) The resource type.
 
 ## Import
 
@@ -138,7 +184,7 @@ The `ibm_is_snapshot` can be imported using ID.
 **Syntax**
 
 ```
-$ terraform import ibm_is_snapshot.example <id>
+$ terraform import ibm_is_snapshot.example < id >
 ```
 
 **Example**

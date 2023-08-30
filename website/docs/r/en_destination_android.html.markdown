@@ -3,7 +3,7 @@ subcategory: 'Event Notifications'
 layout: 'ibm'
 page_title: 'IBM : ibm_en_destination_android'
 description: |-
-  Manages Event Notifications destinations.
+  Manages Event Notifications Android destination.
 ---
 
 # ibm_en_destination_android

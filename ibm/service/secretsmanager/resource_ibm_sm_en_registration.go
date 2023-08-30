@@ -29,18 +29,21 @@ func ResourceIbmSmEnRegistration() *schema.Resource {
 			"event_notifications_instance_crn": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_instance_crn"),
 				Description:  "A CRN that uniquely identifies an IBM Cloud resource.",
 			},
 			"event_notifications_source_name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_name"),
 				Description:  "The name that is displayed as a source that is in your Event Notifications instance.",
 			},
 			"event_notifications_source_description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_description"),
 				Description:  "An optional description for the source  that is in your Event Notifications instance.",
 			},
