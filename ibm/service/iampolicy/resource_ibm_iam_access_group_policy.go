@@ -435,7 +435,7 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
-	accessGroupPolicy := &iampolicymanagementv1.V2Policy{}
+	accessGroupPolicy := &iampolicymanagementv1.V2PolicyTemplateMetaData{}
 	res := &core.DetailedResponse{}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error

@@ -461,7 +461,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	}
 	serviceIDUUID := parts[0]
 	servicePolicyID := parts[1]
-	servicePolicy := &iampolicymanagementv1.V2Policy{}
+	servicePolicy := &iampolicymanagementv1.V2PolicyTemplateMetaData{}
 	res := &core.DetailedResponse{}
 	getPolicyOptions := iamPolicyManagementClient.NewGetV2PolicyOptions(
 		servicePolicyID,
