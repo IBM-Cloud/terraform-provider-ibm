@@ -80,7 +80,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `100` items. The minimum length is `0` items.
 * `require_cn` - (Optional, Boolean) Determines whether to require a common name to create a private certificate.By default, a common name is required to generate a certificate. To make the `common_name` field optional, set the `require_cn` option to `false`.
 * `server_flag` - (Optional, Boolean) Determines whether private certificates are flagged for server use.
-* `serial_number` - (Optional, Forces new resource, String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
+* `serial_number` - (Optional, Forces new resource, String) Deprecated. Unused field. 
   * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `street_address` - (Optional, Forces new resource, List) The street address values to define in the subject field of the resulting certificate.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.

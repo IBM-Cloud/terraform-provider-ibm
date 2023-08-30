@@ -16,6 +16,7 @@ In the following example, you can configure a add-ons:
 
 ```terraform
 resource "ibm_container_addons" "addons" {
+  depends_on = [ ibm_container_vpc_cluster.cluster ]
   cluster = ibm_container_vpc_cluster.cluster.name
   addons {
     name    = "istio"
@@ -64,6 +65,8 @@ resource "ibm_container_addons" "addons" {
 }
 
 ```
+
+( Note: you should use `depends_on = <cluster>` because addons cannot be enabled until the cluster is deployed. See [wait_till](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/container_vpc_cluster#wait_till) )
 
 ## Timeouts
 

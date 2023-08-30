@@ -36,3 +36,9 @@ output "ibm_code_engine_secret" {
   description = "code_engine_secret resource instance"
   sensitive   = true
 }
+// This allows code_engine_binding data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_code_engine_binding" {
+  value       = ibm_code_engine_binding.code_engine_binding_instance
+  description = "code_engine_binding resource instance"
+}

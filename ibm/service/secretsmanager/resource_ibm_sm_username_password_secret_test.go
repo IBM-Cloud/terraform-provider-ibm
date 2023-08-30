@@ -24,6 +24,36 @@ var usernamePasswordSecretName = "terraform-test-username-secret"
 var modifiedUsernamePasswordSecretName = "modified-terraform-test-username-secret"
 
 func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
+	resourceName := "ibm_sm_username_password_secret.sm_username_password_secret_basic"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmUsernamePasswordSecretDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: usernamePasswordSecretConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIbmSmUsernamePasswordSecretAllArgs(t *testing.T) {
 	resourceName := "ibm_sm_username_password_secret.sm_username_password_secret"
 
 	resource.Test(t, resource.TestCase{
@@ -32,7 +62,7 @@ func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSmUsernamePasswordSecretDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSmUsernamePasswordSecretConfigBasic(),
+				Config: usernamePasswordSecretConfigAllArgs(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSmUsernamePasswordSecretCreated(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
@@ -47,7 +77,7 @@ func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSmUsernamePasswordSecretConfigUpdated(),
+				Config: usernamePasswordSecretConfigUpdated(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSmUsernamePasswordSecretUpdated(resourceName),
 				),
@@ -61,7 +91,16 @@ func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 	})
 }
 
-var usernamePasswordSecretConfigFormat = `
+var usernamePasswordSecretBasicConfigFormat = `
+		resource "ibm_sm_username_password_secret" "sm_username_password_secret_basic" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+			username = "%s"
+			password = "%s"
+		}`
+
+var usernamePasswordSecretFullConfigFormat = `
 		resource "ibm_sm_username_password_secret" "sm_username_password_secret" {
 			instance_id   = "%s"
   			region        = "%s"
@@ -76,13 +115,18 @@ var usernamePasswordSecretConfigFormat = `
 			rotation %s
 		}`
 
-func testAccCheckIbmSmUsernamePasswordSecretConfigBasic() string {
-	return fmt.Sprintf(usernamePasswordSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+func usernamePasswordSecretConfigBasic() string {
+	return fmt.Sprintf(usernamePasswordSecretBasicConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		usernamePasswordSecretName, username, password)
+}
+
+func usernamePasswordSecretConfigAllArgs() string {
+	return fmt.Sprintf(usernamePasswordSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		usernamePasswordSecretName, description, label, username, password, expirationDate, customMetadata, rotationPolicy)
 }
 
-func testAccCheckIbmSmUsernamePasswordSecretConfigUpdated() string {
-	return fmt.Sprintf(usernamePasswordSecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+func usernamePasswordSecretConfigUpdated() string {
+	return fmt.Sprintf(usernamePasswordSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		modifiedUsernamePasswordSecretName, modifiedDescription, modifiedLabel, modifiedUsername, modifiedPassword,
 		modifiedExpirationDate, modifiedCustomMetadata, modifiedRotationPolicy)
 }

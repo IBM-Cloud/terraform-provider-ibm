@@ -18,6 +18,10 @@ resource "ibm_enterprise_account" "enterprise_account" {
   parent = "parent"
   name = "name"
   owner_iam_id = "owner_iam_id"
+  traits {
+    mfa = "NONE"
+    enterprise_iam_managed = true
+  }
 }
 
 resource "ibm_enterprise_account" "enterprise_import_account"{
@@ -34,6 +38,9 @@ Review the argument reference that you can specify to create a new account in an
 - `name` - (Required, String) The name of an enterprise. The minimum and maximum character should be from `3 to 60` characters.
 - `owneriam_id` - (Required, String) The IAM ID of an account owner, such as `IBMid-0123ABC.` The IAM ID must already exist.
 - `parent` - (Required, String) The CRN of the parent in which the account is created. The parent can be an existing account group or an enterprise itself.
+- `traits` - (Optional, Set) The traits object can be used to set properties on child accounts of an enterprise. 
+By default MFA will be enabled on a child account. To opt out, pass the traits object with the mfa field set to empty string `traits {mfa = "NONE"}` mfa is an optional property.
+The Enterprise IAM settings property will be turned off for a newly created child account by default. You can enable this property by passing 'true' in this boolean field `traits { enterprise_iam_managed = true }` enterprise_iam_managed an optional property.
 
 Review the argument reference that you can specify to import a new account in an enterprise resource. 
 

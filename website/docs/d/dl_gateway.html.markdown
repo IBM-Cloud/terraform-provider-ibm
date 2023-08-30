@@ -1,4 +1,4 @@
-
+---
 subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_gateway"

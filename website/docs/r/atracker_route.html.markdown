@@ -12,12 +12,33 @@ Provides a resource for Activity Tracker Route. This allows Activity Tracker Rou
 
 ## Example usage
 
+### Example with a single rule
 ```terraform
 resource "ibm_atracker_route" "atracker_route" {
   name = "my-route"
   rules {
     target_ids = [ ibm_atracker_target.atracker_target.id ]
     locations = [ "us-south", "global" ]
+  }
+  lifecycle {
+    # Recommended to ensure that if a target ID is removed here and destroyed in a plan, this is updated first
+    create_before_destroy = true
+  }
+}
+```
+
+### Example with multiple rules
+
+```terraform
+resource "ibm_atracker_route" "atracker_route" {
+  name = "my-route"
+  rules {
+    target_ids = [ ibm_atracker_target.atracker_target.id ]
+    locations = [ "us-south", "global" ]
+  }
+  rules {
+    target_ids = [ ibm_atracker_target.atracker_target.id ]
+    locations = [ "us-east" ]
   }
   lifecycle {
     # Recommended to ensure that if a target ID is removed here and destroyed in a plan, this is updated first

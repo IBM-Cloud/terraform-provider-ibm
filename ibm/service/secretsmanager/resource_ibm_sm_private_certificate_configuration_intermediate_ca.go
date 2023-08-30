@@ -209,10 +209,8 @@ func ResourceIbmSmPrivateCertificateConfigurationIntermediateCA() *schema.Resour
 			},
 			"serial_number": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
 				Computed:    true,
-				Description: "The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.",
+				Description: "The unique serial number that was assigned to a certificate by the issuing certificate authority.",
 			},
 			"signing_method": &schema.Schema{
 				Type:        schema.TypeString,
@@ -290,19 +288,19 @@ func ResourceIbmSmPrivateCertificateConfigurationIntermediateCA() *schema.Resour
 			"ttl": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days.",
+				Description: "Specifies the requested Time To Live (after which the certificate will be expired). The value can be provided provided as a string duration with time suffix (e.g. '24h') or the number of seconds as string (e.g. '86400').",
 			},
 			"max_path_length": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "        The maximum path length to encode in the generated certificate. `-1` means no limit.",
+				Description: "The maximum path length to encode in the generated certificate. `-1` means no limit.",
 			},
 			"permitted_dns_domains": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "        The allowed DNS domains or subdomains for the certificates that are to be signed and issued by this CA certificate.",
+				Description: "The allowed DNS domains or subdomains for the certificates that are to be signed and issued by this CA certificate.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"use_csr_values": &schema.Schema{
@@ -738,11 +736,7 @@ func resourceIbmSmPrivateCertificateConfigurationIntermediateCAMapToConfiguratio
 		}
 		model.PostalCode = postalCode
 	}
-	if _, ok := d.GetOk("serial_number"); ok {
-		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
-	}
 	return model, nil
-	// TODO all other config attributes
 }
 
 func resourceIbmSmPrivateCertificateConfigurationIntermediateCAPrivateCertificateCADataToMap(modelIntf secretsmanagerv2.PrivateCertificateCADataIntf) (map[string]interface{}, error) {
@@ -806,7 +800,7 @@ func resourceIbmSmConfigurationActionPrivateCertificateSignIntermediateCAMapToCo
 		model.TTL = core.StringPtr(d.Get("ttl").(string))
 	}
 	if _, ok := d.GetOk("max_path_length"); ok {
-		model.MaxPathLength = core.Int64Ptr(d.Get("max_path_length").(int64))
+		model.MaxPathLength = core.Int64Ptr(int64(d.Get("max_path_length").(int)))
 	}
 	if _, ok := d.GetOk("exclude_cn_from_sans"); ok {
 		model.ExcludeCnFromSans = core.BoolPtr(d.Get("exclude_cn_from_sans").(bool))
@@ -869,9 +863,6 @@ func resourceIbmSmConfigurationActionPrivateCertificateSignIntermediateCAMapToCo
 			postalCode = append(postalCode, postalCodeItem.(string))
 		}
 		model.PostalCode = postalCode
-	}
-	if _, ok := d.GetOk("serial_number"); ok {
-		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
 	}
 
 	return model, nil

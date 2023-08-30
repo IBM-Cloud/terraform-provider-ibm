@@ -10,6 +10,9 @@ description: |-
 
 Create, update, or delete for a Power Systems Virtual Server cloud connection. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
+**Note**
+
+`Cloud connection are not supported in new workspaces in DAL10 data center.`
 ## Example usage
 
 The following example enables you to create a cloud connection:
