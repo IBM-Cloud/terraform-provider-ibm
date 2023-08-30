@@ -369,6 +369,10 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_template":             iamidentity.DataSourceIBMTrustedProfileTemplate(),
 			"ibm_iam_account_settings_template_assignment": iamidentity.DataSourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":  iamidentity.DataSourceIBMTrustedProfileTemplateAssignment(),
+			"ibm_iam_policy_template":                      iampolicy.DataSourceIBMIAMPolicyTemplate(),
+			"ibm_iam_policy_template_version":              iampolicy.DataSourceIBMIAMPolicyTemplateVersion(),
+			"ibm_iam_policy_assignments":                   iampolicy.DataSourceIBMIAMPolicyAssignments(),
+			"ibm_iam_policy_assignment":                    iampolicy.DataSourceIBMIAMPolicyAssignment(),
 
 			//backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -974,6 +978,8 @@ func Provider() *schema.Provider {
 			"ibm_iam_account_settings_template_assignment": iamidentity.ResourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":  iamidentity.ResourceIBMTrustedProfileTemplateAssignment(),
 			"ibm_ipsec_vpn":                                classicinfrastructure.ResourceIBMIPSecVPN(),
+			"ibm_iam_policy_template":                      iampolicy.ResourceIBMIAMPolicyTemplate(),
+			"ibm_iam_policy_template_version":              iampolicy.ResourceIBMIAMPolicyTemplateVersion(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1529,10 +1535,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_service_api_key":                  iamidentity.ResourceIBMIAMServiceAPIKeyValidator(),
 				"ibm_iam_trusted_profile_identity":         iamidentity.ResourceIBMIamTrustedProfileIdentityValidator(),
 
-				"ibm_iam_trusted_profile_policy": iampolicy.ResourceIBMIAMTrustedProfilePolicyValidator(),
-				"ibm_iam_access_group_policy":    iampolicy.ResourceIBMIAMAccessGroupPolicyValidator(),
-				"ibm_iam_service_policy":         iampolicy.ResourceIBMIAMServicePolicyValidator(),
-				"ibm_iam_authorization_policy":   iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
+				"ibm_iam_trusted_profile_policy":  iampolicy.ResourceIBMIAMTrustedProfilePolicyValidator(),
+				"ibm_iam_access_group_policy":     iampolicy.ResourceIBMIAMAccessGroupPolicyValidator(),
+				"ibm_iam_service_policy":          iampolicy.ResourceIBMIAMServicePolicyValidator(),
+				"ibm_iam_authorization_policy":    iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
+				"ibm_iam_policy_template":         iampolicy.ResourceIBMIAMPolicyTemplateValidator(),
+				"ibm_iam_policy_template_version": iampolicy.ResourceIBMIAMPolicyTemplateVersionValidator(),
 
 				// // Added for Secrets Manager
 				"ibm_sm_secret_group":                                                secretsmanager.ResourceIbmSmSecretGroupValidator(),
