@@ -206,6 +206,15 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 		keyInstance["description"] = key.Description
 		keyInstance["aliases"] = key.Aliases
 		keyInstance["key_ring_id"] = key.KeyRingID
+		policies, err := api.GetPolicies(context.Background(), key.ID)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Failed to read policies: %s", err)
+		}
+		if len(policies) == 0 {
+			log.Printf("No Policy Configurations read\n")
+		} else {
+			keyInstance["policies"] = flex.FlattenKeyPolicies(policies)
+		}
 		keyMap = append(keyMap, keyInstance)
 		d.Set("keys", keyMap)
 
