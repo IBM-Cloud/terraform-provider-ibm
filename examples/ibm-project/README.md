@@ -64,7 +64,7 @@ project_config data source:
 ```hcl
 data "project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
-  id = ibm_project_config.project_config_instance.projectConfigCanonical_id
+  id = ibm_project_config.project_config_instance.project_config_canonical_id
 }
 ```
 
@@ -116,7 +116,5 @@ data "project_config" "project_config_instance" {
 
 | Name | Description |
 |------|-------------|
-| project | project object |
-| project_config | project_config object |
 | project | project object |
 | project_config | project_config object |

@@ -15,12 +15,12 @@ variable "project_location" {
   default     = "us-south"
 }
 variable "project_name" {
-  description = "The name of the project."
+  description = "The project name."
   type        = string
   default     = "acme-microservice"
 }
 variable "project_description" {
-  description = "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description."
+  description = "A project's descriptive text."
   type        = string
   default     = "A microservice to deploy on top of ACME infrastructure."
 }
@@ -31,47 +31,23 @@ variable "project_destroy_on_delete" {
 }
 
 // Resource arguments for project_config
-variable "project_config_project_id" {
-  description = "The unique project ID."
-  type        = string
-  default     = "project_id"
-}
 variable "project_config_name" {
-  description = "The name of the configuration."
+  description = "The configuration name."
   type        = string
   default     = "env-stage"
 }
-variable "project_config_description" {
-  description = "The description of the project configuration."
+variable "project_config_locator_id" {
+  description = "A dotted value of catalogID.versionID."
   type        = string
-  default     = "Stage environment configuration, which includes services common to all the environment regions. There must be a blueprint configuring all the services common to the stage regions. It is a terraform_template type of configuration that points to a Github repo hosting the terraform modules that can be deployed by a Schematics Workspace."
+  default     = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
 }
 variable "project_config_labels" {
   description = "A collection of configuration labels."
   type        = list(string)
   default     = ["env:stage","governance:test","build:0"]
 }
-variable "project_config_locator_id" {
-  description = "A dotted value of catalogID.versionID."
+variable "project_config_description" {
+  description = "The project configuration description."
   type        = string
-  default     = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.018edf04-e772-4ca2-9785-03e8e03bef72-global"
-}
-
-// Data source arguments for project
-variable "project_id" {
-  description = "The unique project ID."
-  type        = string
-  default     = "id"
-}
-
-// Data source arguments for project_config
-variable "project_config_project_id" {
-  description = "The unique project ID."
-  type        = string
-  default     = "project_id"
-}
-variable "project_config_id" {
-  description = "The unique config ID."
-  type        = string
-  default     = "id"
+  default     = "Stage environment configuration, which includes services common to all the environment regions. There must be a blueprint configuring all the services common to the stage regions. It is a terraform_template type of configuration that points to a Github repo hosting the terraform modules that can be deployed by a Schematics Workspace."
 }
