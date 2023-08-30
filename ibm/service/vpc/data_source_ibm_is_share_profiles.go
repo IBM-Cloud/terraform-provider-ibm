@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -59,12 +59,12 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 }
 
 func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listShareProfilesOptions := &vpcbetav1.ListShareProfilesOptions{}
+	listShareProfilesOptions := &vpcv1.ListShareProfilesOptions{}
 
 	shareProfileCollection, response, err := vpcClient.ListShareProfilesWithContext(context, listShareProfilesOptions)
 	if err != nil {
@@ -92,7 +92,7 @@ func dataSourceIbmIsShareProfilesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceShareProfileCollectionFlattenProfiles(result []vpcbetav1.ShareProfile) (profiles []map[string]interface{}) {
+func dataSourceShareProfileCollectionFlattenProfiles(result []vpcv1.ShareProfile) (profiles []map[string]interface{}) {
 	for _, profilesItem := range result {
 		profiles = append(profiles, dataSourceShareProfileCollectionProfilesToMap(profilesItem))
 	}
@@ -100,7 +100,7 @@ func dataSourceShareProfileCollectionFlattenProfiles(result []vpcbetav1.SharePro
 	return profiles
 }
 
-func dataSourceShareProfileCollectionProfilesToMap(profilesItem vpcbetav1.ShareProfile) (profilesMap map[string]interface{}) {
+func dataSourceShareProfileCollectionProfilesToMap(profilesItem vpcv1.ShareProfile) (profilesMap map[string]interface{}) {
 	profilesMap = map[string]interface{}{}
 
 	if profilesItem.Family != nil {
