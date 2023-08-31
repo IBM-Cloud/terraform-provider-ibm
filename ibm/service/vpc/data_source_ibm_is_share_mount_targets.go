@@ -11,7 +11,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -234,14 +234,14 @@ func DataSourceIBMIsShareTargets() *schema.Resource {
 }
 
 func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	start := ""
-	allrecs := []vpcbetav1.ShareMountTarget{}
-	listShareTargetsOptions := &vpcbetav1.ListShareMountTargetsOptions{}
+	allrecs := []vpcv1.ShareMountTarget{}
+	listShareTargetsOptions := &vpcv1.ListShareMountTargetsOptions{}
 
 	listShareTargetsOptions.SetShareID(d.Get("share").(string))
 	if name, ok := d.GetOk("name"); ok {
@@ -263,7 +263,6 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 			break
 		}
 	}
-
 	d.SetId(dataSourceIBMIsShareTargetsID(d))
 
 	if len(allrecs) > 0 {
@@ -281,7 +280,7 @@ func dataSourceIBMIsShareTargetsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceShareMountTargetCollectionFlattenTargets(result []vpcbetav1.ShareMountTarget) (targets []map[string]interface{}) {
+func dataSourceShareMountTargetCollectionFlattenTargets(result []vpcv1.ShareMountTarget) (targets []map[string]interface{}) {
 	for _, targetsItem := range result {
 		targets = append(targets, dataSourceShareMountTargetCollectionTargetsToMap(targetsItem))
 	}
@@ -289,7 +288,7 @@ func dataSourceShareMountTargetCollectionFlattenTargets(result []vpcbetav1.Share
 	return targets
 }
 
-func dataSourceShareMountTargetCollectionTargetsToMap(targetsItem vpcbetav1.ShareMountTarget) (targetsMap map[string]interface{}) {
+func dataSourceShareMountTargetCollectionTargetsToMap(targetsItem vpcv1.ShareMountTarget) (targetsMap map[string]interface{}) {
 	targetsMap = map[string]interface{}{}
 
 	if targetsItem.AccessControlMode != nil {

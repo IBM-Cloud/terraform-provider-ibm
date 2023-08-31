@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -49,14 +49,14 @@ func DataSourceIbmIsSourceShare() *schema.Resource {
 }
 
 func dataSourceIbmIsSourceShareRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	replicaShareId := d.Get("share_replica").(string)
 
-	getShareSourceOptions := &vpcbetav1.GetShareSourceOptions{
+	getShareSourceOptions := &vpcv1.GetShareSourceOptions{
 		ShareID: &replicaShareId,
 	}
 
