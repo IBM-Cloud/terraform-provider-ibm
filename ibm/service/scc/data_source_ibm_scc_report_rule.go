@@ -30,16 +30,6 @@ func DataSourceIbmSccReportRule() *schema.Resource {
 				Required:    true,
 				Description: "The ID of a rule in a report.",
 			},
-			"x_correlation_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request, and repeated in a response header  for the corresponding response.  The same value is not used for downstream requests and retries of those requests.  If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -107,12 +97,6 @@ func dataSourceIbmSccReportRuleRead(context context.Context, d *schema.ResourceD
 
 	getReportRuleOptions.SetReportID(d.Get("report_id").(string))
 	getReportRuleOptions.SetRuleID(d.Get("rule_id").(string))
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		getReportRuleOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		getReportRuleOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 
 	ruleInfo, response, err := resultsClient.GetReportRuleWithContext(context, getReportRuleOptions)
 	if err != nil {

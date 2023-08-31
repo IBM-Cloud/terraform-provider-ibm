@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -37,10 +36,6 @@ func TestAccIbmSccProfileAttachmentBasic(t *testing.T) {
 
 func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.AttachmentItem
-	xCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
-	xCorrelationIDUpdate := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestIDUpdate := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -48,19 +43,14 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(xCorrelationID, xRequestID),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment", conf),
-					resource.TestCheckResourceAttr("ibm_scc_profile_attachment.scc_profile_attachment", "x_correlation_id", xCorrelationID),
-					resource.TestCheckResourceAttr("ibm_scc_profile_attachment.scc_profile_attachment", "x_request_id", xRequestID),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(xCorrelationIDUpdate, xRequestIDUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_profile_attachment.scc_profile_attachment", "x_correlation_id", xCorrelationIDUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_profile_attachment.scc_profile_attachment", "x_request_id", xRequestIDUpdate),
-				),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(),
+				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 			resource.TestStep{
 				ResourceName:      "ibm_scc_profile_attachment.scc_profile_attachment",
@@ -131,8 +121,8 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic() string {
 	`)
 }
 
-func testAccCheckIbmSccProfileAttachmentConfig(xCorrelationID string, xRequestID string) string {
-	return fmt.Sprintf(`
+func testAccCheckIbmSccProfileAttachmentConfig() string {
+	return fmt.Sprint(`
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
 			profile_name = "profile_name"
@@ -190,11 +180,9 @@ func testAccCheckIbmSccProfileAttachmentConfig(xCorrelationID string, xRequestID
 
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 			profiles_id = ibm_scc_profile.scc_profile_instance.id
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			profile_id = ibm_scc_profile.scc_profile_instance.id
 		}
-	`, xCorrelationID, xRequestID)
+	`)
 }
 
 func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcompliancecenterapiv3.AttachmentItem) resource.TestCheckFunc {

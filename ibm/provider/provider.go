@@ -179,7 +179,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "Generation of Virtual Private Cloud. Default is 2",
-				//DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, nil),
+				// DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, nil),
 				Deprecated: "The generation field is deprecated and will be removed after couple of releases",
 			},
 			"iam_profile_id": {
@@ -374,7 +374,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_policy_assignments":                   iampolicy.DataSourceIBMIAMPolicyAssignments(),
 			"ibm_iam_policy_assignment":                    iampolicy.DataSourceIBMIAMPolicyAssignment(),
 
-			//backup as Service
+			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
 			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
@@ -568,8 +568,7 @@ func Provider() *schema.Provider {
 			"ibm_schematics_inventory":      schematics.DataSourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.DataSourceIBMSchematicsResourceQuery(),
 
-			// // Added for Power Resources
-
+			// Added for Power Resources
 			"ibm_pi_catalog_images":                         power.DataSourceIBMPICatalogImages(),
 			"ibm_pi_cloud_connection":                       power.DataSourceIBMPICloudConnection(),
 			"ibm_pi_cloud_connections":                      power.DataSourceIBMPICloudConnections(),
@@ -618,7 +617,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_onboardings":                     power.DataSourceIBMPIVolumeOnboardings(),
 			"ibm_pi_volume_onboarding":                      power.DataSourceIBMPIVolumeOnboarding(),
 
-			// // Added for private dns zones
+			// Added for private dns zones
 
 			"ibm_dns_zones":                            dnsservices.DataSourceIBMPrivateDNSZones(),
 			"ibm_dns_permitted_networks":               dnsservices.DataSourceIBMPrivateDNSPermittedNetworks(),
@@ -630,7 +629,7 @@ func Provider() *schema.Provider {
 			"ibm_dns_custom_resolver_forwarding_rules": dnsservices.DataSourceIBMPrivateDNSForwardingRules(),
 			"ibm_dns_custom_resolver_secondary_zones":  dnsservices.DataSourceIBMPrivateDNSSecondaryZones(),
 
-			// // Added for Direct Link
+			// Added for Direct Link
 
 			"ibm_dl_gateways":             directlink.DataSourceIBMDLGateways(),
 			"ibm_dl_offering_speeds":      directlink.DataSourceIBMDLOfferingSpeeds(),
@@ -648,7 +647,7 @@ func Provider() *schema.Provider {
 			"ibm_dl_import_route_filters": directlink.DataSourceIBMDLImportRouteFilters(),
 			"ibm_dl_import_route_filter":  directlink.DataSourceIBMDLImportRouteFilter(),
 
-			// //Added for Transit Gateway
+			// Added for Transit Gateway
 			"ibm_tg_gateway":                   transitgateway.DataSourceIBMTransitGateway(),
 			"ibm_tg_gateways":                  transitgateway.DataSourceIBMTransitGateways(),
 			"ibm_tg_connection_prefix_filter":  transitgateway.DataSourceIBMTransitGatewayConnectionPrefixFilter(),
@@ -658,12 +657,12 @@ func Provider() *schema.Provider {
 			"ibm_tg_route_report":              transitgateway.DataSourceIBMTransitGatewayRouteReport(),
 			"ibm_tg_route_reports":             transitgateway.DataSourceIBMTransitGatewayRouteReports(),
 
-			// //Added for BSS Enterprise
+			// Added for BSS Enterprise
 			"ibm_enterprises":               enterprise.DataSourceIBMEnterprises(),
 			"ibm_enterprise_account_groups": enterprise.DataSourceIBMEnterpriseAccountGroups(),
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
 
-			// //Added for Secrets Manager
+			// Added for Secrets Manager
 			// V1 data sources:
 			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
 			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
@@ -706,7 +705,7 @@ func Provider() *schema.Provider {
 			"ibm_satellite_endpoint":                            satellite.DataSourceIBMSatelliteEndpoint(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.DataSourceIBMSatelliteClusterWorkerPoolAttachment(),
 
-			// // Catalog related resources
+			// Catalog related resources
 			"ibm_cm_catalog":           catalogmanagement.DataSourceIBMCmCatalog(),
 			"ibm_cm_offering":          catalogmanagement.DataSourceIBMCmOffering(),
 			"ibm_cm_version":           catalogmanagement.DataSourceIBMCmVersion(),
@@ -714,28 +713,45 @@ func Provider() *schema.Provider {
 			"ibm_cm_preset":            catalogmanagement.DataSourceIBMCmPreset(),
 			"ibm_cm_object":            catalogmanagement.DataSourceIBMCmObject(),
 
-			// //Added for Resource Tag
+			// Added for Resource Tag
 			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
 
-			// // Atracker
+			// Atracker
 			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
 			"ibm_atracker_routes":  atracker.DataSourceIBMAtrackerRoutes(),
 
-			//  Metrics Router
+			// Metrics Router
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
-			//Security and Compliance Center
-			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
-			"ibm_scc_account_locations":             scc.DataSourceIBMSccAccountLocations(),
-			"ibm_scc_account_location_settings":     scc.DataSourceIBMSccAccountLocationSettings(),
-			"ibm_scc_account_notification_settings": scc.DataSourceIBMSccNotificationSettings(),
+			// Security and Compliance Center
+			// "ibm_scc_instance_settings":             scc.DataSourceIBMSccInstanceSettings(),
+			"ibm_scc_control_library:": scc.DataSourceIbmSccControlLibrary(),
 
-			// // Added for Context Based Restrictions
+			"ibm_scc_profile":            scc.DataSourceIbmSccProfile(),
+			"ibm_scc_profile_attachment": scc.DataSourceIbmSccProfileAttachment(),
+
+			"ibm_scc_provider_type":            scc.DataSourceIbmSccProviderType(),
+			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
+			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
+
+			"ibm_scc_latest_reports":         scc.DataSourceIbmSccLatestReports(),
+			"ibm_scc_report":                 scc.DataSourceIbmSccReport(),
+			"ibm_scc_report_controls":        scc.DataSourceIbmSccReportControls(),
+			"ibm_scc_report_evaluations":     scc.DataSourceIbmSccReportEvaluations(),
+			"ibm_scc_report_resources":       scc.DataSourceIbmSccReportResources(),
+			"ibm_scc_report_rule":            scc.DataSourceIbmSccReportRule(),
+			"ibm_scc_report_summary":         scc.DataSourceIbmSccReportSummary(),
+			"ibm_scc_report_tags":            scc.DataSourceIbmSccReportTags(),
+			"ibm_scc_report_violation_drift": scc.DataSourceIbmSccReportViolationDrift(),
+
+			"ibm_scc_rule": scc.DataSourceIbmSccRule(),
+
+			// Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
-			// // Added for Event Notifications
+			// Added for Event Notifications
 			"ibm_en_source":                 eventnotification.DataSourceIBMEnSource(),
 			"ibm_en_destinations":           eventnotification.DataSourceIBMEnDestinations(),
 			"ibm_en_topic":                  eventnotification.DataSourceIBMEnTopic(),
@@ -775,7 +791,7 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_huawei":    eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_sources":                eventnotification.DataSourceIBMEnSources(),
 
-			// // Added for Toolchain
+			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
 			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.DataSourceIBMCdToolchainToolKeyprotect(),
 			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.DataSourceIBMCdToolchainToolSecretsmanager(),
@@ -828,7 +844,7 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_shared":                 cloudfoundry.ResourceIBMAppDomainShared(),
 			"ibm_app_route":                         cloudfoundry.ResourceIBMAppRoute(),
 
-			// // AppID
+			// AppID
 			"ibm_appid_action_url":               appid.ResourceIBMAppIDActionURL(),
 			"ibm_appid_apm":                      appid.ResourceIBMAppIDAPM(),
 			"ibm_appid_application":              appid.ResourceIBMAppIDApplication(),
@@ -1100,8 +1116,7 @@ func Provider() *schema.Provider {
 			"ibm_cdn":                                       classicinfrastructure.ResourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                  classicinfrastructure.ResourceIBMFirewallShared(),
 
-			// //Added for Power Colo
-
+			// Added for Power Colo
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
 			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
 			"ibm_pi_volume_onboarding":               power.ResourceIBMPIVolumeOnboarding(),
@@ -1128,7 +1143,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
 			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
 
-			// //Private DNS related resources
+			// Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),
 			"ibm_dns_permitted_network": dnsservices.ResourceIBMPrivateDNSPermittedNetwork(),
 			"ibm_dns_resource_record":   dnsservices.ResourceIBMPrivateDNSResourceRecord(),
@@ -1136,28 +1151,28 @@ func Provider() *schema.Provider {
 			"ibm_dns_glb_pool":          dnsservices.ResourceIBMPrivateDNSGLBPool(),
 			"ibm_dns_glb":               dnsservices.ResourceIBMPrivateDNSGLB(),
 
-			// //Added for Custom Resolver
+			// Added for Custom Resolver
 			"ibm_dns_custom_resolver":                 dnsservices.ResourceIBMPrivateDNSCustomResolver(),
 			"ibm_dns_custom_resolver_location":        dnsservices.ResourceIBMPrivateDNSCRLocation(),
 			"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRule(),
 			"ibm_dns_custom_resolver_secondary_zone":  dnsservices.ResourceIBMPrivateDNSSecondaryZone(),
 			"ibm_dns_linked_zone":                     dnsservices.ResourceIBMDNSLinkedZone(),
 
-			// //Direct Link related resources
+			// Direct Link related resources
 			"ibm_dl_gateway":            directlink.ResourceIBMDLGateway(),
 			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
 			"ibm_dl_route_report":       directlink.ResourceIBMDLGatewayRouteReport(),
 			"ibm_dl_gateway_action":     directlink.ResourceIBMDLGatewayAction(),
 
-			// //Added for Transit Gateway
+			// Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnection(),
 			"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionAction(),
 			"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilter(),
 			"ibm_tg_route_report":             transitgateway.ResourceIBMTransitGatewayRouteReport(),
 
-			// //Catalog related resources
+			// Catalog related resources
 			"ibm_cm_offering_instance": catalogmanagement.ResourceIBMCmOfferingInstance(),
 			"ibm_cm_catalog":           catalogmanagement.ResourceIBMCmCatalog(),
 			"ibm_cm_offering":          catalogmanagement.ResourceIBMCmOffering(),
@@ -1165,19 +1180,19 @@ func Provider() *schema.Provider {
 			"ibm_cm_validation":        catalogmanagement.ResourceIBMCmValidation(),
 			"ibm_cm_object":            catalogmanagement.ResourceIBMCmObject(),
 
-			// //Added for enterprise
+			// Added for enterprise
 			"ibm_enterprise":               enterprise.ResourceIBMEnterprise(),
 			"ibm_enterprise_account_group": enterprise.ResourceIBMEnterpriseAccountGroup(),
 			"ibm_enterprise_account":       enterprise.ResourceIBMEnterpriseAccount(),
 
-			//Added for Schematics
+			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),
 			"ibm_schematics_action":         schematics.ResourceIBMSchematicsAction(),
 			"ibm_schematics_job":            schematics.ResourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.ResourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
 
-			// //Added for Secrets Manager
+			// Added for Secrets Manager
 			"ibm_sm_secret_group":                                                secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmSecretGroup()),
 			"ibm_sm_arbitrary_secret":                                            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmArbitrarySecret()),
 			"ibm_sm_imported_certificate":                                        secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmImportedCertificate()),
@@ -1198,7 +1213,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_private_certificate_configuration_action_sign_csr":           secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSignCsr()),
 			"ibm_sm_private_certificate_configuration_action_set_signed":         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSetSigned()),
 
-			// //satellite  resources
+			// satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
 			"ibm_satellite_host":                                satellite.ResourceIBMSatelliteHost(),
 			"ibm_satellite_cluster":                             satellite.ResourceIBMSatelliteCluster(),
@@ -1208,10 +1223,10 @@ func Provider() *schema.Provider {
 			"ibm_satellite_location_nlb_dns":                    satellite.ResourceIBMSatelliteLocationNlbDns(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
-			//Added for Resource Tag
+			// Added for Resource Tag
 			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
 
-			// // Atracker
+			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
 			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
 			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
@@ -1221,18 +1236,19 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
 			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
 
-			// //Security and Compliance Center
-			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
-			"ibm_scc_rule":                scc.ResourceIBMSccRule(),
-			"ibm_scc_rule_attachment":     scc.ResourceIBMSccRuleAttachment(),
-			"ibm_scc_template":            scc.ResourceIBMSccTemplate(),
-			"ibm_scc_template_attachment": scc.ResourceIBMSccTemplateAttachment(),
+			// Security and Compliance Center
+			"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettings(),
+			"ibm_scc_rule":                   scc.ResourceIbmSccRule(),
+			"ibm_scc_control_library":        scc.ResourceIbmSccControlLibrary(),
+			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
+			"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachment(),
+			"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstance(),
 
-			// // Added for Context Based Restrictions
+			// Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
 
-			// // Added for Event Notifications
+			// Added for Event Notifications
 			"ibm_en_source":                 eventnotification.ResourceIBMEnSource(),
 			"ibm_en_topic":                  eventnotification.ResourceIBMEnTopic(),
 			"ibm_en_destination_webhook":    eventnotification.ResourceIBMEnWebhookDestination(),
@@ -1268,7 +1284,7 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_huawei":    eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_ibmsource":              eventnotification.ResourceIBMEnIBMSource(),
 
-			// // Added for Toolchain
+			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
 			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotect(),
 			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanager(),
@@ -1293,14 +1309,14 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJira(),
 			"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.ResourceIBMCdToolchainToolEventnotifications(),
 
-			// // Added for Tekton Pipeline
+			// Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinition(),
 			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerProperty(),
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMCdTektonPipelineProperty(),
 			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMCdTektonPipelineTrigger(),
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMCdTektonPipeline(),
 
-			// // Added for Code Engine
+			// Added for Code Engine
 			"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineApp(),
 			"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBinding(),
 			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
@@ -1317,8 +1333,10 @@ func Provider() *schema.Provider {
 	}
 }
 
-var globalValidatorDict validate.ValidatorDict
-var initOnce sync.Once
+var (
+	globalValidatorDict validate.ValidatorDict
+	initOnce            sync.Once
+)
 
 func init() {
 	validate.SetValidatorDict(Validator())
@@ -1472,16 +1490,19 @@ func Validator() validate.ValidatorDict {
 				"ibm_metrics_router_route":                metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
 				"ibm_metrics_router_settings":             metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
-				"ibm_scc_account_settings":                scc.ResourceIBMSccAccountSettingsValidator(),
-				"ibm_scc_rule":                            scc.ResourceIBMSccRuleValidator(),
-				"ibm_scc_rule_attachment":                 scc.ResourceIBMSccRuleAttachmentValidator(),
-				"ibm_scc_template":                        scc.ResourceIBMSccTemplateValidator(),
-				"ibm_scc_template_attachment":             scc.ResourceIBMSccTemplateAttachmentValidator(),
 				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
 
-				// // Added for Toolchains
+				// Added for SCC
+				"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettingsValidator(),
+				"ibm_scc_rule":                   scc.ResourceIbmSccRuleValidator(),
+				"ibm_scc_control_library":        scc.ResourceIbmSccControlLibraryValidator(),
+				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
+				"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachmentValidator(),
+				"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstanceValidator(),
+
+				// Added for Toolchains
 				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),
 				"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotectValidator(),
 				"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanagerValidator(),
@@ -1721,7 +1742,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	//Set environment variable to be used in DiffSupressFunction
+	// Set environment variable to be used in DiffSupressFunction
 	if wskEnvVal.(string) == "" {
 		os.Setenv("FUNCTION_NAMESPACE", wskNameSpace)
 	}

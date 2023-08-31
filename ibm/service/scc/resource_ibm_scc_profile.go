@@ -27,18 +27,6 @@ func ResourceIbmSccProfile() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"x_correlation_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_profile", "x_correlation_id"),
-				Description:  "The supplied or generated value of this header is logged for a request, and repeated in a response header for the corresponding response. The same value is used for downstream requests, and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_profile", "x_request_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is not used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"profile_name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -339,24 +327,6 @@ func ResourceIbmSccProfileValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "x_correlation_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "x_request_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
 			Identifier:                 "profile_name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -398,12 +368,6 @@ func resourceIbmSccProfileCreate(context context.Context, d *schema.ResourceData
 	}
 	if _, ok := d.GetOk("default_parameters"); ok {
 		bodyModelMap["default_parameters"] = d.Get("default_parameters")
-	}
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		createProfileOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		createProfileOptions.SetXRequestID(d.Get("x_request_id").(string))
 	}
 	convertedModel, err := resourceIbmSccProfileMapToProfilePrototype(bodyModelMap)
 	if err != nil {
@@ -551,15 +515,6 @@ func resourceIbmSccProfileUpdate(context context.Context, d *schema.ResourceData
 	replaceProfileOptions.SetProfileID(d.Id())
 
 	hasChange := false
-
-	if d.HasChange("x_correlation_id") {
-		replaceProfileOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-		hasChange = true
-	}
-	if d.HasChange("x_request_id") {
-		replaceProfileOptions.SetXRequestID(d.Get("x_request_id").(string))
-		hasChange = true
-	}
 
 	if hasChange {
 		_, response, err := securityandcompliancecenterapiClient.ReplaceProfileWithContext(context, replaceProfileOptions)

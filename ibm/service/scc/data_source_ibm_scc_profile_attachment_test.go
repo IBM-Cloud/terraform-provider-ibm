@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -18,7 +17,7 @@ func TestAccIbmSccProfileAttachmentDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSccProfileAttachmentDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "id"),
@@ -31,21 +30,16 @@ func TestAccIbmSccProfileAttachmentDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmSccProfileAttachmentDataSourceAllArgs(t *testing.T) {
-	attachmentItemXCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	attachmentItemXRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentDataSourceConfig(attachmentItemXCorrelationID, attachmentItemXRequestID),
+			{
+				Config: testAccCheckIbmSccProfileAttachmentDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "attachment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "profiles_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "x_correlation_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "x_request_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "attachment_item_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "profile_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile_attachment.scc_profile_attachment", "account_id"),
@@ -139,14 +133,12 @@ func testAccCheckIbmSccProfileAttachmentDataSourceConfigBasic() string {
 		data "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 			attachment_id = "attachment_id"
 			profiles_id = ibm_scc_profile_attachment.scc_profile_attachment.profiles_id
-			X-Correlation-ID = ibm_scc_profile_attachment.scc_profile_attachment.x_correlation_id
-			X-Request-ID = ibm_scc_profile_attachment.scc_profile_attachment.x_request_id
 		}
 	`)
 }
 
-func testAccCheckIbmSccProfileAttachmentDataSourceConfig(attachmentItemXCorrelationID string, attachmentItemXRequestID string) string {
-	return fmt.Sprintf(`
+func testAccCheckIbmSccProfileAttachmentDataSourceConfig() string {
+	return fmt.Sprint(`
 		resource "ibm_scc_profile" "scc_profile_instance" {
 			profile_name = "profile_name"
 			profile_description = "profile_description"
@@ -203,16 +195,12 @@ func testAccCheckIbmSccProfileAttachmentDataSourceConfig(attachmentItemXCorrelat
 
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 			profiles_id = ibm_scc_profile.scc_profile_instance.id
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			profile_id = ibm_scc_profile.scc_profile_instance.id
 		}
 
 		data "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 			attachment_id = "attachment_id"
 			profiles_id = ibm_scc_profile_attachment.scc_profile_attachment.profiles_id
-			X-Correlation-ID = ibm_scc_profile_attachment.scc_profile_attachment.x_correlation_id
-			X-Request-ID = ibm_scc_profile_attachment.scc_profile_attachment.x_request_id
 		}
-	`, attachmentItemXCorrelationID, attachmentItemXRequestID)
+	`)
 }

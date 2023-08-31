@@ -53,13 +53,9 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 
 func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Profile
-	xCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	profileName := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
 	profileDescription := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
 	profileType := "predefined"
-	xCorrelationIDUpdate := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestIDUpdate := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	profileNameUpdate := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
 	profileDescriptionUpdate := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
 	profileTypeUpdate := "custom"
@@ -70,21 +66,17 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(xCorrelationID, xRequestID, profileName, profileDescription, profileType),
+				Config: testAccCheckIbmSccProfileConfig(profileName, profileDescription, profileType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile", conf),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "x_correlation_id", xCorrelationID),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "x_request_id", xRequestID),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_name", profileName),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_description", profileDescription),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_type", profileType),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(xCorrelationIDUpdate, xRequestIDUpdate, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
+				Config: testAccCheckIbmSccProfileConfig(profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "x_correlation_id", xCorrelationIDUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "x_request_id", xRequestIDUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_name", profileNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_description", profileDescriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_type", profileTypeUpdate),
@@ -202,7 +194,7 @@ func testAccCheckIbmSccProfileConfigBasic(profileName string, profileDescription
 	`, profileName, profileDescription, profileType)
 }
 
-func testAccCheckIbmSccProfileConfig(xCorrelationID string, xRequestID string, profileName string, profileDescription string, profileType string) string {
+func testAccCheckIbmSccProfileConfig(profileName string, profileDescription string, profileType string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
@@ -306,7 +298,7 @@ func testAccCheckIbmSccProfileConfig(xCorrelationID string, xRequestID string, p
 				parameter_type = "string"
 			}
 		}
-	`, xCorrelationID, xRequestID, profileName, profileDescription, profileType)
+	`, profileName, profileDescription, profileType)
 }
 
 func testAccCheckIbmSccProfileExists(n string, obj securityandcompliancecenterapiv3.Profile) resource.TestCheckFunc {

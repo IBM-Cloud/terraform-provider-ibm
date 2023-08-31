@@ -31,16 +31,6 @@ func DataSourceIbmSccProfileAttachment() *schema.Resource {
 				Required:    true,
 				Description: "The profile ID.",
 			},
-			"x_correlation_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is not used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"attachment_item_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -247,12 +237,6 @@ func dataSourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Re
 
 	getProfileAttachmentOptions.SetAttachmentID(d.Get("attachment_id").(string))
 	getProfileAttachmentOptions.SetProfileID(d.Get("profile_id").(string))
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		getProfileAttachmentOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		getProfileAttachmentOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 
 	attachmentItem, response, err := securityandcompliancecenterapiClient.GetProfileAttachmentWithContext(context, getProfileAttachmentOptions)
 	if err != nil {

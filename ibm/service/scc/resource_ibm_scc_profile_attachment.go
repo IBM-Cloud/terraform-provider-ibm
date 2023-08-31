@@ -34,18 +34,6 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_scc_profile_attachment", "profile_id"),
 				Description:  "The ID of the profile that is specified in the attachment.",
 			},
-			"x_correlation_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_profile_attachment", "x_correlation_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_profile_attachment", "x_request_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is not used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"account_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -271,24 +259,6 @@ func ResourceIbmSccProfileAttachmentValidator() *validate.ResourceValidator {
 			MinValueLength:             36,
 			MaxValueLength:             36,
 		},
-		validate.ValidateSchema{
-			Identifier:                 "x_correlation_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "x_request_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_scc_profile_attachment", Schema: validateSchema}
@@ -306,12 +276,6 @@ func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.Re
 
 	if _, ok := d.GetOk("profile_id"); ok {
 		bodyModelMap["profile_id"] = d.Get("profile_id")
-	}
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		createAttachmentOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		createAttachmentOptions.SetXRequestID(d.Get("x_request_id").(string))
 	}
 	if _, ok := d.GetOk("description"); ok {
 		bodyModelMap["description"] = d.Get("description")

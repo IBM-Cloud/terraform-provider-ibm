@@ -26,16 +26,6 @@ func DataSourceIbmSccControlLibrary() *schema.Resource {
 				Required:    true,
 				Description: "The control library ID.",
 			},
-			"x_correlation_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is not used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -297,12 +287,6 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 	getControlLibraryOptions := &securityandcompliancecenterapiv3.GetControlLibraryOptions{}
 
 	getControlLibraryOptions.SetControlLibrariesID(d.Get("control_libraries_id").(string))
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		getControlLibraryOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		getControlLibraryOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 
 	controlLibrary, response, err := securityandcompliancecenterapiClient.GetControlLibraryWithContext(context, getControlLibraryOptions)
 	if err != nil {

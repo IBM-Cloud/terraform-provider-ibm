@@ -21,7 +21,7 @@ func TestAccIbmSccProviderTypeInstanceDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(providerTypeInstanceItemProviderTypeID, providerTypeInstanceItemName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "id"),
@@ -35,22 +35,18 @@ func TestAccIbmSccProviderTypeInstanceDataSourceBasic(t *testing.T) {
 
 func TestAccIbmSccProviderTypeInstanceDataSourceAllArgs(t *testing.T) {
 	providerTypeInstanceItemProviderTypeID := fmt.Sprintf("tf_provider_type_id_%d", acctest.RandIntRange(10, 100))
-	providerTypeInstanceItemXCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	providerTypeInstanceItemXRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	providerTypeInstanceItemName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstanceItemProviderTypeID, providerTypeInstanceItemXCorrelationID, providerTypeInstanceItemXRequestID, providerTypeInstanceItemName),
+			{
+				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstanceItemProviderTypeID, providerTypeInstanceItemName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "x_correlation_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "x_request_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_instance_item_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "type"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance", "name"),
@@ -80,13 +76,11 @@ func testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(providerTypeIns
 		data "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
 			provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
 			provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance_instance.providerTypeInstanceItem_id
-			X-Correlation-ID = ibm_scc_provider_type_instance.scc_provider_type_instance.x_correlation_id
-			X-Request-ID = ibm_scc_provider_type_instance.scc_provider_type_instance.x_request_id
 		}
 	`, providerTypeInstanceItemProviderTypeID, providerTypeInstanceItemName)
 }
 
-func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstanceItemProviderTypeID string, providerTypeInstanceItemXCorrelationID string, providerTypeInstanceItemXRequestID string, providerTypeInstanceItemName string) string {
+func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstanceItemProviderTypeID string, providerTypeInstanceItemName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
 			provider_type_id = "provider_type_id"
@@ -96,8 +90,6 @@ func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstance
 
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
 			provider_type_id = "%s"
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			name = "%s"
 			attributes = {"wp_crn":"crn:v1:staging:public:sysdig-secure:eu-gb:a/14q5SEnVIbwxzvP4AWPCjr2dJg5BAvPb:d1461d1ae-df1eee12fa81812e0-12-aa259::"}
 		}
@@ -105,8 +97,6 @@ func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstance
 		data "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
 			provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
 			provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance_instance.providerTypeInstanceItem_id
-			X-Correlation-ID = ibm_scc_provider_type_instance.scc_provider_type_instance.x_correlation_id
-			X-Request-ID = ibm_scc_provider_type_instance.scc_provider_type_instance.x_request_id
 		}
-	`, providerTypeInstanceItemProviderTypeID, providerTypeInstanceItemXCorrelationID, providerTypeInstanceItemXRequestID, providerTypeInstanceItemName)
+	`, providerTypeInstanceItemProviderTypeID, providerTypeInstanceItemName)
 }

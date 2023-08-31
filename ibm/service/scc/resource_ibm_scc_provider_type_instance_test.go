@@ -50,11 +50,7 @@ func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
 func TestAccIbmSccProviderTypeInstanceAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ProviderTypeInstanceItem
 	providerTypeID := fmt.Sprintf("tf_provider_type_id_%d", acctest.RandIntRange(10, 100))
-	xCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	xCorrelationIDUpdate := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestIDUpdate := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -63,21 +59,17 @@ func TestAccIbmSccProviderTypeInstanceAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProviderTypeInstanceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID, xCorrelationID, xRequestID, name),
+				Config: testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProviderTypeInstanceExists("ibm_scc_provider_type_instance.scc_provider_type_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_id", providerTypeID),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "x_correlation_id", xCorrelationID),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "x_request_id", xRequestID),
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID, xCorrelationIDUpdate, xRequestIDUpdate, nameUpdate),
+				Config: testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_id", providerTypeID),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "x_correlation_id", xCorrelationIDUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "x_request_id", xRequestIDUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "name", nameUpdate),
 				),
 			},
@@ -105,7 +97,7 @@ func testAccCheckIbmSccProviderTypeInstanceConfigBasic(providerTypeID string, na
 	`, providerTypeID, name)
 }
 
-func testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID string, xCorrelationID string, xRequestID string, name string) string {
+func testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
@@ -116,12 +108,10 @@ func testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID string, xCorrel
 
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
 			provider_type_id = "%s"
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			name = "%s"
 			attributes = {"wp_crn":"crn:v1:staging:public:sysdig-secure:eu-gb:a/14q5SEnVIbwxzvP4AWPCjr2dJg5BAvPb:d1461d1ae-df1eee12fa81812e0-12-aa259::"}
 		}
-	`, providerTypeID, xCorrelationID, xRequestID, name)
+	`, providerTypeID, name)
 }
 
 func testAccCheckIbmSccProviderTypeInstanceExists(n string, obj securityandcompliancecenterapiv3.ProviderTypeInstanceItem) resource.TestCheckFunc {

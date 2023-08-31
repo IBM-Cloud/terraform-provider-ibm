@@ -53,8 +53,6 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 
 func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ControlLibrary
-	xCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	controlLibraryName := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
 	controlLibraryType := "predefined"
@@ -62,8 +60,6 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	controlLibraryVersion := fmt.Sprintf("tf_control_library_version_%d", acctest.RandIntRange(10, 100))
 	latest := "true"
 	controlsCount := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	xCorrelationIDUpdate := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestIDUpdate := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	controlLibraryNameUpdate := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryDescriptionUpdate := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
 	controlLibraryTypeUpdate := "custom"
@@ -78,11 +74,9 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(xCorrelationID, xRequestID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest, controlsCount),
+				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest, controlsCount),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library", conf),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "x_correlation_id", xCorrelationID),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "x_request_id", xRequestID),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_name", controlLibraryName),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_description", controlLibraryDescription),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_type", controlLibraryType),
@@ -93,10 +87,8 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(xCorrelationIDUpdate, xRequestIDUpdate, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate, controlsCountUpdate),
+				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate, controlsCountUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "x_correlation_id", xCorrelationIDUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "x_request_id", xRequestIDUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_name", controlLibraryNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_description", controlLibraryDescriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_type", controlLibraryTypeUpdate),
@@ -200,7 +192,7 @@ func testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryName string, cont
 	`, controlLibraryName, controlLibraryDescription, controlLibraryType)
 }
 
-func testAccCheckIbmSccControlLibraryConfig(xCorrelationID string, xRequestID string, controlLibraryName string, controlLibraryDescription string, controlLibraryType string, versionGroupLabel string, controlLibraryVersion string, latest string, controlsCount string) string {
+func testAccCheckIbmSccControlLibraryConfig(controlLibraryName string, controlLibraryDescription string, controlLibraryType string, versionGroupLabel string, controlLibraryVersion string, latest string, controlsCount string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
@@ -245,8 +237,6 @@ func testAccCheckIbmSccControlLibraryConfig(xCorrelationID string, xRequestID st
 		}
 
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
@@ -290,7 +280,7 @@ func testAccCheckIbmSccControlLibraryConfig(xCorrelationID string, xRequestID st
 				status = "enabled"
 			}
 		}
-	`, xCorrelationID, xRequestID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest, controlsCount)
+	`, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest, controlsCount)
 }
 
 func testAccCheckIbmSccControlLibraryExists(n string, obj securityandcompliancecenterapiv3.ControlLibrary) resource.TestCheckFunc {

@@ -23,16 +23,6 @@ func DataSourceIbmSccProviderTypeCollection() *schema.Resource {
 		ReadContext: dataSourceIbmSccProviderTypeCollectionRead,
 
 		Schema: map[string]*schema.Schema{
-			"x_correlation_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this headers is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header  for the corresponding response.  The same value is not used for downstream requests and retries of those requests.  If a value of this headers is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"provider_types": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -135,13 +125,6 @@ func dataSourceIbmSccProviderTypeCollectionRead(context context.Context, d *sche
 	}
 
 	listProviderTypesOptions := &securityandcompliancecenterapiv3.ListProviderTypesOptions{}
-
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		listProviderTypesOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		listProviderTypesOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 
 	providerTypesCollection, response, err := securityAndComplianceCenterApIsClient.ListProviderTypesWithContext(context, listProviderTypesOptions)
 	if err != nil {

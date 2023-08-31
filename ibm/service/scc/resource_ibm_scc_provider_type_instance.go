@@ -34,18 +34,6 @@ func ResourceIbmSccProviderTypeInstance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_scc_provider_type_instance", "provider_type_id"),
 				Description:  "The provider type ID.",
 			},
-			"x_correlation_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_provider_type_instance", "x_correlation_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this headers is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_provider_type_instance", "x_request_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header  for the corresponding response.  The same value is not used for downstream requests and retries of those requests.  If a value of this headers is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -93,24 +81,6 @@ func ResourceIbmSccProviderTypeInstanceValidator() *validate.ResourceValidator {
 			MaxValueLength:             36,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "x_correlation_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "x_request_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -140,12 +110,6 @@ func resourceIbmSccProviderTypeInstanceCreate(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 	createProviderTypeInstanceOptions.SetAttributes(attributesModel)
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		createProviderTypeInstanceOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		createProviderTypeInstanceOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 
 	providerTypeInstanceItem, response, err := securityAndComplianceCenterApIsClient.CreateProviderTypeInstanceWithContext(context, createProviderTypeInstanceOptions)
 	if err != nil {
@@ -246,14 +210,6 @@ func resourceIbmSccProviderTypeInstanceUpdate(context context.Context, d *schema
 	}
 	if d.HasChange("name") {
 		updateProviderTypeInstanceOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
-	if d.HasChange("x_correlation_id") {
-		updateProviderTypeInstanceOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-		hasChange = true
-	}
-	if d.HasChange("x_request_id") {
-		updateProviderTypeInstanceOptions.SetXRequestID(d.Get("x_request_id").(string))
 		hasChange = true
 	}
 

@@ -27,16 +27,6 @@ func DataSourceIbmSccReportControls() *schema.Resource {
 				Required:    true,
 				Description: "The ID of the scan that is associated with a report.",
 			},
-			"x_correlation_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request, and repeated in a response header  for the corresponding response.  The same value is not used for downstream requests and retries of those requests.  If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"control_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -311,12 +301,6 @@ func dataSourceIbmSccReportControlsRead(context context.Context, d *schema.Resou
 	getReportControlsOptions := &securityandcompliancecenterapiv3.GetReportControlsOptions{}
 
 	getReportControlsOptions.SetReportID(d.Get("report_id").(string))
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		getReportControlsOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		getReportControlsOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 	if _, ok := d.GetOk("control_id"); ok {
 		getReportControlsOptions.SetControlID(d.Get("control_id").(string))
 	}

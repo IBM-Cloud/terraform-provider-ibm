@@ -34,8 +34,6 @@ func TestAccIbmSccProfileDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmSccProfileDataSourceAllArgs(t *testing.T) {
-	profileXCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	profileXRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	profileProfileName := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
 	profileProfileDescription := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
 	profileProfileType := "predefined"
@@ -45,12 +43,10 @@ func TestAccIbmSccProfileDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileDataSourceConfig(profileXCorrelationID, profileXRequestID, profileProfileName, profileProfileDescription, profileProfileType),
+				Config: testAccCheckIbmSccProfileDataSourceConfig(profileProfileName, profileProfileDescription, profileProfileType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile", "profiles_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile", "x_correlation_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile", "x_request_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile", "profile_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile", "profile_description"),
@@ -194,13 +190,11 @@ func testAccCheckIbmSccProfileDataSourceConfigBasic(profileProfileName string, p
 
 		data "ibm_scc_profile" "scc_profile_instance" {
 			profiles_id = ibm_scc_profile.scc_profile_instance.profile_id
-			X-Correlation-ID = ibm_scc_profile.scc_profile.x_correlation_id
-			X-Request-ID = ibm_scc_profile.scc_profile.x_request_id
 		}
 	`, profileProfileName, profileProfileDescription, profileProfileType)
 }
 
-func testAccCheckIbmSccProfileDataSourceConfig(profileXCorrelationID string, profileXRequestID string, profileProfileName string, profileProfileDescription string, profileProfileType string) string {
+func testAccCheckIbmSccProfileDataSourceConfig(profileProfileName string, profileProfileDescription string, profileProfileType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_profile" "scc_profile_instance" {
 			profile_name = "profile_name"
@@ -253,8 +247,6 @@ func testAccCheckIbmSccProfileDataSourceConfig(profileXCorrelationID string, pro
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
@@ -306,8 +298,6 @@ func testAccCheckIbmSccProfileDataSourceConfig(profileXCorrelationID string, pro
 
 		data "ibm_scc_profile" "scc_profile_instance" {
 			profiles_id = ibm_scc_profile.scc_profile_instance.profile_id
-			X-Correlation-ID = ibm_scc_profile.scc_profile.x_correlation_id
-			X-Request-ID = ibm_scc_profile.scc_profile.x_request_id
 		}
-	`, profileXCorrelationID, profileXRequestID, profileProfileName, profileProfileDescription, profileProfileType)
+	`, profileProfileName, profileProfileDescription, profileProfileType)
 }

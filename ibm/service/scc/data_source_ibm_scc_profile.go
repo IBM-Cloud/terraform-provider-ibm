@@ -26,16 +26,6 @@ func DataSourceIbmSccProfile() *schema.Resource {
 				Required:    true,
 				Description: "The profile ID.",
 			},
-			"x_correlation_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is not used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"profile_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -338,12 +328,6 @@ func dataSourceIbmSccProfileRead(context context.Context, d *schema.ResourceData
 	getProfileOptions := &securityandcompliancecenterapiv3.GetProfileOptions{}
 
 	getProfileOptions.SetProfileID(d.Get("profile_id").(string))
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		getProfileOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		getProfileOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 
 	profile, response, err := securityandcompliancecenterapiClient.GetProfileWithContext(context, getProfileOptions)
 	if err != nil {

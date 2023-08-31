@@ -27,18 +27,6 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"x_correlation_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "x_correlation_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "x_request_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is not used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"control_library_name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -294,24 +282,6 @@ func ResourceIbmSccControlLibraryValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "x_correlation_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "x_request_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
 			Identifier:                 "control_library_name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -385,12 +355,6 @@ func resourceIbmSccControlLibraryCreate(context context.Context, d *schema.Resou
 		bodyModelMap["controls_count"] = d.Get("controls_count")
 	}
 	bodyModelMap["controls"] = d.Get("controls")
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		createCustomControlLibraryOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		createCustomControlLibraryOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
 
 	convertedModel, err := resourceIbmSccControlLibraryMapToControlLibraryPrototype(bodyModelMap)
 	if err != nil {
@@ -541,14 +505,6 @@ func resourceIbmSccControlLibraryUpdate(context context.Context, d *schema.Resou
 	}
 	if d.HasChange("control_library_version") {
 		replaceCustomControlLibraryOptions.SetControlLibraryVersion(d.Get("control_library_version").(string))
-		hasChange = true
-	}
-	if d.HasChange("x_correlation_id") {
-		replaceCustomControlLibraryOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-		hasChange = true
-	}
-	if d.HasChange("x_request_id") {
-		replaceCustomControlLibraryOptions.SetXRequestID(d.Get("x_request_id").(string))
 		hasChange = true
 	}
 

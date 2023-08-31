@@ -34,8 +34,6 @@ func TestAccIbmSccControlLibraryDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmSccControlLibraryDataSourceAllArgs(t *testing.T) {
-	controlLibraryXCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	controlLibraryXRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	controlLibraryControlLibraryName := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryControlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
 	controlLibraryControlLibraryType := "predefined"
@@ -49,12 +47,10 @@ func TestAccIbmSccControlLibraryDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryXCorrelationID, controlLibraryXRequestID, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest, controlLibraryControlsCount),
+				Config: testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest, controlLibraryControlsCount),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "control_libraries_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "x_correlation_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "x_request_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "control_library_name"),
@@ -170,13 +166,11 @@ func testAccCheckIbmSccControlLibraryDataSourceConfigBasic(controlLibraryControl
 
 		data "ibm_scc_control_library" "scc_control_library_instance" {
 			control_libraries_id = ibm_scc_control_library.scc_control_library_instance.controlLibrary_id
-			X-Correlation-ID = ibm_scc_control_library.scc_control_library.x_correlation_id
-			X-Request-ID = ibm_scc_control_library.scc_control_library.x_request_id
 		}
 	`, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType)
 }
 
-func testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryXCorrelationID string, controlLibraryXRequestID string, controlLibraryControlLibraryName string, controlLibraryControlLibraryDescription string, controlLibraryControlLibraryType string, controlLibraryVersionGroupLabel string, controlLibraryControlLibraryVersion string, controlLibraryLatest string, controlLibraryControlsCount string) string {
+func testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryControlLibraryName string, controlLibraryControlLibraryDescription string, controlLibraryControlLibraryType string, controlLibraryVersionGroupLabel string, controlLibraryControlLibraryVersion string, controlLibraryLatest string, controlLibraryControlsCount string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
 			control_library_name = "control_library_name"
@@ -220,8 +214,6 @@ func testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryXCorrelation
 		}
 
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
@@ -268,8 +260,6 @@ func testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryXCorrelation
 
 		data "ibm_scc_control_library" "scc_control_library_instance" {
 			control_libraries_id = ibm_scc_control_library.scc_control_library_instance.controlLibrary_id
-			X-Correlation-ID = ibm_scc_control_library.scc_control_library.x_correlation_id
-			X-Request-ID = ibm_scc_control_library.scc_control_library.x_request_id
 		}
-	`, controlLibraryXCorrelationID, controlLibraryXRequestID, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest, controlLibraryControlsCount)
+	`, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest, controlLibraryControlsCount)
 }

@@ -36,11 +36,7 @@ func TestAccIbmSccInstanceSettingsBasic(t *testing.T) {
 
 func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Settings
-	xCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	settingsID := fmt.Sprintf("tf_settings_id_%d", acctest.RandIntRange(10, 100))
-	xCorrelationIDUpdate := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestIDUpdate := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
 	settingsIDUpdate := fmt.Sprintf("tf_settings_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -49,19 +45,15 @@ func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccInstanceSettingsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccInstanceSettingsConfig(xCorrelationID, xRequestID, settingsID),
+				Config: testAccCheckIbmSccInstanceSettingsConfig(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings", conf),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_correlation_id", xCorrelationID),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_request_id", xRequestID),
 					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "settings_id", settingsID),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccInstanceSettingsConfig(xCorrelationIDUpdate, xRequestIDUpdate, settingsIDUpdate),
+				Config: testAccCheckIbmSccInstanceSettingsConfig(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_correlation_id", xCorrelationIDUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_request_id", xRequestIDUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "settings_id", settingsIDUpdate),
 				),
 			},
@@ -81,12 +73,10 @@ func testAccCheckIbmSccInstanceSettingsConfigBasic() string {
 	`)
 }
 
-func testAccCheckIbmSccInstanceSettingsConfig(xCorrelationID string, xRequestID string, settingsID string) string {
+func testAccCheckIbmSccInstanceSettingsConfig() string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_instance_settings" "scc_instance_settings_instance" {
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			event_notifications {
 				instance_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/ff88f007f9ff4622aac4fbc0eda36255:7199ae60-a214-4dd8-9bf7-ce571de49d01::"
 				updated_on = "2021-01-31T09:44:12Z"
@@ -101,9 +91,8 @@ func testAccCheckIbmSccInstanceSettingsConfig(xCorrelationID string, xRequestID 
 				bucket_endpoint = "bucket_endpoint"
 				updated_on = "2021-01-31T09:44:12Z"
 			}
-			settings_id = "%s"
 		}
-	`, xCorrelationID, xRequestID, settingsID)
+	`)
 }
 
 func testAccCheckIbmSccInstanceSettingsExists(n string, obj securityandcompliancecenterapiv3.Settings) resource.TestCheckFunc {
