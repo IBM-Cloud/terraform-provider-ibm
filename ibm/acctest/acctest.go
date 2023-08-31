@@ -9,8 +9,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 )
 
 var AppIDTenantID string
@@ -32,6 +33,8 @@ var Ibmid1 string
 var Ibmid2 string
 var IAMUser string
 var IAMAccountId string
+var IAMServiceId string
+var IAMTrustedProfileID string
 var Datacenter string
 var MachineType string
 var trustedMachineType string
@@ -73,6 +76,8 @@ var ISZoneName3 string
 var IsResourceGroupID string
 var ISCIDR string
 var ISCIDR2 string
+var ISPublicSSHKeyFilePath string
+var ISPrivateSSHKeyFilePath string
 var ISAddressPrefixCIDR string
 var InstanceName string
 var InstanceProfileName string
@@ -89,11 +94,13 @@ var InstanceDiskProfileName string
 var DedicatedHostGroupFamily string
 var DedicatedHostGroupClass string
 var ShareProfileName string
+var VNIId string
 var VolumeProfileName string
 var VSIUnattachedBootVolumeID string
 var VSIDataVolumeID string
 var ISRouteDestination string
 var ISRouteNextHop string
+var ISSnapshotCRN string
 var WorkspaceID string
 var TemplateID string
 var ActionID string
@@ -117,6 +124,7 @@ var SecretsManagerPublicCertificateCisCrn string
 var SecretsManagerPublicCertificateClassicInfrastructureUsername string
 var SecretsManagerPublicCertificateClassicInfrastructurePassword string
 var SecretsManagerPublicCertificateCommonName string
+var SecretsManagerValidateManualDnsCisZoneId string
 var SecretsManagerImportedCertificatePathToCertificate string
 var SecretsManagerSecretType string
 var SecretsManagerSecretID string
@@ -139,6 +147,7 @@ var IcdDbTaskId string
 var KmsInstanceID string
 var CrkID string
 var KmsAccountID string
+var BaasEncryptionkeyCRN string
 
 // for snapshot encryption
 var IsKMSInstanceId string
@@ -191,6 +200,9 @@ var Image_cos_url string
 var Image_cos_url_encrypted string
 var Image_operating_system string
 
+// Transit Gateway Power Virtual Server
+var Tg_power_vs_network_id string
+
 // Transit Gateway cross account
 var Tg_cross_network_account_id string
 var Tg_cross_network_account_api_key string
@@ -205,22 +217,6 @@ var Scc_resource_group_id string
 
 // Security and Compliance Center, SI
 var Scc_si_account string
-
-// Security and Compliance Center, Posture Management
-var Scc_posture_scope_id string
-var Scc_posture_scan_id string
-var Scc_posture_profile_id string
-var Scc_posture_group_profile_id string
-var Scc_posture_correlation_id string
-var Scc_posture_report_setting_id string
-var Scc_posture_profile_id_scansummary string
-var Scc_posture_scan_id_scansummary string
-var Scc_posture_credential_id_scope string
-var Scc_posture_credential_id_scope_update string
-var Scc_posture_collector_id_scope []string
-var Scc_posture_collector_id_scope_update []string
-var Scc_posture_collector_id string
-var Scc_posture_credential_id string
 
 // ROKS Cluster
 var ClusterName string
@@ -271,11 +267,17 @@ var CeProjectId string
 var CeServiceInstanceID string
 var CeResourceKeyID string
 
+// for IAM Identity
+
+var IamIdentityAssignmentTargetAccountId string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
 	}
+
+	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
 
 	AppIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if AppIDTenantID == "" {
@@ -313,6 +315,16 @@ func init() {
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
 	if IAMAccountId == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing ibm_iam_trusted_profile resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMServiceId = os.Getenv("IBM_IAM_SERVICE_ID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_SERVICE_ID for testing ibm_iam_trusted_profile_identity resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMTrustedProfileID = os.Getenv("IBM_IAM_TRUSTED_PROFILE_ID")
+	if IAMTrustedProfileID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_TRUSTED_PROFILE_ID for testing ibm_iam_trusted_profile_identity resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	Datacenter = os.Getenv("IBM_DATACENTER")
@@ -589,10 +601,22 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
 	}
 
-	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
-	if ISAddressPrefixCIDR == "" {
-		ISAddressPrefixCIDR = "10.120.0.0/24"
-		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	ISCIDR2 = os.Getenv("SL_CIDR_2")
+	if ISCIDR2 == "" {
+		ISCIDR2 = "10.240.64.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
+	}
+
+	ISPublicSSHKeyFilePath = os.Getenv("IS_PUBLIC_SSH_KEY_PATH")
+	if ISPublicSSHKeyFilePath == "" {
+		ISPublicSSHKeyFilePath = "./test-fixtures/.ssh/pkcs8_rsa.pub"
+		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_instance datasource else it is set to default value './test-fixtures/.ssh/pkcs8_rsa.pub'")
+	}
+
+	ISPrivateSSHKeyFilePath = os.Getenv("IS_PRIVATE_SSH_KEY_PATH")
+	if ISPrivateSSHKeyFilePath == "" {
+		ISPrivateSSHKeyFilePath = "./test-fixtures/.ssh/pkcs8_rsa"
+		fmt.Println("[INFO] Set the environment variable IS_PRIVATE_SSH_KEY_PATH for testing ibm_is_instance datasource else it is set to default value './test-fixtures/.ssh/pkcs8_rsa'")
 	}
 
 	IsResourceGroupID = os.Getenv("SL_RESOURCE_GROUP_ID")
@@ -604,8 +628,8 @@ func init() {
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		//IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		IsImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
+		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
 	}
 
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
@@ -641,6 +665,12 @@ func init() {
 	BackupPolicyID = os.Getenv("IS_BACKUP_POLICY_ID")
 	if BackupPolicyID == "" {
 		fmt.Println("[INFO] Set the environment variable IS_BACKUP_POLICY_ID for testing ibm_is_backup_policy_jobs datasource")
+	}
+
+	BaasEncryptionkeyCRN = os.Getenv("IS_REMOTE_CP_BAAS_ENCRYPTION_KEY_CRN")
+	if BaasEncryptionkeyCRN == "" {
+		BaasEncryptionkeyCRN = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
+		fmt.Println("[INFO] Set the environment variable IS_REMOTE_CP_BAAS_ENCRYPTION_KEY_CRN for testing remote_copies_policy with Baas plans, else it is set to default value, 'crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179'")
 	}
 
 	InstanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
@@ -743,7 +773,7 @@ func init() {
 
 	ShareProfileName = os.Getenv("IS_SHARE_PROFILE")
 	if ShareProfileName == "" {
-		ShareProfileName = "tier-3iops" // for next gen infrastructure
+		ShareProfileName = "dp2" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
 	}
 
@@ -752,6 +782,13 @@ func init() {
 		VolumeProfileName = "general-purpose"
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
 	}
+
+	VNIId = os.Getenv("IS_VIRTUAL_NETWORK_INTERFACE")
+	if VNIId == "" {
+		VNIId = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
+		fmt.Println("[INFO] Set the environment variable IS_VIRTUAL_NETWORK_INTERFACE for testing ibm_is_virtual_network_interface else it is set to default value 'c93dc4c6-e85a-4da2-9ea6-f24576256122'")
+	}
+
 	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
 	if VSIUnattachedBootVolumeID == "" {
 		VSIUnattachedBootVolumeID = "r006-1cbe9f0a-7101-4d25-ae72-2a2d725e530e"
@@ -767,6 +804,12 @@ func init() {
 	if ISRouteNextHop == "" {
 		ISRouteNextHop = "10.240.0.0"
 		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP else it is set to default value '10.0.0.4'")
+	}
+
+	ISSnapshotCRN = os.Getenv("IS_SNAPSHOT_CRN")
+	if ISSnapshotCRN == "" {
+		ISSnapshotCRN = "crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx"
+		fmt.Println("[INFO] Set the environment variable ISSnapshotCRN for ibm_is_snapshot resource else it is set to default value 'crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx'")
 	}
 
 	IcdDbRegion = os.Getenv("ICD_DB_REGION")
@@ -1016,7 +1059,7 @@ func init() {
 	IsImageName = os.Getenv("IS_IMAGE_NAME")
 	if IsImageName == "" {
 		//IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
-		IsImageName = "ibm-ubuntu-18-04-1-minimal-amd64-2" // for next gen infrastructure
+		IsImageName = "ibm-ubuntu-22-04-1-minimal-amd64-4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
@@ -1084,6 +1127,11 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_COMMON_NAME for testing public certificate's tests, else tests fail if not set correctly")
 	}
 
+	SecretsManagerValidateManualDnsCisZoneId = os.Getenv("SECRETS_MANAGER_VALIDATE_MANUAL_DNS_CIS_ZONE_ID")
+	if SecretsManagerValidateManualDnsCisZoneId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_VALIDATE_MANUAL_DNS_CIS_ZONE_ID for testing validate manual dns' test, else tests fail if not set correctly")
+	}
+
 	SecretsManagerPublicCertificateCisCrn = os.Getenv("SECRETS_MANAGER_PUBLIC_CERTIFICATE_CIS_CRN")
 	if SecretsManagerPublicCertificateCisCrn == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PUBLIC_CERTIFICATE_CIS_CRN for testing public certificate's tests, else tests fail if not set correctly")
@@ -1127,6 +1175,10 @@ func init() {
 	Tg_cross_network_id = os.Getenv("IBM_TG_CROSS_NETWORK_ID")
 	if Tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
+	Tg_power_vs_network_id = os.Getenv("IBM_TG_POWER_VS_NETWORK_ID")
+	if Tg_power_vs_network_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_POWER_VS_NETWORK_ID for testing ibm_tg_connection resource else tests will fail if this is not set correctly")
 	}
 	Account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
 	if Account_to_be_imported == "" {
@@ -1176,75 +1228,6 @@ func init() {
 	Scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
 	if Scc_si_account == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_scope_id = os.Getenv("SCC_POSTURE_SCOPE_ID")
-	if Scc_posture_scope_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCOPE_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_scan_id = os.Getenv("SCC_POSTURE_SCAN_ID")
-	if Scc_posture_scan_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCAN_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_profile_id = os.Getenv("SCC_POSTURE_PROFILE_ID")
-	if Scc_posture_profile_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-	Scc_posture_group_profile_id = os.Getenv("SCC_POSTURE_GROUP_PROFILE_ID")
-	if Scc_posture_group_profile_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_GROUP_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_correlation_id = os.Getenv("SCC_POSTURE_CORRELATION_ID")
-	if Scc_posture_correlation_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CORRELATION_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_report_setting_id = os.Getenv("SCC_POSTURE_REPORT_SETTING_ID")
-	if Scc_posture_report_setting_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_REPORT_SETTING_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_profile_id_scansummary = os.Getenv("SCC_POSTURE_PROFILE_ID_SCANSUMMARY")
-	if Scc_posture_profile_id_scansummary == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID_SCANSUMMARY for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_scan_id_scansummary = os.Getenv("SCC_POSTURE_SCAN_ID_SCANSUMMARY")
-	if Scc_posture_scan_id_scansummary == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCAN_ID_SCANSUMMARY for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_credential_id_scope = os.Getenv("SCC_POSTURE_CREDENTIAL_ID_SCOPE")
-	if Scc_posture_credential_id_scope == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CREDENTIAL_ID_SCOPE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_credential_id_scope_update = os.Getenv("SCC_POSTURE_CREDENTIAL_ID_SCOPE_UPDATE")
-	if Scc_posture_credential_id_scope_update == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CREDENTIAL_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_collector_id_scope = []string{os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE")}
-	if os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE") == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID_SCOPE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_collector_id_scope_update = []string{os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE")}
-	if os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE") == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_collector_id = os.Getenv("SCC_POSTURE_COLLECTOR_ID")
-	if Scc_posture_collector_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
-	}
-
-	Scc_posture_credential_id = os.Getenv("SCC_POSTURE_CREDENTIAL_ID")
-	if Scc_posture_credential_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CREDENTIAL_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
 	}
 
 	CloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
@@ -1486,7 +1469,12 @@ func TestAccPreCheckEnterprise(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
+}
 
+func TestAccPreCheckAssignmentTargetAccount(t *testing.T) {
+	if v := os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT"); v == "" {
+		t.Fatal("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT must be set for IAM identity assignment tests")
+	}
 }
 
 func TestAccPreCheckEnterpriseAccountImport(t *testing.T) {

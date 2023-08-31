@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -40,6 +40,15 @@ func DataSourceIBMIsShareTarget() *schema.Resource {
 				Optional:     true,
 				ExactlyOneOf: []string{"mount_target", "mount_target_name"},
 				Description:  "The share target name.",
+			},
+			"transit_encryption": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"access_control_mode": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The access control mode for the share",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -167,12 +176,60 @@ func DataSourceIBMIsShareTarget() *schema.Resource {
 					},
 				},
 			},
+			"virtual_network_interface": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The virtual network interface for this file share mount target.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this virtual network interface.",
+						},
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this virtual network interface.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this virtual network interface.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique user-defined name for this virtual network interface.",
+						},
+						"resource_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
 func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,9 +238,9 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 	share_name := d.Get("share_name").(string)
 	share_target := d.Get("mount_target").(string)
 	share_target_name := d.Get("mount_target_name").(string)
-	var shareTarget *vpcbetav1.ShareMountTarget
+	var shareTarget *vpcv1.ShareMountTarget
 	if share_name != "" {
-		listSharesOptions := &vpcbetav1.ListSharesOptions{}
+		listSharesOptions := &vpcv1.ListSharesOptions{}
 		listSharesOptions.Name = &share_name
 		shareCollection, response, err := vpcClient.ListSharesWithContext(context, listSharesOptions)
 		if err != nil {
@@ -198,7 +255,7 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 		}
 	}
 	if share_target_name != "" {
-		listShareTargetsOptions := &vpcbetav1.ListShareMountTargetsOptions{}
+		listShareTargetsOptions := &vpcv1.ListShareMountTargetsOptions{}
 
 		listShareTargetsOptions.SetShareID(share_id)
 		listShareTargetsOptions.SetName(share_target_name)
@@ -215,7 +272,7 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 			}
 		}
 	} else {
-		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 		getShareTargetOptions.SetShareID(share_id)
 		getShareTargetOptions.SetID(share_target)
 		shareTarget1, response, err := vpcClient.GetShareMountTargetWithContext(context, getShareTargetOptions)
@@ -227,6 +284,9 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", share_id, *shareTarget.ID))
+	if shareTarget.AccessControlMode != nil {
+		d.Set("access_control_mode", *shareTarget.AccessControlMode)
+	}
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
@@ -245,6 +305,11 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("resource_type", shareTarget.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
+	if shareTarget.TransitEncryption != nil {
+		if err = d.Set("transit_encryption", *shareTarget.TransitEncryption); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting transit_encryption: %s", err))
+		}
+	}
 
 	if shareTarget.VPC != nil {
 		err = d.Set("vpc", dataSourceShareMountTargetFlattenVpc(*shareTarget.VPC))
@@ -253,10 +318,24 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 		}
 	}
 
+	if shareTarget.VirtualNetworkInterface != nil {
+		err = d.Set("virtual_network_interface", dataSourceShareMountTargetFlattenVNI(*shareTarget.VirtualNetworkInterface))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+		}
+	}
+
+	if shareTarget.Subnet != nil {
+		err = d.Set("subnet", dataSourceShareMountTargetFlattenSubnet(*shareTarget.Subnet))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
+		}
+	}
+
 	return nil
 }
 
-func dataSourceShareMountTargetFlattenVpc(result vpcbetav1.VPCReference) (finalList []map[string]interface{}) {
+func dataSourceShareMountTargetFlattenVpc(result vpcv1.VPCReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceShareMountTargetVpcToMap(result)
 	finalList = append(finalList, finalMap)
@@ -264,7 +343,7 @@ func dataSourceShareMountTargetFlattenVpc(result vpcbetav1.VPCReference) (finalL
 	return finalList
 }
 
-func dataSourceShareMountTargetVpcToMap(vpcItem vpcbetav1.VPCReference) (vpcMap map[string]interface{}) {
+func dataSourceShareMountTargetVpcToMap(vpcItem vpcv1.VPCReference) (vpcMap map[string]interface{}) {
 	vpcMap = map[string]interface{}{}
 
 	if vpcItem.CRN != nil {
@@ -272,7 +351,7 @@ func dataSourceShareMountTargetVpcToMap(vpcItem vpcbetav1.VPCReference) (vpcMap 
 	}
 	if vpcItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
-		deletedMap := dataSourceShareTargetVpcDeletedToMap(*vpcItem.Deleted)
+		deletedMap := dataSourceShareMountTargetVpcDeletedToMap(*vpcItem.Deleted)
 		deletedList = append(deletedList, deletedMap)
 		vpcMap["deleted"] = deletedList
 	}
@@ -285,16 +364,109 @@ func dataSourceShareMountTargetVpcToMap(vpcItem vpcbetav1.VPCReference) (vpcMap 
 	if vpcItem.Name != nil {
 		vpcMap["name"] = vpcItem.Name
 	}
-	/*
-		if vpcItem.ResourceType != nil {
-			vpcMap["resource_type"] = vpcItem.ResourceType
-		}
-	*/
+
+	if vpcItem.ResourceType != nil {
+		vpcMap["resource_type"] = vpcItem.ResourceType
+	}
 
 	return vpcMap
 }
 
-func dataSourceShareMountTargetVpcDeletedToMap(deletedItem vpcbetav1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareMountTargetVpcDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+	deletedMap = map[string]interface{}{}
+
+	if deletedItem.MoreInfo != nil {
+		deletedMap["more_info"] = deletedItem.MoreInfo
+	}
+
+	return deletedMap
+}
+
+func dataSourceShareMountTargetFlattenSubnet(result vpcv1.SubnetReference) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceShareTargetSubnetToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceShareTargetSubnetToMap(subnetItem vpcv1.SubnetReference) (subnetMap map[string]interface{}) {
+	subnetMap = map[string]interface{}{}
+
+	if subnetItem.CRN != nil {
+		subnetMap["crn"] = subnetItem.CRN
+	}
+	if subnetItem.Deleted != nil {
+		deletedList := []map[string]interface{}{}
+		deletedMap := dataSourceShareTargetSubnetDeletedToMap(*subnetItem.Deleted)
+		deletedList = append(deletedList, deletedMap)
+		subnetMap["deleted"] = deletedList
+	}
+	if subnetItem.Href != nil {
+		subnetMap["href"] = subnetItem.Href
+	}
+	if subnetItem.ID != nil {
+		subnetMap["id"] = subnetItem.ID
+	}
+	if subnetItem.Name != nil {
+		subnetMap["name"] = subnetItem.Name
+	}
+
+	if subnetItem.ResourceType != nil {
+		subnetMap["resource_type"] = subnetItem.ResourceType
+	}
+
+	return subnetMap
+}
+
+func dataSourceShareTargetSubnetDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+	deletedMap = map[string]interface{}{}
+
+	if deletedItem.MoreInfo != nil {
+		deletedMap["more_info"] = deletedItem.MoreInfo
+	}
+
+	return deletedMap
+}
+
+func dataSourceShareMountTargetFlattenVNI(result vpcv1.VirtualNetworkInterfaceReferenceAttachmentContext) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceShareTargetVNIToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceShareTargetVNIToMap(VNIItem vpcv1.VirtualNetworkInterfaceReferenceAttachmentContext) (subnetMap map[string]interface{}) {
+	subnetMap = map[string]interface{}{}
+
+	if VNIItem.CRN != nil {
+		subnetMap["crn"] = VNIItem.CRN
+	}
+	if VNIItem.Deleted != nil {
+		deletedList := []map[string]interface{}{}
+		deletedMap := dataSourceShareTargetVNIDeletedToMap(*VNIItem.Deleted)
+		deletedList = append(deletedList, deletedMap)
+		subnetMap["deleted"] = deletedList
+	}
+	if VNIItem.Href != nil {
+		subnetMap["href"] = VNIItem.Href
+	}
+	if VNIItem.ID != nil {
+		subnetMap["id"] = VNIItem.ID
+	}
+	if VNIItem.Name != nil {
+		subnetMap["name"] = VNIItem.Name
+	}
+
+	if VNIItem.ResourceType != nil {
+		subnetMap["resource_type"] = VNIItem.ResourceType
+	}
+
+	return subnetMap
+}
+
+func dataSourceShareTargetVNIDeletedToMap(deletedItem vpcv1.VirtualNetworkInterfaceReferenceAttachmentContextDeleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

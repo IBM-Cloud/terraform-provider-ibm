@@ -1828,12 +1828,11 @@ func FlattenAllowlist(allowlist []clouddatabasesv5.AllowlistEntry) []map[string]
 	return entries
 }
 
-func ExpandPlatformOptions(platformOptions icdv4.PlatformOptions) []map[string]interface{} {
+func ExpandPlatformOptions(deployment clouddatabasesv5.Deployment) []map[string]interface{} {
 	pltOptions := make([]map[string]interface{}, 0, 1)
 	pltOption := make(map[string]interface{})
-	pltOption["key_protect_key_id"] = platformOptions.KeyProtectKey
-	pltOption["disk_encryption_key_crn"] = platformOptions.DiskENcryptionKeyCrn
-	pltOption["backup_encryption_key_crn"] = platformOptions.BackUpEncryptionKeyCrn
+	pltOption["disk_encryption_key_crn"] = deployment.PlatformOptions["disk_encryption_key_crn"]
+	pltOption["backup_encryption_key_crn"] = deployment.PlatformOptions["backup_encryption_key_crn"]
 	pltOptions = append(pltOptions, pltOption)
 	return pltOptions
 }
@@ -2630,7 +2629,7 @@ func ResourceSharesValidateHelper(diff *schema.ResourceDiff, sizeStr, profileStr
 		}
 	}
 
-	if profile != "custom-iops" {
+	if profile != "custom-iops" && profile != "dp2" {
 		if iops != 0 && diff.NewValueKnown(iopsStr) && diff.HasChange(iopsStr) {
 			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")
 		}
@@ -3422,7 +3421,7 @@ func GetRolesFromRoleNames(roleNames []string, roles []iampolicymanagementv1.Pol
 	return filteredRoles, nil
 }
 
-func MapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampolicymanagementv1.PolicyRole {
+func MapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleCollection) []iampolicymanagementv1.PolicyRole {
 	var policyRoles []iampolicymanagementv1.PolicyRole
 	for _, customRole := range roleList.CustomRoles {
 		newPolicyRole := iampolicymanagementv1.PolicyRole{
@@ -3464,7 +3463,7 @@ func MapRolesToPolicyRoles(roles []iampolicymanagementv1.Roles) []iampolicymanag
 	return policyRoles
 }
 
-func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2Policy, d *schema.ResourceData, meta interface{}) ([]string, error) {
+func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplateMetaData, d *schema.ResourceData, meta interface{}) ([]string, error) {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return []string{}, err

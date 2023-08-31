@@ -23,7 +23,6 @@ const (
 func DataSourceIBMCISBotManagement() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMCISBotManagementRead,
-
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,

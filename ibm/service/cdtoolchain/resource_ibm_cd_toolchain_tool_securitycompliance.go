@@ -80,7 +80,7 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						"use_profile_attachment": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Set to `enabled` to enable use profile with attachment, so that the scripts in the pipeline can interact with the Security and Compliance Center service. When enabled, other parameters become relevant; `scc_api_key`, `profile_name`, `profile_version`, `attachment_id`.",
+							Description: "Set to `enabled` to enable use profile with attachment, so that the scripts in the pipeline can interact with the Security and Compliance Center service. When enabled, other parameters become relevant; `scc_api_key`, `instance_crn`, `profile_name`, `profile_version`, `attachment_id`.",
 						},
 						"scc_api_key": &schema.Schema{
 							Type:             schema.TypeString,
@@ -89,10 +89,15 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 							Sensitive:        true,
 							Description:      "The IBM Cloud API key used to access the Security and Compliance Center service, for the use profile with attachment setting. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
+						"instance_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The Security and Compliance Center service instance CRN (Cloud Resource Name). It is recommended to provide an instance CRN, but when absent, the oldest service instance will be used. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+						},
 						"profile_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The name of a Security and Compliance Center profile. Usually, use the predefined profile \"IBM Cloud Security Best Practices\", which contains the DevSecOps Toolchain rules. Or use a user-authored customized profile that has been configured to contain those rules. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+							Description: "The name of a Security and Compliance Center profile. Usually, use one of the predefined profiles \"IBM Cloud Security Best Practices\" or \"IBM Cloud for Financial Services\", which contain the DevSecOps Toolchain rules. Or use a user-authored customized profile that has been configured to contain those rules. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
 						},
 						"profile_version": &schema.Schema{
 							Type:        schema.TypeString,
@@ -102,7 +107,7 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						"attachment_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "An attachment ID. An attachment is configured under a profile to define how a scan will be run. To find the attachment ID, in the browser, edit the attachment and the attachment ID is at the end of the URL. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
+							Description: "An attachment ID. An attachment is configured under a profile to define how a scan will be run. To find the attachment ID, in the browser, in the attachments list, click on the attachment link, and a panel appears with a button to copy the attachment ID. This parameter is only relevant when the `use_profile_attachment` parameter is `enabled`.",
 						},
 						"evidence_repo_url": &schema.Schema{
 							Type:        schema.TypeString,
