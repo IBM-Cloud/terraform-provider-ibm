@@ -10,13 +10,6 @@ subcategory: "VPC infrastructure"
 
 Provides a resource for Share. This allows Share to be created, updated and deleted.
 
-
-~> **NOTE**
-IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
-
-~> **NOTE**
-This is a Beta feature and it is subject to change in the GA release 
-
 ~> **NOTE**
   New shares should be created with profile `dp2`. Old Tiered profiles will be deprecated soon.
 
