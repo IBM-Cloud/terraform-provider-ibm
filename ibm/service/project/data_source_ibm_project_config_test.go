@@ -26,8 +26,9 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "locator_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.0.locator_id"),
 				),
 			},
 		},
@@ -57,21 +58,15 @@ func TestAccIbmProjectConfigDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "last_approved.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "authorizations.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "compliance_profile.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "locator_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "input.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "input.0.name"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "setting.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "setting.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "setting.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "type"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "output.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "output.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "active_draft.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.0.description"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.0.locator_id"),
 				),
 			},
 		},
@@ -117,14 +112,6 @@ func testAccCheckIbmProjectConfigDataSourceConfig(projectConfigCanonicalName str
                 api_key = "<YOUR_APIKEY_HERE>"
             }
 			locator_id = "%s"
-			input {
-				name = "name"
-				value = "anything as a string"
-			}
-			setting {
-				name = "name"
-				value = "value"
-			}
 		}
 
 		data "ibm_project_config" "project_config_instance" {

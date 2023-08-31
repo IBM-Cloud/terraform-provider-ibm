@@ -122,14 +122,6 @@ func testAccCheckIbmProjectConfigConfig(name string, description string, locator
               api_key = "<YOUR_APIKEY_HERE>"
             }
 			locator_id = "%s"
-			input {
-				name = "name"
-				value = "anything as a string"
-			}
-			setting {
-				name = "name"
-				value = "value"
-			}
 		}
 	`, name, description, locatorID)
 }

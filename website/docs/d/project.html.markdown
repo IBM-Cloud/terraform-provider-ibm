@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a project. You ca
 
 ```hcl
 data "ibm_project" "project" {
-	id = ibm_project.project_instance.projectCanonical_id
+	id = ibm_project.project_instance.id
 }
 ```
 
