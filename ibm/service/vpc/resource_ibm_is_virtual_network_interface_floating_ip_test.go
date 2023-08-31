@@ -119,7 +119,7 @@ func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPConfig(name string) strin
 			flaoting_ip					= ibm_is_floating_ip.fip.id
 		}
 
-	`, name, acc.ISZoneName)
+	`, name, acc.ISZoneName, name, acc.ISZoneName, name, acc.ISZoneName)
 }
 
 func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPExists(n string, obj vpcv1.FloatingIPReference) resource.TestCheckFunc {

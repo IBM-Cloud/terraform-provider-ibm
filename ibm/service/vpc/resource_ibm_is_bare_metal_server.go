@@ -696,7 +696,8 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	options := &vpcv1.CreateBareMetalServerOptions{}
+	createoptions := &vpcv1.CreateBareMetalServerOptions{}
+	options := &vpcv1.BareMetalServerPrototype{}
 	var imageStr string
 	if image, ok := d.GetOk(isBareMetalServerImage); ok {
 		imageStr = image.(string)
@@ -705,7 +706,8 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	// enable secure boot
 
 	if _, ok := d.GetOkExists(isBareMetalServerEnableSecureBoot); ok {
-		options.SetEnableSecureBoot(d.Get(isBareMetalServerEnableSecureBoot).(bool))
+		enablesecureboot := d.Get(isBareMetalServerEnableSecureBoot).(bool)
+		options.EnableSecureBoot = &enablesecureboot
 	}
 
 	// trusted_platform_module
@@ -715,7 +717,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		options.SetTrustedPlatformModule(trustedPlatformModuleModel)
+		options.TrustedPlatformModule = trustedPlatformModuleModel
 	}
 
 	keySet := d.Get(isBareMetalServerKeys).(*schema.Set)
@@ -1300,8 +1302,8 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 			ID: &vpc,
 		}
 	}
-
-	bms, response, err := sess.CreateBareMetalServerWithContext(context, options)
+	createoptions.BareMetalServerPrototype = options
+	bms, response, err := sess.CreateBareMetalServerWithContext(context, createoptions)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server err %s\n%s", err, response))
 	}
