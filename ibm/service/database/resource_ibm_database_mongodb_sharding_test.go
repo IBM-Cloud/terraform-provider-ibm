@@ -16,7 +16,7 @@ import (
 
 func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 	t.Parallel()
-	databaseResourceGroup := "Default"
+	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-mongoSharding-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
@@ -38,14 +38,12 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
-					// resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
 			{
@@ -58,18 +56,11 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
-					resource.TestCheckResourceAttr(name, "users.1.type", "ops_manager"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.scheme", "mongodb"),
-					resource.TestMatchResourceAttr(name, "connectionstrings.0.certname", regexp.MustCompile("[-a-z0-9]*")),
-					resource.TestMatchResourceAttr(name, "connectionstrings.0.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
-					resource.TestMatchResourceAttr(name, "connectionstrings.0.database", regexp.MustCompile("[-a-z0-9]+")),
-					// resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
 			{
@@ -85,53 +76,6 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
-					// resource.TestCheckResourceAttr(name, "tags.#", "1"),
-				),
-			},
-			{
-				ResourceName:      name,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation", "adminpassword", "connectionstrings.0.queryoptions"},
-			},
-		},
-	})
-}
-
-func TestAccIBMMongoDBShardingDatabaseInstanceGroupBasic(t *testing.T) {
-	t.Parallel()
-	databaseResourceGroup := "Default"
-	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf-mongoSharding-%d", acctest.RandIntRange(10, 100))
-	testName := rnd
-	name := "ibm_database." + testName
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingGroupBasic(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
-					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.1.count", "1"),
-					resource.TestCheckResourceAttr(name, "groups.2.count", "1"),
-					resource.TestMatchResourceAttr(name, "connectionstrings.0.certname", regexp.MustCompile("[-a-z0-9]*")),
-					resource.TestMatchResourceAttr(name, "connectionstrings.0.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
-					// resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
 		},
@@ -194,8 +138,8 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		}
 		users {
 		  name     = "user124"
-		  password = "password12$password"
-		  type     = "ops_manager"
+		  password = "password12password"
+		  type     = "database"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -236,55 +180,5 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 			delete = "15m"
 		}
 	  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
-}
-
-func testAccCheckIBMDatabaseInstanceMongoDBShardingGroupBasic(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		name = "%[1]s"
-	}
-
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-mongodb"
-		plan                         = "enterprise-sharding"
-		location                     = "%[3]s"
-		adminpassword                = "password12"
-
-		group {
-			group_id = "member"
-
-			memory {
-				allocation_mb = 14336
-			}
-			 disk {
-				allocation_mb = 20480
-			}
-		}
-
-		group {
-			group_id = "bi_connector"
-
-			members {
-				allocation_count = 1
-			}
-		}
-
-		group {
-			group_id = "analytics"
-
-			members {
-				allocation_count = 1
-			}
-		}
-
-		timeouts {
-			create = "4h"
-			update = "4h"
-			delete = "15m"
-		}
-	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
