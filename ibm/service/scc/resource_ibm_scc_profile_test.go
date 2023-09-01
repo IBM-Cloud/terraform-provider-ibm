@@ -196,7 +196,6 @@ func testAccCheckIbmSccProfileConfigBasic(profileName string, profileDescription
 
 func testAccCheckIbmSccProfileConfig(profileName string, profileDescription string, profileType string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_scc_profile" "scc_profile_instance" {
 			profile_name = "profile_name"
 			profile_description = "profile_description"
@@ -248,8 +247,6 @@ func testAccCheckIbmSccProfileConfig(profileName string, profileDescription stri
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
-			x_correlation_id = "%s"
-			x_request_id = "%s"
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
