@@ -10,14 +10,14 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIbmIsShareMountTarget(t *testing.T) {
-	var conf vpcbetav1.ShareMountTarget
+	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -44,7 +44,7 @@ func TestAccIbmIsShareMountTarget(t *testing.T) {
 	})
 }
 func TestAccIBMIsShareMountTargetTransitEncryptionBasic(t *testing.T) {
-	var conf vpcbetav1.ShareMountTarget
+	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
@@ -69,7 +69,7 @@ func TestAccIBMIsShareMountTargetTransitEncryptionBasic(t *testing.T) {
 }
 
 func TestAccIbmIsShareMountTargetVNISubnet(t *testing.T) {
-	var conf vpcbetav1.ShareMountTarget
+	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -104,7 +104,7 @@ func TestAccIbmIsShareMountTargetVNISubnet(t *testing.T) {
 }
 
 func TestAccIbmIsShareMountTargetVNISubnetPrimaryIPID(t *testing.T) {
-	var conf vpcbetav1.ShareMountTarget
+	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -140,7 +140,7 @@ func TestAccIbmIsShareMountTargetVNISubnetPrimaryIPID(t *testing.T) {
 }
 
 func TestAccIbmIsShareMountTargetVNI(t *testing.T) {
-	var conf vpcbetav1.ShareMountTarget
+	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
@@ -340,7 +340,7 @@ func testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcName, sname, vn
 	}
 	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, primaryIPName, targetName)
 }
-func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcbetav1.ShareMountTarget) resource.TestCheckFunc {
+func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcv1.ShareMountTarget) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -348,12 +348,12 @@ func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcbetav1.ShareMountT
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
 		}
 
-		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
@@ -374,7 +374,7 @@ func testAccCheckIbmIsShareMountTargetExists(n string, obj vpcbetav1.ShareMountT
 }
 
 func testAccCheckIbmIsShareMountTargetDestroy(s *terraform.State) error {
-	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return err
 	}
@@ -383,7 +383,7 @@ func testAccCheckIbmIsShareMountTargetDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getShareTargetOptions := &vpcbetav1.GetShareMountTargetOptions{}
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
@@ -404,4 +404,70 @@ func testAccCheckIbmIsShareMountTargetDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
+	if err != nil {
+		return err
+	}
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_is_share_mount_target" {
+			continue
+		}
+
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+
+		parts, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		getShareTargetOptions.SetShareID(parts[0])
+		getShareTargetOptions.SetID(parts[1])
+
+		// Try to find the key
+		_, response, err := vpcClient.GetShareMountTarget(getShareTargetOptions)
+
+		if err == nil {
+			return fmt.Errorf("ShareTarget still exists: %s", rs.Primary.ID)
+		} else if response.StatusCode != 404 {
+			return fmt.Errorf("Error checking for ShareTarget (%s) has been destroyed: %s", rs.Primary.ID, err)
+		}
+	}
+
+	return nil
+}
+
+func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareMountTarget) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
+		if err != nil {
+			return err
+		}
+
+		getShareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
+
+		parts, err := flex.IdParts(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		getShareTargetOptions.SetShareID(parts[0])
+		getShareTargetOptions.SetID(parts[1])
+
+		shareTarget, _, err := vpcClient.GetShareMountTarget(getShareTargetOptions)
+		if err != nil {
+			return err
+		}
+
+		obj = *shareTarget
+		return nil
+	}
 }

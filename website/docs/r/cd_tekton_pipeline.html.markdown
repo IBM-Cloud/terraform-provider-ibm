@@ -8,7 +8,7 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_tekton_pipeline
 
-Provides a resource for cd_tekton_pipeline. This allows cd_tekton_pipeline to be created, updated and deleted.
+Create, update, and delete cd_tekton_pipelines with this resource.
 
 ## Example Usage
 
@@ -23,24 +23,26 @@ resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `pipeline_id` - (Required, String) ID of the pipeline tool in your toolchain. Can be referenced from your `ibm_cd_toolchain_tool_pipeline` resource, e.g. `pipeline_id = ibm_cd_toolchain_tool_pipeline.my_pipeline.tool_id`
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `enable_notifications` - (Optional, Boolean) Flag whether to enable notifications for this pipeline. When enabled, pipeline run events are published on all slack integration specified channels in the parent toolchain.
-  * Constraints: The default value is `false`.
-* `enable_partial_cloning` - (Optional, Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work.
-  * Constraints: The default value is `false`.
-* `next_build_number` - (Optional, Integer) Specify the build number that will be used for the next pipeline run. Build numbers can be any positive whole number between 0 and 100000000000000.
+* `enable_notifications` - (Optional, Boolean) Flag whether to enable notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the parent toolchain. If omitted, this feature is disabled by default.
+* `enable_partial_cloning` - (Optional, Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work. If omitted, this feature is disabled by default.
+* `next_build_number` - (Optional, Integer) The build number that will be used for the next pipeline run.
   * Constraints: The maximum value is `99999999999999`. The minimum value is `1`.
-* `worker` - (Optional, List) Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default.
-Nested scheme for **worker**:
+* `worker` - (Optional, List) Details of the worker used to run the pipeline.
+Nested schema for **worker**:
 	* `id` - (Required, String) ID of the worker.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,253}$/`.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
+	* `name` - (Computed, String) Name of the worker. Computed based on the worker ID.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.
+	* `type` - (Computed, String) Type of the worker. Computed based on the worker ID.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the cd_tekton_pipeline.
 * `build_number` - (Integer) The latest pipeline run build number. If this property is absent, the pipeline hasn't had any pipeline runs.
@@ -48,15 +50,15 @@ In addition to all argument references listed, you can access the following attr
 * `created_at` - (String) Standard RFC 3339 Date Time String.
 * `definitions` - (List) Definition list.
   * Constraints: The maximum length is `128` items. The minimum length is `0` items.
-Nested scheme for **definitions**:
+Nested schema for **definitions**:
 	* `href` - (String) API URL for interacting with the definition.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `id` - (String) The aggregated definition ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `source` - (List) Source repository containing the Tekton pipeline definition.
-	Nested scheme for **source**:
+	Nested schema for **source**:
 		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or tag.
-		Nested scheme for **properties**:
+		Nested schema for **properties**:
 			* `branch` - (String) A branch from the repo, specify one of branch or tag only.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 			* `path` - (String) The path to the definition's YAML files.
@@ -64,7 +66,7 @@ Nested scheme for **definitions**:
 			* `tag` - (String) A tag from the repo, specify one of branch or tag only.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
 			* `tool` - (List) Reference to the repository tool in the parent toolchain.
-			Nested scheme for **tool**:
+			Nested schema for **tool**:
 				* `id` - (String) ID of the repository tool instance in the parent toolchain.
 				  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 			* `url` - (Forces new resource, String) URL of the definition repository.
@@ -79,7 +81,7 @@ Nested scheme for **definitions**:
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,251}[a-zA-Z0-9]$/`.
 * `properties` - (List) Tekton pipeline's environment properties.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
-Nested scheme for **properties**:
+Nested schema for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed when using `single_select` property type.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
 	* `href` - (String) API URL for interacting with the property.
@@ -93,7 +95,7 @@ Nested scheme for **properties**:
 	* `value` - (String) Property value. Any string value is valid.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `resource_group` - (List) The resource group in which the pipeline was created.
-Nested scheme for **resource_group**:
+Nested schema for **resource_group**:
 	* `id` - (String) ID.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]+$/`.
 * `runs_url` - (String) URL for this pipeline showing the list of pipeline runs.
@@ -101,14 +103,14 @@ Nested scheme for **resource_group**:
 * `status` - (String) Pipeline status.
   * Constraints: Allowable values are: `configured`, `configuring`.
 * `toolchain` - (List) Toolchain object containing references to the parent toolchain.
-Nested scheme for **toolchain**:
+Nested schema for **toolchain**:
 	* `crn` - (String) The CRN for the toolchain that contains the Tekton pipeline.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 	* `id` - (String) UUID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `triggers` - (List) Tekton pipeline triggers list.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
-Nested scheme for **triggers**:
+Nested schema for **triggers**:
 	* `cron` - (String) Only needed for timer triggers. Cron expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: 0 *_/2 * * * - every 2 hours.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^[-0-9a-zA-Z,\\*\/ ]{5,253}$/`.
 	* `enabled` - (Boolean) Flag whether the trigger is enabled.
@@ -117,6 +119,8 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `events` - (List) Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.
 	  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The maximum length is `3` items. The minimum length is `0` items.
+	* `favorite` - (Boolean) Mark the trigger as a favorite.
+	  * Constraints: The default value is `false`.
 	* `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `id` - (String) The Trigger ID.
@@ -126,7 +130,7 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\\(\\)\\[\\]]{1,251}[a-zA-Z0-9])$/`.
 	* `properties` - (List) Optional trigger properties used to override or supplement the pipeline properties when triggering a pipeline run.
 	  * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
-	Nested scheme for **properties**:
+	Nested schema for **properties**:
 		* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
 		  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
 		* `href` - (String) API URL for interacting with the trigger property.
@@ -140,7 +144,7 @@ Nested scheme for **triggers**:
 		* `value` - (String) Property value. Any string value is valid.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 	* `secret` - (List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
-	Nested scheme for **secret**:
+	Nested schema for **secret**:
 		* `algorithm` - (String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
 		  * Constraints: Allowable values are: `md4`, `md5`, `sha1`, `sha256`, `sha384`, `sha512`, `sha512_224`, `sha512_256`, `ripemd160`.
 		* `key_name` - (String) Secret name, not needed if type is `internal_validation`.
@@ -152,9 +156,9 @@ Nested scheme for **triggers**:
 		* `value` - (String) Secret value, not needed if secret type is `internal_validation`.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 	* `source` - (List) Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain API https://cloud.ibm.com/apidocs/toolchain#list-tools.
-	Nested scheme for **source**:
+	Nested schema for **source**:
 		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or pattern.
-		Nested scheme for **properties**:
+		Nested schema for **properties**:
 			* `blind_connection` - (Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
 			* `branch` - (String) Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
@@ -163,7 +167,7 @@ Nested scheme for **triggers**:
 			* `pattern` - (String) The pattern of Git branch or tag to which to listen. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository. The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. One of branch or pattern must be specified, but only one or the other.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.:@=$&^\/\\?\\!\\*\\+\\[\\]\\(\\)\\{\\}\\|\\\\]*$/`.
 			* `tool` - (List) Reference to the repository tool in the parent toolchain.
-			Nested scheme for **tool**:
+			Nested schema for **tool**:
 				* `id` - (String) ID of the repository tool instance in the parent toolchain.
 				  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 			* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
@@ -178,8 +182,8 @@ Nested scheme for **triggers**:
 	  * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
 	* `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-	* `worker` - (List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
-	Nested scheme for **worker**:
+	* `worker` - (List) Details of the worker used to run the trigger.
+	Nested schema for **worker**:
 		* `id` - (String) ID of the worker.
 		  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
 		* `name` - (String) Name of the worker. Computed based on the worker ID.

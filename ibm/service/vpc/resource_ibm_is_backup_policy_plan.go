@@ -137,10 +137,11 @@ func ResourceIBMIsBackupPolicyPlan() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"delete_over_count": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The maximum number of recent remote copies to keep in this region.",
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_backup_policy_plan", "delete_over_count"),
+							Description:  "The maximum number of recent remote copies to keep in this region.",
 						},
 						"encryption_key": {
 							Type:        schema.TypeString,
@@ -191,6 +192,13 @@ func ResourceIBMIsBackupPolicyPlanValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$`,
 			MinValueLength:             1,
 			MaxValueLength:             63,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "delete_over_count",
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			MinValue:                   "1",
+			MaxValue:                   "100",
 		},
 	)
 
@@ -593,7 +601,10 @@ func resourceIBMIsBackupPolicyPlanDelete(context context.Context, d *schema.Reso
 func resourceIBMIsVPCBackupPolicyPlanMapToBackupPolicyPlanRemoteCopyPolicyPrototype(backupPolicyPlanRemoteCopyPolicyMap map[string]interface{}) (*vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype, error) {
 	BackupPolicyPlanRemoteCopyPolicy := &vpcv1.BackupPolicyPlanRemoteRegionPolicyPrototype{}
 	if backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"] != nil {
-		BackupPolicyPlanRemoteCopyPolicy.DeleteOverCount = core.Int64Ptr(int64(backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"].(int)))
+		deleteOverCount := int64(backupPolicyPlanRemoteCopyPolicyMap["delete_over_count"].(int))
+		if deleteOverCount != int64(0) {
+			BackupPolicyPlanRemoteCopyPolicy.DeleteOverCount = core.Int64Ptr(deleteOverCount)
+		}
 	}
 	if backupPolicyPlanRemoteCopyPolicyMap["encryption_key"] != nil && backupPolicyPlanRemoteCopyPolicyMap["encryption_key"] != "" {
 		encCrn := backupPolicyPlanRemoteCopyPolicyMap["encryption_key"].(string)

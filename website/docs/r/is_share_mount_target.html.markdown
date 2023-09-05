@@ -12,12 +12,6 @@ subcategory: "VPC infrastructure"
 Provides a resource for ShareMountTarget. This allows ShareTarget to be created, updated and deleted.
 
 
-~> **NOTE**
-IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
-
-~> **NOTE**
-This is a Beta feature and it is subject to change in the GA release 
-
 ## Example Usage
 
 ```hcl
@@ -136,7 +130,7 @@ The following attributes are exported:
 - `mount_target` - The unique identifier of the share target
 - `created_at` - The date and time that the share target was created.
 - `href` - The URL for this share target.
-- `id` - The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_target_id\>
+- `id` - The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_mount_target_id\>
 - `lifecycle_state` - The lifecycle state of the mount target.
 - `mount_path` - The mount path for the share.The IP addresses used in the mount path are currently within the IBM services IP range, but are expected to change to be within one of the VPC's subnets in the future.
 - `resource_type` - The type of resource referenced.
@@ -144,16 +138,16 @@ The following attributes are exported:
 
 ## Import
 
-The `ibm_is_share_target` can be imported using ID.
+The `ibm_is_share_mount_target` can be imported using ID.
 
 **Syntax**
 
 ```
-$ terraform import ibm_is_share_target.example `\<ibm_is_share_id\>/\<ibm_is_share_target_id\>`
+$ terraform import ibm_is_share_mount_target.example `\<ibm_is_share_id\>/\<ibm_is_share_mount_target_id\>`
 ```
 
 **Example**
 
 ```
-$ terraform import ibm_is_share_target.example d7bec597-4726-451f-8a63-e62e6f19c32c/d7bec597-4726-451f-8a63-e62e6f19c32c
+$ terraform import ibm_is_share_mount_target.example d7bec597-4726-451f-8a63-e62e6f19c32c/d7bec597-4726-451f-8a63-e62e6f19c32c
 ```

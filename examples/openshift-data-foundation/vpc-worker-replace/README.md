@@ -17,6 +17,16 @@ $ terraform apply -var-file input.tfvars
 * Run `terraform untaint ibm_container_vpc_worker.<resource_name>[index]` to untaint the failed worker after fixing it manually to proceed with next set of workers
 * Run `terraform destroy` when you need to provide new set of worker list
 
+A Sample `input.tfvars` is as follows -
+
+```
+worker_list = [ "worker_id_1 ","worker_id_2","worker_id_3" ]
+cluster_name = ""
+ibmcloud_api_key = ""
+resource_group = ""
+```
+In-case you want to perform worker update or replace on non ODF nodes, remove the sds and sds_timeout parameters from the main.tf file.
+
 ## Example usage
 
 Perform worker replace:
