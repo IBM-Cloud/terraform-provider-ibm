@@ -57,6 +57,17 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 										Computed:    true,
 										Description: "The type for this profile field.",
 									},
+									"value": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"values": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeInt},
+										Description: "The permitted values for this profile field.",
+									},
 								},
 							},
 						},
@@ -90,6 +101,17 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"values": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeInt},
+										Description: "The permitted values for this profile field.",
 									},
 								},
 							},
@@ -185,13 +207,15 @@ func dataSourceShareProfileCollectionProfilesToMap(profilesItem vpcv1.ShareProfi
 	}
 	if profilesItem.Capacity != nil {
 		capacityList := []map[string]interface{}{}
-		capacityMap := dataSourceShareProfileCapacityToMap(*profilesItem.Capacity)
+		capacity := profilesItem.Capacity.(*vpcv1.ShareProfileCapacity)
+		capacityMap := dataSourceShareProfileCapacityToMap(*capacity)
 		capacityList = append(capacityList, capacityMap)
 		profilesMap["capacity"] = capacityList
 	}
 	if profilesItem.Iops != nil {
 		iopsList := []map[string]interface{}{}
-		iopsMap := dataSourceShareProfileIopsToMap(*profilesItem.Iops)
+		iops := profilesItem.Iops.(*vpcv1.ShareProfileIops)
+		iopsMap := dataSourceShareProfileIopsToMap(*iops)
 		iopsList = append(iopsList, iopsMap)
 		profilesMap["iops"] = iopsList
 	}

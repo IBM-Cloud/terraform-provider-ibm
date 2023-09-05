@@ -56,6 +56,17 @@ func DataSourceIbmIsShareProfile() *schema.Resource {
 							Computed:    true,
 							Description: "The type for this profile field.",
 						},
+						"value": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field",
+						},
+						"values": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+							Description: "The permitted values for this profile field.",
+						},
 					},
 				},
 			},
@@ -89,6 +100,16 @@ func DataSourceIbmIsShareProfile() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type for this profile field.",
+						},
+						"value": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field",
+						},
+						"values": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
 						},
 					},
 				},
@@ -130,7 +151,8 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 
 	if shareProfile.Capacity != nil {
 		capacityList := []map[string]interface{}{}
-		capacityMap := dataSourceShareProfileCapacityToMap(*shareProfile.Capacity)
+		capacity := shareProfile.Capacity.(*vpcv1.ShareProfileCapacity)
+		capacityMap := dataSourceShareProfileCapacityToMap(*capacity)
 		capacityList = append(capacityList, capacityMap)
 		if err = d.Set("capacity", capacityList); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting capacity: %s", err))
@@ -138,7 +160,8 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 	}
 	if shareProfile.Iops != nil {
 		iopsList := []map[string]interface{}{}
-		iopsMap := dataSourceShareProfileIopsToMap(*shareProfile.Iops)
+		iops := shareProfile.Iops.(*vpcv1.ShareProfileIops)
+		iopsMap := dataSourceShareProfileIopsToMap(*iops)
 		iopsList = append(iopsList, iopsMap)
 		if err = d.Set("iops", iopsList); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting iops: %s", err))
@@ -157,26 +180,46 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 
 	return nil
 }
-func dataSourceShareProfileIopsToMap(iops vpcbetav1.ProfileRangeField) (iopsMap map[string]interface{}) {
+func dataSourceShareProfileIopsToMap(iops vpcv1.ShareProfileIops) (iopsMap map[string]interface{}) {
 	iopsMap = map[string]interface{}{}
-
-	iopsMap["default"] = iops.Default
+	if iops.Default != nil {
+		iopsMap["default"] = int(*iops.Default)
+	}
 	iopsMap["max"] = iops.Max
 	iopsMap["min"] = iops.Min
 	iopsMap["step"] = iops.Step
 	iopsMap["type"] = iops.Type
-
+	if iops.Value != nil {
+		iopsMap["value"] = int(*iops.Value)
+	}
+	values := []int{}
+	if len(iops.Values) > 0 {
+		for _, value := range iops.Values {
+			values = append(values, int(value))
+		}
+		iopsMap["values"] = values
+	}
 	return iopsMap
 }
-func dataSourceShareProfileCapacityToMap(capacity vpcbetav1.ProfileRangeField) (capacityMap map[string]interface{}) {
+func dataSourceShareProfileCapacityToMap(capacity vpcv1.ShareProfileCapacity) (capacityMap map[string]interface{}) {
 	capacityMap = map[string]interface{}{}
-
-	capacityMap["default"] = capacity.Default
+	if capacity.Default != nil {
+		capacityMap["default"] = int(*capacity.Default)
+	}
 	capacityMap["max"] = capacity.Max
 	capacityMap["min"] = capacity.Min
 	capacityMap["step"] = capacity.Step
 	capacityMap["type"] = capacity.Type
-
+	if capacity.Value != nil {
+		capacityMap["value"] = int(*capacity.Value)
+	}
+	values := []int{}
+	if len(capacity.Values) > 0 {
+		for _, value := range capacity.Values {
+			values = append(values, int(value))
+		}
+		capacityMap["values"] = values
+	}
 	return capacityMap
 }
 
