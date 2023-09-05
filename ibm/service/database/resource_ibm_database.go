@@ -1311,7 +1311,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		fmt.Printf("service name %s plan is %s", serviceName, plan)
 		if serviceName == "databases-for-mongodb" && plan == "enterprise-sharding" {
 			return diag.FromErr(fmt.Errorf("%s %s is not available yet in this region", serviceName, plan))
 		} else {
