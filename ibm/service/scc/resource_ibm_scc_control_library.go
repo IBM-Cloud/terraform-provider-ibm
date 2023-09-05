@@ -54,6 +54,7 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 			"control_library_version": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				DefaultFunc:  func() (any, error) { return "0.0.0", nil },
 				ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "control_library_version"),
 				Description:  "The control library version.",
 			},
@@ -666,11 +667,13 @@ func resourceIbmSccControlLibraryMapToImplementation(modelMap map[string]interfa
 	if modelMap["parameters"] != nil {
 		parameters := []securityandcompliancecenterapiv3.ParameterInfo{}
 		for _, parametersItem := range modelMap["parameters"].([]interface{}) {
-			parametersItemModel, err := resourceIbmSccControlLibraryMapToParameterInfo(parametersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
+			if parametersItem != nil {
+				parametersItemModel, err := resourceIbmSccControlLibraryMapToParameterInfo(parametersItem.(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				parameters = append(parameters, *parametersItemModel)
 			}
-			parameters = append(parameters, *parametersItemModel)
 		}
 		model.Parameters = parameters
 	}

@@ -30,8 +30,6 @@ func TestAccIbmSccProviderTypeCollectionDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSccProviderTypeCollectionDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_provider_type_collection" "scc_provider_type_collection_instance" {
-			X-Correlation-ID = "X-Correlation-ID"
-			X-Request-ID = "X-Request-ID"
 		}
 	`)
 }

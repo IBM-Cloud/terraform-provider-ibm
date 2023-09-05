@@ -21,7 +21,7 @@ func DataSourceIbmSccControlLibrary() *schema.Resource {
 		ReadContext: dataSourceIbmSccControlLibraryRead,
 
 		Schema: map[string]*schema.Schema{
-			"control_libraries_id": &schema.Schema{
+			"control_library_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The control library ID.",
@@ -286,7 +286,7 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 
 	getControlLibraryOptions := &securityandcompliancecenterapiv3.GetControlLibraryOptions{}
 
-	getControlLibraryOptions.SetControlLibrariesID(d.Get("control_libraries_id").(string))
+	getControlLibraryOptions.SetControlLibrariesID(d.Get("control_library_id").(string))
 
 	controlLibrary, response, err := securityandcompliancecenterapiClient.GetControlLibraryWithContext(context, getControlLibraryOptions)
 	if err != nil {

@@ -726,7 +726,8 @@ func Provider() *schema.Provider {
 
 			// Security and Compliance Center
 			// "ibm_scc_instance_settings":             scc.DataSourceIBMSccInstanceSettings(),
-			"ibm_scc_control_library:": scc.DataSourceIbmSccControlLibrary(),
+
+			"ibm_scc_control_library": scc.DataSourceIbmSccControlLibrary(),
 
 			"ibm_scc_profile":            scc.DataSourceIbmSccProfile(),
 			"ibm_scc_profile_attachment": scc.DataSourceIbmSccProfileAttachment(),

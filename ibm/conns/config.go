@@ -1163,7 +1163,7 @@ func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.Schema
 }
 
 // Security and Compliance center Admin API
-func (session clientSession) SecurityAndComplianceCenterV3(*scc.SecurityAndComplianceCenterApiV3) (*scc.SecurityAndComplianceCenterApiV3, error) {
+func (session clientSession) SecurityAndComplianceCenterV3() (*scc.SecurityAndComplianceCenterApiV3, error) {
 	return session.securityAndComplianceCenterClient, session.securityAndComplianceCenterClientErr
 }
 

@@ -89,56 +89,6 @@ func TestAccIbmSccProfileDataSourceAllArgs(t *testing.T) {
 func testAccCheckIbmSccProfileDataSourceConfigBasic(profileProfileName string, profileProfileDescription string, profileProfileType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_profile" "scc_profile_instance" {
-			profile_name = "profile_name"
-			profile_description = "profile_description"
-			profile_type = "predefined"
-			controls {
-				control_library_id = "e98a56ff-dc24-41d4-9875-1e188e2da6cd"
-				control_id = "5C453578-E9A1-421E-AD0F-C6AFCDD67CCF"
-				control_library_version = "control_library_version"
-				control_name = "control_name"
-				control_description = "control_description"
-				control_category = "control_category"
-				control_parent = "control_parent"
-				control_requirement = true
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_specifications_count = 1
-				control_specifications {
-					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
-					responsibility = "user"
-					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
-					environment = "environment"
-					control_specification_description = "control_specification_description"
-					assessments_count = 1
-					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
-						assessment_description = "assessment_description"
-						parameter_count = 1
-						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
-						}
-					}
-				}
-			}
-			default_parameters {
-				assessment_type = "assessment_type"
-				assessment_id = "assessment_id"
-				parameter_name = "parameter_name"
-				parameter_default_value = "parameter_default_value"
-				parameter_display_name = "parameter_display_name"
-				parameter_type = "string"
-			}
-		}
-
-		resource "ibm_scc_profile" "scc_profile_instance" {
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
@@ -196,56 +146,6 @@ func testAccCheckIbmSccProfileDataSourceConfigBasic(profileProfileName string, p
 
 func testAccCheckIbmSccProfileDataSourceConfig(profileProfileName string, profileProfileDescription string, profileProfileType string) string {
 	return fmt.Sprintf(`
-		resource "ibm_scc_profile" "scc_profile_instance" {
-			profile_name = "profile_name"
-			profile_description = "profile_description"
-			profile_type = "predefined"
-			controls {
-				control_library_id = "e98a56ff-dc24-41d4-9875-1e188e2da6cd"
-				control_id = "5C453578-E9A1-421E-AD0F-C6AFCDD67CCF"
-				control_library_version = "control_library_version"
-				control_name = "control_name"
-				control_description = "control_description"
-				control_category = "control_category"
-				control_parent = "control_parent"
-				control_requirement = true
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_specifications_count = 1
-				control_specifications {
-					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
-					responsibility = "user"
-					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
-					environment = "environment"
-					control_specification_description = "control_specification_description"
-					assessments_count = 1
-					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
-						assessment_description = "assessment_description"
-						parameter_count = 1
-						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
-						}
-					}
-				}
-			}
-			default_parameters {
-				assessment_type = "assessment_type"
-				assessment_id = "assessment_id"
-				parameter_name = "parameter_name"
-				parameter_default_value = "parameter_default_value"
-				parameter_display_name = "parameter_display_name"
-				parameter_type = "string"
-			}
-		}
-
 		resource "ibm_scc_profile" "scc_profile_instance" {
 			profile_name = "%s"
 			profile_description = "%s"

@@ -30,7 +30,6 @@ func TestAccIbmSccLatestReportsDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSccLatestReportsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_latest_reports" "scc_latest_reports_instance" {
-			X-Correlation-Id = "X-Correlation-Id"
 			sort = "profile_name"
 		}
 	`)
