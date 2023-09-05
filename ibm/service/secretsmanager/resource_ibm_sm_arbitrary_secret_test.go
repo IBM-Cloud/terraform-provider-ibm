@@ -6,33 +6,42 @@ package secretsmanager_test
 import (
 	"fmt"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"os"
-	"strings"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"strings"
+	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
-func TestAccIbmSmArbitrarySecretBasic(t *testing.T) {
-	var conf secretsmanagerv2.ArbitrarySecret
+var arbitrarySecretName = "terraform-test-arbitrary-secret"
+var modifiedArbitrarySecretName = "modified-terraform-test-arbitrary-secret"
+var payload = "secret-credentials"
+var modifiedPayload = "modified-credentials"
 
+func TestAccIbmSmArbitrarySecretBasic(t *testing.T) {
+	resourceName := "ibm_sm_arbitrary_secret.sm_arbitrary_secret_basic"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSmArbitrarySecretDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSmArbitrarySecretConfigBasic(),
+			{
+				Config: arbitrarySecretConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSmArbitrarySecretExists("ibm_sm_arbitrary_secret.sm_arbitrary_secret", conf),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
 				),
 			},
-			resource.TestStep{
-				ResourceName:      "ibm_sm_arbitrary_secret.sm_arbitrary_secret",
+			{
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -40,49 +49,139 @@ func TestAccIbmSmArbitrarySecretBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSmArbitrarySecretConfigBasic() string {
-	return fmt.Sprintf(`
-		resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
-			name = "terraform-test-arbitrary-secret-resource"
-			instance_id   = "%s"
-  			region        = "%s"
-  			custom_metadata = {"key":"value"}
-  			description = "Extended description for this secret."
-  			labels = ["my-label"]
-  			payload = "secret-credentials"
-  			secret_group_id = "default"
-		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+func TestAccIbmSmArbitrarySecretAllArgs(t *testing.T) {
+	resourceName := "ibm_sm_arbitrary_secret.sm_arbitrary_secret"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmArbitrarySecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: arbitrarySecretConfigAllArgs(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmArbitrarySecretCreated(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIbmSmArbitrarySecretConfigUpdated(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmArbitrarySecretUpdated(resourceName),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
-func testAccCheckIbmSmArbitrarySecretExists(n string, obj secretsmanagerv2.ArbitrarySecret) resource.TestCheckFunc {
+var arbitrarySecretBasicConfigFormat = `
+		resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret_basic" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			payload = "%s"
+		}`
 
+var arbitrarySecretFullConfigFormat = `
+		resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			description = "%s"
+  			labels = ["%s"]
+  			payload = "%s"
+  			expiration_date = "%s"
+  			custom_metadata = %s
+			secret_group_id = "default"
+		}`
+
+func arbitrarySecretConfigBasic() string {
+	return fmt.Sprintf(arbitrarySecretBasicConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		arbitrarySecretName, payload)
+}
+
+func arbitrarySecretConfigAllArgs() string {
+	return fmt.Sprintf(arbitrarySecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		arbitrarySecretName, description, label, payload, expirationDate, customMetadata)
+}
+
+func testAccCheckIbmSmArbitrarySecretConfigUpdated() string {
+	return fmt.Sprintf(arbitrarySecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		modifiedArbitrarySecretName, modifiedDescription, modifiedLabel, modifiedPayload, modifiedExpirationDate, modifiedCustomMetadata)
+}
+
+func testAccCheckIbmSmArbitrarySecretCreated(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		secretsManagerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecretsManagerV2()
+		arbitrarySecretIntf, err := getSecret(s, n)
 		if err != nil {
 			return err
 		}
+		secret := arbitrarySecretIntf.(*secretsmanagerv2.ArbitrarySecret)
 
-		secretsManagerClient = getClientWithInstanceEndpointTest(secretsManagerClient)
+		if err := verifyAttr(*secret.Name, arbitrarySecretName, "secret name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, description, "secret description"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], label, "label"); err != nil {
+			return err
+		}
+		if err := verifyDateAttr(secret.ExpirationDate, expirationDate, "expiration date"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, customMetadata, "custom metadata"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Payload, payload, "payload"); err != nil {
+			return err
+		}
+		return nil
+	}
+}
 
-		getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-
-		id := strings.Split(rs.Primary.ID, "/")
-		secretId := id[2]
-		getSecretOptions.SetID(secretId)
-
-		arbitrarySecretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
+func testAccCheckIbmSmArbitrarySecretUpdated(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		arbitrarySecretIntf, err := getSecret(s, n)
 		if err != nil {
 			return err
 		}
-
-		arbitrarySecret := arbitrarySecretIntf.(*secretsmanagerv2.ArbitrarySecret)
-		obj = *arbitrarySecret
+		secret := arbitrarySecretIntf.(*secretsmanagerv2.ArbitrarySecret)
+		if err := verifyAttr(*secret.Name, modifiedArbitrarySecretName, "secret name after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Description, modifiedDescription, "secret description after update"); err != nil {
+			return err
+		}
+		if len(secret.Labels) != 1 {
+			return fmt.Errorf("Wrong number of labels after update: %d", len(secret.Labels))
+		}
+		if err := verifyAttr(secret.Labels[0], modifiedLabel, "label after update"); err != nil {
+			return err
+		}
+		if err := verifyDateAttr(secret.ExpirationDate, modifiedExpirationDate, "expiration date after update"); err != nil {
+			return err
+		}
+		if err := verifyJsonAttr(secret.CustomMetadata, modifiedCustomMetadata, "custom metadata after update"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*secret.Payload, modifiedPayload, "payload after update"); err != nil {
+			return err
+		}
 		return nil
 	}
 }
@@ -117,19 +216,4 @@ func testAccCheckIbmSmArbitrarySecretDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func getClientWithInstanceEndpointTest(originalClient *secretsmanagerv2.SecretsManagerV2) *secretsmanagerv2.SecretsManagerV2 {
-	// build the api endpoint
-	domain := "appdomain.cloud"
-	if strings.Contains(os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"), "test") {
-		domain = "test.appdomain.cloud"
-	}
-	endpoint := fmt.Sprintf("https://%s.%s.secrets-manager.%s", acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, domain)
-	newClient := &secretsmanagerv2.SecretsManagerV2{
-		Service: originalClient.Service.Clone(),
-	}
-	newClient.Service.SetServiceURL(endpoint)
-
-	return newClient
 }

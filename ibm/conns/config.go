@@ -31,6 +31,8 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
+	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
+	cisbotmanagementv1 "github.com/IBM/networking-go-sdk/botmanagementv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
@@ -62,7 +64,6 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
-	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
@@ -73,6 +74,7 @@ import (
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
+	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	project "github.com/IBM/project-go-sdk/projectv1"
@@ -269,6 +271,8 @@ type ClientSession interface {
 	CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisMtlsSession() (*cismtlsv1.MtlsV1, error)
+	CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error)
+	CisBotAnalyticsSession() (*cisbotanalyticsv1.BotAnalyticsV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -289,8 +293,8 @@ type ClientSession interface {
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
-	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
+	MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
@@ -564,6 +568,14 @@ type clientSession struct {
 	cisMtlsClient *cismtlsv1.MtlsV1
 	cisMtlsErr    error
 
+	// Bot Management options
+	cisBotManagementClient *cisbotmanagementv1.BotManagementV1
+	cisBotManagementErr    error
+
+	//Bot Analytics options
+	cisBotAnalyticsClient *cisbotanalyticsv1.BotAnalyticsV1
+	cisBotAnalyticsErr    error
+
 	// CIS Webhooks options
 	cisWebhooksClient *ciswebhooksv1.WebhooksV1
 	cisWebhooksErr    error
@@ -577,11 +589,12 @@ type clientSession struct {
 	cisFirewallRulesErr    error
 
 	//Atracker
-	atrackerClient    *atrackerv1.AtrackerV1
-	atrackerClientErr error
-
 	atrackerClientV2    *atrackerv2.AtrackerV2
 	atrackerClientV2Err error
+
+	// Metrics Router
+	metricsRouterClient    *metricsrouterv3.MetricsRouterV3
+	metricsRouterClientErr error
 
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
@@ -1113,6 +1126,22 @@ func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
 	return sess.cisMtlsClient.Clone(), nil
 }
 
+// CIS Bot Management
+func (sess clientSession) CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error) {
+	if sess.cisBotManagementErr != nil {
+		return sess.cisBotManagementClient, sess.cisBotManagementErr
+	}
+	return sess.cisBotManagementClient.Clone(), nil
+}
+
+// CIS Bot Analytics
+func (sess clientSession) CisBotAnalyticsSession() (*cisbotanalyticsv1.BotAnalyticsV1, error) {
+	if sess.cisBotAnalyticsErr != nil {
+		return sess.cisBotAnalyticsClient, sess.cisBotAnalyticsErr
+	}
+	return sess.cisBotAnalyticsClient.Clone(), nil
+}
+
 // CIS Webhooks
 func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
 	if sess.cisWebhooksErr != nil {
@@ -1138,12 +1167,13 @@ func (sess clientSession) CisFirewallRulesSession() (*cisfirewallrulesv1.Firewal
 }
 
 // Activity Tracker API
-func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
-	return session.atrackerClient, session.atrackerClientErr
-}
-
 func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
 	return session.atrackerClientV2, session.atrackerClientV2Err
+}
+
+// Metrics Router API Version 3
+func (session clientSession) MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error) {
+	return session.metricsRouterClient, session.metricsRouterClientErr
 }
 
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
@@ -1642,43 +1672,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
-	// ATRACKER Service
-	var atrackerClientURL string
-	var atrackerURLErr error
-
-	atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion(c.Region)
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion("private." + c.Region)
-		if err != nil && c.Visibility == "public-and-private" {
-			atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion(c.Region)
-		}
-	}
-
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		atrackerClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ATRACKER_API_ENDPOINT", c.Region, atrackerClientURL)
-	}
-	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
-	}
-	// If we provide IBMCLOUD_ATRACKER_API_ENDPOINT, then ignore any missing region url
-	if atrackerURLErr != nil && len(atrackerClientOptions.URL) == 0 {
-		session.atrackerClientErr = atrackerURLErr
-	}
-	// Construct the service client.
-	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
-	if err != nil {
-		session.atrackerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Activity Tracker API service: %q", err)
-	}
-	if session.atrackerClient != nil && session.atrackerClient.Service != nil {
-		// Enable retries for API calls
-		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-	// Version 2 Atracker
+	// ATRACKER Version 2
 	var atrackerClientV2URL string
 	var atrackerURLV2Err error
 
@@ -1702,8 +1696,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// If we provide IBMCLOUD_ATRACKER_API_ENDPOINT, then ignore any missing region url, or should use the default.
 	// This should technically never happen as we default this for v2
-	if atrackerURLV2Err != nil && len(atrackerClientOptions.URL) == 0 {
-		session.atrackerClientErr = atrackerURLErr
+	if atrackerURLV2Err != nil && len(atrackerClientV2Options.URL) == 0 {
+		session.atrackerClientV2Err = atrackerURLV2Err
 	}
 	session.atrackerClientV2, err = atrackerv2.NewAtrackerV2(atrackerClientV2Options)
 	if err == nil {
@@ -1715,6 +1709,42 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client for Metrics Router
+	var metricsRouterClientURL string
+	var metricsRouterURLV3Err error
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion("private." + c.Region)
+		if metricsRouterURLV3Err != nil && c.Visibility == "public-and-private" {
+			metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		metricsRouterClientURL, metricsRouterURLV3Err = metricsrouterv3.GetServiceURLForRegion(c.Region)
+	}
+	if metricsRouterURLV3Err != nil {
+		metricsRouterClientURL = metricsrouterv3.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		metricsRouterClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_METRICS_ROUTING_API_ENDPOINT", c.Region, metricsRouterClientURL)
+	}
+	metricsRouterClientOptions := &metricsrouterv3.MetricsRouterV3Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_METRICS_ROUTING_API_ENDPOINT"}, metricsRouterClientURL),
+	}
+
+	// Construct the service client.
+	session.metricsRouterClient, err = metricsrouterv3.NewMetricsRouterV3(metricsRouterClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.metricsRouterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.metricsRouterClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.metricsRouterClientErr = fmt.Errorf("Error occurred while configuring Metrics Router API Version 3 service: %q", err)
 	}
 
 	// SCC ADMIN Service
@@ -1980,7 +2010,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// GLOBAL TAGGING Service
 	globalSearchEndpoint := "https://api.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		globalSearchEndpoint = ContructEndpoint("api.private", fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+		var globalSearchRegion string
+		if c.Region != "us-south" && c.Region != "au-syd" && c.Region != "eu-gb" {
+			globalSearchRegion = "us-south"
+		} else {
+			globalSearchRegion = c.Region
+		}
+		globalSearchEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s", globalSearchRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalSearchEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GS_API_ENDPOINT", c.Region, searchv2.DefaultServiceURL)
@@ -2737,6 +2773,46 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisMtlsClient != nil && session.cisMtlsClient.Service != nil {
 		session.cisMtlsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisMtlsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Bot Management
+	cisBotManagementOpt := &cisbotmanagementv1.BotManagementV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisBotManagementClient, session.cisBotManagementErr = cisbotmanagementv1.NewBotManagementV1(cisBotManagementOpt)
+	if session.cisBotManagementErr != nil {
+		session.cisBotManagementErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Bot Management : %s",
+				session.cisBotManagementErr)
+	}
+	if session.cisBotManagementClient != nil && session.cisBotManagementClient.Service != nil {
+		session.cisBotManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisBotManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Bot Analytics
+	cisBotAnalyticsOpt := &cisbotanalyticsv1.BotAnalyticsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisBotAnalyticsClient, session.cisBotAnalyticsErr = cisbotanalyticsv1.NewBotAnalyticsV1(cisBotAnalyticsOpt)
+	if session.cisBotAnalyticsErr != nil {
+		session.cisBotAnalyticsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Bot Anaytics : %s",
+				session.cisBotAnalyticsErr)
+	}
+	if session.cisBotAnalyticsClient != nil && session.cisBotAnalyticsClient.Service != nil {
+		session.cisBotAnalyticsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisBotAnalyticsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}

@@ -70,6 +70,30 @@ func TestAccIBMISSSHKey_Newlinebasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISSSHKey_ed25519(t *testing.T) {
+	var key string
+	publicKey := strings.TrimSpace(`ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHEE9sLlndKFR/hVbF7SUNhKBFrxscJDHrVN/OD1Z+8V abc.edf@ibm.com`)
+	name := fmt.Sprintf("tfssh-createname-%d", acctest.RandIntRange(10, 100))
+	sshKey := "ed25519"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISKeyConfigEd25519(publicKey, name, sshKey),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISKeyExists("ibm_is_ssh_key.isExampleKey", key),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.isExampleKey", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.isExampleKey", "type", sshKey),
+				),
+			},
+		},
+	})
+}
+
 func checkKeyDestroy(s *terraform.State) error {
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	for _, rs := range s.RootModule().Resources {
@@ -123,6 +147,17 @@ func testAccCheckIBMISKeyConfig(publicKey, name string) string {
 		}
 	`, name, publicKey)
 }
+
+func testAccCheckIBMISKeyConfigEd25519(publicKey, name, sshKey string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ssh_key" "isExampleKey" {
+			name = "%s"
+			public_key = "%s"
+			type = "%s"
+		}
+	`, name, publicKey, sshKey)
+}
+
 func testAccCheckIBMISKeyNewlineConfig(name, name1 string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ssh_key" "isExampleKey" {

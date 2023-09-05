@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_eventnotifications. This allows cd_toolchain_tool_eventnotifications to be created, updated and deleted.
 
-See the [tool integration](https://cloud.ibm.com/docs/event-notifications) page for more information.
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-event-notifications-integration) page for more information.
 
 ## Example Usage
 

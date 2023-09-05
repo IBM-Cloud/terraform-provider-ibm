@@ -452,6 +452,10 @@ Review the argument references that you can specify for your resource.
   ~> **Note:**
   `image` conflicts with `boot_volume.0.snapshot` and `catalog_offering`, not required when creating instance using `instance_template` or `catalog_offering`
 - `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+
+  ~> **Note:**
+  **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
+  **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>
 - `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
 
   Nested scheme for `lifecycle_reasons`:
@@ -633,6 +637,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `vcpu`:
   - `architecture` - (String) The architecture of the CPU.
   - `count`- (Integer) The number of virtual CPUS that are assigned to the instance.
+  - `manufacturer`- (String) The VCPU manufacturer.
 
 
 ## Import

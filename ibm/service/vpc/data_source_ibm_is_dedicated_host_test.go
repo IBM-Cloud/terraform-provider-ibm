@@ -32,6 +32,7 @@ func TestAccIbmIsDedicatedHostDSBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resName, "disks.#", "2"),
 					resource.TestCheckResourceAttrSet(resName, "disks.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "disks.0.size"),
+					resource.TestCheckResourceAttrSet(resName, "vcpu.0.manufacturer"),
 				),
 			},
 		},

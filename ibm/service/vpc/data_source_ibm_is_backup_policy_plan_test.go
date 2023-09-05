@@ -43,6 +43,9 @@ func TestAccIBMIsBackupPolicyPlanDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "lifecycle_state"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "remote_region_policy.0.delete_over_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "remote_region_policy.0.encryption_key"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "remote_region_policy.0.region"),
 				),
 			},
 		},
@@ -80,6 +83,42 @@ func TestAccIBMIsBackupPolicyPlanDataSourceClonesBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "clone_policy.0.zones.#"),
 					resource.TestCheckResourceAttr("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "clone_policy.0.zones.0", acc.ISZoneName),
 					resource.TestCheckResourceAttr("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "clone_policy.0.zones.1", acc.ISZoneName2),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIsBackupPolicyPlanDataSourceRemoteCopyPolicy(t *testing.T) {
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	bakupPolicyName := fmt.Sprintf("tfbakuppolicyname%d", acctest.RandIntRange(10, 100))
+	bakupPolicyPlanName := fmt.Sprintf("tfbakuppolicyplanname%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsBackupPolicyPlansDataSourceConfigRemoteCopyPolicies(bakupPolicyName, vpcname, subnetname, sshname, volname, name, bakupPolicyPlanName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "backup_policy_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "active"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "attach_user_tags.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "copy_user_tags"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "cron_spec"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "deletion_trigger.0.delete_after"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "remote_region_policy.0.delete_over_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "remote_region_policy.0.encryption_key"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_plan.is_backup_policy_plan", "remote_region_policy.0.region"),
 				),
 			},
 		},

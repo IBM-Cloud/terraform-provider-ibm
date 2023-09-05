@@ -129,6 +129,13 @@ variable "sm_public_certificate_secret_group_id" {
   default     = "default"
 }
 
+// Resource arguments for sm_public_certificate_action_validate_manual_dns
+variable "sm_public_certificate_action_validate_manual_dns_secret_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
 // Resource arguments for sm_kv_secret
 variable "sm_kv_secret_name" {
   description = "The human-readable name of your secret."
@@ -503,6 +510,30 @@ variable "sm_private_certificate_configuration_template_basic_constraints_valid_
   description = "Determines whether to mark the Basic Constraints extension of an issued private certificate as valid for non-CA certificates."
   type        = bool
   default     = true
+}
+
+// Resource arguments for sm_private_certificate_configuration_action_sign_csr
+variable "sm_private_certificate_configuration_action_sign_csr_name" {
+  description = "The name that uniquely identifies a configuration."
+  type        = string
+  default     = "my_root_ca"
+}
+variable "sm_private_certificate_configuration_action_sign_csr_csr" {
+  description = "The certificate signing request."
+  type        = string
+  default     = "csr"
+}
+
+// Resource arguments for sm_private_certificate_configuration_action_set_signed
+variable "sm_private_certificate_configuration_action_set_signed_name" {
+  description = "The name that uniquely identifies a configuration."
+  type        = string
+  default     = "my_intermediate_ca"
+}
+variable "sm_private_certificate_configuration_action_set_signed_certificate" {
+  description = "The PEM-encoded certificate."
+  type        = string
+  default     = "certificate"
 }
 
 // Resource arguments for sm_public_certificate_configuration_ca_lets_encrypt

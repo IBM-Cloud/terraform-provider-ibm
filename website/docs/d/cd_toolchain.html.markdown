@@ -53,3 +53,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `updated_at` - (String) Latest toolchain update timestamp.
 
+* `tags` - (Array of Strings) Tags associated with the toolchain.
+
+

@@ -117,6 +117,30 @@ func DataSourceIBMIsBackupPolicyPlans() *schema.Resource {
 							Computed:    true,
 							Description: "The lifecycle state of this backup policy plan.",
 						},
+						"remote_region_policy": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Backup policy plan cross region rule.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_over_count": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum number of recent remote copies to keep in this region.",
+									},
+									"encryption_key": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
+									},
+									"region": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this region.",
+									},
+								},
+							},
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -232,6 +256,14 @@ func dataSourceBackupPolicyPlanCollectionPlansToMap(plansItem vpcv1.BackupPolicy
 	}
 	if plansItem.Name != nil {
 		plansMap["name"] = plansItem.Name
+	}
+	remoteRegionPolicies := []map[string]interface{}{}
+	if plansItem.RemoteRegionPolicies != nil {
+		for _, remoteCopyPolicy := range plansItem.RemoteRegionPolicies {
+			remoteRegionPoliciesMap, _ := dataSourceIBMIsVPCBackupPolicyPlanRemoteCopyPolicyItemToMap(&remoteCopyPolicy)
+			remoteRegionPolicies = append(remoteRegionPolicies, remoteRegionPoliciesMap)
+		}
+		plansMap["remote_region_policy"] = remoteRegionPolicies
 	}
 	if plansItem.ResourceType != nil {
 		plansMap["resource_type"] = plansItem.ResourceType

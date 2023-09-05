@@ -19,7 +19,7 @@ resource "ibm_cis_domain" "example" {
 
 resource "ibm_cis" "instance" {
   name = "test-domain"
-  plan = "standard"
+  plan = "standard-next"
 }
 ```
 
@@ -33,7 +33,7 @@ resource "ibm_cis_domain" "example" {
 
 resource "ibm_cis" "instance" {
   name = "test-domain"
-  plan = "standard"
+  plan = "standard-next"
 }
 ```
 

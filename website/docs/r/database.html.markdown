@@ -189,12 +189,6 @@ resource "ibm_database" "autoscale" {
     location                     = "us-south"
     service_endpoints            = "private"
     auto_scaling {
-        cpu {
-            rate_increase_percent       = 20
-            rate_limit_count_per_member = 20
-            rate_period_seconds         = 900
-            rate_units                  = "count"
-        }
         disk {
             capacity_enabled             = true
             free_space_less_than_percent = 15
@@ -606,19 +600,13 @@ Review the argument reference that you can specify for your resource.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
    - Nested scheme for `auto_scaling`:
-     - `cpu` (List , Optional) Single block of CPU is allowed at once by CPU autoscaling.
-       - Nested scheme for `cpu`:
-         - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-         - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
-         - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
-         - `rate_units` - (Optional, String) Auto scaling rate in units.
-
      - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
         - Nested scheme for `disk`:
           - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
           - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
           - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
           - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
+          - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
           - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
           - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
           - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
@@ -683,10 +671,10 @@ Review the argument reference that you can specify for your resource.
 
   ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb`. `group` conflicts with `node_` and `members_` arguments. Either members, node, or group arguments have to be provided.
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
-- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for cassandra (`databases-for-cassandra`) and mongodb(`databases-for-mongodb`)
+- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), cassandra (`databases-for-cassandra`), and mongodb(`databases-for-mongodb`)
 * `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
-- `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
+- `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
 - `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, `databases-for-cassandra` and `databases-for-enterprisedb`.
@@ -707,20 +695,11 @@ Review the argument reference that you can specify for your resource.
   - `address` - (Optional, String) The IP address or range of database client addresses to be allowlisted in CIDR format. Example, `172.168.1.2/32`.
   - `description` - (Optional, String) A description for the allowed IP addresses range.
 
-- `whitelist` **Deprecated** - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
-
-  Nested scheme for `whitelist`:
-  - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
-  - `description` - (Optional, String) A description for the allowed IP addresses range.
-
-  ~> **Note:** `whitelist` conflicts with `allowlist`. `whitelist` has been deprecated and replaced by `allowlist`
-
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
 - `configuration_schema` (String) Database Configuration Schema in JSON format.
-- `connectionstrings` - **Deprecated** - (Array) A list of connection strings for the database for each user ID - replaced by `ibm_database_connection`. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
 - `id` - (String) The CRN of the database instance.
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
