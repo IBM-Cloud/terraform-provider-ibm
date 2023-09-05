@@ -33,7 +33,7 @@ resource "ibm_kms_key" "key" {
 }
 ```
 
-Sample example of deleting a key ring where all keys inside have key state equals to 5(destroyed). Keys are moved to the default key ring.
+Sample example of deleting a key ring where all keys inside have key state equals to 5 (destroyed). Keys are moved to the default key ring.
 
 ```
 resource "ibm_kms_key_rings" "key_ring" {
