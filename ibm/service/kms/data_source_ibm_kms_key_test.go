@@ -34,7 +34,6 @@ func TestAccIBMKMSKeyDataSource_basic(t *testing.T) {
 
 func TestAccIBMKMSKeyDataSource_description(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 	customDescription := "I am a custom description for the key"
 

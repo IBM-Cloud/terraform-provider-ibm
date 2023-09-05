@@ -294,7 +294,7 @@ func dataSourceIBMKMSKeysRead(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 		if len(totalKeys) == 0 {
-			return fmt.Errorf("[ERROR] No keys in instance  %s", instanceID)
+			return fmt.Errorf("[ERROR] No keys in instance %s", instanceID)
 		}
 		var keyName string
 		var matchKeys []kp.Key
