@@ -198,7 +198,7 @@ Review the argument references that you can specify for your resource.
    - `http_redirect_code` - (Optional) HTTP redirect code to use on the response.
    - `protocol` - (Optional) Protocol to use when redirecting requests. The default is the protocol that is used in the original request. Valid values: http, https.
    - `replace_key_prefix_with` - (Optional, Conflicts with `replace_key_with`) Object key prefix to use in the redirect request. For example, to redirect requests for all pages with prefix docs/ (objects in the docs/ folder) to documents/, you can set a condition block with key_prefix_equals set to docs/ and in the redirect set replace_key_prefix_with to /documents.
-  - `replace_key_with` - (Optional, Conflicts with `replace_key_prefix_with`) Specific object key to use in the redirect request. For example, redirect request to error.html
+  - `replace_key_with` - (Optional, Conflicts with `replace_key_prefix_with`) Specific object key to use in the redirect request. For example, redirect request to error.html.
 
   - `routing_rules` - (Optional, Conflicts with `routing_rule` and `redirect_all_requests_to`) JSON array containing routing rules describing redirect behavior and when redirects are applied. Use this parameter when your routing rules contain empty String values ("") as seen in the example above.
   

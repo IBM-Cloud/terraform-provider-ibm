@@ -566,7 +566,4 @@ func parseWebsiteId(id string, info string) string {
 
 func getWebsiteEndpoint(bucketName string, bucketLocation string) string {
 	return fmt.Sprintf("https://%s.s3-web.%s.cloud-object-storage.appdomain.cloud", bucketName, bucketLocation)
-
-	//https://newstaticwebhostingbucket0102.s3-web.us-south.cloud-object-storage.appdomain.cloud
-
 }

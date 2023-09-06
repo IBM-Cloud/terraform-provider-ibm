@@ -425,7 +425,7 @@ resource "ibm_iam_access_group_policy" "policy" {
   } 
 } 
 
-# Add website configuration
+# Add basic website configuration on a COS bucket
 
 resource ibm_cos_bucket_website_configuration "website" {
   bucket_crn = "bucket_crn"
@@ -440,3 +440,64 @@ resource ibm_cos_bucket_website_configuration "website" {
   }
 }
 
+# Add a request redirect website configuration on a COS bucket
+
+resource ibm_cos_bucket_website_configuration "website" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    redirect_all_requests_to{
+			host_name = "exampleBucketName"
+			protocol = "https"
+		}
+  }
+}
+
+
+# Add a website configuration on a COS bucket with routing rule
+
+resource ibm_cos_bucket_website_configuration "website" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+      }
+    index_document{
+      suffix = "index.html"
+    }
+   routing_rule {
+      condition {
+       key_prefix_equals = "pages/"
+     }
+      redirect {
+        replace_key_prefix_with = "web_pages/"
+      }
+    }
+  }
+}
+
+# Add a website configuration on a COS bucket with JSON routing rule
+
+resource ibm_cos_bucket_website_configuration "website" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+      }
+    index_document{
+      suffix = "index.html"
+    }
+   routing_rules = <<EOF
+			[{
+			    "Condition": {
+			        "KeyPrefixEquals": "pages/"
+			     },
+			     "Redirect": {
+			         "ReplaceKeyPrefixWith": "webpages/"
+			     }
+			 }]
+			 EOF
+  }
+}

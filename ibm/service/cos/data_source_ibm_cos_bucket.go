@@ -435,7 +435,7 @@ func DataSourceIBMCosBucket() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"key": {
 										Type:     schema.TypeString,
-										Required: true,
+										Computed: true,
 									},
 								},
 							},
@@ -447,7 +447,7 @@ func DataSourceIBMCosBucket() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"suffix": {
 										Type:     schema.TypeString,
-										Required: true,
+										Computed: true,
 									},
 								},
 							},
@@ -484,12 +484,12 @@ func DataSourceIBMCosBucket() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"http_error_code_returned_equals": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "The HTTP error code when the redirect is applied. Valid codes are 4XX or 5XX..",
 												},
 												"key_prefix_equals": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "The object key name prefix when the redirect is applied..",
 												},
 											},
@@ -504,28 +504,28 @@ func DataSourceIBMCosBucket() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"host_name": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "The host name the request should be redirected to.",
 												},
 												"http_redirect_code": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "The HTTP redirect code to use on the response. Valid codes are 3XX except 300..",
 												},
 												"protocol": {
 													Type:         schema.TypeString,
-													Optional:     true,
+													Computed:     true,
 													ValidateFunc: validation.StringInSlice(s3.Protocol_Values(), false),
 													Description:  "Protocol to be used in the Location header that is returned in the response.",
 												},
 												"replace_key_prefix_with": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "The prefix of the object key name that replaces the value of KeyPrefixEquals in the redirect request.",
 												},
 												"replace_key_with": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Computed:    true,
 													Description: "The object key to be used in the Location header that is returned in the response.",
 												},
 											},

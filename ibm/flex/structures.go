@@ -952,10 +952,10 @@ func WebsiteConfigurationGet(in *s3.WebsiteConfiguration) []map[string]interface
 		websiteConfig := make(map[string]interface{})
 
 		if in.ErrorDocument != nil {
-			websiteConfig["error_document"] = GetErrorDocs(in.ErrorDocument)
+			websiteConfig["error_document"] = GetErrorDocument(in.ErrorDocument)
 		}
 		if in.IndexDocument != nil {
-			websiteConfig["index_document"] = GetIndexDoc(in.IndexDocument)
+			websiteConfig["index_document"] = GetIndexDocument(in.IndexDocument)
 		}
 		if in.RedirectAllRequestsTo != nil {
 			websiteConfig["redirect_all_requests_to"] = RedirectAllRequestsGet(in.RedirectAllRequestsTo)
@@ -970,7 +970,7 @@ func WebsiteConfigurationGet(in *s3.WebsiteConfiguration) []map[string]interface
 	return configuration
 }
 
-func GetErrorDocs(in *s3.ErrorDocument) []map[string]interface{} {
+func GetErrorDocument(in *s3.ErrorDocument) []map[string]interface{} {
 	e := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		edv := make(map[string]interface{})
@@ -983,7 +983,7 @@ func GetErrorDocs(in *s3.ErrorDocument) []map[string]interface{} {
 	return e
 }
 
-func GetIndexDoc(in *s3.IndexDocument) []map[string]interface{} {
+func GetIndexDocument(in *s3.IndexDocument) []map[string]interface{} {
 	e := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		edv := make(map[string]interface{})
@@ -1020,11 +1020,11 @@ func RoutingRulesGet(in []*s3.RoutingRule) []map[string]interface{} {
 			rule := make(map[string]interface{})
 
 			if routingRuleValue.Condition != nil {
-				rule["condition"] = RoutingRulesConditionGet(routingRuleValue.Condition)
+				rule["condition"] = RoutingRuleConditionGet(routingRuleValue.Condition)
 			}
 
 			if routingRuleValue.Redirect != nil {
-				rule["redirect"] = RoutingRulesRedirectGet(routingRuleValue.Redirect)
+				rule["redirect"] = RoutingRuleRedirectGet(routingRuleValue.Redirect)
 			}
 
 			routingRules = append(routingRules, rule)
@@ -1033,7 +1033,7 @@ func RoutingRulesGet(in []*s3.RoutingRule) []map[string]interface{} {
 	return routingRules
 }
 
-func RoutingRulesConditionGet(in *s3.Condition) []map[string]interface{} {
+func RoutingRuleConditionGet(in *s3.Condition) []map[string]interface{} {
 	condition := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		conditionConfig := make(map[string]interface{})
@@ -1050,7 +1050,7 @@ func RoutingRulesConditionGet(in *s3.Condition) []map[string]interface{} {
 	return condition
 }
 
-func RoutingRulesRedirectGet(in *s3.Redirect) []map[string]interface{} {
+func RoutingRuleRedirectGet(in *s3.Redirect) []map[string]interface{} {
 	redirect := make([]map[string]interface{}, 0, 1)
 	if in != nil {
 		redirectConfig := make(map[string]interface{})
