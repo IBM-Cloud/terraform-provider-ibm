@@ -19,7 +19,7 @@ import (
 func TestAccIbmSccRuleBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Rule
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	descriptionUpdate := description
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -29,14 +29,14 @@ func TestAccIbmSccRuleBasic(t *testing.T) {
 			{
 				Config: testAccCheckIbmSccRuleConfigBasic(description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule", conf),
-					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule", "description", description),
+					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule_instance", conf),
+					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", description),
 				),
 			},
 			{
 				Config: testAccCheckIbmSccRuleConfigBasic(descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", descriptionUpdate),
 				),
 			},
 		},
@@ -46,9 +46,9 @@ func TestAccIbmSccRuleBasic(t *testing.T) {
 func TestAccIbmSccRuleAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Rule
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	version := fmt.Sprintf("tf_version_%d", acctest.RandIntRange(10, 100))
+	version := fmt.Sprintf("0.0.%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	versionUpdate := fmt.Sprintf("tf_version_%d", acctest.RandIntRange(10, 100))
+	versionUpdate := fmt.Sprintf("0.0.%d", acctest.RandIntRange(2, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -58,20 +58,20 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIbmSccRuleConfig(description, version),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule", conf),
-					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule", "description", description),
-					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule", "version", version),
+					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule_instance", conf),
+					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "version", version),
 				),
 			},
 			{
 				Config: testAccCheckIbmSccRuleConfig(descriptionUpdate, versionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule", "version", versionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "version", versionUpdate),
 				),
 			},
 			{
-				ResourceName:      "ibm_scc_rule.scc_rule",
+				ResourceName:      "ibm_scc_rule.scc_rule_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -83,25 +83,29 @@ func testAccCheckIbmSccRuleConfigBasic(description string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_rule" "scc_rule_instance" {
 			description = "%s"
+			version = "0.0.1"
 			target {
-				service_name = "service_name"
-				service_display_name = "service_display_name"
-				resource_kind = "resource_kind"
+				service_name = "cloud-object-storage"
+				resource_kind = "bucket"
 				additional_target_attributes {
-					name = "name"
+					name = "location"
 					operator = "string_equals"
-					value = "value"
+					value = "us-south"
 				}
 			}
 			required_config {
-				description = "description"
 				and {
-					description = "description"
 					or {
 						description = "description"
-						property = "property"
+						property = "storage_class"
 						operator = "string_equals"
-						value = "anything as a string"
+						value = "smart"
+					}
+					or {
+						description = "description"
+						property = "storage_class"
+						operator = "string_equals"
+						value = "cold"
 					}
 				}
 			}
@@ -124,28 +128,31 @@ func testAccCheckIbmSccRuleConfig(description string, version string) string {
 				}
 			}
 			target {
-				service_name = "service_name"
-				service_display_name = "service_display_name"
-				resource_kind = "resource_kind"
+				service_name = "cloud-object-storage"
+				resource_kind = "bucket"
 				additional_target_attributes {
-					name = "name"
+					name = "location"
 					operator = "string_equals"
-					value = "value"
+					value = "$${name}"
 				}
 			}
 			required_config {
-				description = "description"
 				and {
-					description = "description"
 					or {
 						description = "description"
-						property = "property"
+						property = "storage_class"
 						operator = "string_equals"
-						value = "anything as a string"
+						value = "smart"
+					}
+					or {
+						description = "description"
+						property = "storage_class"
+						operator = "string_equals"
+						value = "cold"
 					}
 				}
 			}
-			labels = "FIXME"
+			labels = ["FIXME"]
 		}
 	`, description, version)
 }

@@ -458,7 +458,7 @@ func resourceIbmSccRuleCreate(context context.Context, d *schema.ResourceData, m
 		createRuleOptions.SetImport(importVarModel)
 	}
 	if _, ok := d.GetOk("labels"); ok {
-		var labels []string
+		labels := make([]string, 0)
 		for _, v := range d.Get("labels").([]interface{}) {
 			labelsItem := v.(string)
 			labels = append(labels, labelsItem)
@@ -505,6 +505,7 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 	if err = d.Set("description", rule.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
+
 	if !core.IsNil(rule.Version) {
 		if err = d.Set("version", rule.Version); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
@@ -534,6 +535,7 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("Error setting required_config: %s", err))
 	}
 	if !core.IsNil(rule.Labels) {
+		log.Printf("[INFO] rule.Labels = %v\n", rule.Labels)
 		if err = d.Set("labels", rule.Labels); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
 		}
@@ -602,16 +604,25 @@ func resourceIbmSccRuleUpdate(context context.Context, d *schema.ResourceData, m
 		hasChange = true
 	}
 	if d.HasChange("labels") {
-		var labels []string
-		for _, v := range d.Get("labels").([]interface{}) {
-			labelsItem := v.(string)
-			labels = append(labels, labelsItem)
-		}
-		replaceRuleOptions.SetLabels(labels)
 		hasChange = true
 	}
 
 	if hasChange {
+		if _, ok := d.GetOk("labels"); ok {
+			labels := make([]string, 0)
+			for _, v := range d.Get("labels").([]interface{}) {
+				labelsItem := v.(string)
+				labels = append(labels, labelsItem)
+			}
+			replaceRuleOptions.SetLabels(labels)
+		}
+		if _, ok := d.GetOk("import"); ok {
+			importVar, err := resourceIbmSccRuleMapToImport(d.Get("import.0").(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			replaceRuleOptions.SetImport(importVar)
+		}
 		_, response, err := configManagerClient.ReplaceRuleWithContext(context, replaceRuleOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ReplaceRuleWithContext failed %s\n%s", err, response)
@@ -735,7 +746,7 @@ func resourceIbmSccRuleMapToRequiredConfigItems(modelMap map[string]interface{})
 	if modelMap["or"] != nil {
 		or := []securityandcompliancecenterapiv3.RequiredConfigItemsIntf{}
 		for _, orItem := range modelMap["or"].([]interface{}) {
-			orItemModel, err := resourceIbmSccRuleMapToRequiredConfigItemsRequiredConfigOrDepth1(orItem.(map[string]interface{}))
+			orItemModel, err := resourceIbmSccRuleMapToRequiredConfigItems(orItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -746,7 +757,7 @@ func resourceIbmSccRuleMapToRequiredConfigItems(modelMap map[string]interface{})
 	if modelMap["and"] != nil {
 		and := []securityandcompliancecenterapiv3.RequiredConfigItemsIntf{}
 		for _, andItem := range modelMap["and"].([]interface{}) {
-			andItemModel, err := resourceIbmSccRuleMapToRequiredConfigItemsRequiredConfigAndDepth1(andItem.(map[string]interface{}))
+			andItemModel, err := resourceIbmSccRuleMapToRequiredConfigItems(andItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -761,7 +772,7 @@ func resourceIbmSccRuleMapToRequiredConfigItems(modelMap map[string]interface{})
 		model.Operator = core.StringPtr(modelMap["operator"].(string))
 	}
 	// Manual Intervention
-	if modelMap["value"] != nil {
+	if modelMap["value"] != nil && len(modelMap["value"].(string)) > 0 {
 		// model.Value = modelMap["value"].(string)
 		sLit := strings.Trim(modelMap["value"].(string), "[]")
 		sList := strings.Split(sLit, ",")
@@ -802,6 +813,17 @@ func resourceIbmSccRuleMapToRequiredConfigItemsRequiredConfigOrDepth1(modelMap m
 	if modelMap["or"] != nil {
 		or := []securityandcompliancecenterapiv3.RequiredConfigItemsIntf{}
 		for _, orItem := range modelMap["or"].([]interface{}) {
+			orItemModel, err := resourceIbmSccRuleMapToRequiredConfigItemsRequiredConfigBase(orItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			or = append(or, orItemModel)
+		}
+		model.Or = or
+	}
+	if modelMap["and"] != nil {
+		or := []securityandcompliancecenterapiv3.RequiredConfigItemsIntf{}
+		for _, orItem := range modelMap["and"].([]interface{}) {
 			orItemModel, err := resourceIbmSccRuleMapToRequiredConfigItemsRequiredConfigBase(orItem.(map[string]interface{}))
 			if err != nil {
 				return model, err

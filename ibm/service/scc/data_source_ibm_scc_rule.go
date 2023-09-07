@@ -450,8 +450,13 @@ func dataSourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, m
 		}
 		target = append(target, modelMap)
 	}
+
 	if err = d.Set("target", target); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting target %s", err))
+	}
+
+	if err = d.Set("labels", rule.Labels); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
 	}
 
 	requiredConfig := []map[string]interface{}{}
