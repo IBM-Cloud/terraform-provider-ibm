@@ -20,10 +20,10 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ControlLibrary
 	controlLibraryName := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
-	controlLibraryType := "predefined"
-	controlLibraryNameUpdate := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
-	controlLibraryDescriptionUpdate := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
-	controlLibraryTypeUpdate := "custom"
+	controlLibraryType := "custom"
+	controlLibraryNameUpdate := controlLibraryName
+	controlLibraryDescriptionUpdate := controlLibraryDescription
+	controlLibraryTypeUpdate := controlLibraryType
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -33,18 +33,18 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryName, controlLibraryDescription, controlLibraryType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library", conf),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_name", controlLibraryName),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_description", controlLibraryDescription),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_type", controlLibraryType),
+					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library_instance", conf),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescription),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_type", controlLibraryType),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_name", controlLibraryNameUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_description", controlLibraryDescriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_type", controlLibraryTypeUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryNameUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_type", controlLibraryTypeUpdate),
 				),
 			},
 		},
@@ -55,18 +55,18 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ControlLibrary
 	controlLibraryName := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
-	controlLibraryType := "predefined"
-	versionGroupLabel := fmt.Sprintf("tf_version_group_label_%d", acctest.RandIntRange(10, 100))
-	controlLibraryVersion := fmt.Sprintf("tf_control_library_version_%d", acctest.RandIntRange(10, 100))
+	controlLibraryType := "custom"
+	versionGroupLabel := "11111111-2222-3333-4444-555555555555"
+	controlLibraryVersion := "0.0.1"
 	latest := "true"
-	controlsCount := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	controlLibraryNameUpdate := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
-	controlLibraryDescriptionUpdate := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
+	controlsCount := "1"
+
+	controlLibraryNameUpdate := controlLibraryName
+	controlLibraryDescriptionUpdate := controlLibraryDescription
 	controlLibraryTypeUpdate := "custom"
-	versionGroupLabelUpdate := fmt.Sprintf("tf_version_group_label_%d", acctest.RandIntRange(10, 100))
-	controlLibraryVersionUpdate := fmt.Sprintf("tf_control_library_version_%d", acctest.RandIntRange(10, 100))
-	latestUpdate := "false"
-	controlsCountUpdate := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
+	versionGroupLabelUpdate := versionGroupLabel
+	controlLibraryVersionUpdate := "0.0.2"
+	latestUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -74,32 +74,32 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest, controlsCount),
+				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library", conf),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_name", controlLibraryName),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_description", controlLibraryDescription),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_type", controlLibraryType),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "version_group_label", versionGroupLabel),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_version", controlLibraryVersion),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "latest", latest),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "controls_count", controlsCount),
+					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library_instance", conf),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescription),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_type", controlLibraryType),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "version_group_label", versionGroupLabel),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_version", controlLibraryVersion),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "latest", latest),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "controls_count", controlsCount),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate, controlsCountUpdate),
+				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_name", controlLibraryNameUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_description", controlLibraryDescriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_type", controlLibraryTypeUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "version_group_label", versionGroupLabelUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "control_library_version", controlLibraryVersionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "latest", latestUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library", "controls_count", controlsCountUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryNameUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_type", controlLibraryTypeUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "version_group_label", versionGroupLabelUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_version", controlLibraryVersionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "latest", latestUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "controls_count", controlsCount),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_scc_control_library.scc_control_library",
+				ResourceName:      "ibm_scc_control_library.scc_control_library_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -110,74 +110,33 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 func testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryName string, controlLibraryDescription string, controlLibraryType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
-			control_library_name = "control_library_name"
-			control_library_description = "control_library_description"
-			control_library_type = "predefined"
-			controls {
-				control_name = "control_name"
-				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
-				control_description = "control_description"
-				control_category = "control_category"
-				control_parent = "control_parent"
-				control_tags = [ "control_tags" ]
-				control_specifications {
-					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
-					responsibility = "user"
-					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
-					environment = "environment"
-					control_specification_description = "control_specification_description"
-					assessments_count = 1
-					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
-						assessment_description = "assessment_description"
-						parameter_count = 1
-						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
-						}
-					}
-				}
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_requirement = true
-				status = "enabled"
-			}
-		}
-		resource "ibm_scc_control_library" "scc_control_library_instance" {
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
+			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
+			latest = true
 			controls {
-				control_name = "control_name"
+				control_name = "control-name"
 				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
-				control_parent = "control_parent"
 				control_tags = [ "control_tags" ]
 				control_specifications {
 					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
 					responsibility = "user"
 					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
+					component_name = "f3517159-889e-4781-819a-89d89b747c85"
 					environment = "environment"
 					control_specification_description = "control_specification_description"
-					assessments_count = 1
 					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
+						assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
+						assessment_method = "ibm-cloud-rule"
+						assessment_type = "automated"
 						assessment_description = "assessment_description"
-						parameter_count = 1
 						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
+							parameter_display_name = "Sign out due to inactivity in seconds"
+                            parameter_name         = "session_invalidation_in_seconds"
+							parameter_type = "numeric"
 						}
 					}
 				}
@@ -192,49 +151,8 @@ func testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryName string, cont
 	`, controlLibraryName, controlLibraryDescription, controlLibraryType)
 }
 
-func testAccCheckIbmSccControlLibraryConfig(controlLibraryName string, controlLibraryDescription string, controlLibraryType string, versionGroupLabel string, controlLibraryVersion string, latest string, controlsCount string) string {
+func testAccCheckIbmSccControlLibraryConfig(controlLibraryName string, controlLibraryDescription string, controlLibraryType string, versionGroupLabel string, controlLibraryVersion string, latest string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_scc_control_library" "scc_control_library_instance" {
-			control_library_name = "control_library_name"
-			control_library_description = "control_library_description"
-			control_library_type = "predefined"
-			controls {
-				control_name = "control_name"
-				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
-				control_description = "control_description"
-				control_category = "control_category"
-				control_parent = "control_parent"
-				control_tags = [ "control_tags" ]
-				control_specifications {
-					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
-					responsibility = "user"
-					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
-					environment = "environment"
-					control_specification_description = "control_specification_description"
-					assessments_count = 1
-					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
-						assessment_description = "assessment_description"
-						parameter_count = 1
-						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
-						}
-					}
-				}
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_requirement = true
-				status = "enabled"
-			}
-		}
 
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
 			control_library_name = "%s"
@@ -243,32 +161,28 @@ func testAccCheckIbmSccControlLibraryConfig(controlLibraryName string, controlLi
 			version_group_label = "%s"
 			control_library_version = "%s"
 			latest = %s
-			controls_count = %s
 			controls {
-				control_name = "control_name"
+				control_name = "control-name"
 				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
-				control_parent = "control_parent"
 				control_tags = [ "control_tags" ]
 				control_specifications {
 					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
 					responsibility = "user"
 					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
+					component_name = "f3517159-889e-4781-819a-89d89b747c85"
 					environment = "environment"
 					control_specification_description = "control_specification_description"
-					assessments_count = 1
 					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
+						assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
+						assessment_method = "ibm-cloud-rule"
+						assessment_type = "automated"
 						assessment_description = "assessment_description"
-						parameter_count = 1
 						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
+							parameter_display_name = "Sign out due to inactivity in seconds"
+                            parameter_name         = "session_invalidation_in_seconds"
+							parameter_type = "numeric"
 						}
 					}
 				}
@@ -280,7 +194,7 @@ func testAccCheckIbmSccControlLibraryConfig(controlLibraryName string, controlLi
 				status = "enabled"
 			}
 		}
-	`, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest, controlsCount)
+	`, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest)
 }
 
 func testAccCheckIbmSccControlLibraryExists(n string, obj securityandcompliancecenterapiv3.ControlLibrary) resource.TestCheckFunc {

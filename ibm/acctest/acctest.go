@@ -213,6 +213,7 @@ var Account_to_be_imported string
 
 // Secuity and Complinace Center
 var SccApiEndpoint string
+var SccProviderTypeAttributes string
 
 // ROKS Cluster
 var ClusterName string
@@ -1214,6 +1215,11 @@ func init() {
 	SccApiEndpoint = os.Getenv("IBMCLOUD_SCC_API_ENDPOINT")
 	if SccApiEndpoint == "" {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID endpoint")
+	}
+
+	SccProviderTypeAttributes = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
+	if SccProviderTypeAttributes == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID ATTRIBUTE")
 	}
 
 	CloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")

@@ -5,6 +5,7 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -19,28 +20,26 @@ import (
 
 func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ProviderTypeInstanceItem
-	providerTypeID := fmt.Sprintf("tf_provider_type_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	providerTypeAttributes := os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
+	name := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProviderTypeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(providerTypeID, name),
+			{
+				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(name, providerTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccProviderTypeInstanceExists("ibm_scc_provider_type_instance.scc_provider_type_instance", conf),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_id", providerTypeID),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "name", name),
+					testAccCheckIbmSccProviderTypeInstanceExists("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", conf),
+					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", name),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(providerTypeID, nameUpdate),
+			{
+				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(nameUpdate, providerTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_id", providerTypeID),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", nameUpdate),
 				),
 			},
 		},
@@ -49,32 +48,30 @@ func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
 
 func TestAccIbmSccProviderTypeInstanceAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ProviderTypeInstanceItem
-	providerTypeID := fmt.Sprintf("tf_provider_type_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	providerTypeAttributes := os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
+	name := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProviderTypeInstanceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID, name),
+			{
+				Config: testAccCheckIbmSccProviderTypeInstanceConfig(name, providerTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccProviderTypeInstanceExists("ibm_scc_provider_type_instance.scc_provider_type_instance", conf),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_id", providerTypeID),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "name", name),
+					testAccCheckIbmSccProviderTypeInstanceExists("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", conf),
+					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", name),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID, nameUpdate),
+			{
+				Config: testAccCheckIbmSccProviderTypeInstanceConfig(nameUpdate, providerTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "provider_type_id", providerTypeID),
-					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", nameUpdate),
 				),
 			},
-			resource.TestStep{
-				ResourceName:      "ibm_scc_provider_type_instance.scc_provider_type_instance",
+			{
+				ResourceName:      "ibm_scc_provider_type_instance.scc_provider_type_instance_wlp",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -82,40 +79,27 @@ func TestAccIbmSccProviderTypeInstanceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccProviderTypeInstanceConfigBasic(providerTypeID string, name string) string {
+func testAccCheckIbmSccProviderTypeInstanceConfigBasic(name string, attributes string) string {
 	return fmt.Sprintf(`
-		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
-			provider_type_id = "provider_type_id"
-			name = "workload-protection-instance-1"
-			attributes = {"wp_crn":"crn:v1:staging:public:sysdig-secure:eu-gb:a/14q5SEnVIbwxzvP4AWPCjr2dJg5BAvPb:d1461d1ae-df1eee12fa81812e0-12-aa259::"}
-		}
-		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
-			provider_type_id = "%s"
+		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_wlp" {
+			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
 			name = "%s"
-			attributes = {"wp_crn":"crn:v1:staging:public:sysdig-secure:eu-gb:a/14q5SEnVIbwxzvP4AWPCjr2dJg5BAvPb:d1461d1ae-df1eee12fa81812e0-12-aa259::"}
+			attributes = %s
 		}
-	`, providerTypeID, name)
+	`, name, attributes)
 }
 
-func testAccCheckIbmSccProviderTypeInstanceConfig(providerTypeID string, name string) string {
+func testAccCheckIbmSccProviderTypeInstanceConfig(name string, attributes string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
-			provider_type_id = "provider_type_id"
-			name = "workload-protection-instance-1"
-			attributes = {"wp_crn":"crn:v1:staging:public:sysdig-secure:eu-gb:a/14q5SEnVIbwxzvP4AWPCjr2dJg5BAvPb:d1461d1ae-df1eee12fa81812e0-12-aa259::"}
-		}
-
-		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" {
-			provider_type_id = "%s"
+		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_wlp" {
+			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
 			name = "%s"
-			attributes = {"wp_crn":"crn:v1:staging:public:sysdig-secure:eu-gb:a/14q5SEnVIbwxzvP4AWPCjr2dJg5BAvPb:d1461d1ae-df1eee12fa81812e0-12-aa259::"}
+			attributes = %s
 		}
-	`, providerTypeID, name)
+	`, name, attributes)
 }
 
 func testAccCheckIbmSccProviderTypeInstanceExists(n string, obj securityandcompliancecenterapiv3.ProviderTypeInstanceItem) resource.TestCheckFunc {
-
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

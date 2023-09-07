@@ -32,8 +32,6 @@ func testAccCheckIbmSccReportViolationDriftDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_report_violation_drift" "scc_report_violation_drift_instance" {
 			report_id = "report_id"
-			X-Correlation-Id = "X-Correlation-Id"
-			X-Request-Id = "X-Request-Id"
 			scan_time_duration = 0
 		}
 	`)

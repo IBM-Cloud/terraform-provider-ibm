@@ -20,7 +20,7 @@ func TestAccIbmSccLatestReportsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccLatestReportsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_latest_reports.scc_latest_reports", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_latest_reports.scc_latest_reports_instance", "id"),
 				),
 			},
 		},

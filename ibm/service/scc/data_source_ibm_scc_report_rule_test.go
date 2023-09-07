@@ -34,8 +34,6 @@ func testAccCheckIbmSccReportRuleDataSourceConfigBasic() string {
 		data "ibm_scc_report_rule" "scc_report_rule_instance" {
 			report_id = "report_id"
 			rule_id = "rule-8d444f8c-fd1d-48de-bcaa-f43732568761"
-			X-Correlation-Id = "X-Correlation-Id"
-			X-Request-Id = "X-Request-Id"
 		}
 	`)
 }

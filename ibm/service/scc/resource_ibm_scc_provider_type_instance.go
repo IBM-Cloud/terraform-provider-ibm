@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+//ng Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package scc
@@ -151,13 +151,16 @@ func resourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema.R
 	if err = d.Set("name", providerTypeInstanceItem.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
+
 	attributesMap, err := resourceIbmSccProviderTypeInstanceProviderTypeInstanceAttributesToMap(providerTypeInstanceItem.Attributes)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err = d.Set("attributes", attributesMap); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting attributes: %s", err))
 	}
+
 	if !core.IsNil(providerTypeInstanceItem.Type) {
 		if err = d.Set("type", providerTypeInstanceItem.Type); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
@@ -177,6 +180,9 @@ func resourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema.R
 		if err = d.Set("provider_type_instance_id", providerTypeInstanceItem.ID); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting provider_type_instance_id: %s", err))
 		}
+	}
+	if err = d.Set("provider_type_id", parts[0]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting provider_type_id: %s", err))
 	}
 
 	return nil

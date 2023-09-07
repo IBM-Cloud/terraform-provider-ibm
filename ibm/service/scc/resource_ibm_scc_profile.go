@@ -222,7 +222,7 @@ func ResourceIbmSccProfile() *schema.Resource {
 			},
 			"default_parameters": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The default parameters of the profile.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

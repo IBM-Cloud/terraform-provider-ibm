@@ -20,10 +20,10 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Profile
 	profileName := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
 	profileDescription := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
-	profileType := "predefined"
-	profileNameUpdate := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
-	profileDescriptionUpdate := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
-	profileTypeUpdate := "custom"
+	profileType := "custom"
+	profileNameUpdate := profileName
+	profileDescriptionUpdate := profileDescription
+	profileTypeUpdate := profileType
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -33,18 +33,18 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccProfileConfigBasic(profileName, profileDescription, profileType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile", conf),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_name", profileName),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_description", profileDescription),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_type", profileType),
+					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile_instance", conf),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescription),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_type", profileType),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmSccProfileConfigBasic(profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_name", profileNameUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_description", profileDescriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_type", profileTypeUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_type", profileTypeUpdate),
 				),
 			},
 		},
@@ -55,10 +55,10 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Profile
 	profileName := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
 	profileDescription := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
-	profileType := "predefined"
-	profileNameUpdate := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
-	profileDescriptionUpdate := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
-	profileTypeUpdate := "custom"
+	profileType := "custom"
+	profileNameUpdate := profileName
+	profileDescriptionUpdate := profileDescription
+	profileTypeUpdate := profileType
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -68,22 +68,22 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccProfileConfig(profileName, profileDescription, profileType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile", conf),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_name", profileName),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_description", profileDescription),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_type", profileType),
+					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile_instance", conf),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescription),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_type", profileType),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmSccProfileConfig(profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_name", profileNameUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_description", profileDescriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile", "profile_type", profileTypeUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_type", profileTypeUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_scc_profile.scc_profile",
+				ResourceName:      "ibm_scc_profile.scc_profile_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -93,156 +93,100 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 
 func testAccCheckIbmSccProfileConfigBasic(profileName string, profileDescription string, profileType string) string {
 	return fmt.Sprintf(`
-		resource "ibm_scc_profile" "scc_profile_instance" {
-			profile_name = "profile_name"
-			profile_description = "profile_description"
-			profile_type = "predefined"
+		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			control_library_name = "control_library_name"
+			control_library_description = "control_library_description"
+			control_library_type = "custom"
+			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
+			latest = true
 			controls {
-				control_library_id = "e98a56ff-dc24-41d4-9875-1e188e2da6cd"
-				control_id = "5C453578-E9A1-421E-AD0F-C6AFCDD67CCF"
-				control_library_version = "control_library_version"
-				control_name = "control_name"
+				control_name = "control-name"
+				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
-				control_parent = "control_parent"
-				control_requirement = true
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_specifications_count = 1
+				control_tags = [ "control_tags" ]
 				control_specifications {
 					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
 					responsibility = "user"
 					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
+					component_name = "f3517159-889e-4781-819a-89d89b747c85"
 					environment = "environment"
 					control_specification_description = "control_specification_description"
-					assessments_count = 1
 					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
+						assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
+						assessment_method = "ibm-cloud-rule"
+						assessment_type = "automated"
 						assessment_description = "assessment_description"
-						parameter_count = 1
 						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
+							parameter_display_name = "Sign out due to inactivity in seconds"
+                            parameter_name         = "session_invalidation_in_seconds"
+							parameter_type = "numeric"
 						}
 					}
 				}
-			}
-			default_parameters {
-				assessment_type = "assessment_type"
-				assessment_id = "assessment_id"
-				parameter_name = "parameter_name"
-				parameter_default_value = "parameter_default_value"
-				parameter_display_name = "parameter_display_name"
-				parameter_type = "string"
+				control_docs {
+					control_docs_id = "control_docs_id"
+					control_docs_type = "control_docs_type"
+				}
+				control_requirement = true
+				status = "enabled"
 			}
 		}
+
 		resource "ibm_scc_profile" "scc_profile_instance" {
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
 			controls {
-				control_library_id = "e98a56ff-dc24-41d4-9875-1e188e2da6cd"
-				control_id = "5C453578-E9A1-421E-AD0F-C6AFCDD67CCF"
-				control_library_version = "control_library_version"
-				control_name = "control_name"
-				control_description = "control_description"
-				control_category = "control_category"
-				control_parent = "control_parent"
-				control_requirement = true
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_specifications_count = 1
-				control_specifications {
-					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
-					responsibility = "user"
-					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
-					environment = "environment"
-					control_specification_description = "control_specification_description"
-					assessments_count = 1
-					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
-						assessment_description = "assessment_description"
-						parameter_count = 1
-						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
-						}
-					}
-				}
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
 			default_parameters {
-				assessment_type = "assessment_type"
-				assessment_id = "assessment_id"
-				parameter_name = "parameter_name"
-				parameter_default_value = "parameter_default_value"
-				parameter_display_name = "parameter_display_name"
-				parameter_type = "string"
 			}
 		}
+
 	`, profileName, profileDescription, profileType)
 }
 
 func testAccCheckIbmSccProfileConfig(profileName string, profileDescription string, profileType string) string {
 	return fmt.Sprintf(`
-		resource "ibm_scc_profile" "scc_profile_instance" {
-			profile_name = "profile_name"
-			profile_description = "profile_description"
-			profile_type = "predefined"
+		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			control_library_name = "control_library_name"
+			control_library_description = "control_library_description"
+			control_library_type = "custom"
+			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
+			latest = true
 			controls {
-				control_library_id = "e98a56ff-dc24-41d4-9875-1e188e2da6cd"
-				control_id = "5C453578-E9A1-421E-AD0F-C6AFCDD67CCF"
-				control_library_version = "control_library_version"
-				control_name = "control_name"
+				control_name = "control-name"
+				control_id = "1fa45e17-9322-4e6c-bbd6-1c51db08e790"
 				control_description = "control_description"
 				control_category = "control_category"
-				control_parent = "control_parent"
-				control_requirement = true
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_specifications_count = 1
+				control_tags = [ "control_tags" ]
 				control_specifications {
 					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
 					responsibility = "user"
 					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
+					component_name = "f3517159-889e-4781-819a-89d89b747c85"
 					environment = "environment"
 					control_specification_description = "control_specification_description"
-					assessments_count = 1
 					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
+						assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
+						assessment_method = "ibm-cloud-rule"
+						assessment_type = "automated"
 						assessment_description = "assessment_description"
-						parameter_count = 1
 						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
+							parameter_display_name = "Sign out due to inactivity in seconds"
+                            parameter_name         = "session_invalidation_in_seconds"
+							parameter_type = "numeric"
 						}
 					}
 				}
-			}
-			default_parameters {
-				assessment_type = "assessment_type"
-				assessment_id = "assessment_id"
-				parameter_name = "parameter_name"
-				parameter_default_value = "parameter_default_value"
-				parameter_display_name = "parameter_display_name"
-				parameter_type = "string"
+				control_docs {
+					control_docs_id = "control_docs_id"
+					control_docs_type = "control_docs_type"
+				}
+				control_requirement = true
+				status = "enabled"
 			}
 		}
 
@@ -251,50 +195,19 @@ func testAccCheckIbmSccProfileConfig(profileName string, profileDescription stri
 			profile_description = "%s"
 			profile_type = "%s"
 			controls {
-				control_library_id = "e98a56ff-dc24-41d4-9875-1e188e2da6cd"
-				control_id = "5C453578-E9A1-421E-AD0F-C6AFCDD67CCF"
-				control_library_version = "control_library_version"
-				control_name = "control_name"
-				control_description = "control_description"
-				control_category = "control_category"
-				control_parent = "control_parent"
-				control_requirement = true
-				control_docs {
-					control_docs_id = "control_docs_id"
-					control_docs_type = "control_docs_type"
-				}
-				control_specifications_count = 1
-				control_specifications {
-					control_specification_id = "f3517159-889e-4781-819a-89d89b747c85"
-					responsibility = "user"
-					component_id = "f3517159-889e-4781-819a-89d89b747c85"
-					componenet_name = "componenet_name"
-					environment = "environment"
-					control_specification_description = "control_specification_description"
-					assessments_count = 1
-					assessments {
-						assessment_id = "assessment_id"
-						assessment_method = "assessment_method"
-						assessment_type = "assessment_type"
-						assessment_description = "assessment_description"
-						parameter_count = 1
-						parameters {
-							parameter_name = "parameter_name"
-							parameter_display_name = "parameter_display_name"
-							parameter_type = "string"
-						}
-					}
-				}
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
 			default_parameters {
-				assessment_type = "assessment_type"
-				assessment_id = "assessment_id"
-				parameter_name = "parameter_name"
-				parameter_default_value = "parameter_default_value"
-				parameter_display_name = "parameter_display_name"
-				parameter_type = "string"
+				assessment_type = "automated"
+				assessment_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_specifications[0].assessments[0].assessment_id
+				parameter_name = "session_invalidation_in_seconds"
+				parameter_type = "numeric"
+				parameter_default_value = "9"
+				parameter_display_name = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_specifications[0].assessments[0].parameters[0].parameter_display_name
 			}
 		}
+
 	`, profileName, profileDescription, profileType)
 }
 

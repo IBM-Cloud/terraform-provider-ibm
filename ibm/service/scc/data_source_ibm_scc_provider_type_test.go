@@ -20,18 +20,17 @@ func TestAccIbmSccProviderTypeDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccProviderTypeDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "provider_type_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "type"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "s2s_enabled"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "instance_limit"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "mode"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "data_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "icon"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type", "attributes.%"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "provider_type_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "type"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "s2s_enabled"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "instance_limit"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "mode"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "data_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "icon"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "attributes.%"),
 				),
 			},
 		},
@@ -41,9 +40,7 @@ func TestAccIbmSccProviderTypeDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSccProviderTypeDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_provider_type" "scc_provider_type_instance" {
-			provider_type_id = "provider_type_id"
-			X-Correlation-ID = "X-Correlation-ID"
-			X-Request-ID = "X-Request-ID"
+			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
 		}
 	`)
 }

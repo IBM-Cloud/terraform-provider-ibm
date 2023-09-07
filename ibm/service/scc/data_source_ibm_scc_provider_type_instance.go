@@ -47,12 +47,8 @@ func DataSourceIbmSccProviderTypeInstance() *schema.Resource {
 				Description: "The name of the provider type instance.",
 			},
 			"attributes": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The attributes for connecting to the provider type instance.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{},
-				},
+				Type:     schema.TypeMap,
+				Computed: true,
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -99,9 +95,9 @@ func dataSourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 
-	attributes := []map[string]interface{}{}
+	attributes := map[string]interface{}{}
 	if providerTypeInstanceItem.Attributes != nil {
-		attributes = append(attributes, providerTypeInstanceItem.Attributes)
+		attributes = providerTypeInstanceItem.Attributes
 	}
 	if err = d.Set("attributes", attributes); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting attributes %s", err))

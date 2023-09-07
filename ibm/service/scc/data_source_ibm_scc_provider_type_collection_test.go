@@ -20,7 +20,7 @@ func TestAccIbmSccProviderTypeCollectionDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccProviderTypeCollectionDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_collection.scc_provider_type_collection", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_collection.scc_provider_type_collection_instance", "id"),
 				),
 			},
 		},

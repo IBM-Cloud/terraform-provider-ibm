@@ -32,8 +32,6 @@ func testAccCheckIbmSccReportSummaryDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_report_summary" "scc_report_summary_instance" {
 			report_id = "report_id"
-			X-Correlation-Id = "X-Correlation-Id"
-			X-Request-Id = "X-Request-Id"
 		}
 	`)
 }
