@@ -725,28 +725,23 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
 			// Security and Compliance Center
-			// "ibm_scc_instance_settings":             scc.DataSourceIBMSccInstanceSettings(),
-
-			"ibm_scc_control_library": scc.DataSourceIbmSccControlLibrary(),
-
-			"ibm_scc_profile":            scc.DataSourceIbmSccProfile(),
-			"ibm_scc_profile_attachment": scc.DataSourceIbmSccProfileAttachment(),
-
+			"ibm_scc_instance_settings":        scc.DataSourceIbmSccInstanceSettings(),
+			"ibm_scc_control_library":          scc.DataSourceIbmSccControlLibrary(),
+			"ibm_scc_profile":                  scc.DataSourceIbmSccProfile(),
+			"ibm_scc_profile_attachment":       scc.DataSourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type":            scc.DataSourceIbmSccProviderType(),
 			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
 			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
-
-			"ibm_scc_latest_reports":         scc.DataSourceIbmSccLatestReports(),
-			"ibm_scc_report":                 scc.DataSourceIbmSccReport(),
-			"ibm_scc_report_controls":        scc.DataSourceIbmSccReportControls(),
-			"ibm_scc_report_evaluations":     scc.DataSourceIbmSccReportEvaluations(),
-			"ibm_scc_report_resources":       scc.DataSourceIbmSccReportResources(),
-			"ibm_scc_report_rule":            scc.DataSourceIbmSccReportRule(),
-			"ibm_scc_report_summary":         scc.DataSourceIbmSccReportSummary(),
-			"ibm_scc_report_tags":            scc.DataSourceIbmSccReportTags(),
-			"ibm_scc_report_violation_drift": scc.DataSourceIbmSccReportViolationDrift(),
-
-			"ibm_scc_rule": scc.DataSourceIbmSccRule(),
+			"ibm_scc_latest_reports":           scc.DataSourceIbmSccLatestReports(),
+			"ibm_scc_report":                   scc.DataSourceIbmSccReport(),
+			"ibm_scc_report_controls":          scc.DataSourceIbmSccReportControls(),
+			"ibm_scc_report_evaluations":       scc.DataSourceIbmSccReportEvaluations(),
+			"ibm_scc_report_resources":         scc.DataSourceIbmSccReportResources(),
+			"ibm_scc_report_rule":              scc.DataSourceIbmSccReportRule(),
+			"ibm_scc_report_summary":           scc.DataSourceIbmSccReportSummary(),
+			"ibm_scc_report_tags":              scc.DataSourceIbmSccReportTags(),
+			"ibm_scc_report_violation_drift":   scc.DataSourceIbmSccReportViolationDrift(),
+			"ibm_scc_rule":                     scc.DataSourceIbmSccRule(),
 
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
@@ -1238,7 +1233,6 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
 
 			// Security and Compliance Center
-			"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettings(),
 			"ibm_scc_rule":                   scc.ResourceIbmSccRule(),
 			"ibm_scc_control_library":        scc.ResourceIbmSccControlLibrary(),
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
