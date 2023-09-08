@@ -24,7 +24,12 @@ import (
 )
 
 var (
-	vpcUnavailable = regexp.MustCompile("503|service unavailable|server is down for maintenance or overloaded")
+	vpcUnavailable = regexp.MustCompile("pcloudCloudconnectionsPostServiceUnavailable|pcloudCloudconnectionsPutServiceUnavailable")
+)
+
+const (
+	vpcRetryCount    = 2
+	vpcRetryDuration = time.Minute
 )
 
 func ResourceIBMPICloudConnection() *schema.Resource {
@@ -229,24 +234,16 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	client := st.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
-	retryCount := 2
 	cloudConnection, cloudConnectionJob, err := client.Create(body)
 	if err != nil {
-		for count := retryCount; count >= 0; count-- {
-			if err == nil {
-				break
-			}
-			if vpcUnavailable.Match([]byte(err.Error())) {
-				log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", err)
-				time.Sleep(time.Minute)
-				log.Printf("[DEBUG] retrying cloud connection create, retry #%v", (retryCount-count)+1)
+		if vpcUnavailable.Match([]byte(err.Error())) {
+			err = retryCloudConnectionsVPC(func() (err error) {
 				cloudConnection, cloudConnectionJob, err = client.Create(body)
-			}
+				return
+			}, vpcRetryCount, vpcRetryDuration, "create")
 		}
-		if err != nil {
-			log.Printf("[DEBUG] create cloud connection failed %v", err)
-			return diag.FromErr(err)
-		}
+		log.Printf("[DEBUG] create cloud connection failed %v", err)
+		return diag.FromErr(err)
 	}
 
 	if cloudConnection != nil {
@@ -285,7 +282,6 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 
 	client := st.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
 	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
-	retryCount := 2
 
 	if d.HasChangesExcept(helpers.PICloudConnectionNetworks) {
 
@@ -353,21 +349,14 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 
 		_, cloudConnectionJob, err := client.Update(cloudConnectionID, body)
 		if err != nil {
-			for count := retryCount; count >= 0; count-- {
-				if err == nil {
-					break
-				}
-				if vpcUnavailable.Match([]byte(err.Error())) {
-					log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", err)
-					time.Sleep(time.Minute)
-					log.Printf("[DEBUG] retrying cloud connection update, retry #%v", (retryCount-count)+1)
+			if vpcUnavailable.Match([]byte(err.Error())) {
+				err = retryCloudConnectionsVPC(func() (err error) {
 					_, cloudConnectionJob, err = client.Update(cloudConnectionID, body)
-				}
+					return
+				}, vpcRetryCount, vpcRetryDuration, "update")
 			}
-			if err != nil {
-				log.Printf("[DEBUG] update cloud connection failed %v", err)
-				return diag.FromErr(err)
-			}
+			log.Printf("[DEBUG] update cloud connection failed %v", err)
+			return diag.FromErr(err)
 		}
 		if cloudConnectionJob != nil {
 			_, err = waitForIBMPIJobCompleted(ctx, jobClient, *cloudConnectionJob.ID, d.Timeout(schema.TimeoutCreate))
@@ -530,4 +519,17 @@ func resourceIBMPICloudConnectionDelete(ctx context.Context, d *schema.ResourceD
 
 	d.SetId("")
 	return nil
+}
+
+func retryCloudConnectionsVPC(ccVPCRetry func() error, retryCount int, waitDuration time.Duration, operation string) (err error) {
+	for count := 0; count < retryCount; count++ {
+		log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", err)
+		time.Sleep(time.Minute)
+		log.Printf("[DEBUG] retrying cloud connection %s, retry #%v", operation, count+1)
+		err = ccVPCRetry()
+	}
+	if err != nil {
+		return
+	}
+	return
 }
