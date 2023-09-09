@@ -240,10 +240,12 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 			err = retryCloudConnectionsVPC(func() (err error) {
 				cloudConnection, cloudConnectionJob, err = client.Create(body)
 				return
-			}, vpcRetryCount, vpcRetryDuration, "create")
+			}, vpcRetryCount, vpcRetryDuration, "create", err)
 		}
-		log.Printf("[DEBUG] create cloud connection failed %v", err)
-		return diag.FromErr(err)
+		if err != nil {
+			log.Printf("[DEBUG] create cloud connection failed %v", err)
+			return diag.FromErr(err)
+		}
 	}
 
 	if cloudConnection != nil {
@@ -353,10 +355,12 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 				err = retryCloudConnectionsVPC(func() (err error) {
 					_, cloudConnectionJob, err = client.Update(cloudConnectionID, body)
 					return
-				}, vpcRetryCount, vpcRetryDuration, "update")
+				}, vpcRetryCount, vpcRetryDuration, "update", err)
 			}
-			log.Printf("[DEBUG] update cloud connection failed %v", err)
-			return diag.FromErr(err)
+			if err != nil {
+				log.Printf("[DEBUG] update cloud connection failed %v", err)
+				return diag.FromErr(err)
+			}
 		}
 		if cloudConnectionJob != nil {
 			_, err = waitForIBMPIJobCompleted(ctx, jobClient, *cloudConnectionJob.ID, d.Timeout(schema.TimeoutCreate))
@@ -521,15 +525,12 @@ func resourceIBMPICloudConnectionDelete(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func retryCloudConnectionsVPC(ccVPCRetry func() error, retryCount int, waitDuration time.Duration, operation string) (err error) {
+func retryCloudConnectionsVPC(ccVPCRetry func() error, retryCount int, waitDuration time.Duration, operation string, errMsg error) (err error) {
 	for count := 0; count < retryCount; count++ {
-		log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", err)
-		time.Sleep(time.Minute)
+		log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", errMsg)
+		time.Sleep(waitDuration)
 		log.Printf("[DEBUG] retrying cloud connection %s, retry #%v", operation, count+1)
 		err = ccVPCRetry()
-	}
-	if err != nil {
-		return
 	}
 	return
 }
