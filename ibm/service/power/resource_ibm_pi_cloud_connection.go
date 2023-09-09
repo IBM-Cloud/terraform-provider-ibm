@@ -240,7 +240,7 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 			err = retryCloudConnectionsVPC(func() (err error) {
 				cloudConnection, cloudConnectionJob, err = client.Create(body)
 				return
-			}, vpcRetryCount, vpcRetryDuration, "create", err)
+			}, "create", err)
 		}
 		if err != nil {
 			log.Printf("[DEBUG] create cloud connection failed %v", err)
@@ -355,7 +355,7 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 				err = retryCloudConnectionsVPC(func() (err error) {
 					_, cloudConnectionJob, err = client.Update(cloudConnectionID, body)
 					return
-				}, vpcRetryCount, vpcRetryDuration, "update", err)
+				}, "update", err)
 			}
 			if err != nil {
 				log.Printf("[DEBUG] update cloud connection failed %v", err)
@@ -525,10 +525,10 @@ func resourceIBMPICloudConnectionDelete(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func retryCloudConnectionsVPC(ccVPCRetry func() error, retryCount int, waitDuration time.Duration, operation string, errMsg error) (err error) {
-	for count := 0; count < retryCount; count++ {
+func retryCloudConnectionsVPC(ccVPCRetry func() error, operation string, errMsg error) (err error) {
+	for count := 0; count < vpcRetryCount && errMsg != nil; count++ {
 		log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", errMsg)
-		time.Sleep(waitDuration)
+		time.Sleep(vpcRetryDuration)
 		log.Printf("[DEBUG] retrying cloud connection %s, retry #%v", operation, count+1)
 		err = ccVPCRetry()
 	}
