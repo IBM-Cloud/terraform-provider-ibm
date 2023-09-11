@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDatabaseInstance_Elasticsearchpl_Basic(t *testing.T) {
+func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -27,7 +27,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -46,7 +46,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -62,7 +62,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplReduced(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -77,7 +77,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplGroupMigration(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -100,7 +100,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Basic(t *testing.T) {
 	})
 }
 
-func TestAccIBMDatabaseInstance_Elasticsearchpl_Node(t *testing.T) {
+func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -114,7 +114,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Node(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplNodeBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -136,7 +136,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Node(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplNodeFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -154,7 +154,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Node(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplNodeReduced(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -171,7 +171,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Node(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplNodeScaleOut(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -196,7 +196,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Node(t *testing.T) {
 	})
 }
 
-func TestAccIBMDatabaseInstance_Elasticsearchpl_Group(t *testing.T) {
+func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -210,7 +210,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Group(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplGroupBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -232,7 +232,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Group(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplGroupFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -254,7 +254,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Group(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplGroupReduced(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -275,7 +275,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Group(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplGroupScaleOut(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -306,7 +306,7 @@ func TestAccIBMDatabaseInstance_Elasticsearchpl_Group(t *testing.T) {
 
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
-func TestAccIBMDatabaseInstanceElasticsearchplImport(t *testing.T) {
+func TestAccIBMDatabaseInstanceElasticsearchPlatinumImport(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -320,7 +320,7 @@ func TestAccIBMDatabaseInstanceElasticsearchplImport(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceElasticsearchplImport(databaseResourceGroup, serviceName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResourceGroup, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
@@ -342,7 +342,7 @@ func TestAccIBMDatabaseInstanceElasticsearchplImport(t *testing.T) {
 
 // func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) etc in resource_ibm_database_postgresql_test.go
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -358,6 +358,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplBasic(databaseResourceGroup s
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 15360
+		plan_validation              = false
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -376,7 +377,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplBasic(databaseResourceGroup s
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -392,6 +393,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplFullyspecified(databaseResour
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 6144
 		members_disk_allocation_mb   = 18432
+		plan_validation              = false
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -419,7 +421,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplFullyspecified(databaseResour
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplReduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -435,6 +437,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplReduced(databaseResourceGroup
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 18432
+		plan_validation              = false
 
 		timeouts {
 			create = "120m"
@@ -445,7 +448,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplReduced(databaseResourceGroup
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplGroupMigration(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -459,6 +462,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupMigration(databaseResour
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -480,7 +484,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupMigration(databaseResour
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplNodeBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -498,6 +502,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeBasic(databaseResourceGro
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 5120
         node_cpu_allocation_count    = 3
+		plan_validation              = false
 
 		users {
 		  name     = "user123"
@@ -517,7 +522,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeBasic(databaseResourceGro
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplNodeFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -535,6 +540,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeFullyspecified(databaseRe
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
+		plan_validation              = false
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -561,7 +567,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeFullyspecified(databaseRe
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplNodeReduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -579,6 +585,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeReduced(databaseResourceG
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
+		plan_validation              = false
 
 		timeouts {
 			create = "120m"
@@ -589,7 +596,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeReduced(databaseResourceG
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplNodeScaleOut(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -607,6 +614,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeScaleOut(databaseResource
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
+		plan_validation              = false
 
 		timeouts {
 			create = "120m"
@@ -617,7 +625,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplNodeScaleOut(databaseResource
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplGroupBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -631,6 +639,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupBasic(databaseResourceGr
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		plan_validation              = false
 
 		group {
 			group_id = "member"
@@ -666,7 +675,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupBasic(databaseResourceGr
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplGroupFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -680,6 +689,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupFullyspecified(databaseR
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -723,7 +733,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupFullyspecified(databaseR
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplGroupReduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -737,6 +747,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupReduced(databaseResource
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -763,7 +774,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupReduced(databaseResource
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplGroupScaleOut(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -777,6 +788,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupScaleOut(databaseResourc
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
+		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -802,7 +814,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplGroupScaleOut(databaseResourc
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceElasticsearchplImport(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -815,6 +827,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchplImport(databaseResourceGroup 
 		service           = "databases-for-elasticsearch"
 		plan              = "platinum"
 		location          = "%[3]s"
+		plan_validation   = false
 
 		timeouts {
 			create = "120m"
