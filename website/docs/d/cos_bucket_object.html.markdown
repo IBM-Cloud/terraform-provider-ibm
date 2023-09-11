@@ -43,6 +43,7 @@ Review the argument references that you can specify for your data source.
 - `bucket_location` - (Required, String) The location of the COS bucket.
 - `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Accepted values: `public`, `private`, or `direct`. Default value is `public`.
 - `key` - (Required, String) The name of an object in the COS bucket.
+- `website_redirect` - (Optional, String) Redirect a request to another object or an URL.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -57,3 +58,4 @@ In addition to all argument reference list, you can access the following attribu
 - `object_lock_mode` - (String) This is the retention mode for an object.
 - `object_lock_retain_until_date` - (String) A date after which the object can be deleted from the COS bucket.
 - `object_lock_legal_hold_status` - (String) If the value of this attribute is **ON**, then the object cannot be deleted from the COS bucket.
+- - `website_redirect` - (String) If this value is set then incoming request will be redirected to the set value..

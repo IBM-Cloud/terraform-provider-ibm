@@ -147,8 +147,9 @@ func ResourceIBMCOSBucketObject() *schema.Resource {
 				Description:  "An object cannot be deleted when the current time is earlier than the retainUntilDate. After this date, the object can be deleted.",
 			},
 			"website_redirect": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Redirect a request to another object or an URL",
 			},
 		},
 	}

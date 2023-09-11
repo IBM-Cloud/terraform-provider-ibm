@@ -470,7 +470,6 @@ func DataSourceIBMCosBucket() *schema.Resource {
 						},
 						"routing_rule": {
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Rules that define when a redirect is applied and the redirect behavior.",
 							Elem: &schema.Resource{
@@ -536,7 +535,6 @@ func DataSourceIBMCosBucket() *schema.Resource {
 						},
 						"routing_rules": {
 							Type:          schema.TypeString,
-							Optional:      true,
 							Computed:      true,
 							Description:   "Rules that define when a redirect is applied and the redirect behavior.",
 							ConflictsWith: []string{"routing_rule"},
@@ -871,7 +869,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		fmt.Println(outputBucketWebsiteptr)
 		websiteConfiguration := flex.WebsiteConfigurationGet(outputBucketWebsiteptr)
 		if len(websiteConfiguration) > 0 {
-			fmt.Println("printing website_configuration in the if condition", websiteConfiguration)
 			d.Set("website_configuration", websiteConfiguration)
 		}
 		websiteEndpoint := getWebsiteEndpoint(bucketName, bucketRegion)

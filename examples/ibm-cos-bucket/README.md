@@ -420,7 +420,6 @@ resource "ibm_cos_bucket" "cos_bucket_website_configuration" {
 
 }
 # Give public access to above mentioned bucket
- 
 resource "ibm_iam_access_group_policy" "policy" { 
   depends_on = [ibm_cos_bucket.cos_bucket_website_configuration] 
   access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id 
@@ -435,8 +434,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 } 
 
 # Add basic website configuration on a COS bucket
-
-resource ibm_cos_bucket_website_configuration "website" {
+resource ibm_cos_bucket_website_configuration "website_configuration" {
   bucket_crn = "bucket_crn"
   bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
   website_configuration {
@@ -444,14 +442,13 @@ resource ibm_cos_bucket_website_configuration "website" {
       key = "error.html"
     }
     index_document{
-      suffix = "index2.html"
+      suffix = "index.html"
     }
   }
 }
 
 # Add a request redirect website configuration on a COS bucket
-
-resource ibm_cos_bucket_website_configuration "website" {
+resource ibm_cos_bucket_website_configuration "website_configuration" {
   bucket_crn = "bucket_crn"
   bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
   website_configuration {
@@ -465,7 +462,7 @@ resource ibm_cos_bucket_website_configuration "website" {
 
 # Add a website configuration on a COS bucket with routing rule
 
-resource ibm_cos_bucket_website_configuration "website" {
+resource ibm_cos_bucket_website_configuration "website_configuration" {
   bucket_crn = "bucket_crn"
   bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
   website_configuration {
@@ -477,7 +474,7 @@ resource ibm_cos_bucket_website_configuration "website" {
     }
    routing_rule {
       condition {
-       key_prefix_equals = "pages/"
+        key_prefix_equals = "pages/"
      }
       redirect {
         replace_key_prefix_with = "web_pages/"
@@ -487,8 +484,7 @@ resource ibm_cos_bucket_website_configuration "website" {
 }
 
 # Add a website configuration on a COS bucket with JSON routing rule
-
-resource ibm_cos_bucket_website_configuration "website" {
+resource ibm_cos_bucket_website_configuration "website_configuration" {
   bucket_crn = "bucket_crn"
   bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
   website_configuration {
@@ -504,7 +500,7 @@ resource ibm_cos_bucket_website_configuration "website" {
 			        "KeyPrefixEquals": "pages/"
 			     },
 			     "Redirect": {
-			         "ReplaceKeyPrefixWith": "webpages/"
+			        "ReplaceKeyPrefixWith": "webpages/"
 			     }
 			 }]
 			 EOF

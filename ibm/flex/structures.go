@@ -971,29 +971,29 @@ func WebsiteConfigurationGet(in *s3.WebsiteConfiguration) []map[string]interface
 }
 
 func GetErrorDocument(in *s3.ErrorDocument) []map[string]interface{} {
-	e := make([]map[string]interface{}, 0, 1)
+	errorDocumentMap := make([]map[string]interface{}, 0, 1)
 	if in != nil {
-		edv := make(map[string]interface{})
+		errorDocValue := make(map[string]interface{})
 
 		if in.Key != nil {
-			edv["key"] = aws.StringValue(in.Key)
+			errorDocValue["key"] = aws.StringValue(in.Key)
 		}
-		e = append(e, edv)
+		errorDocumentMap = append(errorDocumentMap, errorDocValue)
 	}
-	return e
+	return errorDocumentMap
 }
 
 func GetIndexDocument(in *s3.IndexDocument) []map[string]interface{} {
-	e := make([]map[string]interface{}, 0, 1)
+	indexDocumentMap := make([]map[string]interface{}, 0, 1)
 	if in != nil {
-		edv := make(map[string]interface{})
+		indexDocumentValue := make(map[string]interface{})
 
 		if in.Suffix != nil {
-			edv["suffix"] = aws.StringValue(in.Suffix)
+			indexDocumentValue["suffix"] = aws.StringValue(in.Suffix)
 		}
-		e = append(e, edv)
+		indexDocumentMap = append(indexDocumentMap, indexDocumentValue)
 	}
-	return e
+	return indexDocumentMap
 }
 
 func RedirectAllRequestsGet(in *s3.RedirectAllRequestsTo) []map[string]interface{} {

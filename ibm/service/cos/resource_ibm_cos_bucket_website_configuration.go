@@ -206,7 +206,6 @@ func errorDocumentSetFunction(errorDocument []interface{}) *s3.ErrorDocument {
 	} else {
 		return nil
 	}
-
 }
 
 func indexDocumentSetFunction(indexDocument []interface{}) *s3.IndexDocument {
@@ -226,27 +225,6 @@ func indexDocumentSetFunction(indexDocument []interface{}) *s3.IndexDocument {
 
 }
 
-func redirectAllRequestsDocumentSetFunction(redirectAllRequestsDocumentSet []interface{}) *s3.RedirectAllRequestsTo {
-	var redirect_all_requests_document *s3.RedirectAllRequestsTo
-	redirectAllRequestsDocumentValue := s3.RedirectAllRequestsTo{}
-	if len(redirectAllRequestsDocumentSet) != 0 {
-		redirectAllRequestsMap, _ := redirectAllRequestsDocumentSet[0].(map[string]interface{})
-
-		if hostName, ok := redirectAllRequestsMap["hostname"].(string); ok && hostName != "" {
-			redirectAllRequestsDocumentValue.HostName = aws.String(hostName)
-		}
-		if protocol, ok := redirectAllRequestsMap["protocol"].(string); ok && protocol != "" {
-			redirectAllRequestsDocumentValue.HostName = aws.String(protocol)
-		}
-
-		redirect_all_requests_document = &redirectAllRequestsDocumentValue
-		return redirect_all_requests_document
-	} else {
-		return nil
-	}
-
-}
-
 func redirectAllRequestsSetFunction(redirectAllRequestsSet []interface{}) *s3.RedirectAllRequestsTo {
 	var redirect_all_requests *s3.RedirectAllRequestsTo
 	redirectAllRequestsValue := s3.RedirectAllRequestsTo{}
@@ -257,7 +235,7 @@ func redirectAllRequestsSetFunction(redirectAllRequestsSet []interface{}) *s3.Re
 			redirectAllRequestsValue.HostName = aws.String(hostName)
 		}
 		if protocol, ok := redirectAllRequestsMap["protocol"].(string); ok && protocol != "" {
-			redirectAllRequestsValue.HostName = aws.String(protocol)
+			redirectAllRequestsValue.Protocol = aws.String(protocol)
 		}
 
 		redirect_all_requests = &redirectAllRequestsValue
