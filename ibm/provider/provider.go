@@ -1490,7 +1490,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
 
 				// Added for SCC
-				"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettingsValidator(),
 				"ibm_scc_rule":                   scc.ResourceIbmSccRuleValidator(),
 				"ibm_scc_control_library":        scc.ResourceIbmSccControlLibraryValidator(),
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
