@@ -987,6 +987,7 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 
 	if service == "elasticsearch" && _plan == "platinum" {
 		service = "elasticsearchpl"
+	}
 
 	if service == "mongodb" && _plan == "enterprise-sharding" {
 		service = "mongodbees"
