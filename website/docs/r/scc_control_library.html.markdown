@@ -8,7 +8,7 @@ subcategory: "securityandcompliancecenterapi"
 
 # ibm_scc_control_library
 
-Create, update, and delete scc_control_librarys with this resource.
+Create, update, and delete control libraries by using this resource.
 
 ## Example Usage
 

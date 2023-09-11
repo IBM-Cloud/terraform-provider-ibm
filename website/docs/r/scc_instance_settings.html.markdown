@@ -8,7 +8,7 @@ subcategory: "Admin"
 
 # ibm_scc_instance_settings
 
-Create, update, and delete scc_instance_settingss with this resource.
+Create, update, and delete your instance's settings by using this resource.
 
 ## Example Usage
 

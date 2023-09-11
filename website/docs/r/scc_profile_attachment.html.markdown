@@ -8,7 +8,7 @@ subcategory: "securityandcompliancecenterapi"
 
 # ibm_scc_profile_attachment
 
-Create, update, and delete scc_profile_attachments with this resource.
+Create, update, and delete profile attachments with this resource.
 
 ## Example Usage
 
