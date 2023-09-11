@@ -89,7 +89,7 @@ func DataSourceIBMContainerClusterConfig() *schema.Resource {
 				Default:     false,
 			},
 			"endpoint_type": {
-				Description: "",
+				Description: "It can specify what kind of server URL will be used for the cluster context",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     false,
