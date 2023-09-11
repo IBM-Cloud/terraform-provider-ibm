@@ -21,10 +21,27 @@ data "ibm_is_share_profiles" "example" {
 
 The following attributes are exported:
 
-- `profiles` - Collection of share profiles. Nested `profiles` blocks have the following structure:
-	- `family` - The product family this share profile belongs to.
-	- `href` - The URL for this share profile.
-	- `name` - The globally unique name for this share profile.
-	- `resource_type` - The resource type.
+- `profiles` - (List) Collection of share profiles. Nested `profiles` blocks have the following structure:
+	- `family` - (String) The product family this share profile belongs to.
+	- `href` - (String) The URL for this share profile.
+	- `name` - (String) The globally unique name for this share profile.
+	- `resource_type` - (String) The resource type.
+	- `capacity` - (List) The permitted capacity range (in gigabytes) for a share with this profile. Nested `capacity` blocks have the following structure:
+		- `default` - (Integer) The default capacity for this share profile
+		- `max` - (Integer) The max capacity for this share profile
+		- `min` - (Integer) The min capacity for this share profile
+		- `step` - (Integer) The increment step value for this profile field
+		- `type` - (String) The type for this profile field
+		- `value` - (Integer) The value for this profile field
+		- `values` - (List of Integers) The permitted values for this profile field
+	- `iops` - (List) The permitted IOPS range for a share with this profile. Nested `iops` blocks have the following structure:
+		- `default` - (Integer) The default iops for this share profile
+		- `max` - (Integer) The max iops for this share profile
+		- `min` - (Integer) The min iops for this share profile
+		- `step` - (Integer) The increment step value for this profile field
+		- `type` - (String) The type for this profile field
+		- `value` - (Integer) The value for this profile field
+		- `values` - (List of Integers) The permitted values for this profile field
+
 - `total_count` - The total number of resources across all pages.
 
