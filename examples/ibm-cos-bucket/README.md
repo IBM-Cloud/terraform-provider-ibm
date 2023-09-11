@@ -468,14 +468,14 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
   website_configuration {
     error_document{
       key = "error.html"
-      }
+    }
     index_document{
       suffix = "index.html"
     }
-   routing_rule {
+    routing_rule {
       condition {
         key_prefix_equals = "pages/"
-     }
+      }
       redirect {
         replace_key_prefix_with = "web_pages/"
       }

@@ -43,7 +43,6 @@ Review the argument references that you can specify for your data source.
 - `bucket_location` - (Required, String) The location of the COS bucket.
 - `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Accepted values: `public`, `private`, or `direct`. Default value is `public`.
 - `key` - (Required, String) The name of an object in the COS bucket.
-- `website_redirect` - (Optional, String) Redirect a request to another object or an URL.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
