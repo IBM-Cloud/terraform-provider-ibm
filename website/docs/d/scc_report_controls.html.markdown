@@ -8,7 +8,7 @@ subcategory: "Results"
 
 # ibm_scc_report_controls
 
-Provides a read-only data source to retrieve information about scc_report_controls. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about report controls from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 

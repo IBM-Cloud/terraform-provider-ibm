@@ -8,7 +8,7 @@ subcategory: "Security and Compliance Center APIs"
 
 # ibm_scc_provider_type
 
-Provides a read-only data source to retrieve information about a scc_provider_type. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about a provider type from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -32,7 +32,7 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the scc_provider_type.
 * `attributes` - (Map) The attributes that are required when you're creating an instance of a provider type. The attributes field can have multiple  keys in its value. Each of those keys has a value  object that includes the type, and display name as keys. For example, `{type:"", display_name:""}`. **NOTE;** If the provider type is s2s-enabled, which means that if the `s2s_enabled` field is set to `true`, then a CRN field of type text is required in the attributes value object.
 
-* `created_at` - (String) Time at which resource was created.
+* `created_at` - (String) The time when the resource was created.
 
 * `data_type` - (String) The format of the results that a provider supports.
 
@@ -57,5 +57,5 @@ Nested schema for **label**:
 
 * `type` - (String) The type of the provider type.
 
-* `updated_at` - (String) Time at which resource was updated.
+* `updated_at` - (String) The time when the resource was updated.
 

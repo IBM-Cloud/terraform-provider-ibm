@@ -8,7 +8,7 @@ subcategory: "Results"
 
 # ibm_scc_report_violation_drift
 
-Provides a read-only data source to retrieve information about a scc_report_violation_drift. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about a report violation drift from a read-only data source. Then, yo can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
