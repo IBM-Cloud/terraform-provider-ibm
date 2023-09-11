@@ -56,3 +56,4 @@ In addition to all argument reference list, you can access the following attribu
   - `pool_name` - (String) The pool name.
   - `storage_type` - (String) Storage type of the storage pool.
   - `total_capacity` - (Integer) Total pool capacity (GB).
+  - `replication_enabled` - (Boolean) "Replication status of the storage pool"
