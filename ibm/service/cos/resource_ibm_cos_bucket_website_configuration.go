@@ -222,7 +222,6 @@ func indexDocumentSetFunction(indexDocument []interface{}) *s3.IndexDocument {
 	} else {
 		return nil
 	}
-
 }
 
 func redirectAllRequestsSetFunction(redirectAllRequestsSet []interface{}) *s3.RedirectAllRequestsTo {
@@ -230,20 +229,17 @@ func redirectAllRequestsSetFunction(redirectAllRequestsSet []interface{}) *s3.Re
 	redirectAllRequestsValue := s3.RedirectAllRequestsTo{}
 	if len(redirectAllRequestsSet) != 0 {
 		redirectAllRequestsMap, _ := redirectAllRequestsSet[0].(map[string]interface{})
-
 		if hostName, ok := redirectAllRequestsMap["hostname"].(string); ok && hostName != "" {
 			redirectAllRequestsValue.HostName = aws.String(hostName)
 		}
 		if protocol, ok := redirectAllRequestsMap["protocol"].(string); ok && protocol != "" {
 			redirectAllRequestsValue.Protocol = aws.String(protocol)
 		}
-
 		redirect_all_requests = &redirectAllRequestsValue
 		return redirect_all_requests
 	} else {
 		return nil
 	}
-
 }
 
 func routingRouteConditionSet(routingRuleConditionSet []interface{}) *s3.Condition {
@@ -251,20 +247,17 @@ func routingRouteConditionSet(routingRuleConditionSet []interface{}) *s3.Conditi
 	conditionValue := s3.Condition{}
 	if len(routingRuleConditionSet) != 0 {
 		routingRuleConditionMap, _ := routingRuleConditionSet[0].(map[string]interface{})
-
 		if httpErrorCodeReturnedEquals, ok := routingRuleConditionMap["http_error_code_returned_equals"].(string); ok && httpErrorCodeReturnedEquals != "" {
 			conditionValue.HttpErrorCodeReturnedEquals = aws.String(httpErrorCodeReturnedEquals)
 		}
 		if keyPrefixEquals, ok := routingRuleConditionMap["key_prefix_equals"].(string); ok && keyPrefixEquals != "" {
 			conditionValue.KeyPrefixEquals = aws.String(keyPrefixEquals)
 		}
-
 		routingRuleCondition = &conditionValue
 		return routingRuleCondition
 	} else {
 		return nil
 	}
-
 }
 
 func routingRouteRedirectSet(routingRuleRedirectSet []interface{}) *s3.Redirect {
@@ -272,7 +265,6 @@ func routingRouteRedirectSet(routingRuleRedirectSet []interface{}) *s3.Redirect 
 	redirectValue := s3.Redirect{}
 	if len(routingRuleRedirectSet) != 0 {
 		routingRuleRedirectMap, _ := routingRuleRedirectSet[0].(map[string]interface{})
-
 		if hostName, ok := routingRuleRedirectMap["host_name"].(string); ok && hostName != "" {
 			redirectValue.HostName = aws.String(hostName)
 		}
@@ -288,13 +280,11 @@ func routingRouteRedirectSet(routingRuleRedirectSet []interface{}) *s3.Redirect 
 		if replaceKeyWith, ok := routingRuleRedirectMap["replace_key_with"].(string); ok && replaceKeyWith != "" {
 			redirectValue.ReplaceKeyWith = aws.String(replaceKeyWith)
 		}
-
 		routingRuleRedirect = &redirectValue
 		return routingRuleRedirect
 	} else {
 		return nil
 	}
-
 }
 
 func routingRuleSetFunction(routingRuleSet []interface{}) []*s3.RoutingRule {
@@ -304,56 +294,41 @@ func routingRuleSetFunction(routingRuleSet []interface{}) []*s3.RoutingRule {
 		if !ok {
 			continue
 		}
-
 		routing_rule := s3.RoutingRule{}
-
 		if condition, ok := ruleMap["condition"].([]interface{}); ok && len(condition) > 0 && condition[0] != nil {
 			routing_rule.Condition = routingRouteConditionSet(condition)
 		}
-
 		if redirect, ok := ruleMap["redirect"].([]interface{}); ok && len(redirect) > 0 && redirect[0] != nil {
 			routing_rule.Redirect = routingRouteRedirectSet(redirect)
 		}
-
 		rules = append(rules, &routing_rule)
-
 	}
 	return rules
 }
 
 func websiteConfigurationSet(websiteConfigurationList []interface{}) (*s3.WebsiteConfiguration, error) {
 	var websiteConfig *s3.WebsiteConfiguration
-
 	website_configuration := s3.WebsiteConfiguration{}
 	configurationMap, _ := websiteConfigurationList[0].(map[string]interface{})
 	// error document is provided
 	if errorDocumentSet, exist := configurationMap["error_document"]; exist {
 		website_configuration.ErrorDocument = errorDocumentSetFunction(errorDocumentSet.([]interface{}))
-
 	}
-
 	//index document is provided
 	if indexDocumentSet, exist := configurationMap["index_document"]; exist {
 		website_configuration.IndexDocument = indexDocumentSetFunction(indexDocumentSet.([]interface{}))
-
 	}
-
 	//redirect_all_requests_to is provided
-
 	if redirectAllRequestsSet, exist := configurationMap["redirect_all_requests_to"]; exist {
 
 		website_configuration.RedirectAllRequestsTo = redirectAllRequestsSetFunction(redirectAllRequestsSet.([]interface{}))
-
 	}
 	// routing_rules provided
 	if routingRulesSet, exist := configurationMap["routing_rule"]; exist {
-
 		website_configuration.RoutingRules = routingRuleSetFunction(routingRulesSet.([]interface{}))
-
 	}
 	// if json routing routes are provided
 	if routingRulesJsonSet, exist := configurationMap["routing_rules"]; exist {
-
 		var unmarshalledRules []*s3.RoutingRule
 		if err := json.Unmarshal([]byte(routingRulesJsonSet.(string)), &unmarshalledRules); err != nil {
 			return nil, fmt.Errorf("failed to update the json routing rules in the website configuration : %v", err)
@@ -365,25 +340,20 @@ func websiteConfigurationSet(websiteConfigurationList []interface{}) (*s3.Websit
 }
 
 func resourceIBMCOSBucketWebsiteConfigurationCreate(d *schema.ResourceData, meta interface{}) error {
-
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
-
 	bucketLocation := d.Get("bucket_location").(string)
 	endpointType := d.Get("endpoint_type").(string)
-
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
-
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	var websiteConfiguration *s3.WebsiteConfiguration
 	configuration, ok := d.GetOk("website_configuration")
 	if ok {
 		websiteConfiguration, err = websiteConfigurationSet(configuration.([]interface{}))
-
 	}
 	if err != nil {
 		return fmt.Errorf("failed to read website configuration for COS bucket %s, %v", bucketName, err)
@@ -403,19 +373,15 @@ func resourceIBMCOSBucketWebsiteConfigurationCreate(d *schema.ResourceData, meta
 }
 
 func resourceIBMCOSBucketWebsiteConfigurationUpdate(d *schema.ResourceData, meta interface{}) error {
-
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
-
 	bucketLocation := d.Get("bucket_location").(string)
 	endpointType := d.Get("endpoint_type").(string)
-
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
-
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	if err != nil {
 		return err
@@ -444,24 +410,20 @@ func resourceIBMCOSBucketWebsiteConfigurationUpdate(d *schema.ResourceData, meta
 }
 
 func resourceIBMCOSBucketWebsiteConfigurationRead(d *schema.ResourceData, meta interface{}) error {
-
 	bucketCRN := parseWebsiteId(d.Id(), "bucketCRN")
 	bucketName := parseWebsiteId(d.Id(), "bucketName")
 	bucketLocation := parseWebsiteId(d.Id(), "bucketLocation")
 	instanceCRN := parseWebsiteId(d.Id(), "instanceCRN")
 	endpointType := parseWebsiteId(d.Id(), "endpointType")
-
 	d.Set("bucket_crn", bucketCRN)
 	d.Set("bucket_location", bucketLocation)
 	if endpointType != "" {
 		d.Set("endpoint_type", endpointType)
 	}
-
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
-
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	if err != nil {
 		return err
@@ -470,14 +432,12 @@ func resourceIBMCOSBucketWebsiteConfigurationRead(d *schema.ResourceData, meta i
 	getBucketWebsiteConfigurationInput := &s3.GetBucketWebsiteInput{
 		Bucket: aws.String(bucketName),
 	}
-
 	output, err := s3Client.GetBucketWebsite(getBucketWebsiteConfigurationInput)
 	var outputptr *s3.WebsiteConfiguration
 	outputptr = (*s3.WebsiteConfiguration)(output)
 	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
 		return err
 	}
-
 	if output != nil {
 		websiteConfiguration := flex.WebsiteConfigurationGet(outputptr)
 		if len(websiteConfiguration) > 0 {
@@ -487,7 +447,6 @@ func resourceIBMCOSBucketWebsiteConfigurationRead(d *schema.ResourceData, meta i
 		if websiteEndpoint != "" {
 			d.Set("website_endpoint", websiteEndpoint)
 		}
-
 	}
 	return nil
 }
@@ -497,12 +456,10 @@ func resourceIBMCOSBucketWebsiteConfigurationDelete(d *schema.ResourceData, meta
 	bucketLocation := parseWebsiteId(d.Id(), "bucketLocation")
 	instanceCRN := parseWebsiteId(d.Id(), "instanceCRN")
 	endpointType := parseWebsiteId(d.Id(), "endpointType")
-
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
-
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	if err != nil {
 		return err
@@ -538,7 +495,6 @@ func parseWebsiteId(id string, info string) string {
 	if info == "keyName" {
 		return strings.Split(meta, ":key:")[1]
 	}
-
 	return parseBucketId(bucketCRN, info)
 }
 
