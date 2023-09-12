@@ -584,6 +584,62 @@ func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 	return groups
 }
 
+func FlattenIcdGroupsV5(groupResponse *clouddatabasesv5.ListDeploymentScalingGroupsResponse) []map[string]interface{} {
+	groups := make([]map[string]interface{}, len(groupResponse.Groups))
+	for i, group := range groupResponse.Groups {
+		memorys := make([]map[string]interface{}, 1)
+		memory := make(map[string]interface{})
+		memory["units"] = group.Memory.Units
+		memory["allocation_mb"] = group.Memory.AllocationMb
+		memory["minimum_mb"] = group.Memory.MinimumMb
+		memory["step_size_mb"] = group.Memory.StepSizeMb
+		memory["is_adjustable"] = group.Memory.IsAdjustable
+		memory["can_scale_down"] = group.Memory.CanScaleDown
+		memorys[0] = memory
+
+		cpus := make([]map[string]interface{}, 1)
+		cpu := make(map[string]interface{})
+		cpu["units"] = group.CPU.Units
+		cpu["allocation_count"] = group.CPU.AllocationCount
+		cpu["minimum_count"] = group.CPU.MinimumCount
+		cpu["step_size_count"] = group.CPU.StepSizeCount
+		cpu["is_adjustable"] = group.CPU.IsAdjustable
+		cpu["can_scale_down"] = group.CPU.CanScaleDown
+		cpus[0] = cpu
+
+		disks := make([]map[string]interface{}, 1)
+		disk := make(map[string]interface{})
+		disk["units"] = group.Disk.Units
+		disk["allocation_mb"] = group.Disk.AllocationMb
+		disk["minimum_mb"] = group.Disk.MinimumMb
+		disk["step_size_mb"] = group.Disk.StepSizeMb
+		disk["is_adjustable"] = group.Disk.IsAdjustable
+		disk["can_scale_down"] = group.Disk.CanScaleDown
+		disks[0] = disk
+
+		hostflavors := make([]map[string]interface{}, 0)
+		if group.HostFlavor != nil {
+			hostflavors := make([]map[string]interface{}, 1)
+			hostflavor := make(map[string]interface{})
+			hostflavor["id"] = group.HostFlavor.ID
+			hostflavor["name"] = group.HostFlavor.Name
+			hostflavor["hosting_size"] = group.HostFlavor.HostingSize
+			hostflavors[0] = hostflavor
+		}
+
+		l := map[string]interface{}{
+			"group_id":    group.ID,
+			"count":       group.Count,
+			"memory":      memorys,
+			"cpu":         cpus,
+			"disk":        disks,
+			"host_flavor": hostflavors,
+		}
+		groups[i] = l
+	}
+	return groups
+}
+
 func NormalizeJSONString(jsonString interface{}) (string, error) {
 	var j interface{}
 	if jsonString == nil || jsonString.(string) == "" {
