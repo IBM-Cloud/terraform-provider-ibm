@@ -511,12 +511,43 @@ func resourceIbmSccProfileUpdate(context context.Context, d *schema.ResourceData
 	}
 
 	replaceProfileOptions := &securityandcompliancecenterapiv3.ReplaceProfileOptions{}
-
-	replaceProfileOptions.SetProfileID(d.Id())
-
 	hasChange := false
+	bodyModelMap := map[string]interface{}{}
+
+	if d.HasChange("controls") {
+		hasChange = true
+	}
+	if d.HasChange("default_parameters") {
+		hasChange = true
+	}
+	if d.HasChange("profile_name") {
+		hasChange = true
+	}
+	if d.HasChange("profile_description") {
+		hasChange = true
+	}
 
 	if hasChange {
+		if _, ok := d.GetOk("controls"); ok {
+			bodyModelMap["controls"] = d.Get("controls")
+		}
+		if _, ok := d.GetOk("default_parameters"); ok {
+			bodyModelMap["default_parameters"] = d.Get("default_parameters")
+		}
+		if _, ok := d.GetOk("profile_name"); ok {
+			bodyModelMap["profile_name"] = d.Get("profile_name")
+		}
+		if _, ok := d.GetOk("profile_description"); ok {
+			bodyModelMap["profile_description"] = d.Get("profile_description")
+		}
+
+		convertedModel, err := resourceIbmSccProfileMapToReplaceProfileOptions(bodyModelMap)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		replaceProfileOptions = convertedModel
+		replaceProfileOptions.SetProfileID(d.Id())
 		_, response, err := securityandcompliancecenterapiClient.ReplaceProfileWithContext(context, replaceProfileOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ReplaceProfileWithContext failed %s\n%s", err, response)
@@ -584,6 +615,34 @@ func resourceIbmSccProfileMapToDefaultParametersPrototype(modelMap map[string]in
 
 func resourceIbmSccProfileMapToProfilePrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.CreateProfileOptions, error) {
 	model := &securityandcompliancecenterapiv3.CreateProfileOptions{}
+	model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
+	model.ProfileDescription = core.StringPtr(modelMap["profile_description"].(string))
+	model.ProfileType = core.StringPtr(modelMap["profile_type"].(string))
+	controls := []securityandcompliancecenterapiv3.ProfileControlsPrototype{}
+	for _, controlsItem := range modelMap["controls"].([]interface{}) {
+		controlsItemModel, err := resourceIbmSccProfileMapToProfileControlsPrototype(controlsItem.(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		controls = append(controls, *controlsItemModel)
+	}
+	model.Controls = controls
+	defaultParameters := []securityandcompliancecenterapiv3.DefaultParametersPrototype{}
+	for _, defaultParametersItem := range modelMap["default_parameters"].([]interface{}) {
+		if defaultParametersItem != nil {
+			defaultParametersItemModel, err := resourceIbmSccProfileMapToDefaultParametersPrototype(defaultParametersItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			defaultParameters = append(defaultParameters, *defaultParametersItemModel)
+		}
+	}
+	model.DefaultParameters = defaultParameters
+	return model, nil
+}
+
+func resourceIbmSccProfileMapToReplaceProfileOptions(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ReplaceProfileOptions, error) {
+	model := &securityandcompliancecenterapiv3.ReplaceProfileOptions{}
 	model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
 	model.ProfileDescription = core.StringPtr(modelMap["profile_description"].(string))
 	model.ProfileType = core.StringPtr(modelMap["profile_type"].(string))
