@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_latest_reports"
 description: |-
   Get information about scc_latest_reports
-subcategory: "Results"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_latest_reports

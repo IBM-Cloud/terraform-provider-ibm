@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_provider_type_collection"
 description: |-
   Get information about scc_provider_type_collection
-subcategory: "Security and Compliance Center APIs"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_provider_type_collection

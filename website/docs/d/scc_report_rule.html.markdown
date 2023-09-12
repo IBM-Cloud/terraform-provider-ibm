@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_report_rule"
 description: |-
   Get information about scc_report_rule
-subcategory: "Results"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_report_rule

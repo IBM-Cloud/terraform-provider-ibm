@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_instance_settings"
 description: |-
   Manages scc_instance_settings.
-subcategory: "Admin"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_instance_settings

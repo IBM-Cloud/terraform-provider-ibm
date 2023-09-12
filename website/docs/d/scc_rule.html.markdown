@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_rule"
 description: |-
   Get information about scc_rule
-subcategory: "Config Manager"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_rule

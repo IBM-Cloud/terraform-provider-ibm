@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_control_library"
 description: |-
   Manages scc_control_library.
-subcategory: "securityandcompliancecenterapi"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_control_library
