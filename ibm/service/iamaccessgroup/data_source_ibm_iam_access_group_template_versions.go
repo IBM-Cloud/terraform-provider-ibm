@@ -222,11 +222,6 @@ func DataSourceIBMIAMAccessGroupTemplateVersions() *schema.Resource {
 																			Computed:    true,
 																			Description: "Action control for removing this enterprise-managed dynamic rule.",
 																		},
-																		"update": {
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Action control for updating this enterprise-managed dynamic rule.",
-																		},
 																	},
 																},
 															},
@@ -236,7 +231,7 @@ func DataSourceIBMIAMAccessGroupTemplateVersions() *schema.Resource {
 												"action_controls": {
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "Control whether or not access group administrators in child accounts can add, remove, and update dynamic rules for the enterprise-managed access group in their account. The inner level RuleActionControls override these `remove` and `update` action controls.",
+													Description: "Control whether or not access group administrators in child accounts can add and remove dynamic rules for the enterprise-managed access group in their account. The inner level RuleActionControls override these action controls.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"add": {
@@ -248,11 +243,6 @@ func DataSourceIBMIAMAccessGroupTemplateVersions() *schema.Resource {
 																Type:        schema.TypeBool,
 																Computed:    true,
 																Description: "Action control for removing enterprise-managed dynamic rules in an enterprise-managed access group.",
-															},
-															"update": {
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Action control for updating enterprise-managed dynamic rules in an enterprise-managed access group.",
 															},
 														},
 													},
@@ -552,9 +542,6 @@ func dataSourceIBMIAMAccessGroupTemplateVersionRuleActionControlsToMap(model *ia
 	if model.Remove != nil {
 		modelMap["remove"] = model.Remove
 	}
-	if model.Update != nil {
-		modelMap["update"] = model.Update
-	}
 	return modelMap, nil
 }
 
@@ -565,9 +552,6 @@ func dataSourceIBMIAMAccessGroupTemplateVersionAssertionsActionControlsToMap(mod
 	}
 	if model.Remove != nil {
 		modelMap["remove"] = model.Remove
-	}
-	if model.Update != nil {
-		modelMap["update"] = model.Update
 	}
 	return modelMap, nil
 }
