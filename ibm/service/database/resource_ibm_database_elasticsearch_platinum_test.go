@@ -358,7 +358,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 15360
-		plan_validation              = false
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -393,7 +392,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(database
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 6144
 		members_disk_allocation_mb   = 18432
-		plan_validation              = false
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -437,7 +435,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourc
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 18432
-		plan_validation              = false
 
 		timeouts {
 			create = "120m"
@@ -462,7 +459,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(database
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -502,7 +498,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 5120
         node_cpu_allocation_count    = 3
-		plan_validation              = false
 
 		users {
 		  name     = "user123"
@@ -540,7 +535,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
-		plan_validation              = false
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -585,7 +579,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseRes
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
-		plan_validation              = false
 
 		timeouts {
 			create = "120m"
@@ -614,7 +607,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseRe
 		node_memory_allocation_mb    = 1024
 		node_disk_allocation_mb      = 6144
         node_cpu_allocation_count    = 3
-		plan_validation              = false
 
 		timeouts {
 			create = "120m"
@@ -639,7 +631,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		plan_validation              = false
 
 		group {
 			group_id = "member"
@@ -689,7 +680,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -747,7 +737,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseRe
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -788,7 +777,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseR
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		plan_validation              = false
 
 		group {
 		  group_id = "member"
@@ -827,7 +815,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResource
 		service           = "databases-for-elasticsearch"
 		plan              = "platinum"
 		location          = "%[3]s"
-		plan_validation   = false
 
 		timeouts {
 			create = "120m"
