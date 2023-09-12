@@ -35,18 +35,82 @@ func ResourceIbmSccRule() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			// Deprecation list
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A human-readable alias to assign to your rule.",
+				Deprecated:  "name is now deprecated",
+			},
+			"rule_type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of rule. Rules that you create are `user_defined`.",
+				Deprecated:  "use type instead",
+			},
+			"creation_date": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the resource was created.",
+				Deprecated:  "use created_on instead",
+			},
+			"modification_date": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date the resource was last modified.",
+				Deprecated:  "use updated_on instead",
+			},
+			"modified_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier for the user or application that last modified the resource.",
+				Deprecated:  "use updated_by",
+			},
+			"enforcement_actions": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The actions that the service must run on your behalf when a request to create or modify the target resource does not comply with your conditions.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"action": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "To block a request from completing, use `disallow`.",
+						},
+					},
+				},
+				MaxItems:   1,
+				Deprecated: "enforcement_actions is now deprecated",
+			},
+			// End of Deprecation list
+			"account_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The account ID.",
+			},
+			"created_on": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the rule was created.",
+			},
+			"created_by": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The user who created the rule.",
+			},
 			"description": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_scc_rule", "description"),
 				Description:  "The details of a rule's response.",
 			},
-			"version": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_rule", "version"),
-				Description:  "The version number of a rule.",
+			// Manual Intervention
+			"etag": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The etag of the rule.",
 			},
+			// End Manual Intervention
 			"import": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -86,66 +150,11 @@ func ResourceIbmSccRule() *schema.Resource {
 					},
 				},
 			},
-			"target": {
+			"labels": {
 				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Required:    true,
-				Description: "The rule target.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"service_name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target service name.",
-						},
-						"service_display_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The display name of the target service.",
-							// Manual Intervention
-							DiffSuppressFunc: func(_, oldVal, newVal string, d *schema.ResourceData) bool {
-								if newVal == "" {
-									return true
-								}
-								if strings.ToLower(oldVal) == strings.ToLower(newVal) {
-									return true
-								}
-								return false
-							},
-							// End Manual Intervention
-						},
-						"resource_kind": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target resource kind.",
-						},
-						"additional_target_attributes": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The list of targets supported properties.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The additional target attribute name.",
-									},
-									"operator": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The operator.",
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The value.",
-									},
-								},
-							},
-						},
-					},
-				},
+				Optional:    true,
+				Description: "The list of labels.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"required_config": {
 				Type:        schema.TypeList,
@@ -352,21 +361,71 @@ func ResourceIbmSccRule() *schema.Resource {
 					},
 				},
 			},
-			"labels": {
+			"target": {
 				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The list of labels.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				MinItems:    1,
+				MaxItems:    1,
+				Required:    true,
+				Description: "The rule target.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"service_name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The target service name.",
+						},
+						"service_display_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The display name of the target service.",
+							// Manual Intervention
+							DiffSuppressFunc: func(_, oldVal, newVal string, d *schema.ResourceData) bool {
+								if newVal == "" {
+									return true
+								}
+								if strings.ToLower(oldVal) == strings.ToLower(newVal) {
+									return true
+								}
+								return false
+							},
+							// End Manual Intervention
+						},
+						"resource_kind": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The target resource kind.",
+						},
+						"additional_target_attributes": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "The list of targets supported properties.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The additional target attribute name.",
+									},
+									"operator": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The operator.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The value.",
+									},
+								},
+							},
+						},
+					},
+				},
 			},
-			"created_on": {
+			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date when the rule was created.",
-			},
-			"created_by": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The user who created the rule.",
+				Description: "The rule type (allowable values are `user_defined` or `system_defined`).",
 			},
 			"updated_on": {
 				Type:        schema.TypeString,
@@ -378,23 +437,12 @@ func ResourceIbmSccRule() *schema.Resource {
 				Computed:    true,
 				Description: "The user who modified the rule.",
 			},
-			"account_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The account ID.",
+			"version": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_scc_rule", "version"),
+				Description:  "The version number of a rule.",
 			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The rule type (allowable values are `user_defined` or `system_defined`).",
-			},
-			// Manual Intervention
-			"etag": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The etag of the rule.",
-			},
-			// End Manual Intervention
 		},
 	}
 }
@@ -511,6 +559,7 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
 		}
 	}
+
 	if !core.IsNil(rule.Import) {
 		importVarMap, err := resourceIbmSccRuleImportToMap(rule.Import)
 		if err != nil {
@@ -520,6 +569,7 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting import: %s", err))
 		}
 	}
+
 	targetMap, err := resourceIbmSccRuleTargetToMap(rule.Target)
 	if err != nil {
 		return diag.FromErr(err)

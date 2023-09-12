@@ -5,6 +5,7 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,9 +21,9 @@ func TestAccIbmSccReportRuleDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccReportRuleDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_rule.scc_report_rule", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_rule.scc_report_rule", "report_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_rule.scc_report_rule", "rule_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_rule.scc_report_rule_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_rule.scc_report_rule_instance", "report_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_rule.scc_report_rule_instance", "rule_id"),
 				),
 			},
 		},
@@ -30,10 +31,11 @@ func TestAccIbmSccReportRuleDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIbmSccReportRuleDataSourceConfigBasic() string {
+	report_id := os.Getenv("IBMCLOUD_SCC_REPORT_ID")
 	return fmt.Sprintf(`
 		data "ibm_scc_report_rule" "scc_report_rule_instance" {
-			report_id = "report_id"
-			rule_id = "rule-8d444f8c-fd1d-48de-bcaa-f43732568761"
+			report_id = "%s"
+			rule_id = "rule-f8722625-1968-4d7a-93cb-4b0f8da726da"
 		}
-	`)
+	`, report_id)
 }

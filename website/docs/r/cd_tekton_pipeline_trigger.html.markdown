@@ -19,14 +19,6 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" 
   max_concurrent_runs = 3
   name = "Manual Trigger"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
-  source {
-		type = "git"
-		properties {
-			url = "url"
-			branch = "branch"
-			pattern = "pattern"
-		}
-  }
   type = "manual"
   worker {
 		id = "public"

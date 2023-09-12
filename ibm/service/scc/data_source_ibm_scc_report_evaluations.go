@@ -290,6 +290,7 @@ func dataSourceIbmSccReportEvaluationsRead(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
+	log.Printf("[DEBUG] ReportEvaluationsPager %v:\n%s", pager, err)
 	allItems, err := pager.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] ReportEvaluationsPager.GetAll() failed %s", err)

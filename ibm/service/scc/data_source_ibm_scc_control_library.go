@@ -26,11 +26,6 @@ func DataSourceIbmSccControlLibrary() *schema.Resource {
 				Required:    true,
 				Description: "The control library ID.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The control library ID.",
-			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -295,10 +290,6 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getControlLibraryOptions.ControlLibrariesID))
-
-	if err = d.Set("id", controlLibrary.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 
 	if err = d.Set("account_id", controlLibrary.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
