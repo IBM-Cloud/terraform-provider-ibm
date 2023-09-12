@@ -8,7 +8,7 @@ subcategory: "Security and Compliance Center APIs"
 
 # ibm_scc_provider_type_instance
 
-Provides a read-only data source to retrieve information about a scc_provider_type_instance. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about a provider type instance from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -36,7 +36,7 @@ After your data source is created, you can read values from the following attrib
 * `attributes` - (List) The attributes for connecting to the provider type instance.
 Nested schema for **attributes**:
 
-* `created_at` - (String) Time at which resource was created.
+* `created_at` - (String) The time when the resource was created.
 
 * `name` - (String) The name of the provider type instance.
 
@@ -44,5 +44,5 @@ Nested schema for **attributes**:
 
 * `type` - (String) The type of the provider type.
 
-* `updated_at` - (String) Time at which resource was updated.
+* `updated_at` - (String) The time when the resource was updated.
 

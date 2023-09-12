@@ -8,7 +8,7 @@ subcategory: "Config Manager"
 
 # ibm_scc_rule
 
-Create, update, and delete scc_rules with this resource.
+Create, update, and delete rules with this resource.
 
 ## Example Usage
 

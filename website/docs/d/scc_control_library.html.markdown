@@ -8,7 +8,7 @@ subcategory: "securityandcompliancecenterapi"
 
 # ibm_scc_control_library
 
-Provides a read-only data source to retrieve information about a scc_control_library. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about a scc_control_library from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
@@ -66,7 +66,7 @@ Nested schema for **controls**:
 	  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 	* `control_parent` - (String) The parent control.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]*/`.
-	* `control_requirement` - (Boolean) Is this a control that can be automated or manually evaluated.
+	* `control_requirement` - (Boolean) The indication of whether a control can be automated or manually evaluated.
 	* `control_specifications` - (List) The control specifications.
 	  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 	Nested schema for **control_specifications**:

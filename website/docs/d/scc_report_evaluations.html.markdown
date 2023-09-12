@@ -8,7 +8,7 @@ subcategory: "Results"
 
 # ibm_scc_report_evaluations
 
-Provides a read-only data source to retrieve information about scc_report_evaluations. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieve information about report evaluations from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 

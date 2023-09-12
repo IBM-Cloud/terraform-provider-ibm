@@ -8,7 +8,7 @@ subcategory: "Security and Compliance Center APIs"
 
 # ibm_scc_provider_type_instance
 
-Create, update, and delete scc_provider_type_instances with this resource.
+Create, update, and delete provider type instances with this resource.
 
 ## Example Usage
 
@@ -35,10 +35,10 @@ Nested schema for **attributes**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the scc_provider_type_instance.
-* `created_at` - (String) Time at which resource was created.
+* `created_at` - (String) The time when resource was created.
 * `provider_type_instance_item_id` - (String) The unique identifier of the provider type instance.
 * `type` - (String) The type of the provider type.
-* `updated_at` - (String) Time at which resource was updated.
+* `updated_at` - (String) The time when resource was updated.
 
 
 ## Import

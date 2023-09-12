@@ -8,7 +8,7 @@ subcategory: "securityandcompliancecenterapi"
 
 # ibm_scc_profile
 
-Create, update, and delete scc_profiles with this resource.
+Create, update, and delete profiles with this resource.
 
 ## Example Usage
 
