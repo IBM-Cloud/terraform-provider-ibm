@@ -724,6 +724,12 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
+			// Security and Complaince Center(soon to be deprecated)
+			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
+			"ibm_scc_account_locations":             scc.DataSourceIBMSccAccountLocations(),
+			"ibm_scc_account_location_settings":     scc.DataSourceIBMSccAccountLocationSettings(),
+			"ibm_scc_account_notification_settings": scc.DataSourceIBMSccNotificationSettings(),
+
 			// Security and Compliance Center
 			"ibm_scc_instance_settings":        scc.DataSourceIbmSccInstanceSettings(),
 			"ibm_scc_control_library":          scc.DataSourceIbmSccControlLibrary(),
@@ -1231,6 +1237,12 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_target":   metricsrouter.ResourceIBMMetricsRouterTarget(),
 			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
 			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
+
+			// Security and Compliance Center(soon to be deprecated)
+			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
+			"ibm_scc_rule_attachment":     scc.ResourceIBMSccRuleAttachment(),
+			"ibm_scc_template":            scc.ResourceIBMSccTemplate(),
+			"ibm_scc_template_attachment": scc.ResourceIBMSccTemplateAttachment(),
 
 			// Security and Compliance Center
 			"ibm_scc_rule":                   scc.ResourceIbmSccRule(),

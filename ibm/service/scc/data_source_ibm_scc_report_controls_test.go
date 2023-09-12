@@ -5,6 +5,7 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,11 +18,11 @@ func TestAccIbmSccReportControlsDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSccReportControlsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_controls.scc_report_controls", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_controls.scc_report_controls", "report_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_controls.scc_report_controls_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_controls.scc_report_controls_instance", "report_id"),
 				),
 			},
 		},
@@ -29,15 +30,10 @@ func TestAccIbmSccReportControlsDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIbmSccReportControlsDataSourceConfigBasic() string {
+	report_id := os.Getenv("IBMCLOUD_SCC_REPORT_ID")
 	return fmt.Sprintf(`
 		data "ibm_scc_report_controls" "scc_report_controls_instance" {
-			report_id = "report_id"
-			control_id = "control_id"
-			control_name = "control_name"
-			control_description = "control_description"
-			control_category = "control_category"
-			status = "compliant"
-			sort = "control_name"
+			report_id = "%s"
 		}
-	`)
+	`, report_id)
 }

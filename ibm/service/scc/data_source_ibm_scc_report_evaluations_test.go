@@ -5,6 +5,7 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,9 +21,9 @@ func TestAccIbmSccReportEvaluationsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations", "report_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations", "first.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations_instance", "report_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations_instance", "evaluations.#"),
 				),
 			},
 		},
@@ -30,14 +31,10 @@ func TestAccIbmSccReportEvaluationsDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic() string {
+	report_id := os.Getenv("IBMCLOUD_SCC_REPORT_ID")
 	return fmt.Sprintf(`
 		data "ibm_scc_report_evaluations" "scc_report_evaluations_instance" {
-			report_id = "report_id"
-			assessment_id = "assessment_id"
-			component_id = "component_id"
-			target_id = "target_id"
-			target_name = "target_name"
-			status = "failure"
+			report_id = "%s"
 		}
-	`)
+	`, report_id)
 }

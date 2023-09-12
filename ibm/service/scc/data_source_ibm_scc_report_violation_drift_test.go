@@ -5,6 +5,7 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,8 +21,8 @@ func TestAccIbmSccReportViolationDriftDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccReportViolationDriftDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_violation_drift.scc_report_violation_drift", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_report_violation_drift.scc_report_violation_drift", "report_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_violation_drift.scc_report_violation_drift_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_report_violation_drift.scc_report_violation_drift_instance", "report_id"),
 				),
 			},
 		},
@@ -29,10 +30,10 @@ func TestAccIbmSccReportViolationDriftDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIbmSccReportViolationDriftDataSourceConfigBasic() string {
+	report_id := os.Getenv("IBMCLOUD_SCC_REPORT_ID")
 	return fmt.Sprintf(`
 		data "ibm_scc_report_violation_drift" "scc_report_violation_drift_instance" {
-			report_id = "report_id"
-			scan_time_duration = 0
+			report_id = "%s"
 		}
-	`)
+	`, report_id)
 }
