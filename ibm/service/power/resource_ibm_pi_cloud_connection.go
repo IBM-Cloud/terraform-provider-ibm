@@ -525,12 +525,12 @@ func resourceIBMPICloudConnectionDelete(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func retryCloudConnectionsVPC(ccVPCRetry func() error, operation string, errMsg error) (err error) {
+func retryCloudConnectionsVPC(ccVPCRetry func() error, operation string, errMsg error) error {
 	for count := 0; count < vpcRetryCount && errMsg != nil; count++ {
 		log.Printf("[DEBUG] unable to get vpc details for cloud connection: %v", errMsg)
 		time.Sleep(vpcRetryDuration)
 		log.Printf("[DEBUG] retrying cloud connection %s, retry #%v", operation, count+1)
-		err = ccVPCRetry()
+		errMsg = ccVPCRetry()
 	}
-	return
+	return errMsg
 }
