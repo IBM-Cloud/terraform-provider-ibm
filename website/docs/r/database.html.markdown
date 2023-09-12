@@ -157,6 +157,53 @@ output "ICD Etcd database connection string" {
 
 ```
 
+### Sample database instance by using `host_flavor` attribute
+An example to configure and deploy database by using `host_flavor` attribute.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "<your_database>" {
+  name              = "<your_database_name>"
+  plan              = "standard"
+  location          = "eu-gb"
+  service           = "databases-for-etcd"
+  resource_group_id = data.ibm_resource_group.group.id
+  tags              = ["tag1", "tag2"]
+
+  adminpassword                = "password12"
+
+  group {
+    group_id = "member"
+
+    host_flavor {
+      id = "b3c.8x32.encrypted"
+    }
+
+    disk {
+      allocation_mb = 256000
+    }
+  }
+
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+
+  allowlist {
+    address     = "172.168.1.1/32"
+    description = "desc"
+  }
+}
+
+output "ICD Etcd database connection string" {
+  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+}
+
+```
+
 ### Sample database instance by using `point_in_time_recovery`
 An example for configuring `point_in_time_recovery` time by using `ibm_database` resource.
 
@@ -660,6 +707,10 @@ Review the argument reference that you can specify for your resource.
     - `cpu` (Set, Optional)
       - Nested scheme for `cpu`:
         - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
+
+    - `host_flavor` (Set, Optional)
+      - Nested scheme for `host_flavor`:
+        - `id` - (Optional, String) Host flavor per-member. Examples: b3c.4x16.encrypted
 
 - `members_memory_allocation_mb` **Deprecated** - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
 - `members_disk_allocation_mb` **Deprecated** - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
