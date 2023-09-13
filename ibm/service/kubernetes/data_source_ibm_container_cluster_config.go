@@ -92,7 +92,6 @@ func DataSourceIBMContainerClusterConfig() *schema.Resource {
 				Description: "It can specify what kind of server URL will be used for the cluster context",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     false,
 			},
 			"config_file_path": {
 				Description: "The absolute path to the kubernetes config yml file ",
