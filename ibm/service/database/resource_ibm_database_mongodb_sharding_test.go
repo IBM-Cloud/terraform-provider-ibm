@@ -138,8 +138,8 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		}
 		users {
 		  name     = "user124"
-		  password = "password12password"
-		  type     = "database"
+		  password = "password$12password"
+		  type     = "ops_manager"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
