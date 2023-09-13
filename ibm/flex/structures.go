@@ -619,7 +619,7 @@ func FlattenIcdGroupsV5(groupResponse *clouddatabasesv5.ListDeploymentScalingGro
 
 		hostflavors := make([]map[string]interface{}, 0)
 		if group.HostFlavor != nil {
-			hostflavors := make([]map[string]interface{}, 1)
+			hostflavors = make([]map[string]interface{}, 1)
 			hostflavor := make(map[string]interface{})
 			hostflavor["id"] = group.HostFlavor.ID
 			hostflavor["name"] = group.HostFlavor.Name
