@@ -684,14 +684,14 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		ID: core.StringPtr(instance.ID),
 	}
 
-	groupsList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
+	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
 
-	d.Set("groups", flex.FlattenIcdGroupsV5(groupsList))
-	d.Set("members_memory_allocation_mb", groupsList.Groups[0].Memory.AllocationMb)
-	d.Set("members_disk_allocation_mb", groupsList.Groups[0].Disk.AllocationMb)
+	d.Set("groups", flex.FlattenIcdGroupsV5(groupList))
+	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
+	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
 	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
 		ID:      &instance.ID,
