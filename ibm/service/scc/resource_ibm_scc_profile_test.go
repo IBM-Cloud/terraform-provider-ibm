@@ -141,8 +141,6 @@ func testAccCheckIbmSccProfileConfigBasic(profileName string, profileDescription
 				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
-			default_parameters {
-			}
 		}
 
 	`, profileName, profileDescription, profileType)

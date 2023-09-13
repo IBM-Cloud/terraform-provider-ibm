@@ -368,6 +368,8 @@ func resourceIbmSccProfileCreate(context context.Context, d *schema.ResourceData
 	}
 	if _, ok := d.GetOk("default_parameters"); ok {
 		bodyModelMap["default_parameters"] = d.Get("default_parameters")
+	} else {
+		bodyModelMap["default_parameters"] = []interface{}{}
 	}
 	convertedModel, err := resourceIbmSccProfileMapToProfilePrototype(bodyModelMap)
 	if err != nil {
