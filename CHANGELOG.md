@@ -1,3 +1,66 @@
+# 1.57.0 (Sep 13, 2023)
+
+Features
+* Support IAM Trusted Profile
+    - **Resources**
+        - ibm_iam_trusted_profile_identity
+    - **Datasources**
+        - ibm_iam_trusted_profile_identity
+        - ibm_iam_trusted_profile_identities
+
+* Support IAM Identity Enterprise Templates 
+     - **Resources**
+        - ibm_iam_account_settings_template
+        - ibm_iam_trusted_profile_template
+        - ibm_iam_account_settings_template_assignment
+        - ibm_iam_account_settings_template_assignment
+    - **Datasources**
+        - ibm_iam_account_settings_template
+        - ibm_iam_trusted_profile_template
+        - ibm_iam_account_settings_template_assignment
+        - ibm_iam_trusted_profile_template_assignment
+
+* Support IAM Access Group Templates 
+    - **Resources**
+        - ibm_iam_access_group_template
+        - ibm_iam_access_group_template_version
+        - ibm_iam_access_group_template_assignment
+    - **Datasources**
+        - ibm_iam_access_group_template_versions
+        - ibm_iam_access_group_template_assignment
+    
+* Support IAM Policy Templates 
+    - **Resources**
+        - ibm_iam_policy_template
+        - ibm_iam_policy_template_version
+    - **Datasources**
+        - ibm_iam_policy_template
+        - ibm_iam_policy_template_version
+        - ibm_iam_policy_assignments
+        - ibm_iam_policy_assignment
+
+     
+Enhancements
+* Support `instance_crn` argument for ibm_cd_toolchain_tool_securitycompliance ([4746](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4746))
+* Remove `whitelist` argument for ibm_database ([4714](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4714))
+* Remove deprecated share target resource and data sources ([4739](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4739))
+* fix force_new to resource fields for ibm_iam_trusted_profile_identity ([4762](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4762))
+* CD Toolchain SCC tool param description update ([4753](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4753))
+* enhancement(File-share): GA Preview, beta SDK upgraded ([4770](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4770))
+* feat: support new target_account_contexts field in Catalog Management ([4773](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4773))
+* ODF Example Doc Update ([4757](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4757))
+* Feature(File-share-GA): Promoting File share from Beta to GA ([4759](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4759))
+* Share profile data source added with capacity and iops ([4789](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4789))
+* remove update from IAM Access Group Templates ([4796](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4796))
+
+BugFixes
+* Fix documentation of Secrets Manager private certificate resource ([4760](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4760))
+* Update iam_access_group_members.html.markdown ([4760](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4760))
+* fix(tekton): Trigger updates ([4731](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4731))
+* feat: Fixed TGW Route report update issue dependency: None ([4777](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4777))
+* DeleteVPNServerWithContext failure occurring when attempting to destroy ([4758](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4758))
+* fix(tekton): update trigger sample ([4787](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4787))
+
 # 1.57.0-beta0 (Sep 05, 2023)
 
 Features
@@ -20,15 +83,24 @@ Features
         - ibm_iam_account_settings_template_assignment
         - ibm_iam_trusted_profile_template_assignment
 
-* * Support IAM Access Group Templates 
+* Support IAM Access Group Templates 
     - **Resources**
         - ibm_iam_access_group_template
         - ibm_iam_access_group_template_version
         - ibm_iam_access_group_template_assignment
-
     - **Datasources**
         - ibm_iam_access_group_template_versions
         - ibm_iam_access_group_template_assignment
+    
+* Support IAM Policy Templates 
+    - **Resources**
+        - ibm_iam_policy_template
+        - ibm_iam_policy_template_version
+    - **Datasources**
+        - ibm_iam_policy_template
+        - ibm_iam_policy_template_version
+        - ibm_iam_policy_assignments
+        - ibm_iam_policy_assignment
 
      
 Enhancements
