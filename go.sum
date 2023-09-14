@@ -1192,8 +1192,6 @@ github.com/michaelklishin/rabbit-hole v0.0.0-20191008194146-93d9988f0cd5/go.mod 
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.15/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.41 h1:WMszZWJG0XmzbK9FEmzH2TVcqYzFesusSIB41b8KHxY=
-github.com/mihivagyok/bluemix-go v0.0.0-20230908132747-880981f4c25b h1:pEaN7CTx9EAckvc/Oga0bQpjMm/VEo+BsqPuSKkyyuY=
-github.com/mihivagyok/bluemix-go v0.0.0-20230908132747-880981f4c25b/go.mod h1:cO5KCpiop9eP/pM/5W07TprYUkv/kHtajW1FiZgE59k=
 github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3 h1:PHPBYVeLuR7/2XSOfVwDpW+70KNuxMWygsyOZSKK15Y=
 github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3/go.mod h1:jh28TRFZwBumf7OjMQbRb8TNtDuuX7QNAGRjFEt+h6I=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
