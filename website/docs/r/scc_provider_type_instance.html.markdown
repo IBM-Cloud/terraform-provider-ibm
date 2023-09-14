@@ -24,11 +24,9 @@ resource "ibm_scc_provider_type_instance" "scc_provider_type_instance_instance" 
 
 You can specify the following arguments for this resource.
 
-* `attributes` - (Required, List) The attributes for connecting to the provider type instance.
-Nested schema for **attributes**:
-* `name` - (Required, String) The name of the provider type instance.
-* `provider_type_id` - (Required, Forces new resource, String) The provider type ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `32` characters. The value must match regular expression `/^[a-zA-Z0-9 ,\\-_]+$/`.
+* `attributes` - (Required, Map) The attributes for connecting to the provider type instance.
+* `name` - (Required, String) The name for the provider_type instance
+* `provider_type_id` - (Required, String) The unique identifier of the provider type instance.
 
 ## Attribute Reference
 
@@ -36,7 +34,6 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the scc_provider_type_instance.
 * `created_at` - (String) The time when resource was created.
-* `provider_type_instance_item_id` - (String) The unique identifier of the provider type instance.
 * `type` - (String) The type of the provider type.
 * `updated_at` - (String) The time when resource was updated.
 

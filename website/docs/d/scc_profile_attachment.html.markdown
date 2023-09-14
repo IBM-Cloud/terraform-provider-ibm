@@ -15,7 +15,7 @@ Retrieve information about a profile attachment from a read-only data source. Th
 ```hcl
 data "ibm_scc_profile_attachment" "scc_profile_attachment" {
 	attachment_id = "attachment_id"
-	profiles_id = ibm_scc_profile_attachment.scc_profile_attachment.profiles_id
+	profile_id = ibm_scc_profile_attachment.scc_profile_attachment.profiles_id
 }
 ```
 
@@ -25,7 +25,7 @@ You can specify the following arguments for this data source.
 
 * `attachment_id` - (Required, Forces new resource, String) The attachment ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$|^$/`.
-* `profiles_id` - (Required, Forces new resource, String) The profile ID.
+* `profile_id` - (Required, Forces new resource, String) The profile ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 
 ## Attribute Reference

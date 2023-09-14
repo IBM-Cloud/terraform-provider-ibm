@@ -22,11 +22,6 @@ func DataSourceIbmSccLatestReports() *schema.Resource {
 		ReadContext: dataSourceIbmSccLatestReportsRead,
 
 		Schema: map[string]*schema.Schema{
-			"x_correlation_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"sort": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -310,9 +305,6 @@ func dataSourceIbmSccLatestReportsRead(context context.Context, d *schema.Resour
 
 	getLatestReportsOptions := &securityandcompliancecenterapiv3.GetLatestReportsOptions{}
 
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		getLatestReportsOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
 	if _, ok := d.GetOk("sort"); ok {
 		getLatestReportsOptions.SetSort(d.Get("sort").(string))
 	}

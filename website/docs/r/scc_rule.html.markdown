@@ -26,7 +26,6 @@ resource "ibm_scc_rule" "scc_rule_instance" {
   required_config {
 		description = "description"
 		and {
-			description = "description"
 			or {
 				description = "description"
 				property = "property"

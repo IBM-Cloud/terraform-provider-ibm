@@ -129,7 +129,7 @@ Nested schema for **controls**:
 	  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_,'"\\s\\-\\[\\]]+$/`. The maximum length is `512` items. The minimum length is `0` items.
 	* `status` - (Optional, String) The control status.
 	  * Constraints: Allowable values are: `enabled`, `disabled`.
-* `controls_count` - (Optional, Integer) The number of controls.
+
 * `latest` - (Optional, Boolean) The latest version of the control library.
 * `version_group_label` - (Optional, String) The version group label.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
@@ -138,6 +138,7 @@ Nested schema for **controls**:
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
+* `controls_count` - (Optional, Integer) The number of controls.
 * `id` - The unique identifier of the scc_control_library.
 * `account_id` - (String) The account ID.
   * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.

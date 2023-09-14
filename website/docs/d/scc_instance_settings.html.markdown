@@ -27,7 +27,7 @@ Nested schema for **event_notifications**:
 	* `instance_crn` - (String) The Event Notifications instance CRN.
 	* `source_id` - (String) The connected Security and Compliance Center instance CRN.
 	* `updated_on` - (String) The date when the Event Notifications connection was updated.
-* `object_storage` - (Optional, List) The Cloud Object Storage settings.
+* `object_storage` - (List) The Cloud Object Storage settings.
 Nested schema for **object_storage**:
 	* `bucket` - (String) The connected Cloud Object Storage bucket name.
 	* `bucket_endpoint` - (String) The connected Cloud Object Storage bucket endpoint.

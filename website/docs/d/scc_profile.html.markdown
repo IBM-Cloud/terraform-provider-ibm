@@ -14,7 +14,7 @@ Retrieve information about a profile from a read-only data source. Then, you can
 
 ```hcl
 data "ibm_scc_profile" "scc_profile" {
-	profiles_id = ibm_scc_profile.scc_profile_instance.profile_id
+	profile_id = ibm_scc_profile.scc_profile_instance.profile_id
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_scc_profile" "scc_profile" {
 
 You can specify the following arguments for this data source.
 
-* `profiles_id` - (Required, Forces new resource, String) The profile ID.
+* `profile_id` - (Required, Forces new resource, String) The profile ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 
 ## Attribute Reference

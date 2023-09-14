@@ -14,7 +14,7 @@ Retrieve information about a scc_control_library from a read-only data source. T
 
 ```hcl
 data "ibm_scc_control_library" "scc_control_library" {
-	control_libraries_id = ibm_scc_control_library.scc_control_library_instance.controlLibrary_id
+	control_library_id = ibm_scc_control_library.scc_control_library_instance.controlLibrary_id
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_scc_control_library" "scc_control_library" {
 
 You can specify the following arguments for this data source.
 
-* `control_libraries_id` - (Required, Forces new resource, String) The control library ID.
+* `control_library_id` - (Required, Forces new resource, String) The control library ID.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 
 ## Attribute Reference
