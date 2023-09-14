@@ -48,13 +48,13 @@ func testAccCheckIBMDatabaseDataSourceConfig2(name string) string {
 	resource "ibm_database" "db" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[1]s"
-		service           = "databases-for-postgresql"
+		service           = "databases-for-postgresql%[2]s"
 		plan              = "standard"
 		location          = "au-syd"
 		tags              = ["one:two"]
 	}
 
-				`, name)
+				`, name, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresql(name string) string {

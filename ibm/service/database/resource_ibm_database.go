@@ -50,6 +50,8 @@ const (
 	databaseTaskFailStatus     = "failed"
 )
 
+var IcdEnvSuffix string = os.Getenv("ICD_ENV_SUFFIX")
+
 type userChange struct {
 	Old, New map[string]interface{}
 }
@@ -936,7 +938,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-cassandra, databases-for-enterprisedb",
+			AllowedValues:              fmt.Sprintf("databases-for-etcd%[1]s, databases-for-postgresql%[1]s, databases-for-redis%[1]s, databases-for-elasticsearch%[1]s, databases-for-mongodb%[1]s, messages-for-rabbitmq%[1]s, databases-for-mysql%[1]s, databases-for-cassandra%[1]s, databases-for-enterprisedb%[1]s", IcdEnvSuffix),
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1044,12 +1046,15 @@ func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group,
 	}
 
 	var dbType string
-	if service == "databases-for-cassandra" {
-		dbType = "datastax_enterprise_full"
-	} else if strings.HasPrefix(service, "messages-for-") {
+	if strings.HasPrefix(service, "messages-for-") {
 		dbType = service[len("messages-for-"):]
 	} else {
 		dbType = service[len("databases-for-"):]
+	}
+	dbType = strings.TrimSuffix(dbType, IcdEnvSuffix)
+
+	if dbType == "cassandra" {
+		dbType = "datastax_enterprise_full"
 	}
 
 	groupDefaults, err := icdClient.Groups().GetDefaultGroups(dbType)
@@ -1203,10 +1208,10 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	service := diff.Get("service").(string)
 	planPhase := diff.Get("plan_validation").(bool)
 
-	if service == "databases-for-postgresql" ||
-		service == "databases-for-elasticsearch" ||
-		service == "databases-for-cassandra" ||
-		service == "databases-for-enterprisedb" {
+	if service == "databases-for-postgresql"+IcdEnvSuffix ||
+		service == "databases-for-elasticsearch"+IcdEnvSuffix ||
+		service == "databases-for-cassandra"+IcdEnvSuffix ||
+		service == "databases-for-enterprisedb"+IcdEnvSuffix {
 		if planPhase {
 			groupDefaults, err := getDatabaseServiceDefaults(service, meta)
 			if err != nil {
@@ -1265,7 +1270,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 
 	_, logicalReplicationSet := diff.GetOk("logical_replication_slot")
 
-	if service != "databases-for-postgresql" && logicalReplicationSet {
+	if service != "databases-for-postgresql"+IcdEnvSuffix && logicalReplicationSet {
 		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
 	}
 
@@ -1283,15 +1288,15 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
 
 		switch service {
-		case "databases-for-postgresql":
+		case "databases-for-postgresql" + IcdEnvSuffix:
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
-		case "databases-for-enterprisedb":
+		case "databases-for-enterprisedb" + IcdEnvSuffix:
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
-		case "databases-for-redis":
+		case "databases-for-redis" + IcdEnvSuffix:
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
-		case "databases-for-mysql":
+		case "databases-for-mysql" + IcdEnvSuffix:
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationMySQLConfiguration
-		case "messages-for-rabbitmq":
+		case "messages-for-rabbitmq" + IcdEnvSuffix:
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRabbitMqConfiguration
 		default:
 			return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
@@ -1746,7 +1751,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if _, ok := d.GetOk("logical_replication_slot"); ok {
 		service := d.Get("service").(string)
-		if service != "databases-for-postgresql" {
+		if service != "databases-for-postgresql"+IcdEnvSuffix {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
 		}
 
@@ -1963,7 +1968,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("connectionstrings", flex.FlattenConnectionStrings(connectionStrings))
 
-	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
+	if serviceOff == "databases-for-postgresql"+IcdEnvSuffix || serviceOff == "databases-for-redis"+IcdEnvSuffix || serviceOff == "databases-for-enterprisedb"+IcdEnvSuffix {
 		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database (%s) configuration schema : %s", icdId, err))
@@ -2387,7 +2392,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 	if d.HasChange("logical_replication_slot") {
 		service := d.Get("service").(string)
-		if service != "databases-for-postgresql" {
+		if service != "databases-for-postgresql"+IcdEnvSuffix {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
 		}
 
@@ -2512,23 +2517,23 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 	var cassandraConnection icdv4.CassandraUri
 
 	switch service {
-	case "databases-for-postgresql":
+	case "databases-for-postgresql" + IcdEnvSuffix:
 		dbConnection = connection.Postgres
-	case "databases-for-redis":
+	case "databases-for-redis" + IcdEnvSuffix:
 		dbConnection = connection.Rediss
-	case "databases-for-mongodb":
+	case "databases-for-mongodb" + IcdEnvSuffix:
 		dbConnection = connection.Mongo
-	case "databases-for-mysql":
+	case "databases-for-mysql" + IcdEnvSuffix:
 		dbConnection = connection.Mysql
-	case "databases-for-elasticsearch":
+	case "databases-for-elasticsearch" + IcdEnvSuffix:
 		dbConnection = connection.Https
-	case "databases-for-cassandra":
+	case "databases-for-cassandra" + IcdEnvSuffix:
 		cassandraConnection = connection.Secure
-	case "databases-for-etcd":
+	case "databases-for-etcd" + IcdEnvSuffix:
 		dbConnection = connection.Grpc
-	case "messages-for-rabbitmq":
+	case "messages-for-rabbitmq" + IcdEnvSuffix:
 		dbConnection = connection.Amqps
-	case "databases-for-enterprisedb":
+	case "databases-for-enterprisedb" + IcdEnvSuffix:
 		dbConnection = connection.Postgres
 	default:
 		return csEntry, fmt.Errorf("[ERROR] Unrecognised database type during connection string lookup: %s", service)
@@ -2648,7 +2653,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 				return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 			}
-			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, err)
+			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, cdbErr)
 		}
 		return nil
 	})

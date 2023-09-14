@@ -141,6 +141,7 @@ var IksClusterVpcID string
 var IksClusterSubnetID string
 var IksClusterResourceGroupID string
 var IcdDbRegion string
+var IcdEnvSuffix string
 var IcdDbDeploymentId string
 var IcdDbBackupId string
 var IcdDbTaskId string
@@ -817,6 +818,8 @@ func init() {
 		IcdDbRegion = "eu-gb"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_REGION for testing ibm_cloud_databases else it is set to default value 'eu-gb'")
 	}
+
+	IcdEnvSuffix = os.Getenv("ICD_ENV_SUFFIX")
 
 	IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
 	if IcdDbDeploymentId == "" {

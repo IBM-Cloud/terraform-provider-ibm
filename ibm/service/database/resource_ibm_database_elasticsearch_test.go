@@ -31,7 +31,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
@@ -50,7 +50,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
@@ -66,7 +66,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
@@ -81,7 +81,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
@@ -117,7 +117,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
@@ -139,7 +139,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
@@ -157,7 +157,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
@@ -174,7 +174,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "4"),
@@ -213,7 +213,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
@@ -235,7 +235,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
@@ -257,7 +257,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
@@ -278,7 +278,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Group(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "4"),
@@ -323,7 +323,7 @@ func TestAccIBMDatabaseInstanceElasticsearchImport(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
-					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-elasticsearch"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
 					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
 				),
@@ -351,7 +351,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -372,7 +372,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResourceGroup string, name string) string {
@@ -385,7 +385,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -415,7 +415,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup string, name string) string {
@@ -428,7 +428,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -441,7 +441,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResourceGroup string, name string) string {
@@ -454,7 +454,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResource
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -476,7 +476,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResource
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup string, name string) string {
@@ -489,7 +489,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -513,7 +513,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseResourceGroup string, name string) string {
@@ -526,7 +526,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -557,7 +557,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGroup string, name string) string {
@@ -570,7 +570,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -585,7 +585,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGroup string, name string) string {
@@ -598,7 +598,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -613,7 +613,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGroup string, name string) string {
@@ -626,7 +626,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -662,7 +662,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseResourceGroup string, name string) string {
@@ -675,7 +675,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -719,7 +719,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGroup string, name string) string {
@@ -732,7 +732,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGr
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -759,7 +759,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGr
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceGroup string, name string) string {
@@ -772,7 +772,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceG
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-elasticsearch"
+		service                      = "databases-for-elasticsearch%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -798,7 +798,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceG
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup string, name string) string {
@@ -811,7 +811,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup st
 	resource "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
-		service           = "databases-for-elasticsearch"
+		service           = "databases-for-elasticsearch%[4]s"
 		plan              = "standard"
 		location          = "%[3]s"
 
@@ -822,5 +822,5 @@ func testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup st
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }

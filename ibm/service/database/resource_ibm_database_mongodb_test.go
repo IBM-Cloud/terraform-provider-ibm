@@ -32,7 +32,7 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
@@ -51,7 +51,7 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
@@ -68,7 +68,7 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
@@ -107,7 +107,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
-					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-mongodb"+acc.IcdEnvSuffix),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
 					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
 				),
@@ -132,7 +132,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-mongodb"
+		service                      = "databases-for-mongodb%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -147,7 +147,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		  description = "desc1"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup string, name string) string {
@@ -159,7 +159,7 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-mongodb"
+		service                      = "databases-for-mongodb%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -182,7 +182,7 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		  description = "desc"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string, name string) string {
@@ -194,7 +194,7 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-mongodb"
+		service                      = "databases-for-mongodb%[4]s"
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
@@ -202,7 +202,7 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		members_disk_allocation_mb   = 30720
 	}
 	  
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
 
 func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, name string) string {
@@ -215,10 +215,10 @@ func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, 
 	resource "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
-		service           = "databases-for-mongodb"
+		service           = "databases-for-mongodb%[4]s"
 		plan              = "standard"
 		location          = "%[3]s"
 	}
 	  
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
 }
