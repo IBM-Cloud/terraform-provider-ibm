@@ -93,7 +93,7 @@ func DataSourceIBMCosBucketObject() *schema.Resource {
 			},
 			"website_redirect": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 		},
 	}

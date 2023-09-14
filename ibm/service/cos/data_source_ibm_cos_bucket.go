@@ -860,8 +860,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if outputBucketWebsite != nil {
-		println("output is not nil")
-		fmt.Println(outputBucketWebsiteptr)
 		websiteConfiguration := flex.WebsiteConfigurationGet(outputBucketWebsiteptr)
 		if len(websiteConfiguration) > 0 {
 			d.Set("website_configuration", websiteConfiguration)
