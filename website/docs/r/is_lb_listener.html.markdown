@@ -181,11 +181,12 @@ Review the argument references that you can specify for your resource.
 
 - `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, `https` and `udp`. Network load balancer supports only `tcp` and `udp` protocol.
 - `default_pool` - (Optional, String) The load balancer pool unique identifier.
-    ~> **NOTE**
-    - The specified pool must -
-      - Belong to this load balancer
-      - Have the  same protocol as this listener, or have a compatible protocol. At present, the compatible protocols are http and https.
-      - Not already be the default_pool for another listener 
+
+    ~> **The specified pool must**
+      </br>&#x2022; Belong to this load balancer
+      </br>&#x2022; Have the  same protocol as this listener, or have a compatible protocol. At present, the compatible protocols are http and https.
+      </br>&#x2022; Not already be the default_pool for another listener 
+
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 
   !> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
@@ -194,7 +195,7 @@ Review the argument references that you can specify for your resource.
 - `https_redirect_listener` - (Optional, String) ID of the listener that will be set as http redirect target.
 - `https_redirect_status_code` - (Optional, Integer) The HTTP status code to be returned in the redirect response, one of [301, 302, 303, 307, 308].
 - `https_redirect_uri` - (Optional, String) Target URI where traffic will be redirected.
-- `idle_connection_timeout` - (Optional, Integer) The idle connection timeout of the listener in seconds. This property will be present for load balancers in the `application` family. Default value is `50`.
+- `idle_connection_timeout` - (Optional, Integer) The idle connection timeout of the listener in seconds. Supported for load balancers in the `application` family. Default value is `50`, allowed value is between `50` - `7200`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

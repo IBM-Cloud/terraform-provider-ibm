@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmPrivateCertificateConfigurationTemplate() *schema.Resource {
@@ -326,11 +326,11 @@ func dataSourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(privateCertificateConfigurationTemplate.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(privateCertificateConfigurationTemplate.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(privateCertificateConfigurationTemplate.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(privateCertificateConfigurationTemplate.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

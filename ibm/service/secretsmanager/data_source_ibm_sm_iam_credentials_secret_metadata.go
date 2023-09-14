@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmIamCredentialsSecretMetadata() *schema.Resource {
@@ -209,7 +209,7 @@ func dataSourceIbmSmIamCredentialsSecretMetadataRead(context context.Context, d 
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(iAMCredentialsSecretMetadata.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(iAMCredentialsSecretMetadata.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -263,7 +263,7 @@ func dataSourceIbmSmIamCredentialsSecretMetadataRead(context context.Context, d 
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(iAMCredentialsSecretMetadata.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(iAMCredentialsSecretMetadata.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -303,7 +303,7 @@ func dataSourceIbmSmIamCredentialsSecretMetadataRead(context context.Context, d 
 		return diag.FromErr(fmt.Errorf("Error setting rotation %s", err))
 	}
 
-	if err = d.Set("next_rotation_date", flex.DateTimeToString(iAMCredentialsSecretMetadata.NextRotationDate)); err != nil {
+	if err = d.Set("next_rotation_date", DateTimeToRFC3339(iAMCredentialsSecretMetadata.NextRotationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 

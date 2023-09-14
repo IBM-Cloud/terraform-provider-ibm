@@ -251,6 +251,22 @@ resource "ibm_iam_service_policy" "policy" {
 }
 ```
 
+### Service Policy by using service_group_id resource attribute
+
+```terraform
+resource "ibm_iam_service_id" "service_id" {
+  name = "test"
+}
+
+resource "ibm_iam_service_policy" "policy" {
+  roles  = ["Service ID creator", "User API key creator", "Administrator"]
+  resource_attributes {
+    name     = "service_group_id"
+    operator = "stringEquals"
+    value    = "IAM"
+  }
+}
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -268,11 +284,12 @@ Review the argument references that you can specify for your resource.
   - `resource_type` - (Optional, String) The resource type of the policy definition.
   - `resource` - (Optional, String) The resource of the policy definition.
   - `resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
+  - `service_group_id` (Optional, String) The service group id of the policy definition. **Note** Attributes service, service_group_id are mutually exclusive.
   - `attributes` (Optional, Map)  A set of resource attributes in the format `name=value,name=value`. If you set this option, do not specify `account_management` and `resource_attributes` at the same time.
 - `resource_attributes` - (Optional, list) A nested block describing the resource of this policy. - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
 
   Nested scheme for `resource_attributes`:
-  - `name` - (Required, String) The name of an attribute. Supported values are `serviceName` , `serviceInstance` , `region` ,`resourceType` , `resource` , `resourceGroupId` and other service specific resource attributes.
+  - `name` - (Required, String) The name of an attribute. Supported values are `serviceName` , `serviceInstance` , `region` ,`resourceType` , `resource` , `resourceGroupId`, `service_group_id`, and other service specific resource attributes.
   - `value` - (Required, String) The value of an attribute.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`. **Note** Conflicts with `account_management` and `resources`.
 - `roles` - (Required, List) A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)

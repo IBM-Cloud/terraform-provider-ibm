@@ -17,7 +17,6 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMCosBucketObject() *schema.Resource {
@@ -81,19 +80,16 @@ func DataSourceIBMCosBucketObject() *schema.Resource {
 				Computed: true,
 			},
 			"object_lock_legal_hold_status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice(s3.ObjectLockLegalHoldStatus_Values(), false),
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"object_lock_mode": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice(s3.ObjectLockMode_Values(), false),
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"object_lock_retain_until_date": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.IsRFC3339Time,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -166,31 +162,14 @@ func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceDat
 
 		log.Printf("[INFO] Ignoring body of COS bucket (%s) object (%s) with Content-Type %q", bucketName, objectKey, contentType)
 	}
-	getObjectRetentionInput := new(s3.GetObjectRetentionInput)
-	getObjectRetentionInput.Bucket = aws.String(bucketName)
-	getObjectRetentionInput.Key = aws.String(objectKey)
-	response, err := s3Client.GetObjectRetention(getObjectRetentionInput)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed getting COS bucket (%s) object retention (%s): %w", bucketName, objectKey, err))
+	if out.ObjectLockMode != nil {
+		d.Set("object_lock_mode", out.ObjectLockMode)
 	}
-	objectretentionptr := response.Retention
-	if objectretentionptr != nil {
-		d.Set("object_lock_mode", *objectretentionptr.Mode)
-		retainuntildatestring := objectDatetoString(objectretentionptr.RetainUntilDate)
-		d.Set("object_lock_retain_until_date", retainuntildatestring)
-
+	if out.ObjectLockRetainUntilDate != nil {
+		d.Set("object_lock_retain_until_date", out.ObjectLockRetainUntilDate.Format(time.RFC1123))
 	}
-	getObjectLegalHoldInput := new(s3.GetObjectLegalHoldInput)
-	getObjectLegalHoldInput.Bucket = aws.String(bucketName)
-	getObjectLegalHoldInput.Key = aws.String(objectKey)
-	response1, err := s3Client.GetObjectLegalHold(getObjectLegalHoldInput)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed getting COS bucket (%s) object retention (%s): %w", bucketName, objectKey, err))
-	}
-	objectlegalholdptr := response1.LegalHold
-	if objectlegalholdptr != nil {
-		d.Set("object_lock_legal_hold_status", *objectlegalholdptr.Status)
-
+	if out.ObjectLockLegalHoldStatus != nil {
+		d.Set("object_lock_legal_hold_status", out.ObjectLockLegalHoldStatus)
 	}
 
 	objectID := getObjectId(bucketCRN, objectKey, bucketLocation)

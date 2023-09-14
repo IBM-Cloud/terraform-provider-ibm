@@ -35,8 +35,6 @@ Review the argument reference that you can specify for your data source.
 
 - `identifier` - (Optional, String) The ID of the subnet, This is required when `name` is not specified.
 - `name` - (Optional, String) The name of the subnet,  This is required when `identifier` is not specified.
-- `identifier` - (Optional, String) The ID of the subnet, This is required when name is not specified.
-- `name` - (Optional, String) The name of the subnet,  This is required when identifier is not specified.
 
 ## Attribute reference
 
@@ -81,9 +79,9 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for `vpc`:
 	- `crn` - (String) The CRN for this VPC.
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-		
+
 		Nested scheme for `deleted`:
-  		-`more_info` - (String) Link to documentation about deleted resources.
+		 - `more_info` - (String) Link to documentation about deleted resources.
 	- `href` - (String) The URL for this VPC.
 	- `id` - (String) The unique identifier for this VPC.
 	- `name` - (String) The unique user-defined name for this VPC.

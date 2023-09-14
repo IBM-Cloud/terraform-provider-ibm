@@ -104,57 +104,6 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMDatabaseInstancePostgresAllowlistMigration(t *testing.T) {
-	t.Parallel()
-	databaseResourceGroup := "default"
-	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
-	testName := rnd
-	name := "ibm_database." + testName
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresWhitelistDeprecated(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "20480"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "0"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
-					resource.TestCheckResourceAttr(name, "users.#", "1"),
-				),
-			},
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresAllowlistMigrated(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "20480"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "0"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
-					resource.TestCheckResourceAttr(name, "users.#", "1"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
@@ -292,6 +241,46 @@ func TestAccIBMDatabaseInstancePostgresImport(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstancePostgresPITR(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	var databaseInstanceTwo string
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	//serviceName := "test_acc"
+	pitrServiceName := serviceName + "-pitr"
+	resourceName := "ibm_database." + serviceName
+	pitrResource := "ibm_database." + pitrServiceName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(pitrResource, &databaseInstanceTwo),
+					resource.TestCheckResourceAttr(pitrResource, "name", pitrServiceName),
+					resource.TestCheckResourceAttr(pitrResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(pitrResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(pitrResource, "location", acc.IcdDbRegion),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -380,7 +369,6 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 }
 
 func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseID *string) resource.TestCheckFunc {
-
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -525,76 +513,6 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 			name = "wj321"
 			database_name = "ibmclouddb"
 			plugin_type = "wal2json"
-		}
-	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
-}
-
-func testAccCheckIBMDatabaseInstancePostgresWhitelistDeprecated(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		name = "%[1]s"
-	}
-
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-postgresql"
-		plan                         = "standard"
-		location                     = "%[3]s"
-		adminpassword                = "password12"
-		group {
-			group_id = "member"
-			memory {
-			  allocation_mb = 2048
-			}
-			disk {
-			  allocation_mb = 10240
-			}
-		}
-		tags                         = ["one:two"]
-		users {
-			name     = "user123"
-			password = "password12"
-		}
-		whitelist {
-			address     = "172.168.1.2/32"
-			description = "desc1"
-		}
-	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
-}
-
-func testAccCheckIBMDatabaseInstancePostgresAllowlistMigrated(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		name = "%[1]s"
-	}
-
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-postgresql"
-		plan                         = "standard"
-		location                     = "%[3]s"
-		adminpassword                = "password12"
-		group {
-			group_id = "member"
-			memory {
-			  allocation_mb = 2048
-			}
-			disk {
-			  allocation_mb = 10240
-			}
-		}
-		tags                         = ["one:two"]
-		users {
-			name     = "user123"
-			password = "password12"
-		}
-		allowlist {
-			address     = "172.168.1.3/32"
-			description = "desc2"
 		}
 	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
@@ -773,5 +691,49 @@ func testAccCheckIBMDatabaseInstancePostgresImport(databaseResourceGroup string,
 		plan              = "standard"
 		location          = "%[3]s"
 	  }
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[3]s"
+	}
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[3]s"
+	}
+
+	resource "ibm_database" "%[2]s-pitr" {
+		resource_group_id                     = data.ibm_resource_group.test_acc.id
+		name                                  = "%[2]s-pitr"
+		service                               = "databases-for-postgresql"
+		plan                                  = "standard"
+		location                              = "%[3]s"
+		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
+		point_in_time_recovery_time           = ""
+	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }

@@ -43,7 +43,7 @@ resource "ibm_is_ssh_key" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = "a7a0626c-f97e-4180-afbe-0331ec62f32a"
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
 
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -83,9 +83,8 @@ In addition to all argument references listed, you can access the following attr
 	  - `address` - (String) The globally unique IP address.
 	  - `crn` - (String) The CRN for this floating IP.
 	  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. 
-	     
-		 Nested scheme for `deleted`:
-		- `more_info` - (String) Link to documentation about deleted resources.
+			Nested scheme for `deleted`:
+			- `more_info` - (String) Link to documentation about deleted resources.
 	  - `href` - (String) The URL for this floating IP.
 	  - `id` - (String) The unique identifier for this floating IP.
 	  - `name` - (String) The unique user-defined name for this floating IP.

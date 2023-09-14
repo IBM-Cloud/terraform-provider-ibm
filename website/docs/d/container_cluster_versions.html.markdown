@@ -41,3 +41,5 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the cluster. 
 - `valid_kube_versions` - (String) The supported Kubernetes version in IBM Cloud Kubernetes Service clusters. 
 - `valid_openshift_versions` - (String) The supported OpenShift Container Platform version in Red Hat OpenShift on IBM Cloud clusters.
+- `default_kube_version` - (String) The default Kubernetes version in IBM Cloud Kubernetes Service clusters. 
+- `default_openshift_version` - (String) The default OpenShift Container Platform version in Red Hat OpenShift on IBM Cloud clusters.

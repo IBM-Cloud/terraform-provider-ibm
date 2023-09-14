@@ -693,7 +693,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceByCatalogOffering{
+	instanceproto := &vpcv1.InstanceTemplatePrototypeInstanceTemplateByCatalogOffering{
 		Zone: &vpcv1.ZoneIdentity{
 			Name: &zone,
 		},
@@ -1277,7 +1277,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volIdStr := vol[isInstanceTemplateVolAttVol].(string)
 
 			if volIdStr != "" {
-				volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeVolume{
+				volInterface.Volume = &vpcv1.VolumeAttachmentPrototypeVolumeVolumeIdentity{
 					ID: &volIdStr,
 				}
 			} else {

@@ -40,7 +40,9 @@ resource "ibm_is_bare_metal_server_action" "bms_action" {
 Review the argument references that you can specify for your resource. 
 
 
-- `action` - (Required, String) The type of action to perfrom on the  Bare metal server.[**start**, **stop**, **restart**]
+- `action` - (Required, String) The type of action to perfrom on the  Bare metal server.
+
+  -> **Supported Action** &#x2022; start </br>&#x2022; stop </br>&#x2022; restart
 - `bare_metal_server` - (Required, String) Bare metal server identifier. 
 - `stop_type` - (Optional, String) The type of stop for the `stop` action. [**soft**, **hard**]. By default its `hard`
 

@@ -1839,7 +1839,6 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	updateOfferingOptions.IfMatch = &ifMatch
 
 	hasChange := false
-	method := "replace"
 
 	// find kind and version index
 	var kindIndex int
@@ -1861,6 +1860,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	pathToVersion := fmt.Sprintf("/kinds/%d/versions/%d", kindIndex, versionIndex)
 
 	if _, ok := d.GetOk("tags"); ok {
+		var method string
 		if activeVersion.Tags == nil {
 			method = "add"
 		} else {
@@ -1876,6 +1876,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("configuration"); ok {
+		var method string
 		if activeVersion.Configuration == nil {
 			method = "add"
 		} else {
@@ -1895,6 +1896,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("iam_permissions"); ok {
+		var method string
 		if activeVersion.IamPermissions == nil {
 			method = "add"
 		} else {
@@ -1910,6 +1912,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("install"); ok {
+		var method string
 		if activeVersion.Install == nil {
 			method = "add"
 		} else {
@@ -1925,6 +1928,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("pre_install"); ok {
+		var method string
 		if activeVersion.PreInstall == nil {
 			method = "add"
 		} else {
@@ -1940,6 +1944,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("licenses"); ok {
+		var method string
 		if activeVersion.Licenses == nil {
 			method = "add"
 		} else {
@@ -1955,6 +1960,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("solution_info"); ok {
+		var method string
 		if activeVersion.SolutionInfo == nil {
 			method = "add"
 		} else {
@@ -1974,6 +1980,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("usage"); ok {
+		var method string
 		if activeVersion.Metadata["usage"] == nil {
 			method = "add"
 		} else {
@@ -1989,6 +1996,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if _, ok := d.GetOk("terraform_version"); ok {
+		var method string
 		if activeVersion.Metadata["terraform_version"] == nil {
 			method = "add"
 		} else {
@@ -2323,7 +2331,6 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 	updateOfferingOptions.IfMatch = &ifMatch
 
 	hasChange := false
-	method := "replace"
 
 	// find kind and version index
 	var kindIndex int
@@ -2345,6 +2352,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 	pathToVersion := fmt.Sprintf("/kinds/%d/versions/%d", kindIndex, versionIndex)
 
 	if d.HasChange("flavor") {
+		var method string
 		if activeVersion.Flavor == nil {
 			method = "add"
 		} else {
@@ -2360,6 +2368,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("tags") {
+		var method string
 		if activeVersion.Tags == nil {
 			method = "add"
 		} else {
@@ -2375,6 +2384,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("configuration") {
+		var method string
 		if activeVersion.Configuration == nil {
 			method = "add"
 		} else {
@@ -2394,6 +2404,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("iam_permissions") {
+		var method string
 		if activeVersion.IamPermissions == nil {
 			method = "add"
 		} else {
@@ -2409,6 +2420,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("install") {
+		var method string
 		if activeVersion.Install == nil {
 			method = "add"
 		} else {
@@ -2424,6 +2436,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("pre_install") {
+		var method string
 		if activeVersion.PreInstall == nil {
 			method = "add"
 		} else {
@@ -2439,6 +2452,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("licenses") {
+		var method string
 		if activeVersion.Licenses == nil {
 			method = "add"
 		} else {
@@ -2454,6 +2468,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("solution_info") {
+		var method string
 		if activeVersion.SolutionInfo == nil {
 			method = "add"
 		} else {
@@ -2473,6 +2488,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		hasChange = true
 	}
 	if d.HasChange("terraform_version") {
+		var method string
 		if activeVersion.Metadata["terraform_version"] == nil {
 			method = "add"
 		} else {
@@ -2842,7 +2858,7 @@ func resourceIBMCmVersionRenderTypeToMap(model *catalogmanagementv1.RenderType) 
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
 	}
 	if model.ConfigConstraints != nil {
-		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints.(map[string]interface{}))
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints)
 	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmVersionRenderTypeAssociationsToMap(model.Associations)
@@ -3253,8 +3269,8 @@ func resourceIBMCmVersionCostBreakdownToMap(model *catalogmanagementv1.CostBreak
 	if model.TotalHourlyCost != nil {
 		modelMap["total_hourly_cost"] = model.TotalHourlyCost
 	}
-	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_cost"] = model.TotalMonthlyCOst
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -3341,7 +3357,7 @@ func resourceIBMCmVersionCostSummaryToMap(model *catalogmanagementv1.CostSummary
 	return modelMap, nil
 }
 
-func resourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.Dependency) (map[string]interface{}, error) {
+func resourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.OfferingReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CatalogID != nil {
 		modelMap["catalog_id"] = model.CatalogID

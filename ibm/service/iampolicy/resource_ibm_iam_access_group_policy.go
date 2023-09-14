@@ -102,6 +102,12 @@ func ResourceIBMIAMAccessGroupPolicy() *schema.Resource {
 							Description: "Service type of the policy definition",
 						},
 
+						"service_group_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Service group id of the policy definition",
+						},
+
 						"attributes": {
 							Type:        schema.TypeMap,
 							Optional:    true,
@@ -429,7 +435,7 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
-	accessGroupPolicy := &iampolicymanagementv1.V2Policy{}
+	accessGroupPolicy := &iampolicymanagementv1.V2PolicyTemplateMetaData{}
 	res := &core.DetailedResponse{}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error

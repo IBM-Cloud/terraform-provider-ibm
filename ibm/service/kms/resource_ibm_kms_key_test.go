@@ -24,6 +24,7 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 	payload := "LqMWNtSi3Snr4gFNO0PsFFLFRNs57mSXCQE7O2oE+g0="
 	resourceName := "ibm_kms_key"
 	standard_key := true
+	customDescription := "i am a custom description"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -61,6 +62,13 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 				Config: testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, resourceName, keyName, cosInstanceName, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+				),
+			},
+			{
+				// Test Description in Root Key
+				Config: testAccCheckIBMKmsResourceConfigDescription(instanceName, resourceName, keyName, !standard_key, customDescription),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "description", customDescription),
 				),
 			},
 		},
@@ -163,6 +171,24 @@ func testAccCheckIBMKmsResourceConfig(instanceName, resource, KeyName string, st
 `, instanceName, resource, KeyName, standard_key)
 }
 
+func testAccCheckIBMKmsResourceConfigDescription(instanceName, resource, KeyName string, standard_key bool, description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "kms_instance" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+	  resource "%s" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "%s"
+		standard_key = %t
+		description = "%s"
+		force_delete = true
+	}
+`, instanceName, resource, KeyName, standard_key, description)
+}
+
 func testAccCheckIBMKmsResourceImportConfig(instanceName, resource, KeyName string, standard_key bool, payload string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "kms_instance" {
@@ -214,7 +240,7 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, resource, KeyN
 		resource_instance_id = ibm_resource_instance.cos_instance.id
 		region_location      = "us-south"
 		storage_class        = "smart"
-		key_protect          = ibm_kms_key.test.id
+		kms_key_crn          = ibm_kms_key.test.id
 	}
 `, instanceName, resource, KeyName, cosInstanceName, bucketName)
 }

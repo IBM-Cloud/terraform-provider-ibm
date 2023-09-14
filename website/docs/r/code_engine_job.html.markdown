@@ -117,3 +117,8 @@ The `name` property can be formed from `project_id`, and `name` in the following
 ```
 $ terraform import ibm_code_engine_job.code_engine_job <project_id>/<name>
 ```
+
+# Example
+```
+$ terraform import ibm_code_engine_job.code_engine_job "15314cc3-85b4-4338-903f-c28cdee6d005/my-job"
+```

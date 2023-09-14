@@ -34,6 +34,30 @@ func TestAccIBMISImageDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISImageDataSource_ilc(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageDataSourceConfigIlc(imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", imageName),
+					resource.TestCheckResourceAttrSet(resName, "os"),
+					resource.TestCheckResourceAttrSet(resName, "architecture"),
+					resource.TestCheckResourceAttrSet(resName, "visibility"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "created_at"),
+					resource.TestCheckResourceAttrSet(resName, "deprecation_at"),
+					resource.TestCheckResourceAttrSet(resName, "obsolescence_at"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISImageDataSource_catalog(t *testing.T) {
 	resName := "data.ibm_is_image.test1"
 	resName1 := "data.ibm_is_image.test1"
@@ -119,6 +143,19 @@ func testAccCheckIBMISImageDataSourceConfig(imageName string) string {
 		name = ibm_is_image.isExampleImage.name
 	}`, acc.Image_cos_url, imageName, acc.Image_operating_system)
 }
+
+func testAccCheckIBMISImageDataSourceConfigIlc(imageName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_image" "isExampleImage" {
+		href = "%s"
+		name = "%s"
+		operating_system = "%s"
+	}
+	data "ibm_is_image" "test1" {
+		name = ibm_is_image.isExampleImage.name
+	}`, acc.Image_cos_url, imageName, acc.Image_operating_system)
+}
+
 func testAccCheckIBMISCatalogImageDataSourceConfig() string {
 	return fmt.Sprintf(`
 	data "ibm_is_images" "test1" {

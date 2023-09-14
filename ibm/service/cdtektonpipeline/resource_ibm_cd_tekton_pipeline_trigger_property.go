@@ -48,12 +48,6 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "name"),
 				Description:  "Property name.",
 			},
-			"type": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "type"),
-				Description:  "Property type.",
-			},
 			"value": &schema.Schema{
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -67,11 +61,18 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Description: "Options for `single_select` property type. Only needed for `single_select` property type.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
+			"type": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "type"),
+				Description:  "Property type.",
+			},
 			"path": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
-				Description:  "A dot notation path for `integration` type properties only, to select a value from the tool integration. If left blank the full tool integration data will be used.",
+				Description:  "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -113,13 +114,6 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			MaxValueLength:             253,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "type",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "appconfig, integration, secure, single_select, text",
-		},
-		validate.ValidateSchema{
 			Identifier:                 "value",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -127,6 +121,13 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			Regexp:                     `^.*$`,
 			MinValueLength:             0,
 			MaxValueLength:             4096,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "appconfig, integration, secure, single_select, text",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "path",
@@ -217,9 +218,6 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 	if err = d.Set("name", triggerProperty.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if err = d.Set("type", triggerProperty.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
-	}
 	if !core.IsNil(triggerProperty.Value) {
 		if err = d.Set("value", triggerProperty.Value); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
@@ -229,6 +227,9 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 		if err = d.Set("enum", triggerProperty.Enum); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
 		}
+	}
+	if err = d.Set("type", triggerProperty.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
 	if !core.IsNil(triggerProperty.Path) {
 		if err = d.Set("path", triggerProperty.Path); err != nil {
@@ -278,8 +279,8 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 			" The resource must be re-created to update this property.", "name"))
 	}
 	if d.HasChange("type") {
-		replaceTektonPipelineTriggerPropertyOptions.SetType(d.Get("type").(string))
-		hasChange = true
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "type"))
 	}
 
 	if d.Get("type").(string) == "integration" {

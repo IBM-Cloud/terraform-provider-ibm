@@ -304,7 +304,7 @@ resource "ibm_cos_bucket" "hpcs-enabled" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
-  key_protect          = ibm_kms_key.key.id
+  kms_key_crn          = ibm_kms_key.key.id
 }
 
 //HPCS - UKO plan
@@ -314,7 +314,7 @@ resource "ibm_cos_bucket" "hpcs-uko-enabled" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
-  key_protect           = var.hpcs_uko_rootkeycrn
+  kms_key_crn           = var.hpcs_uko_rootkeycrn
 }
 resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
@@ -362,7 +362,7 @@ resource "ibm_cos_bucket" "cos_bucket_onerate" {
   storage_class         = var.onerate_storage_class
   }
   
-#COS objectlock
+#COS Object Lock
 
 resource "ibm_resource_instance" "cos_instance2" {
   name              = "cos-instance"

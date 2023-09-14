@@ -12,8 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmIamCredentialsConfiguration() *schema.Resource {
@@ -99,11 +98,11 @@ func dataSourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(iAMCredentialsConfiguration.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(iAMCredentialsConfiguration.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(iAMCredentialsConfiguration.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(iAMCredentialsConfiguration.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 

@@ -1385,6 +1385,7 @@ func GetV2PolicyCustomAttributes(r iampolicymanagementv1.V2PolicyResource) []iam
 		case "serviceType":
 		case "serviceName":
 		case "serviceInstance":
+		case "service_group_id":
 		default:
 			attributes = append(attributes, a)
 		}
@@ -1463,6 +1464,7 @@ func FlattenV2PolicyResource(resource iampolicymanagementv1.V2PolicyResource) []
 		"resource":             GetV2PolicyResourceAttribute("resource", resource),
 		"resource_group_id":    GetV2PolicyResourceAttribute("resourceGroupId", resource),
 		"service_type":         GetV2PolicyResourceAttribute("serviceType", resource),
+		"service_group_id":     GetV2PolicyResourceAttribute("service_group_id", resource),
 	}
 	customAttributes := GetV2PolicyCustomAttributes(resource)
 
@@ -1826,12 +1828,11 @@ func FlattenAllowlist(allowlist []clouddatabasesv5.AllowlistEntry) []map[string]
 	return entries
 }
 
-func ExpandPlatformOptions(platformOptions icdv4.PlatformOptions) []map[string]interface{} {
+func ExpandPlatformOptions(deployment clouddatabasesv5.Deployment) []map[string]interface{} {
 	pltOptions := make([]map[string]interface{}, 0, 1)
 	pltOption := make(map[string]interface{})
-	pltOption["key_protect_key_id"] = platformOptions.KeyProtectKey
-	pltOption["disk_encryption_key_crn"] = platformOptions.DiskENcryptionKeyCrn
-	pltOption["backup_encryption_key_crn"] = platformOptions.BackUpEncryptionKeyCrn
+	pltOption["disk_encryption_key_crn"] = deployment.PlatformOptions["disk_encryption_key_crn"]
+	pltOption["backup_encryption_key_crn"] = deployment.PlatformOptions["backup_encryption_key_crn"]
 	pltOptions = append(pltOptions, pltOption)
 	return pltOptions
 }
@@ -2628,7 +2629,7 @@ func ResourceSharesValidateHelper(diff *schema.ResourceDiff, sizeStr, profileStr
 		}
 	}
 
-	if profile != "custom-iops" {
+	if profile != "custom-iops" && profile != "dp2" {
 		if iops != 0 && diff.NewValueKnown(iopsStr) && diff.HasChange(iopsStr) {
 			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")
 		}
@@ -3222,6 +3223,22 @@ func FlattenNlbConfigs(nlbData []containerv2.NlbVPCListConfig) []map[string]inte
 	return nlbConfigList
 }
 
+func FlattenOpaqueSecret(fields containerv2.Fields) []map[string]interface{} {
+	flattenedOpaqueSecret := make([]map[string]interface{}, 0)
+
+	for _, field := range fields {
+		opaqueSecretField := map[string]interface{}{
+			"name":                   field.Name,
+			"crn":                    field.CRN,
+			"expires_on":             field.ExpiresOn,
+			"last_updated_timestamp": field.LastUpdatedTimestamp,
+		}
+		flattenedOpaqueSecret = append(flattenedOpaqueSecret, opaqueSecretField)
+	}
+
+	return flattenedOpaqueSecret
+}
+
 // flattenHostLabels ..
 func FlattenHostLabels(hostLabels []interface{}) map[string]string {
 	labels := make(map[string]string)
@@ -3404,7 +3421,7 @@ func GetRolesFromRoleNames(roleNames []string, roles []iampolicymanagementv1.Pol
 	return filteredRoles, nil
 }
 
-func MapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampolicymanagementv1.PolicyRole {
+func MapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleCollection) []iampolicymanagementv1.PolicyRole {
 	var policyRoles []iampolicymanagementv1.PolicyRole
 	for _, customRole := range roleList.CustomRoles {
 		newPolicyRole := iampolicymanagementv1.PolicyRole{
@@ -3446,7 +3463,7 @@ func MapRolesToPolicyRoles(roles []iampolicymanagementv1.Roles) []iampolicymanag
 	return policyRoles
 }
 
-func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2Policy, d *schema.ResourceData, meta interface{}) ([]string, error) {
+func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplateMetaData, d *schema.ResourceData, meta interface{}) ([]string, error) {
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return []string{}, err
@@ -3461,35 +3478,51 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2Policy, d *sc
 		return []string{}, err
 	}
 
-	var serviceToQuery string
-	var resourceType string
+	var (
+		serviceName    string
+		resourceType   string
+		serviceGroupID string
+	)
 
 	for _, a := range resourceAttributes {
 		if *a.Key == "serviceName" &&
 			(*a.Operator == "stringMatch" ||
 				*a.Operator == "stringEquals") {
-			serviceToQuery = a.Value.(string)
+			serviceName = a.Value.(string)
 		}
 		if *a.Key == "resourceType" &&
 			(*a.Operator == "stringMatch" ||
 				*a.Operator == "stringEquals") {
 			resourceType = a.Value.(string)
 		}
+		if *a.Key == "service_group_id" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			serviceGroupID = a.Value.(string)
+		}
+	}
+
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
 	}
 
 	var isAccountManagementPolicy bool
 	if accountManagement, ok := d.GetOk("account_management"); ok {
 		isAccountManagementPolicy = accountManagement.(bool)
 	}
-	if serviceToQuery == "" && // no specific service specified
+	if serviceName == "" && // no specific service specified
 		!isAccountManagementPolicy && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
 
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -3514,6 +3547,7 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 
 	var serviceName string
 	var resourceType string
+	var serviceGroupID string
 	resourceAttributes := []iampolicymanagementv1.ResourceAttribute{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -3526,6 +3560,18 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("service_group_id"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}
@@ -3615,6 +3661,9 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			if name == "serviceName" {
 				serviceName = value
 			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
@@ -3659,17 +3708,20 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 		return iampolicymanagementv1.CreatePolicyOptions{}, err
 	}
 
-	serviceToQuery := serviceName
-
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" { // service_group_id and service is mutually exclusive
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
-
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -3690,6 +3742,7 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 
 	var serviceName string
 	var resourceType string
+	var serviceGroupID string
 	resourceAttributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
 
 	if res, ok := d.GetOk("resources"); ok {
@@ -3702,6 +3755,18 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
 						Key:      core.StringPtr("serviceName"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_group_id"]; ok && r != nil {
+				serviceGroupID = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
+						Key:      core.StringPtr("service_group_id"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}
@@ -3791,6 +3856,9 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 			if name == "serviceName" {
 				serviceName = value
 			}
+			if name == "service_group_id" {
+				serviceGroupID = value
+			}
 			at := iampolicymanagementv1.V2PolicyResourceAttribute{
 				Key:      &name,
 				Value:    &value,
@@ -3835,17 +3903,23 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 		return iampolicymanagementv1.CreateV2PolicyOptions{}, err
 	}
 
-	serviceToQuery := serviceName
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		AccountID: &userDetails.UserAccount,
+	}
 
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
-		resourceType != "resource-group" { // not to a resource group
-		serviceToQuery = "alliamserviceroles"
+		resourceType != "resource-group" && // not to a resource group
+		serviceGroupID == "" {
+		listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 	}
 
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.UserAccount,
-		ServiceName: &serviceToQuery,
+	if serviceName != "" {
+		listRoleOptions.ServiceName = &serviceName
+	}
+
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
@@ -4143,4 +4217,20 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 
 	err = json.Unmarshal(data, &newMap) // Convert to a map
 	return
+}
+
+// This function takes two lists and returns the difference between the two lists
+// Listdifference([1,2] [2,3]) = [1]
+func Listdifference(a, b []string) []string {
+	mb := map[string]bool{}
+	for _, x := range b {
+		mb[x] = true
+	}
+	ab := []string{}
+	for _, x := range a {
+		if _, ok := mb[x]; !ok {
+			ab = append(ab, x)
+		}
+	}
+	return ab
 }

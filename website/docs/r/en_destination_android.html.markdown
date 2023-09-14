@@ -3,7 +3,7 @@ subcategory: 'Event Notifications'
 layout: 'ibm'
 page_title: 'IBM : ibm_en_destination_android'
 description: |-
-  Manages Event Notifications destinations.
+  Manages Event Notifications Android destination.
 ---
 
 # ibm_en_destination_android
@@ -20,8 +20,9 @@ resource "ibm_en_destination_android" "android_en_destination" {
   description   = "The Android Destination"
   config {
     params {
-      sender_id   = "5237288990"
-      server_key  = "36228ghutwervhudokmk"
+      project_id   = "5237288990"
+      private_key  = "36228ghutwervhudokmk"
+      client_email = "testuser123@gmail.com"
       pre_prod = false
     }
   }
@@ -49,8 +50,9 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `sender_id` - (String) Sender Id value for FCM project.
-  - `server_key` - (String) Server Key value for FCM project
+  - `project_id` - (String) Project Id value for FCM project.
+  - `private_key` - (String) Private Key value for FCM project
+  - `client_email` - (String) FCM client email address
   - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
 
 ## Attribute reference

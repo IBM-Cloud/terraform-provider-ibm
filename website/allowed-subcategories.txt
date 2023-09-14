@@ -3,7 +3,6 @@ API Gateway
 App ID Management
 App Configuration
 Catalog Management
-Certificate Manager
 Classic infrastructure
 Cloud Database
 Cloud Foundry
@@ -26,8 +25,10 @@ Identity & Access Management (IAM)
 Internet services
 Key Management Service
 Kubernetes Service
+Metrics Router
 Object Storage
 Power Systems
+Project
 Push Notifications
 Resource management
 Satellite

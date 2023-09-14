@@ -299,7 +299,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 		} else if *bms.Status == "running" {
 			log.Printf("[DEBUG] Stopping bare metal server (%s) to create a PCI network interface", bareMetalServerId)
 			stopType := "hard"
-			if d.Get(isBareMetalServerHardStop).(bool) {
+			if _, ok := d.GetOk(isBareMetalServerHardStop); ok && !d.Get(isBareMetalServerHardStop).(bool) {
 				stopType = "soft"
 			}
 			createstopaction := &vpcv1.StopBareMetalServerOptions{
@@ -958,6 +958,47 @@ func resourceIBMISBareMetalServerNetworkInterfaceUpdate(context context.Context,
 		return diag.FromErr(err)
 	}
 
+	if d.HasChange("security_groups") && !d.IsNewResource() {
+		ovs, nvs := d.GetChange("security_groups")
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+		remove := flex.ExpandStringList(ov.Difference(nv).List())
+		add := flex.ExpandStringList(nv.Difference(ov).List())
+		if len(add) > 0 {
+			for i := range add {
+				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &add[i],
+					ID:              &nicId,
+				}
+				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response))
+				}
+				_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
+		}
+		if len(remove) > 0 {
+			for i := range remove {
+				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &remove[i],
+					ID:              &nicId,
+				}
+				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for network interface of bare metal server %s\n%s: %q", remove[i], d.Id(), err, response))
+				}
+				_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	}
+
 	options := &vpcv1.UpdateBareMetalServerNetworkInterfaceOptions{
 		BareMetalServerID: &bareMetalServerId,
 		ID:                &nicId,
@@ -1160,7 +1201,7 @@ func isWaitForBareMetalServerNetworkInterfaceDeleted(bmsC *vpcv1.VpcV1, bareMeta
 	log.Printf("Waiting for (%s) / (%s) to be deleted.", bareMetalServerId, nicId)
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{isBareMetalServerNetworkInterfaceAvailable, isBareMetalServerNetworkInterfaceDeleting, isBareMetalServerNetworkInterfacePending},
-		Target:     []string{isBareMetalServerNetworkInterfaceDeleted, isBareMetalServerNetworkInterfaceVlanPending, isBareMetalServerNetworkInterfaceFailed, ""},
+		Target:     []string{isBareMetalServerNetworkInterfaceDeleted, isBareMetalServerNetworkInterfaceVlanPending, isBareMetalServerNetworkInterfaceFailed, isBareMetalServerNetworkInterfacePCIPending, ""},
 		Refresh:    isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC, bareMetalServerId, nicId, nicType, nicIntf),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -1187,6 +1228,18 @@ func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareM
 			}
 			if *bms.Status == "stopped" {
 				return bmsNic, isBareMetalServerNetworkInterfaceVlanPending, fmt.Errorf("[ERROR] Error deleting Bare Metal Server(%s) Network Interface (%s), server in stopped state ", bareMetalServerId, nicId)
+			}
+		}
+		if bmsNic != nil && nicType == "pci" {
+			getBmsOptions := &vpcv1.GetBareMetalServerOptions{
+				ID: &bareMetalServerId,
+			}
+			bms, response, err := bmsC.GetBareMetalServer(getBmsOptions)
+			if err != nil {
+				return bmsNic, isBareMetalServerNetworkInterfaceFailed, fmt.Errorf("[ERROR] Error getting Bare Metal Server(%s) : %s\n%s", bareMetalServerId, err, response)
+			}
+			if *bms.Status == "stopped" {
+				return bmsNic, isBareMetalServerNetworkInterfacePCIPending, nil
 			}
 		}
 		if err != nil {

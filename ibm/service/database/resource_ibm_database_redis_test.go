@@ -78,7 +78,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 				),
 			},
 		},
@@ -184,7 +184,11 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		}
 		configuration                = <<CONFIGURATION
 		{
-		  "maxmemory-policy": "allkeys-lru"
+		  "appendonly": "no",
+		  "maxmemory": 0,
+		  "maxmemory-policy": "noeviction",
+		  "maxmemory-samples": 5,
+		  "stop-writes-on-bgsave-error": "yes"
 		}
 		CONFIGURATION
 	  }

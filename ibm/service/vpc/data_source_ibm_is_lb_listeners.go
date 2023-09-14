@@ -286,6 +286,9 @@ func dataSourceLoadBalancerListenerCollectionListenersToMap(listenersItem vpcv1.
 	if listenersItem.ConnectionLimit != nil {
 		listenersMap["connection_limit"] = listenersItem.ConnectionLimit
 	}
+	if listenersItem.IdleConnectionTimeout != nil {
+		listenersMap[isLBListenerIdleConnectionTimeout] = listenersItem.IdleConnectionTimeout
+	}
 	if listenersItem.CreatedAt != nil {
 		listenersMap["created_at"] = listenersItem.CreatedAt.String()
 	}

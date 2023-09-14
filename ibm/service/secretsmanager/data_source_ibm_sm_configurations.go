@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmConfigurations() *schema.Resource {
@@ -76,6 +76,61 @@ func DataSourceIbmSmConfigurations() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date when a resource was recently modified. The date format follows RFC 3339.",
+						},
+						"lets_encrypt_environment": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The configuration of the Let's Encrypt CA environment.",
+						},
+						"lets_encrypt_preferred_chain": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Prefer the chain with an issuer matching this Subject Common Name.",
+						},
+						"common_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.",
+						},
+						"crl_distribution_points_encoded": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Determines whether to encode the certificate revocation list (CRL) distribution points in the certificates that are issued by this certificate authority.",
+						},
+						"expiration_date": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date a secret is expired. The date format follows RFC 3339.",
+						},
+						"key_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of private key to generate.",
+						},
+						"key_bits": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of bits to use to generate the private key.Allowable values for RSA keys are: `2048` and `4096`. Allowable values for EC keys are: `224`, `256`, `384`, and `521`. The default for RSA keys is `2048`. The default for EC keys is `256`.",
+						},
+						"status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of the certificate authority. The status of a root certificate authority is either `configured` or `expired`. For intermediate certificate authorities, possible statuses include `signing_required`,`signed_certificate_required`, `certificate_template_required`, `configured`, `expired` or `revoked`.",
+						},
+						"issuer": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The distinguished name that identifies the entity that signed and issued the certificate.",
+						},
+						"signing_method": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The signing method to use with this certificate authority to generate private certificates.You can choose between internal or externally signed options. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-intermediate-certificate-authorities).",
+						},
+						"certificate_authority": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the intermediate certificate authority.",
 						},
 					},
 				},
@@ -180,6 +235,39 @@ func dataSourceIbmSmConfigurationsConfigurationMetadataToMap(model secretsmanage
 		if model.UpdatedAt != nil {
 			modelMap["updated_at"] = model.UpdatedAt.String()
 		}
+		if model.LetsEncryptEnvironment != nil {
+			modelMap["lets_encrypt_environment"] = *model.LetsEncryptEnvironment
+		}
+		if model.LetsEncryptPreferredChain != nil {
+			modelMap["lets_encrypt_preferred_chain"] = *model.LetsEncryptPreferredChain
+		}
+		if model.CommonName != nil {
+			modelMap["common_name"] = *model.CommonName
+		}
+		if model.CrlDistributionPointsEncoded != nil {
+			modelMap["crl_distribution_points_encoded"] = *model.CrlDistributionPointsEncoded
+		}
+		if model.ExpirationDate != nil {
+			modelMap["expiration_date"] = model.ExpirationDate.String()
+		}
+		if model.KeyType != nil {
+			modelMap["key_type"] = *model.KeyType
+		}
+		if model.KeyBits != nil {
+			modelMap["key_bits"] = *model.KeyBits
+		}
+		if model.Status != nil {
+			modelMap["status"] = *model.Status
+		}
+		if model.Issuer != nil {
+			modelMap["issuer"] = *model.Issuer
+		}
+		if model.SigningMethod != nil {
+			modelMap["signing_method"] = *model.SigningMethod
+		}
+		if model.CertificateAuthority != nil {
+			modelMap["certificate_authority"] = *model.CertificateAuthority
+		}
 		return modelMap, nil
 	} else {
 		return nil, fmt.Errorf("Unrecognized secretsmanagerv2.ConfigurationMetadataIntf subtype encountered")
@@ -205,6 +293,30 @@ func dataSourceIbmSmConfigurationsPrivateCertificateConfigurationIntermediateCAM
 	}
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.CommonName != nil {
+		modelMap["common_name"] = *model.CommonName
+	}
+	if model.CrlDistributionPointsEncoded != nil {
+		modelMap["crl_distribution_points_encoded"] = *model.CrlDistributionPointsEncoded
+	}
+	if model.ExpirationDate != nil {
+		modelMap["expiration_date"] = model.ExpirationDate.String()
+	}
+	if model.KeyType != nil {
+		modelMap["key_type"] = *model.KeyType
+	}
+	if model.KeyBits != nil {
+		modelMap["key_bits"] = *model.KeyBits
+	}
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
+	}
+	if model.Issuer != nil {
+		modelMap["issuer"] = *model.Issuer
+	}
+	if model.SigningMethod != nil {
+		modelMap["signing_method"] = *model.SigningMethod
 	}
 	return modelMap, nil
 }
@@ -252,6 +364,24 @@ func dataSourceIbmSmConfigurationsPrivateCertificateConfigurationRootCAMetadataT
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
+	if model.CommonName != nil {
+		modelMap["common_name"] = *model.CommonName
+	}
+	if model.CrlDistributionPointsEncoded != nil {
+		modelMap["crl_distribution_points_encoded"] = *model.CrlDistributionPointsEncoded
+	}
+	if model.ExpirationDate != nil {
+		modelMap["expiration_date"] = model.ExpirationDate.String()
+	}
+	if model.KeyType != nil {
+		modelMap["key_type"] = *model.KeyType
+	}
+	if model.KeyBits != nil {
+		modelMap["key_bits"] = *model.KeyBits
+	}
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
+	}
 	return modelMap, nil
 }
 
@@ -298,6 +428,12 @@ func dataSourceIbmSmConfigurationsPublicCertificateConfigurationCALetsEncryptMet
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
+	if model.LetsEncryptEnvironment != nil {
+		modelMap["lets_encrypt_environment"] = *model.LetsEncryptEnvironment
+	}
+	if model.LetsEncryptPreferredChain != nil {
+		modelMap["lets_encrypt_preferred_chain"] = *model.LetsEncryptPreferredChain
+	}
 	return modelMap, nil
 }
 
@@ -343,6 +479,9 @@ func dataSourceIbmSmConfigurationsPrivateCertificateConfigurationTemplateMetadat
 	}
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.CertificateAuthority != nil {
+		modelMap["certificate_authority"] = *model.CertificateAuthority
 	}
 	return modelMap, nil
 }

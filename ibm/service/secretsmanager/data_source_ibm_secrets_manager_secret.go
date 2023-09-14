@@ -13,15 +13,15 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMSecretsManagerSecret() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSecretsManagerSecretRead,
-
+		ReadContext:        dataSourceIBMSecretsManagerSecretRead,
+		DeprecationMessage: "Data Source Removal: Data Source ibm_secrets_manager_secret is deprecated and will be removed. Use ibm_sm_<secret_type>_secret for managing secret of a specific type.",
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
 				Type:        schema.TypeString,

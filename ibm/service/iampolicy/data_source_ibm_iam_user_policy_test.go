@@ -96,6 +96,22 @@ func TestAccIBMIAMUserPolicyDataSource_Time_Based_Conditions_Custom(t *testing.T
 	})
 }
 
+func TestAccIBMIAMUserPolicyDataSource_ServiceGroupID(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyDataSourceServiceGroupID(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_iam_user_policy.policy", "policies.#"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMUserPolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 
@@ -218,6 +234,40 @@ func testAccCheckIBMIAMUserPolicyDataSourceTimeBasedCustom() string {
 		roles  = ["Viewer"]
 		resources {
 			service = "kms"
+		}
+		rule_conditions {
+			key = "{{environment.attributes.day_of_week}}"
+			operator = "dayOfWeekAnyOf"
+			value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeGreaterThanOrEquals"
+			value = ["09:00:00+00:00"]
+		}
+		rule_conditions {
+			key = "{{environment.attributes.current_time}}"
+			operator = "timeLessThanOrEquals"
+			value = ["17:00:00+00:00"]
+		}
+		rule_operator = "and"
+		pattern = "time-based-conditions:weekly:custom-hours"
+		}
+
+	data "ibm_iam_user_policy" "policy" {
+		ibm_id = ibm_iam_user_policy.policy.ibm_id
+	}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyDataSourceServiceGroupID() string {
+	return fmt.Sprintf(`
+
+	resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Service ID creator", "User API key creator"]
+		resources {
+			service_group_id = "IAM"
 		}
 		rule_conditions {
 			key = "{{environment.attributes.day_of_week}}"

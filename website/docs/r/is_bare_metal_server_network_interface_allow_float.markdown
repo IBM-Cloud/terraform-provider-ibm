@@ -116,7 +116,9 @@ In addition to the argument reference list, you can access the following attribu
 - `network_interface` - (String) The network interface id.
 - `port_speed` - (Integer) The network interface port speed in Mbps
 - `resource_type` - (String)The resource type [ **subnet_reserved_ip** ]
-- `status` - (String) The status of the network interface. Supported values are [ **available**, **deleting**, **failed**, **pending** ]
+- `status` - (String) The status of the network interface.
+
+  -> **Supported Status** &#x2022; available</br> &#x2022; deleting</br> &#x2022; failed</br> &#x2022; pending</br>
 - `type` - (String) The type of this bare metal server network interface. Supported values are [ **primary**, **secondary** ]
 
 

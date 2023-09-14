@@ -6,7 +6,7 @@ description: |-
   Get information about secrets manager secret
 ---
 
-# ibm_secrets_manager_secret
+# ibm_secrets_manager_secret (Deprecated)
 Retrieve information about the secrets manager secret data sources.  For more information, about getting started with secrets manager, see [about secrets manager](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-getting-started).
 
 ## Example usage

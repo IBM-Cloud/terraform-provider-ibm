@@ -14,7 +14,7 @@ Provides a resource for PrivateCertificateConfigurationRootCA. This allows Priva
 
 ```hcl
 resource "ibm_sm_private_certificate_configuration_root_ca" "private_certificate_root_CA" {
-  instance_id   = "6ebc4224-e983-496a-8a54-f40a0bfa9175"
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name          = "my_root_ca"
   common_name   = "ibm.com"
@@ -67,8 +67,6 @@ Review the argument reference that you can specify for your resource.
     * Constraints: The default value is `der`. Allowable values are: `der`, `pkcs8`.
 * `province` - (Optional, Forces new resource, List) The Province (ST) values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
-* `serial_number` - (Optional, Forces new resource, String) The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.
-    * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `street_address` - (Optional, Forces new resource, List) The street address values to define in the subject field of the resulting certificate.
     * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `10` items. The minimum length is `0` items.
 * `ttl` - (Optional, String) The requested time-to-live (TTL) for certificates that are created by this CA. This field's value cannot be longer than the `max_ttl` limit.The value can be supplied as a string representation of a duration in hours, for example '8760h'. In the API response, this value is returned in seconds (integer).
@@ -105,6 +103,8 @@ Nested scheme for **data**:
 * `max_ttl_seconds` - (Integer) The maximum time-to-live (TTL) for certificates that are created by this CA in seconds.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
   * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
+* `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.
+    * Constraints: The maximum length is `64` characters. The minimum length is `32` characters. The value must match regular expression `/[^a-fA-F0-9]/`.
 * `status` - (String) The status of the certificate authority. The status of a root certificate authority is either `configured` or `expired`. For intermediate certificate authorities, possible statuses include `signing_required`,`signed_certificate_required`, `certificate_template_required`, `configured`, `expired` or `revoked`.
   * Constraints: Allowable values are: `signing_required`, `signed_certificate_required`, `certificate_template_required`, `configured`, `expired`, `revoked`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.

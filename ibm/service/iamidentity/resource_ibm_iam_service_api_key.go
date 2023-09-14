@@ -229,7 +229,7 @@ func resourceIBMIAMServiceAPIKeyRead(d *schema.ResourceData, meta interface{}) e
 	if apiKey.AccountID != nil {
 		d.Set("account_id", *apiKey.AccountID)
 	}
-	if *apiKey.Apikey != "" {
+	if apiKey.Apikey != nil && *apiKey.Apikey != "" {
 		d.Set("apikey", *apiKey.Apikey)
 	}
 	if apiKey.CRN != nil {

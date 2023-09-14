@@ -14,7 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmEnRegistration() *schema.Resource {
@@ -29,18 +29,21 @@ func ResourceIbmSmEnRegistration() *schema.Resource {
 			"event_notifications_instance_crn": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_instance_crn"),
 				Description:  "A CRN that uniquely identifies an IBM Cloud resource.",
 			},
 			"event_notifications_source_name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_name"),
 				Description:  "The name that is displayed as a source that is in your Event Notifications instance.",
 			},
 			"event_notifications_source_description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_sm_en_registration", "event_notifications_source_description"),
 				Description:  "An optional description for the source  that is in your Event Notifications instance.",
 			},

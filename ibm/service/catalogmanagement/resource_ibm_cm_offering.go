@@ -3728,17 +3728,6 @@ func resourceIBMCmOfferingMapToKind(modelMap map[string]interface{}) (*catalogma
 		}
 		model.Versions = versions
 	}
-	if modelMap["plans"] != nil {
-		plans := []catalogmanagementv1.Plan{}
-		for _, plansItem := range modelMap["plans"].([]interface{}) {
-			plansItemModel, err := resourceIBMCmOfferingMapToPlan(plansItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			plans = append(plans, *plansItemModel)
-		}
-		model.Plans = plans
-	}
 	return model, nil
 }
 
@@ -4016,7 +4005,7 @@ func resourceIBMCmOfferingMapToRenderType(modelMap map[string]interface{}) (*cat
 		model.GroupingIndex = core.Int64Ptr(int64(modelMap["grouping_index"].(int)))
 	}
 	if modelMap["config_constraints"] != nil {
-		model.ConfigConstraints = modelMap["config_constraints"]
+		model.ConfigConstraints = modelMap["config_constraints"].(map[string]interface{})
 	}
 	if modelMap["associations"] != nil && len(modelMap["associations"].([]interface{})) > 0 {
 		AssociationsModel, err := resourceIBMCmOfferingMapToRenderTypeAssociations(modelMap["associations"].([]interface{})[0].(map[string]interface{}))
@@ -4271,7 +4260,7 @@ func resourceIBMCmOfferingMapToSolutionInfo(modelMap map[string]interface{}) (*c
 		model.CostEstimate = CostEstimateModel
 	}
 	if modelMap["dependencies"] != nil {
-		dependencies := []catalogmanagementv1.Dependency{}
+		dependencies := []catalogmanagementv1.OfferingReference{}
 		for _, dependenciesItem := range modelMap["dependencies"].([]interface{}) {
 			dependenciesItemModel, err := resourceIBMCmOfferingMapToDependency(dependenciesItem.(map[string]interface{}))
 			if err != nil {
@@ -4429,7 +4418,7 @@ func resourceIBMCmOfferingMapToCostBreakdown(modelMap map[string]interface{}) (*
 		model.TotalHourlyCost = core.StringPtr(modelMap["total_hourly_cost"].(string))
 	}
 	if modelMap["total_monthly_cost"] != nil && modelMap["total_monthly_cost"].(string) != "" {
-		model.TotalMonthlyCOst = core.StringPtr(modelMap["total_monthly_cost"].(string))
+		model.TotalMonthlyCost = core.StringPtr(modelMap["total_monthly_cost"].(string))
 	}
 	if modelMap["resources"] != nil {
 		resources := []catalogmanagementv1.CostResource{}
@@ -4516,8 +4505,8 @@ func resourceIBMCmOfferingMapToCostSummary(modelMap map[string]interface{}) (*ca
 	return model, nil
 }
 
-func resourceIBMCmOfferingMapToDependency(modelMap map[string]interface{}) (*catalogmanagementv1.Dependency, error) {
-	model := &catalogmanagementv1.Dependency{}
+func resourceIBMCmOfferingMapToDependency(modelMap map[string]interface{}) (*catalogmanagementv1.OfferingReference, error) {
+	model := &catalogmanagementv1.OfferingReference{}
 	if modelMap["catalog_id"] != nil && modelMap["catalog_id"].(string) != "" {
 		model.CatalogID = core.StringPtr(modelMap["catalog_id"].(string))
 	}
@@ -4536,94 +4525,6 @@ func resourceIBMCmOfferingMapToDependency(modelMap map[string]interface{}) (*cat
 			flavors = append(flavors, flavorsItem.(string))
 		}
 		model.Flavors = flavors
-	}
-	return model, nil
-}
-
-func resourceIBMCmOfferingMapToPlan(modelMap map[string]interface{}) (*catalogmanagementv1.Plan, error) {
-	model := &catalogmanagementv1.Plan{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["label"] != nil && modelMap["label"].(string) != "" {
-		model.Label = core.StringPtr(modelMap["label"].(string))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["short_description"] != nil && modelMap["short_description"].(string) != "" {
-		model.ShortDescription = core.StringPtr(modelMap["short_description"].(string))
-	}
-	if modelMap["long_description"] != nil && modelMap["long_description"].(string) != "" {
-		model.LongDescription = core.StringPtr(modelMap["long_description"].(string))
-	}
-	if modelMap["tags"] != nil {
-		tags := []string{}
-		for _, tagsItem := range modelMap["tags"].([]interface{}) {
-			tags = append(tags, tagsItem.(string))
-		}
-		model.Tags = tags
-	}
-	if modelMap["additional_features"] != nil {
-		additionalFeatures := []catalogmanagementv1.Feature{}
-		for _, additionalFeaturesItem := range modelMap["additional_features"].([]interface{}) {
-			additionalFeaturesItemModel, err := resourceIBMCmOfferingMapToFeature(additionalFeaturesItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			additionalFeatures = append(additionalFeatures, *additionalFeaturesItemModel)
-		}
-		model.AdditionalFeatures = additionalFeatures
-	}
-	if modelMap["created"] != nil {
-
-	}
-	if modelMap["updated"] != nil {
-
-	}
-	if modelMap["deployments"] != nil {
-		deployments := []catalogmanagementv1.Deployment{}
-		for _, deploymentsItem := range modelMap["deployments"].([]interface{}) {
-			deploymentsItemModel, err := resourceIBMCmOfferingMapToDeployment(deploymentsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			deployments = append(deployments, *deploymentsItemModel)
-		}
-		model.Deployments = deployments
-	}
-	return model, nil
-}
-
-func resourceIBMCmOfferingMapToDeployment(modelMap map[string]interface{}) (*catalogmanagementv1.Deployment, error) {
-	model := &catalogmanagementv1.Deployment{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["label"] != nil && modelMap["label"].(string) != "" {
-		model.Label = core.StringPtr(modelMap["label"].(string))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["short_description"] != nil && modelMap["short_description"].(string) != "" {
-		model.ShortDescription = core.StringPtr(modelMap["short_description"].(string))
-	}
-	if modelMap["long_description"] != nil && modelMap["long_description"].(string) != "" {
-		model.LongDescription = core.StringPtr(modelMap["long_description"].(string))
-	}
-	if modelMap["tags"] != nil {
-		tags := []string{}
-		for _, tagsItem := range modelMap["tags"].([]interface{}) {
-			tags = append(tags, tagsItem.(string))
-		}
-		model.Tags = tags
-	}
-	if modelMap["created"] != nil {
-
-	}
-	if modelMap["updated"] != nil {
-
 	}
 	return model, nil
 }
@@ -4933,17 +4834,6 @@ func resourceIBMCmOfferingKindToMap(model *catalogmanagementv1.Kind) (map[string
 		}
 		modelMap["versions"] = versions
 	}
-	if model.Plans != nil {
-		plans := []map[string]interface{}{}
-		for _, plansItem := range model.Plans {
-			plansItemMap, err := resourceIBMCmOfferingPlanToMap(&plansItem)
-			if err != nil {
-				return modelMap, err
-			}
-			plans = append(plans, plansItemMap)
-		}
-		modelMap["plans"] = plans
-	}
 	return modelMap, nil
 }
 
@@ -5237,7 +5127,7 @@ func resourceIBMCmOfferingRenderTypeToMap(model *catalogmanagementv1.RenderType)
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
 	}
 	if model.ConfigConstraints != nil {
-		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints.(map[string]interface{}))
+		modelMap["config_constraints"] = flex.Flatten(model.ConfigConstraints)
 	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmOfferingRenderTypeAssociationsToMap(model.Associations)
@@ -5637,8 +5527,8 @@ func resourceIBMCmOfferingCostBreakdownToMap(model *catalogmanagementv1.CostBrea
 	if model.TotalHourlyCost != nil {
 		modelMap["total_hourly_cost"] = model.TotalHourlyCost
 	}
-	if model.TotalMonthlyCOst != nil {
-		modelMap["total_monthly_cost"] = model.TotalMonthlyCOst
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
 	}
 	if model.Resources != nil {
 		resources := []map[string]interface{}{}
@@ -5725,7 +5615,7 @@ func resourceIBMCmOfferingCostSummaryToMap(model *catalogmanagementv1.CostSummar
 	return modelMap, nil
 }
 
-func resourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.Dependency) (map[string]interface{}, error) {
+func resourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.OfferingReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CatalogID != nil {
 		modelMap["catalog_id"] = model.CatalogID
@@ -5741,86 +5631,6 @@ func resourceIBMCmOfferingDependencyToMap(model *catalogmanagementv1.Dependency)
 	}
 	if model.Flavors != nil {
 		modelMap["flavors"] = model.Flavors
-	}
-	return modelMap, nil
-}
-
-func resourceIBMCmOfferingPlanToMap(model *catalogmanagementv1.Plan) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Label != nil {
-		modelMap["label"] = model.Label
-	}
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
-	if model.ShortDescription != nil {
-		modelMap["short_description"] = model.ShortDescription
-	}
-	if model.LongDescription != nil {
-		modelMap["long_description"] = model.LongDescription
-	}
-	if model.Tags != nil {
-		modelMap["tags"] = model.Tags
-	}
-	if model.AdditionalFeatures != nil {
-		additionalFeatures := []map[string]interface{}{}
-		for _, additionalFeaturesItem := range model.AdditionalFeatures {
-			additionalFeaturesItemMap, err := resourceIBMCmOfferingFeatureToMap(&additionalFeaturesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			additionalFeatures = append(additionalFeatures, additionalFeaturesItemMap)
-		}
-		modelMap["additional_features"] = additionalFeatures
-	}
-	if model.Created != nil {
-		modelMap["created"] = model.Created.String()
-	}
-	if model.Updated != nil {
-		modelMap["updated"] = model.Updated.String()
-	}
-	if model.Deployments != nil {
-		deployments := []map[string]interface{}{}
-		for _, deploymentsItem := range model.Deployments {
-			deploymentsItemMap, err := resourceIBMCmOfferingDeploymentToMap(&deploymentsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			deployments = append(deployments, deploymentsItemMap)
-		}
-		modelMap["deployments"] = deployments
-	}
-	return modelMap, nil
-}
-
-func resourceIBMCmOfferingDeploymentToMap(model *catalogmanagementv1.Deployment) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Label != nil {
-		modelMap["label"] = model.Label
-	}
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
-	if model.ShortDescription != nil {
-		modelMap["short_description"] = model.ShortDescription
-	}
-	if model.LongDescription != nil {
-		modelMap["long_description"] = model.LongDescription
-	}
-	if model.Tags != nil {
-		modelMap["tags"] = model.Tags
-	}
-	if model.Created != nil {
-		modelMap["created"] = model.Created.String()
-	}
-	if model.Updated != nil {
-		modelMap["updated"] = model.Updated.String()
 	}
 	return modelMap, nil
 }

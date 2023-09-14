@@ -110,6 +110,12 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 							Description: "Service type of the policy definition",
 						},
 
+						"service_group_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Service group id of the policy definition",
+						},
+
 						"attributes": {
 							Type:        schema.TypeMap,
 							Optional:    true,
@@ -454,7 +460,7 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 	}
 	profileIDUUID := parts[0]
 	trustedProfilePolicyID := parts[1]
-	trustedProfilePolicy := &iampolicymanagementv1.V2Policy{}
+	trustedProfilePolicy := &iampolicymanagementv1.V2PolicyTemplateMetaData{}
 	res := &core.DetailedResponse{}
 	getPolicyOptions := iamPolicyManagementClient.NewGetV2PolicyOptions(
 		trustedProfilePolicyID,

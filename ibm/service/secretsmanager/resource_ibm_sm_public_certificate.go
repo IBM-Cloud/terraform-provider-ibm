@@ -4,11 +4,19 @@
 package secretsmanager
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/client-v1"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v5/pkg/dns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"io/ioutil"
 	"log"
+	"reflect"
+	"sort"
 	"strings"
 	"time"
 
@@ -18,7 +26,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmPublicCertificate() *schema.Resource {
@@ -66,12 +74,13 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Description: "The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.",
 			},
 			"alt_names": &schema.Schema{
-				Type:        schema.TypeList,
-				ForceNew:    true,
-				Optional:    true,
-				Computed:    true,
-				Description: "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:             schema.TypeList,
+				ForceNew:         true,
+				Optional:         true,
+				Computed:         true,
+				Description:      "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: altNamesDiffSuppress,
 			},
 			"key_algorithm": &schema.Schema{
 				Type:        schema.TypeString,
@@ -111,7 +120,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.",
+							Description: "Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your certificate 31 days before it expires.",
 						},
 						"rotate_keys": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -135,6 +144,76 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Optional:    true,
 				Description: "The secret version metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"akamai": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "",
+				ForceNew:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"edgerc": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Akamai credentials",
+							MaxItems:    1,
+							ForceNew:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"path_to_edgerc": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Path to Akamai's configuration file.",
+										ForceNew:    true,
+									},
+									"config_section": &schema.Schema{
+										Description: "The section of the edgerc file to use for configuration.",
+										Optional:    true,
+										Type:        schema.TypeString,
+										Default:     "default",
+										ForceNew:    true,
+									},
+								},
+							},
+						},
+						"config": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Akamai credentials",
+							MaxItems:    1,
+							ForceNew:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+									"client_secret": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+									"access_token": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+									"client_token": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
@@ -292,12 +371,12 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"not_before": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 						"not_after": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The date-time format follows RFC 3339.",
 						},
 					},
@@ -323,7 +402,7 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(35 * time.Minute),
+			Create: schema.DefaultTimeout(37 * time.Minute),
 		},
 	}
 }
@@ -356,26 +435,30 @@ func resourceIbmSmPublicCertificateCreate(context context.Context, d *schema.Res
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
 	d.Set("secret_id", *secret.ID)
 
-	_, err = waitForIbmSmPublicCertificateCreate(secretsManagerClient, d)
+	if *secret.Dns == "manual" || *secret.Dns == "akamai" {
+		_, err = waitForIbmSmPublicCertificateCreate(secretsManagerClient, d, "", "pre_activation")
+	} else {
+		_, err = waitForIbmSmPublicCertificateCreate(secretsManagerClient, d, "pre_activation", "active")
+	}
+
 	if err != nil {
 		return diag.FromErr(fmt.Errorf(
-			"Error waiting for resource IbmSmPublicCertificate (%s) to be created: %s", d.Id(), err))
+			"error waiting for resource IbmSmPublicCertificate (%s) to be created: %s", d.Id(), err))
 	}
 
 	return resourceIbmSmPublicCertificateRead(context, d, meta)
 }
 
-func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
+func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData, pendingStatus string, targetStatus string) (interface{}, error) {
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
 	id := strings.Split(d.Id(), "/")
 	secretId := id[2]
 
 	getSecretOptions.SetID(secretId)
-
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pre_activation"},
-		Target:  []string{"active"},
+		Pending: []string{pendingStatus},
+		Target:  []string{targetStatus},
 		Refresh: func() (interface{}, string, error) {
 			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
 			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
@@ -442,7 +525,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(secret.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
@@ -469,7 +552,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(secret.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -479,7 +562,7 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 	if secret.IssuanceInfo != nil {
-		issuanceInfoMap, err := resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(secret.IssuanceInfo)
+		issuanceInfoMap, err := resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(secret.IssuanceInfo, d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -487,14 +570,17 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 			return diag.FromErr(fmt.Errorf("Error setting issuance_info: %s", err))
 		}
 	}
+
 	if err = d.Set("key_algorithm", secret.KeyAlgorithm); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting key_algorithm: %s", err))
 	}
 	if err = d.Set("ca", secret.Ca); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting ca: %s", err))
 	}
-	if err = d.Set("dns", secret.Dns); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
+	if d.Get("dns").(string) != "akamai" {
+		if err = d.Set("dns", secret.Dns); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting dns: %s", err))
+		}
 	}
 	if err = d.Set("bundle_certs", secret.BundleCerts); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting bundle_certs: %s", err))
@@ -521,12 +607,11 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 	if secret.AltNames != nil {
-		altNames := secret.AltNames[1:]
-		if err = d.Set("alt_names", altNames); err != nil {
+		if err = d.Set("alt_names", secret.AltNames); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
 		}
 	}
-	if err = d.Set("expiration_date", flex.DateTimeToString(secret.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if err = d.Set("issuer", secret.Issuer); err != nil {
@@ -535,14 +620,12 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	if err = d.Set("serial_number", secret.SerialNumber); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting serial_number: %s", err))
 	}
-	if secret.Validity != nil {
-		validityMap, err := resourceIbmSmPublicCertificateCertificateValidityToMap(secret.Validity)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("validity", []map[string]interface{}{validityMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting validity: %s", err))
-		}
+	validityMap, err := resourceIbmSmPublicCertificateCertificateValidityToMap(secret.Validity)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("validity", []map[string]interface{}{validityMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting validity: %s", err))
 	}
 	if err = d.Set("certificate", secret.Certificate); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting certificate: %s", err))
@@ -552,6 +635,13 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	}
 	if err = d.Set("private_key", secret.PrivateKey); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting private_key: %s", err))
+	}
+	if d.Get("dns").(string) == "akamai" && d.Get("state_description").(string) == "pre_activation" {
+		err := setChallengesWithAkamaiAndValidateManualDns(context, d, meta, secret, secretsManagerClient)
+		if err != nil {
+			return err
+		}
+		return resourceIbmSmPublicCertificateRead(context, d, meta)
 	}
 	return nil
 }
@@ -685,7 +775,11 @@ func resourceIbmSmPublicCertificateMapToSecretPrototype(d *schema.ResourceData) 
 		model.Ca = core.StringPtr(d.Get("ca").(string))
 	}
 	if _, ok := d.GetOk("dns"); ok {
-		model.Dns = core.StringPtr(d.Get("dns").(string))
+		if d.Get("dns").(string) == "akamai" {
+			model.Dns = core.StringPtr("manual")
+		} else {
+			model.Dns = core.StringPtr(d.Get("dns").(string))
+		}
 	}
 	if _, ok := d.GetOk("bundle_certs"); ok {
 		model.BundleCerts = core.BoolPtr(d.Get("bundle_certs").(bool))
@@ -767,7 +861,7 @@ func resourceIbmSmPublicCertificateRotationPolicyToMap(modelIntf secretsmanagerv
 	return modelMap, nil
 }
 
-func resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(model *secretsmanagerv2.CertificateIssuanceInfo) (map[string]interface{}, error) {
+func resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(model *secretsmanagerv2.CertificateIssuanceInfo, d *schema.ResourceData) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AutoRotated != nil {
 		modelMap["auto_rotated"] = model.AutoRotated
@@ -782,6 +876,10 @@ func resourceIbmSmPublicCertificateCertificateIssuanceInfoToMap(model *secretsma
 			challenges = append(challenges, challengesItemMap)
 		}
 		modelMap["challenges"] = challenges
+	} else {
+		if d.Get("dns").(string) == "manual" {
+			modelMap["challenges"] = d.Get("issuance_info").([]interface{})[0].(map[string]interface{})["challenges"]
+		}
 	}
 	if model.DnsChallengeValidationTime != nil {
 		modelMap["dns_challenge_validation_time"] = model.DnsChallengeValidationTime.String()
@@ -826,7 +924,319 @@ func resourceIbmSmPublicCertificateChallengeResourceToMap(model *secretsmanagerv
 
 func resourceIbmSmPublicCertificateCertificateValidityToMap(model *secretsmanagerv2.CertificateValidity) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["not_before"] = model.NotBefore.String()
-	modelMap["not_after"] = model.NotAfter.String()
+	if model == nil {
+		modelMap["not_before"] = ""
+		modelMap["not_after"] = ""
+	} else {
+		modelMap["not_before"] = model.NotBefore.String()
+		modelMap["not_after"] = model.NotAfter.String()
+	}
 	return modelMap, nil
+}
+
+func altNamesDiffSuppress(key, oldValue, newValue string, d *schema.ResourceData) bool {
+	lastDotIndex := strings.LastIndex(key, ".")
+	if lastDotIndex != -1 {
+		key = key[:lastDotIndex]
+	}
+
+	oldData, newData := d.GetChange(key)
+	if oldData == nil || newData == nil {
+		return false
+	}
+
+	oldAltNames, _ := ConcreteListToStringSlice(oldData.([]any), d.Get("common_name").(string))
+	newAltNames, _ := ConcreteListToStringSlice(newData.([]any), d.Get("common_name").(string))
+
+	sort.Strings(oldAltNames)
+	sort.Strings(newAltNames)
+
+	return reflect.DeepEqual(oldAltNames, newAltNames)
+}
+
+func ConcreteListToStringSlice(elements []interface{}, commonName string) ([]string, error) {
+	// Create a new slice of strings with the same length as the input slice
+	output := make([]string, len(elements))
+	commonNameIndex := -1
+
+	// Iterate over the input slice and cast each element to a string
+	for i, elem := range elements {
+		// Make sure the element is castable to string
+		str, ok := elem.(string)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast element %d to type []string", i)
+		}
+		if str == commonName {
+			commonNameIndex = i
+		}
+		// Store the string in the output slice
+		output[i] = str
+	}
+
+	if commonNameIndex != -1 {
+		tempLst := append([]string{}, output[:commonNameIndex]...)
+		output = append(tempLst, output[commonNameIndex+1:]...)
+	}
+
+	return output, nil
+}
+
+func setChallengesWithAkamaiAndValidateManualDns(context context.Context, d *schema.ResourceData, meta interface{}, secret *secretsmanagerv2.PublicCertificate, secretsManagerClient *secretsmanagerv2.SecretsManagerV2) diag.Diagnostics {
+	config, err := configureAkamai(d)
+	if err != nil {
+		resourceIbmSmPublicCertificateDelete(context, d, meta)
+		return err
+	}
+
+	successfullySetChallengeDomains := make(map[string]string)
+	ttl := 120
+
+	domains := []string{d.Get("common_name").(string)}
+	if secret.AltNames != nil {
+		domains = append(domains, secret.AltNames...)
+	}
+
+	for _, domainItem := range domains {
+		domainForTxtRecordName := domainItem
+		if domainItem[0] == '*' {
+			domainForTxtRecordName = domainItem[2:]
+		}
+
+		txtRecordName := "_acme-challenge." + domainForTxtRecordName + "."
+
+		txtRecordValuesChallenges, err := findAllTxtRecordValuesForDomain(domainItem, txtRecordName, secret, successfullySetChallengeDomains) // get txtRecordValues from our challenges
+		if err != nil {
+			resourceIbmSmPublicCertificateDelete(context, d, meta)
+			return err
+		}
+
+		if len(txtRecordValuesChallenges) > 0 { // if we had not created already a dns record set for this txtRecordName (domain)
+			zone, err := getZone(domainForTxtRecordName, domainItem, config)
+			if err != nil {
+				resourceIbmSmPublicCertificateDelete(context, d, meta)
+				return err
+			}
+
+			txtRecordValuesAkamai, err := checkIfRecordExistsInAkamai(config, zone, txtRecordName) // get txtRecordValues from akamai
+			if err != nil {
+				resourceIbmSmPublicCertificateDelete(context, d, meta)
+				return err
+			}
+
+			if len(txtRecordValuesAkamai) > 0 {
+				txtRecordValuesToAdd := findTxtRecordValuesDifferences(txtRecordValuesAkamai, txtRecordValuesChallenges)
+				if len(txtRecordValuesToAdd) > 0 {
+					// there are already some txtRecordValues stored in akamai (len(txtRecordValuesAkamai > 0)) AND
+					// there are *new* txtRecordValues in the challenges (len(txtRecordValuesToAdd) > 0) --> need to update
+					// UPDATE
+					txtRecordValuesAkamaiUpdated := append(txtRecordValuesAkamai, txtRecordValuesToAdd...)
+					err := createOrUpdateAkamaiChallengeRecordSet(config, zone, txtRecordName, ttl, txtRecordValuesAkamaiUpdated, "PUT")
+					//err := createOrUpdateAkamaiChallengeRecordSet(config, zone, txtRecordName, ttl, txtRecordValuesToAdd, "PUT")
+					if err != nil {
+						resourceIbmSmPublicCertificateDelete(context, d, meta)
+						return err
+					}
+				}
+			} else {
+				// there is no txtRecordValues in akamai --> need to create
+				// CREATE
+				err := createOrUpdateAkamaiChallengeRecordSet(config, zone, txtRecordName, ttl, txtRecordValuesChallenges, "POST")
+				if err != nil {
+					resourceIbmSmPublicCertificateDelete(context, d, meta)
+					return err
+				}
+			}
+		}
+
+	}
+
+	for _, challengeItem := range secret.IssuanceInfo.Challenges {
+		if _, exists := successfullySetChallengeDomains[*challengeItem.TxtRecordValue]; !exists {
+			resourceIbmSmPublicCertificateDelete(context, d, meta)
+			return diag.FromErr(fmt.Errorf("error: a dns record set in Akamai was not created for domain: %s", *challengeItem.Domain))
+		}
+	}
+
+	return validateManualDns(context, d, secretsManagerClient)
+}
+
+func configureAkamai(d *schema.ResourceData) (edgegrid.Config, diag.Diagnostics) {
+	var config edgegrid.Config
+	var err error
+	defaultErrMsg := "error configuring Akamai: One or more arguments are missing. Please verify that you provided either a path to your 'edgerc' file or all the config parameters ('host', 'client_secret', 'access_token' and 'client_token')"
+
+	if len(d.Get("akamai").([]interface{})) == 0 || d.Get("akamai").([]interface{})[0] == nil {
+		return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+	}
+	akamaiData := d.Get("akamai").([]interface{})[0].(map[string]interface{})
+
+	if len(akamaiData["edgerc"].([]interface{})) > 0 {
+		edgercData := akamaiData["edgerc"].([]interface{})[0].(map[string]interface{})
+		edgerc := edgercData["path_to_edgerc"].(string)
+		if edgerc == "" {
+			return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+		}
+		configSection := edgercData["config_section"].(string)
+		config, err = edgegrid.InitEdgeRc(edgerc, configSection)
+		if err != nil {
+			return config, diag.FromErr(fmt.Errorf("error initiating edgerc: %s", err))
+		}
+	} else if len(akamaiData["config"].([]interface{})) > 0 && akamaiData["config"].([]interface{})[0] != nil {
+		akamaiDataConfig := akamaiData["config"].([]interface{})[0].(map[string]interface{})
+		if akamaiDataConfig["host"] != "" && akamaiDataConfig["client_secret"] != "" && akamaiDataConfig["access_token"] != "" && akamaiDataConfig["client_token"] != "" {
+			config.ClientSecret = akamaiDataConfig["client_secret"].(string)
+			config.Host = akamaiDataConfig["host"].(string)
+			config.AccessToken = akamaiDataConfig["access_token"].(string)
+			config.ClientToken = akamaiDataConfig["client_token"].(string)
+			if config.MaxBody == 0 {
+				config.MaxBody = 131072
+			}
+		} else {
+			return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+		}
+	} else {
+		return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+	}
+
+	return config, nil
+
+}
+
+func checkIfRecordExistsInAkamai(config edgegrid.Config, zone string, txtRecordName string) ([]string, diag.Diagnostics) {
+	req, err := client.NewRequest(config, "GET", fmt.Sprintf("/config-dns/v2/zones/%s/names/%s/types/TXT", zone, txtRecordName), nil)
+	if err != nil {
+		return nil, diag.FromErr(fmt.Errorf("error creating akamai 'GET' request: %s", err))
+	}
+	res, err := client.Do(config, req)
+	if err != nil {
+		return nil, diag.FromErr(fmt.Errorf("error in performing akamai 'GET' request: %s", err))
+	}
+	if res.StatusCode == 404 { // there is no record set, we need to create one
+		return nil, nil
+	} else if res.StatusCode == 200 {
+		var recordData dns.RecordBody
+
+		err := json.NewDecoder(res.Body).Decode(&recordData)
+		if err != nil {
+			diag.FromErr(fmt.Errorf("error in performing akamai 'GET' request: error in decoding JSON: %s", err))
+		}
+
+		return recordData.Target, nil
+	} else {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			fmt.Printf("Error reading response: %s\n", err.Error())
+			return nil, diag.FromErr(fmt.Errorf("error in performing akamai 'GET' request: error reading error: %s", err))
+		}
+		return nil, diag.FromErr(fmt.Errorf("error in performing akamai 'GET' request: %s", string(body)))
+	}
+}
+
+func createOrUpdateAkamaiChallengeRecordSet(config edgegrid.Config, zone string, txtRecordName string, ttl int, rdata []string, method string) diag.Diagnostics {
+	type TXTRecordSet struct {
+		Name  string   `json:"name"`
+		Type  string   `json:"type"`
+		TTL   int      `json:"ttl"`
+		Rdata []string `json:"rdata"`
+	}
+
+	recordSetBody := TXTRecordSet{
+		Name:  txtRecordName,
+		Type:  "TXT",
+		TTL:   ttl,
+		Rdata: rdata,
+	}
+
+	jsonBody, err := json.Marshal(recordSetBody)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error setting body for akamai request: %s", err))
+	}
+	req, err := client.NewRequest(config, method, fmt.Sprintf("/config-dns/v2/zones/%s/names/%s/types/TXT", zone, txtRecordName), bytes.NewReader(jsonBody))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error creating akamai request: %s", err))
+	}
+	res, err := client.Do(config, req)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error in akamai request: %s", err))
+	}
+	if res.StatusCode != 201 && res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			fmt.Printf("Error reading response: %s\n", err.Error())
+			return nil
+		}
+		return diag.FromErr(fmt.Errorf("error from akamai in '%s' request: %s", method, string(body)))
+	}
+	return nil
+}
+
+func findAllTxtRecordValuesForDomain(domainItem string, txtRecordName string, secret *secretsmanagerv2.PublicCertificate, successfullySetChallengeDomains map[string]string) ([]string, diag.Diagnostics) {
+	challenges := secret.IssuanceInfo.Challenges
+	var txtRecordValues []string
+
+	for _, challengesItem := range challenges {
+		if *challengesItem.TxtRecordName == txtRecordName {
+			if _, exists := successfullySetChallengeDomains[*challengesItem.TxtRecordValue]; !exists {
+				txtRecordValues = append(txtRecordValues, *challengesItem.TxtRecordValue)
+				successfullySetChallengeDomains[*challengesItem.TxtRecordValue] = *challengesItem.Domain
+			} else { // if the txtRecordValue exists --> this txtRecordName (domain) has already been checked --> no need to continue
+				return txtRecordValues, nil
+			}
+		}
+	}
+
+	if len(txtRecordValues) > 0 {
+		return txtRecordValues, nil
+	}
+	return nil, diag.FromErr(fmt.Errorf("failed to find a challenge for the domain: %s", domainItem))
+}
+
+func findTxtRecordValuesDifferences(akamaiValues, challengesValues []string) []string {
+	var differences []string
+
+	if akamaiValues != nil {
+		set := make(map[string]bool)
+		for _, value := range akamaiValues {
+			set[value] = true
+		}
+
+		for _, challengeValue := range challengesValues {
+			stringChallengeValue := "\"" + challengeValue + "\""
+			if !set[stringChallengeValue] {
+				differences = append(differences, challengeValue)
+			}
+		}
+	}
+
+	return differences
+}
+
+func getZone(currentZone string, originalDomain string, config edgegrid.Config) (string, diag.Diagnostics) {
+	req, err := client.NewRequest(config, "GET", fmt.Sprintf("/config-dns/v2/zones/%s", currentZone), nil)
+	if err != nil {
+		return "", diag.FromErr(fmt.Errorf("error creating akamai 'GET' zone request: %s", err))
+	}
+	res, err := client.Do(config, req)
+	if err != nil {
+		return "", diag.FromErr(fmt.Errorf("error in performing akamai 'GET' zone request: %s", err))
+	}
+	if res.StatusCode == 404 {
+		zoneSplit := strings.Split(currentZone, ".")
+		if len(zoneSplit) == 2 {
+			return "", diag.FromErr(fmt.Errorf("could not find a zone in Akamai for the domain: %s", originalDomain))
+		}
+
+		newZone := strings.Join(zoneSplit[1:], ".")
+		return getZone(newZone, originalDomain, config)
+
+	} else if res.StatusCode == 200 {
+		return currentZone, nil
+	} else {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			fmt.Printf("Error reading response: %s\n", err.Error())
+			return "", diag.FromErr(fmt.Errorf("error in performing akamai 'GET' zone request for zone: %s: error reading error: %s", currentZone, err))
+		}
+		return "", diag.FromErr(fmt.Errorf("error in performing akamai 'GET' zone request for zone: %s:: %s", currentZone, string(body)))
+	}
 }

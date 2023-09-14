@@ -75,6 +75,11 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "CRN of the key you want to use data at rest encryption",
 			},
+			"kms_key_crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of the key you want to use data at rest encryption",
+			},
 			"single_site_location": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -372,45 +377,40 @@ func DataSourceIBMCosBucket() *schema.Resource {
 			},
 			"object_lock_configuration": {
 				Type:        schema.TypeList,
-				Required:    true,
-				MaxItems:    1,
+				Computed:    true,
 				Description: "Bucket level object lock settings includes Days, Years, Mode.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"object_lock_enabled": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Enable object lock on a COS bucket. This can be used to enable objectlock on an existing bucket",
 						},
 						"object_lock_rule": {
 							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"default_retention": {
 										Type:        schema.TypeList,
-										Optional:    true,
-										MaxItems:    1,
+										Computed:    true,
 										Description: "An object lock configuration on the object at a bucket level, in the form of a days , years and mode that establishes a point in time after which the object can be deleted. This is applied at bucket level hence it is by default applied to all the object in the bucket unless a seperate retention period is set on the object.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"mode": {
 													Type:        schema.TypeString,
-													Required:    true,
+													Computed:    true,
 													Description: "Retention modes apply different levels of protection to the objects.",
 												},
 												"years": {
-													Type:          schema.TypeInt,
-													Optional:      true,
-													ConflictsWith: []string{"object_lock_configuration.0.object_lock_rule.0.default_retention.0.days"},
-													Description:   "Retention period in terms of years after which the object can be deleted.",
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Retention period in terms of years after which the object can be deleted.",
 												},
 												"days": {
-													Type:          schema.TypeInt,
-													Optional:      true,
-													ConflictsWith: []string{"object_lock_configuration.0.object_lock_rule.0.default_retention.0.years"},
-													Description:   "Retention period in terms of days after which the object can be deleted.",
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Retention period in terms of days after which the object can be deleted.",
 												},
 											},
 										},
@@ -458,6 +458,7 @@ func DataSourceIBMCosBucketValidator() *validate.ResourceValidator {
 }
 func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
+	var keyProtectFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -467,6 +468,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
 	endpointType := d.Get("endpoint_type").(string)
+	if _, ok := d.GetOk("key_protect"); ok {
+		keyProtectFlag = true
+	}
 
 	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint string
 
@@ -562,7 +566,16 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion, endpointType)
 	d.SetId(bucketID)
-	d.Set("key_protect", head.IBMSSEKPCrkId)
+	if head.IBMSSEKPEnabled != nil {
+		if *head.IBMSSEKPEnabled == true {
+			if keyProtectFlag == true {
+				d.Set("key_protect", head.IBMSSEKPCrkId)
+			} else {
+				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+			}
+		}
+	}
+
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)

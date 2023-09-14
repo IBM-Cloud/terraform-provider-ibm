@@ -19,7 +19,7 @@ import (
 )
 
 func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -49,7 +49,7 @@ func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -79,7 +79,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_ServiceType(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -101,7 +101,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ServiceType(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -123,7 +123,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -145,7 +145,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -166,7 +166,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
@@ -194,7 +194,7 @@ func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
@@ -217,7 +217,7 @@ func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Attributes(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -239,7 +239,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Attributes(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Attributes(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -268,7 +268,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Attributes(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Service_Specific_Roles(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -289,7 +289,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service_Specific_Roles(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
@@ -312,7 +312,7 @@ func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Tags(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -342,7 +342,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Tags(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Transaction_Id(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -373,7 +373,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Transaction_Id(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_Custom(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -409,7 +409,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_Custom(t *
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_All_Day(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -435,7 +435,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_All_Day(t 
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Once(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -460,7 +460,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Once(t *testing.T
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -479,6 +479,35 @@ func TestAccIBMIAMAccessGroupPolicy_With_Update_To_Time_Based_Conditions(t *test
 			{
 				Config:      testAccCheckIBMIAMAccessGroupPolicyUpdateConditions(name),
 				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_ServiceGroupID(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_attributes.0.value", "IAM"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
+				),
 			},
 		},
 	})
@@ -517,7 +546,7 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagementv1.V2Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagementv1.V2PolicyTemplateMetaData) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -1058,6 +1087,42 @@ func testAccCheckIBMIAMAccessGroupPolicyTimeBasedOnce(name string) string {
 			rule_operator = "and"
 		  pattern = "time-based-conditions:once"
 			description = "IAM Access Group Policy Once Time-Based Conditions Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+			}
+
+			resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Service ID creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyUpdateWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+			}
+
+			resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Service ID creator", "User API key creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
 		}
 	`, name)
 }

@@ -130,6 +130,28 @@ func TestAccIBMISVPC_securityGroups(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVPC_noSGACLRules(t *testing.T) {
+	var vpc string
+	vpcname := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPCNoSgAclRulesConfig(vpcname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc", "name", vpcname),
+					resource.TestCheckNoResourceAttr("ibm_is_vpc.testacc_vpc", "security_group.0.rules.#"),
+					resource.TestCheckNoResourceAttr("ibm_is_vpc.testacc_vpc", "security_group.0.rules.#"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISVPCDestroy(s *terraform.State) error {
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	for _, rs := range s.RootModule().Resources {
@@ -232,5 +254,15 @@ func testAccCheckIBMISVPCSgConfig(vpcname string, sgname string) string {
 		}
 	}  
 `, vpcname, sgname)
+
+}
+
+func testAccCheckIBMISVPCNoSgAclRulesConfig(vpcname string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+		no_sg_acl_rules = true
+	  }
+`, vpcname)
 
 }

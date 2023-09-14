@@ -22,6 +22,8 @@ func TestAccIBMContainerClusterVersionsDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "valid_kube_versions.0"),
 					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "valid_openshift_versions.0"),
+					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "default_kube_version"),
+					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_versions.versions", "default_openshift_version"),
 				),
 			},
 		},

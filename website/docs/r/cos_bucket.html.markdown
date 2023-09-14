@@ -294,6 +294,11 @@ resource "ibm_cos_bucket" "cos_bucket" {
 
 Create or delete an COS bucket with a key protect root key.For more details about key protect see https://cloud.ibm.com/docs/key-protect?topic=key-protect-about  .We  need to create and manage root key using  **ibm_kms_key** resource. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key
 
+  **Note:**
+
+ `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
+
+
 ## Example usage
 
 ```terraform
@@ -320,7 +325,7 @@ resource "ibm_cos_bucket" "smart-us-south" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "us-south"
   storage_class        = "smart"
-  key_protect          = ibm_kms_key.test.id
+  kms_key_crn         = ibm_kms_key.test.id
 }
 ```
 
@@ -328,6 +333,10 @@ resource "ibm_cos_bucket" "smart-us-south" {
 # HPCS enabled COS bucket
 
 Create or delete a COS bucket with a Hyper Protect Crypto Services (HPCS) root key.For more details about HPCS see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started .To enable HPCS on a COS bucket, an HPCS instance is required and needs to be initialized by loading the master key to create and manage HPCS keys. For more information on initializing the HPCS instance, see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm-recovery-crypto-unit. To create an HPCS instance using terraform, see https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/hpcs.
+
+  **Note:**
+
+`key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
 
 
 ## Example usage
@@ -369,7 +378,7 @@ resource "ibm_cos_bucket" "smart-us-south" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "us-south"
   storage_class        = "smart"
-  key_protect          = ibm_kms_key.key.id
+  kms_key_crn          = ibm_kms_key.key.id
 }
 
 ```
@@ -398,9 +407,9 @@ resource "ibm_cos_bucket" "cos_bucket_onerate" {
 
 
 ```
-# ibm_cos_objectlock_configuration
+# ibm_cos_object_lock_configuration
 
-COS objectlock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legalhold for an object.
+COS Object Lock feature enables user to store the object in a bucket with an extra layer of protection against object changes and deletion.Object Lock can help prevent objects from being deleted or overwritten for a fixed amount of time or indefinitely by setting up retention period and legal hold for an object.
 
 ## Example usage
 
@@ -479,7 +488,11 @@ Review the argument references that you can specify for your resource.
 
     **Note:** `force_delete` will timeout on buckets with a large amount of objects. 24 hours before you delete the bucket you can set an expire rule to remove all the files over a day old.
 - `hard_quota` - (Optional, Integer) Sets a maximum amount of storage (in bytes) available for a bucket. For more information, check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-quota).
-- `key_protect` - (Optional, String) The CRN of the IBM Key Protect root key that you want to use to encrypt data that is sent and stored in IBM Cloud Object Storage. Before you can enable IBM Key Protect encryption, you must provision an instance of IBM Key Protect and authorize the service to access IBM Cloud Object Storage. For more information, see [Server-Side Encryption with IBM Key Protect or Hyper Protect Crypto Services (SSE-KP)](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-encryption).
+- `kms_key_crn` - (Optional, String) The CRN of the IBM Key Protect root key that you want to use to encrypt data that is sent and stored in IBM Cloud Object Storage. Before you can enable IBM Key Protect encryption, you must provision an instance of IBM Key Protect and authorize the service to access IBM Cloud Object Storage. For more information, see [Server-Side Encryption with IBM Key Protect or Hyper Protect Crypto Services (SSE-KP)](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-encryption).
+    **Note:**
+
+ `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
+
 - `metrics_monitoring`- (Object) to enable metrics tracking with IBM Cloud Monitoring - Optional- Set up your IBM Cloud Monitoring service instance to receive metrics for your IBM Cloud Object Storage bucket.
 
   Nested scheme for `metrics_monitoring`:
@@ -529,10 +542,10 @@ Review the argument references that you can specify for your resource.
 - `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
 - `storage_class` - (Optional, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold` and `smart` for `standard` and `lite` COS plans, `onerate_active` for `cos-one-rate-plan` COS plan.For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).`storage_class` should not be used with Satellite location id.
 - `satellite_location_id` - (Optional, String) satellite location id. Provided by end users.
-- `object_lock` - (Optional, Bool) Enables objectlock feature on a COS bucket.
+- `object_lock` - (Optional, Bool) Enables Object Lock feature on a COS bucket.
 
     **Note:**
-     - To enable objectlock on a bucket , object_versioning should be enabled.
+     - To enable Object Lock on a bucket , object_versioning should be enabled.
 
   
 ## Attribute reference
@@ -541,7 +554,10 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN of the bucket.
 - `cross_region_location` - (String) The location if you created a cross-regional bucket.
 - `id` - (String) The ID of the bucket. 
-- `key_protect` - (String) The CRN of the IBM Key Protect instance that you use to encrypt your data in IBM Cloud Object Storage.
+- `kms_key_crn` - (String) The CRN of the IBM Key Protect instance that you use to encrypt your data in IBM Cloud Object Storage.
+    **Note:**
+
+ `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
 - `region_location` - (String) The location if you created a regional bucket.
 - `resource_instance_id` - (String) The ID of IBM Cloud Object Storage instance. 
 - `single_site_location` - (String) The location if you created a single site bucket.

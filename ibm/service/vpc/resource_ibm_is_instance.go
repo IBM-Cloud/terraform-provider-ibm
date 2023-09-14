@@ -55,6 +55,7 @@ const (
 	isInstanceCPUArch                 = "architecture"
 	isInstanceCPUCores                = "cores"
 	isInstanceCPUCount                = "count"
+	isInstanceCPUManufacturer         = "manufacturer"
 	isInstanceGpu                     = "gpu"
 	isInstanceGpuCores                = "cores"
 	isInstanceGpuCount                = "count"
@@ -219,8 +220,8 @@ func ResourceIBMISInstance() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-				ConflictsWith: []string{"boot_volume.0.snapshot"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.volume_id"},
 				Description:   "Id of the instance template",
 			},
 			isInstanceZone: {
@@ -609,8 +610,8 @@ func ResourceIBMISInstance() *schema.Resource {
 				ForceNew:      true,
 				Computed:      true,
 				Optional:      true,
-				ConflictsWith: []string{"boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 				RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceKeys, isInstanceVPC, isInstanceProfile},
 				Description:   "image id",
 			},
@@ -622,6 +623,16 @@ func ResourceIBMISInstance() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceBootVolumeId: {
+							Type:          schema.TypeString,
+							Optional:      true,
+							ForceNew:      true,
+							Computed:      true,
+							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							Description:   "The unique identifier for this volume",
+						},
 						isInstanceVolAttVolAutoDelete: {
 							Type:        schema.TypeBool,
 							Optional:    true,
@@ -635,18 +646,14 @@ func ResourceIBMISInstance() *schema.Resource {
 							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceBootAttachmentName),
 						},
 
-						isInstanceBootVolumeId: {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-
 						isInstanceVolumeSnapshot: {
 							Type:          schema.TypeString,
 							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 							Optional:      true,
 							ForceNew:      true,
+							Computed:      true,
 						},
 						isInstanceBootEncryption: {
 							Type:             schema.TypeString,
@@ -681,13 +688,11 @@ func ResourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceVolumes: {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
 				Description: "List of volumes",
 			},
-
 			isInstanceVolAttVolAutoDelete: {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -714,6 +719,11 @@ func ResourceIBMISInstance() *schema.Resource {
 						isInstanceCPUCount: {
 							Type:     schema.TypeInt,
 							Computed: true,
+						},
+						isInstanceCPUManufacturer: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer",
 						},
 					},
 				},
@@ -2200,7 +2210,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 	return nil
 }
 
-func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
+func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -2279,7 +2289,6 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				CRN: &encstr,
 			}
 		}
-
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
@@ -2574,6 +2583,344 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	return nil
 }
 
+func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone string) error {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		return err
+	}
+	instanceproto := &vpcv1.InstancePrototypeInstanceByVolume{
+		Zone: &vpcv1.ZoneIdentity{
+			Name: &zone,
+		},
+		Profile: &vpcv1.InstanceProfileIdentity{
+			Name: &profile,
+		},
+		Name: &name,
+		VPC: &vpcv1.VPCIdentity{
+			ID: &vpcID,
+		},
+	}
+
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
+
+	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
+		dHostIdStr := dHostIdInf.(string)
+		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
+			ID: &dHostIdStr,
+		}
+		instanceproto.PlacementTarget = dHostPlaementTarget
+	} else if dHostGrpIdInf, ok := d.GetOk(isPlacementTargetDedicatedHostGroup); ok {
+		dHostGrpIdStr := dHostGrpIdInf.(string)
+		dHostGrpPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostGroupIdentity{
+			ID: &dHostGrpIdStr,
+		}
+		instanceproto.PlacementTarget = dHostGrpPlaementTarget
+	} else if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
+		placementGrpStr := placementGroupInf.(string)
+		placementGrp := &vpcv1.InstancePlacementTargetPrototypePlacementGroupIdentity{
+			ID: &placementGrpStr,
+		}
+		instanceproto.PlacementTarget = placementGrp
+	}
+
+	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
+		bootvol := boot.([]interface{})[0].(map[string]interface{})
+		volumeId, ok := bootvol[isInstanceBootVolumeId]
+
+		volumeIdStr := volumeId.(string)
+		bootVolAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{}
+		if ok && volumeIdStr != "" {
+			volumeIdentity := &vpcv1.VolumeIdentity{
+				ID: &volumeIdStr,
+			}
+			bootVolAttachment.Volume = volumeIdentity
+		}
+		if autoDeleteIntf, ok := d.GetOk("boot_volume.0.auto_delete_volume"); ok {
+			autoDelete := autoDeleteIntf.(bool)
+			bootVolAttachment.DeleteVolumeOnInstanceDelete = &autoDelete
+		}
+		instanceproto.BootVolumeAttachment = bootVolAttachment
+	}
+	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
+		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
+		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
+
+	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
+		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
+		subnetintf, _ := primnic[isInstanceNicSubnet]
+		subnetintfstr := subnetintf.(string)
+		var primnicobj = &vpcv1.NetworkInterfacePrototype{}
+		primnicobj.Subnet = &vpcv1.SubnetIdentity{
+			ID: &subnetintfstr,
+		}
+		name, _ := primnic[isInstanceNicName]
+		namestr := name.(string)
+		if namestr != "" {
+			primnicobj.Name = &namestr
+		}
+
+		// reserved ip changes
+
+		var ipv4str, reservedIp, reservedipv4, reservedipname string
+		var autodelete, okAuto bool
+		ipv4, _ := primnic[isInstanceNicPrimaryIpv4Address]
+		ipv4str = ipv4.(string)
+
+		primaryIpOk, ok := primnic[isInstanceNicPrimaryIP]
+		if ok && len(primaryIpOk.([]interface{})) > 0 {
+			primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+			reservedipok, _ := primip[isInstanceNicReservedIpId]
+			reservedIp = reservedipok.(string)
+
+			reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+			reservedipv4 = reservedipv4Ok.(string)
+
+			reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+			reservedipname = reservedipnameOk.(string)
+			var reservedipautodeleteok interface{}
+			reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+			autodelete = reservedipautodeleteok.(bool)
+		}
+		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+		}
+		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+		}
+		if reservedIp != "" {
+			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+				ID: &reservedIp,
+			}
+		} else {
+			if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+				primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+				if ipv4str != "" {
+					primaryipobj.Address = &ipv4str
+				}
+				if reservedipv4 != "" {
+					primaryipobj.Address = &reservedipv4
+				}
+				if reservedipname != "" {
+					primaryipobj.Name = &reservedipname
+				}
+				if okAuto {
+					primaryipobj.AutoDelete = &autodelete
+				}
+				primnicobj.PrimaryIP = primaryipobj
+			}
+		}
+
+		allowIPSpoofing, ok := primnic[isInstanceNicAllowIPSpoofing]
+		allowIPSpoofingbool := allowIPSpoofing.(bool)
+		if ok {
+			primnicobj.AllowIPSpoofing = &allowIPSpoofingbool
+		}
+		secgrpintf, ok := primnic[isInstanceNicSecurityGroups]
+		if ok {
+			secgrpSet := secgrpintf.(*schema.Set)
+			if secgrpSet.Len() != 0 {
+				var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+				for i, secgrpIntf := range secgrpSet.List() {
+					secgrpIntfstr := secgrpIntf.(string)
+					secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+						ID: &secgrpIntfstr,
+					}
+				}
+				primnicobj.SecurityGroups = secgrpobjs
+			}
+		}
+		instanceproto.PrimaryNetworkInterface = primnicobj
+	}
+
+	if nicsintf, ok := d.GetOk(isInstanceNetworkInterfaces); ok {
+		nics := nicsintf.([]interface{})
+		var intfs []vpcv1.NetworkInterfacePrototype
+		for _, resource := range nics {
+			nic := resource.(map[string]interface{})
+			nwInterface := &vpcv1.NetworkInterfacePrototype{}
+			subnetintf, _ := nic[isInstanceNicSubnet]
+			subnetintfstr := subnetintf.(string)
+			nwInterface.Subnet = &vpcv1.SubnetIdentity{
+				ID: &subnetintfstr,
+			}
+			name, ok := nic[isInstanceNicName]
+			namestr := name.(string)
+			if ok && namestr != "" {
+				nwInterface.Name = &namestr
+			}
+			// reserved ip changes
+
+			var ipv4str, reservedIp, reservedipv4, reservedipname string
+			var autodelete, okAuto bool
+			ipv4, _ := nic[isInstanceNicPrimaryIpv4Address]
+			ipv4str = ipv4.(string)
+
+			primaryIpOk, ok := nic[isInstanceNicPrimaryIP]
+			if ok && len(primaryIpOk.([]interface{})) > 0 {
+				primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+				reservedipok, _ := primip[isInstanceNicReservedIpId]
+				reservedIp = reservedipok.(string)
+
+				reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+				reservedipv4 = reservedipv4Ok.(string)
+
+				reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+				reservedipname = reservedipnameOk.(string)
+				var reservedipautodeleteok interface{}
+				reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+				autodelete = reservedipautodeleteok.(bool)
+			}
+			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			}
+			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			}
+			if reservedIp != "" {
+				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+					ID: &reservedIp,
+				}
+			} else {
+				if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+					primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+					if ipv4str != "" {
+						primaryipobj.Address = &ipv4str
+					}
+					if reservedipv4 != "" {
+						primaryipobj.Address = &reservedipv4
+					}
+					if reservedipname != "" {
+						primaryipobj.Name = &reservedipname
+					}
+					if okAuto {
+						primaryipobj.AutoDelete = &autodelete
+					}
+					nwInterface.PrimaryIP = primaryipobj
+				}
+			}
+			allowIPSpoofing, ok := nic[isInstanceNicAllowIPSpoofing]
+			allowIPSpoofingbool := allowIPSpoofing.(bool)
+			if ok {
+				nwInterface.AllowIPSpoofing = &allowIPSpoofingbool
+			}
+			secgrpintf, ok := nic[isInstanceNicSecurityGroups]
+			if ok {
+				secgrpSet := secgrpintf.(*schema.Set)
+				if secgrpSet.Len() != 0 {
+					var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+					for i, secgrpIntf := range secgrpSet.List() {
+						secgrpIntfstr := secgrpIntf.(string)
+						secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+							ID: &secgrpIntfstr,
+						}
+					}
+					nwInterface.SecurityGroups = secgrpobjs
+				}
+			}
+			intfs = append(intfs, *nwInterface)
+		}
+		instanceproto.NetworkInterfaces = intfs
+	}
+
+	keySet := d.Get(isInstanceKeys).(*schema.Set)
+	if keySet.Len() != 0 {
+		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+		for i, key := range keySet.List() {
+			keystr := key.(string)
+			keyobjs[i] = &vpcv1.KeyIdentity{
+				ID: &keystr,
+			}
+		}
+		instanceproto.Keys = keyobjs
+	}
+
+	if userdata, ok := d.GetOk(isInstanceUserData); ok {
+		userdatastr := userdata.(string)
+		instanceproto.UserData = &userdatastr
+	}
+
+	if grp, ok := d.GetOk(isInstanceResourceGroup); ok {
+		grpstr := grp.(string)
+		instanceproto.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &grpstr,
+		}
+
+	}
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	if metadataServiceEnabled {
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabled,
+		}
+	}
+	if metadataService := GetInstanceMetadataServiceOptions(d); metadataService != nil {
+		instanceproto.MetadataService = metadataService
+	}
+
+	options := &vpcv1.CreateInstanceOptions{
+		InstancePrototype: instanceproto,
+	}
+
+	instance, response, err := sess.CreateInstance(options)
+	if err != nil {
+		log.Printf("[DEBUG] Instance err %s\n%s", err, response)
+		return err
+	}
+	d.SetId(*instance.ID)
+
+	log.Printf("[INFO] Instance : %s", *instance.ID)
+	d.Set(isInstanceStatus, instance.Status)
+
+	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
+	if err != nil {
+		return err
+	}
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isInstanceTags); ok || v != "" {
+		oldList, newList := d.GetChange(isInstanceTags)
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk(isInstanceAccessTags); ok {
+		oldList, newList := d.GetChange(isInstanceAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance (%s) access tags: %s", d.Id(), err)
+		}
+	}
+	return nil
+}
+
 func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error {
 
 	profile := d.Get(isInstanceProfile).(string)
@@ -2582,6 +2929,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	zone := d.Get(isInstanceZone).(string)
 	image := d.Get(isInstanceImage).(string)
 	snapshot := d.Get("boot_volume.0.snapshot").(string)
+	volume := d.Get("boot_volume.0.volume_id").(string)
 	template := d.Get(isInstanceSourceTemplate).(string)
 	if catalogOfferingOk, ok := d.GetOk(isInstanceCatalogOffering); ok {
 		catalogOffering := catalogOfferingOk.([]interface{})[0].(map[string]interface{})
@@ -2592,8 +2940,13 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 
-	} else if snapshot != "" {
+	} else if volume != "" {
 		err := instanceCreateByVolume(d, meta, profile, name, vpcID, zone)
+		if err != nil {
+			return err
+		}
+	} else if snapshot != "" {
+		err := instanceCreateBySnapshot(d, meta, profile, name, vpcID, zone)
 		if err != nil {
 			return err
 		}
@@ -2790,6 +3143,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		currentCPU := map[string]interface{}{}
 		currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
 		currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
+		currentCPU[isInstanceCPUManufacturer] = instance.Vcpu.Manufacturer
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)
@@ -3340,12 +3694,20 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if d.HasChange(isInstanceVolumes) {
-		ovs, nvs := d.GetChange(isInstanceVolumes)
-		ov := ovs.(*schema.Set)
-		nv := nvs.(*schema.Set)
-
-		remove := flex.ExpandStringList(ov.Difference(nv).List())
-		add := flex.ExpandStringList(nv.Difference(ov).List())
+		old, new := d.GetChange(isInstanceVolumes)
+		oldaddons := old.([]interface{})
+		newaddons := new.([]interface{})
+		var oldaddon, newaddon, add []string
+		for _, v := range oldaddons {
+			oldaddon = append(oldaddon, v.(string))
+		}
+		for _, v := range newaddons {
+			newaddon = append(newaddon, v.(string))
+		}
+		// 1. Remove old addons no longer appearing in the new set
+		// 2. Add new addons not already provisioned
+		remove := flex.Listdifference(oldaddon, newaddon)
+		add = flex.Listdifference(newaddon, oldaddon)
 		var volautoDelete bool
 		if volumeautodeleteIntf, ok := d.GetOk(isInstanceVolAttVolAutoDelete); ok && volumeautodeleteIntf != nil {
 			volautoDelete = volumeautodeleteIntf.(bool)

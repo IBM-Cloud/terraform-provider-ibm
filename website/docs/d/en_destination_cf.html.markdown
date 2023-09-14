@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Destination type push_chrome.
+- `type` - (String) Destination type ibmcf.
 
 - `config` - (List) Payload describing a destination configuration.
   Nested scheme for **config**:

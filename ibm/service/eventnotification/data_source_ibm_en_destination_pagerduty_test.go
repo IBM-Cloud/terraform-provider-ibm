@@ -47,7 +47,7 @@ func testAccCheckIBMEnPagerDutyDestinationDataSourceConfigBasic(instanceName, na
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination_msteams" "en_destination_datasource_4" {
+	resource "ibm_en_destination_pagerduty" "en_destination_datasource_4" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
 		type        = "pagerduty"

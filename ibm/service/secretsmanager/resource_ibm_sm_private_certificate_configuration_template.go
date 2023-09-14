@@ -15,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func ResourceIbmSmPrivateCertificateConfigurationTemplate() *schema.Resource {
@@ -113,7 +113,8 @@ func ResourceIbmSmPrivateCertificateConfigurationTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The serial number to assign to the generated certificate. To assign a random serial number, you can omit this field.",
+				Description: "Unused field.",
+				Deprecated:  "This field is deprecated.",
 			},
 			"certificate_authority": &schema.Schema{
 				Type:        schema.TypeString,
@@ -521,9 +522,6 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.Co
 			return diag.FromErr(fmt.Errorf("Error setting postal_code: %s", err))
 		}
 	}
-	if err = d.Set("serial_number", configuration.SerialNumber); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting serial_number: %s", err))
-	}
 	if err = d.Set("require_cn", configuration.RequireCn); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting require_cn: %s", err))
 	}
@@ -775,11 +773,6 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateUpdate(context context.
 		hasChange = true
 	}
 
-	if d.HasChange("serial_number") {
-		patchVals.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
-		hasChange = true
-	}
-
 	if d.HasChange("not_before_duration") {
 		patchVals.NotBeforeDuration = core.StringPtr(d.Get("not_before_duration").(string))
 		hasChange = true
@@ -863,8 +856,8 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 	if _, ok := d.GetOk("ttl"); ok {
 		model.TTL = core.StringPtr(d.Get("ttl").(string))
 	}
-	if _, ok := d.GetOk("allow_localhost"); ok {
-		model.AllowLocalhost = core.BoolPtr(d.Get("ttl").(bool))
+	if _, ok := d.GetOkExists("allow_localhost"); ok {
+		model.AllowLocalhost = core.BoolPtr(d.Get("allow_localhost").(bool))
 	}
 	if _, ok := d.GetOk("allowed_domains"); ok {
 		allowedDomains := []string{}
@@ -891,10 +884,10 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 	if _, ok := d.GetOk("allow_any_name"); ok {
 		model.AllowAnyName = core.BoolPtr(d.Get("allow_any_name").(bool))
 	}
-	if _, ok := d.GetOk("enforce_hostnames"); ok {
+	if _, ok := d.GetOkExists("enforce_hostnames"); ok {
 		model.EnforceHostnames = core.BoolPtr(d.Get("enforce_hostnames").(bool))
 	}
-	if _, ok := d.GetOk("allow_ip_sans"); ok {
+	if _, ok := d.GetOkExists("allow_ip_sans"); ok {
 		model.AllowIpSans = core.BoolPtr(d.Get("allow_ip_sans").(bool))
 	}
 	if _, ok := d.GetOk("allowed_uri_sans"); ok {
@@ -911,10 +904,10 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 		}
 		model.AllowedOtherSans = allowedOtherSans
 	}
-	if _, ok := d.GetOk("server_flag"); ok {
+	if _, ok := d.GetOkExists("server_flag"); ok {
 		model.ServerFlag = core.BoolPtr(d.Get("server_flag").(bool))
 	}
-	if _, ok := d.GetOk("client_flag"); ok {
+	if _, ok := d.GetOkExists("client_flag"); ok {
 		model.ClientFlag = core.BoolPtr(d.Get("client_flag").(bool))
 	}
 	if _, ok := d.GetOk("code_signing_flag"); ok {
@@ -950,10 +943,10 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 		}
 		model.ExtKeyUsageOids = extKeyUsageOids
 	}
-	if _, ok := d.GetOk("use_csr_common_name"); ok {
+	if _, ok := d.GetOkExists("use_csr_common_name"); ok {
 		model.UseCsrCommonName = core.BoolPtr(d.Get("use_csr_common_name").(bool))
 	}
-	if _, ok := d.GetOk("use_csr_sans"); ok {
+	if _, ok := d.GetOkExists("use_csr_sans"); ok {
 		model.UseCsrSans = core.BoolPtr(d.Get("use_csr_sans").(bool))
 	}
 	if _, ok := d.GetOk("ou"); ok {
@@ -1005,10 +998,7 @@ func resourceIbmSmPrivateCertificateConfigurationTemplateMapToConfigurationProto
 		}
 		model.PostalCode = postalCode
 	}
-	if _, ok := d.GetOk("serial_number"); ok {
-		model.SerialNumber = core.StringPtr(d.Get("serial_number").(string))
-	}
-	if _, ok := d.GetOk("require_cn"); ok {
+	if _, ok := d.GetOkExists("require_cn"); ok {
 		model.RequireCn = core.BoolPtr(d.Get("require_cn").(bool))
 	}
 	if _, ok := d.GetOk("policy_identifiers"); ok {

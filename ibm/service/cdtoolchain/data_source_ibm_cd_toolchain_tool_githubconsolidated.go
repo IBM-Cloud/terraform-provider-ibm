@@ -73,7 +73,7 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool name.",
+				Description: "Name of the tool.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -89,7 +89,12 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 						"git_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Set this value to 'github' for github.com, or to the GUID of a custom GitHub Enterprise server.",
+							Description: "Set this value to 'github' for github.com, or 'githubcustom' for a custom GitHub Enterprise server.",
+						},
+						"title": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The title of the server. e.g. My GitHub Enterprise Server.",
 						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -100,6 +105,16 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The default branch of the git repository.",
+						},
+						"root_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Root URL of the server. e.g. https://github.example.com.",
+						},
+						"blind_connection": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.",
 						},
 						"owner_id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -265,10 +280,10 @@ func dataSourceIBMCdToolchainToolGithubconsolidatedRead(context context.Context,
 func dataSourceIBMCdToolchainToolGithubconsolidatedToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
-		modelMap["ui_href"] = *model.UIHref
+		modelMap["ui_href"] = model.UIHref
 	}
 	if model.APIHref != nil {
-		modelMap["api_href"] = *model.APIHref
+		modelMap["api_href"] = model.APIHref
 	}
 	return modelMap, nil
 }

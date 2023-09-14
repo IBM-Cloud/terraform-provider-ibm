@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv2"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
 func DataSourceIbmSmImportedCertificate() *schema.Resource {
@@ -227,7 +227,7 @@ func dataSourceIbmSmImportedCertificateRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(importedCertificate.CreatedAt)); err != nil {
+	if err = d.Set("created_at", DateTimeToRFC3339(importedCertificate.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
@@ -281,7 +281,7 @@ func dataSourceIbmSmImportedCertificateRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(importedCertificate.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", DateTimeToRFC3339(importedCertificate.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
@@ -297,7 +297,7 @@ func dataSourceIbmSmImportedCertificateRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateTimeToString(importedCertificate.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", DateTimeToRFC3339(importedCertificate.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 

@@ -250,6 +250,23 @@ resource "ibm_iam_access_group_policy" "policy" {
 }
 ```
 
+### Access Group Policy by using service_group_id resource attribute
+
+```terraform
+resource "ibm_iam_access_group" "accgrp" {
+  name = "access_group"
+}
+
+resource "ibm_iam_access_group_policy" "policy" {
+  roles  = ["Service ID creator", "User API key creator", "Administrator"]
+  resource_attributes {
+    name     = "service_group_id"
+    operator = "stringEquals"
+    value    = "IAM"
+  }
+}
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -267,11 +284,11 @@ Review the argument references that you can specify for your resource.
   - `resources.resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
   - `service` - (Optional, String) The service name that you want to include in your policy definition. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output. Attributes service, service_type are mutually exclusive.
   - `service_type`  (Optional, String) The service type of the policy definition. **Note** Attributes service, service_type are mutually exclusive.
-
+  - `service_group_id` (Optional, String) The service group id of the policy definition. **Note** Attributes service, service_group_id are mutually exclusive.
 - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
 
   Nested scheme for `resource_attributes`:
-  - `name` - (Required, String) Name of an attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.
+  - `name` - (Required, String) Name of an attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, `service_group_id`, and other service specific resource attributes.
   - `value` - (Required, String) Value of an attribute.
   - `operator` - (Optional, string) Operator of an attribute. Default value is `stringEquals`. **Note** Conflicts with `account_management` and `resources`.
 
