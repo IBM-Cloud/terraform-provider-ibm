@@ -95,6 +95,52 @@ resource "ibm_iam_authorization_policy" "policy" {
 ```
 
 
+### Authorization policy between resource group and a target service
+
+```terraform
+resource "ibm_resource_group" "source_resource_group" {
+  name     = "123123"
+}
+
+
+resource "ibm_iam_authorization_policy" "policy" {
+  source_resource_group_id    = ibm_resource_group.source_resource_group.id
+  target_service_name         = "cloud-object-storage"
+  roles                       = ["Reader"]
+}
+
+```
+
+### Authorization policy between resource group and a target service using resource attributes
+
+```terraform
+
+resource "ibm_iam_authorization_policy" "policy" {
+    roles                  = [
+        "Reader",
+    ]
+
+    resource_attributes {
+        name     = "accountId"
+        operator = "stringEquals"
+        value    = "12345"
+    }
+    resource_attributes {
+        name     = "serviceName"
+        operator = "stringEquals"
+        value    = "cloud-object-storage"
+    }
+
+    subject_attributes {
+        name  = "accountId"
+        value = "12345"
+    }
+    subject_attributes {
+        name  = "resourceGroupId"
+        value = "abcdef123456"
+    }
+}
+
 ### Authorization policy between two specific services.
 
 ```terraform
@@ -142,7 +188,7 @@ Review the argument references that you can specify for your resource.
 - `roles` - (Required, list) The comma separated list of roles. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 
 - `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.**Note** Conflicts with `subject_attributes`.
-- `source_service_name` - (Required, Forces new resource, string) The source service name.**Note** Conflicts with `subject_attributes`.
+- `source_service_name` - (Optional, Forces new resource, string) The source service name.**Note** Conflicts with `subject_attributes`.
 - `target_service_name` - (Required, Forces new resource, string) The target service name.**Note** Conflicts with `resource_attributes`.
 - `source_resource_instance_id` - (Optional, Forces new resource, string) The source resource instance id.**Note** Conflicts with `subject_attributes`.
 - `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.**Note** Conflicts with `resource_attributes`.

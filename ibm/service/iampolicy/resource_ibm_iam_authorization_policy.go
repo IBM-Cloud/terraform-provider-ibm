@@ -32,7 +32,6 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{"source_service_name", "subject_attributes"},
 				Description:  "The source service name",
 				ForceNew:     true,
 			},
@@ -249,13 +248,15 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		}
 	} else {
 
-		sourceServiceName = d.Get("source_service_name").(string)
+		if name, ok := d.GetOk("source_service_name"); ok {
+			sourceServiceName = name.(string)
 
-		serviceNameSubjectAttribute := &iampolicymanagementv1.SubjectAttribute{
-			Name:  core.StringPtr("serviceName"),
-			Value: &sourceServiceName,
+			serviceNameSubjectAttribute := &iampolicymanagementv1.SubjectAttribute{
+				Name:  core.StringPtr("serviceName"),
+				Value: &sourceServiceName,
+			}
+			policySubject.Attributes = append(policySubject.Attributes, *serviceNameSubjectAttribute)
 		}
-		policySubject.Attributes = append(policySubject.Attributes, *serviceNameSubjectAttribute)
 
 		sourceServiceAccount := userDetails.UserAccount
 		if account, ok := d.GetOk("source_service_account"); ok {
