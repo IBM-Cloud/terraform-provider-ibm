@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20230601050310-eecebfbff63e
-	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230118060037-101bda076037
+	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230822142550-30562e113de9
 	github.com/IBM-Cloud/power-go-client v1.2.4
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
@@ -60,6 +60,17 @@ require (
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.1
+)
+
+require (
+	github.com/IBM/go-sdk-core/v3 v3.2.4
+	github.com/IBM/project-go-sdk v0.0.10
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
+	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
+	github.com/pkg/errors v0.9.1
+	github.com/rook/rook v1.11.4
+	gopkg.in/yaml.v3 v3.0.1
+	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1
 )
 
@@ -209,7 +220,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20221110221610-a28e98eb7c70 // indirect
-	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
