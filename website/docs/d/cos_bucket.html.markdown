@@ -120,27 +120,6 @@ data "ibm_cos_bucket" "object_lock_bucket" {
 
 ```
 
-
-# ibm_cos_bucket_website_configuration
-
-Retrieves an IBM Cloud Object Storage bucket with configuration added to static web hosting..
-
-## Example usage
-
-```terraform
-data "ibm_resource_group" "cos_group" {
-  name = "cos-resource-group"
-}
-
-data "ibm_cos_bucket" "static_website_bucket" {
-  bucket_name          = "bucket-name"
-  resource_instance_id = data.ibm_resource_instance.cos_instance.id
-  bucket_type          = "region_location"
-  bucket_region        = "bucket-region"
-}
-
-```
-
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
