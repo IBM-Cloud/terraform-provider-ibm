@@ -17,117 +17,117 @@ import (
 )
 
 func DataSourceIbmSccControlLibrary() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccControlLibraryRead,
 
 		Schema: map[string]*schema.Schema{
-			"control_library_id": &schema.Schema{
+			"control_library_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The control library ID.",
 			},
-			"account_id": &schema.Schema{
+			"account_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The account ID.",
 			},
-			"control_library_name": &schema.Schema{
+			"control_library_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The control library name.",
 			},
-			"control_library_description": &schema.Schema{
+			"control_library_description": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The control library description.",
 			},
-			"control_library_type": &schema.Schema{
+			"control_library_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The control library type.",
 			},
-			"version_group_label": &schema.Schema{
+			"version_group_label": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version group label.",
 			},
-			"control_library_version": &schema.Schema{
+			"control_library_version": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The control library version.",
 			},
-			"created_on": &schema.Schema{
+			"created_on": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when the control library was created.",
 			},
-			"created_by": &schema.Schema{
+			"created_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The user who created the control library.",
 			},
-			"updated_on": &schema.Schema{
+			"updated_on": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when the control library was updated.",
 			},
-			"updated_by": &schema.Schema{
+			"updated_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The user who updated the control library.",
 			},
-			"latest": &schema.Schema{
+			"latest": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "The latest version of the control library.",
 			},
-			"hierarchy_enabled": &schema.Schema{
+			"hierarchy_enabled": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "The indication of whether hierarchy is enabled for the control library.",
 			},
-			"controls_count": &schema.Schema{
+			"controls_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The number of controls.",
 			},
-			"control_parents_count": &schema.Schema{
+			"control_parents_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The number of parent controls in the control library.",
 			},
-			"controls": &schema.Schema{
+			"controls": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The list of controls in a control library.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"control_name": &schema.Schema{
+						"control_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the control library that contains the profile.",
 						},
-						"control_id": &schema.Schema{
+						"control_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The control name.",
 						},
-						"control_description": &schema.Schema{
+						"control_description": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The control description.",
 						},
-						"control_category": &schema.Schema{
+						"control_category": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The control category.",
 						},
-						"control_parent": &schema.Schema{
+						"control_parent": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The parent control.",
 						},
-						"control_tags": &schema.Schema{
+						"control_tags": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The control tags.",
@@ -135,95 +135,95 @@ func DataSourceIbmSccControlLibrary() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"control_specifications": &schema.Schema{
+						"control_specifications": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The control specifications.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"control_specification_id": &schema.Schema{
+									"control_specification_id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The control specification ID.",
 									},
-									"responsibility": &schema.Schema{
+									"responsibility": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The responsibility for managing the control.",
 									},
-									"component_id": &schema.Schema{
+									"component_id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The component ID.",
 									},
-									"component_name": &schema.Schema{
+									"component_name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The component name.",
 									},
-									"environment": &schema.Schema{
+									"environment": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The control specifications environment.",
 									},
-									"control_specification_description": &schema.Schema{
+									"control_specification_description": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The control specifications description.",
 									},
-									"assessments_count": &schema.Schema{
+									"assessments_count": {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The number of assessments.",
 									},
-									"assessments": &schema.Schema{
+									"assessments": {
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "The assessments.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"assessment_id": &schema.Schema{
+												"assessment_id": {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The assessment ID.",
 												},
-												"assessment_method": &schema.Schema{
+												"assessment_method": {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The assessment method.",
 												},
-												"assessment_type": &schema.Schema{
+												"assessment_type": {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The assessment type.",
 												},
-												"assessment_description": &schema.Schema{
+												"assessment_description": {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The assessment description.",
 												},
-												"parameter_count": &schema.Schema{
+												"parameter_count": {
 													Type:        schema.TypeInt,
 													Computed:    true,
 													Description: "The parameter count.",
 												},
-												"parameters": &schema.Schema{
+												"parameters": {
 													Type:        schema.TypeList,
 													Computed:    true,
 													Description: "The parameters.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"parameter_name": &schema.Schema{
+															"parameter_name": {
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "The parameter name.",
 															},
-															"parameter_display_name": &schema.Schema{
+															"parameter_display_name": {
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "The parameter display name.",
 															},
-															"parameter_type": &schema.Schema{
+															"parameter_type": {
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "The parameter type.",
@@ -237,18 +237,18 @@ func DataSourceIbmSccControlLibrary() *schema.Resource {
 								},
 							},
 						},
-						"control_docs": &schema.Schema{
+						"control_docs": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The control documentation.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"control_docs_id": &schema.Schema{
+									"control_docs_id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ID of the control documentation.",
 									},
-									"control_docs_type": &schema.Schema{
+									"control_docs_type": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of control documentation.",
@@ -256,12 +256,12 @@ func DataSourceIbmSccControlLibrary() *schema.Resource {
 								},
 							},
 						},
-						"control_requirement": &schema.Schema{
+						"control_requirement": {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Is this a control that can be automated or manually evaluated.",
 						},
-						"status": &schema.Schema{
+						"status": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The control status.",
@@ -270,7 +270,7 @@ func DataSourceIbmSccControlLibrary() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -282,6 +282,7 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 	getControlLibraryOptions := &securityandcompliancecenterapiv3.GetControlLibraryOptions{}
 
 	getControlLibraryOptions.SetControlLibrariesID(d.Get("control_library_id").(string))
+	getControlLibraryOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	controlLibrary, response, err := securityandcompliancecenterapiClient.GetControlLibraryWithContext(context, getControlLibraryOptions)
 	if err != nil {

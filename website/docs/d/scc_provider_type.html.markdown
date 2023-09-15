@@ -10,11 +10,13 @@ subcategory: "Security and Compliance Center"
 
 Retrieve information about a provider type from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.ibm.com`).
+
 ## Example Usage
 
 ```hcl
 data "ibm_scc_provider_type" "scc_provider_type" {
-	provider_type_id = "provider_type_id"
+    provider_type_id = "provider_type_id"
 }
 ```
 
