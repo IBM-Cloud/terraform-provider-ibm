@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20230601050310-eecebfbff63e
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20230914140903-40534e34a2a5
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230822142550-30562e113de9
 	github.com/IBM-Cloud/power-go-client v1.2.4
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -24,8 +24,8 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
 	github.com/IBM/networking-go-sdk v0.42.2
-	github.com/IBM/project-go-sdk v0.0.10
 	github.com/IBM/platform-services-go-sdk v0.48.1
+	github.com/IBM/project-go-sdk v0.0.10
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.0.2
 	github.com/IBM/schematics-go-sdk v0.2.1
@@ -63,13 +63,6 @@ require (
 )
 
 require (
-	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/project-go-sdk v0.0.10
-	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
-	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
-	github.com/pkg/errors v0.9.1
-	github.com/rook/rook v1.11.4
-	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1
 )
