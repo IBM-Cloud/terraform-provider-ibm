@@ -945,6 +945,137 @@ func ObjectLockDefaultRetentionGet(in *s3.DefaultRetention) []map[string]interfa
 	}
 	return defaultRetention
 }
+
+func WebsiteConfigurationGet(in *s3.WebsiteConfiguration) []map[string]interface{} {
+	configuration := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		websiteConfig := make(map[string]interface{})
+
+		if in.ErrorDocument != nil {
+			websiteConfig["error_document"] = GetErrorDocument(in.ErrorDocument)
+		}
+		if in.IndexDocument != nil {
+			websiteConfig["index_document"] = GetIndexDocument(in.IndexDocument)
+		}
+		if in.RedirectAllRequestsTo != nil {
+			websiteConfig["redirect_all_requests_to"] = RedirectAllRequestsGet(in.RedirectAllRequestsTo)
+		}
+
+		if in.RoutingRules != nil {
+			websiteConfig["routing_rule"] = RoutingRulesGet(in.RoutingRules)
+		}
+
+		configuration = append(configuration, websiteConfig)
+	}
+	return configuration
+}
+
+func GetErrorDocument(in *s3.ErrorDocument) []map[string]interface{} {
+	errorDocumentMap := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		errorDocValue := make(map[string]interface{})
+
+		if in.Key != nil {
+			errorDocValue["key"] = aws.StringValue(in.Key)
+		}
+		errorDocumentMap = append(errorDocumentMap, errorDocValue)
+	}
+	return errorDocumentMap
+}
+
+func GetIndexDocument(in *s3.IndexDocument) []map[string]interface{} {
+	indexDocumentMap := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		indexDocumentValue := make(map[string]interface{})
+
+		if in.Suffix != nil {
+			indexDocumentValue["suffix"] = aws.StringValue(in.Suffix)
+		}
+		indexDocumentMap = append(indexDocumentMap, indexDocumentValue)
+	}
+	return indexDocumentMap
+}
+
+func RedirectAllRequestsGet(in *s3.RedirectAllRequestsTo) []map[string]interface{} {
+	redirectRequests := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		redirectRequestConfig := make(map[string]interface{})
+
+		if in.HostName != nil {
+			redirectRequestConfig["host_name"] = aws.StringValue(in.HostName)
+		}
+		if in.Protocol != nil {
+			redirectRequestConfig["protocol"] = aws.StringValue(in.Protocol)
+		}
+
+		redirectRequests = append(redirectRequests, redirectRequestConfig)
+	}
+	return redirectRequests
+}
+
+func RoutingRulesGet(in []*s3.RoutingRule) []map[string]interface{} {
+	routingRules := make([]map[string]interface{}, 0, len(in))
+	if in != nil {
+		for _, routingRuleValue := range in {
+			rule := make(map[string]interface{})
+
+			if routingRuleValue.Condition != nil {
+				rule["condition"] = RoutingRuleConditionGet(routingRuleValue.Condition)
+			}
+
+			if routingRuleValue.Redirect != nil {
+				rule["redirect"] = RoutingRuleRedirectGet(routingRuleValue.Redirect)
+			}
+
+			routingRules = append(routingRules, rule)
+		}
+	}
+	return routingRules
+}
+
+func RoutingRuleConditionGet(in *s3.Condition) []map[string]interface{} {
+	condition := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		conditionConfig := make(map[string]interface{})
+
+		if in.HttpErrorCodeReturnedEquals != nil {
+			conditionConfig["http_error_code_returned_equals"] = aws.StringValue(in.HttpErrorCodeReturnedEquals)
+		}
+		if in.KeyPrefixEquals != nil {
+			conditionConfig["key_prefix_equals"] = aws.StringValue(in.KeyPrefixEquals)
+		}
+
+		condition = append(condition, conditionConfig)
+	}
+	return condition
+}
+
+func RoutingRuleRedirectGet(in *s3.Redirect) []map[string]interface{} {
+	redirect := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		redirectConfig := make(map[string]interface{})
+
+		if in.HostName != nil {
+			redirectConfig["host_name"] = aws.StringValue(in.HostName)
+		}
+		if in.HttpRedirectCode != nil {
+			redirectConfig["http_redirect_code"] = aws.StringValue(in.HttpRedirectCode)
+		}
+		if in.Protocol != nil {
+			redirectConfig["protocol"] = aws.StringValue(in.Protocol)
+		}
+		if in.ReplaceKeyPrefixWith != nil {
+			redirectConfig["replace_key_prefix_with"] = aws.StringValue(in.ReplaceKeyPrefixWith)
+		}
+		if in.ReplaceKeyWith != nil {
+			redirectConfig["replace_key_with"] = aws.StringValue(in.ReplaceKeyWith)
+		}
+
+		redirect = append(redirect, redirectConfig)
+	}
+	return redirect
+}
+
 func FlattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
