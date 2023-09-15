@@ -32,7 +32,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					testAccCheckIBMDatabaseInstanceExists(dataName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(dataName, "name", testName),
-					resource.TestCheckResourceAttr(dataName, "service", "databases-for-postgresql"+acc.IcdEnvSuffix),
+					resource.TestCheckResourceAttr(dataName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(dataName, "plan", "standard"),
 					resource.TestCheckResourceAttr(dataName, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(dataName, "adminuser", "admin"),
@@ -60,11 +60,11 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 	resource "ibm_database" "db" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
-		service           = "databases-for-postgresql%[4]s"
+		service           = "databases-for-postgresql"
 		plan              = "standard"
 		location          = "%[3]s"
 		tags              = ["one:two"]
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion, acc.IcdEnvSuffix)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }

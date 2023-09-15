@@ -125,7 +125,7 @@ func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
 				Config: testAccCheckIBMIAMAuthorizationPolicyDelegatorRole(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
-					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"+acc.IcdEnvSuffix),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
 				),
 			},
@@ -166,7 +166,7 @@ func TestAccIBMIAMAuthorizationPolicy_With_Transaction_id(t *testing.T) {
 				Config: testAccCheckIBMIAMAuthorizationPolicyTransactionId(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
-					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"+acc.IcdEnvSuffix),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "transaction_id", "terrformAuthorizationPolicy"),
 				),
@@ -280,13 +280,13 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
 	`
 }
 func testAccCheckIBMIAMAuthorizationPolicyDelegatorRole() string {
-	return fmt.Sprintf(`
+	return `
 	resource "ibm_iam_authorization_policy" "policy" {
-		source_service_name         = "databases-for-redis%[1]s"
+		source_service_name         = "databases-for-redis"
 		target_service_name         = "kms"
 		roles                       = ["Reader", "Authorization Delegator"]
 	  }
-	`, acc.IcdEnvSuffix)
+	`
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyResourceGroup(sResourceGroup, tResourceGroup string) string {
@@ -359,12 +359,12 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, t
 }
 
 func testAccCheckIBMIAMAuthorizationPolicyTransactionId() string {
-	return fmt.Sprintf(`
+	return `
 	resource "ibm_iam_authorization_policy" "policy" {
-		source_service_name         = "databases-for-redis%[1]s"
+		source_service_name         = "databases-for-redis"
 		target_service_name         = "kms"
 		roles                       = ["Reader", "Authorization Delegator"]
 		transaction_id 				= "terrformAuthorizationPolicy"
 	  }
-	`, acc.IcdEnvSuffix)
+	`
 }

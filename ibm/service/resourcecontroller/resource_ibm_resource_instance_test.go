@@ -114,7 +114,7 @@ func TestAccIBMResourceInstanceWithServiceendpoints(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceInstanceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
-					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"+acc.IcdEnvSuffix),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
 					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
 				),
@@ -407,7 +407,7 @@ func testAccCheckIBMResourceInstanceServiceendpoints(serviceName string) string 
 	resource "ibm_resource_instance" "instance" {
 		name     = "%s"
 		location = "us-south"
-		service  = "databases-for-postgresql%[2]s"
+		service  = "databases-for-postgresql"
 		plan     = "standard"
 		parameters = {
 		  members_memory_allocation_mb = "4096"
@@ -421,5 +421,5 @@ func testAccCheckIBMResourceInstanceServiceendpoints(serviceName string) string 
 		}
 	}
 			
-	`, serviceName, acc.IcdEnvSuffix)
+	`, serviceName)
 }

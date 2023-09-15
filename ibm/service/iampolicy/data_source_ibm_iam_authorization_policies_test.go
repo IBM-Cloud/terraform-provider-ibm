@@ -4,7 +4,6 @@
 package iampolicy_test
 
 import (
-	"fmt"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -64,9 +63,9 @@ func testAccCheckIBMIAMAuthorizationPoliciesDataSourceConfigSort() string {
 }
 
 func testAccCheckIBMIAMAuthorizationPoliciesDataSourceMultiplePolicies() string {
-	return fmt.Sprintf(`
+	return `
 		resource "ibm_iam_authorization_policy" "policy" {
-			source_service_name         = "databases-for-redis%[1]s"
+			source_service_name         = "databases-for-redis"
 			target_service_name         = "kms"
 			roles                       = ["Reader", "Authorization Delegator"]
 		}
@@ -77,5 +76,5 @@ func testAccCheckIBMIAMAuthorizationPoliciesDataSourceMultiplePolicies() string 
 			target_service_name  = "cloudcerts"
 			roles                = ["Reader"]
 		}
-		`, acc.IcdEnvSuffix)
+		`
 }
