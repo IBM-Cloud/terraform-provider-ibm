@@ -29,11 +29,11 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"source_service_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The source service name",
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The source service name",
+				ForceNew:    true,
 			},
 
 			"target_service_name": {

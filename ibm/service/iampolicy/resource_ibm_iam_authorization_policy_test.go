@@ -107,7 +107,7 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "is"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_resource_type", "load-balancer"),
-					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "cloudcerts"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "hs-crypto"),
 				),
 			},
 		},
@@ -324,7 +324,7 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
 	resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name  = "is"
 		source_resource_type = "load-balancer"
-		target_service_name  = "cloudcerts"
+		target_service_name  = "hs-crypto"
 		roles                = ["Reader"]
 	  }
 	`
