@@ -12,7 +12,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	brokerVersion       = sarama.V2_6_0_0
+	brokerVersion       = sarama.V3_3_0_0
 	adminClientTimeout  = 30 * time.Second
 	allowedTopicConfigs = []string{
 		"cleanup.policy",
