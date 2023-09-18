@@ -12,7 +12,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
