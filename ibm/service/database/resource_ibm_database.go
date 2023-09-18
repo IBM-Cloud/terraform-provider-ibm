@@ -3152,11 +3152,18 @@ func userUpdateCreate(userData map[string]interface{}, instanceID string, meta i
 		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
 	}
 
-	taskID := *changeUserPasswordResponse.Task.ID
-	updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+	updatePass := true // Assume that update password passed
 
-	if err != nil {
-		log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+	if userData["type"].(string) == "ops_manager" && response.StatusCode == 404 {
+		updatePass = false // when user_password api can't find an ops_manager user, it returns a 404 and does not get to the point of creating a task
+	} else {
+		// when user_password api can't find a database user, its task fails
+		taskID := *changeUserPasswordResponse.Task.ID
+		updatePass, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+		if err != nil {
+			log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+		}
 	}
 
 	// Updating the password has failed

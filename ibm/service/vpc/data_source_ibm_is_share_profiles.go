@@ -26,6 +26,96 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 				Description: "Collection of share profiles.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"capacity": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted capacity range (in gigabytes) for a share with this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default capacity.",
+									},
+									"max": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The max capacity.",
+									},
+									"min": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The min capacity.",
+									},
+									"step": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"values": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeInt},
+										Description: "The permitted values for this profile field.",
+									},
+								},
+							},
+						},
+						"iops": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted IOPS range for a share with this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default iops.",
+									},
+									"max": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The max iops.",
+									},
+									"min": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The min iops.",
+									},
+									"step": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"values": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeInt},
+										Description: "The permitted values for this profile field.",
+									},
+								},
+							},
+						},
 						"family": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -115,6 +205,19 @@ func dataSourceShareProfileCollectionProfilesToMap(profilesItem vpcv1.ShareProfi
 	if profilesItem.ResourceType != nil {
 		profilesMap["resource_type"] = profilesItem.ResourceType
 	}
-
+	if profilesItem.Capacity != nil {
+		capacityList := []map[string]interface{}{}
+		capacity := profilesItem.Capacity.(*vpcv1.ShareProfileCapacity)
+		capacityMap := dataSourceShareProfileCapacityToMap(*capacity)
+		capacityList = append(capacityList, capacityMap)
+		profilesMap["capacity"] = capacityList
+	}
+	if profilesItem.Iops != nil {
+		iopsList := []map[string]interface{}{}
+		iops := profilesItem.Iops.(*vpcv1.ShareProfileIops)
+		iopsMap := dataSourceShareProfileIopsToMap(*iops)
+		iopsList = append(iopsList, iopsMap)
+		profilesMap["iops"] = iopsList
+	}
 	return profilesMap
 }
