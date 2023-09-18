@@ -72,8 +72,6 @@ func TestAccIBMEventStreamsTopicResourceBasic(t *testing.T) {
 	})
 }
 
-var existingInstanceName = "hyperion-preprod-spp-a-service"
-
 func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 	topicName := fmt.Sprintf("es_topic_%d", acctest.RandInt())
 	partitions := 1
@@ -86,7 +84,7 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(existingInstanceName, topicName, partitions),
+				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(standardInstanceName, topicName, partitions),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
@@ -100,7 +98,7 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(existingInstanceName, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes),
+				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(standardInstanceName, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),

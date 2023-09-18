@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	MZREnterpriseInstanceName = "mh-preprod-customer-us-south-wp"
+	MZREnterpriseInstanceName = "ES Preprod Pipeline MZR"
 	SZREnterpriseInstanceName = "mh-preprod-customer-us-south-szr"
-	standardInstanceName      = "hyperion-preprod-spp-a-service"
+	standardInstanceName      = "hyperion-preprod-spp09-us-south-a-service"
 	topicName                 = "kafka-java-console-sample-topic"
 )
 
