@@ -179,11 +179,6 @@ func ResourceIBMIAMAccessGroupTemplate() *schema.Resource {
 																Optional:    true,
 																Description: "Action control for removing this enterprise-managed dynamic rule.",
 															},
-															"update": {
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Action control for updating this enterprise-managed dynamic rule.",
-															},
 														},
 													},
 												},
@@ -194,7 +189,7 @@ func ResourceIBMIAMAccessGroupTemplate() *schema.Resource {
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
-										Description: "Control whether or not access group administrators in child accounts can add, remove, and update dynamic rules for the enterprise-managed access group in their account. The inner level RuleActionControls override these `remove` and `update` action controls.",
+										Description: "Control whether or not access group administrators in child accounts can add, remove, and update dynamic rules for the enterprise-managed access group in their account. The inner level RuleActionControls override these action controls.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"add": {
@@ -206,11 +201,6 @@ func ResourceIBMIAMAccessGroupTemplate() *schema.Resource {
 													Type:        schema.TypeBool,
 													Optional:    true,
 													Description: "Action control for removing enterprise-managed dynamic rules in an enterprise-managed access group.",
-												},
-												"update": {
-													Type:        schema.TypeBool,
-													Optional:    true,
-													Description: "Action control for updating enterprise-managed dynamic rules in an enterprise-managed access group.",
 												},
 											},
 										},
@@ -544,9 +534,6 @@ func resourceIBMIAMAccessGroupTemplateMapToRuleActionControls(modelMap map[strin
 	if modelMap["remove"] != nil {
 		model.Remove = core.BoolPtr(modelMap["remove"].(bool))
 	}
-	if modelMap["update"] != nil {
-		model.Update = core.BoolPtr(modelMap["update"].(bool))
-	}
 	return model, nil
 }
 
@@ -557,9 +544,6 @@ func resourceIBMIAMAccessGroupTemplateMapToAssertionsActionControls(modelMap map
 	}
 	if modelMap["remove"] != nil {
 		model.Remove = core.BoolPtr(modelMap["remove"].(bool))
-	}
-	if modelMap["update"] != nil {
-		model.Update = core.BoolPtr(modelMap["update"].(bool))
 	}
 	return model, nil
 }
@@ -728,9 +712,6 @@ func resourceIBMIAMAccessGroupTemplateRuleActionControlsToMap(model *iamaccessgr
 	if model.Remove != nil {
 		modelMap["remove"] = model.Remove
 	}
-	if model.Update != nil {
-		modelMap["update"] = model.Update
-	}
 	return modelMap, nil
 }
 
@@ -741,9 +722,6 @@ func resourceIBMIAMAccessGroupTemplateAssertionsActionControlsToMap(model *iamac
 	}
 	if model.Remove != nil {
 		modelMap["remove"] = model.Remove
-	}
-	if model.Update != nil {
-		modelMap["update"] = model.Update
 	}
 	return modelMap, nil
 }

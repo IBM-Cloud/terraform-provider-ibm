@@ -97,7 +97,6 @@ func testAccCheckIBMIAMAccessGroupTemplateVersionConfigBasic(name string, agName
 				action_controls {
 					add    = false
 					remove = true
-					update = true
 				}
 			}
 		}
@@ -125,7 +124,6 @@ func testAccCheckIBMIAMAccessGroupTemplateVersionUpdateWithCommit(name string, a
 				action_controls {
 					add    = true
 					remove = true
-					update = true
 				}
 			}
 		}
