@@ -39,207 +39,27 @@ func ResourceIbmProject() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
 				Description:  "The location where the project's data and tools are created.",
 			},
-			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_project", "name"),
-				Description: "The name of the project.",
-			},
-			"description": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_project", "description"),
-				Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
-			},
-			"destroy_on_delete": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
-			},
-			"configs": &schema.Schema{
+			"definition": &schema.Schema{
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Optional:    true,
-				Description: "The project configurations. These configurations are only included in the response of creating a project if a configs array is specified in the request payload.",
+				Description: "The definition of the project.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the project.",
+						},
+						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
+							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
 						},
-						"project_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The unique ID.",
-						},
-						"version": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "The version of the configuration.",
-						},
-						"is_draft": &schema.Schema{
+						"destroy_on_delete": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "The flag that indicates whether the version of the configuration is draft, or active.",
-						},
-						"needs_attention_state": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The needs attention state of a configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"state": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The state of the configuration.",
-						},
-						"approved_version": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The project configuration version.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"needs_attention_state": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The needs attention state of a configuration.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"state": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The state of the configuration.",
-									},
-									"version": &schema.Schema{
-										Type:        schema.TypeInt,
-										Required:    true,
-										Description: "The version number of the configuration.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A relative URL.",
-									},
-								},
-							},
-						},
-						"installed_version": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The project configuration version.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"needs_attention_state": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The needs attention state of a configuration.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"state": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The state of the configuration.",
-									},
-									"version": &schema.Schema{
-										Type:        schema.TypeInt,
-										Required:    true,
-										Description: "The version number of the configuration.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A relative URL.",
-									},
-								},
-							},
-						},
-						"definition": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The project configuration definition summary.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The name of the configuration.",
-									},
-									"description": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The description of the project configuration.",
-									},
-								},
-							},
-						},
-						"check_job": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The action job performed on the project configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The unique ID.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A relative URL.",
-									},
-								},
-							},
-						},
-						"install_job": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The action job performed on the project configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The unique ID.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A relative URL.",
-									},
-								},
-							},
-						},
-						"uninstall_job": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The action job performed on the project configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The unique ID.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A relative URL.",
-									},
-								},
-							},
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "A relative URL.",
+							Required:    true,
+							Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
 						},
 					},
 				},
@@ -298,27 +118,119 @@ func ResourceIbmProject() *schema.Resource {
 				Computed:    true,
 				Description: "The CRN of the event notifications instance if one is connected to this project.",
 			},
-			"definition": &schema.Schema{
+			"configs": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The definition of the project.",
+				Description: "The project configurations. These configurations are only included in the response of creating a project if a configs array is specified in the request payload.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The name of the project.",
+							Required:    true,
+							Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
 						},
-						"description": &schema.Schema{
+						"project_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
+							Required:    true,
+							Description: "The unique ID.",
 						},
-						"destroy_on_delete": &schema.Schema{
+						"version": &schema.Schema{
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "The version of the configuration.",
+						},
+						"is_draft": &schema.Schema{
 							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "The flag that indicates whether the version of the configuration is draft, or active.",
+						},
+						"needs_attention_state": &schema.Schema{
+							Type:        schema.TypeList,
 							Optional:    true,
-							Default:     true,
-							Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
+							Description: "The needs attention state of a configuration.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"state": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The state of the configuration.",
+						},
+						"update_available": &schema.Schema{
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "The flag that indicates whether a configuration update is available.",
+						},
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"updated_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"last_approved": &schema.Schema{
+							Type: schema.TypeList,
+							// MaxItems:    1,
+							Computed:    true,
+							Description: "The last approved metadata of the configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"is_forced": &schema.Schema{
+										Type:        schema.TypeBool,
+										Required:    true,
+										Description: "The flag that indicates whether the approval was forced approved.",
+									},
+									"comment": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Default:     "",
+										Description: "The comment left by the user who approved the configuration.",
+									},
+									"timestamp": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+									},
+									"user_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The unique ID.",
+									},
+								},
+							},
+						},
+						"last_save": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A relative URL.",
+						},
+						"definition": &schema.Schema{
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
+							Required:    true,
+							Description: "The name and description of a project configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The configuration name.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A project configuration description.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -348,24 +260,6 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 			MinValueLength:             0,
 			MaxValueLength:             12,
 		},
-		validate.ValidateSchema{
-			Identifier:                 "name",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^(?!\s)(?!.*\s$)[^'"` + "`" + `<>{}\x00-\x1F]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             64,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "description",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^$|^(?!\s).*\S$`,
-			MinValueLength:             0,
-			MaxValueLength:             1024,
-		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_project", Schema: validateSchema}
@@ -382,20 +276,18 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 
 	createProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
 	createProjectOptions.SetLocation(d.Get("location").(string))
-	if _, ok := d.GetOk("name"); ok {
-		createProjectOptions.SetName(d.Get("name").(string))
-	}
-	if _, ok := d.GetOk("description"); ok {
-		createProjectOptions.SetDescription(d.Get("description").(string))
-	}
-	if _, ok := d.GetOk("destroy_on_delete"); ok {
-		createProjectOptions.SetDestroyOnDelete(d.Get("destroy_on_delete").(bool))
+	if _, ok := d.GetOk("definition"); ok {
+		definitionModel, err := resourceIbmProjectMapToProjectPrototypeDefinition(d.Get("definition.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createProjectOptions.SetDefinition(definitionModel)
 	}
 	if _, ok := d.GetOk("configs"); ok {
-		var configs []projectv1.ProjectConfigTerraform
+		var configs []projectv1.ProjectConfigPrototype
 		for _, v := range d.Get("configs").([]interface{}) {
 			value := v.(map[string]interface{})
-			configsItem, err := resourceIbmProjectMapToProjectConfigTerraform(value)
+			configsItem, err := resourceIbmProjectMapToProjectConfigPrototype(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -404,13 +296,13 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 		createProjectOptions.SetConfigs(configs)
 	}
 
-	projectCanonical, response, err := projectClient.CreateProjectWithContext(context, createProjectOptions)
+	project, response, err := projectClient.CreateProjectWithContext(context, createProjectOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateProjectWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateProjectWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*projectCanonical.ID)
+	d.SetId(*project.ID)
 
 	return resourceIbmProjectRead(context, d, meta)
 }
@@ -425,7 +317,7 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 
 	getProjectOptions.SetID(d.Id())
 
-	projectCanonical, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
+	project, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -435,53 +327,34 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("resource_group", projectCanonical.ResourceGroup); err != nil {
+	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
 	}
-	if err = d.Set("location", projectCanonical.Location); err != nil {
+	if err = d.Set("location", project.Location); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
 	}
-	if !core.IsNil(projectCanonical.Name) {
-		if err = d.Set("name", projectCanonical.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	if !core.IsNil(project.Definition) {
+		definitionMap, err := resourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
 		}
 	}
-	if !core.IsNil(projectCanonical.Description) {
-		if err = d.Set("description", projectCanonical.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
-		}
-	}
-	if !core.IsNil(projectCanonical.DestroyOnDelete) {
-		if err = d.Set("destroy_on_delete", projectCanonical.DestroyOnDelete); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting destroy_on_delete: %s", err))
-		}
-	}
-	if !core.IsNil(projectCanonical.Configs) {
-		configs := []map[string]interface{}{}
-		for _, configsItem := range projectCanonical.Configs {
-			configsItemMap, err := resourceIbmProjectProjectConfigCollectionMemberTerraformToMap(&configsItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			configs = append(configs, configsItemMap)
-		}
-		if err = d.Set("configs", configs); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
-		}
-	}
-	if !core.IsNil(projectCanonical.Crn) {
-		if err = d.Set("crn", projectCanonical.Crn); err != nil {
+	if !core.IsNil(project.Crn) {
+		if err = d.Set("crn", project.Crn); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
 	}
-	if !core.IsNil(projectCanonical.CreatedAt) {
-		if err = d.Set("created_at", flex.DateTimeToString(projectCanonical.CreatedAt)); err != nil {
+	if !core.IsNil(project.CreatedAt) {
+		if err = d.Set("created_at", flex.DateTimeToString(project.CreatedAt)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 		}
 	}
-	if !core.IsNil(projectCanonical.CumulativeNeedsAttentionView) {
+	if !core.IsNil(project.CumulativeNeedsAttentionView) {
 		cumulativeNeedsAttentionView := []map[string]interface{}{}
-		for _, cumulativeNeedsAttentionViewItem := range projectCanonical.CumulativeNeedsAttentionView {
+		for _, cumulativeNeedsAttentionViewItem := range project.CumulativeNeedsAttentionView {
 			cumulativeNeedsAttentionViewItemMap, err := resourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -492,28 +365,32 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view: %s", err))
 		}
 	}
-	if !core.IsNil(projectCanonical.CumulativeNeedsAttentionViewError) {
-		if err = d.Set("cumulative_needs_attention_view_error", projectCanonical.CumulativeNeedsAttentionViewError); err != nil {
+	if !core.IsNil(project.CumulativeNeedsAttentionViewError) {
+		if err = d.Set("cumulative_needs_attention_view_error", project.CumulativeNeedsAttentionViewError); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view_error: %s", err))
 		}
 	}
-	if !core.IsNil(projectCanonical.State) {
-		if err = d.Set("state", projectCanonical.State); err != nil {
+	if !core.IsNil(project.State) {
+		if err = d.Set("state", project.State); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 		}
 	}
-	if !core.IsNil(projectCanonical.EventNotificationsCrn) {
-		if err = d.Set("event_notifications_crn", projectCanonical.EventNotificationsCrn); err != nil {
+	if !core.IsNil(project.EventNotificationsCrn) {
+		if err = d.Set("event_notifications_crn", project.EventNotificationsCrn); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting event_notifications_crn: %s", err))
 		}
 	}
-	if !core.IsNil(projectCanonical.Definition) {
-		definitionMap, err := resourceIbmProjectProjectDefinitionTerraformToMap(projectCanonical.Definition)
-		if err != nil {
-			return diag.FromErr(err)
+	if !core.IsNil(project.Configs) {
+		configs := []map[string]interface{}{}
+		for _, configsItem := range project.Configs {
+			configsItemMap, err := resourceIbmProjectProjectConfigCollectionMemberToMap(&configsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			configs = append(configs, configsItemMap)
 		}
-		if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
+		if err = d.Set("configs", configs); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
 		}
 	}
 
@@ -532,29 +409,12 @@ func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, m
 
 	hasChange := false
 
-	if d.HasChange("name") {
-		updateProjectOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
-	if d.HasChange("description") {
-		updateProjectOptions.SetDescription(d.Get("description").(string))
-		hasChange = true
-	}
-	if d.HasChange("destroy_on_delete") {
-		updateProjectOptions.SetDestroyOnDelete(d.Get("destroy_on_delete").(bool))
-		hasChange = true
-	}
-	if d.HasChange("configs") {
-		var configs []projectv1.ProjectConfigTerraform
-		for _, v := range d.Get("configs").([]interface{}) {
-			value := v.(map[string]interface{})
-			configsItem, err := resourceIbmProjectMapToProjectConfigTerraform(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			configs = append(configs, *configsItem)
+	if d.HasChange("definition") {
+		definition, err := resourceIbmProjectMapToProjectPrototypePatchDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		updateProjectOptions.SetConfigs(configs)
+		updateProjectOptions.SetDefinition(definition)
 		hasChange = true
 	}
 
@@ -590,11 +450,33 @@ func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceIbmProjectMapToProjectConfigTerraform(modelMap map[string]interface{}) (*projectv1.ProjectConfigTerraform, error) {
-	model := &projectv1.ProjectConfigTerraform{}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+func resourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]interface{}) (*projectv1.ProjectPrototypeDefinition, error) {
+	model := &projectv1.ProjectPrototypeDefinition{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
+	if modelMap["destroy_on_delete"] != nil {
+		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
+	}
+	return model, nil
+}
+
+func resourceIbmProjectMapToProjectConfigPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototype, error) {
+	model := &projectv1.ProjectConfigPrototype{}
+	if modelMap["definition"] != nil && len(modelMap["definition"].([]interface{})) > 0 {
+		DefinitionModel, err := resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap["definition"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Definition = DefinitionModel
+	}
+	return model, nil
+}
+
+func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototypeDefinitionBlock, error) {
+	model := &projectv1.ProjectConfigPrototypeDefinitionBlock{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -613,15 +495,13 @@ func resourceIbmProjectMapToProjectConfigTerraform(modelMap map[string]interface
 		model.Authorizations = AuthorizationsModel
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
-		ComplianceProfileModel, err := resourceIbmProjectMapToProjectConfigComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
+		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.ComplianceProfile = ComplianceProfileModel
 	}
-	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
-		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
-	}
+	model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	if modelMap["input"] != nil && len(modelMap["input"].([]interface{})) > 0 {
 		InputModel, err := resourceIbmProjectMapToInputVariable(modelMap["input"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -668,8 +548,8 @@ func resourceIbmProjectMapToProjectConfigAuthTrustedProfile(modelMap map[string]
 	return model, nil
 }
 
-func resourceIbmProjectMapToProjectConfigComplianceProfile(modelMap map[string]interface{}) (*projectv1.ProjectConfigComplianceProfile, error) {
-	model := &projectv1.ProjectConfigComplianceProfile{}
+func resourceIbmProjectMapToProjectComplianceProfile(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfile, error) {
+	model := &projectv1.ProjectComplianceProfile{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
@@ -698,104 +578,27 @@ func resourceIbmProjectMapToProjectConfigSetting(modelMap map[string]interface{}
 	return model, nil
 }
 
-func resourceIbmProjectProjectConfigCollectionMemberTerraformToMap(model *projectv1.ProjectConfigCollectionMemberTerraform) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
+func resourceIbmProjectMapToProjectPrototypePatchDefinitionBlock(modelMap map[string]interface{}) (*projectv1.ProjectPrototypePatchDefinitionBlock, error) {
+	model := &projectv1.ProjectPrototypePatchDefinitionBlock{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
-	if model.ProjectID != nil {
-		modelMap["project_id"] = model.ProjectID
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if model.Version != nil {
-		modelMap["version"] = flex.IntValue(model.Version)
+	if modelMap["destroy_on_delete"] != nil {
+		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
 	}
-	if model.IsDraft != nil {
-		modelMap["is_draft"] = model.IsDraft
-	}
-	if model.NeedsAttentionState != nil {
-		modelMap["needs_attention_state"] = model.NeedsAttentionState
-	}
-	if model.State != nil {
-		modelMap["state"] = model.State
-	}
-	if model.ApprovedVersion != nil {
-		approvedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
-	}
-	if model.InstalledVersion != nil {
-		installedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.InstalledVersion)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["installed_version"] = []map[string]interface{}{installedVersionMap}
-	}
-	if model.Definition != nil {
-		definitionMap, err := resourceIbmProjectProjectConfigDefinitionSummaryToMap(model.Definition)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["definition"] = []map[string]interface{}{definitionMap}
-	}
-	if model.CheckJob != nil {
-		checkJobMap, err := resourceIbmProjectActionJobWithIdAndHrefToMap(model.CheckJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["check_job"] = []map[string]interface{}{checkJobMap}
-	}
-	if model.InstallJob != nil {
-		installJobMap, err := resourceIbmProjectActionJobWithIdAndHrefToMap(model.InstallJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["install_job"] = []map[string]interface{}{installJobMap}
-	}
-	if model.UninstallJob != nil {
-		uninstallJobMap, err := resourceIbmProjectActionJobWithIdAndHrefToMap(model.UninstallJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["uninstall_job"] = []map[string]interface{}{uninstallJobMap}
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
+	return model, nil
 }
 
-func resourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.NeedsAttentionState != nil {
-		modelMap["needs_attention_state"] = model.NeedsAttentionState
-	}
-	modelMap["state"] = model.State
-	modelMap["version"] = flex.IntValue(model.Version)
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectProjectConfigDefinitionSummaryToMap(model *projectv1.ProjectConfigDefinitionSummary) (map[string]interface{}, error) {
+func resourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectActionJobWithIdAndHrefToMap(model *projectv1.ActionJobWithIdAndHref) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
+	modelMap["destroy_on_delete"] = model.DestroyOnDelete
 	return modelMap, nil
 }
 
@@ -816,16 +619,60 @@ func resourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulative
 	return modelMap, nil
 }
 
-func resourceIbmProjectProjectDefinitionTerraformToMap(model *projectv1.ProjectDefinitionTerraform) (map[string]interface{}, error) {
+func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.ProjectConfigCollectionMember) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	modelMap["project_id"] = model.ProjectID
+	modelMap["version"] = flex.IntValue(model.Version)
+	modelMap["is_draft"] = model.IsDraft
+	if model.NeedsAttentionState != nil {
+		modelMap["needs_attention_state"] = model.NeedsAttentionState
+	}
+	modelMap["state"] = model.State
+	modelMap["update_available"] = model.UpdateAvailable
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.LastApproved != nil {
+		lastApprovedMap, err := resourceIbmProjectProjectConfigMetadataLastApprovedToMap(model.LastApproved)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["last_approved"] = []map[string]interface{}{lastApprovedMap}
+	}
+	if model.LastSave != nil {
+		modelMap["last_save"] = model.LastSave.String()
+	}
+	modelMap["href"] = model.Href
+	definitionMap, err := resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	return modelMap, nil
+}
+
+func resourceIbmProjectProjectConfigMetadataLastApprovedToMap(model *projectv1.ProjectConfigMetadataLastApproved) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["is_forced"] = model.IsForced
+	if model.Comment != nil {
+		modelMap["comment"] = model.Comment
+	}
+	modelMap["timestamp"] = model.Timestamp.String()
+	modelMap["user_id"] = model.UserID
+	return modelMap, nil
+}
+
+func resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model *projectv1.ProjectConfigDefinitionNameDescription) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = model.Name
 	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
-	}
-	if model.DestroyOnDelete != nil {
-		modelMap["destroy_on_delete"] = model.DestroyOnDelete
 	}
 	return modelMap, nil
 }

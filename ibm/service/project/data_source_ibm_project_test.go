@@ -14,88 +14,34 @@ import (
 )
 
 func TestAccIbmProjectDataSourceBasic(t *testing.T) {
-	projectCanonicalResourceGroup := fmt.Sprintf("Default")
-	projectCanonicalLocation := fmt.Sprintf("us-south")
-	projectCanonicalName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	projectResourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	projectLocation := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProjectDataSourceConfigBasic(projectCanonicalResourceGroup, projectCanonicalLocation, projectCanonicalName),
+				Config: testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup, projectLocation),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "location"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "state"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "destroy_on_delete"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project", "definition.#"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIbmProjectDataSourceAllArgs(t *testing.T) {
-	projectCanonicalResourceGroup := fmt.Sprintf("Default")
-	projectCanonicalLocation := fmt.Sprintf("us-south")
-	projectCanonicalName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	projectCanonicalDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	projectCanonicalDestroyOnDelete := "true"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmProjectDataSourceConfig(projectCanonicalResourceGroup, projectCanonicalLocation, projectCanonicalName, projectCanonicalDescription, projectCanonicalDestroyOnDelete),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "location"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "state"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.0.description"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "destroy_on_delete"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckIbmProjectDataSourceConfigBasic(projectCanonicalResourceGroup string, projectCanonicalLocation string, projectCanonicalName string) string {
+func testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup string, projectLocation string) string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
 			resource_group = "%s"
 			location = "%s"
-			name = "%s"
 		}
 
 		data "ibm_project" "project_instance" {
-			id = ibm_project.project_instance.id
+			id = ibm_project.project_instance.project_id
 		}
-	`, projectCanonicalResourceGroup, projectCanonicalLocation, projectCanonicalName)
-}
-
-func testAccCheckIbmProjectDataSourceConfig(projectCanonicalResourceGroup string, projectCanonicalLocation string, projectCanonicalName string, projectCanonicalDescription string, projectCanonicalDestroyOnDelete string) string {
-	return fmt.Sprintf(`
-		resource "ibm_project" "project_instance" {
-			resource_group = "%s"
-			location = "%s"
-			name = "%s"
-			description = "%s"
-			destroy_on_delete = %s
-		}
-
-		data "ibm_project" "project_instance" {
-			id = ibm_project.project_instance.id
-		}
-	`, projectCanonicalResourceGroup, projectCanonicalLocation, projectCanonicalName, projectCanonicalDescription, projectCanonicalDestroyOnDelete)
+	`, projectResourceGroup, projectLocation)
 }
