@@ -64,6 +64,16 @@ func DataSourceIbmIsShare() *schema.Resource {
 				Computed:    true,
 				Description: "The maximum input/output operation performance bandwidth per second for the file share.",
 			},
+			"last_sync_started_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The start date and time of last synchronization of the replica share to its source.",
+			},
+			"last_sync_completed_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The completed date and time of last synchronization of the replica share to its source.",
+			},
 			"latest_job": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -410,7 +420,13 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("iops", share.Iops); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting iops: %s", err))
 	}
+	if share.LastSyncStartedAt != nil {
+		d.Set("last_sync_started_at", share.LastSyncStartedAt.String())
+	}
 
+	if share.LastSyncCompletedAt != nil {
+		d.Set("last_sync_completed_at", share.LastSyncCompletedAt.String())
+	}
 	if share.LatestJob != nil {
 		err = d.Set("latest_job", dataSourceShareFlattenLatestJob(*share.LatestJob))
 		if err != nil {

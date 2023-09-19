@@ -51,6 +51,25 @@ resource "ibm_is_share" "example-2" {
   }
 }
 ```
+## Example Usage (Create a cross regional replication)
+```terraform
+resource "ibm_is_share" "example-3" {
+  provider = ibm.syd
+  access_control_mode = "security_group"
+  name    = "my-share"
+  size    = 200
+  profile = "dp2"
+  zone    = "au-syd-2"
+}
+resource "ibm_is_share" "example-4" {
+  provider = ibm.ussouth
+  zone                  = "us-south-3"
+  source_share_crn          = ibm_is_share.example.crn
+  name                  = "my-replica1"
+  profile               = "dp2"
+  replication_cron_spec = "0 */5 * * *"
+}
+```
 ## Argument Reference
 
 The following arguments are supported:
@@ -146,7 +165,8 @@ The following attributes are exported:
 - `href` - (String) The URL for this share.
 - `id` - (String) The unique identifier of the Share.
 - `iops` - (Integer) The maximum input/output operation performance bandwidth per second for the file share.
-- `last_sync_at` - (String) The date and time that the file share was last synchronized to its replica.This property will be present when the `replication_role` is `source`.
+- `last_sync_started_at` - (String) The start date and time of last synchronization of the replica share to its source. This property will be present when the replication_role is replica and at least one replication_sync job has been started.
+- `last_sync_completed_at` - (String) The completed date and time of last synchronization of the replica share to its source. This property will be present when the replication_role is replica and at least one replication_sync job has been completed.
 - `latest_job` - (List) The latest job associated with this file share.This property will be absent if no jobs have been created for this file share. Nested `latest_job` blocks have the following structure:
   - `status` - (String) The status of the file share job
   - `status_reasons` - (List) The reasons for the file share job status (if any). Nested `status_reasons` blocks have the following structure:

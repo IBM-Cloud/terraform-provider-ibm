@@ -36,6 +36,8 @@ The following attributes are exported:
 	- `href` - The URL for this share.
 	- `id` - The unique identifier for this file share.
 	- `iops` - The maximum input/output operation performance bandwidth per second for the file share.
+	- `last_sync_started_at` - (String) The start date and time of last synchronization of the replica share to its source. This property will be present when the replication_role is replica and at least one replication_sync job has been started.
+    - `last_sync_completed_at` - (String) The completed date and time of last synchronization of the replica share to its source. This property will be present when the replication_role is replica and at least one replication_sync job has been completed.
 	- `latest_job` - The latest job associated with this file share.This property will be absent if no jobs have been created for this file share. Nested `latest_job` blocks have the following structure:
     - `status` - The status of the file share job
     - `status_reasons` - The reasons for the file share job status (if any). Nested `status_reasons` blocks have the following structure:

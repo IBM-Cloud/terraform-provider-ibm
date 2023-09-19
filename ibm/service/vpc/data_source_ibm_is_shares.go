@@ -78,6 +78,16 @@ func DataSourceIbmIsShares() *schema.Resource {
 							Computed:    true,
 							Description: "The maximum input/output operation performance bandwidth per second for the file share.",
 						},
+						"last_sync_started_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The start date and time of last synchronization of the replica share to its source.",
+						},
+						"last_sync_completed_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The completed date and time of last synchronization of the replica share to its source.",
+						},
 						"latest_job": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -454,6 +464,12 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	}
 	if sharesItem.Iops != nil {
 		sharesMap["iops"] = sharesItem.Iops
+	}
+	if sharesItem.LastSyncStartedAt != nil {
+		sharesMap["last_sync_started_at"] = sharesItem.LastSyncStartedAt.String()
+	}
+	if sharesItem.LastSyncCompletedAt != nil {
+		sharesMap["last_sync_completed_at"] = sharesItem.LastSyncCompletedAt.String()
 	}
 	if sharesItem.LifecycleState != nil {
 		sharesMap["lifecycle_state"] = sharesItem.LifecycleState

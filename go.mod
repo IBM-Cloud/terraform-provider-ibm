@@ -234,4 +234,4 @@ exclude (
 	k8s.io/client-go v12.0.0+incompatible
 )
 
-replace github.com/ibm/vpc-go-sdk => ./common/github.com/ibm/vpc-go-sdk 
+replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk 
