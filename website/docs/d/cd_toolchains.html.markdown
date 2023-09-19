@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about cd_toolchains. Yo
 
 ```hcl
 data "ibm_cd_toolchains" "cd_toolchains" {
-	name = "My Toolchain"
+	name = "TestToolchainV2"
 	resource_group_id = "6a9a01f2cff54a7f966f803d92877123"
 }
 ```

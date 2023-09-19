@@ -113,9 +113,9 @@ func dataSourceIBMCdToolchainsRead(context context.Context, d *schema.ResourceDa
 	listToolchainsOptions := &cdtoolchainv2.ListToolchainsOptions{}
 
 	listToolchainsOptions.SetResourceGroupID(d.Get("resource_group_id").(string))
-	// if _, ok := d.GetOk("name"); ok {
-	// 	listToolchainsOptions.SetName(d.Get("name").(string))
-	// }
+	if _, ok := d.GetOk("name"); ok {
+		listToolchainsOptions.SetName(d.Get("name").(string))
+	}
 
 	var pager *cdtoolchainv2.ToolchainsPager
 	pager, err = cdToolchainClient.NewToolchainsPager(listToolchainsOptions)
