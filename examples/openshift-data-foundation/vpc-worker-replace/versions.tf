@@ -3,10 +3,10 @@
 ###############################
 
 terraform {
-required_version = "1.55.0-beta0"
   required_providers {
     ibm = {
       source = "IBM-Cloud/ibm"
+      version = "1.56.0"
     }
   }
 }
