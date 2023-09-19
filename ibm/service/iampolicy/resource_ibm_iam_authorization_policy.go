@@ -37,12 +37,11 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 			},
 
 			"target_service_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ExactlyOneOf: []string{"target_service_name", "resource_attributes"},
-				ForceNew:     true,
-				Description:  "The target service name",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The target service name",
 			},
 
 			"roles": {
@@ -305,6 +304,9 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 			if name == "serviceName" {
 				targetServiceName = value
 			}
+			if name == "resourceType" && targetServiceName == "" {
+				targetServiceName = "resource-controller"
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
@@ -313,13 +315,15 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 			policyResource.Attributes = append(policyResource.Attributes, at)
 		}
 	} else {
-		targetServiceName = d.Get("target_service_name").(string)
-		serviceNameResourceAttribute := &iampolicymanagementv1.ResourceAttribute{
-			Name:     core.StringPtr("serviceName"),
-			Value:    core.StringPtr(targetServiceName),
-			Operator: core.StringPtr("stringEquals"),
+		if name, ok := d.GetOk("target_service_name"); ok {
+			targetServiceName = name.(string)
+			serviceNameResourceAttribute := &iampolicymanagementv1.ResourceAttribute{
+				Name:     core.StringPtr("serviceName"),
+				Value:    core.StringPtr(targetServiceName),
+				Operator: core.StringPtr("stringEquals"),
+			}
+			policyResource.Attributes = append(policyResource.Attributes, *serviceNameResourceAttribute)
 		}
-		policyResource.Attributes = append(policyResource.Attributes, *serviceNameResourceAttribute)
 
 		accountIDResourceAttribute := &iampolicymanagementv1.ResourceAttribute{
 			Name:     core.StringPtr("accountId"),
@@ -343,6 +347,9 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 				Value: core.StringPtr(tType.(string)),
 			}
 			policyResource.Attributes = append(policyResource.Attributes, resourceTypeResourceAttribute)
+			if targetServiceName == "" {
+				targetServiceName = "resource-controller"
+			}
 		}
 
 		if tResGrpID, ok := d.GetOk("target_resource_group_id"); ok {

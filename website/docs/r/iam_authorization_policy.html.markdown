@@ -115,6 +115,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 ```terraform
 
+resource "ibm_resource_group" "source_resource_group" {
+  name     = "123123"
+}
+
 resource "ibm_iam_authorization_policy" "policy" {
     roles                  = [
         "Reader",
@@ -137,9 +141,46 @@ resource "ibm_iam_authorization_policy" "policy" {
     }
     subject_attributes {
         name  = "resourceGroupId"
-        value = "abcdef123456"
+        value = ibm_resource_group.source_resource_group.id
     }
 }
+```
+
+### Authorization policy between source service and target resource type "resource-group"
+
+```terraform
+resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name = "project"
+		target_resource_type  = "resource-group"
+		roles                = ["Viewer"]
+	  }
+```
+
+
+### Authorization policy between source service and target resource type "resource-group" using resource attributes
+
+```terraform
+resource "ibm_iam_authorization_policy" "policy" {
+		roles    = ["Viewer"]
+		subject_attributes {
+			name   = "accountId"
+			value  = "12345"
+		}
+		subject_attributes {
+			name   = "serviceName"
+			value  = "project"
+		}
+
+		resource_attributes {
+			name   = "resourceType"
+			value  = "resource-group"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value  = "12345"
+		}
+	}
+```
 
 ### Authorization policy between two specific services.
 
