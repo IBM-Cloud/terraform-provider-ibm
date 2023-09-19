@@ -388,15 +388,11 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		fmt.Println("**** TEST *****", lastApprovedMap)
 		if len(lastApprovedMap) > 0 {
-			// if err = d.Set("last_approved", []map[string]interface{}{lastApprovedMap}); err != nil {
 			if err = d.Set("last_approved", []interface{}{lastApprovedMap}); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting last_approved: %s", err))
 			}
 		}
-	} else {
-		fmt.Println("**** TEST *****", projectConfig.LastApproved)
 	}
 	if !core.IsNil(projectConfig.LastSave) {
 		if err = d.Set("last_save", flex.DateTimeToString(projectConfig.LastSave)); err != nil {
