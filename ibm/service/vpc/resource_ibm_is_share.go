@@ -1081,9 +1081,9 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
-	// if share.LastSyncAt != nil {
-	// 	d.Set("last_sync_at", share.LastSyncAt.String())
-	// }
+	if share.LastSyncAt != nil {
+		d.Set("last_sync_at", share.LastSyncAt.String())
+	}
 	latest_jobs := []map[string]interface{}{}
 	if share.LatestJob != nil {
 		latest_job := make(map[string]interface{})
