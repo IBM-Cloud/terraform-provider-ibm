@@ -3,8 +3,8 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.19
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20231204080125-462fa9e436bc
-	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231116055201-2a84da7b9bd6
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20240110132033-6ead1f81a985
+	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231207111718-a3b74cc935fa
 	github.com/IBM-Cloud/power-go-client v1.5.8
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
@@ -83,7 +83,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/cloudflare/circl v1.3.3 // indirect
+	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/pkg v0.0.0-20220810130054-c7d1c02cb6cf // indirect
