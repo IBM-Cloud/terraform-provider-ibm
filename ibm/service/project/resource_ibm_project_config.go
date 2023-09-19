@@ -389,7 +389,8 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 		if len(lastApprovedMap) > 0 {
-			if err = d.Set("last_approved", []map[string]interface{}{lastApprovedMap}); err != nil {
+			// if err = d.Set("last_approved", []map[string]interface{}{lastApprovedMap}); err != nil {
+			if err = d.Set("last_approved", []interface{}{lastApprovedMap}); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting last_approved: %s", err))
 			}
 		}
