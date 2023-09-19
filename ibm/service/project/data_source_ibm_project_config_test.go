@@ -20,15 +20,14 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "project_config_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "version"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "is_draft"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "state"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "update_available"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config", "definition.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_config_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "version"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "is_draft"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "state"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "update_available"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.#"),
 				),
 			},
 		},
@@ -40,15 +39,29 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic() string {
 		resource "ibm_project" "project_instance" {
 			resource_group = "Default"
 			location = "us-south"
+			definition {
+                name = "acme-microservice"
+                description = "acme-microservice description"
+                destroy_on_delete = true
+            }
 		}
 
 		resource "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
+            definition {
+                name = "stage-environment"
+                labels = ["env:stage"]
+                authorizations {
+                    method = "API_KEY"
+                    api_key = "uJLTE48pX6_kAI_tQZVX1Rp1TbnrE17ybQY0x1YbHl8A"
+               }
+               locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
+            }
 		}
 
 		data "ibm_project_config" "project_config_instance" {
-			project_id = ibm_project_config.project_config.project_id
-			id = ibm_project_config.project_config_instance.projectConfig_id
+			project_id = ibm_project_config.project_config_instance.project_id
+			id = ibm_project_config.project_config_instance.project_config_id
 		}
 	`)
 }

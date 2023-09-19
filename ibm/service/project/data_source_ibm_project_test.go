@@ -7,15 +7,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmProjectDataSourceBasic(t *testing.T) {
-	projectResourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	projectLocation := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	projectResourceGroup := fmt.Sprintf("Default")
+	projectLocation := fmt.Sprintf("us-south")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -24,9 +23,8 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup, projectLocation),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_project.project", "definition.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
 				),
 			},
 		},
@@ -38,10 +36,15 @@ func testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup string, pr
 		resource "ibm_project" "project_instance" {
 			resource_group = "%s"
 			location = "%s"
+			definition {
+                name = "acme-microservice"
+                description = "acme-microservice description"
+                destroy_on_delete = true
+            }
 		}
 
 		data "ibm_project" "project_instance" {
-			id = ibm_project.project_instance.project_id
+			id = ibm_project.project_instance.id
 		}
 	`, projectResourceGroup, projectLocation)
 }

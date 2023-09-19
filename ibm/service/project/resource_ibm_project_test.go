@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -18,10 +17,10 @@ import (
 
 func TestAccIbmProjectBasic(t *testing.T) {
 	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	location := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
-	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := fmt.Sprintf("Default")
+	location := fmt.Sprintf("us-south")
+	resourceGroupUpdate := fmt.Sprintf("Default")
+	locationUpdate := fmt.Sprintf("us-south")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,20 +30,20 @@ func TestAccIbmProjectBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigBasic(resourceGroup, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmProjectExists("ibm_project.project", conf),
-					resource.TestCheckResourceAttr("ibm_project.project", "resource_group", resourceGroup),
-					resource.TestCheckResourceAttr("ibm_project.project", "location", location),
+					testAccCheckIbmProjectExists("ibm_project.project_instance", conf),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "resource_group", resourceGroup),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "location", location),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmProjectConfigBasic(resourceGroupUpdate, locationUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_project.project", "resource_group", resourceGroupUpdate),
-					resource.TestCheckResourceAttr("ibm_project.project", "location", locationUpdate),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "resource_group", resourceGroupUpdate),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "location", locationUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_project.project",
+				ResourceName:      "ibm_project.project_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -57,6 +56,11 @@ func testAccCheckIbmProjectConfigBasic(resourceGroup string, location string) st
 		resource "ibm_project" "project_instance" {
 			resource_group = "%s"
 			location = "%s"
+			definition {
+                name = "acme-microservice"
+                description = "acme-microservice description"
+                destroy_on_delete = true
+            }
 		}
 	`, resourceGroup, location)
 }
