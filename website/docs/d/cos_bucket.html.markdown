@@ -225,6 +225,8 @@ In addition to all argument reference list, you can access the following attribu
 
  Either days or years should be provided for default retention, both cannot be used simultaneoulsy.
 
+ - `website_endpoint` - (String) Website endpoint, if the bucket is configured with a website. If not, this will be an empty string.
+
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.
 - `s3_endpoint_public` - (String) Public endpoint for cos bucket.
