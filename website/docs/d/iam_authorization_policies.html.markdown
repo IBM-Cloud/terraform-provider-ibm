@@ -40,7 +40,7 @@ In addition to all argument reference list, you can access the following attribu
     Nested scheme for `resources`:
     - `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.
     - `source_service_name` - (Optional, Forces new resource, string) The source service name.
-    - `target_service_name` - (Required, Forces new resource, string) The target service name.
+    - `target_service_name` - (Optional, Forces new resource, string) The target service name.
     - `source_resource_instance_id` - (Optional, Forces new resource, string) The source resource instance id.
     - `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.
     - `source_resource_type` - (Optional, Forces new resource, string) The resource type of source service.

@@ -230,7 +230,7 @@ Review the argument references that you can specify for your resource.
 
 - `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.**Note** Conflicts with `subject_attributes`.
 - `source_service_name` - (Optional, Forces new resource, string) The source service name.**Note** Conflicts with `subject_attributes`.
-- `target_service_name` - (Required, Forces new resource, string) The target service name.**Note** Conflicts with `resource_attributes`.
+- `target_service_name` - (Optional, Forces new resource, string) The target service name.**Note** Conflicts with `resource_attributes`.
 - `source_resource_instance_id` - (Optional, Forces new resource, string) The source resource instance id.**Note** Conflicts with `subject_attributes`.
 - `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.**Note** Conflicts with `resource_attributes`.
 - `source_resource_type` - (Optional, Forces new resource, string) The resource type of source service.**Note** Conflicts with `subject_attributes`.
