@@ -388,8 +388,10 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("last_approved", []map[string]interface{}{lastApprovedMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_approved: %s", err))
+		if len(lastApprovedMap) > 0 {
+			if err = d.Set("last_approved", []map[string]interface{}{lastApprovedMap}); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting last_approved: %s", err))
+			}
 		}
 	}
 	if !core.IsNil(projectConfig.LastSave) {
@@ -647,7 +649,9 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+		if len(complianceProfileMap) > 0 {
+			modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+		}
 	}
 	modelMap["locator_id"] = model.LocatorID
 	if model.Input != nil {
@@ -655,7 +659,9 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["input"] = []map[string]interface{}{inputMap}
+		if len(inputMap) > 0 {
+			modelMap["input"] = []map[string]interface{}{inputMap}
+		}
 	}
 	if model.Setting != nil {
 		settingMap, err := resourceIbmProjectConfigProjectConfigSettingToMap(model.Setting)
