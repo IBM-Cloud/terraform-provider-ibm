@@ -89,8 +89,6 @@ data "project" "project_instance" {
 | location | The location where the project's data and tools are created. | `string` | true |
 | definition | The definition of the project. | `` | false |
 | project_id | The unique project ID. | `string` | true |
-| id | The unique config ID. | `string` | true |
-| id | The unique project ID. | `string` | true |
 
 ## Outputs
 
