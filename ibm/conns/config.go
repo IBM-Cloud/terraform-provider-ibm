@@ -1707,15 +1707,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// SCC Service
 	sccApiClientURL := scc.DefaultServiceURL
-	// Construct the service options.
-
-	sccApiClientOptions := &scc.SecurityAndComplianceCenterApiV3Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_API_ENDPOINT"}, sccApiClientURL),
+	_, ok := os.LookupEnv("IBMCLOUD_SCC_API_ENDPOINT")
+	// Warn the client that IBMCLOUD_SCC_API_ENDPOINT needs to be set for now
+	if ok {
+		// Construct the service options.
+		sccApiClientOptions := &scc.SecurityAndComplianceCenterApiV3Options{
+			Authenticator: authenticator,
+			URL:           EnvFallBack([]string{"IBMCLOUD_SCC_API_ENDPOINT"}, sccApiClientURL),
+		}
+		// Construct the service client.
+		session.securityAndComplianceCenterClient, err = scc.NewSecurityAndComplianceCenterApiV3(sccApiClientOptions)
+	} else {
+		err = fmt.Errorf("[ERROR] ENV VAR IBMCLOUD_SCC_API_ENDPOINT is not set. Please set IBMCLOUD_SCC_API_ENDPOINT with the following format: https://<region>.compliance.cloud.ibm.com/instances/<instance_id>/v3/")
 	}
-
-	// Construct the service client.
-	session.securityAndComplianceCenterClient, err = scc.NewSecurityAndComplianceCenterApiV3(sccApiClientOptions)
 	if err == nil {
 		// Enable retries for API calls
 		session.securityAndComplianceCenterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -1724,7 +1728,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.securityAndComplianceCenterClientErr = fmt.Errorf("Error occurred while configuring Config Manager service: %q", err)
+		session.securityAndComplianceCenterClientErr = fmt.Errorf("Error occurred while configuring Security and Compliance Center service: %q", err)
 	}
 
 	// SCHEMATICS Service
@@ -3464,6 +3468,7 @@ func isRetryable(err error) bool {
 	return false
 }
 
+// ConstructEndpoint returns a string of the base URL for a service
 func ContructEndpoint(subdomain, domain string) string {
 	endpoint := fmt.Sprintf("https://%s.%s", subdomain, domain)
 	return endpoint
