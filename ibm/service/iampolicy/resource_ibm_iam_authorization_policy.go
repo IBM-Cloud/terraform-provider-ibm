@@ -29,21 +29,21 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"source_service_name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				AtLeastOneOf:  []string{"source_service_name", "source_resource_group_id", "subject_attributes"},
-				Description:   "The source service name",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				AtLeastOneOf: []string{"source_service_name", "source_resource_group_id", "subject_attributes"},
+				Description:  "The source service name",
 			},
 
 			"target_service_name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				AtLeastOneOf:  []string{"target_service_name", "target_resource_type", "resource_attributes"},
-				Description:   "The target service name",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				AtLeastOneOf: []string{"target_service_name", "target_resource_type", "resource_attributes"},
+				Description:  "The target service name",
 			},
 
 			"roles": {
