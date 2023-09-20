@@ -33,7 +33,7 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"subject_attributes"},
+				AtLeastOneOf:  []string{"source_service_name", "source_resource_group_id", "subject_attributes"},
 				Description:   "The source service name",
 			},
 
@@ -42,7 +42,7 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"subject_attributes"},
+				AtLeastOneOf:  []string{"target_service_name", "target_resource_type", "resource_attributes"},
 				Description:   "The target service name",
 			},
 
