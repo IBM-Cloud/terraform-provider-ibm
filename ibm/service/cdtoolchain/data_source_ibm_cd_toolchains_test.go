@@ -47,6 +47,9 @@ func testAccCheckIBMCdToolchainsDataSourceConfigBasic(tcName string, rgName stri
 		data "ibm_cd_toolchains" "cd_toolchains" {
 			resource_group_id = data.ibm_resource_group.resource_group.id
 			name = "%s"
+			depends_on = [
+				ibm_cd_toolchain.cd_toolchain
+			]
 		}
 	`, rgName, tcName, tcName)
 }
