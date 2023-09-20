@@ -40,7 +40,7 @@ resource "ibm_project_config" "project_config_instance" {
 		output {
 			name = "name"
 			description = "description"
-			value = { "key" = "anything as a string" }
+			value = "anything as a string"
 		}
   }
   project_id = ibm_project.project_instance.id
@@ -79,7 +79,7 @@ Nested schema for **definition**:
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
 	* `description` - (Optional, String) A project configuration description.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
-	* `input` - (Optional, List) The input variables for the configuration definition.
+	* `input` - (Optional, List) The input variables for configuration definition and environment.
 	Nested schema for **input**:
 	* `labels` - (Optional, List) The configuration labels.
 	  * Constraints: The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.
@@ -94,7 +94,7 @@ Nested schema for **definition**:
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
 		* `name` - (Required, String) The variable name.
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-		* `value` - (Optional, Map) The output value object.
+		* `value` - (Optional, String) Can be any value - a string, number, boolean, array, or object.
 	* `setting` - (Optional, List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
 	Nested schema for **setting**:
 	* `type` - (Computed, String) The type of a project configuration manual property.
@@ -117,7 +117,84 @@ Nested schema for **last_approved**:
 	* `timestamp` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 	* `user_id` - (String) The unique ID.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+* `last_deployed` - (List) The action job performed on the project configuration.
+Nested schema for **last_deployed**:
+	* `href` - (String) A relative URL.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
+	* `job` - (List) A brief summary of an action.
+	Nested schema for **job**:
+		* `id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `summary` - (List) The summaries of jobs that were performed on the configuration.
+		Nested schema for **summary**:
+			* `apply_messages` - (Map) The messages of apply jobs on the configuration.
+			* `apply_summary` - (Map) The summary of the apply jobs on the configuration.
+			* `destroy_messages` - (Map) The messages of destroy jobs on the configuration.
+			* `destroy_summary` - (Map) The summary of the destroy jobs on the configuration.
+			* `message_summary` - (Map) The message summaries of jobs on the configuration.
+			* `plan_messages` - (Map) The messages of plan jobs on the configuration.
+			* `plan_summary` - (Map) The summary of the plan jobs on the configuration.
+	* `result` - (String) The result of the last action.
+	  * Constraints: Allowable values are: `failed`, `passed`.
 * `last_save` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+* `last_undeployed` - (List) The action job performed on the project configuration.
+Nested schema for **last_undeployed**:
+	* `href` - (String) A relative URL.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
+	* `job` - (List) A brief summary of an action.
+	Nested schema for **job**:
+		* `id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `summary` - (List) The summaries of jobs that were performed on the configuration.
+		Nested schema for **summary**:
+			* `apply_messages` - (Map) The messages of apply jobs on the configuration.
+			* `apply_summary` - (Map) The summary of the apply jobs on the configuration.
+			* `destroy_messages` - (Map) The messages of destroy jobs on the configuration.
+			* `destroy_summary` - (Map) The summary of the destroy jobs on the configuration.
+			* `message_summary` - (Map) The message summaries of jobs on the configuration.
+			* `plan_messages` - (Map) The messages of plan jobs on the configuration.
+			* `plan_summary` - (Map) The summary of the plan jobs on the configuration.
+	* `result` - (String) The result of the last action.
+	  * Constraints: Allowable values are: `failed`, `passed`.
+* `last_validated` - (List) The action job performed on the project configuration.
+Nested schema for **last_validated**:
+	* `cost_estimate` - (List) The cost estimate of the configuration.It only exists after the first configuration validation.
+	Nested schema for **cost_estimate**:
+		* `currency` - (String) The currency of the cost estimate of the configuration.
+		* `diff_total_hourly_cost` - (String) The difference between current and past total hourly cost estimates of the configuration.
+		* `diff_total_monthly_cost` - (String) The difference between current and past total monthly cost estimates of the configuration.
+		* `past_total_hourly_cost` - (String) The past total hourly cost estimate of the configuration.
+		* `past_total_monthly_cost` - (String) The past total monthly cost estimate of the configuration.
+		* `time_generated` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+		* `total_hourly_cost` - (String) The total hourly cost estimate of the configuration.
+		* `total_monthly_cost` - (String) The total monthly cost estimate of the configuration.
+		* `user_id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `version` - (String) The version of the cost estimate of the configuration.
+	* `cra_logs` - (List) The Code Risk Analyzer logs of the configuration.
+	Nested schema for **cra_logs**:
+		* `cra_version` - (String) The version of the Code Risk Analyzer logs of the configuration.
+		* `schema_version` - (String) The schema version of Code Risk Analyzer logs of the configuration.
+		* `status` - (String) The status of the Code Risk Analyzer logs of the configuration.
+		* `summary` - (Map) The summary of the Code Risk Analyzer logs of the configuration.
+		* `timestamp` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+	* `href` - (String) A relative URL.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
+	* `job` - (List) A brief summary of an action.
+	Nested schema for **job**:
+		* `id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `summary` - (List) The summaries of jobs that were performed on the configuration.
+		Nested schema for **summary**:
+			* `apply_messages` - (Map) The messages of apply jobs on the configuration.
+			* `apply_summary` - (Map) The summary of the apply jobs on the configuration.
+			* `destroy_messages` - (Map) The messages of destroy jobs on the configuration.
+			* `destroy_summary` - (Map) The summary of the destroy jobs on the configuration.
+			* `message_summary` - (Map) The message summaries of jobs on the configuration.
+			* `plan_messages` - (Map) The messages of plan jobs on the configuration.
+			* `plan_summary` - (Map) The summary of the plan jobs on the configuration.
+	* `result` - (String) The result of the last action.
+	  * Constraints: Allowable values are: `failed`, `passed`.
 * `needs_attention_state` - (List) The needs attention state of a configuration.
   * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
 * `project_config_id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.

@@ -5,6 +5,7 @@ package project
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -205,6 +206,363 @@ func ResourceIbmProject() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"last_validated": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The action job performed on the project configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A relative URL.",
+									},
+									"result": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The result of the last action.",
+									},
+									"job": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "A brief summary of an action.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID.",
+												},
+												"summary": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "The summaries of jobs that were performed on the configuration.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"plan_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the plan jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"apply_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the apply jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"destroy_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the destroy jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"message_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The message summaries of jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"plan_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of plan jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"apply_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of apply jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"destroy_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of destroy jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"cost_estimate": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "The cost estimate of the configuration.It only exists after the first configuration validation.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"version": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The version of the cost estimate of the configuration.",
+												},
+												"currency": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The currency of the cost estimate of the configuration.",
+												},
+												"total_hourly_cost": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The total hourly cost estimate of the configuration.",
+												},
+												"total_monthly_cost": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The total monthly cost estimate of the configuration.",
+												},
+												"past_total_hourly_cost": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The past total hourly cost estimate of the configuration.",
+												},
+												"past_total_monthly_cost": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The past total monthly cost estimate of the configuration.",
+												},
+												"diff_total_hourly_cost": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The difference between current and past total hourly cost estimates of the configuration.",
+												},
+												"diff_total_monthly_cost": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The difference between current and past total monthly cost estimates of the configuration.",
+												},
+												"time_generated": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+												},
+												"user_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID.",
+												},
+											},
+										},
+									},
+									"cra_logs": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "The Code Risk Analyzer logs of the configuration.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cra_version": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The version of the Code Risk Analyzer logs of the configuration.",
+												},
+												"schema_version": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The schema version of Code Risk Analyzer logs of the configuration.",
+												},
+												"status": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The status of the Code Risk Analyzer logs of the configuration.",
+												},
+												"summary": &schema.Schema{
+													Type:        schema.TypeMap,
+													Optional:    true,
+													Description: "The summary of the Code Risk Analyzer logs of the configuration.",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+												"timestamp": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"last_deployed": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The action job performed on the project configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A relative URL.",
+									},
+									"result": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The result of the last action.",
+									},
+									"job": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "A brief summary of an action.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID.",
+												},
+												"summary": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "The summaries of jobs that were performed on the configuration.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"plan_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the plan jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"apply_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the apply jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"destroy_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the destroy jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"message_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The message summaries of jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"plan_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of plan jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"apply_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of apply jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"destroy_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of destroy jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"last_undeployed": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "The action job performed on the project configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "A relative URL.",
+									},
+									"result": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The result of the last action.",
+									},
+									"job": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "A brief summary of an action.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unique ID.",
+												},
+												"summary": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "The summaries of jobs that were performed on the configuration.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"plan_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the plan jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"apply_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the apply jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"destroy_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The summary of the destroy jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"message_summary": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The message summaries of jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"plan_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of plan jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"apply_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of apply jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+															"destroy_messages": &schema.Schema{
+																Type:        schema.TypeMap,
+																Optional:    true,
+																Description: "The messages of destroy jobs on the configuration.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -646,6 +1004,27 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 	if model.LastSave != nil {
 		modelMap["last_save"] = model.LastSave.String()
 	}
+	if model.LastValidated != nil {
+		lastValidatedMap, err := resourceIbmProjectLastValidatedActionWithSummaryToMap(model.LastValidated)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["last_validated"] = []map[string]interface{}{lastValidatedMap}
+	}
+	if model.LastDeployed != nil {
+		lastDeployedMap, err := resourceIbmProjectLastActionWithSummaryToMap(model.LastDeployed)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["last_deployed"] = []map[string]interface{}{lastDeployedMap}
+	}
+	if model.LastUndeployed != nil {
+		lastUndeployedMap, err := resourceIbmProjectLastActionWithSummaryToMap(model.LastUndeployed)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["last_undeployed"] = []map[string]interface{}{lastUndeployedMap}
+	}
 	modelMap["href"] = model.Href
 	definitionMap, err := resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)
 	if err != nil {
@@ -663,6 +1042,216 @@ func resourceIbmProjectProjectConfigMetadataLastApprovedToMap(model *projectv1.P
 	}
 	modelMap["timestamp"] = model.Timestamp.String()
 	modelMap["user_id"] = model.UserID
+	return modelMap, nil
+}
+
+func resourceIbmProjectLastValidatedActionWithSummaryToMap(model *projectv1.LastValidatedActionWithSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Href != nil {
+		modelMap["href"] = model.Href
+	}
+	if model.Result != nil {
+		modelMap["result"] = model.Result
+	}
+	if model.Job != nil {
+		jobMap, err := resourceIbmProjectActionJobWithIdAndSummaryToMap(model.Job)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["job"] = []map[string]interface{}{jobMap}
+	}
+	if model.CostEstimate != nil {
+		costEstimateMap, err := resourceIbmProjectProjectConfigMetadataCostEstimateToMap(model.CostEstimate)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cost_estimate"] = []map[string]interface{}{costEstimateMap}
+	}
+	if model.CraLogs != nil {
+		craLogsMap, err := resourceIbmProjectProjectConfigMetadataCraLogsToMap(model.CraLogs)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cra_logs"] = []map[string]interface{}{craLogsMap}
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectActionJobWithIdAndSummaryToMap(model *projectv1.ActionJobWithIdAndSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.Summary != nil {
+		summaryMap, err := resourceIbmProjectActionJobSummaryToMap(model.Summary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["summary"] = []map[string]interface{}{summaryMap}
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectActionJobSummaryToMap(model *projectv1.ActionJobSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PlanSummary != nil {
+		planSummary := make(map[string]interface{})
+		for k, v := range model.PlanSummary {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			planSummary[k] = string(bytes)
+		}
+		modelMap["plan_summary"] = planSummary
+	}
+	if model.ApplySummary != nil {
+		applySummary := make(map[string]interface{})
+		for k, v := range model.ApplySummary {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			applySummary[k] = string(bytes)
+		}
+		modelMap["apply_summary"] = applySummary
+	}
+	if model.DestroySummary != nil {
+		destroySummary := make(map[string]interface{})
+		for k, v := range model.DestroySummary {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			destroySummary[k] = string(bytes)
+		}
+		modelMap["destroy_summary"] = destroySummary
+	}
+	if model.MessageSummary != nil {
+		messageSummary := make(map[string]interface{})
+		for k, v := range model.MessageSummary {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			messageSummary[k] = string(bytes)
+		}
+		modelMap["message_summary"] = messageSummary
+	}
+	if model.PlanMessages != nil {
+		planMessages := make(map[string]interface{})
+		for k, v := range model.PlanMessages {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			planMessages[k] = string(bytes)
+		}
+		modelMap["plan_messages"] = planMessages
+	}
+	if model.ApplyMessages != nil {
+		applyMessages := make(map[string]interface{})
+		for k, v := range model.ApplyMessages {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			applyMessages[k] = string(bytes)
+		}
+		modelMap["apply_messages"] = applyMessages
+	}
+	if model.DestroyMessages != nil {
+		destroyMessages := make(map[string]interface{})
+		for k, v := range model.DestroyMessages {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			destroyMessages[k] = string(bytes)
+		}
+		modelMap["destroy_messages"] = destroyMessages
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectProjectConfigMetadataCostEstimateToMap(model *projectv1.ProjectConfigMetadataCostEstimate) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Version != nil {
+		modelMap["version"] = model.Version
+	}
+	if model.Currency != nil {
+		modelMap["currency"] = model.Currency
+	}
+	if model.TotalHourlyCost != nil {
+		modelMap["total_hourly_cost"] = model.TotalHourlyCost
+	}
+	if model.TotalMonthlyCost != nil {
+		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
+	}
+	if model.PastTotalHourlyCost != nil {
+		modelMap["past_total_hourly_cost"] = model.PastTotalHourlyCost
+	}
+	if model.PastTotalMonthlyCost != nil {
+		modelMap["past_total_monthly_cost"] = model.PastTotalMonthlyCost
+	}
+	if model.DiffTotalHourlyCost != nil {
+		modelMap["diff_total_hourly_cost"] = model.DiffTotalHourlyCost
+	}
+	if model.DiffTotalMonthlyCost != nil {
+		modelMap["diff_total_monthly_cost"] = model.DiffTotalMonthlyCost
+	}
+	if model.TimeGenerated != nil {
+		modelMap["time_generated"] = model.TimeGenerated.String()
+	}
+	if model.UserID != nil {
+		modelMap["user_id"] = model.UserID
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectProjectConfigMetadataCraLogsToMap(model *projectv1.ProjectConfigMetadataCraLogs) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CraVersion != nil {
+		modelMap["cra_version"] = model.CraVersion
+	}
+	if model.SchemaVersion != nil {
+		modelMap["schema_version"] = model.SchemaVersion
+	}
+	if model.Status != nil {
+		modelMap["status"] = model.Status
+	}
+	if model.Summary != nil {
+		summary := make(map[string]interface{})
+		for k, v := range model.Summary {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			summary[k] = string(bytes)
+		}
+		modelMap["summary"] = summary
+	}
+	if model.Timestamp != nil {
+		modelMap["timestamp"] = model.Timestamp.String()
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectLastActionWithSummaryToMap(model *projectv1.LastActionWithSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Href != nil {
+		modelMap["href"] = model.Href
+	}
+	if model.Result != nil {
+		modelMap["result"] = model.Result
+	}
+	if model.Job != nil {
+		jobMap, err := resourceIbmProjectActionJobWithIdAndSummaryToMap(model.Job)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["job"] = []map[string]interface{}{jobMap}
+	}
 	return modelMap, nil
 }
 
