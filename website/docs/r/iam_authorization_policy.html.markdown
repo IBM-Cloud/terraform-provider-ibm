@@ -237,14 +237,14 @@ Review the argument references that you can specify for your resource.
 - `target_resource_type` - (Optional, Forces new resource, string) The resource type of target service.**Note** Conflicts with `resource_attributes`.
 - `source_resource_group_id` - (Optional, Forces new resource, string) The source resource group id.**Note** Conflicts with `subject_attributes`.
 - `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id.**Note** Conflicts with `resource_attributes`.
-- `resource_attributes` - (Optional, Forces new resource, list) A nested block describing the resource attributes of this policy.**Note** Conflicts with `target_resource_instance_id`, `target_resource_group_id` and `target_resource_type`.
+- `resource_attributes` - (Optional, Forces new resource, list) A nested block describing the resource attributes of this policy.**Note** Conflicts with `target_service_name`, `target_resource_instance_id`, `target_resource_group_id` and `target_resource_type`.
 
   Nested scheme for `resource_attributes`:
   - `name` - (Required, String) The name of an attribute. Supported values are `serviceName` , `serviceInstance` ,`resourceType` , `resourceGroupId` `accountId` and other service specific resource attributes.
   - `value` - (Required, String) The value of an attribute.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
 
-- `subject_attributes` - (Optional, Forces new resource, list) A nested block describing the subject attributes of this policy.**Note** Conflicts with `source_resource_instance_id`, `source_resource_group_id` `source_resource_type` and `source_service_account`.
+- `subject_attributes` - (Optional, Forces new resource, list) A nested block describing the subject attributes of this policy.**Note** Conflicts with `source_service_name`, `source_resource_instance_id`, `source_resource_group_id` `source_resource_type` and `source_service_account`.
   
   Nested scheme for `subject_attributes`:
   - `name` - (Required, String) The name of an attribute. Supported values are `serviceName` , `serviceInstance` , `region` , `resource` , `resourceType` , `resourceGroupId` `accountId`.

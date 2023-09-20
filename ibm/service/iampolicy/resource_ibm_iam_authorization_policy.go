@@ -29,19 +29,21 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"source_service_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The source service name",
-				ForceNew:    true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"subject_attributes"},
+				Description:   "The source service name",
 			},
 
 			"target_service_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The target service name",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"subject_attributes"},
+				Description:   "The target service name",
 			},
 
 			"roles": {
@@ -124,7 +126,7 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				Description:   "Set subject attributes.",
-				ConflictsWith: []string{"source_resource_instance_id", "source_resource_group_id", "source_resource_type", "source_service_account"},
+				ConflictsWith: []string{"source_service_name", "source_resource_instance_id", "source_resource_group_id", "source_resource_type", "source_service_account"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -147,7 +149,7 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				Computed:      true,
 				ForceNew:      true,
 				Description:   "Set resource attributes.",
-				ConflictsWith: []string{"target_resource_instance_id", "target_resource_group_id", "target_resource_type"},
+				ConflictsWith: []string{"target_service_name", "target_resource_instance_id", "target_resource_group_id", "target_resource_type"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
