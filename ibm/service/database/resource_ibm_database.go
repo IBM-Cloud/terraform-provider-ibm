@@ -428,28 +428,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
 			},
-			"whitelist": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"address": {
-							Description:  "Whitelist IP address in CIDR notation",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validate.ValidateCIDR,
-						},
-						"description": {
-							Description:  "Unique white list description",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringLenBetween(1, 32),
-						},
-					},
-				},
-				Deprecated:    "Whitelist is deprecated please use allowlist",
-				ConflictsWith: []string{"allowlist"},
-			},
 			"allowlist": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -469,7 +447,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				ConflictsWith: []string{"whitelist"},
 			},
 			"logical_replication_slot": {
 				Type:     schema.TypeSet,
@@ -930,7 +907,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, enterprise",
+			AllowedValues:              "standard, enterprise, enterprise-sharding",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1006,6 +983,10 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 
 	if service == "mongodb" && _plan == "enterprise" {
 		service = "mongodbee"
+	}
+
+	if service == "mongodb" && _plan == "enterprise-sharding" {
+		service = "mongodbees"
 	}
 
 	getDefaultScalingGroupsOptions := cloudDatabasesClient.NewGetDefaultScalingGroupsOptions(service)
@@ -1330,7 +1311,11 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		if serviceName == "databases-for-mongodb" && plan == "enterprise-sharding" {
+			return diag.FromErr(fmt.Errorf("%s %s is not available yet in this region", serviceName, plan))
+		} else {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		}
 	}
 	if len(deployments) == 0 {
 		return diag.FromErr(fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan))
@@ -1594,16 +1579,12 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	_, hasWhitelist := d.GetOk("whitelist")
 	_, hasAllowlist := d.GetOk("allowlist")
 
-	if hasWhitelist || hasAllowlist {
+	if hasAllowlist {
 		var ipAddresses *schema.Set
-		if hasWhitelist {
-			ipAddresses = d.Get("whitelist").(*schema.Set)
-		} else {
-			ipAddresses = d.Get("allowlist").(*schema.Set)
-		}
+
+		ipAddresses = d.Get("allowlist").(*schema.Set)
 
 		entries := flex.ExpandAllowlist(ipAddresses)
 
@@ -1904,8 +1885,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
-	_, hasWhitelist := d.GetOk("whitelist")
-
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
 		ID: &instanceID,
 	}
@@ -1916,11 +1895,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
 	}
 
-	if hasWhitelist {
-		d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	} else {
-		d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	}
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
@@ -2257,15 +2232,12 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChange("whitelist") || d.HasChange("allowlist") {
+	if d.HasChange("allowlist") {
 		_, hasAllowlist := d.GetOk("allowlist")
-		_, hasWhitelist := d.GetOk("whitelist")
 
 		var entries interface{}
 
-		if hasWhitelist {
-			_, entries = d.GetChange("whitelist")
-		} else if hasAllowlist {
+		if hasAllowlist {
 			_, entries = d.GetChange("allowlist")
 		}
 
@@ -2290,7 +2262,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", instanceID, err))
+				"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
 		}
 	}
 
@@ -3180,11 +3152,18 @@ func userUpdateCreate(userData map[string]interface{}, instanceID string, meta i
 		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
 	}
 
-	taskID := *changeUserPasswordResponse.Task.ID
-	updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+	updatePass := true // Assume that update password passed
 
-	if err != nil {
-		log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+	if userData["type"].(string) == "ops_manager" && response.StatusCode == 404 {
+		updatePass = false // when user_password api can't find an ops_manager user, it returns a 404 and does not get to the point of creating a task
+	} else {
+		// when user_password api can't find a database user, its task fails
+		taskID := *changeUserPasswordResponse.Task.ID
+		updatePass, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+		if err != nil {
+			log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+		}
 	}
 
 	// Updating the password has failed

@@ -109,6 +109,19 @@ Nested scheme for **syndication_settings**:
 
 * `tags` - (List) List of tags associated with this catalog.
 
+* `target_account_contexts` - (List) List of target account contexts for this catalog.
+Nested scheme for **target_account_contexts**:
+	* `api_key` - (String) API key of the target account.
+	* `name` - (String) Unique name/identifier for this target account context.
+	* `label` - (String) Label for this target account context.
+	* `project_id` - (String) Project ID.
+	* `trusted_profile` - (List) Trusted profile information.
+	Nested scheme for **trusted_profile**:
+		* `trusted_profile_id` - (String) Trusted profile ID.
+		* `catalog_crn` - (String) CRN of this catalog.
+		* `catalog_name` - (String) Name of this catalog.
+		* `target_service_id` - (String) Target service ID.
+
 * `updated` - (String) The date-time this catalog was last updated.
 
 * `url` - (String) The url for this specific catalog.

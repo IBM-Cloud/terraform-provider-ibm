@@ -8,7 +8,7 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_tekton_pipeline_property
 
-Provides a resource for cd_tekton_pipeline_property. This allows cd_tekton_pipeline_property to be created, updated and deleted.
+Create, update, and delete cd_tekton_pipeline_propertys with this resource.
 
 ## Example Usage
 
@@ -23,13 +23,13 @@ resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `enum` - (Optional, List) Options for `single_select` property type. Only needed when using `single_select` property type.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
 * `name` - (Required, Forces new resource, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-* `path` - (Optional, String) A dot notation path for `integration` type properties only, to select a value from the tool integration. If left blank the full tool integration data will be used.
+* `path` - (Optional, String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
   * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^[-0-9a-zA-Z_.]*$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
@@ -40,7 +40,7 @@ Review the argument reference that you can specify for your resource.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the cd_tekton_pipeline_property.
 * `href` - (String) API URL for interacting with the property.
