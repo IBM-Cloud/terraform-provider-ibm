@@ -30,13 +30,11 @@ resource "ibm_iam_access_group_template" "iam_access_group_template_instance" {
         }
         action_controls {
           remove = true
-          update = true
         }
       }
       action_controls {
         add = true
         remove = true
-        update = true
       }
     }
     action_controls {
@@ -80,13 +78,11 @@ resource "ibm_iam_access_group_template_version" "iam_access_group_template_vers
         }
         action_controls {
           remove = true
-          update = true
         }
       }
       action_controls {
         add = true
         remove = true
-        update = true
       }
     }
     action_controls {

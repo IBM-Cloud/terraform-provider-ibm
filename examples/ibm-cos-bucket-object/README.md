@@ -62,6 +62,17 @@ resource "ibm_cos_bucket_object" "object" {
   force_delete = true
 }
 ```
+## COS Website Redirect
+
+
+```hcl
+resource "ibm_cos_bucket_object" "object" {
+  bucket_crn      = ibm_cos_bucket.bucket.crn
+  bucket_location = ibm_cos_bucket.bucket.cross_region_location
+  key             = "page1.html"
+  website_redirect = "/page2.html"
+}
+```
 
 ## Requirements
 
@@ -90,6 +101,7 @@ resource "ibm_cos_bucket_object" "object" {
 | object_lock_legal_hold_status | An object lock configuration on the object, the valid states are ON/OFF. When ON prevents deletion of the object version. | `string` | false |
 | object_lock_mode | Retention modes apply different levels of protection to the objects. | `string` | false |
 | object_lock_legal_hold_status | An object cannot be deleted when the current time is earlier than the retainUntilDate. After this date, the object can be deleted. | `string` | false |
+| website_redirect | To redirect the request for a particular object. | `string` | false |
 
 ## Outputs
 
