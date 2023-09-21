@@ -36,8 +36,9 @@ func ResourceIbmProjectConfig() *schema.Resource {
 			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
+				MinItems:    1,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "The type and output of a project configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -263,13 +264,11 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 	createConfigOptions := &projectv1.CreateConfigOptions{}
 
 	createConfigOptions.SetProjectID(d.Get("project_id").(string))
-	if _, ok := d.GetOk("definition"); ok {
-		definitionModel, err := resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createConfigOptions.SetDefinition(definitionModel)
+	definitionModel, err := resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	createConfigOptions.SetDefinition(definitionModel)
 
 	projectConfig, response, err := projectClient.CreateConfigWithContext(context, createConfigOptions)
 	if err != nil {
@@ -311,14 +310,12 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("project_id", projectConfig.ProjectID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting project_id: %s", err))
 	}
-	if !core.IsNil(projectConfig.Definition) {
-		definitionMap, err := resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(projectConfig.Definition)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
-		}
+	definitionMap, err := resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(projectConfig.Definition)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
 	}
 	if err = d.Set("version", flex.IntValue(projectConfig.Version)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))

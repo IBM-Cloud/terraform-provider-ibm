@@ -28,22 +28,23 @@ func ResourceIbmProject() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"location": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
+				Description:  "The IBM Cloud location where a resource is deployed.",
+			},
 			"resource_group": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_project", "resource_group"),
 				Description: "The resource group where the project's data and tools are created.",
 			},
-			"location": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
-				Description:  "The location where the project's data and tools are created.",
-			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
+				MinItems:    1,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "The definition of the project.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -213,15 +214,6 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "resource_group",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^$|^(?!\s)(?!.*\s$)[^'"` + "`" + `<>{}\x00-\x1F]*$`,
-			MinValueLength:             0,
-			MaxValueLength:             40,
-		},
-		validate.ValidateSchema{
 			Identifier:                 "location",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -229,6 +221,15 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 			Regexp:                     `^$|^(us-south|us-east|eu-gb|eu-de)$`,
 			MinValueLength:             0,
 			MaxValueLength:             12,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "resource_group",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^(?!\s)(?!.*\s$)[^'"` + "`" + `<>{}\x00-\x1F]*$`,
+			MinValueLength:             0,
+			MaxValueLength:             64,
 		},
 	)
 
@@ -244,15 +245,13 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 
 	createProjectOptions := &projectv1.CreateProjectOptions{}
 
-	createProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
-	createProjectOptions.SetLocation(d.Get("location").(string))
-	if _, ok := d.GetOk("definition"); ok {
-		definitionModel, err := resourceIbmProjectMapToProjectPrototypeDefinition(d.Get("definition.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createProjectOptions.SetDefinition(definitionModel)
+	definitionModel, err := resourceIbmProjectMapToProjectPrototypeDefinition(d.Get("definition.0").(map[string]interface{}))
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	createProjectOptions.SetDefinition(definitionModel)
+	createProjectOptions.SetLocation(d.Get("location").(string))
+	createProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
 	if _, ok := d.GetOk("configs"); ok {
 		var configs []projectv1.ProjectConfigPrototype
 		for _, v := range d.Get("configs").([]interface{}) {
@@ -297,20 +296,18 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("GetProjectWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
-	}
 	if err = d.Set("location", project.Location); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
 	}
-	if !core.IsNil(project.Definition) {
-		definitionMap, err := resourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
-		}
+	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+	}
+	definitionMap, err := resourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
 	}
 	if !core.IsNil(project.Crn) {
 		if err = d.Set("crn", project.Crn); err != nil {
@@ -434,13 +431,11 @@ func resourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]inter
 
 func resourceIbmProjectMapToProjectConfigPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototype, error) {
 	model := &projectv1.ProjectConfigPrototype{}
-	if modelMap["definition"] != nil && len(modelMap["definition"].([]interface{})) > 0 {
-		DefinitionModel, err := resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap["definition"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Definition = DefinitionModel
+	DefinitionModel, err := resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap["definition"].([]interface{})[0].(map[string]interface{}))
+	if err != nil {
+		return model, err
 	}
+	model.Definition = DefinitionModel
 	return model, nil
 }
 

@@ -28,18 +28,17 @@ resource "ibm_project" "project_instance" {
 
 You can specify the following arguments for this resource.
 
-* `definition` - (Optional, List) The definition of the project.
+* `definition` - (Required, List) The definition of the project.
 Nested schema for **definition**:
 	* `description` - (Optional, String) A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
 	* `destroy_on_delete` - (Required, Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.
-	  * Constraints: The default value is `true`.
 	* `name` - (Required, String) The name of the project.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
-* `location` - (Required, String) The location where the project's data and tools are created.
-  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
+* `location` - (Required, String) The IBM Cloud location where a resource is deployed.
+  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
 * `resource_group` - (Required, String) The resource group where the project's data and tools are created.
-  * Constraints: The maximum length is `40` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
 
 ## Attribute Reference
 
@@ -61,92 +60,7 @@ Nested schema for **configs**:
 	* `id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
-	* `last_approved` - (List) The last approved metadata of the configuration.
-	Nested schema for **last_approved**:
-		* `comment` - (String) The comment left by the user who approved the configuration.
-		  * Constraints: The default value is ``.
-		* `is_forced` - (Boolean) The flag that indicates whether the approval was forced approved.
-		* `timestamp` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-		* `user_id` - (String) The unique ID.
-		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `last_deployed` - (List) The action job performed on the project configuration.
-	Nested schema for **last_deployed**:
-		* `href` - (String) A relative URL.
-		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
-		* `job` - (List) A brief summary of an action.
-		Nested schema for **job**:
-			* `id` - (String) The unique ID.
-			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-			* `summary` - (List) The summaries of jobs that were performed on the configuration.
-			Nested schema for **summary**:
-				* `apply_messages` - (Map) The messages of apply jobs on the configuration.
-				* `apply_summary` - (Map) The summary of the apply jobs on the configuration.
-				* `destroy_messages` - (Map) The messages of destroy jobs on the configuration.
-				* `destroy_summary` - (Map) The summary of the destroy jobs on the configuration.
-				* `message_summary` - (Map) The message summaries of jobs on the configuration.
-				* `plan_messages` - (Map) The messages of plan jobs on the configuration.
-				* `plan_summary` - (Map) The summary of the plan jobs on the configuration.
-		* `result` - (String) The result of the last action.
-		  * Constraints: Allowable values are: `failed`, `passed`.
 	* `last_save` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-	* `last_undeployed` - (List) The action job performed on the project configuration.
-	Nested schema for **last_undeployed**:
-		* `href` - (String) A relative URL.
-		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
-		* `job` - (List) A brief summary of an action.
-		Nested schema for **job**:
-			* `id` - (String) The unique ID.
-			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-			* `summary` - (List) The summaries of jobs that were performed on the configuration.
-			Nested schema for **summary**:
-				* `apply_messages` - (Map) The messages of apply jobs on the configuration.
-				* `apply_summary` - (Map) The summary of the apply jobs on the configuration.
-				* `destroy_messages` - (Map) The messages of destroy jobs on the configuration.
-				* `destroy_summary` - (Map) The summary of the destroy jobs on the configuration.
-				* `message_summary` - (Map) The message summaries of jobs on the configuration.
-				* `plan_messages` - (Map) The messages of plan jobs on the configuration.
-				* `plan_summary` - (Map) The summary of the plan jobs on the configuration.
-		* `result` - (String) The result of the last action.
-		  * Constraints: Allowable values are: `failed`, `passed`.
-	* `last_validated` - (List) The action job performed on the project configuration.
-	Nested schema for **last_validated**:
-		* `cost_estimate` - (List) The cost estimate of the configuration.It only exists after the first configuration validation.
-		Nested schema for **cost_estimate**:
-			* `currency` - (String) The currency of the cost estimate of the configuration.
-			* `diff_total_hourly_cost` - (String) The difference between current and past total hourly cost estimates of the configuration.
-			* `diff_total_monthly_cost` - (String) The difference between current and past total monthly cost estimates of the configuration.
-			* `past_total_hourly_cost` - (String) The past total hourly cost estimate of the configuration.
-			* `past_total_monthly_cost` - (String) The past total monthly cost estimate of the configuration.
-			* `time_generated` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-			* `total_hourly_cost` - (String) The total hourly cost estimate of the configuration.
-			* `total_monthly_cost` - (String) The total monthly cost estimate of the configuration.
-			* `user_id` - (String) The unique ID.
-			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-			* `version` - (String) The version of the cost estimate of the configuration.
-		* `cra_logs` - (List) The Code Risk Analyzer logs of the configuration.
-		Nested schema for **cra_logs**:
-			* `cra_version` - (String) The version of the Code Risk Analyzer logs of the configuration.
-			* `schema_version` - (String) The schema version of Code Risk Analyzer logs of the configuration.
-			* `status` - (String) The status of the Code Risk Analyzer logs of the configuration.
-			* `summary` - (Map) The summary of the Code Risk Analyzer logs of the configuration.
-			* `timestamp` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
-		* `href` - (String) A relative URL.
-		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
-		* `job` - (List) A brief summary of an action.
-		Nested schema for **job**:
-			* `id` - (String) The unique ID.
-			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-			* `summary` - (List) The summaries of jobs that were performed on the configuration.
-			Nested schema for **summary**:
-				* `apply_messages` - (Map) The messages of apply jobs on the configuration.
-				* `apply_summary` - (Map) The summary of the apply jobs on the configuration.
-				* `destroy_messages` - (Map) The messages of destroy jobs on the configuration.
-				* `destroy_summary` - (Map) The summary of the destroy jobs on the configuration.
-				* `message_summary` - (Map) The message summaries of jobs on the configuration.
-				* `plan_messages` - (Map) The messages of plan jobs on the configuration.
-				* `plan_summary` - (Map) The summary of the plan jobs on the configuration.
-		* `result` - (String) The result of the last action.
-		  * Constraints: Allowable values are: `failed`, `passed`.
 	* `needs_attention_state` - (List) The needs attention state of a configuration.
 	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
 	* `project_id` - (String) The unique ID.
