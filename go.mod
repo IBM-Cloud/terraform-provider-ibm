@@ -13,7 +13,7 @@ require (
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918
 	github.com/IBM/container-registry-go-sdk v1.1.0
-	github.com/IBM/continuous-delivery-go-sdk v1.1.2
+	github.com/IBM/continuous-delivery-go-sdk v1.2.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.4
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
@@ -31,7 +31,7 @@ require (
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
-	github.com/IBM/vpc-go-sdk v0.41.0
+	github.com/IBM/vpc-go-sdk v0.42.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
@@ -231,3 +231,5 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
+
+replace github.com/IBM/vpc-go-sdk v0.42.0 => ./common/github.com/IBM/vpc-go-sdk
