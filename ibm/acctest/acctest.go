@@ -187,6 +187,8 @@ var Pi_capture_storage_image_path string
 var Pi_capture_cloud_storage_access_key string
 var Pi_capture_cloud_storage_secret_key string
 
+var ISDelegegatedVPC string
+
 // For Image
 
 var IsImageName string
@@ -1042,6 +1044,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
 	}
 
+	ISDelegegatedVPC = os.Getenv("IS_DELEGATED_VPC")
+	if ISDelegegatedVPC == "" {
+		ISDelegegatedVPC = "tfp-test-vpc-hub-false-del"
+		fmt.Println("[WARN] Set the environment variable IS_DELEGATED_VPC with a VALID created vpc name for testing ibm_is_vpc data source on staging/test")
+	}
 	// Added for resource image testing
 	Image_cos_url_encrypted = os.Getenv("IMAGE_COS_URL_ENCRYPTED")
 	if Image_cos_url_encrypted == "" {
