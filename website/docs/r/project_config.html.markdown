@@ -14,36 +14,24 @@ Create, update, and delete project_configs with this resource.
 
 ```hcl
 resource "ibm_project_config" "project_config_instance" {
+  project_id = ibm_project.project_instance.project_id
   definition {
-		name = "name"
-		description = "description"
-		labels = [ "labels" ]
-		authorizations {
-			trusted_profile {
-				id = "id"
-				target_iam_id = "target_iam_id"
-			}
-			method = "method"
-			api_key = "api_key"
-		}
-		compliance_profile {
-			id = "id"
-			instance_id = "instance_id"
-			instance_location = "instance_location"
-			attachment_id = "attachment_id"
-			profile_name = "profile_name"
-		}
-		locator_id = "locator_id"
-		input = {  }
-		setting = {  }
-		type = "terraform_template"
-		output {
-			name = "name"
-			description = "description"
-			value = "anything as a string"
-		}
+    name = "static-website-dev"
+    labels = [ "env:dev", "billing:internal" ]
+    description = "Website - development"
+    authorizations {
+      method = "APIKEY"
+      api_key = "<your_apikey_here>"
+    }
+    locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
+    input {
+      name = "app_repo_name"
+    }
+    setting {
+      name = "app_repo_name"
+      value = "static-website-dev-app-repo"
+    }
   }
-  project_id = ibm_project.project_instance.id
 }
 ```
 

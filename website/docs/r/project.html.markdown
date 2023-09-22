@@ -14,13 +14,13 @@ Create, update, and delete projects with this resource.
 
 ```hcl
 resource "ibm_project" "project_instance" {
-  definition {
-		name = "name"
-		description = "description"
-		destroy_on_delete = true
-  }
-  location = "us-south"
   resource_group = "Default"
+  location = "us-south"
+  definition {
+    name = "My static website"
+    description = "Sample static website test using the IBM catalog deployable architecture"
+    destroy_on_delete = true
+  }
 }
 ```
 
