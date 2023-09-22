@@ -224,20 +224,23 @@ specific to a service `internet-svcs` use above `resource_attributes` format.<br
 
 ## Argument reference
 Review the argument references that you can specify for your resource.
+**Note:**
+At least one of the following subject attributes is required: `source_service_name`, `source_resource_group_id`, or `subject_attributes`.
+Additionally, at least one of the following resource attributes is required: `target_service_name`, `target_resource_type`, `resource_attributes`.
 
 - `description`  (Optional, String) The description of the Authorization Policy.
 - `roles` - (Required, list) The comma separated list of roles. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 
-- `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.**Note** Conflicts with `subject_attributes`.
-- `source_service_name` - (Optional, Forces new resource, string) The source service name.**Note** Conflicts with `subject_attributes`.
-- `target_service_name` - (Optional, Forces new resource, string) The target service name.**Note** Conflicts with `resource_attributes`.
-- `source_resource_instance_id` - (Optional, Forces new resource, string) The source resource instance id.**Note** Conflicts with `subject_attributes`.
-- `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.**Note** Conflicts with `resource_attributes`.
-- `source_resource_type` - (Optional, Forces new resource, string) The resource type of source service.**Note** Conflicts with `subject_attributes`.
-- `target_resource_type` - (Optional, Forces new resource, string) The resource type of target service.**Note** Conflicts with `resource_attributes`.
-- `source_resource_group_id` - (Optional, Forces new resource, string) The source resource group id.**Note** Conflicts with `subject_attributes`.
-- `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id.**Note** Conflicts with `resource_attributes`.
-- `resource_attributes` - (Optional, Forces new resource, list) A nested block describing the resource attributes of this policy.**Note** Conflicts with `target_service_name`, `target_resource_instance_id`, `target_resource_group_id` and `target_resource_type`.
+- `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service. **Note** Conflicts with `subject_attributes`.
+- `source_service_name` - (Optional, Forces new resource, string) The source service name. **Note** Conflicts with `subject_attributes`.
+- `target_service_name` - (Optional, Forces new resource, string) The target service name. **Note** Conflicts with `resource_attributes`.
+- `source_resource_instance_id` - (Optional, Forces new resource, string) The source resource instance id. **Note** Conflicts with `subject_attributes`.
+- `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id. **Note** Conflicts with `resource_attributes`.
+- `source_resource_type` - (Optional, Forces new resource, string) The resource type of source service. **Note** Conflicts with `subject_attributes`.
+- `target_resource_type` - (Optional, Forces new resource, string) The resource type of target service. **Note** Conflicts with `resource_attributes`.
+- `source_resource_group_id` - (Optional, Forces new resource, string) The source resource group id. **Note** Conflicts with `subject_attributes`.
+- `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id. **Note** Conflicts with `resource_attributes`.
+- `resource_attributes` - (Optional, Forces new resource, list) A nested block describing the resource attributes of this policy. **Note** Conflicts with `target_service_name`, `target_resource_instance_id`, `target_resource_group_id` and `target_resource_type`.
 
   Nested scheme for `resource_attributes`:
   - `name` - (Required, String) The name of an attribute. Supported values are `serviceName` , `serviceInstance` ,`resourceType` , `resourceGroupId` `accountId` and other service specific resource attributes.
