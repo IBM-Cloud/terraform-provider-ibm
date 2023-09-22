@@ -46032,7 +46032,6 @@ func UnmarshalInstanceInitializationDefaultTrustedProfile(m map[string]json.RawM
 	return
 }
 
-// InstanceInitializationPassword : InstanceInitializationPassword struct
 type InstanceInitializationPassword struct {
 	// The administrator password at initialization, encrypted using `encryption_key`, and returned base64-encoded.
 	EncryptedPassword *[]byte `json:"encrypted_password" validate:"required"`
