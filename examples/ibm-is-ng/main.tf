@@ -1258,6 +1258,111 @@ data "ibm_is_share" "is_share" {
 data "ibm_is_shares" "is_shares" {
 }
 
+// vpc dns resolution bindings
+
+  // list all dns resolution bindings on a vpc
+data "ibm_is_vpc_dns_resolution_bindings" "is_vpc_dns_resolution_bindings" {
+	vpc_id = ibm_is_vpc.vpc1.id
+}
+  // get a dns resolution bindings on a vpc
+data "ibm_is_vpc_dns_resolution_binding" "is_vpc_dns_resolution_binding" {
+	vpc_id  = ibm_is_vpc.vpc1.id
+  id      = ibm_is_vpc.vpc2.id
+}
+data "ibm_resource_group" "rg" {
+	is_default	   =  true
+}
+  // creating a hub enabled vpc, hub disabled vpc, creating custom resolvers for both then
+  // delegating the vpc by uncommenting the configuration in hub_false_delegated vpc
+resource ibm_is_vpc hub_true {
+  name = "${var.name}-vpc-hub-true"
+  dns {
+    enable_hub = true
+  }
+}
+
+resource ibm_is_vpc hub_false_delegated {
+  name = "${var.name}-vpc-hub-false-del"
+  dns {
+    enable_hub = false
+    # resolver {
+    # 	type = "delegated"
+    # 	vpc_id = ibm_is_vpc.hub_true.id
+    # }
+  }
+}
+
+resource "ibm_is_subnet" "hub_true_sub1" {
+  name		   				        =  "hub-true-subnet1"
+  vpc      	   				      =  ibm_is_vpc.hub_true.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_is_subnet" "hub_true_sub2" {
+  name		   				        =  "hub-true-subnet2"
+  vpc      	   				      =  ibm_is_vpc.hub_true.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_is_subnet" "hub_false_delegated_sub1" {
+  name		   				        =  "hub-false-delegated-subnet1"
+  vpc      	   				      =  ibm_is_vpc.hub_false_delegated.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_is_subnet" "hub_false_delegated_sub2" {
+  name		   				        =  "hub-false-delegated-subnet2"
+  vpc      	   				      =  ibm_is_vpc.hub_false_delegated.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_resource_instance" "dns-cr-instance" {
+  name		   		      =  "dns-cr-instance"
+  resource_group_id  	=  data.ibm_resource_group.rg.id
+  location           	=  "global"
+  service		   		    =  "dns-svcs"
+  plan		   		      =  "standard-dns"
+}
+resource "ibm_dns_custom_resolver" "test_hub_true" {
+  name		   		    =  "test-hub-true-customresolver"
+  instance_id 	   	=  ibm_resource_instance.dns-cr-instance.guid
+  description	   		=  "new test CR - TF"
+  high_availability =  true
+  enabled 	   		  =  true
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_true_sub1.crn
+    enabled	    = true
+  }
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_true_sub2.crn
+    enabled	    = true
+  }
+}
+resource "ibm_dns_custom_resolver" "test_hub_false_delegated" {
+  name		   		    =  "test-hub-false-customresolver"
+  instance_id 	   	=  ibm_resource_instance.dns-cr-instance.guid
+  description	   		=  "new test CR - TF"
+  high_availability =  true
+  enabled 	   		  =  true
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_false_delegated_sub1.crn
+    enabled	    = true
+  }
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_false_delegated_sub2.crn
+    enabled	    = true
+  }
+}
+
+resource ibm_is_vpc_dns_resolution_binding dnstrue {
+  name    = "hub-spoke-binding"
+  vpc_id  =  ibm_is_vpc.hub_false_delegated.id
+  vpc {
+    id = ibm_is_vpc.hub_true.id
+  }
+}
+
+
 // snapshot cross region
 
 provider "ibm" {
