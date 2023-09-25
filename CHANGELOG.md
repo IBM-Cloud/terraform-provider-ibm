@@ -1,3 +1,15 @@
+# 1.58.0-beta1 (Sep 25, 2023)
+Features
+* Support CD Toolchain
+     - **Datasources**
+        - ibm_cd_toolchains
+* Support Virtual Private Cloud
+    - **Resources**
+        - ibm_is_vpc_dns_resolution_binding
+    - **Datasources**
+        - ibm_is_vpc_dns_resolution_binding
+        - ibm_is_vpc_dns_resolution_bindings
+
 # 1.58.0-beta0 (Sep 10, 2023)
 
 Features
