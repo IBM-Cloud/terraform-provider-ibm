@@ -47,7 +47,3 @@ In addition to all argument reference list, you can access the following attribu
     - `target_resource_type` - (Optional, Forces new resource, string) The resource type of target service.
     - `source_resource_group_id` - (Optional, Forces new resource, string) The source resource group id.
     - `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id.
-
-**Note:**
-At least one of the following subject attributes is required: `source_service_name` or `source_resource_group_id`.
-Additionally, at least one of the following resource attributes is required: `target_service_name` or `target_resource_type`.
