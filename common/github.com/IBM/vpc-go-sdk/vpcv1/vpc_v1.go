@@ -13211,6 +13211,348 @@ func (vpc *VpcV1) UpdateVolumeWithContext(ctx context.Context, updateVolumeOptio
 	return
 }
 
+// ListSnapshotConsistencyGroups : List all snapshot consistency groups
+// This request lists all snapshot consistency groups in the region. A snapshot consistency group is a collection of
+// individual snapshots taken at the same time.
+func (vpc *VpcV1) ListSnapshotConsistencyGroups(listSnapshotConsistencyGroupsOptions *ListSnapshotConsistencyGroupsOptions) (result *SnapshotConsistencyGroupCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListSnapshotConsistencyGroupsWithContext(context.Background(), listSnapshotConsistencyGroupsOptions)
+}
+
+// ListSnapshotConsistencyGroupsWithContext is an alternate form of the ListSnapshotConsistencyGroups method which supports a Context parameter
+func (vpc *VpcV1) ListSnapshotConsistencyGroupsWithContext(ctx context.Context, listSnapshotConsistencyGroupsOptions *ListSnapshotConsistencyGroupsOptions) (result *SnapshotConsistencyGroupCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listSnapshotConsistencyGroupsOptions, "listSnapshotConsistencyGroupsOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listSnapshotConsistencyGroupsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListSnapshotConsistencyGroups")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listSnapshotConsistencyGroupsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Start))
+	}
+	if listSnapshotConsistencyGroupsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Limit))
+	}
+	if listSnapshotConsistencyGroupsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.ResourceGroupID))
+	}
+	if listSnapshotConsistencyGroupsOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Name))
+	}
+	if listSnapshotConsistencyGroupsOptions.Sort != nil {
+		builder.AddQuery("sort", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Sort))
+	}
+	if listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID != nil {
+		builder.AddQuery("backup_policy_plan.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroupCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateSnapshotConsistencyGroup : Create a snapshot consistency group
+// This request creates a new snapshot consistency group from a snapshot consistency group object.  The prototype object
+// is structured in the same way as a retrieved consistency group, and contains the information necessary to provision
+// the new snapshot consistency group.
+func (vpc *VpcV1) CreateSnapshotConsistencyGroup(createSnapshotConsistencyGroupOptions *CreateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.CreateSnapshotConsistencyGroupWithContext(context.Background(), createSnapshotConsistencyGroupOptions)
+}
+
+// CreateSnapshotConsistencyGroupWithContext is an alternate form of the CreateSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) CreateSnapshotConsistencyGroupWithContext(ctx context.Context, createSnapshotConsistencyGroupOptions *CreateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createSnapshotConsistencyGroupOptions, "createSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createSnapshotConsistencyGroupOptions, "createSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(createSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPrototype)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteSnapshotConsistencyGroup : Delete a snapshot consistency group
+// This request deletes snapshot consistency group. This operation cannot be reversed. If the
+// `delete_snapshots_on_delete` property is `true`, all snapshots in the consistency group will also be deleted.
+func (vpc *VpcV1) DeleteSnapshotConsistencyGroup(deleteSnapshotConsistencyGroupOptions *DeleteSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.DeleteSnapshotConsistencyGroupWithContext(context.Background(), deleteSnapshotConsistencyGroupOptions)
+}
+
+// DeleteSnapshotConsistencyGroupWithContext is an alternate form of the DeleteSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) DeleteSnapshotConsistencyGroupWithContext(ctx context.Context, deleteSnapshotConsistencyGroupOptions *DeleteSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteSnapshotConsistencyGroupOptions, "deleteSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteSnapshotConsistencyGroupOptions, "deleteSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deleteSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetSnapshotConsistencyGroup : Retrieve a snapshot consistency group
+// This request retrieves a single snapshot consistency group specified by the identifier in the URL.
+func (vpc *VpcV1) GetSnapshotConsistencyGroup(getSnapshotConsistencyGroupOptions *GetSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.GetSnapshotConsistencyGroupWithContext(context.Background(), getSnapshotConsistencyGroupOptions)
+}
+
+// GetSnapshotConsistencyGroupWithContext is an alternate form of the GetSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) GetSnapshotConsistencyGroupWithContext(ctx context.Context, getSnapshotConsistencyGroupOptions *GetSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSnapshotConsistencyGroupOptions, "getSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getSnapshotConsistencyGroupOptions, "getSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateSnapshotConsistencyGroup : Update a snapshot consistency group
+// This request updates a snapshot consistency group with the information in a provided snapshot consistency group
+// patch. The snapshot consistency group patch object is structured in the same way as a retrieved snapshot consistency
+// group and contains only the information to be updated.
+func (vpc *VpcV1) UpdateSnapshotConsistencyGroup(updateSnapshotConsistencyGroupOptions *UpdateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.UpdateSnapshotConsistencyGroupWithContext(context.Background(), updateSnapshotConsistencyGroupOptions)
+}
+
+// UpdateSnapshotConsistencyGroupWithContext is an alternate form of the UpdateSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) UpdateSnapshotConsistencyGroupWithContext(ctx context.Context, updateSnapshotConsistencyGroupOptions *UpdateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateSnapshotConsistencyGroupOptions, "updateSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateSnapshotConsistencyGroupOptions, "updateSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updateSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+	if updateSnapshotConsistencyGroupOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*updateSnapshotConsistencyGroupOptions.IfMatch))
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
 // DeleteSnapshots : Delete a filtered collection of snapshots
 // This request deletes all snapshots created from a specific source volume.
 func (vpc *VpcV1) DeleteSnapshots(deleteSnapshotsOptions *DeleteSnapshotsOptions) (response *core.DetailedResponse, err error) {
@@ -31297,6 +31639,34 @@ func (options *CreateSnapshotCloneOptions) SetHeaders(param map[string]string) *
 	return options
 }
 
+// CreateSnapshotConsistencyGroupOptions : The CreateSnapshotConsistencyGroup options.
+type CreateSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group prototype object.
+	SnapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf `json:"SnapshotConsistencyGroupPrototype" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateSnapshotConsistencyGroupOptions : Instantiate CreateSnapshotConsistencyGroupOptions
+func (*VpcV1) NewCreateSnapshotConsistencyGroupOptions(snapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf) *CreateSnapshotConsistencyGroupOptions {
+	return &CreateSnapshotConsistencyGroupOptions{
+		SnapshotConsistencyGroupPrototype: snapshotConsistencyGroupPrototype,
+	}
+}
+
+// SetSnapshotConsistencyGroupPrototype : Allow user to set SnapshotConsistencyGroupPrototype
+func (_options *CreateSnapshotConsistencyGroupOptions) SetSnapshotConsistencyGroupPrototype(snapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf) *CreateSnapshotConsistencyGroupOptions {
+	_options.SnapshotConsistencyGroupPrototype = snapshotConsistencyGroupPrototype
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *CreateSnapshotConsistencyGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateSnapshotOptions : The CreateSnapshot options.
 type CreateSnapshotOptions struct {
 	// The snapshot prototype object.
@@ -36007,6 +36377,34 @@ func (options *DeleteSnapshotCloneOptions) SetHeaders(param map[string]string) *
 	return options
 }
 
+// DeleteSnapshotConsistencyGroupOptions : The DeleteSnapshotConsistencyGroup options.
+type DeleteSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteSnapshotConsistencyGroupOptions : Instantiate DeleteSnapshotConsistencyGroupOptions
+func (*VpcV1) NewDeleteSnapshotConsistencyGroupOptions(id string) *DeleteSnapshotConsistencyGroupOptions {
+	return &DeleteSnapshotConsistencyGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *DeleteSnapshotConsistencyGroupOptions) SetID(id string) *DeleteSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *DeleteSnapshotConsistencyGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // DeleteSnapshotOptions : The DeleteSnapshot options.
 type DeleteSnapshotOptions struct {
 	// The snapshot identifier.
@@ -40332,6 +40730,34 @@ func (_options *GetSnapshotCloneOptions) SetZoneName(zoneName string) *GetSnapsh
 
 // SetHeaders : Allow user to set Headers
 func (options *GetSnapshotCloneOptions) SetHeaders(param map[string]string) *GetSnapshotCloneOptions {
+	options.Headers = param
+	return options
+}
+
+// GetSnapshotConsistencyGroupOptions : The GetSnapshotConsistencyGroup options.
+type GetSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetSnapshotConsistencyGroupOptions : Instantiate GetSnapshotConsistencyGroupOptions
+func (*VpcV1) NewGetSnapshotConsistencyGroupOptions(id string) *GetSnapshotConsistencyGroupOptions {
+	return &GetSnapshotConsistencyGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *GetSnapshotConsistencyGroupOptions) SetID(id string) *GetSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *GetSnapshotConsistencyGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -51790,6 +52216,89 @@ func (_options *ListSnapshotClonesOptions) SetID(id string) *ListSnapshotClonesO
 
 // SetHeaders : Allow user to set Headers
 func (options *ListSnapshotClonesOptions) SetHeaders(param map[string]string) *ListSnapshotClonesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListSnapshotConsistencyGroupsOptions : The ListSnapshotConsistencyGroups options.
+type ListSnapshotConsistencyGroupsOptions struct {
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
+	ResourceGroupID *string `json:"resource_group.id,omitempty"`
+
+	// Filters the collection to resources with a `name` property matching the exact specified name.
+	Name *string `json:"name,omitempty"`
+
+	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+	// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+	Sort *string `json:"sort,omitempty"`
+
+	// Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified
+	// identifier.
+	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the ListSnapshotConsistencyGroupsOptions.Sort property.
+// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+const (
+	ListSnapshotConsistencyGroupsOptionsSortCreatedAtConst = "created_at"
+	ListSnapshotConsistencyGroupsOptionsSortNameConst      = "name"
+)
+
+// NewListSnapshotConsistencyGroupsOptions : Instantiate ListSnapshotConsistencyGroupsOptions
+func (*VpcV1) NewListSnapshotConsistencyGroupsOptions() *ListSnapshotConsistencyGroupsOptions {
+	return &ListSnapshotConsistencyGroupsOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListSnapshotConsistencyGroupsOptions) SetStart(start string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListSnapshotConsistencyGroupsOptions) SetLimit(limit int64) *ListSnapshotConsistencyGroupsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetResourceGroupID : Allow user to set ResourceGroupID
+func (_options *ListSnapshotConsistencyGroupsOptions) SetResourceGroupID(resourceGroupID string) *ListSnapshotConsistencyGroupsOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *ListSnapshotConsistencyGroupsOptions) SetName(name string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetSort : Allow user to set Sort
+func (_options *ListSnapshotConsistencyGroupsOptions) SetSort(sort string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Sort = core.StringPtr(sort)
+	return _options
+}
+
+// SetBackupPolicyPlanID : Allow user to set BackupPolicyPlanID
+func (_options *ListSnapshotConsistencyGroupsOptions) SetBackupPolicyPlanID(backupPolicyPlanID string) *ListSnapshotConsistencyGroupsOptions {
+	_options.BackupPolicyPlanID = core.StringPtr(backupPolicyPlanID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListSnapshotConsistencyGroupsOptions) SetHeaders(param map[string]string) *ListSnapshotConsistencyGroupsOptions {
 	options.Headers = param
 	return options
 }
@@ -65804,6 +66313,529 @@ func UnmarshalSnapshotCollectionNext(m map[string]json.RawMessage, result interf
 	return
 }
 
+// SnapshotConsistencyGroup : SnapshotConsistencyGroup struct
+type SnapshotConsistencyGroup struct {
+	// If present, the backup policy plan which created this snapshot consistency group.
+	BackupPolicyPlan *BackupPolicyPlanReference `json:"backup_policy_plan,omitempty"`
+
+	// The date and time that this snapshot consistency group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN of this snapshot consistency group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete" validate:"required"`
+
+	// The URL for this snapshot consistency group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot consistency group.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of this snapshot consistency group.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this snapshot consistency group. The name is unique across all snapshot consistency groups in the
+	// region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this snapshot consistency group.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+	// [`is.instance:` prefix](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-faqs) associated with this snapshot
+	// consistency group.
+	ServiceTags []string `json:"service_tags" validate:"required"`
+
+	// The member snapshots that are data-consistent with respect to captured time. (may be
+	// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+	Snapshots []SnapshotConsistencyGroupSnapshotsItem `json:"snapshots" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroup.LifecycleState property.
+// The lifecycle state of this snapshot consistency group.
+const (
+	SnapshotConsistencyGroupLifecycleStateDeletingConst  = "deleting"
+	SnapshotConsistencyGroupLifecycleStateFailedConst    = "failed"
+	SnapshotConsistencyGroupLifecycleStatePendingConst   = "pending"
+	SnapshotConsistencyGroupLifecycleStateStableConst    = "stable"
+	SnapshotConsistencyGroupLifecycleStateSuspendedConst = "suspended"
+	SnapshotConsistencyGroupLifecycleStateUpdatingConst  = "updating"
+	SnapshotConsistencyGroupLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the SnapshotConsistencyGroup.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupResourceTypeSnapshotConsistencyGroupConst = "snapshot_consistency_group"
+)
+
+// UnmarshalSnapshotConsistencyGroup unmarshals an instance of SnapshotConsistencyGroup from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroup(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroup)
+	err = core.UnmarshalModel(m, "backup_policy_plan", &obj.BackupPolicyPlan, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "service_tags", &obj.ServiceTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupSnapshotsItem)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupCollection : SnapshotConsistencyGroupCollection struct
+type SnapshotConsistencyGroupCollection struct {
+	// A link to the first page of resources.
+	First *SnapshotConsistencyGroupCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *SnapshotConsistencyGroupCollectionNext `json:"next,omitempty"`
+
+	// Collection of snapshot consistency groups.
+	SnapshotConsistencyGroups []SnapshotConsistencyGroup `json:"snapshot_consistency_groups" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollection unmarshals an instance of SnapshotConsistencyGroupCollection from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalSnapshotConsistencyGroupCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalSnapshotConsistencyGroupCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshot_consistency_groups", &obj.SnapshotConsistencyGroups, UnmarshalSnapshotConsistencyGroup)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *SnapshotConsistencyGroupCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// SnapshotConsistencyGroupCollectionFirst : A link to the first page of resources.
+type SnapshotConsistencyGroupCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollectionFirst unmarshals an instance of SnapshotConsistencyGroupCollectionFirst from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type SnapshotConsistencyGroupCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollectionNext unmarshals an instance of SnapshotConsistencyGroupCollectionNext from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPatch : SnapshotConsistencyGroupPatch struct
+type SnapshotConsistencyGroupPatch struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must not be used by another snapshot consistency groups in
+	// the region.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalSnapshotConsistencyGroupPatch unmarshals an instance of SnapshotConsistencyGroupPatch from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPatch)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the SnapshotConsistencyGroupPatch
+func (snapshotConsistencyGroupPatch *SnapshotConsistencyGroupPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(snapshotConsistencyGroupPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
+}
+
+// SnapshotConsistencyGroupPrototype : SnapshotConsistencyGroupPrototype struct
+// Models which "extend" this model:
+// - SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots
+type SnapshotConsistencyGroupPrototype struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must be unique across all snapshot consistency groups in the
+	// region.
+	//
+	// If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The data-consistent member snapshots to create.  All snapshots must specify a
+	// `source_volume` attached to the same virtual server instance.
+	Snapshots []SnapshotConsistencyGroupPrototypeSnapshotsItem `json:"snapshots,omitempty"`
+}
+
+func (*SnapshotConsistencyGroupPrototype) isaSnapshotConsistencyGroupPrototype() bool {
+	return true
+}
+
+type SnapshotConsistencyGroupPrototypeIntf interface {
+	isaSnapshotConsistencyGroupPrototype() bool
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototype unmarshals an instance of SnapshotConsistencyGroupPrototype from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototype)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem : SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem struct
+type SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem struct {
+	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The volume to create this snapshot from.
+	SourceVolume VolumeIdentityIntf `json:"source_volume" validate:"required"`
+
+	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
+	UserTags []string `json:"user_tags,omitempty"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem : Instantiate SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem(sourceVolume VolumeIdentityIntf) (_model *SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem{
+		SourceVolume: sourceVolume,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_volume", &obj.SourceVolume, UnmarshalVolumeIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotsItem : SnapshotConsistencyGroupPrototypeSnapshotsItem struct
+type SnapshotConsistencyGroupPrototypeSnapshotsItem struct {
+	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The volume to create this snapshot from.
+	SourceVolume VolumeIdentityIntf `json:"source_volume" validate:"required"`
+
+	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
+	UserTags []string `json:"user_tags,omitempty"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotsItem : Instantiate SnapshotConsistencyGroupPrototypeSnapshotsItem (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotsItem(sourceVolume VolumeIdentityIntf) (_model *SnapshotConsistencyGroupPrototypeSnapshotsItem, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotsItem{
+		SourceVolume: sourceVolume,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_volume", &obj.SourceVolume, UnmarshalVolumeIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupReference : SnapshotConsistencyGroupReference struct
+type SnapshotConsistencyGroupReference struct {
+	// The CRN of this snapshot consistency group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *SnapshotConsistencyGroupReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this snapshot consistency group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot consistency group.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot consistency group. The name is unique across all snapshot consistency groups in the
+	// region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroupReference.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupReferenceResourceTypeSnapshotConsistencyGroupConst = "snapshot_consistency_group"
+)
+
+// UnmarshalSnapshotConsistencyGroupReference unmarshals an instance of SnapshotConsistencyGroupReference from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalSnapshotConsistencyGroupReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
+// information.
+type SnapshotConsistencyGroupReferenceDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupReferenceDeleted unmarshals an instance of SnapshotConsistencyGroupReferenceDeleted from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupReferenceDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupSnapshotsItem : SnapshotConsistencyGroupSnapshotsItem struct
+type SnapshotConsistencyGroupSnapshotsItem struct {
+	// The CRN of this snapshot.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *SnapshotReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this snapshot.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot. The name is unique across all snapshots in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// If present, this property indicates that the resource associated with this reference
+	// is remote and therefore may not be directly retrievable.
+	Remote *SnapshotRemote `json:"remote,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroupSnapshotsItem.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupSnapshotsItemResourceTypeSnapshotConst = "snapshot"
+)
+
+// UnmarshalSnapshotConsistencyGroupSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalSnapshotReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSnapshotRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // SnapshotCopiesItem : SnapshotCopiesItem struct
 type SnapshotCopiesItem struct {
 	// The CRN for the copied snapshot.
@@ -68760,6 +69792,54 @@ func (_options *UpdateShareOptions) SetIfMatch(ifMatch string) *UpdateShareOptio
 
 // SetHeaders : Allow user to set Headers
 func (options *UpdateShareOptions) SetHeaders(param map[string]string) *UpdateShareOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateSnapshotConsistencyGroupOptions : The UpdateSnapshotConsistencyGroup options.
+type UpdateSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The snapshot consistency group patch.
+	SnapshotConsistencyGroupPatch map[string]interface{} `json:"SnapshotConsistencyGroup_patch" validate:"required"`
+
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	// Required if the request body includes an array.
+	IfMatch *string `json:"If-Match,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateSnapshotConsistencyGroupOptions : Instantiate UpdateSnapshotConsistencyGroupOptions
+func (*VpcV1) NewUpdateSnapshotConsistencyGroupOptions(id string, snapshotConsistencyGroupPatch map[string]interface{}) *UpdateSnapshotConsistencyGroupOptions {
+	return &UpdateSnapshotConsistencyGroupOptions{
+		ID:                            core.StringPtr(id),
+		SnapshotConsistencyGroupPatch: snapshotConsistencyGroupPatch,
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetID(id string) *UpdateSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupPatch : Allow user to set SnapshotConsistencyGroupPatch
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetSnapshotConsistencyGroupPatch(snapshotConsistencyGroupPatch map[string]interface{}) *UpdateSnapshotConsistencyGroupOptions {
+	_options.SnapshotConsistencyGroupPatch = snapshotConsistencyGroupPatch
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetIfMatch(ifMatch string) *UpdateSnapshotConsistencyGroupOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *UpdateSnapshotConsistencyGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -91753,6 +92833,61 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "source_share", &obj.SourceShare, UnmarshalShareIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots : SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots struct
+// This model "extends" SnapshotConsistencyGroupPrototype
+type SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must be unique across all snapshot consistency groups in the
+	// region.
+	//
+	// If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The data-consistent member snapshots to create.  All snapshots must specify a
+	// `source_volume` attached to the same virtual server instance.
+	Snapshots []SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem `json:"snapshots" validate:"required"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots : Instantiate SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots(snapshots []SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem) (_model *SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots{
+		Snapshots: snapshots,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots) isaSnapshotConsistencyGroupPrototype() bool {
+	return true
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem)
 	if err != nil {
 		return
 	}
