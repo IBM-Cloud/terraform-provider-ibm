@@ -19,7 +19,7 @@ import (
 )
 
 func ResourceIbmSccProfile() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		CreateContext: resourceIbmSccProfileCreate,
 		ReadContext:   resourceIbmSccProfileRead,
 		UpdateContext: resourceIbmSccProfileUpdate,
@@ -27,6 +27,11 @@ func ResourceIbmSccProfile() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"profile_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The profile name.",
+			},
 			"profile_name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -320,7 +325,7 @@ func ResourceIbmSccProfile() *schema.Resource {
 				Description: "The number of attachments related to this profile.",
 			},
 		},
-	}
+	})
 }
 
 func ResourceIbmSccProfileValidator() *validate.ResourceValidator {
@@ -360,6 +365,8 @@ func resourceIbmSccProfileCreate(context context.Context, d *schema.ResourceData
 	bodyModelMap := map[string]interface{}{}
 	createProfileOptions := &securityandcompliancecenterapiv3.CreateProfileOptions{}
 
+	instance_id := d.Get("instance_id").(string)
+	bodyModelMap["instance_id"] = instance_id
 	bodyModelMap["profile_name"] = d.Get("profile_name")
 	bodyModelMap["profile_description"] = d.Get("profile_description")
 	bodyModelMap["profile_type"] = "custom"
@@ -376,6 +383,7 @@ func resourceIbmSccProfileCreate(context context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	createProfileOptions = convertedModel
+	createProfileOptions.SetInstanceID(instance_id)
 
 	profile, response, err := securityandcompliancecenterapiClient.CreateProfileWithContext(context, createProfileOptions)
 	if err != nil {
@@ -383,7 +391,7 @@ func resourceIbmSccProfileCreate(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("CreateProfileWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*profile.ID)
+	d.SetId(instance_id + "/" + *profile.ID)
 
 	return resourceIbmSccProfileRead(context, d, meta)
 }
@@ -397,7 +405,12 @@ func resourceIbmSccProfileRead(context context.Context, d *schema.ResourceData, 
 
 	getProfileOptions := &securityandcompliancecenterapiv3.GetProfileOptions{}
 
-	getProfileOptions.SetProfileID(d.Id())
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	getProfileOptions.SetInstanceID(parts[0])
+	getProfileOptions.SetProfileID(parts[1])
 
 	profile, response, err := securityandcompliancecenterapiClient.GetProfileWithContext(context, getProfileOptions)
 	if err != nil {
@@ -409,6 +422,12 @@ func resourceIbmSccProfileRead(context context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf("GetProfileWithContext failed %s\n%s", err, response))
 	}
 
+	if err = d.Set("instance_id", parts[0]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("profile_id", parts[1]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
+	}
 	if err = d.Set("profile_name", profile.ProfileName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting profile_name: %s", err))
 	}
@@ -513,6 +532,13 @@ func resourceIbmSccProfileUpdate(context context.Context, d *schema.ResourceData
 	}
 
 	replaceProfileOptions := &securityandcompliancecenterapiv3.ReplaceProfileOptions{}
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	// TODO: Implement replaceProfileOptions.SetInstanceID
+	replaceProfileOptions.InstanceID = &parts[0]
+	replaceProfileOptions.SetProfileID(parts[1])
 	hasChange := false
 	bodyModelMap := map[string]interface{}{}
 
@@ -568,7 +594,12 @@ func resourceIbmSccProfileDelete(context context.Context, d *schema.ResourceData
 
 	deleteCustomProfileOptions := &securityandcompliancecenterapiv3.DeleteCustomProfileOptions{}
 
-	deleteCustomProfileOptions.SetProfileID(d.Id())
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	deleteCustomProfileOptions.SetInstanceID(parts[0])
+	deleteCustomProfileOptions.SetProfileID(parts[1])
 
 	_, response, err := securityandcompliancecenterapiClient.DeleteCustomProfileWithContext(context, deleteCustomProfileOptions)
 	if err != nil {

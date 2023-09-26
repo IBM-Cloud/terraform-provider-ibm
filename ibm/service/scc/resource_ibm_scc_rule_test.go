@@ -5,6 +5,8 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -20,6 +22,11 @@ func TestAccIbmSccRuleBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Rule
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := description
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,14 +34,14 @@ func TestAccIbmSccRuleBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleConfigBasic(description),
+				Config: testAccCheckIbmSccRuleConfigBasic(instanceID, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIbmSccRuleConfigBasic(descriptionUpdate),
+				Config: testAccCheckIbmSccRuleConfigBasic(instanceID, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", descriptionUpdate),
 				),
@@ -49,6 +56,11 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 	version := fmt.Sprintf("0.0.%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	versionUpdate := fmt.Sprintf("0.0.%d", acctest.RandIntRange(2, 100))
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -56,7 +68,7 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleConfig(description, version),
+				Config: testAccCheckIbmSccRuleConfig(instanceID, description, version),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", description),
@@ -64,7 +76,7 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmSccRuleConfig(descriptionUpdate, versionUpdate),
+				Config: testAccCheckIbmSccRuleConfig(instanceID, descriptionUpdate, versionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "version", versionUpdate),
@@ -79,9 +91,10 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccRuleConfigBasic(description string) string {
+func testAccCheckIbmSccRuleConfigBasic(instanceID string, description string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_rule" "scc_rule_instance" {
+			instance_id = "%s"
 			description = "%s"
 			version = "0.0.1"
 			target {
@@ -110,13 +123,14 @@ func testAccCheckIbmSccRuleConfigBasic(description string) string {
 				}
 			}
 		}
-	`, description)
+	`, instanceID, description)
 }
 
-func testAccCheckIbmSccRuleConfig(description string, version string) string {
+func testAccCheckIbmSccRuleConfig(instanceID string, description string, version string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_rule" "scc_rule_instance" {
+			instance_id = "%s"
 			description = "%s"
 			version = "%s"
 			import {
@@ -154,7 +168,7 @@ func testAccCheckIbmSccRuleConfig(description string, version string) string {
 			}
 			labels = ["FIXME"]
 		}
-	`, description, version)
+	`, instanceID, description, version)
 }
 
 func testAccCheckIbmSccRuleExists(n string, obj securityandcompliancecenterapiv3.Rule) resource.TestCheckFunc {
@@ -170,8 +184,9 @@ func testAccCheckIbmSccRuleExists(n string, obj securityandcompliancecenterapiv3
 		}
 
 		getRuleOptions := &securityandcompliancecenterapiv3.GetRuleOptions{}
-
-		getRuleOptions.SetRuleID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		getRuleOptions.SetInstanceID(id[0])
+		getRuleOptions.SetRuleID(id[1])
 
 		rule, _, err := configManagerClient.GetRule(getRuleOptions)
 		if err != nil {
@@ -195,7 +210,9 @@ func testAccCheckIbmSccRuleDestroy(s *terraform.State) error {
 
 		getRuleOptions := &securityandcompliancecenterapiv3.GetRuleOptions{}
 
-		getRuleOptions.SetRuleID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		getRuleOptions.SetInstanceID(id[0])
+		getRuleOptions.SetRuleID(id[1])
 
 		// Try to find the key
 		_, response, err := configManagerClient.GetRule(getRuleOptions)

@@ -5,6 +5,8 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -24,6 +26,11 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 	profileNameUpdate := profileName
 	profileDescriptionUpdate := profileDescription
 	profileTypeUpdate := profileType
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,7 +38,7 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfigBasic(profileName, profileDescription, profileType),
+				Config: testAccCheckIbmSccProfileConfigBasic(instanceID, profileName, profileDescription, profileType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
@@ -40,7 +47,7 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfigBasic(profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
+				Config: testAccCheckIbmSccProfileConfigBasic(instanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),
@@ -59,6 +66,11 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	profileNameUpdate := profileName
 	profileDescriptionUpdate := profileDescription
 	profileTypeUpdate := profileType
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -66,7 +78,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(profileName, profileDescription, profileType),
+				Config: testAccCheckIbmSccProfileConfig(instanceID, profileName, profileDescription, profileType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
@@ -75,7 +87,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
+				Config: testAccCheckIbmSccProfileConfig(instanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),
@@ -91,9 +103,10 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccProfileConfigBasic(profileName string, profileDescription string, profileType string) string {
+func testAccCheckIbmSccProfileConfigBasic(instanceID string, profileName string, profileDescription string, profileType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
@@ -134,21 +147,23 @@ func testAccCheckIbmSccProfileConfigBasic(profileName string, profileDescription
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
 			controls {
-				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
 		}
 
-	`, profileName, profileDescription, profileType)
+	`, instanceID, profileName, profileDescription, profileType)
 }
 
-func testAccCheckIbmSccProfileConfig(profileName string, profileDescription string, profileType string) string {
+func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, profileDescription string, profileType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
@@ -189,11 +204,12 @@ func testAccCheckIbmSccProfileConfig(profileName string, profileDescription stri
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
 			controls {
-				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
 			default_parameters {
@@ -206,7 +222,7 @@ func testAccCheckIbmSccProfileConfig(profileName string, profileDescription stri
 			}
 		}
 
-	`, profileName, profileDescription, profileType)
+	`, instanceID, profileName, profileDescription, profileType)
 }
 
 func testAccCheckIbmSccProfileExists(n string, obj securityandcompliancecenterapiv3.Profile) resource.TestCheckFunc {
@@ -224,7 +240,9 @@ func testAccCheckIbmSccProfileExists(n string, obj securityandcompliancecenterap
 
 		getProfileOptions := &securityandcompliancecenterapiv3.GetProfileOptions{}
 
-		getProfileOptions.SetProfileID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		getProfileOptions.SetInstanceID(id[0])
+		getProfileOptions.SetProfileID(id[1])
 
 		profile, _, err := securityandcompliancecenterapiClient.GetProfile(getProfileOptions)
 		if err != nil {
@@ -248,7 +266,9 @@ func testAccCheckIbmSccProfileDestroy(s *terraform.State) error {
 
 		getProfileOptions := &securityandcompliancecenterapiv3.GetProfileOptions{}
 
-		getProfileOptions.SetProfileID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		getProfileOptions.SetInstanceID(id[0])
+		getProfileOptions.SetProfileID(id[1])
 
 		// Try to find the key
 		_, response, err := securityandcompliancecenterapiClient.GetProfile(getProfileOptions)

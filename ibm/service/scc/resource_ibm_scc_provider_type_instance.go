@@ -19,7 +19,7 @@ import (
 )
 
 func ResourceIbmSccProviderTypeInstance() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		CreateContext: resourceIbmSccProviderTypeInstanceCreate,
 		ReadContext:   resourceIbmSccProviderTypeInstanceRead,
 		UpdateContext: resourceIbmSccProviderTypeInstanceUpdate,
@@ -65,7 +65,7 @@ func ResourceIbmSccProviderTypeInstance() *schema.Resource {
 				Description: "The unique identifier of the provider type instance.",
 			},
 		},
-	}
+	})
 }
 
 func ResourceIbmSccProviderTypeInstanceValidator() *validate.ResourceValidator {

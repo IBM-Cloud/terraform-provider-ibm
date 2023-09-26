@@ -18,7 +18,7 @@ import (
 )
 
 func DataSourceIbmSccReportEvaluations() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccReportEvaluationsRead,
 
 		Schema: map[string]*schema.Schema{
@@ -256,7 +256,7 @@ func DataSourceIbmSccReportEvaluations() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccReportEvaluationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -5,6 +5,7 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -17,13 +18,18 @@ func TestAccIbmSccControlLibraryDataSourceBasic(t *testing.T) {
 	controlLibraryControlLibraryName := fmt.Sprintf("tf_control_library_name_%d", acctest.RandIntRange(10, 100))
 	controlLibraryControlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
 	controlLibraryControlLibraryType := "custom"
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccControlLibraryDataSourceConfigBasic(controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType),
+				Config: testAccCheckIbmSccControlLibraryDataSourceConfigBasic(instanceID, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "control_library_id"),
@@ -41,13 +47,18 @@ func TestAccIbmSccControlLibraryDataSourceAllArgs(t *testing.T) {
 
 	controlLibraryControlLibraryVersion := fmt.Sprintf("0.0.%d", acctest.RandIntRange(1, 100))
 	controlLibraryLatest := "true"
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest),
+				Config: testAccCheckIbmSccControlLibraryDataSourceConfig(instanceID, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_control_library.scc_control_library", "account_id"),
@@ -77,9 +88,10 @@ func TestAccIbmSccControlLibraryDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccControlLibraryDataSourceConfigBasic(controlLibraryControlLibraryName string, controlLibraryControlLibraryDescription string, controlLibraryControlLibraryType string) string {
+func testAccCheckIbmSccControlLibraryDataSourceConfigBasic(instanceID string, controlLibraryControlLibraryName string, controlLibraryControlLibraryDescription string, controlLibraryControlLibraryType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
@@ -120,15 +132,17 @@ func testAccCheckIbmSccControlLibraryDataSourceConfigBasic(controlLibraryControl
 		}
 
 		data "ibm_scc_control_library" "scc_control_library" {
-			control_library_id = ibm_scc_control_library.scc_control_library_instance.id
+			instance_id = ibm_scc_control_library.scc_control_library_instance.instance_id
+			control_library_id = ibm_scc_control_library.scc_control_library_instance.control_library_id
 		}
 
-	`, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType)
+	`, instanceID, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType)
 }
 
-func testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryControlLibraryName string, controlLibraryControlLibraryDescription string, controlLibraryControlLibraryType string, controlLibraryVersionGroupLabel string, controlLibraryControlLibraryVersion string, controlLibraryLatest string) string {
+func testAccCheckIbmSccControlLibraryDataSourceConfig(instanceID string, controlLibraryControlLibraryName string, controlLibraryControlLibraryDescription string, controlLibraryControlLibraryType string, controlLibraryVersionGroupLabel string, controlLibraryControlLibraryVersion string, controlLibraryLatest string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
@@ -170,8 +184,9 @@ func testAccCheckIbmSccControlLibraryDataSourceConfig(controlLibraryControlLibra
 		}
 
 		data "ibm_scc_control_library" "scc_control_library" {
-			control_library_id = ibm_scc_control_library.scc_control_library_instance.id
+			instance_id = ibm_scc_control_library.scc_control_library_instance.instance_id
+			control_library_id = ibm_scc_control_library.scc_control_library_instance.control_library_id
 		}
 
-	`, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest)
+	`, instanceID, controlLibraryControlLibraryName, controlLibraryControlLibraryDescription, controlLibraryControlLibraryType, controlLibraryVersionGroupLabel, controlLibraryControlLibraryVersion, controlLibraryLatest)
 }

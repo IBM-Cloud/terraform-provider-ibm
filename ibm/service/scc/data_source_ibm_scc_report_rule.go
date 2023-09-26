@@ -16,7 +16,7 @@ import (
 )
 
 func DataSourceIbmSccReportRule() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccReportRuleRead,
 
 		Schema: map[string]*schema.Schema{
@@ -84,7 +84,7 @@ func DataSourceIbmSccReportRule() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccReportRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

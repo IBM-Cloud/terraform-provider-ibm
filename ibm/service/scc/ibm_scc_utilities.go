@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// AddSchemaData will add the data instance_id and region to the resource 
+const INSTANCE_ID = "instance_id"
+
+// AddSchemaData will add the Schemas 'instance_id' and 'region' to the resource
 func AddSchemaData(resource *schema.Resource) *schema.Resource {
 	resource.Schema["instance_id"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -30,11 +32,19 @@ func AddSchemaData(resource *schema.Resource) *schema.Resource {
 
 // getRegionData will check if the field region is defined
 func getRegionData(client securityandcompliancecenterapiv3.SecurityAndComplianceCenterApiV3, d *schema.ResourceData) string {
-	_, ok := d.GetOk("region")
+	val, ok := d.GetOk("region")
 	if ok {
-		return d.Get("region").(string)
+		return val.(string)
 	} else {
 		url := client.Service.GetServiceURL()
 		return strings.Split(url, ".")[1]
 	}
+}
+
+// setRegionData will set the field "region" field if the field was previously defined
+func setRegionData(d *schema.ResourceData, region string) error {
+	if val, ok := d.GetOk("region"); ok {
+		return d.Set("region", val.(string))
+	}
+	return nil
 }

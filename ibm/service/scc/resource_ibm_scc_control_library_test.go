@@ -5,6 +5,8 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -24,6 +26,11 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 	controlLibraryNameUpdate := controlLibraryName
 	controlLibraryDescriptionUpdate := controlLibraryDescription
 	controlLibraryTypeUpdate := controlLibraryType
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -31,7 +38,7 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryName, controlLibraryDescription, controlLibraryType),
+				Config: testAccCheckIbmSccControlLibraryConfigBasic(instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
@@ -40,7 +47,7 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate),
+				Config: testAccCheckIbmSccControlLibraryConfigBasic(instanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescriptionUpdate),
@@ -67,6 +74,11 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	versionGroupLabelUpdate := versionGroupLabel
 	controlLibraryVersionUpdate := "0.0.2"
 	latestUpdate := "true"
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+		t.FailNow()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -74,7 +86,7 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest),
+				Config: testAccCheckIbmSccControlLibraryConfig(instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
@@ -87,7 +99,7 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate),
+				Config: testAccCheckIbmSccControlLibraryConfig(instanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescriptionUpdate),
@@ -107,9 +119,10 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryName string, controlLibraryDescription string, controlLibraryType string) string {
+func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibraryName string, controlLibraryDescription string, controlLibraryType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
@@ -148,13 +161,14 @@ func testAccCheckIbmSccControlLibraryConfigBasic(controlLibraryName string, cont
 				status = "enabled"
 			}
 		}
-	`, controlLibraryName, controlLibraryDescription, controlLibraryType)
+	`, instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType)
 }
 
-func testAccCheckIbmSccControlLibraryConfig(controlLibraryName string, controlLibraryDescription string, controlLibraryType string, versionGroupLabel string, controlLibraryVersion string, latest string) string {
+func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryName string, controlLibraryDescription string, controlLibraryType string, versionGroupLabel string, controlLibraryVersion string, latest string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
@@ -194,7 +208,7 @@ func testAccCheckIbmSccControlLibraryConfig(controlLibraryName string, controlLi
 				status = "enabled"
 			}
 		}
-	`, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest)
+	`, instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest)
 }
 
 func testAccCheckIbmSccControlLibraryExists(n string, obj securityandcompliancecenterapiv3.ControlLibrary) resource.TestCheckFunc {
@@ -212,7 +226,9 @@ func testAccCheckIbmSccControlLibraryExists(n string, obj securityandcompliancec
 
 		getControlLibraryOptions := &securityandcompliancecenterapiv3.GetControlLibraryOptions{}
 
-		getControlLibraryOptions.SetControlLibrariesID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		getControlLibraryOptions.SetInstanceID(id[0])
+		getControlLibraryOptions.SetControlLibrariesID(id[1])
 
 		controlLibrary, _, err := securityandcompliancecenterapiClient.GetControlLibrary(getControlLibraryOptions)
 		if err != nil {
@@ -236,7 +252,9 @@ func testAccCheckIbmSccControlLibraryDestroy(s *terraform.State) error {
 
 		getControlLibraryOptions := &securityandcompliancecenterapiv3.GetControlLibraryOptions{}
 
-		getControlLibraryOptions.SetControlLibrariesID(rs.Primary.ID)
+		id := strings.Split(rs.Primary.ID, "/")
+		getControlLibraryOptions.SetInstanceID(id[0])
+		getControlLibraryOptions.SetControlLibrariesID(id[1])
 
 		// Try to find the key
 		_, response, err := securityandcompliancecenterapiClient.GetControlLibrary(getControlLibraryOptions)

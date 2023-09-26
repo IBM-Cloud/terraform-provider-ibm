@@ -19,7 +19,7 @@ import (
 )
 
 func DataSourceIbmSccProviderTypeCollection() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccProviderTypeCollectionRead,
 
 		Schema: map[string]*schema.Schema{
@@ -115,7 +115,7 @@ func DataSourceIbmSccProviderTypeCollection() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccProviderTypeCollectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -18,7 +18,7 @@ import (
 )
 
 func DataSourceIbmSccReportViolationDrift() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccReportViolationDriftRead,
 
 		Schema: map[string]*schema.Schema{
@@ -102,7 +102,7 @@ func DataSourceIbmSccReportViolationDrift() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccReportViolationDriftRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

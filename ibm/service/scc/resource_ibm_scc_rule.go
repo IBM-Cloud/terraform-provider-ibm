@@ -22,7 +22,7 @@ import (
 )
 
 func ResourceIbmSccRule() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		CreateContext: resourceIbmSccRuleCreate,
 		ReadContext:   resourceIbmSccRuleRead,
 		UpdateContext: resourceIbmSccRuleUpdate,
@@ -83,6 +83,11 @@ func ResourceIbmSccRule() *schema.Resource {
 				Deprecated: "enforcement_actions is now deprecated",
 			},
 			// End of Deprecation list
+			"rule_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The rule ID.",
+			},
 			"account_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -444,7 +449,7 @@ func ResourceIbmSccRule() *schema.Resource {
 				Description:  "The version number of a rule.",
 			},
 		},
-	}
+	})
 }
 
 func ResourceIbmSccRuleValidator() *validate.ResourceValidator {
@@ -514,13 +519,15 @@ func resourceIbmSccRuleCreate(context context.Context, d *schema.ResourceData, m
 		createRuleOptions.SetLabels(labels)
 	}
 
+	instance_id := d.Get("instance_id").(string)
+	createRuleOptions.SetInstanceID(instance_id)
 	rule, response, err := configManagerClient.CreateRuleWithContext(context, createRuleOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateRuleWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateRuleWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*rule.ID)
+	d.SetId(instance_id + "/" + *rule.ID)
 
 	return resourceIbmSccRuleRead(context, d, meta)
 }
@@ -533,7 +540,12 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 
 	getRuleOptions := &securityandcompliancecenterapiv3.GetRuleOptions{}
 
-	getRuleOptions.SetRuleID(d.Id())
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	getRuleOptions.SetInstanceID(parts[0])
+	getRuleOptions.SetRuleID(parts[1])
 
 	rule, response, err := configManagerClient.GetRuleWithContext(context, getRuleOptions)
 	if err != nil {
@@ -545,6 +557,12 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
 	}
 	// Manual Intervention
+	if err = d.Set("instance_id", parts[0]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("rule_id", parts[1]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
 	if err = d.Set("etag", response.Headers.Get("ETag")); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting etag: %s", err))
 	}
@@ -620,11 +638,14 @@ func resourceIbmSccRuleUpdate(context context.Context, d *schema.ResourceData, m
 
 	replaceRuleOptions := &securityandcompliancecenterapiv3.ReplaceRuleOptions{}
 
-	replaceRuleOptions.SetRuleID(d.Id())
-	// Manual Intervention
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	replaceRuleOptions.InstanceID = &parts[0]
+	replaceRuleOptions.SetRuleID(parts[1])
 	replaceRuleOptions.SetIfMatch(d.Get("etag").(string))
 
-	// End Manual Intervention
 	hasChange := false
 
 	if d.HasChange("description") || d.HasChange("target") || d.HasChange("required_config") {
@@ -691,7 +712,12 @@ func resourceIbmSccRuleDelete(context context.Context, d *schema.ResourceData, m
 
 	deleteRuleOptions := &securityandcompliancecenterapiv3.DeleteRuleOptions{}
 
-	deleteRuleOptions.SetRuleID(d.Id())
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	deleteRuleOptions.SetInstanceID(parts[0])
+	deleteRuleOptions.SetRuleID(parts[1])
 
 	response, err := configManagerClient.DeleteRuleWithContext(context, deleteRuleOptions)
 	if err != nil {

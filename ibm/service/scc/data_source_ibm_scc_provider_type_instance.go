@@ -17,7 +17,7 @@ import (
 )
 
 func DataSourceIbmSccProviderTypeInstance() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccProviderTypeInstanceRead,
 
 		Schema: map[string]*schema.Schema{
@@ -61,7 +61,7 @@ func DataSourceIbmSccProviderTypeInstance() *schema.Resource {
 				Description: "Time at which resource was updated.",
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
