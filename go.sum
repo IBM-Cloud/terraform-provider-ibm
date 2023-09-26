@@ -123,12 +123,10 @@ github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918 h1:RfHezAVs
 github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918/go.mod h1:IP6U/1NxgxzPeYdyiEwMaZyzelTw82JGHWl7bY78eQM=
 github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
 github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
-github.com/IBM/continuous-delivery-go-sdk v1.1.2 h1:UHwwak2RVTSZGtIV+SjH0vALqSvA+Vwkd1PHAbGgGrc=
-github.com/IBM/continuous-delivery-go-sdk v1.1.2/go.mod h1:A9rI1HPbccBBFgwJxXB999yXXpj1l+MnlE+rsxKtxw0=
 github.com/IBM/continuous-delivery-go-sdk v1.2.0 h1:FcgB5EvVrZLUnyR4S/mBocHHo9gJ5IQkSlCa6nqmr2A=
 github.com/IBM/continuous-delivery-go-sdk v1.2.0/go.mod h1:oW51tS5/MDCcEM7lUvjK1H9GFC/oKsRbyYfmvGyMGmw=
-github.com/IBM/event-notifications-go-admin-sdk v0.2.4 h1:WWUxwrKQxvExEK+xaAQOs6gP54LvJDPi3KatDTMfwh0=
-github.com/IBM/event-notifications-go-admin-sdk v0.2.4/go.mod h1:1TlGAFP47DybbovJfHtYYgSI8xpLL8Q0wao6vsAlb6c=
+github.com/IBM/event-notifications-go-admin-sdk v0.2.7 h1:Y6YPiXZO3/oAhs7rY6ekowJAsf9J05g2UFq3wjFkuCs=
+github.com/IBM/event-notifications-go-admin-sdk v0.2.7/go.mod h1:iI6/TJt4GQBDsl8NYzoIYGnsNjMG0kOVIEl7mcM5v1E=
 github.com/IBM/eventstreams-go-sdk v1.2.0 h1:eP0afHArMGjwhGqvZAhhu/3EDKRch2JehpveqF1TUjs=
 github.com/IBM/eventstreams-go-sdk v1.2.0/go.mod h1:2tuAxaYLctfqfr5jvyqSrxxEQGMwYPm3yJGWSj85YVQ=
 github.com/IBM/go-sdk-core/v3 v3.0.0/go.mod h1:JI5NS2+iCoY/D8Oq3JNEZNA7qO42agu6fnaUmDsRcJA=
