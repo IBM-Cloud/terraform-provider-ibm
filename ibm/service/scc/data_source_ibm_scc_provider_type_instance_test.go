@@ -17,13 +17,17 @@ import (
 func TestAccIbmSccProviderTypeInstanceDataSourceBasic(t *testing.T) {
 	providerTypeInstanceName := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 	providerTypeInstanceAttributes := os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(providerTypeInstanceName, providerTypeInstanceAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(instanceID, providerTypeInstanceName, providerTypeInstanceAttributes),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "provider_type_id"),
@@ -37,13 +41,17 @@ func TestAccIbmSccProviderTypeInstanceDataSourceBasic(t *testing.T) {
 func TestAccIbmSccProviderTypeInstanceDataSourceAllArgs(t *testing.T) {
 	providerTypeInstanceName := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 	providerTypeInstanceAttributes := os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstanceName, providerTypeInstanceAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(instanceID, providerTypeInstanceName, providerTypeInstanceAttributes),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "provider_type_id"),
@@ -59,32 +67,36 @@ func TestAccIbmSccProviderTypeInstanceDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(providerTypeInstanceName string, providerTypeInstanceAttributes string) string {
+func testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(instanceID string, providerTypeInstanceName string, providerTypeInstanceAttributes string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance" {
+			instance_id = "%s"
 			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
 			name = "%s"
 			attributes = %s
 		}
 
 		data "ibm_scc_provider_type_instance" "scc_provider_type_instance_tf" {
+			instance_id = resource.ibm_scc_provider_type_instance.scc_provider_type_instance.instance_id
 			provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
 			provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_instance_id
 		}
-	`, providerTypeInstanceName, providerTypeInstanceAttributes)
+	`, instanceID, providerTypeInstanceName, providerTypeInstanceAttributes)
 }
 
-func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(providerTypeInstanceName string, providerTypeInstanceAttributes string) string {
+func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(instanceID string, providerTypeInstanceName string, providerTypeInstanceAttributes string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance" {
+			instance_id = "%s"
 			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
 			name = "%s"
 			attributes = %s
 		}
 
 		data "ibm_scc_provider_type_instance" "scc_provider_type_instance_tf" {
+			instance_id = resource.ibm_scc_provider_type_instance.scc_provider_type_instance.instance_id
 			provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
 			provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_instance_id
 		}
-	`, providerTypeInstanceName, providerTypeInstanceAttributes)
+	`, instanceID, providerTypeInstanceName, providerTypeInstanceAttributes)
 }

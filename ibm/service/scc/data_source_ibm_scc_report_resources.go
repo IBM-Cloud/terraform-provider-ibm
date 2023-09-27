@@ -177,6 +177,7 @@ func dataSourceIbmSccReportResourcesRead(context context.Context, d *schema.Reso
 	listReportResourcesOptions := &securityandcompliancecenterapiv3.ListReportResourcesOptions{}
 
 	listReportResourcesOptions.SetReportID(d.Get("report_id").(string))
+	listReportResourcesOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("id"); ok {
 		listReportResourcesOptions.SetID(d.Get("id").(string))
 	}

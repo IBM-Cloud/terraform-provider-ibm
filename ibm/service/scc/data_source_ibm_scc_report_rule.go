@@ -97,6 +97,7 @@ func dataSourceIbmSccReportRuleRead(context context.Context, d *schema.ResourceD
 
 	getReportRuleOptions.SetReportID(d.Get("report_id").(string))
 	getReportRuleOptions.SetRuleID(d.Get("rule_id").(string))
+	getReportRuleOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	ruleInfo, response, err := resultsClient.GetReportRuleWithContext(context, getReportRuleOptions)
 	if err != nil {

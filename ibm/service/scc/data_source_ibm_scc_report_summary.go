@@ -302,6 +302,7 @@ func dataSourceIbmSccReportSummaryRead(context context.Context, d *schema.Resour
 	getReportSummaryOptions := &securityandcompliancecenterapiv3.GetReportSummaryOptions{}
 
 	getReportSummaryOptions.SetReportID(d.Get("report_id").(string))
+	getReportSummaryOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	reportSummary, response, err := resultsClient.GetReportSummaryWithContext(context, getReportSummaryOptions)
 	if err != nil {

@@ -14,12 +14,21 @@ import (
 )
 
 func TestAccIbmSccReportEvaluationsDataSourceBasic(t *testing.T) {
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+	}
+	reportID, ok := os.LookupEnv("IBMCLOUD_SCC_REPORT_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_REPORT_ID.")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic(),
+				Config: testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic(instanceID, reportID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations_instance", "report_id"),
@@ -30,11 +39,11 @@ func TestAccIbmSccReportEvaluationsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic() string {
-	report_id := os.Getenv("IBMCLOUD_SCC_REPORT_ID")
+func testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic(instanceID, reportID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_report_evaluations" "scc_report_evaluations_instance" {
+			instance_id = "%s"
 			report_id = "%s"
 		}
-	`, report_id)
+	`, instanceID, reportID)
 }

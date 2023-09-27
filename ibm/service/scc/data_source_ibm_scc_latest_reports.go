@@ -304,6 +304,7 @@ func dataSourceIbmSccLatestReportsRead(context context.Context, d *schema.Resour
 	}
 
 	getLatestReportsOptions := &securityandcompliancecenterapiv3.GetLatestReportsOptions{}
+	getLatestReportsOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	if _, ok := d.GetOk("sort"); ok {
 		getLatestReportsOptions.SetSort(d.Get("sort").(string))

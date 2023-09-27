@@ -5,6 +5,7 @@ package scc_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -13,12 +14,17 @@ import (
 )
 
 func TestAccIbmSccInstanceSettingsDataSourceBasic(t *testing.T) {
+	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
+	if !ok {
+		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic(),
+				Config: testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic(instanceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_instance_settings.scc_instance_settings_tf", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_instance_settings.scc_instance_settings_tf", "event_notifications.#"),
@@ -29,9 +35,10 @@ func TestAccIbmSccInstanceSettingsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic() string {
+func testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_instance_settings" "scc_instance_settings_tf" {
+			instance_id = "%s"
 		}
-	`)
+	`, instanceID)
 }

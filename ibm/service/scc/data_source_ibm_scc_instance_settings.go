@@ -90,6 +90,7 @@ func dataSourceIbmSccInstanceSettingsRead(context context.Context, d *schema.Res
 	}
 
 	getSettingsOptions := &securityandcompliancecenterapiv3.GetSettingsOptions{}
+	getSettingsOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	settings, response, err := adminClient.GetSettingsWithContext(context, getSettingsOptions)
 

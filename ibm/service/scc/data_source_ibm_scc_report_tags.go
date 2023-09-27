@@ -72,6 +72,7 @@ func dataSourceIbmSccReportTagsRead(context context.Context, d *schema.ResourceD
 	getReportTagsOptions := &securityandcompliancecenterapiv3.GetReportTagsOptions{}
 
 	getReportTagsOptions.SetReportID(d.Get("report_id").(string))
+	getReportTagsOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	reportTags, response, err := resultsClient.GetReportTagsWithContext(context, getReportTagsOptions)
 	if err != nil {

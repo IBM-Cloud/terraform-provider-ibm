@@ -268,6 +268,7 @@ func dataSourceIbmSccReportEvaluationsRead(context context.Context, d *schema.Re
 	listReportEvaluationsOptions := &securityandcompliancecenterapiv3.ListReportEvaluationsOptions{}
 
 	listReportEvaluationsOptions.SetReportID(d.Get("report_id").(string))
+	listReportEvaluationsOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("assessment_id"); ok {
 		listReportEvaluationsOptions.SetAssessmentID(d.Get("assessment_id").(string))
 	}

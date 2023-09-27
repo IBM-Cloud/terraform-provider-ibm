@@ -279,12 +279,6 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	// try to find the region if the field was set
-	region := getRegionData(*securityandcompliancecenterapiClient, d)
-	if val, err := securityandcompliancecenterapiv3.GetServiceURLForRegion(region); err == nil {
-		securityandcompliancecenterapiClient.SetServiceURL(val)
-	}
-
 	getControlLibraryOptions := &securityandcompliancecenterapiv3.GetControlLibraryOptions{}
 
 	getControlLibraryOptions.SetControlLibrariesID(d.Get("control_library_id").(string))
@@ -297,7 +291,6 @@ func dataSourceIbmSccControlLibraryRead(context context.Context, d *schema.Resou
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getControlLibraryOptions.ControlLibrariesID))
-	setRegionData(d, region)
 
 	if err = d.Set("account_id", controlLibrary.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))

@@ -114,6 +114,7 @@ func dataSourceIbmSccReportViolationDriftRead(context context.Context, d *schema
 	getReportViolationsDriftOptions := &securityandcompliancecenterapiv3.GetReportViolationsDriftOptions{}
 
 	getReportViolationsDriftOptions.SetReportID(d.Get("report_id").(string))
+	getReportViolationsDriftOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("scan_time_duration"); ok {
 		getReportViolationsDriftOptions.SetScanTimeDuration(int64(d.Get("scan_time_duration").(int)))
 	}

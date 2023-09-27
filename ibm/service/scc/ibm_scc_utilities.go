@@ -20,13 +20,6 @@ func AddSchemaData(resource *schema.Resource) *schema.Resource {
 		ForceNew:    true,
 		Description: "The ID of the Security and Compliance Center instance.",
 	}
-	resource.Schema["region"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		Computed:    true,
-		ForceNew:    true,
-		Description: "The region code of the instance",
-	}
 	return resource
 }
 

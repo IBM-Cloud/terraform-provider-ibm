@@ -301,6 +301,7 @@ func dataSourceIbmSccReportControlsRead(context context.Context, d *schema.Resou
 	getReportControlsOptions := &securityandcompliancecenterapiv3.GetReportControlsOptions{}
 
 	getReportControlsOptions.SetReportID(d.Get("report_id").(string))
+	getReportControlsOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("control_id"); ok {
 		getReportControlsOptions.SetControlID(d.Get("control_id").(string))
 	}

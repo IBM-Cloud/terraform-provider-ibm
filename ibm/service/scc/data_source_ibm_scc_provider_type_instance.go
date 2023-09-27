@@ -74,6 +74,7 @@ func dataSourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema
 
 	getProviderTypeInstanceOptions.SetProviderTypeID(d.Get("provider_type_id").(string))
 	getProviderTypeInstanceOptions.SetProviderTypeInstanceID(d.Get("provider_type_instance_id").(string))
+	getProviderTypeInstanceOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	providerTypeInstanceItem, response, err := securityAndComplianceCenterApIsClient.GetProviderTypeInstanceWithContext(context, getProviderTypeInstanceOptions)
 	if err != nil {

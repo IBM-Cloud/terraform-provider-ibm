@@ -25,7 +25,6 @@ func TestAccIbmSccRuleBasic(t *testing.T) {
 	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
 	if !ok {
 		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-		t.FailNow()
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -59,7 +58,6 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
 	if !ok {
 		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-		t.FailNow()
 	}
 
 	resource.Test(t, resource.TestCase{
