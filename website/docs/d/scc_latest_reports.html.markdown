@@ -10,10 +10,13 @@ subcategory: "Security and Compliance Center"
 
 Retrieve information about the latest reports from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.ibm.com`).
+
 ## Example Usage
 
 ```hcl
 data "ibm_scc_latest_reports" "scc_latest_reports" {
+    instance_id = "00000000-1111-2222-3333-444444444444"
 	sort = "profile_name"
 }
 ```
@@ -24,6 +27,7 @@ You can specify the following arguments for this data source.
 
 * `sort` - (Optional, String) This field sorts results by using a valid sort field. To learn more, see [Sorting](https://cloud.ibm.com/docs/api-handbook?topic=api-handbook-sorting).
   * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-]?[a-z0-9_]+$/`.
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 
 ## Attribute Reference
 

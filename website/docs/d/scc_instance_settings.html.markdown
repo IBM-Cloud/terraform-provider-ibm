@@ -15,8 +15,11 @@ Provides a read-only data source to retrieve information about scc_instance_sett
 
 ```hcl
 resource "ibm_scc_instance_settings" "scc_instance_settings_instance" {
+  instance_id = "00000000-1111-2222-3333-444444444444"
 }
 ```
+## Argument Reference
+
 
 ## Attribute Reference
 

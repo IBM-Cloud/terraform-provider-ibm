@@ -10,10 +10,13 @@ subcategory: "Security and Compliance Center"
 
 Retrieve information about report controls from a read-only data source. Then, you can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.ibm.com`).
+
 ## Example Usage
 
 ```hcl
 data "ibm_scc_report_controls" "scc_report_controls" {
+	instance_id = "00000000-1111-2222-3333-444444444444"
 	report_id = "report_id"
 	status = "compliant"
 }
@@ -23,6 +26,7 @@ data "ibm_scc_report_controls" "scc_report_controls" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 * `control_category` - (Optional, String) A control category value.
   * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-]+$/`.
 * `control_description` - (Optional, String) The description of the control.
