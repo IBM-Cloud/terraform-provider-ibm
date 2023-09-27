@@ -50,8 +50,8 @@ resource "ibm_iam_access_group_policy" "policy" {
   resources { 
     service = "cloud-object-storage" 
     resource_type = "bucket" 
-    resource_instance_id = "COS instance guid" 
-    resource = data.ibm_cos_bucket.cos_bucket_website_configuration.bucket_name 
+    resource_instance_id = "COS instance guid"  # eg : 94xxxxxx-3xxx-4xxx-8xxx-7xxxxxxxxx7
+    resource = sibm_cos_bucket.cos_bucket_website_configuration.bucket_name
   } 
 } 
 
