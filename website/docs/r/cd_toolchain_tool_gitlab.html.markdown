@@ -8,7 +8,7 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_toolchain_tool_gitlab
 
-Provides a resource for cd_toolchain_tool_gitlab. This allows cd_toolchain_tool_gitlab to be created, updated and deleted.
+Create, update, and delete cd_toolchain_tool_gitlabs with this resource.
 
 See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-gitlab) page for more information.
 
@@ -36,13 +36,13 @@ resource "ibm_cd_toolchain_tool_gitlab" "cd_toolchain_tool_gitlab_instance" {
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `initialization` - (Required, List) 
-Nested scheme for **initialization**:
+Nested schema for **initialization**:
 	* `blind_connection` - (Optional, Forces new resource, Boolean) Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.
 	  * Constraints: The default value is `false`.
-	* `git_id` - (Optional, Forces new resource, String) Set this value to 'gitlab' for gitlab.com, the GUID of an existing custom GitLab server, or 'gitlabcustom'.
+	* `git_id` - (Optional, Forces new resource, String) Set this value to 'gitlab' for gitlab.com, or 'gitlabcustom' for a custom GitLab server.
 	* `owner_id` - (Optional, Forces new resource, String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Optional, Forces new resource, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `true`.
@@ -56,7 +56,7 @@ Nested scheme for **initialization**:
 * `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
-Nested scheme for **parameters**:
+Nested schema for **parameters**:
 	* `api_root_url` - (Computed, String) The API root URL for the GitLab Server.
 	* `api_token` - (Optional, String) Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.
 	* `auth_type` - (Optional, String) Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.
@@ -66,7 +66,7 @@ Nested scheme for **parameters**:
 	* `default_branch` - (Computed, String) The default branch of the git repository.
 	* `enable_traceability` - (Optional, Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
-	* `git_id` - (Computed, String) Set this value to 'gitlab' for gitlab.com, the GUID of an existing custom GitLab server, or 'gitlabcustom'.
+	* `git_id` - (Computed, String) Set this value to 'gitlab' for gitlab.com, or 'gitlabcustom' for a custom GitLab server.
 	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.
 	* `owner_id` - (Computed, String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Computed, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
@@ -87,13 +87,13 @@ Nested scheme for **parameters**:
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the cd_toolchain_tool_gitlab.
 * `crn` - (String) Tool CRN.
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
-Nested scheme for **referent**:
+Nested schema for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
 * `resource_group_id` - (String) Resource group where the tool is located.
@@ -104,55 +104,6 @@ Nested scheme for **referent**:
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `updated_at` - (String) Latest tool update timestamp.
 
-## Provider Configuration
-
-The IBM Cloud provider offers a flexible means of providing credentials for authentication. The following methods are supported, in this order, and explained below:
-
-- Static credentials
-- Environment variables
-
-To find which credentials are required for this resource, see the service table [here](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-
-### Static credentials
-
-You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_classic_username`, and `iaas_classic_api_key` arguments in the IBM Cloud provider block.
-
-Usage:
-```
-provider "ibm" {
-    ibmcloud_api_key = ""
-    iaas_classic_username = ""
-    iaas_classic_api_key = ""
-}
-```
-
-### Environment variables
-
-You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
-
-```
-provider "ibm" {}
-```
-
-Usage:
-```
-export IC_API_KEY="ibmcloud_api_key"
-export IAAS_CLASSIC_USERNAME="iaas_classic_username"
-export IAAS_CLASSIC_API_KEY="iaas_classic_api_key"
-terraform plan
-```
-
-Note:
-
-1. Create or find your `ibmcloud_api_key` and `iaas_classic_api_key` [here](https://cloud.ibm.com/iam/apikeys).
-  - Select `My IBM Cloud API Keys` option from view dropdown for `ibmcloud_api_key`
-  - Select `Classic Infrastructure API Keys` option from view dropdown for `iaas_classic_api_key`
-2. For iaas_classic_username
-  - Go to [Users](https://cloud.ibm.com/iam/users)
-  - Click on user.
-  - Find user name in the `VPN password` section under `User Details` tab
-
-For more informaton, see [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#authentication).
 
 ## Import
 

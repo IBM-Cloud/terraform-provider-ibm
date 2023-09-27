@@ -50,17 +50,15 @@ Nested schema for **group**:
     		* `remove` - (Boolean) Action control for removing enterprise-managed members from an enterprise-managed access group.
     * `assertions` - (List) Assertions Input Component.
     Nested schema for **assertions**:
-    	* `action_controls` - (List) Control whether or not access group administrators in child accounts can add, remove, and update dynamic rules for the enterprise-managed access group in their account. The inner level RuleActionControls override these `remove` and `update` action controls.
+    	* `action_controls` - (List) Control whether or not access group administrators in child accounts can add, remove, and update dynamic rules for the enterprise-managed access group in their account. The inner level RuleActionControls override these action controls.
     	Nested schema for **action_controls**:
     		* `add` - (Boolean) Action control for adding dynamic rules to an enterprise-managed access group. If an access group administrator in a child account adds a dynamic rule, they can always update or remove it.
     		* `remove` - (Boolean) Action control for removing enterprise-managed dynamic rules in an enterprise-managed access group.
-    		* `update` - (Boolean) Action control for updating enterprise-managed dynamic rules in an enterprise-managed access group.
     	* `rules` - (List) Dynamic rules to automatically add federated users to access groups based on specific identity attributes.
     	Nested schema for **rules**:
     		* `action_controls` - (List) Control whether or not access group administrators in child accounts can update and remove this dynamic rule in the enterprise-managed access group in their account.This overrides outer level AssertionsActionControls.
     		Nested schema for **action_controls**:
     			* `remove` - (Boolean) Action control for removing this enterprise-managed dynamic rule.
-    			* `update` - (Boolean) Action control for updating this enterprise-managed dynamic rule.
     		* `conditions` - (List) Conditions of membership. You can think of this as a key:value pair.
     		Nested schema for **conditions**:
     			* `claim` - (String) The key in the key:value pair.

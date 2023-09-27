@@ -7,14 +7,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
@@ -32,6 +35,12 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_securitycompliance", "toolchain_id"),
 				Description:  "ID of the toolchain to bind the tool to.",
+			},
+			"name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_securitycompliance", "name"),
+				Description:  "Name of the tool.",
 			},
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
@@ -54,7 +63,7 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						"trigger_scan": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Deprecated:  "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Deprecated:  "This argument is deprecated and may be removed in a future release",
 							Description: "Set to `enabled` to indicate that a DevSecOps pipeline task should trigger a Security and Compliance Center run of a Hybrid cloud validation scan. Note, each scan may incur charges. When enabled, other parameters become relevant that are needed to trigger that scan; `api_key`, `scope`, `profile`. Hybrid cloud scans are deprecated and are planned to be removed. This option will stop working at that time. For more information see the [Security and Compliance Center Release Notes](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-release-notes#security-compliance-march312023).",
 						},
 						"api_key": &schema.Schema{
@@ -62,19 +71,19 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Deprecated:       "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Deprecated:       "This argument is deprecated and may be removed in a future release",
 							Description:      "The IBM Cloud API key used to access the Security and Compliance Center API. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. For information about the deprecation see the `trigger_scan` parameter. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"scope": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Deprecated:  "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Deprecated:  "This argument is deprecated and may be removed in a future release",
 							Description: "The name of a Security and Compliance Center scope, which has previously been created in that service. When the `trigger_scan` parameter is set to `enabled`, then the Validation scan will scan all the resources in that scope. Select a scope that contains this toolchain, so that the scan will find the evidence that has been recently updated by the DevSecOps pipeline-run. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. For information about the deprecation see the `trigger_scan` parameter.",
 						},
 						"profile": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Deprecated:  "This argument is deprecated and will be removed in a future release. Refer to the provider documentation for details.",
+							Deprecated:  "This argument is deprecated and may be removed in a future release",
 							Description: "The name of a Security and Compliance Center, Hybrid cloud profile. Usually, use the predefined profile \"IBM Cloud Security Best Practices v1.0.0\", which contains the DevSecOps toolchain goals. Or use a user-authored customized profile that has been configured to contain those goals. When the `trigger_scan` parameter is set to `enabled`, then the Validation scan will use the controls and goals in the configured profile. If configured with a profile that does not check the DevSecOps toolchain goals, it might incorrectly indicate that the toolchain status is passed even though some of the DevSecOps scans had actually failed. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. For information about the deprecation see the `trigger_scan` parameter.",
 						},
 						"use_profile_attachment": &schema.Schema{
@@ -116,12 +125,6 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						},
 					},
 				},
-			},
-			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_securitycompliance", "name"),
-				Description:  "Name of the tool.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -255,7 +258,21 @@ func resourceIBMCdToolchainToolSecuritycomplianceRead(context context.Context, d
 	getToolByIDOptions.SetToolchainID(parts[0])
 	getToolByIDOptions.SetToolID(parts[1])
 
-	toolchainTool, response, err := cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
+	var toolchainTool *cdtoolchainv2.ToolchainTool
+	var response *core.DetailedResponse
+	err = resource.RetryContext(context, 10*time.Second, func() *resource.RetryError {
+		toolchainTool, response, err = cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
+		if err != nil || toolchainTool == nil {
+			if response != nil && response.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if conns.IsResourceTimeoutError(err) {
+		toolchainTool, response, err = cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
+	}
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -268,6 +285,11 @@ func resourceIBMCdToolchainToolSecuritycomplianceRead(context context.Context, d
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
+	if !core.IsNil(toolchainTool.Name) {
+		if err = d.Set("name", toolchainTool.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+	}
 	remapFields := map[string]string{
 		"evidence_repo_url": "evidence_repo_name",
 		"api_key":           "api-key",
@@ -275,9 +297,6 @@ func resourceIBMCdToolchainToolSecuritycomplianceRead(context context.Context, d
 	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSecuritycompliance(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
-	}
-	if err = d.Set("name", toolchainTool.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if err = d.Set("resource_group_id", toolchainTool.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
@@ -334,6 +353,11 @@ func resourceIBMCdToolchainToolSecuritycomplianceUpdate(context context.Context,
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
+	if d.HasChange("name") {
+		newName := d.Get("name").(string)
+		patchVals.Name = &newName
+		hasChange = true
+	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
 			"evidence_repo_url": "evidence_repo_name",
@@ -341,11 +365,6 @@ func resourceIBMCdToolchainToolSecuritycomplianceUpdate(context context.Context,
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSecuritycompliance(), remapFields)
 		patchVals.Parameters = parameters
-		hasChange = true
-	}
-	if d.HasChange("name") {
-		newName := d.Get("name").(string)
-		patchVals.Name = &newName
 		hasChange = true
 	}
 

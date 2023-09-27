@@ -187,6 +187,8 @@ var Pi_capture_storage_image_path string
 var Pi_capture_cloud_storage_access_key string
 var Pi_capture_cloud_storage_secret_key string
 
+var ISDelegegatedVPC string
+
 // For Image
 
 var IsImageName string
@@ -211,12 +213,10 @@ var Tg_cross_network_id string
 // Enterprise Management
 var Account_to_be_imported string
 
-// Secuity and Complinace Center, Governance
-var Scc_gov_account_id string
-var Scc_resource_group_id string
-
-// Security and Compliance Center, SI
-var Scc_si_account string
+// Secuity and Complinace Center
+var SccApiEndpoint string
+var SccProviderTypeAttributes string
+var SccReportId string
 
 // ROKS Cluster
 var ClusterName string
@@ -1044,6 +1044,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
 	}
 
+	ISDelegegatedVPC = os.Getenv("IS_DELEGATED_VPC")
+	if ISDelegegatedVPC == "" {
+		ISDelegegatedVPC = "tfp-test-vpc-hub-false-del"
+		fmt.Println("[WARN] Set the environment variable IS_DELEGATED_VPC with a VALID created vpc name for testing ibm_is_vpc data source on staging/test")
+	}
 	// Added for resource image testing
 	Image_cos_url_encrypted = os.Getenv("IMAGE_COS_URL_ENCRYPTED")
 	if Image_cos_url_encrypted == "" {
@@ -1215,19 +1220,19 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ROOTKEY_CRN with a VALID CRN for a root key created in the HPCS instance")
 	}
 
-	Scc_gov_account_id = os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
-	if Scc_gov_account_id == "" {
-		fmt.Println("[WARN] Set the environment variable SCC_GOVERNANCE_ACCOUNT_ID with a VALID account name")
+	SccApiEndpoint = os.Getenv("IBMCLOUD_SCC_API_ENDPOINT")
+	if SccApiEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID endpoint")
 	}
 
-	Scc_resource_group_id = os.Getenv("IBM_SCC_RESOURCE_GROUP")
-	if Scc_resource_group_id == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_SCC_RESOURCE_GROUP with a VALID resource group id")
+	SccProviderTypeAttributes = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
+	if SccProviderTypeAttributes == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID ATTRIBUTE")
 	}
 
-	Scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
-	if Scc_si_account == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")
+	SccReportId = os.Getenv("IBMCLOUD_SCC_REPORT_ID")
+	if SccApiEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
 	}
 
 	CloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")

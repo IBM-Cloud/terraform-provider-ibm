@@ -56,6 +56,26 @@ You can access the following attribute references after your data source is crea
     - `default_security_group_name` - (String) The name of the default security group.
     - `default_routing_table`-  (String) The unique identifier of the VPC default routing table.
     - `default_routing_table_name` - (String) The name of the default routing table.
+
+    -> **NOTE:** `dns` attribute is a select location availability, invitation only feature. In other regions value might not be present.
+    - `dns` - (List) The DNS configuration for this VPC.
+      
+      Nested scheme for `dns`:
+      - `enable_hub` - (Boolean) Indicates whether this VPC is enabled as a DNS name resolution hub.
+      - `resolver` - (List) The zone list this backup policy plan will create snapshot clones in.
+        
+        Nested scheme for `resolver`:
+          - `manual_servers` - (Integer) The DNS servers to use for this VPC, replacing any existing servers. All the DNS servers must either: **have a unique zone_affinity**, or **not have a zone_affinity**.  
+          - `type` - (String) The type of the DNS resolver to use.
+          - `vpc` - (String) The VPC to provide DNS server addresses for this VPC. The specified VPC must be configured with a DNS Services custom resolver and must be in one of this VPC's DNS resolution bindings.
+    - `health_reasons` - (List) The reasons for the current `health_state` (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.
+      Nested schema for **health_reasons**:
+      - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+      - `message` - (String) An explanation of the reason for this health state.
+      - `more_info` - (String) Link to documentation about the reason for this health state.
+
+    - `health_state` - (String) The health of this resource.- `ok`: No abnormal behavior detected- `degraded`: Experiencing compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.[`degraded`, `faulted`, `inapplicable`, `ok`]
+
     - `id` - (String) The ID of the VPC.
     - `name` - (String) The name of the VPC.
     - `resource_group` - (String) The resource group ID where the VPC created.

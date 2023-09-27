@@ -135,7 +135,6 @@ func testAccCheckIBMIAMAccessGroupTemplateConfig(name string, description string
 					action_controls {
 						add = true
 						remove = true
-						update = true
 					}
 				}
 				action_controls {
