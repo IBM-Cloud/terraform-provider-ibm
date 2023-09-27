@@ -16,9 +16,9 @@ Retrieve information about a profile attachment from a read-only data source. Th
 
 ```hcl
 data "ibm_scc_profile_attachment" "scc_profile_attachment" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	attachment_id = "attachment_id"
-	profile_id = ibm_scc_profile_attachment.scc_profile_attachment.profiles_id
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    attachment_id = "attachment_id"
+    profile_id = ibm_scc_profile_attachment.scc_profile_attachment.profiles_id
 }
 ```
 

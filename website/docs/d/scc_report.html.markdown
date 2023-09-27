@@ -16,8 +16,8 @@ Retrieve information about a report from a read-only data source. Then, you can 
 
 ```hcl
 data "ibm_scc_report" "scc_report" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	report_id = "report_id"
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    report_id = "report_id"
 }
 ```
 

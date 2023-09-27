@@ -16,9 +16,9 @@ Retrieve information about report controls from a read-only data source. Then, y
 
 ```hcl
 data "ibm_scc_report_controls" "scc_report_controls" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	report_id = "report_id"
-	status = "compliant"
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    report_id = "report_id"
+    status = "compliant"
 }
 ```
 

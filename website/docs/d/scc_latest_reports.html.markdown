@@ -17,7 +17,7 @@ Retrieve information about the latest reports from a read-only data source. Then
 ```hcl
 data "ibm_scc_latest_reports" "scc_latest_reports" {
     instance_id = "00000000-1111-2222-3333-444444444444"
-	sort = "profile_name"
+    sort = "profile_name"
 }
 ```
 

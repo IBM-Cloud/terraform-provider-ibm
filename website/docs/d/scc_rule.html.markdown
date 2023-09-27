@@ -16,8 +16,8 @@ Retrieve information about a rule from a read-only data source. Then, you can re
 
 ```hcl
 data "ibm_scc_rule" "scc_rule" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	rule_id = ibm_scc_rule.scc_rule_instance.rule_id
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    rule_id = ibm_scc_rule.scc_rule_instance.rule_id
 }
 ```
 

@@ -17,7 +17,7 @@ Retrieve information about a scc_control_library from a read-only data source. T
 ```hcl
 data "ibm_scc_control_library" "scc_control_library" {
     instance_id = "00000000-1111-2222-3333-444444444444"
-	control_library_id = ibm_scc_control_library.scc_control_library_instance.controlLibrary_id
+    control_library_id = "aaaaaaaa-1111-bbbb-2222-cccccccccccc"
 }
 ```
 

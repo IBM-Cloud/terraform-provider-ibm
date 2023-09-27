@@ -16,8 +16,8 @@ Retrieve information about report tags from a read-only data source. Then, you c
 
 ```hcl
 data "ibm_scc_report_tags" "scc_report_tags" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	report_id = "report_id"
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    report_id = "report_id"
 }
 ```
 

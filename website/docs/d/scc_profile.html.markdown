@@ -16,8 +16,8 @@ Retrieve information about a profile from a read-only data source. Then, you can
 
 ```hcl
 data "ibm_scc_profile" "scc_profile" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	profile_id = ibm_scc_profile.scc_profile_instance.profile_id
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    profile_id = ibm_scc_profile.scc_profile_instance.profile_id
 }
 ```
 

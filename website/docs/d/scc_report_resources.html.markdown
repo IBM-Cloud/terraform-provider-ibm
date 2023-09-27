@@ -16,9 +16,9 @@ Retrieve information about report resources from a read-only data source. Then, 
 
 ```hcl
 data "ibm_scc_report_resources" "scc_report_resources" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	report_id = "report_id"
-	status = "compliant"
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    report_id = "report_id"
+    status = "compliant"
 }
 ```
 

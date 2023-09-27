@@ -16,9 +16,9 @@ Retrieve information about a provider type instance from a read-only data source
 
 ```hcl
 data "ibm_scc_provider_type_instance" "scc_provider_type_instance" {
-  instance_id = "00000000-1111-2222-3333-444444444444"
-	provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
-	provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance_instance.providerTypeInstanceItem_id
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
+    provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance_instance.providerTypeInstanceItem_id
 }
 ```
 

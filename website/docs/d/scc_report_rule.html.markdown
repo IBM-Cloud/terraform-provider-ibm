@@ -16,9 +16,9 @@ Retrieve information about a report rule from a read-only data source. Then, you
 
 ```hcl
 data "ibm_scc_report_rule" "scc_report_rule" {
-  instance_id = "00000000-1111-2222-3333-444444444444"
-	report_id = "report_id"
-	rule_id = "rule-8d444f8c-fd1d-48de-bcaa-f43732568761"
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    report_id = "report_id"
+    rule_id = "rule-8d444f8c-fd1d-48de-bcaa-f43732568761"
 }
 ```
 

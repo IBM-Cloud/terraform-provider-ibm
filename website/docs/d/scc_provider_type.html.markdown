@@ -16,8 +16,7 @@ Retrieve information about a provider type from a read-only data source. Then, y
 
 ```hcl
 data "ibm_scc_provider_type" "scc_provider_type" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
-	provider_type_id = "provider_type_id"
+    provider_type_id = "provider_type_id"
 }
 ```
 
@@ -25,7 +24,6 @@ data "ibm_scc_provider_type" "scc_provider_type" {
 
 You can specify the following arguments for this data source.
 
-* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 * `provider_type_id` - (Required, Forces new resource, String) The provider type ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `32` characters. The value must match regular expression `/^[a-zA-Z0-9 ,\\-_]+$/`.
 

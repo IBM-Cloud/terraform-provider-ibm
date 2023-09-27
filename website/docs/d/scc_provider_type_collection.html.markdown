@@ -16,15 +16,8 @@ Retrieve information about a provider type collection from a read-only data sour
 
 ```hcl
 data "ibm_scc_provider_type_collection" "scc_provider_type_collection" {
-	instance_id = "00000000-1111-2222-3333-444444444444"
 }
 ```
-
-## Argument Reference
-
-You can specify the following arguments for this data source.
-
-* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 
 ## Attribute Reference
 
