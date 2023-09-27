@@ -6,12 +6,9 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
@@ -23,7 +20,8 @@ func DataSourceIbmSmImportedCertificate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "The ID of the secret.",
 			},
 			"created_by": &schema.Schema{
@@ -74,6 +72,7 @@ func DataSourceIbmSmImportedCertificate() *schema.Resource {
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The human-readable name of your secret.",
 			},
@@ -81,6 +80,11 @@ func DataSourceIbmSmImportedCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
+			},
+			"secret_group_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The human-readable name of your secret group.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -197,29 +201,15 @@ func DataSourceIbmSmImportedCertificate() *schema.Resource {
 }
 
 func dataSourceIbmSmImportedCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	region := getRegion(secretsManagerClient, d)
-	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
-
-	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-
-	secretId := d.Get("secret_id").(string)
-	getSecretOptions.SetID(secretId)
-
-	importedCertificateIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetSecretWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
+	importedCertificateIntf, region, instanceId, diagError := getSecretByIdOrByName(context, d, meta, ImportedCertSecretType)
+	if diagError != nil {
+		return diagError
 	}
 
 	importedCertificate := importedCertificateIntf.(*secretsmanagerv2.ImportedCertificate)
-	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *importedCertificate.ID))
 
+	var err error
 	if err = d.Set("region", region); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
