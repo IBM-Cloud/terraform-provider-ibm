@@ -642,7 +642,7 @@ func resourceIbmSccRuleUpdate(context context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	replaceRuleOptions.InstanceID = &parts[0]
+	replaceRuleOptions.SetInstanceID(parts[0])
 	replaceRuleOptions.SetRuleID(parts[1])
 	replaceRuleOptions.SetIfMatch(d.Get("etag").(string))
 
