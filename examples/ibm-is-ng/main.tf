@@ -1257,56 +1257,6 @@ data "ibm_is_share" "is_share" {
 
 data "ibm_is_shares" "is_shares" {
 }
-
-// vni
-resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instance" {
-  allow_ip_spoofing = var.is_virtual_network_interface_allow_ip_spoofing
-  auto_delete = var.is_virtual_network_interface_auto_delete
-  enable_infrastructure_nat = var.is_virtual_network_interface_enable_infrastructure_nat
-  ips {
-    address = "192.168.3.4"
-    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e/reserved_ips/6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    id = "6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    name = "my-reserved-ip"
-  }
-  name = var.is_virtual_network_interface_name
-  primary_ip {
-    address = "192.168.3.4"
-    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e/reserved_ips/6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    id = "6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    name = "my-reserved-ip"
-  }
-  resource_group {
-    id = "fee82deba12e4c0fb69c3b09d1f12345"
-  }
-  security_groups {
-    crn = "crn:v1:bluemix:public:is:us-south:a/123456::security-group:be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-    deleted {
-      more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-    }
-    href = "https://us-south.iaas.cloud.ibm.com/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-    id = "be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-    name = "my-security-group"
-  }
-  subnet {
-    crn = "crn:v1:bluemix:public:is:us-south-1:a/123456::subnet:7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-    id = "7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-  }
-}
-resource "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
-  virtual_network_interface = <vni_id>
-  floating_ip 				= <fip_id>
-}
-
-data "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
-  virtual_network_interface = <vni_id>
-  floating_ip 				= <fip_id>
-}
-
-data "ibm_is_virtual_network_interface_floating_ips" "vni_fips" {
-  virtual_network_interface = <vni_id>
-}
 // vpc dns resolution bindings
 
   // list all dns resolution bindings on a vpc
@@ -1433,4 +1383,55 @@ resource "ibm_is_image_deprecate" "example" {
 
 resource "ibm_is_image_obsolete" "example" {
   image     = ibm_is_image.image1.id
+}
+
+
+// vni
+resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instance" {
+  allow_ip_spoofing = true
+  auto_delete       = true
+  enable_infrastructure_nat = true
+  ips {
+    address = "192.168.3.4"
+    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e/reserved_ips/6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+    id = "6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+    name = "my-reserved-ip"
+  }
+  name = "my-virtual-network-interface"
+  primary_ip {
+    address = "192.168.3.4"
+    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e/reserved_ips/6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+    id = "6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+    name = "my-reserved-ip"
+  }
+  resource_group {
+    id = "fee82deba12e4c0fb69c3b09d1f12345"
+  }
+  security_groups {
+    crn = "crn:v1:bluemix:public:is:us-south:a/123456::security-group:be5df5ca-12a0-494b-907e-aa6ec2bfa271"
+    deleted {
+      more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+    }
+    href = "https://us-south.iaas.cloud.ibm.com/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271"
+    id = "be5df5ca-12a0-494b-907e-aa6ec2bfa271"
+    name = "my-security-group"
+  }
+  subnet {
+    crn = "crn:v1:bluemix:public:is:us-south-1:a/123456::subnet:7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+    id = "7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+  }
+}
+resource "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
+  virtual_network_interface = <vni_id>
+  floating_ip 				= <fip_id>
+}
+
+data "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
+  virtual_network_interface = <vni_id>
+  floating_ip 				= <fip_id>
+}
+
+data "ibm_is_virtual_network_interface_floating_ips" "vni_fips" {
+  virtual_network_interface = <vni_id>
 }
