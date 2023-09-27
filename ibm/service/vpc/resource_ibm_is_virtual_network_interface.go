@@ -977,13 +977,13 @@ func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetShareMount
 
 func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextToMap(model *vpcv1.VirtualNetworkInterfaceTargetInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContext) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Deleted != nil {
-		deletedMap, err := resourceIBMIsVirtualNetworkInterfaceInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
+	// if model.Deleted != nil {
+	// 	deletedMap, err := resourceIBMIsVirtualNetworkInterfaceInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model.Deleted)
+	// 	if err != nil {
+	// 		return modelMap, err
+	// 	}
+	// 	modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	// }
 	modelMap["href"] = model.Href
 	modelMap["id"] = model.ID
 	modelMap["name"] = model.Name
@@ -991,21 +991,21 @@ func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetInstanceNe
 	return modelMap, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model *vpcv1.InstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = model.MoreInfo
-	return modelMap, nil
-}
+// func resourceIBMIsVirtualNetworkInterfaceInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model *vpcv1.InstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeleted) (map[string]interface{}, error) {
+// 	modelMap := make(map[string]interface{})
+// 	modelMap["more_info"] = model.MoreInfo
+// 	return modelMap, nil
+// }
 
 func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContextToMap(model *vpcv1.VirtualNetworkInterfaceTargetBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContext) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Deleted != nil {
-		deletedMap, err := resourceIBMIsVirtualNetworkInterfaceBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
+	// if model.Deleted != nil {
+	// 	deletedMap, err := resourceIBMIsVirtualNetworkInterfaceBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model.Deleted)
+	// 	if err != nil {
+	// 		return modelMap, err
+	// 	}
+	// 	modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	// }
 	modelMap["href"] = model.Href
 	modelMap["id"] = model.ID
 	modelMap["name"] = model.Name
@@ -1013,11 +1013,11 @@ func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetBareMetalS
 	return modelMap, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model *vpcv1.BareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = model.MoreInfo
-	return modelMap, nil
-}
+// func resourceIBMIsVirtualNetworkInterfaceBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeletedToMap(model *vpcv1.BareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContextDeleted) (map[string]interface{}, error) {
+// 	modelMap := make(map[string]interface{})
+// 	modelMap["more_info"] = model.MoreInfo
+// 	return modelMap, nil
+// }
 
 func resourceIBMIsVirtualNetworkInterfaceVPCReferenceToMap(model *vpcv1.VPCReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})

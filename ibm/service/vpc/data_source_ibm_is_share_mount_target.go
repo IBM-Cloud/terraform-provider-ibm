@@ -443,12 +443,12 @@ func dataSourceShareTargetVNIToMap(VNIItem vpcv1.VirtualNetworkInterfaceReferenc
 	if VNIItem.CRN != nil {
 		subnetMap["crn"] = VNIItem.CRN
 	}
-	if VNIItem.Deleted != nil {
-		deletedList := []map[string]interface{}{}
-		deletedMap := dataSourceShareTargetVNIDeletedToMap(*VNIItem.Deleted)
-		deletedList = append(deletedList, deletedMap)
-		subnetMap["deleted"] = deletedList
-	}
+	// if VNIItem.Deleted != nil {
+	// 	deletedList := []map[string]interface{}{}
+	// 	deletedMap := dataSourceShareTargetVNIDeletedToMap(*VNIItem.Deleted)
+	// 	deletedList = append(deletedList, deletedMap)
+	// 	subnetMap["deleted"] = deletedList
+	// }
 	if VNIItem.Href != nil {
 		subnetMap["href"] = VNIItem.Href
 	}
@@ -466,12 +466,12 @@ func dataSourceShareTargetVNIToMap(VNIItem vpcv1.VirtualNetworkInterfaceReferenc
 	return subnetMap
 }
 
-func dataSourceShareTargetVNIDeletedToMap(deletedItem vpcv1.VirtualNetworkInterfaceReferenceAttachmentContextDeleted) (deletedMap map[string]interface{}) {
-	deletedMap = map[string]interface{}{}
+// func dataSourceShareTargetVNIDeletedToMap(deletedItem vpcv1.VirtualNetworkInterfaceReferenceAttachmentContextDeleted) (deletedMap map[string]interface{}) {
+// 	deletedMap = map[string]interface{}{}
 
-	if deletedItem.MoreInfo != nil {
-		deletedMap["more_info"] = deletedItem.MoreInfo
-	}
+// 	if deletedItem.MoreInfo != nil {
+// 		deletedMap["more_info"] = deletedItem.MoreInfo
+// 	}
 
-	return deletedMap
-}
+// 	return deletedMap
+// }
