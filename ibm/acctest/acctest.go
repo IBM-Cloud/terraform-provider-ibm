@@ -1619,6 +1619,7 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 }
 
 func TestAccPreCheckSccInstanceID(t *testing.T) {
+	TestAccPreCheck(t)
 	if v := os.Getenv("IBMCLOUD_SCC_INSTANCE_ID"); v == "" {
 		t.Fatal("IBMCLOUD_SCC_INSTANCE_ID must be set for acceptance tests")
 	}
