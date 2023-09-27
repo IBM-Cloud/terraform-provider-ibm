@@ -25,7 +25,7 @@ func TestAccIbmSccProfileAttachmentBasic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
@@ -47,7 +47,7 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{

@@ -32,7 +32,7 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{
@@ -71,7 +71,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{

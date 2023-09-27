@@ -20,10 +20,10 @@ func TestAccIbmSccInstanceSettingsDataSourceBasic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic(instanceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_instance_settings.scc_instance_settings_tf", "id"),

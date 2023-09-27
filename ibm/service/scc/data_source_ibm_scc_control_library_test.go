@@ -24,7 +24,7 @@ func TestAccIbmSccControlLibraryDataSourceBasic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -52,7 +52,7 @@ func TestAccIbmSccControlLibraryDataSourceAllArgs(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{

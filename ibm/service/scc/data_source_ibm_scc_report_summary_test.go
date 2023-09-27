@@ -24,7 +24,7 @@ func TestAccIbmSccReportSummaryDataSourceBasic(t *testing.T) {
 		t.Logf("Missing the env var IBMCLOUD_SCC_REPORT_ID.")
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{

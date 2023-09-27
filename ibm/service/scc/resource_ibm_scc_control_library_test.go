@@ -32,7 +32,7 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
@@ -79,7 +79,7 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{

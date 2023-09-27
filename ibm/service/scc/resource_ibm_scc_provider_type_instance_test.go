@@ -29,7 +29,7 @@ func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProviderTypeInstanceDestroy,
 		Steps: []resource.TestStep{
@@ -62,7 +62,7 @@ func TestAccIbmSccProviderTypeInstanceAllArgs(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProviderTypeInstanceDestroy,
 		Steps: []resource.TestStep{
