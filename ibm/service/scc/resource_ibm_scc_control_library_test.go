@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,18 +25,14 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 	controlLibraryNameUpdate := controlLibraryName
 	controlLibraryDescriptionUpdate := controlLibraryDescription
 	controlLibraryTypeUpdate := controlLibraryType
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfigBasic(instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType),
+				Config: testAccCheckIbmSccControlLibraryConfigBasic(acc.SccInstanceID, controlLibraryName, controlLibraryDescription, controlLibraryType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
@@ -46,7 +41,7 @@ func TestAccIbmSccControlLibraryBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfigBasic(instanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate),
+				Config: testAccCheckIbmSccControlLibraryConfigBasic(acc.SccInstanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescriptionUpdate),
@@ -73,18 +68,14 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	versionGroupLabelUpdate := versionGroupLabel
 	controlLibraryVersionUpdate := "0.0.2"
 	latestUpdate := "true"
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(instanceID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest),
+				Config: testAccCheckIbmSccControlLibraryConfig(acc.SccInstanceID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
@@ -97,7 +88,7 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(instanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate),
+				Config: testAccCheckIbmSccControlLibraryConfig(acc.SccInstanceID, controlLibraryNameUpdate, controlLibraryDescriptionUpdate, controlLibraryTypeUpdate, versionGroupLabelUpdate, controlLibraryVersionUpdate, latestUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_description", controlLibraryDescriptionUpdate),

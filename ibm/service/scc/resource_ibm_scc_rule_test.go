@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -22,25 +21,20 @@ func TestAccIbmSccRuleBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Rule
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := description
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleConfigBasic(instanceID, description),
+				Config: testAccCheckIbmSccRuleConfigBasic(acc.SccInstanceID, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIbmSccRuleConfigBasic(instanceID, descriptionUpdate),
+				Config: testAccCheckIbmSccRuleConfigBasic(acc.SccInstanceID, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", descriptionUpdate),
 				),
@@ -55,18 +49,14 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 	version := fmt.Sprintf("0.0.%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	versionUpdate := fmt.Sprintf("0.0.%d", acctest.RandIntRange(2, 100))
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleConfig(instanceID, description, version),
+				Config: testAccCheckIbmSccRuleConfig(acc.SccInstanceID, description, version),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccRuleExists("ibm_scc_rule.scc_rule_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", description),
@@ -74,7 +64,7 @@ func TestAccIbmSccRuleAllArgs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmSccRuleConfig(instanceID, descriptionUpdate, versionUpdate),
+				Config: testAccCheckIbmSccRuleConfig(acc.SccInstanceID, descriptionUpdate, versionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_rule.scc_rule_instance", "version", versionUpdate),

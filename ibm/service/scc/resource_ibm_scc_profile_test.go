@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,18 +25,14 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 	profileNameUpdate := profileName
 	profileDescriptionUpdate := profileDescription
 	profileTypeUpdate := profileType
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfigBasic(instanceID, profileName, profileDescription, profileType),
+				Config: testAccCheckIbmSccProfileConfigBasic(acc.SccInstanceID, profileName, profileDescription, profileType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
@@ -46,7 +41,7 @@ func TestAccIbmSccProfileBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfigBasic(instanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
+				Config: testAccCheckIbmSccProfileConfigBasic(acc.SccInstanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),
@@ -65,18 +60,14 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	profileNameUpdate := profileName
 	profileDescriptionUpdate := profileDescription
 	profileTypeUpdate := profileType
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(instanceID, profileName, profileDescription, profileType),
+				Config: testAccCheckIbmSccProfileConfig(acc.SccInstanceID, profileName, profileDescription, profileType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
@@ -85,7 +76,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(instanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
+				Config: testAccCheckIbmSccProfileConfig(acc.SccInstanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),

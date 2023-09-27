@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -20,28 +19,23 @@ import (
 
 func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ProviderTypeInstanceItem
-	providerTypeAttributes := os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
 	name := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProviderTypeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(instanceID, name, providerTypeAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(acc.SccInstanceID, name, acc.SccProviderTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProviderTypeInstanceExists("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", conf),
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", name),
 				),
 			},
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(instanceID, nameUpdate, providerTypeAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceConfigBasic(acc.SccInstanceID, nameUpdate, acc.SccProviderTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", nameUpdate),
 				),
@@ -52,29 +46,23 @@ func TestAccIbmSccProviderTypeInstanceBasic(t *testing.T) {
 
 func TestAccIbmSccProviderTypeInstanceAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.ProviderTypeInstanceItem
-	providerTypeAttributes := os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
 	name := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_provider_type_instance_name_%d", acctest.RandIntRange(10, 100))
 
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProviderTypeInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfig(instanceID, name, providerTypeAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceConfig(acc.SccInstanceID, name, acc.SccProviderTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProviderTypeInstanceExists("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", conf),
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", name),
 				),
 			},
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceConfig(instanceID, nameUpdate, providerTypeAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceConfig(acc.SccInstanceID, nameUpdate, acc.SccProviderTypeAttributes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_provider_type_instance.scc_provider_type_instance_wlp", "name", nameUpdate),
 				),

@@ -288,7 +288,6 @@ var (
 )
 
 // For Code Engine
-
 var (
 	CeResourceGroupID   string
 	CeProjectId         string
@@ -297,7 +296,6 @@ var (
 )
 
 // for IAM Identity
-
 var IamIdentityAssignmentTargetAccountId string
 
 func init() {
@@ -1249,26 +1247,6 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ROOTKEY_CRN with a VALID CRN for a root key created in the HPCS instance")
 	}
 
-	SccApiEndpoint = os.Getenv("IBMCLOUD_SCC_API_ENDPOINT")
-	if SccApiEndpoint == "" {
-		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID endpoint")
-	}
-
-	SccProviderTypeAttributes = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
-	if SccProviderTypeAttributes == "" {
-		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID ATTRIBUTE")
-	}
-
-	SccInstanceID = os.Getenv("IBMCLOUD_SCC_INSTANCE_ID")
-	if SccInstanceID == "" {
-		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")
-	}
-
-	SccReportID = os.Getenv("IBMCLOUD_SCC_REPORT_ID")
-	if SccReportID == "" {
-		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
-	}
-
 	CloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
 	if CloudShellAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
@@ -1302,6 +1280,26 @@ func init() {
 	Satellite_Resource_instance_id = os.Getenv("SATELLITE_RESOURCE_INSTANCE_ID")
 	if Satellite_Resource_instance_id == "" {
 		fmt.Println("[INFO] Set the environment variable SATELLITE_RESOURCE_INSTANCE_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	SccInstanceID = os.Getenv("IBMCLOUD_SCC_INSTANCE_ID")
+	if SccInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")
+	}
+
+	SccApiEndpoint = os.Getenv("IBMCLOUD_SCC_API_ENDPOINT")
+	if SccApiEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID SCC API ENDPOINT")
+	}
+
+	SccReportID = os.Getenv("IBMCLOUD_SCC_REPORT_ID")
+	if SccReportID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID SCC REPORT ID")
+	}
+
+	SccProviderTypeAttributes = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
+	if SccProviderTypeAttributes == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC PROVIDER TYPE ATTRIBUTE")
 	}
 
 	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
@@ -1618,9 +1616,21 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	}
 }
 
-func TestAccPreCheckSccInstanceID(t *testing.T) {
+func TestAccPreCheckScc(t *testing.T) {
 	TestAccPreCheck(t)
-	if v := os.Getenv("IBMCLOUD_SCC_INSTANCE_ID"); v == "" {
-		t.Fatal("IBMCLOUD_SCC_INSTANCE_ID must be set for acceptance tests")
+	if SccApiEndpoint == "" {
+		t.Fatal("IBMCLOUD_SCC_API_ENDPOINT missing. Set the environment variable IBMCLOUD_SCC_API_ENDPOINT with a VALID endpoint")
+	}
+
+	if SccProviderTypeAttributes == "" {
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID ATTRIBUTE")
+	}
+
+	if SccInstanceID == "" {
+		t.Fatal("IBMCLOUD_SCC_INSTANCE_ID missing. Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")
+	}
+
+	if SccReportID == "" {
+		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
 	}
 }

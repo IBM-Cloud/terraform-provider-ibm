@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -18,17 +17,13 @@ func TestAccIbmSccProfileDataSourceBasic(t *testing.T) {
 	profileProfileName := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
 	profileProfileDescription := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
 	profileProfileType := "custom"
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileDataSourceConfigBasic(instanceID, profileProfileName, profileProfileDescription, profileProfileType),
+				Config: testAccCheckIbmSccProfileDataSourceConfigBasic(acc.SccInstanceID, profileProfileName, profileProfileDescription, profileProfileType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "profile_id"),
@@ -42,17 +37,13 @@ func TestAccIbmSccProfileDataSourceAllArgs(t *testing.T) {
 	profileProfileName := fmt.Sprintf("tf_profile_name_%d", acctest.RandIntRange(10, 100))
 	profileProfileDescription := fmt.Sprintf("tf_profile_description_%d", acctest.RandIntRange(10, 100))
 	profileProfileType := "custom"
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileDataSourceConfig(instanceID, profileProfileName, profileProfileDescription, profileProfileType),
+				Config: testAccCheckIbmSccProfileDataSourceConfig(acc.SccInstanceID, profileProfileName, profileProfileDescription, profileProfileType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "profile_name"),

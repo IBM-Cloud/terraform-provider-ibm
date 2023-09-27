@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -19,18 +18,14 @@ import (
 
 func TestAccIbmSccProfileAttachmentBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.AttachmentItem
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID),
+				Config: testAccCheckIbmSccProfileAttachmentConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 				),
@@ -42,23 +37,19 @@ func TestAccIbmSccProfileAttachmentBasic(t *testing.T) {
 func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.AttachmentItem
 
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(instanceID),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(instanceID),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
 				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 			resource.TestStep{

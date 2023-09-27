@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -16,17 +15,13 @@ import (
 
 func TestAccIbmSccRuleDataSourceBasic(t *testing.T) {
 	ruleDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleDataSourceConfigBasic(instanceID, ruleDescription),
+				Config: testAccCheckIbmSccRuleDataSourceConfigBasic(acc.SccInstanceID, ruleDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "rule_id"),
@@ -51,17 +46,13 @@ func TestAccIbmSccRuleDataSourceBasic(t *testing.T) {
 func TestAccIbmSccRuleDataSourceAllArgs(t *testing.T) {
 	ruleDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	ruleVersion := "0.0.1"
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleDataSourceConfig(instanceID, ruleDescription, ruleVersion),
+				Config: testAccCheckIbmSccRuleDataSourceConfig(acc.SccInstanceID, ruleDescription, ruleVersion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "rule_id"),

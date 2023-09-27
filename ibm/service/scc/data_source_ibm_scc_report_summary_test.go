@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -14,21 +13,12 @@ import (
 )
 
 func TestAccIbmSccReportSummaryDataSourceBasic(t *testing.T) {
-	instanceID, ok := os.LookupEnv("IBMCLOUD_SCC_INSTANCE_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_INSTANCE_ID.")
-	}
-
-	reportID, ok := os.LookupEnv("IBMCLOUD_SCC_REPORT_ID")
-	if !ok {
-		t.Logf("Missing the env var IBMCLOUD_SCC_REPORT_ID.")
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckSccInstanceID(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccReportSummaryDataSourceConfigBasic(instanceID, reportID),
+				Config: testAccCheckIbmSccReportSummaryDataSourceConfigBasic(acc.SccInstanceID, acc.SccReportID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_report_summary.scc_report_summary_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_report_summary.scc_report_summary_instance", "report_id"),
