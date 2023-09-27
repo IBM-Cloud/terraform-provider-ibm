@@ -536,8 +536,7 @@ func resourceIbmSccProfileUpdate(context context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// TODO: Implement replaceProfileOptions.SetInstanceID
-	replaceProfileOptions.InstanceID = &parts[0]
+	replaceProfileOptions.SetInstanceID(parts[0])
 	replaceProfileOptions.SetProfileID(parts[1])
 	hasChange := false
 	bodyModelMap := map[string]interface{}{}

@@ -208,6 +208,7 @@ func resourceIbmSccProviderTypeInstanceUpdate(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
+	// TODO: add updateProviderTypeInstanceOptions.SetInstanceID to scc-go-sdk
 	updateProviderTypeInstanceOptions.InstanceID = &parts[0]
 	updateProviderTypeInstanceOptions.SetProviderTypeID(parts[1])
 	updateProviderTypeInstanceOptions.SetProviderTypeInstanceID(parts[2])

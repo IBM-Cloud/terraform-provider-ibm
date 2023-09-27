@@ -500,8 +500,7 @@ func resourceIbmSccControlLibraryUpdate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// TODO: use replaceCustomControlLibraryOptions.SetInstanceID to set the InstanceID
-	replaceCustomControlLibraryOptions.InstanceID = &parts[0]
+	replaceCustomControlLibraryOptions.SetInstanceID(parts[0])
 	replaceCustomControlLibraryOptions.SetControlLibrariesID(parts[1])
 
 	hasChange := false
