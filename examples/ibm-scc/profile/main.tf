@@ -3,6 +3,7 @@ data "ibm_scc_control_library" "scc_control_library" {
 }
 
 resource "ibm_scc_profile" "scc_demo_profile" {
+	instance_id = "00000000-1111-2222-3333-444444444444"
 	profile_type = "custom"
 	profile_description = var.ibm_scc_profile_description
 	profile_name = var.ibm_scc_profile_name
@@ -15,6 +16,7 @@ resource "ibm_scc_profile" "scc_demo_profile" {
 }
 
 resource "ibm_scc_profile_attachment" "scc_demo_profile_attachment" {
+	instance_id = "00000000-1111-2222-3333-444444444444"
 	profile_id = resource.ibm_scc_profile.scc_demo_profile.id
 	name = var.ibm_scc_profile_attachment_name
 	description = var.ibm_scc_profile_attachment_description
