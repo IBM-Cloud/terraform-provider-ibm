@@ -90,3 +90,13 @@ After your data source is created, you can read values from the following attrib
 				- `href` - (String) The URL for this region.
 				- `name` - (String) The globally unique name for this region.
 		- `resource_type` - (String) The resource type.
+	- `snapshot_consistency_group` - (List) The snapshot consistency group which created this snapshot.
+	    Nested scheme for `snapshot_consistency_group`:
+    	- `crn` - (String) The CRN of this snapshot consistency group.
+    	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+    		Nested scheme for `deleted`:
+			- `more_info` - (String) Link to documentation about deleted resources.
+    	- `href` - (String) The URL for the snapshot consistency group.
+    	- `id` - (String) The unique identifier for the snapshot consistency group.
+    	- `name` - (String) TThe name for the snapshot consistency group. The name is unique across all snapshot consistency groups in the region.
+    	- `resource_type` - (String) The resource type.
