@@ -81,7 +81,8 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `capacity`:
   - `allocated` - (Integer) The amount allocated to this capacity reservation.
   - `available` - (Integer) The amount of this capacity reservation available for new attachments.
-  - `status` - (String) The status of the capacity reservation:
+  - `status` - (String) The status of the capacity reservation.
+
     ->**status** 
       </br>&#x2022; allocating: The capacity reservation is being allocated for use
       </br>&#x2022; allocated: The total capacity of the reservation has been allocated for use
@@ -94,10 +95,12 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `committed_use`:
   - `expiration_at` - (Timestamp) The expiration date and time for this committed use reservation.
   - `expiration_policy` - (String) The policy to apply when the committed use term expires.
+
     ->**expiration_policy** 
       </br>&#x2022; release: Release any available capacity and let the reservation expire
       </br>&#x2022; renew: Renew for another term, provided the term remains listed in the reservation_terms for the profile. Otherwise, let the reservation expire
-  - `term` - (String) The status of the capacity reservation:
+  - `term` - (String) The term for this committed use reservation.
+
     ->**term** 
       </br>&#x2022; one_year: 1 year
       </br>&#x2022; three_year: 3 years
@@ -106,6 +109,7 @@ In addition to all argument reference list, you can access the following attribu
 - `href` - (String) The URL for this reservation.
 - `id` - (String) The unique identifier for this reservation.
 - `lifecycle_state` - (String) The lifecycle state of this reservation.
+
    ->**lifecycle_state** 
       </br>&#x2022; deleting
       </br>&#x2022; failed
@@ -120,6 +124,7 @@ In addition to all argument reference list, you can access the following attribu
   - `href` - (String) The URL for this virtual server instance profile.
   - `name` - (String) The globally unique name for this virtual server instance profile.
   - `resource_type` - (string) The resource type
+
      ->**resource_type** 
       </br>&#x2022; instance_profile
 - `resource_group` - (List) The resource group for this reservation. 
@@ -129,9 +134,11 @@ In addition to all argument reference list, you can access the following attribu
   - `id` - (String) The unique identifier for this resource group.
   - `name` - (String) The name for this resource group.
 - `resource_type` - (String) The resource type.
+
   ->**resource_type** 
     </br>&#x2022; reservation
 - `status` - (String) The status of the reservation.
+
   ->**status** 
     </br>&#x2022; activating
     </br>&#x2022; active
@@ -143,6 +150,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `status_reasons`:
   - `code` - (String) A snake case string succinctly identifying the status reason.
+
     ->**code** 
       </br>&#x2022; cannot_activate_no_capacity_available
       </br>&#x2022; cannot_renew_unsupported_profile_term
