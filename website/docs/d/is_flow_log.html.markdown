@@ -74,6 +74,13 @@ In addition to all argument references listed, you can access the following attr
    	- `name` - (String) The user-defined name for this network interface.
   	- `resource_type` - (String) The resource type. Allowable values are: `network_interface`.
 
+  -> **Note:**
+  **&#x2022;** If the target is an instance network attachment, flow logs will be collected  for that instance network attachment.</br>
+  **&#x2022;** If the target is an instance network interface, flow logs will be collected  for that instance network interface.</br>
+  **&#x2022;** If the target is a virtual network interface, flow logs will be collected for the  the virtual network interface's `target` resource if the resource is:  - an instance network attachment.</br>
+  **&#x2022;** If the target is a virtual server instance, flow logs will be collected  for all network attachments or network interfaces on that instance.- If the target is a subnet, flow logs will be collected  for all instance network interfaces and virtual network interfaces  attached to that subnet.</br>
+  **&#x2022;** If the target is a VPC, flow logs will be collected for all instance network  interfaces and virtual network interfaces  attached to all subnets within that VPC. If the target is an instance, subnet, or VPC, flow logs will not be collectedfor any instance network attachments or instance network interfaces within the targetthat are themselves the target of a more specific flow log collector.</br>
+  
 - `vpc` - (List) The VPC this flow log collector is associated with.
 	
 	Nested scheme for `vpc`:
