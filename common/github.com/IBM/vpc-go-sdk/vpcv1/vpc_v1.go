@@ -13695,6 +13695,12 @@ func (vpc *VpcV1) ListSnapshotsWithContext(ctx context.Context, listSnapshotsOpt
 	if listSnapshotsOptions.ClonesZoneName != nil {
 		builder.AddQuery("clones[].zone.name", fmt.Sprint(*listSnapshotsOptions.ClonesZoneName))
 	}
+	if listSnapshotsOptions.SnapshotConsistencyGroupID != nil {
+		builder.AddQuery("snapshot_consistency_group.id", fmt.Sprint(*listSnapshotsOptions.SnapshotConsistencyGroupID))
+	}
+	if listSnapshotsOptions.SnapshotConsistencyGroupCRN != nil {
+		builder.AddQuery("snapshot_consistency_group.crn", fmt.Sprint(*listSnapshotsOptions.SnapshotConsistencyGroupCRN))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -52382,6 +52388,14 @@ type ListSnapshotsOptions struct {
 	// exact specified name.
 	ClonesZoneName *string `json:"clones[].zone.name,omitempty"`
 
+	// Filters the collection to resources with a `snapshot_consistency_group.id` property matching the specified
+	// identifier.
+	SnapshotConsistencyGroupID *string `json:"snapshot_consistency_group.id,omitempty"`
+
+	// Filters the collection to resources with a `snapshot_consistency_group.crn` property matching the specified
+	// identifier.
+	SnapshotConsistencyGroupCRN *string `json:"snapshot_consistency_group.crn,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -52517,6 +52531,18 @@ func (_options *ListSnapshotsOptions) SetSourceImageRemoteRegionName(sourceImage
 // SetClonesZoneName : Allow user to set ClonesZoneName
 func (_options *ListSnapshotsOptions) SetClonesZoneName(clonesZoneName string) *ListSnapshotsOptions {
 	_options.ClonesZoneName = core.StringPtr(clonesZoneName)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupID : Allow user to set SnapshotConsistencyGroupID
+func (_options *ListSnapshotsOptions) SetSnapshotConsistencyGroupID(snapshotConsistencyGroupID string) *ListSnapshotsOptions {
+	_options.SnapshotConsistencyGroupID = core.StringPtr(snapshotConsistencyGroupID)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupCRN : Allow user to set SnapshotConsistencyGroupCRN
+func (_options *ListSnapshotsOptions) SetSnapshotConsistencyGroupCRN(snapshotConsistencyGroupCRN string) *ListSnapshotsOptions {
+	_options.SnapshotConsistencyGroupCRN = core.StringPtr(snapshotConsistencyGroupCRN)
 	return _options
 }
 
