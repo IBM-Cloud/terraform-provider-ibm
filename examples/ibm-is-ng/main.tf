@@ -1385,3 +1385,30 @@ resource "ibm_is_image_deprecate" "example" {
 resource "ibm_is_image_obsolete" "example" {
   image     = ibm_is_image.image1.id
 }
+
+//reservation
+
+resource "ibm_is_reservation" "example" {
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name = "ba2-2x8"
+    resource_type = "instance_profile"
+  }
+  zone = "us-east-3"
+}
+
+resource "ibm_is_reservation_activate" "example" {
+  reservation = ibm_is_reservation.example.id
+}
+
+data "ibm_is_reservations" "example" {
+}
+
+data "ibm_is_reservation" "example" {
+  identifier = ibm_is_reservation.example.id
+}

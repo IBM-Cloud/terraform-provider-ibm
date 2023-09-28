@@ -5402,6 +5402,15 @@ func (vpc *VpcV1) ListInstancesWithContext(ctx context.Context, listInstancesOpt
 	if listInstancesOptions.PlacementGroupName != nil {
 		builder.AddQuery("placement_group.name", fmt.Sprint(*listInstancesOptions.PlacementGroupName))
 	}
+	if listInstancesOptions.ReservationID != nil {
+		builder.AddQuery("reservation.id", fmt.Sprint(*listInstancesOptions.ReservationID))
+	}
+	if listInstancesOptions.ReservationCRN != nil {
+		builder.AddQuery("reservation.crn", fmt.Sprint(*listInstancesOptions.ReservationCRN))
+	}
+	if listInstancesOptions.ReservationName != nil {
+		builder.AddQuery("reservation.name", fmt.Sprint(*listInstancesOptions.ReservationName))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -8838,6 +8847,596 @@ func (vpc *VpcV1) UpdateInstanceGroupMembershipWithContext(ctx context.Context, 
 	}
 
 	return
+}
+
+// ListReservations : List all reservations
+// This request lists all reservations in the region. A reservation provides reserved capacity for a specified profile
+// in a specified zone. A reservation can also include a long-term committed use discount.
+//
+// The reservations will be sorted by their `created_at` property values, with newest reservations first. Reservations
+// with identical `created_at` property values will in turn be sorted by ascending `name` property values.
+func (vpc *VpcV1) ListReservations(listReservationsOptions *ListReservationsOptions) (result *ReservationCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListReservationsWithContext(context.Background(), listReservationsOptions)
+}
+
+// ListReservationsWithContext is an alternate form of the ListReservations method which supports a Context parameter
+func (vpc *VpcV1) ListReservationsWithContext(ctx context.Context, listReservationsOptions *ListReservationsOptions) (result *ReservationCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listReservationsOptions, "listReservationsOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listReservationsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListReservations")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listReservationsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listReservationsOptions.Start))
+	}
+	if listReservationsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listReservationsOptions.Limit))
+	}
+	if listReservationsOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listReservationsOptions.Name))
+	}
+	if listReservationsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listReservationsOptions.ResourceGroupID))
+	}
+	if listReservationsOptions.ZoneName != nil {
+		builder.AddQuery("zone.name", fmt.Sprint(*listReservationsOptions.ZoneName))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalReservationCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateReservation : Create a reservation
+// This request creates a new reservation from a reservation prototype object. The prototype object is structured in the
+// same way as a retrieved reservation, and contains the information necessary to create the new reservation.
+func (vpc *VpcV1) CreateReservation(createReservationOptions *CreateReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	return vpc.CreateReservationWithContext(context.Background(), createReservationOptions)
+}
+
+// CreateReservationWithContext is an alternate form of the CreateReservation method which supports a Context parameter
+func (vpc *VpcV1) CreateReservationWithContext(ctx context.Context, createReservationOptions *CreateReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createReservationOptions, "createReservationOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createReservationOptions, "createReservationOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createReservationOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateReservation")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createReservationOptions.Capacity != nil {
+		body["capacity"] = createReservationOptions.Capacity
+	}
+	if createReservationOptions.CommittedUse != nil {
+		body["committed_use"] = createReservationOptions.CommittedUse
+	}
+	if createReservationOptions.Profile != nil {
+		body["profile"] = createReservationOptions.Profile
+	}
+	if createReservationOptions.Zone != nil {
+		body["zone"] = createReservationOptions.Zone
+	}
+	if createReservationOptions.AffinityPolicy != nil {
+		body["affinity_policy"] = createReservationOptions.AffinityPolicy
+	}
+	if createReservationOptions.Name != nil {
+		body["name"] = createReservationOptions.Name
+	}
+	if createReservationOptions.ResourceGroup != nil {
+		body["resource_group"] = createReservationOptions.ResourceGroup
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalReservation)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteReservation : Delete a reservation
+// This request deletes a reservation. This operation cannot be reversed. Reservations with a `status` of `active` are
+// not allowed to be deleted.
+func (vpc *VpcV1) DeleteReservation(deleteReservationOptions *DeleteReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	return vpc.DeleteReservationWithContext(context.Background(), deleteReservationOptions)
+}
+
+// DeleteReservationWithContext is an alternate form of the DeleteReservation method which supports a Context parameter
+func (vpc *VpcV1) DeleteReservationWithContext(ctx context.Context, deleteReservationOptions *DeleteReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteReservationOptions, "deleteReservationOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteReservationOptions, "deleteReservationOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deleteReservationOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteReservationOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteReservation")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalReservation)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetReservation : Retrieve a reservation
+// This request retrieves a single reservation specified by identifier in the URL.
+func (vpc *VpcV1) GetReservation(getReservationOptions *GetReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	return vpc.GetReservationWithContext(context.Background(), getReservationOptions)
+}
+
+// GetReservationWithContext is an alternate form of the GetReservation method which supports a Context parameter
+func (vpc *VpcV1) GetReservationWithContext(ctx context.Context, getReservationOptions *GetReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getReservationOptions, "getReservationOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getReservationOptions, "getReservationOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getReservationOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getReservationOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetReservation")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalReservation)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateReservation : Update a reservation
+// This request updates a reservation with the information provided in a reservation patch object. The patch object is
+// structured in the same way as a retrieved reservation and needs to contain only the information to be updated.
+func (vpc *VpcV1) UpdateReservation(updateReservationOptions *UpdateReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	return vpc.UpdateReservationWithContext(context.Background(), updateReservationOptions)
+}
+
+// UpdateReservationWithContext is an alternate form of the UpdateReservation method which supports a Context parameter
+func (vpc *VpcV1) UpdateReservationWithContext(ctx context.Context, updateReservationOptions *UpdateReservationOptions) (result *Reservation, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateReservationOptions, "updateReservationOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateReservationOptions, "updateReservationOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updateReservationOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateReservationOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateReservation")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateReservationOptions.ReservationPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalReservation)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ActivateReservation : Activate a reservation
+// This request activates a reservation. For this request to succeed, the reservation status must be `inactive`.
+func (vpc *VpcV1) ActivateReservation(activateReservationOptions *ActivateReservationOptions) (response *core.DetailedResponse, err error) {
+	return vpc.ActivateReservationWithContext(context.Background(), activateReservationOptions)
+}
+
+// ActivateReservationWithContext is an alternate form of the ActivateReservation method which supports a Context parameter
+func (vpc *VpcV1) ActivateReservationWithContext(ctx context.Context, activateReservationOptions *ActivateReservationOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(activateReservationOptions, "activateReservationOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(activateReservationOptions, "activateReservationOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *activateReservationOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}/activate`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range activateReservationOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ActivateReservation")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// ActivateReservationOptions : The ActivateReservation options.
+type ActivateReservationOptions struct {
+	// The reservation identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewActivateReservationOptions : Instantiate ActivateReservationOptions
+func (*VpcV1) NewActivateReservationOptions(id string) *ActivateReservationOptions {
+	return &ActivateReservationOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *ActivateReservationOptions) SetID(id string) *ActivateReservationOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ActivateReservationOptions) SetHeaders(param map[string]string) *ActivateReservationOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateReservationOptions : The CreateReservation options.
+type CreateReservationOptions struct {
+	// The capacity reservation configuration to use.
+	Capacity *ReservationCapacityPrototype `json:"capacity" validate:"required"`
+
+	// The committed use configuration to use for this reservation.
+	CommittedUse *ReservationCommittedUsePrototype `json:"committed_use" validate:"required"`
+
+	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) to use for this
+	// reservation.
+	Profile *ReservationProfilePrototype `json:"profile" validate:"required"`
+
+	// The zone to use for this reservation.
+	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
+
+	// The affinity policy to use for this reservation:
+	// - `restricted`: The reservation must be manually requested.
+	AffinityPolicy *string `json:"affinity_policy,omitempty"`
+
+	// The name for this reservation. The name must not be used by another reservation in the region. If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the CreateReservationOptions.AffinityPolicy property.
+// The affinity policy to use for this reservation:
+// - `restricted`: The reservation must be manually requested.
+const (
+	CreateReservationOptionsAffinityPolicyRestrictedConst = "restricted"
+)
+
+// NewCreateReservationOptions : Instantiate CreateReservationOptions
+func (*VpcV1) NewCreateReservationOptions(capacity *ReservationCapacityPrototype, committedUse *ReservationCommittedUsePrototype, profile *ReservationProfilePrototype, zone ZoneIdentityIntf) *CreateReservationOptions {
+	return &CreateReservationOptions{
+		Capacity:     capacity,
+		CommittedUse: committedUse,
+		Profile:      profile,
+		Zone:         zone,
+	}
+}
+
+// SetCapacity : Allow user to set Capacity
+func (_options *CreateReservationOptions) SetCapacity(capacity *ReservationCapacityPrototype) *CreateReservationOptions {
+	_options.Capacity = capacity
+	return _options
+}
+
+// SetCommittedUse : Allow user to set CommittedUse
+func (_options *CreateReservationOptions) SetCommittedUse(committedUse *ReservationCommittedUsePrototype) *CreateReservationOptions {
+	_options.CommittedUse = committedUse
+	return _options
+}
+
+// SetProfile : Allow user to set Profile
+func (_options *CreateReservationOptions) SetProfile(profile *ReservationProfilePrototype) *CreateReservationOptions {
+	_options.Profile = profile
+	return _options
+}
+
+// SetZone : Allow user to set Zone
+func (_options *CreateReservationOptions) SetZone(zone ZoneIdentityIntf) *CreateReservationOptions {
+	_options.Zone = zone
+	return _options
+}
+
+// SetAffinityPolicy : Allow user to set AffinityPolicy
+func (_options *CreateReservationOptions) SetAffinityPolicy(affinityPolicy string) *CreateReservationOptions {
+	_options.AffinityPolicy = core.StringPtr(affinityPolicy)
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *CreateReservationOptions) SetName(name string) *CreateReservationOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetResourceGroup : Allow user to set ResourceGroup
+func (_options *CreateReservationOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateReservationOptions {
+	_options.ResourceGroup = resourceGroup
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateReservationOptions) SetHeaders(param map[string]string) *CreateReservationOptions {
+	options.Headers = param
+	return options
+}
+
+// DeleteReservationOptions : The DeleteReservation options.
+type DeleteReservationOptions struct {
+	// The reservation identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteReservationOptions : Instantiate DeleteReservationOptions
+func (*VpcV1) NewDeleteReservationOptions(id string) *DeleteReservationOptions {
+	return &DeleteReservationOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *DeleteReservationOptions) SetID(id string) *DeleteReservationOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteReservationOptions) SetHeaders(param map[string]string) *DeleteReservationOptions {
+	options.Headers = param
+	return options
+}
+
+// GetReservationOptions : The GetReservation options.
+type GetReservationOptions struct {
+	// The reservation identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetReservationOptions : Instantiate GetReservationOptions
+func (*VpcV1) NewGetReservationOptions(id string) *GetReservationOptions {
+	return &GetReservationOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *GetReservationOptions) SetID(id string) *GetReservationOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetReservationOptions) SetHeaders(param map[string]string) *GetReservationOptions {
+	options.Headers = param
+	return options
 }
 
 // ListDedicatedHostGroups : List all dedicated host groups
@@ -43113,6 +43712,13 @@ type Instance struct {
 	// server instance.
 	Profile *InstanceProfileReference `json:"profile" validate:"required"`
 
+	// The reservation used by this virtual server instance.
+	//
+	// If absent, no reservation is in use.
+	Reservation *ReservationReference `json:"reservation,omitempty"`
+
+	ReservationAffinity *InstanceReservationAffinity `json:"reservation_affinity" validate:"required"`
+
 	// The resource group for this instance.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
@@ -43276,6 +43882,14 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation", &obj.Reservation, UnmarshalReservationReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinity)
 	if err != nil {
 		return
 	}
@@ -45975,6 +46589,46 @@ func UnmarshalInstanceGroupReferenceDeleted(m map[string]json.RawMessage, result
 	return
 }
 
+// InstanceHealthReason : InstanceHealthReason struct
+type InstanceHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the InstanceHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	InstanceHealthReasonCodeReservationCapacityUnavailableConst = "reservation_capacity_unavailable"
+	InstanceHealthReasonCodeReservationDeletedConst             = "reservation_deleted"
+	InstanceHealthReasonCodeReservationExpiredConst             = "reservation_expired"
+	InstanceHealthReasonCodeReservationFailedConst              = "reservation_failed"
+)
+
+// UnmarshalInstanceHealthReason unmarshals an instance of InstanceHealthReason from the specified map of raw messages.
+func UnmarshalInstanceHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceInitialization : InstanceInitialization struct
 type InstanceInitialization struct {
 	// The default trusted profile configuration specified at virtual server instance
@@ -46256,6 +46910,8 @@ type InstancePatch struct {
 	// - Support the number of network interfaces the instance currently has.
 	Profile InstancePatchProfileIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPatch `json:"reservation_affinity,omitempty"`
+
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
 	// `total_network_bandwidth`.
@@ -46282,6 +46938,10 @@ func UnmarshalInstancePatch(m map[string]json.RawMessage, result interface{}) (e
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstancePatchProfile)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPatch)
 	if err != nil {
 		return
 	}
@@ -46536,6 +47196,8 @@ type InstanceProfile struct {
 
 	PortSpeed InstanceProfilePortSpeedIntf `json:"port_speed" validate:"required"`
 
+	ReservationTerms *InstanceProfileReservationTerms `json:"reservation_terms" validate:"required"`
+
 	TotalVolumeBandwidth InstanceProfileVolumeBandwidthIntf `json:"total_volume_bandwidth" validate:"required"`
 
 	VcpuArchitecture *InstanceProfileVcpuArchitecture `json:"vcpu_architecture" validate:"required"`
@@ -46597,6 +47259,10 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "port_speed", &obj.PortSpeed, UnmarshalInstanceProfilePortSpeed)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_terms", &obj.ReservationTerms, UnmarshalInstanceProfileReservationTerms)
 	if err != nil {
 		return
 	}
@@ -47441,6 +48107,42 @@ func UnmarshalInstanceProfileReference(m map[string]json.RawMessage, result inte
 	return
 }
 
+// InstanceProfileReservationTerms : InstanceProfileReservationTerms struct
+type InstanceProfileReservationTerms struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The supported committed use terms for a reservation using this profile.
+	Values []string `json:"values" validate:"required"`
+}
+
+// Constants associated with the InstanceProfileReservationTerms.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileReservationTermsTypeEnumConst = "enum"
+)
+
+// Constants associated with the InstanceProfileReservationTerms.Values property.
+const (
+	InstanceProfileReservationTermsValuesOneYearConst   = "one_year"
+	InstanceProfileReservationTermsValuesThreeYearConst = "three_year"
+)
+
+// UnmarshalInstanceProfileReservationTerms unmarshals an instance of InstanceProfileReservationTerms from the specified map of raw messages.
+func UnmarshalInstanceProfileReservationTerms(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileReservationTerms)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceProfileVcpu : InstanceProfileVcpu struct
 // Models which "extend" this model:
 // - InstanceProfileVcpuFixed
@@ -47723,6 +48425,8 @@ type InstancePrototype struct {
 	// in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
@@ -47810,6 +48514,10 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -47929,6 +48637,140 @@ func UnmarshalInstanceReferenceDeleted(m map[string]json.RawMessage, result inte
 	return
 }
 
+// InstanceReservationAffinity : InstanceReservationAffinity struct
+type InstanceReservationAffinity struct {
+	// The reservation affinity policy to use for this virtual server instance:
+	// - `disabled`: Reservations will not be used
+	// - `manual`: Reservations in `pool` are available for use.
+	Policy *string `json:"policy" validate:"required"`
+
+	// The pool of reservations available for use by this virtual server instance.
+	Pool []ReservationReference `json:"pool" validate:"required"`
+}
+
+// Constants associated with the InstanceReservationAffinity.Policy property.
+// The reservation affinity policy to use for this virtual server instance:
+// - `disabled`: Reservations will not be used
+// - `manual`: Reservations in `pool` are available for use.
+const (
+	InstanceReservationAffinityPolicyDisabledConst = "disabled"
+	InstanceReservationAffinityPolicyManualConst   = "manual"
+)
+
+// UnmarshalInstanceReservationAffinity unmarshals an instance of InstanceReservationAffinity from the specified map of raw messages.
+func UnmarshalInstanceReservationAffinity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceReservationAffinity)
+	err = core.UnmarshalPrimitive(m, "policy", &obj.Policy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "pool", &obj.Pool, UnmarshalReservationReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceReservationAffinityPatch : InstanceReservationAffinityPatch struct
+type InstanceReservationAffinityPatch struct {
+	// The reservation affinity policy to use for this virtual server instance:
+	// - `disabled`: Reservations will not be used
+	// - `manual`: Reservations in `pool` will be available for use
+	//
+	// The policy will default to `manual` if `pool` is not empty, and `disabled` otherwise.
+	//
+	// The policy must be `disabled` if `placement_target` is specified.
+	Policy *string `json:"policy,omitempty"`
+
+	// The pool of reservations available for use by this virtual server instance, replacing the existing pool of
+	// reservations.
+	//
+	// Specified reservations must have a `status` of `active`, and have the same `profile` and
+	// `zone` as this virtual server instance.
+	//
+	// The pool must be empty if `policy` is `disabled`, and must not be empty if `policy` is
+	// `manual`.
+	Pool []ReservationIdentityIntf `json:"pool,omitempty"`
+}
+
+// Constants associated with the InstanceReservationAffinityPatch.Policy property.
+// The reservation affinity policy to use for this virtual server instance:
+// - `disabled`: Reservations will not be used
+// - `manual`: Reservations in `pool` will be available for use
+//
+// The policy will default to `manual` if `pool` is not empty, and `disabled` otherwise.
+//
+// The policy must be `disabled` if `placement_target` is specified.
+const (
+	InstanceReservationAffinityPatchPolicyDisabledConst = "disabled"
+	InstanceReservationAffinityPatchPolicyManualConst   = "manual"
+)
+
+// UnmarshalInstanceReservationAffinityPatch unmarshals an instance of InstanceReservationAffinityPatch from the specified map of raw messages.
+func UnmarshalInstanceReservationAffinityPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceReservationAffinityPatch)
+	err = core.UnmarshalPrimitive(m, "policy", &obj.Policy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "pool", &obj.Pool, UnmarshalReservationIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceReservationAffinityPrototype : InstanceReservationAffinityPrototype struct
+type InstanceReservationAffinityPrototype struct {
+	// The reservation affinity policy to use for this virtual server instance:
+	// - `disabled`: Reservations will not be used
+	// - `manual`: Reservations in `pool` will be available for use
+	//
+	// The policy will default to `manual` if `pool` is not empty, and `disabled` otherwise.
+	//
+	// The policy must be `disabled` if `placement_target` is specified.
+	Policy *string `json:"policy,omitempty"`
+
+	// The pool of reservations available for use by this virtual server instance.
+	//
+	// Specified reservations must have a `status` of `active`, and have the same `profile` and
+	// `zone` as this virtual server instance.
+	//
+	// The pool must be empty if `policy` is `disabled`, and must not be empty if `policy` is
+	// `manual`.
+	Pool []ReservationIdentityIntf `json:"pool,omitempty"`
+}
+
+// Constants associated with the InstanceReservationAffinityPrototype.Policy property.
+// The reservation affinity policy to use for this virtual server instance:
+// - `disabled`: Reservations will not be used
+// - `manual`: Reservations in `pool` will be available for use
+//
+// The policy will default to `manual` if `pool` is not empty, and `disabled` otherwise.
+//
+// The policy must be `disabled` if `placement_target` is specified.
+const (
+	InstanceReservationAffinityPrototypePolicyDisabledConst = "disabled"
+	InstanceReservationAffinityPrototypePolicyManualConst   = "manual"
+)
+
+// UnmarshalInstanceReservationAffinityPrototype unmarshals an instance of InstanceReservationAffinityPrototype from the specified map of raw messages.
+func UnmarshalInstanceReservationAffinityPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceReservationAffinityPrototype)
+	err = core.UnmarshalPrimitive(m, "policy", &obj.Policy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "pool", &obj.Pool, UnmarshalReservationIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceStatusReason : InstanceStatusReason struct
 type InstanceStatusReason struct {
 	// A snake case string succinctly identifying the status reason.
@@ -47944,16 +48786,18 @@ type InstanceStatusReason struct {
 // Constants associated with the InstanceStatusReason.Code property.
 // A snake case string succinctly identifying the status reason.
 const (
-	InstanceStatusReasonCodeCannotStartConst               = "cannot_start"
-	InstanceStatusReasonCodeCannotStartCapacityConst       = "cannot_start_capacity"
-	InstanceStatusReasonCodeCannotStartComputeConst        = "cannot_start_compute"
-	InstanceStatusReasonCodeCannotStartIPAddressConst      = "cannot_start_ip_address"
-	InstanceStatusReasonCodeCannotStartNetworkConst        = "cannot_start_network"
-	InstanceStatusReasonCodeCannotStartPlacementGroupConst = "cannot_start_placement_group"
-	InstanceStatusReasonCodeCannotStartStorageConst        = "cannot_start_storage"
-	InstanceStatusReasonCodeEncryptionKeyDeletedConst      = "encryption_key_deleted"
-	InstanceStatusReasonCodeStoppedByHostFailureConst      = "stopped_by_host_failure"
-	InstanceStatusReasonCodeStoppedForImageCreationConst   = "stopped_for_image_creation"
+	InstanceStatusReasonCodeCannotStartConst                    = "cannot_start"
+	InstanceStatusReasonCodeCannotStartCapacityConst            = "cannot_start_capacity"
+	InstanceStatusReasonCodeCannotStartComputeConst             = "cannot_start_compute"
+	InstanceStatusReasonCodeCannotStartIPAddressConst           = "cannot_start_ip_address"
+	InstanceStatusReasonCodeCannotStartNetworkConst             = "cannot_start_network"
+	InstanceStatusReasonCodeCannotStartPlacementGroupConst      = "cannot_start_placement_group"
+	InstanceStatusReasonCodeCannotStartReservationCapacityConst = "cannot_start_reservation_capacity"
+	InstanceStatusReasonCodeCannotStartReservationExpiredConst  = "cannot_start_reservation_expired"
+	InstanceStatusReasonCodeCannotStartStorageConst             = "cannot_start_storage"
+	InstanceStatusReasonCodeEncryptionKeyDeletedConst           = "encryption_key_deleted"
+	InstanceStatusReasonCodeStoppedByHostFailureConst           = "stopped_by_host_failure"
+	InstanceStatusReasonCodeStoppedForImageCreationConst        = "stopped_for_image_creation"
 )
 
 // UnmarshalInstanceStatusReason unmarshals an instance of InstanceStatusReason from the specified map of raw messages.
@@ -48033,6 +48877,8 @@ type InstanceTemplate struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change
 	// in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
@@ -48133,6 +48979,10 @@ func UnmarshalInstanceTemplate(m map[string]json.RawMessage, result interface{})
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -48383,6 +49233,8 @@ type InstanceTemplatePrototype struct {
 	// in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
@@ -48471,6 +49323,10 @@ func UnmarshalInstanceTemplatePrototype(m map[string]json.RawMessage, result int
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -50714,6 +51570,15 @@ type ListInstancesOptions struct {
 	// group name.
 	PlacementGroupName *string `json:"placement_group.name,omitempty"`
 
+	// Filters the collection to instances with a `reservation.id` property matching the specified identifier.
+	ReservationID *string `json:"reservation.id,omitempty"`
+
+	// Filters the collection to instances with a `reservation.crn` property matching the specified CRN.
+	ReservationCRN *string `json:"reservation.crn,omitempty"`
+
+	// Filters the collection to resources with a `reservation.name` property matching the exact specified name.
+	ReservationName *string `json:"reservation.name,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -50798,6 +51663,24 @@ func (_options *ListInstancesOptions) SetPlacementGroupCRN(placementGroupCRN str
 // SetPlacementGroupName : Allow user to set PlacementGroupName
 func (_options *ListInstancesOptions) SetPlacementGroupName(placementGroupName string) *ListInstancesOptions {
 	_options.PlacementGroupName = core.StringPtr(placementGroupName)
+	return _options
+}
+
+// SetReservationID : Allow user to set ReservationID
+func (_options *ListInstancesOptions) SetReservationID(reservationID string) *ListInstancesOptions {
+	_options.ReservationID = core.StringPtr(reservationID)
+	return _options
+}
+
+// SetReservationCRN : Allow user to set ReservationCRN
+func (_options *ListInstancesOptions) SetReservationCRN(reservationCRN string) *ListInstancesOptions {
+	_options.ReservationCRN = core.StringPtr(reservationCRN)
+	return _options
+}
+
+// SetReservationName : Allow user to set ReservationName
+func (_options *ListInstancesOptions) SetReservationName(reservationName string) *ListInstancesOptions {
+	_options.ReservationName = core.StringPtr(reservationName)
 	return _options
 }
 
@@ -51417,6 +52300,68 @@ func (*VpcV1) NewListRegionsOptions() *ListRegionsOptions {
 
 // SetHeaders : Allow user to set Headers
 func (options *ListRegionsOptions) SetHeaders(param map[string]string) *ListRegionsOptions {
+	options.Headers = param
+	return options
+}
+
+// ListReservationsOptions : The ListReservations options.
+type ListReservationsOptions struct {
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources with a `name` property matching the exact specified name.
+	Name *string `json:"name,omitempty"`
+
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
+	ResourceGroupID *string `json:"resource_group.id,omitempty"`
+
+	// Filters the collection to resources with a `zone.name` property matching the exact specified name.
+	ZoneName *string `json:"zone.name,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListReservationsOptions : Instantiate ListReservationsOptions
+func (*VpcV1) NewListReservationsOptions() *ListReservationsOptions {
+	return &ListReservationsOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListReservationsOptions) SetStart(start string) *ListReservationsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListReservationsOptions) SetLimit(limit int64) *ListReservationsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *ListReservationsOptions) SetName(name string) *ListReservationsOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetResourceGroupID : Allow user to set ResourceGroupID
+func (_options *ListReservationsOptions) SetResourceGroupID(resourceGroupID string) *ListReservationsOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
+}
+
+// SetZoneName : Allow user to set ZoneName
+func (_options *ListReservationsOptions) SetZoneName(zoneName string) *ListReservationsOptions {
+	_options.ZoneName = core.StringPtr(zoneName)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListReservationsOptions) SetHeaders(param map[string]string) *ListReservationsOptions {
 	options.Headers = param
 	return options
 }
@@ -60239,6 +61184,892 @@ func (options *ReplaceSubnetRoutingTableOptions) SetHeaders(param map[string]str
 	return options
 }
 
+// Reservation : Reservation struct
+type Reservation struct {
+	// The affinity policy to use for this reservation:
+	// - `restricted`: The reservation must be manually requested
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+	// property value was encountered.
+	AffinityPolicy *string `json:"affinity_policy" validate:"required"`
+
+	// The capacity configuration for this reservation
+	//
+	// If absent, this reservation has no assigned capacity.
+	Capacity *ReservationCapacity `json:"capacity,omitempty"`
+
+	// The committed use configuration for this reservation.
+	//
+	// If absent, this reservation has no commitment for use.
+	CommittedUse *ReservationCommittedUse `json:"committed_use,omitempty"`
+
+	// The date and time that the reservation was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this reservation.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this reservation.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this reservation.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of this reservation.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this reservation. The name is unique across all reservations in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) for this reservation.
+	Profile ReservationProfileIntf `json:"profile" validate:"required"`
+
+	// The resource group for this reservation.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The status of the reservation.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+	// property value was encountered.
+	Status *string `json:"status" validate:"required"`
+
+	// The reasons for the current status (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []ReservationStatusReason `json:"status_reasons" validate:"required"`
+
+	// The zone for this reservation.
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the Reservation.AffinityPolicy property.
+// The affinity policy to use for this reservation:
+// - `restricted`: The reservation must be manually requested
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+// property value was encountered.
+const (
+	ReservationAffinityPolicyRestrictedConst = "restricted"
+)
+
+// Constants associated with the Reservation.LifecycleState property.
+// The lifecycle state of this reservation.
+const (
+	ReservationLifecycleStateDeletingConst  = "deleting"
+	ReservationLifecycleStateFailedConst    = "failed"
+	ReservationLifecycleStatePendingConst   = "pending"
+	ReservationLifecycleStateStableConst    = "stable"
+	ReservationLifecycleStateSuspendedConst = "suspended"
+	ReservationLifecycleStateUpdatingConst  = "updating"
+	ReservationLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the Reservation.ResourceType property.
+// The resource type.
+const (
+	ReservationResourceTypeReservationConst = "reservation"
+)
+
+// Constants associated with the Reservation.Status property.
+// The status of the reservation.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+// property value was encountered.
+const (
+	ReservationStatusActivatingConst   = "activating"
+	ReservationStatusActiveConst       = "active"
+	ReservationStatusDeactivatingConst = "deactivating"
+	ReservationStatusExpiredConst      = "expired"
+	ReservationStatusFailedConst       = "failed"
+	ReservationStatusInactiveConst     = "inactive"
+)
+
+// UnmarshalReservation unmarshals an instance of Reservation from the specified map of raw messages.
+func UnmarshalReservation(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(Reservation)
+	err = core.UnmarshalPrimitive(m, "affinity_policy", &obj.AffinityPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "capacity", &obj.Capacity, UnmarshalReservationCapacity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "committed_use", &obj.CommittedUse, UnmarshalReservationCommittedUse)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalReservationProfile)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalReservationStatusReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCapacity : The capacity configuration for this reservation
+//
+// If absent, this reservation has no assigned capacity.
+type ReservationCapacity struct {
+	// The amount allocated to this capacity reservation.
+	Allocated *int64 `json:"allocated" validate:"required"`
+
+	// The amount of this capacity reservation available for new attachments.
+	Available *int64 `json:"available" validate:"required"`
+
+	// The status of the capacity reservation:
+	// - `allocating`: The capacity reservation is being allocated for use
+	// - `allocated`: The total capacity of the reservation has been allocated for use
+	// - `degraded`: The capacity reservation has been allocated for use, but some of the
+	//   capacity is not available. See https://cloud.ibm.com/docs/__TBD__ for more
+	//   information.
+	// - `unallocated`: The capacity reservation is not allocated for use
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+	// property value was encountered.
+	Status *string `json:"status" validate:"required"`
+
+	// The total amount of this capacity reservation.
+	Total *int64 `json:"total" validate:"required"`
+
+	// The amount of this capacity reservation used by existing attachments.
+	Used *int64 `json:"used" validate:"required"`
+}
+
+// Constants associated with the ReservationCapacity.Status property.
+// The status of the capacity reservation:
+//   - `allocating`: The capacity reservation is being allocated for use
+//   - `allocated`: The total capacity of the reservation has been allocated for use
+//   - `degraded`: The capacity reservation has been allocated for use, but some of the
+//     capacity is not available. See https://cloud.ibm.com/docs/__TBD__ for more
+//     information.
+//   - `unallocated`: The capacity reservation is not allocated for use
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+// property value was encountered.
+const (
+	ReservationCapacityStatusAllocatedConst   = "allocated"
+	ReservationCapacityStatusAllocatingConst  = "allocating"
+	ReservationCapacityStatusDegradedConst    = "degraded"
+	ReservationCapacityStatusUnallocatedConst = "unallocated"
+)
+
+// UnmarshalReservationCapacity unmarshals an instance of ReservationCapacity from the specified map of raw messages.
+func UnmarshalReservationCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCapacity)
+	err = core.UnmarshalPrimitive(m, "allocated", &obj.Allocated)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "available", &obj.Available)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total", &obj.Total)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "used", &obj.Used)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCapacityPatch : The capacity reservation configuration to use.
+//
+// The configuration can only be changed for reservations with a `status` of `inactive`.
+type ReservationCapacityPatch struct {
+	// The total amount to use for this capacity reservation.
+	Total *int64 `json:"total,omitempty"`
+}
+
+// UnmarshalReservationCapacityPatch unmarshals an instance of ReservationCapacityPatch from the specified map of raw messages.
+func UnmarshalReservationCapacityPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCapacityPatch)
+	err = core.UnmarshalPrimitive(m, "total", &obj.Total)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCapacityPrototype : The capacity reservation configuration to use.
+type ReservationCapacityPrototype struct {
+	// The total amount to use for this capacity reservation.
+	Total *int64 `json:"total" validate:"required"`
+}
+
+// NewReservationCapacityPrototype : Instantiate ReservationCapacityPrototype (Generic Model Constructor)
+func (*VpcV1) NewReservationCapacityPrototype(total int64) (_model *ReservationCapacityPrototype, err error) {
+	_model = &ReservationCapacityPrototype{
+		Total: core.Int64Ptr(total),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalReservationCapacityPrototype unmarshals an instance of ReservationCapacityPrototype from the specified map of raw messages.
+func UnmarshalReservationCapacityPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCapacityPrototype)
+	err = core.UnmarshalPrimitive(m, "total", &obj.Total)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCollection : ReservationCollection struct
+type ReservationCollection struct {
+	// A link to the first page of resources.
+	First *ReservationCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *ReservationCollectionNext `json:"next,omitempty"`
+
+	// Collection of reservations.
+	Reservations []Reservation `json:"reservations" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalReservationCollection unmarshals an instance of ReservationCollection from the specified map of raw messages.
+func UnmarshalReservationCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalReservationCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalReservationCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservations", &obj.Reservations, UnmarshalReservation)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *ReservationCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// ReservationCollectionFirst : A link to the first page of resources.
+type ReservationCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalReservationCollectionFirst unmarshals an instance of ReservationCollectionFirst from the specified map of raw messages.
+func UnmarshalReservationCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type ReservationCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalReservationCollectionNext unmarshals an instance of ReservationCollectionNext from the specified map of raw messages.
+func UnmarshalReservationCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCommittedUse : The committed use reservation configuration.
+type ReservationCommittedUse struct {
+	// The expiration date and time for this committed use reservation.
+	ExpirationAt *strfmt.DateTime `json:"expiration_at" validate:"required"`
+
+	// The policy to apply when the committed use term expires:
+	// - `release`: Release any available capacity and let the reservation expire.
+	// - `renew`: Renew for another term, provided the term remains listed in the
+	//   `reservation_terms` for the profile. Otherwise, let the reservation expire.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+	// property value was encountered.
+	ExpirationPolicy *string `json:"expiration_policy" validate:"required"`
+
+	// The term for this committed use reservation:
+	// - `one_year`: 1 year
+	// - `three_year`: 3 years
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+	// property value was encountered.
+	Term *string `json:"term" validate:"required"`
+}
+
+// Constants associated with the ReservationCommittedUse.ExpirationPolicy property.
+// The policy to apply when the committed use term expires:
+//   - `release`: Release any available capacity and let the reservation expire.
+//   - `renew`: Renew for another term, provided the term remains listed in the
+//     `reservation_terms` for the profile. Otherwise, let the reservation expire.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+// property value was encountered.
+const (
+	ReservationCommittedUseExpirationPolicyReleaseConst = "release"
+	ReservationCommittedUseExpirationPolicyRenewConst   = "renew"
+)
+
+// UnmarshalReservationCommittedUse unmarshals an instance of ReservationCommittedUse from the specified map of raw messages.
+func UnmarshalReservationCommittedUse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCommittedUse)
+	err = core.UnmarshalPrimitive(m, "expiration_at", &obj.ExpirationAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "expiration_policy", &obj.ExpirationPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "term", &obj.Term)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCommittedUsePatch : ReservationCommittedUsePatch struct
+type ReservationCommittedUsePatch struct {
+	// The policy to apply when the committed use term expires:
+	// - `release`: Release any available capacity and let the reservation expire.
+	// - `renew`: Renew for another term, provided the term remains listed in the
+	//   `reservation_terms` for the profile. Otherwise, let the reservation expire.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+	// property value was encountered.
+	ExpirationPolicy *string `json:"expiration_policy,omitempty"`
+
+	// The term for this committed use reservation:
+	// - `one_year`: 1 year
+	// - `three_year`: 3 years
+	//
+	// The specified value must be listed in the `reservation_terms` in the profile for this reservation. The term can only
+	// be changed for a reservation with a `status` of
+	// `inactive`.
+	Term *string `json:"term,omitempty"`
+}
+
+// Constants associated with the ReservationCommittedUsePatch.ExpirationPolicy property.
+// The policy to apply when the committed use term expires:
+//   - `release`: Release any available capacity and let the reservation expire.
+//   - `renew`: Renew for another term, provided the term remains listed in the
+//     `reservation_terms` for the profile. Otherwise, let the reservation expire.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+// property value was encountered.
+const (
+	ReservationCommittedUsePatchExpirationPolicyReleaseConst = "release"
+	ReservationCommittedUsePatchExpirationPolicyRenewConst   = "renew"
+)
+
+// UnmarshalReservationCommittedUsePatch unmarshals an instance of ReservationCommittedUsePatch from the specified map of raw messages.
+func UnmarshalReservationCommittedUsePatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCommittedUsePatch)
+	err = core.UnmarshalPrimitive(m, "expiration_policy", &obj.ExpirationPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "term", &obj.Term)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationCommittedUsePrototype : ReservationCommittedUsePrototype struct
+type ReservationCommittedUsePrototype struct {
+	// The policy to apply when the committed use term expires:
+	// - `release`: Release any available capacity and let the reservation expire.
+	// - `renew`: Renew for another term, provided the term remains listed in the
+	//   `reservation_terms` for the profile. Otherwise, let the reservation expire.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+	// property value was encountered.
+	ExpirationPolicy *string `json:"expiration_policy,omitempty"`
+
+	// The term for this committed use reservation:
+	// - `one_year`: 1 year
+	// - `three_year`: 3 years
+	//
+	// The specified value must be listed in the `reservation_terms` in the profile for this reservation.
+	Term *string `json:"term" validate:"required"`
+}
+
+// Constants associated with the ReservationCommittedUsePrototype.ExpirationPolicy property.
+// The policy to apply when the committed use term expires:
+//   - `release`: Release any available capacity and let the reservation expire.
+//   - `renew`: Renew for another term, provided the term remains listed in the
+//     `reservation_terms` for the profile. Otherwise, let the reservation expire.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected
+// property value was encountered.
+const (
+	ReservationCommittedUsePrototypeExpirationPolicyReleaseConst = "release"
+	ReservationCommittedUsePrototypeExpirationPolicyRenewConst   = "renew"
+)
+
+// NewReservationCommittedUsePrototype : Instantiate ReservationCommittedUsePrototype (Generic Model Constructor)
+func (*VpcV1) NewReservationCommittedUsePrototype(term string) (_model *ReservationCommittedUsePrototype, err error) {
+	_model = &ReservationCommittedUsePrototype{
+		Term: core.StringPtr(term),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalReservationCommittedUsePrototype unmarshals an instance of ReservationCommittedUsePrototype from the specified map of raw messages.
+func UnmarshalReservationCommittedUsePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationCommittedUsePrototype)
+	err = core.UnmarshalPrimitive(m, "expiration_policy", &obj.ExpirationPolicy)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "term", &obj.Term)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationIdentity : Identifies a reservation by a unique property.
+// Models which "extend" this model:
+// - ReservationIdentityByID
+// - ReservationIdentityByCRN
+// - ReservationIdentityByHref
+type ReservationIdentity struct {
+	// The unique identifier for this reservation.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this reservation.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this reservation.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*ReservationIdentity) isaReservationIdentity() bool {
+	return true
+}
+
+type ReservationIdentityIntf interface {
+	isaReservationIdentity() bool
+}
+
+// UnmarshalReservationIdentity unmarshals an instance of ReservationIdentity from the specified map of raw messages.
+func UnmarshalReservationIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationIdentity)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationPatch : ReservationPatch struct
+type ReservationPatch struct {
+	// The capacity reservation configuration to use.
+	//
+	// The configuration can only be changed for reservations with a `status` of `inactive`.
+	Capacity *ReservationCapacityPatch `json:"capacity,omitempty"`
+
+	// The committed use configuration to use for this reservation.
+	CommittedUse *ReservationCommittedUsePatch `json:"committed_use,omitempty"`
+
+	// The name for this reservation. The name must not be used by another reservation in the region.
+	Name *string `json:"name,omitempty"`
+
+	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) to use for this
+	// reservation.
+	//
+	// The profile can only be changed for a reservation with a `status` of `inactive`.
+	Profile *ReservationProfilePatch `json:"profile,omitempty"`
+}
+
+// UnmarshalReservationPatch unmarshals an instance of ReservationPatch from the specified map of raw messages.
+func UnmarshalReservationPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationPatch)
+	err = core.UnmarshalModel(m, "capacity", &obj.Capacity, UnmarshalReservationCapacityPatch)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "committed_use", &obj.CommittedUse, UnmarshalReservationCommittedUsePatch)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalReservationProfilePatch)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the ReservationPatch
+func (reservationPatch *ReservationPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(reservationPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
+}
+
+// ReservationProfile : The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) for this reservation.
+// Models which "extend" this model:
+// - ReservationProfileInstanceProfileReference
+type ReservationProfile struct {
+	// The URL for this virtual server instance profile.
+	Href *string `json:"href,omitempty"`
+
+	// The globally unique name for this virtual server instance profile.
+	Name *string `json:"name,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type,omitempty"`
+}
+
+// Constants associated with the ReservationProfile.ResourceType property.
+// The resource type.
+const (
+	ReservationProfileResourceTypeInstanceProfileConst = "instance_profile"
+)
+
+func (*ReservationProfile) isaReservationProfile() bool {
+	return true
+}
+
+type ReservationProfileIntf interface {
+	isaReservationProfile() bool
+}
+
+// UnmarshalReservationProfile unmarshals an instance of ReservationProfile from the specified map of raw messages.
+func UnmarshalReservationProfile(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationProfile)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationProfilePatch : The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) to use for this reservation.
+//
+// The profile can only be changed for a reservation with a `status` of `inactive`.
+type ReservationProfilePatch struct {
+	// The globally unique name of the profile.
+	Name *string `json:"name,omitempty"`
+
+	// The resource type of the profile.
+	ResourceType *string `json:"resource_type,omitempty"`
+}
+
+// Constants associated with the ReservationProfilePatch.ResourceType property.
+// The resource type of the profile.
+const (
+	ReservationProfilePatchResourceTypeInstanceProfileConst = "instance_profile"
+)
+
+// UnmarshalReservationProfilePatch unmarshals an instance of ReservationProfilePatch from the specified map of raw messages.
+func UnmarshalReservationProfilePatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationProfilePatch)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationProfilePrototype : The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) to use for this reservation.
+type ReservationProfilePrototype struct {
+	// The globally unique name of the profile.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type of the profile.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the ReservationProfilePrototype.ResourceType property.
+// The resource type of the profile.
+const (
+	ReservationProfilePrototypeResourceTypeInstanceProfileConst = "instance_profile"
+)
+
+// NewReservationProfilePrototype : Instantiate ReservationProfilePrototype (Generic Model Constructor)
+func (*VpcV1) NewReservationProfilePrototype(name string, resourceType string) (_model *ReservationProfilePrototype, err error) {
+	_model = &ReservationProfilePrototype{
+		Name:         core.StringPtr(name),
+		ResourceType: core.StringPtr(resourceType),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalReservationProfilePrototype unmarshals an instance of ReservationProfilePrototype from the specified map of raw messages.
+func UnmarshalReservationProfilePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationProfilePrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationReference : ReservationReference struct
+type ReservationReference struct {
+	// The CRN for this reservation.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *ReservationReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this reservation.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this reservation.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this reservation. The name is unique across all reservations in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the ReservationReference.ResourceType property.
+// The resource type.
+const (
+	ReservationReferenceResourceTypeReservationConst = "reservation"
+)
+
+// UnmarshalReservationReference unmarshals an instance of ReservationReference from the specified map of raw messages.
+func UnmarshalReservationReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalReservationReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
+// information.
+type ReservationReferenceDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalReservationReferenceDeleted unmarshals an instance of ReservationReferenceDeleted from the specified map of raw messages.
+func UnmarshalReservationReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationReferenceDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationStatusReason : ReservationStatusReason struct
+type ReservationStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the status reason.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the ReservationStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	ReservationStatusReasonCodeCannotActivateNoCapacityAvailableConst = "cannot_activate_no_capacity_available"
+	ReservationStatusReasonCodeCannotRenewUnsupportedProfileTermConst = "cannot_renew_unsupported_profile_term"
+)
+
+// UnmarshalReservationStatusReason unmarshals an instance of ReservationStatusReason from the specified map of raw messages.
+func UnmarshalReservationStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // ReservedIP : ReservedIP struct
 type ReservedIP struct {
 	// The IP address.
@@ -68578,6 +70409,44 @@ func (_options *UpdatePublicGatewayOptions) SetPublicGatewayPatch(publicGatewayP
 
 // SetHeaders : Allow user to set Headers
 func (options *UpdatePublicGatewayOptions) SetHeaders(param map[string]string) *UpdatePublicGatewayOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateReservationOptions : The UpdateReservation options.
+type UpdateReservationOptions struct {
+	// The reservation identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The reservation patch.
+	ReservationPatch map[string]interface{} `json:"Reservation_patch" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateReservationOptions : Instantiate UpdateReservationOptions
+func (*VpcV1) NewUpdateReservationOptions(id string, reservationPatch map[string]interface{}) *UpdateReservationOptions {
+	return &UpdateReservationOptions{
+		ID:               core.StringPtr(id),
+		ReservationPatch: reservationPatch,
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateReservationOptions) SetID(id string) *UpdateReservationOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetReservationPatch : Allow user to set ReservationPatch
+func (_options *UpdateReservationOptions) SetReservationPatch(reservationPatch map[string]interface{}) *UpdateReservationOptions {
+	_options.ReservationPatch = reservationPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateReservationOptions) SetHeaders(param map[string]string) *UpdateReservationOptions {
 	options.Headers = param
 	return options
 }
@@ -82874,6 +84743,8 @@ type InstancePrototypeInstanceByCatalogOffering struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -82959,6 +84830,10 @@ func UnmarshalInstancePrototypeInstanceByCatalogOffering(m map[string]json.RawMe
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -83049,6 +84924,8 @@ type InstancePrototypeInstanceByImage struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -83127,6 +85004,10 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -83217,6 +85098,8 @@ type InstancePrototypeInstanceBySourceSnapshot struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -83292,6 +85175,10 @@ func UnmarshalInstancePrototypeInstanceBySourceSnapshot(m map[string]json.RawMes
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -83380,6 +85267,8 @@ type InstancePrototypeInstanceBySourceTemplate struct {
 	//
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
@@ -83471,6 +85360,10 @@ func UnmarshalInstancePrototypeInstanceBySourceTemplate(m map[string]json.RawMes
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -83569,6 +85462,8 @@ type InstancePrototypeInstanceByVolume struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -83644,6 +85539,10 @@ func UnmarshalInstancePrototypeInstanceByVolume(m map[string]json.RawMessage, re
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -83821,6 +85720,8 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOffering struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -83909,6 +85810,10 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByCatalogOffering(m map[s
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		return
@@ -83994,6 +85899,8 @@ type InstanceTemplatePrototypeInstanceTemplateByImage struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -84072,6 +85979,10 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByImage(m map[string]json
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -84160,6 +86071,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshot struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -84235,6 +86148,10 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateBySourceSnapshot(m map[st
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -84318,6 +86235,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceTemplate struct {
 	//
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
@@ -84409,6 +86328,10 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateBySourceTemplate(m map[st
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -84516,6 +86439,8 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContext struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
@@ -84607,6 +86532,10 @@ func UnmarshalInstanceTemplateInstanceByCatalogOfferingInstanceTemplateContext(m
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -84706,6 +86635,8 @@ type InstanceTemplateInstanceByImageInstanceTemplateContext struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
@@ -84790,6 +86721,10 @@ func UnmarshalInstanceTemplateInstanceByImageInstanceTemplateContext(m map[strin
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -84889,6 +86824,8 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext struct {
 	// If unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
+	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
+
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
@@ -84970,6 +86907,10 @@ func UnmarshalInstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext(m 
 		return
 	}
 	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "reservation_affinity", &obj.ReservationAffinity, UnmarshalInstanceReservationAffinityPrototype)
 	if err != nil {
 		return
 	}
@@ -88445,6 +90386,141 @@ func (*RegionIdentityByName) isaRegionIdentity() bool {
 func UnmarshalRegionIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RegionIdentityByName)
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationIdentityByCRN : ReservationIdentityByCRN struct
+// This model "extends" ReservationIdentity
+type ReservationIdentityByCRN struct {
+	// The CRN for this reservation.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewReservationIdentityByCRN : Instantiate ReservationIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewReservationIdentityByCRN(crn string) (_model *ReservationIdentityByCRN, err error) {
+	_model = &ReservationIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*ReservationIdentityByCRN) isaReservationIdentity() bool {
+	return true
+}
+
+// UnmarshalReservationIdentityByCRN unmarshals an instance of ReservationIdentityByCRN from the specified map of raw messages.
+func UnmarshalReservationIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationIdentityByHref : ReservationIdentityByHref struct
+// This model "extends" ReservationIdentity
+type ReservationIdentityByHref struct {
+	// The URL for this reservation.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewReservationIdentityByHref : Instantiate ReservationIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewReservationIdentityByHref(href string) (_model *ReservationIdentityByHref, err error) {
+	_model = &ReservationIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*ReservationIdentityByHref) isaReservationIdentity() bool {
+	return true
+}
+
+// UnmarshalReservationIdentityByHref unmarshals an instance of ReservationIdentityByHref from the specified map of raw messages.
+func UnmarshalReservationIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationIdentityByID : ReservationIdentityByID struct
+// This model "extends" ReservationIdentity
+type ReservationIdentityByID struct {
+	// The unique identifier for this reservation.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewReservationIdentityByID : Instantiate ReservationIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewReservationIdentityByID(id string) (_model *ReservationIdentityByID, err error) {
+	_model = &ReservationIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*ReservationIdentityByID) isaReservationIdentity() bool {
+	return true
+}
+
+// UnmarshalReservationIdentityByID unmarshals an instance of ReservationIdentityByID from the specified map of raw messages.
+func UnmarshalReservationIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ReservationProfileInstanceProfileReference : ReservationProfileInstanceProfileReference struct
+// This model "extends" ReservationProfile
+type ReservationProfileInstanceProfileReference struct {
+	// The URL for this virtual server instance profile.
+	Href *string `json:"href" validate:"required"`
+
+	// The globally unique name for this virtual server instance profile.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the ReservationProfileInstanceProfileReference.ResourceType property.
+// The resource type.
+const (
+	ReservationProfileInstanceProfileReferenceResourceTypeInstanceProfileConst = "instance_profile"
+)
+
+func (*ReservationProfileInstanceProfileReference) isaReservationProfile() bool {
+	return true
+}
+
+// UnmarshalReservationProfileInstanceProfileReference unmarshals an instance of ReservationProfileInstanceProfileReference from the specified map of raw messages.
+func UnmarshalReservationProfileInstanceProfileReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ReservationProfileInstanceProfileReference)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -100020,6 +102096,91 @@ func (pager *InstanceGroupMembershipsPager) GetNext() (page []InstanceGroupMembe
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *InstanceGroupMembershipsPager) GetAll() (allItems []InstanceGroupMembership, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// ReservationsPager can be used to simplify the use of the "ListReservations" method.
+type ReservationsPager struct {
+	hasNext     bool
+	options     *ListReservationsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewReservationsPager returns a new ReservationsPager instance.
+func (vpc *VpcV1) NewReservationsPager(options *ListReservationsOptions) (pager *ReservationsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListReservationsOptions = *options
+	pager = &ReservationsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ReservationsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ReservationsPager) GetNextWithContext(ctx context.Context) (page []Reservation, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListReservationsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Reservations
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ReservationsPager) GetAllWithContext(ctx context.Context) (allItems []Reservation, err error) {
+	for pager.HasNext() {
+		var nextPage []Reservation
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ReservationsPager) GetNext() (page []Reservation, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ReservationsPager) GetAll() (allItems []Reservation, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
