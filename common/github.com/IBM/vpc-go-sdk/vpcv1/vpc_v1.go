@@ -102093,6 +102093,91 @@ func (pager *VolumesPager) GetAll() (allItems []Volume, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
+// SnapshotConsistencyGroupsPager can be used to simplify the use of the "ListSnapshotConsistencyGroups" method.
+type SnapshotConsistencyGroupsPager struct {
+	hasNext     bool
+	options     *ListSnapshotConsistencyGroupsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSnapshotConsistencyGroupsPager returns a new SnapshotConsistencyGroupsPager instance.
+func (vpc *VpcV1) NewSnapshotConsistencyGroupsPager(options *ListSnapshotConsistencyGroupsOptions) (pager *SnapshotConsistencyGroupsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSnapshotConsistencyGroupsOptions = *options
+	pager = &SnapshotConsistencyGroupsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SnapshotConsistencyGroupsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SnapshotConsistencyGroupsPager) GetNextWithContext(ctx context.Context) (page []SnapshotConsistencyGroup, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSnapshotConsistencyGroupsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.SnapshotConsistencyGroups
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SnapshotConsistencyGroupsPager) GetAllWithContext(ctx context.Context) (allItems []SnapshotConsistencyGroup, err error) {
+	for pager.HasNext() {
+		var nextPage []SnapshotConsistencyGroup
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotConsistencyGroupsPager) GetNext() (page []SnapshotConsistencyGroup, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotConsistencyGroupsPager) GetAll() (allItems []SnapshotConsistencyGroup, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
 // SnapshotsPager can be used to simplify the use of the "ListSnapshots" method.
 type SnapshotsPager struct {
 	hasNext     bool
