@@ -1705,10 +1705,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.metricsRouterClientErr = fmt.Errorf("Error occurred while configuring Metrics Router API Version 3 service: %q", err)
 	}
 
-	// SCC Service
+	// SCC (Security and Compliance Center) Service
 	sccApiClientURL := scc.DefaultServiceURL
 	// Construct the service options.
-
+	if regionURL, sccRegionErr := scc.GetServiceURLForRegion(c.Region); sccRegionErr == nil {
+		sccApiClientURL = regionURL
+	}
 	sccApiClientOptions := &scc.SecurityAndComplianceCenterApiV3Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_API_ENDPOINT"}, sccApiClientURL),
@@ -1724,7 +1726,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.securityAndComplianceCenterClientErr = fmt.Errorf("Error occurred while configuring Config Manager service: %q", err)
+		session.securityAndComplianceCenterClientErr = fmt.Errorf("Error occurred while configuring Security And Compliance Center service: %q", err)
 	}
 
 	// SCHEMATICS Service

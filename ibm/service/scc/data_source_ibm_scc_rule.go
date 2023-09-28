@@ -18,7 +18,7 @@ import (
 )
 
 func DataSourceIbmSccRule() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccRuleRead,
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(40 * time.Minute),
@@ -373,7 +373,7 @@ func DataSourceIbmSccRule() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -385,6 +385,7 @@ func dataSourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, m
 	getRuleOptions := &securityandcompliancecenterapiv3.GetRuleOptions{}
 
 	getRuleOptions.SetRuleID(d.Get("rule_id").(string))
+	getRuleOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	rule, response, err := configManagerClient.GetRuleWithContext(context, getRuleOptions)
 	if err != nil {

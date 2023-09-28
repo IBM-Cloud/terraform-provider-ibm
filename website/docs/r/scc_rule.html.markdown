@@ -10,10 +10,13 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete rules with this resource.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.ibm.com`).
+
 ## Example Usage
 
 ```hcl
 resource "ibm_scc_rule" "scc_rule_instance" {
+  instance_id = "00000000-1111-2222-3333-444444444444"
   description = "Example rule"
   import {
 		parameters {
@@ -60,6 +63,7 @@ scc_rule provides the following [Timeouts](https://www.terraform.io/docs/configu
 
 You can specify the following arguments for this resource.
 
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 * `description` - (Required, String) The details of a rule's response.
   * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `import` - (Optional, List) The collection of import parameters.
@@ -171,6 +175,7 @@ Nested schema for **target**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the scc_rule.
+* `rule_id` - (String) The ID that is associated with the created `rule`
 * `account_id` - (String) The account ID.
   * Constraints: The maximum length is `32` characters. The minimum length is `3` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `created_by` - (String) The user who created the rule.
@@ -186,8 +191,15 @@ After your resource is created, you can read values from the listed arguments an
 ## Import
 
 You can import the `ibm_scc_rule` resource by using `id`. The rule ID.
+The `id` property can be formed from `instance_id` and `rule_id` in the following format:
+
+```
+<instance_id>/<rule_id>
+```
+* `instance_id`: A string. The instance ID.
+* `rule_id`: A string. The rule ID.
 
 # Syntax
 ```
-$ terraform import ibm_scc_rule.scc_rule <id>
+$ terraform import ibm_scc_rule.scc_rule <instance_id>/<rule_id>
 ```

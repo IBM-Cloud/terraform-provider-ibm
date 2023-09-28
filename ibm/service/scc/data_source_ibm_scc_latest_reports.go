@@ -18,7 +18,7 @@ import (
 )
 
 func DataSourceIbmSccLatestReports() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccLatestReportsRead,
 
 		Schema: map[string]*schema.Schema{
@@ -294,7 +294,7 @@ func DataSourceIbmSccLatestReports() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccLatestReportsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -304,6 +304,7 @@ func dataSourceIbmSccLatestReportsRead(context context.Context, d *schema.Resour
 	}
 
 	getLatestReportsOptions := &securityandcompliancecenterapiv3.GetLatestReportsOptions{}
+	getLatestReportsOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	if _, ok := d.GetOk("sort"); ok {
 		getLatestReportsOptions.SetSort(d.Get("sort").(string))
