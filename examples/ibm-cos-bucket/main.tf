@@ -412,7 +412,7 @@ resource "ibm_cos_bucket" "cos_bucket_website_configuration" {
 }
 
 data "ibm_iam_access_group" "public_access_group" {
-access_group_name = "Public Access"
+  access_group_name = "Public Access"
 }
 
 # Give public access to above mentioned bucket
