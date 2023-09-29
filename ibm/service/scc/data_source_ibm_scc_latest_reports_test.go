@@ -14,11 +14,11 @@ import (
 
 func TestAccIbmSccLatestReportsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccLatestReportsDataSourceConfigBasic(),
+				Config: testAccCheckIbmSccLatestReportsDataSourceConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_latest_reports.scc_latest_reports_instance", "id"),
 				),
@@ -27,10 +27,11 @@ func TestAccIbmSccLatestReportsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccLatestReportsDataSourceConfigBasic() string {
+func testAccCheckIbmSccLatestReportsDataSourceConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_latest_reports" "scc_latest_reports_instance" {
+			instance_id = "%s"
 			sort = "profile_name"
 		}
-	`)
+	`, instanceID)
 }

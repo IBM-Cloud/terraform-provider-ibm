@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20230914140903-40534e34a2a5
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20230926060322-15952e0c95c9
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230822142550-30562e113de9
 	github.com/IBM-Cloud/power-go-client v1.2.4
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -27,7 +27,7 @@ require (
 	github.com/IBM/platform-services-go-sdk v0.48.1
 	github.com/IBM/project-go-sdk v0.0.26-83
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
-	github.com/IBM/scc-go-sdk/v5 v5.0.2
+	github.com/IBM/scc-go-sdk/v5 v5.1.2
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
