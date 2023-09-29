@@ -10,10 +10,13 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete profiles with this resource.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.ibm.com`).
+
 ## Example Usage
 
 ```hcl
 resource "ibm_scc_profile" "scc_profile_instance" {
+  instance_id = "00000000-1111-2222-3333-444444444444"
   controls {
 		control_library_id = "e98a56ff-dc24-41d4-9875-1e188e2da6cd"
 		control_id = "5C453578-E9A1-421E-AD0F-C6AFCDD67CCF"
@@ -68,6 +71,7 @@ resource "ibm_scc_profile" "scc_profile_instance" {
 
 You can specify the following arguments for this resource.
 
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 * `controls` - (Required, List) The array of controls that are used to create the profile.
   * Constraints: The maximum length is `600` items. The minimum length is `0` items.
 Nested schema for **controls**:
@@ -157,6 +161,7 @@ Nested schema for **default_parameters**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the scc_profile.
+* `profile_id` - (String) The ID that is associated with the created `profile`
 * `attachments_count` - (Integer) The number of attachments related to this profile.
 * `control_parents_count` - (Integer) The number of parent controls for the profile.
 * `controls_count` - (Integer) The number of controls for the profile.
@@ -178,9 +183,16 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_scc_profile` resource by using `id`. The unique ID of the profile.
+You can import the `ibm_scc_profile` resource by using `id`.
+The `id` property can be formed from `instance_id` and `profiles_id` in the following format:
+
+```
+<instance_id>/<profile_id>
+```
+* `instance_id`: A string. The instance ID.
+* `profile_id`: A string. The profile ID.
 
 # Syntax
 ```
-$ terraform import ibm_scc_profile.scc_profile <id>
+$ terraform import ibm_scc_profile.scc_profile <instance_id>/<profile_id>
 ```

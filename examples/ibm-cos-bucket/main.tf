@@ -410,6 +410,11 @@ resource "ibm_cos_bucket" "cos_bucket_website_configuration" {
   storage_class         = var.standard_storage_class
 
 }
+
+data "ibm_iam_access_group" "public_access_group" {
+  access_group_name = "Public Access"
+}
+
 # Give public access to above mentioned bucket
 resource "ibm_iam_access_group_policy" "policy" { 
   depends_on = [ibm_cos_bucket.cos_bucket_website_configuration] 
@@ -419,8 +424,8 @@ resource "ibm_iam_access_group_policy" "policy" {
   resources { 
     service = "cloud-object-storage" 
     resource_type = "bucket" 
-    resource_instance_id = "COS instance guid" 
-    resource = data.ibm_cos_bucket.cos_bucket_website_configuration.bucket_name 
+    resource_instance_id = "COS instance guid"  # eg : 94xxxxxx-3xxx-4xxx-8xxx-7xxxxxxxxx7
+    resource = ibm_cos_bucket.cos_bucket_website_configuration.bucket_name
   } 
 } 
 
