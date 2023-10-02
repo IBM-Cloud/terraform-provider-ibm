@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -15,11 +14,11 @@ import (
 
 func TestAccIbmSccReportEvaluationsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic(),
+				Config: testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic(acc.SccInstanceID, acc.SccReportID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_report_evaluations.scc_report_evaluations_instance", "report_id"),
@@ -30,11 +29,11 @@ func TestAccIbmSccReportEvaluationsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic() string {
-	report_id := os.Getenv("IBMCLOUD_SCC_REPORT_ID")
+func testAccCheckIbmSccReportEvaluationsDataSourceConfigBasic(instanceID, reportID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_report_evaluations" "scc_report_evaluations_instance" {
+			instance_id = "%s"
 			report_id = "%s"
 		}
-	`, report_id)
+	`, instanceID, reportID)
 }

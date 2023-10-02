@@ -1,4 +1,4 @@
-//ng Copyright IBM Corp. 2023 All Rights Reserved.
+// ng Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package scc
@@ -19,7 +19,7 @@ import (
 )
 
 func ResourceIbmSccProviderTypeInstance() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		CreateContext: resourceIbmSccProviderTypeInstanceCreate,
 		ReadContext:   resourceIbmSccProviderTypeInstanceRead,
 		UpdateContext: resourceIbmSccProviderTypeInstanceUpdate,
@@ -65,7 +65,7 @@ func ResourceIbmSccProviderTypeInstance() *schema.Resource {
 				Description: "The unique identifier of the provider type instance.",
 			},
 		},
-	}
+	})
 }
 
 func ResourceIbmSccProviderTypeInstanceValidator() *validate.ResourceValidator {
@@ -102,9 +102,11 @@ func resourceIbmSccProviderTypeInstanceCreate(context context.Context, d *schema
 	}
 
 	createProviderTypeInstanceOptions := &securityandcompliancecenterapiv3.CreateProviderTypeInstanceOptions{}
+	instanceID := d.Get("instance_id").(string)
 
 	createProviderTypeInstanceOptions.SetProviderTypeID(d.Get("provider_type_id").(string))
 	createProviderTypeInstanceOptions.SetName(d.Get("name").(string))
+	createProviderTypeInstanceOptions.SetInstanceID(instanceID)
 	attributesModel, err := resourceIbmSccProviderTypeInstanceMapToProviderTypeInstanceAttributes(d.Get("attributes").(map[string]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,7 +119,7 @@ func resourceIbmSccProviderTypeInstanceCreate(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("CreateProviderTypeInstanceWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createProviderTypeInstanceOptions.ProviderTypeID, *providerTypeInstanceItem.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, *createProviderTypeInstanceOptions.ProviderTypeID, *providerTypeInstanceItem.ID))
 
 	return resourceIbmSccProviderTypeInstanceRead(context, d, meta)
 }
@@ -135,8 +137,9 @@ func resourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	getProviderTypeInstanceOptions.SetProviderTypeID(parts[0])
-	getProviderTypeInstanceOptions.SetProviderTypeInstanceID(parts[1])
+	getProviderTypeInstanceOptions.SetInstanceID(parts[0])
+	getProviderTypeInstanceOptions.SetProviderTypeID(parts[1])
+	getProviderTypeInstanceOptions.SetProviderTypeInstanceID(parts[2])
 
 	providerTypeInstanceItem, response, err := securityAndComplianceCenterApIsClient.GetProviderTypeInstanceWithContext(context, getProviderTypeInstanceOptions)
 	if err != nil {
@@ -146,6 +149,10 @@ func resourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema.R
 		}
 		log.Printf("[DEBUG] GetProviderTypeInstanceWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetProviderTypeInstanceWithContext failed %s\n%s", err, response))
+	}
+
+	if err = d.Set("instance_id", parts[0]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 
 	if err = d.Set("name", providerTypeInstanceItem.Name); err != nil {
@@ -181,7 +188,7 @@ func resourceIbmSccProviderTypeInstanceRead(context context.Context, d *schema.R
 			return diag.FromErr(fmt.Errorf("Error setting provider_type_instance_id: %s", err))
 		}
 	}
-	if err = d.Set("provider_type_id", parts[0]); err != nil {
+	if err = d.Set("provider_type_id", parts[1]); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting provider_type_id: %s", err))
 	}
 
@@ -201,8 +208,10 @@ func resourceIbmSccProviderTypeInstanceUpdate(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	updateProviderTypeInstanceOptions.SetProviderTypeID(parts[0])
-	updateProviderTypeInstanceOptions.SetProviderTypeInstanceID(parts[1])
+	// TODO: add updateProviderTypeInstanceOptions.SetInstanceID to scc-go-sdk
+	updateProviderTypeInstanceOptions.SetInstanceID(parts[0])
+	updateProviderTypeInstanceOptions.SetProviderTypeID(parts[1])
+	updateProviderTypeInstanceOptions.SetProviderTypeInstanceID(parts[2])
 
 	hasChange := false
 
@@ -243,8 +252,9 @@ func resourceIbmSccProviderTypeInstanceDelete(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	deleteProviderTypeInstanceOptions.SetProviderTypeID(parts[0])
-	deleteProviderTypeInstanceOptions.SetProviderTypeInstanceID(parts[1])
+	deleteProviderTypeInstanceOptions.SetInstanceID(parts[0])
+	deleteProviderTypeInstanceOptions.SetProviderTypeID(parts[1])
+	deleteProviderTypeInstanceOptions.SetProviderTypeInstanceID(parts[2])
 
 	response, err := securityAndComplianceCenterApIsClient.DeleteProviderTypeInstanceWithContext(context, deleteProviderTypeInstanceOptions)
 	if err != nil {

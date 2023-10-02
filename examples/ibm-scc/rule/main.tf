@@ -1,5 +1,6 @@
 // Provision scc_rule resource instance
 resource "ibm_scc_rule" "scc_rule_tf_demo" {
+	instance_id = "00000000-1111-2222-3333-444444444444"
     description = var.scc_description
     target {
         service_name = "cloud-object-storage"

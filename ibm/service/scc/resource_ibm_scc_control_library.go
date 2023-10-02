@@ -19,7 +19,7 @@ import (
 )
 
 func ResourceIbmSccControlLibrary() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		CreateContext: resourceIbmSccControlLibraryCreate,
 		ReadContext:   resourceIbmSccControlLibraryRead,
 		UpdateContext: resourceIbmSccControlLibraryUpdate,
@@ -27,6 +27,11 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"control_library_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The control library ID.",
+			},
 			"control_library_name": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -276,7 +281,7 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 				Description: "The number of parent controls in the control library.",
 			},
 		},
-	}
+	})
 }
 
 func ResourceIbmSccControlLibraryValidator() *validate.ResourceValidator {
@@ -340,6 +345,8 @@ func resourceIbmSccControlLibraryCreate(context context.Context, d *schema.Resou
 	bodyModelMap := map[string]interface{}{}
 	createCustomControlLibraryOptions := &securityandcompliancecenterapiv3.CreateCustomControlLibraryOptions{}
 
+	instance_id := d.Get("instance_id").(string)
+	bodyModelMap["instance_id"] = instance_id
 	bodyModelMap["control_library_name"] = d.Get("control_library_name")
 	bodyModelMap["control_library_description"] = d.Get("control_library_description")
 	bodyModelMap["control_library_type"] = d.Get("control_library_type")
@@ -369,7 +376,7 @@ func resourceIbmSccControlLibraryCreate(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("CreateCustomControlLibraryWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*controlLibrary.ID)
+	d.SetId(instance_id + "/" + *controlLibrary.ID)
 
 	return resourceIbmSccControlLibraryRead(context, d, meta)
 }
@@ -381,8 +388,12 @@ func resourceIbmSccControlLibraryRead(context context.Context, d *schema.Resourc
 	}
 
 	getControlLibraryOptions := &securityandcompliancecenterapiv3.GetControlLibraryOptions{}
-
-	getControlLibraryOptions.SetControlLibrariesID(d.Id())
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	getControlLibraryOptions.SetInstanceID(parts[0])
+	getControlLibraryOptions.SetControlLibrariesID(parts[1])
 
 	controlLibrary, response, err := securityandcompliancecenterapiClient.GetControlLibraryWithContext(context, getControlLibraryOptions)
 	if err != nil {
@@ -393,7 +404,12 @@ func resourceIbmSccControlLibraryRead(context context.Context, d *schema.Resourc
 		log.Printf("[DEBUG] GetControlLibraryWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetControlLibraryWithContext failed %s\n%s", err, response))
 	}
-
+	if err = d.Set("instance_id", parts[0]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if err = d.Set("control_library_id", controlLibrary.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting control_library_id: %s", err))
+	}
 	if err = d.Set("control_library_name", controlLibrary.ControlLibraryName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting control_library_name: %s", err))
 	}
@@ -480,8 +496,12 @@ func resourceIbmSccControlLibraryUpdate(context context.Context, d *schema.Resou
 	}
 
 	replaceCustomControlLibraryOptions := &securityandcompliancecenterapiv3.ReplaceCustomControlLibraryOptions{}
-
-	replaceCustomControlLibraryOptions.SetControlLibrariesID(d.Id())
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	replaceCustomControlLibraryOptions.SetInstanceID(parts[0])
+	replaceCustomControlLibraryOptions.SetControlLibrariesID(parts[1])
 
 	hasChange := false
 
@@ -546,7 +566,12 @@ func resourceIbmSccControlLibraryDelete(context context.Context, d *schema.Resou
 
 	deleteCustomControlLibraryOptions := &securityandcompliancecenterapiv3.DeleteCustomControlLibraryOptions{}
 
-	deleteCustomControlLibraryOptions.SetControlLibrariesID(d.Id())
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	deleteCustomControlLibraryOptions.SetInstanceID(parts[0])
+	deleteCustomControlLibraryOptions.SetControlLibrariesID(parts[1])
 
 	_, response, err := securityandcompliancecenterapiClient.DeleteCustomControlLibraryWithContext(context, deleteCustomControlLibraryOptions)
 	if err != nil {
@@ -776,6 +801,7 @@ func resourceIbmSccControlLibraryMapToControlLibrary(modelMap map[string]interfa
 
 func resourceIbmSccControlLibraryMapToControlLibraryPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.CreateCustomControlLibraryOptions, error) {
 	model := &securityandcompliancecenterapiv3.CreateCustomControlLibraryOptions{}
+	model.InstanceID = core.StringPtr(modelMap["instance_id"].(string))
 	model.ControlLibraryName = core.StringPtr(modelMap["control_library_name"].(string))
 	model.ControlLibraryDescription = core.StringPtr(modelMap["control_library_description"].(string))
 	model.ControlLibraryType = core.StringPtr(modelMap["control_library_type"].(string))
