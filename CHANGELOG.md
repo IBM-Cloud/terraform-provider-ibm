@@ -1,3 +1,77 @@
+# 1.58.0 (Sep 29, 2023)
+
+Features
+* Support Satellite Cluster
+    - **Resources**
+        - ibm_satellite_storage_configuration
+        - ibm_satellite_storage_assignment
+    - **Datasources**
+        - ibm_satellite_storage_configuration
+        - ibm_satellite_storage_assignment
+* Support Security and Compliance
+    - **Resources**
+        - ibm_scc_rule
+        - ibm_scc_control_library
+        - ibm_scc_profile
+        - ibm_scc_profile_attachment
+        - ibm_scc_provider_type_instance
+    - **Datasources**
+        - ibm_scc_instance_settings
+        - ibm_scc_control_library
+        - ibm_scc_profile
+        - ibm_scc_profile_attachment
+        - ibm_scc_provider_type
+        - ibm_scc_provider_type_collection
+        - ibm_scc_provider_type_instance
+        - ibm_scc_latest_reports
+        - ibm_scc_report
+        - ibm_scc_report_controls
+        - ibm_scc_report_evaluations
+        - ibm_scc_report_resources
+        - ibm_scc_report_rule
+        - ibm_scc_report_summary
+        - ibm_scc_report_tags
+        - ibm_scc_report_violation_drift
+        - ibm_scc_rule
+
+* Support CD Toolchain
+     - **Datasources**
+        - ibm_cd_toolchains
+* Support Virtual Private Cloud
+    - **Resources**
+        - ibm_is_vpc_dns_resolution_binding
+    - **Datasources**
+        - ibm_is_vpc_dns_resolution_binding
+        - ibm_is_vpc_dns_resolution_bindings
+
+
+Enhancements
+* Added retry mechanism and new SDK generator 3.78 ([4776](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4776))
+* Add default cluster versions to cluster versions data source ([4799](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4799))
+* Add description for keys and force_delete for deleteKeyRings for IBM ([4767](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4767))
+* Retry cloud connection create/update when vpc is unavailable ([4766](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4766))
+* Adding support for COS Static Web hosting ([4766](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4766))
+* add support for endpoint parameter in cluster_config ([4793](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4793))
+* fix(IAM Policy Management): allow sourceServiceName to be optional for authorizational policies ([4804](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4804))
+
+BugFixes
+* ops_manager User Creation ([4755](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4755))
+* fix(share-iops): Share Iops range fix for dp2 ([4807](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4807))
+* fix(VSI-Profile-patch): Remove validation for VSI profile patching ([4824](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4824))
+
+
+# 1.58.0-beta1 (Sep 25, 2023)
+Features
+* Support CD Toolchain
+     - **Datasources**
+        - ibm_cd_toolchains
+* Support Virtual Private Cloud
+    - **Resources**
+        - ibm_is_vpc_dns_resolution_binding
+    - **Datasources**
+        - ibm_is_vpc_dns_resolution_binding
+        - ibm_is_vpc_dns_resolution_bindings
+
 # 1.58.0-beta0 (Sep 10, 2023)
 
 Features
