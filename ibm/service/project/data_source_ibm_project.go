@@ -140,7 +140,7 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 						},
-						"updated_at": &schema.Schema{
+						"user_modified_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
@@ -149,6 +149,20 @@ func DataSourceIbmProject() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"schematics": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A schematics workspace associated to a project configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"workspace_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An existing schematics workspace ID.",
+									},
+								},
+							},
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -325,8 +339,8 @@ func dataSourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Pro
 	if model.CreatedAt != nil {
 		modelMap["created_at"] = model.CreatedAt.String()
 	}
-	if model.UpdatedAt != nil {
-		modelMap["updated_at"] = model.UpdatedAt.String()
+	if model.UserModifiedAt != nil {
+		modelMap["user_modified_at"] = model.UserModifiedAt.String()
 	}
 	if model.LastApproved != nil {
 		lastApprovedMap, err := dataSourceIbmProjectProjectConfigMetadataLastApprovedToMap(model.LastApproved)
@@ -359,6 +373,13 @@ func dataSourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Pro
 		}
 		modelMap["last_undeployed"] = []map[string]interface{}{lastUndeployedMap}
 	}
+	if model.Schematics != nil {
+		schematicsMap, err := dataSourceIbmProjectSchematicsWorkspaceToMap(model.Schematics)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["schematics"] = []map[string]interface{}{schematicsMap}
+	}
 	modelMap["href"] = model.Href
 	definitionMap, err := dataSourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)
 	if err != nil {
@@ -387,6 +408,20 @@ func dataSourceIbmProjectLastValidatedActionWithSummaryToMap(model *projectv1.La
 	if model.Result != nil {
 		modelMap["result"] = model.Result
 	}
+	if model.PreJob != nil {
+		preJobMap, err := dataSourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PreJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["pre_job"] = []map[string]interface{}{preJobMap}
+	}
+	if model.PostJob != nil {
+		postJobMap, err := dataSourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PostJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["post_job"] = []map[string]interface{}{postJobMap}
+	}
 	if model.Job != nil {
 		jobMap, err := dataSourceIbmProjectActionJobWithIdAndSummaryToMap(model.Job)
 		if err != nil {
@@ -407,6 +442,25 @@ func dataSourceIbmProjectLastValidatedActionWithSummaryToMap(model *projectv1.La
 			return modelMap, err
 		}
 		modelMap["cra_logs"] = []map[string]interface{}{craLogsMap}
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model *projectv1.PrePostActionJobWithIdAndSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.Summary != nil {
+		summary := make(map[string]interface{})
+		for k, v := range model.Summary {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			summary[k] = string(bytes)
+		}
+		modelMap["summary"] = summary
 	}
 	return modelMap, nil
 }
@@ -579,12 +633,34 @@ func dataSourceIbmProjectLastActionWithSummaryToMap(model *projectv1.LastActionW
 	if model.Result != nil {
 		modelMap["result"] = model.Result
 	}
+	if model.PreJob != nil {
+		preJobMap, err := dataSourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PreJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["pre_job"] = []map[string]interface{}{preJobMap}
+	}
+	if model.PostJob != nil {
+		postJobMap, err := dataSourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PostJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["post_job"] = []map[string]interface{}{postJobMap}
+	}
 	if model.Job != nil {
 		jobMap, err := dataSourceIbmProjectActionJobWithIdAndSummaryToMap(model.Job)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["job"] = []map[string]interface{}{jobMap}
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectSchematicsWorkspaceToMap(model *projectv1.SchematicsWorkspace) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkspaceID != nil {
+		modelMap["workspace_id"] = model.WorkspaceID
 	}
 	return modelMap, nil
 }
