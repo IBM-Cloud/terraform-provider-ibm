@@ -34,6 +34,21 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_project_config", "project_id"),
 				Description:  "The unique project ID.",
 			},
+			"schematics": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "A schematics workspace associated to a project configuration.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"workspace_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An existing schematics workspace ID.",
+						},
+					},
+				},
+			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
 				MinItems:    1,
@@ -219,7 +234,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
-			"updated_at": &schema.Schema{
+			"user_modified_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
@@ -269,6 +284,13 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 	createConfigOptions.SetDefinition(definitionModel)
+	if _, ok := d.GetOk("schematics"); ok {
+		schematicsModel, err := resourceIbmProjectConfigMapToSchematicsWorkspace(d.Get("schematics.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createConfigOptions.SetSchematics(schematicsModel)
+	}
 
 	projectConfig, response, err := projectClient.CreateConfigWithContext(context, createConfigOptions)
 	if err != nil {
@@ -343,9 +365,9 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.UpdatedAt) {
-		if err = d.Set("updated_at", flex.DateTimeToString(projectConfig.UpdatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	if !core.IsNil(projectConfig.UserModifiedAt) {
+		if err = d.Set("user_modified_at", flex.DateTimeToString(projectConfig.UserModifiedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting user_modified_at: %s", err))
 		}
 	}
 	if !core.IsNil(projectConfig.LastSave) {
@@ -456,7 +478,9 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(modelMap
 		}
 		model.ComplianceProfile = ComplianceProfileModel
 	}
-	model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
+	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
+		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
+	}
 	if modelMap["input"] != nil && len(modelMap["input"].([]interface{})) > 0 {
 		InputModel, err := resourceIbmProjectConfigMapToInputVariable(modelMap["input"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -533,6 +557,14 @@ func resourceIbmProjectConfigMapToProjectConfigSetting(modelMap map[string]inter
 	return model, nil
 }
 
+func resourceIbmProjectConfigMapToSchematicsWorkspace(modelMap map[string]interface{}) (*projectv1.SchematicsWorkspace, error) {
+	model := &projectv1.SchematicsWorkspace{}
+	if modelMap["workspace_id"] != nil && modelMap["workspace_id"].(string) != "" {
+		model.WorkspaceID = core.StringPtr(modelMap["workspace_id"].(string))
+	}
+	return model, nil
+}
+
 func resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototypePatchDefinitionBlock, error) {
 	model := &projectv1.ProjectConfigPrototypePatchDefinitionBlock{}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
@@ -580,6 +612,14 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(mod
 		model.Setting = SettingModel
 	}
 	return model, nil
+}
+
+func resourceIbmProjectConfigSchematicsWorkspaceToMap(model *projectv1.SchematicsWorkspace) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkspaceID != nil {
+		modelMap["workspace_id"] = model.WorkspaceID
+	}
+	return modelMap, nil
 }
 
 func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *projectv1.ProjectConfigResponseDefinition) (map[string]interface{}, error) {

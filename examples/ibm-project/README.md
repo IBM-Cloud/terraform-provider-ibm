@@ -84,11 +84,14 @@ data "project" "project_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | project_id | The unique project ID. | `string` | true |
-| definition | The type and output of a project configuration. | `` | false |
+| schematics | A schematics workspace associated to a project configuration. | `` | false |
+| definition | The type and output of a project configuration. | `` | true |
 | resource_group | The resource group where the project's data and tools are created. | `string` | true |
 | location | The location where the project's data and tools are created. | `string` | true |
 | definition | The definition of the project. | `` | false |
 | project_id | The unique project ID. | `string` | true |
+| id | The unique config ID. | `string` | true |
+| id | The unique project ID. | `string` | true |
 
 ## Outputs
 

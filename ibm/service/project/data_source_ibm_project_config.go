@@ -69,7 +69,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
-			"updated_at": &schema.Schema{
+			"user_modified_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
@@ -78,6 +78,20 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+			},
+			"schematics": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "A schematics workspace associated to a project configuration.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"workspace_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An existing schematics workspace ID.",
+						},
+					},
+				},
 			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
@@ -279,12 +293,24 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(projectConfig.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	if err = d.Set("user_modified_at", flex.DateTimeToString(projectConfig.UserModifiedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting user_modified_at: %s", err))
 	}
 
 	if err = d.Set("last_save", flex.DateTimeToString(projectConfig.LastSave)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting last_save: %s", err))
+	}
+
+	schematics := []map[string]interface{}{}
+	if projectConfig.Schematics != nil {
+		modelMap, err := dataSourceIbmProjectConfigSchematicsWorkspaceToMap(projectConfig.Schematics)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		schematics = append(schematics, modelMap)
+	}
+	if err = d.Set("schematics", schematics); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting schematics %s", err))
 	}
 
 	definition := []map[string]interface{}{}
@@ -300,6 +326,14 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	}
 
 	return nil
+}
+
+func dataSourceIbmProjectConfigSchematicsWorkspaceToMap(model *projectv1.SchematicsWorkspace) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkspaceID != nil {
+		modelMap["workspace_id"] = model.WorkspaceID
+	}
+	return modelMap, nil
 }
 
 func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *projectv1.ProjectConfigResponseDefinition) (map[string]interface{}, error) {

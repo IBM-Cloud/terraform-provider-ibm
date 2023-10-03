@@ -89,6 +89,10 @@ Nested schema for **definition**:
 	  * Constraints: Allowable values are: `terraform_template`, `schematics_blueprint`.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+* `schematics` - (Optional, List) A schematics workspace associated to a project configuration.
+Nested schema for **schematics**:
+	* `workspace_id` - (Optional, String) An existing schematics workspace ID.
+	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.-]+$/`.
 
 ## Attribute Reference
 
@@ -105,7 +109,7 @@ After your resource is created, you can read values from the listed arguments an
 * `state` - (String) The state of the configuration.
   * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superceded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
 * `update_available` - (Boolean) The flag that indicates whether a configuration update is available.
-* `updated_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+* `user_modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `version` - (Integer) The version of the configuration.
 
 
