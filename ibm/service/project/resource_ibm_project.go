@@ -35,8 +35,8 @@ func ResourceIbmProject() *schema.Resource {
 				Description:  "The IBM Cloud location where a resource is deployed.",
 			},
 			"resource_group": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "The resource group where the project's data and tools are created.",
 			},
 			"definition": &schema.Schema{
