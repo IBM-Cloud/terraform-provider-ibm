@@ -10561,12 +10561,12 @@ func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBacku
 
 // GetBackupPolicy : Retrieve a backup policy
 // This request retrieves a single backup policy specified by the identifier in the URL.
-func (vpc *VpcV1) GetBackupPolicy(getBackupPolicyOptions *GetBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetBackupPolicy(getBackupPolicyOptions *GetBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.GetBackupPolicyWithContext(context.Background(), getBackupPolicyOptions)
 }
 
 // GetBackupPolicyWithContext is an alternate form of the GetBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolicyOptions *GetBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolicyOptions *GetBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getBackupPolicyOptions, "getBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -10625,12 +10625,12 @@ func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolic
 // UpdateBackupPolicy : Update a backup policy
 // This request updates a backup policy with the information in a provided backup policy patch. The backup policy patch
 // object is structured in the same way as a retrieved backup policy and contains only the information to be updated.
-func (vpc *VpcV1) UpdateBackupPolicy(updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateBackupPolicy(updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.UpdateBackupPolicyWithContext(context.Background(), updateBackupPolicyOptions)
 }
 
 // UpdateBackupPolicyWithContext is an alternate form of the UpdateBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateBackupPolicyOptions, "updateBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return

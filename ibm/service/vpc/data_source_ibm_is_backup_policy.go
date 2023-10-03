@@ -69,6 +69,12 @@ func DataSourceIBMIsBackupPolicy() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"included_content": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The included content for backups created using this policy",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"match_user_tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -170,7 +176,7 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 			log.Printf("[DEBUG] GetBackupPolicyWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("[ERROR] GetBackupPolicyWithContext failed %s\n%s", err, response))
 		}
-		backupPolicy = backupPolicyInfo
+		backupPolicy = backupPolicyInfo.(*vpcv1.BackupPolicy)
 
 	} else if v, ok := d.GetOk("name"); ok {
 
@@ -191,7 +197,10 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 				break
 			}
 			start = flex.GetNext(backupPolicyCollection.Next)
-			allrecs = append(allrecs, backupPolicyCollection.BackupPolicies...)
+			for _, backupPolicyInfo := range backupPolicyCollection.BackupPolicies {
+				backupPolicies := backupPolicyInfo.(*vpcv1.BackupPolicy)
+				allrecs = append(allrecs, *backupPolicies)
+			}
 			if start == "" {
 				break
 			}
@@ -244,6 +253,12 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 		}
 	}
 	d.Set("match_resource_types", matchResourceType)
+
+	if backupPolicy.IncludedContent != nil {
+		if err = d.Set("included_content", backupPolicy.IncludedContent); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting included_content: %s", err))
+		}
+	}
 
 	matchUserTags := make([]string, 0)
 	if backupPolicy.MatchUserTags != nil {

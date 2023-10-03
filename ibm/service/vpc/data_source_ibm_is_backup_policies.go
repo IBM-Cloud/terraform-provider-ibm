@@ -81,6 +81,12 @@ func DataSourceIBMIsBackupPolicies() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"included_content": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The included content for backups created using this policy",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
 						"match_user_tags": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -220,7 +226,10 @@ func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.Resour
 			break
 		}
 		start = flex.GetNext(backupPolicyCollection.Next)
-		matchBackupPolicies = append(matchBackupPolicies, backupPolicyCollection.BackupPolicies...)
+		for _, backupPolicyInfo := range backupPolicyCollection.BackupPolicies {
+			backupPolicies := backupPolicyInfo.(*vpcv1.BackupPolicy)
+			matchBackupPolicies = append(matchBackupPolicies, *backupPolicies)
+		}
 		if start == "" {
 			break
 		}
@@ -278,6 +287,9 @@ func dataSourceBackupPolicyCollectionBackupPoliciesToMap(backupPoliciesItem vpcv
 	}
 	if backupPoliciesItem.MatchUserTags != nil {
 		backupPoliciesMap["match_user_tags"] = backupPoliciesItem.MatchUserTags
+	}
+	if backupPoliciesItem.IncludedContent != nil {
+		backupPoliciesMap["included_content"] = backupPoliciesItem.IncludedContent
 	}
 	if backupPoliciesItem.Name != nil {
 		backupPoliciesMap["name"] = backupPoliciesItem.Name
