@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,13 +67,13 @@ func ResourceIBMIsSnapshotConsistencyGroup() *schema.Resource {
 							ForceNew:    true,
 							Description: "The volume to create this snapshot from.",
 						},
-						// "tags": {
-						// 	Type:     schema.TypeSet,
-						// 	Optional: true,
-						// 	Set:      flex.ResourceIBMVPCHash,
-						// 	// Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_snapshot_consistency_group", "tags")},
-						// 	Description: "User Tags for the snapshot",
-						// },
+						"tags": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Set:         flex.ResourceIBMVPCHash,
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_snapshot_consistency_group", "tags")},
+							Description: "User Tags for the snapshot",
+						},
 					},
 				},
 			},
@@ -330,21 +331,21 @@ func resourceIBMIsSnapshotConsistencyGroupCreate(context context.Context, d *sch
 			snapshotConsistencyGroupPrototypeSnapshotsItem.Name = &name
 		}
 
-		// userTags := snapshotVal["tags"].(*schema.Set)
-		// if userTags != nil && userTags.Len() != 0 {
-		// 	userTagsArray := make([]string, userTags.Len())
-		// 	for i, userTag := range userTags.List() {
-		// 		userTagStr := userTag.(string)
-		// 		userTagsArray[i] = userTagStr
-		// 	}
-		// 	schematicTags := os.Getenv("IC_ENV_TAGS")
-		// 	var envTags []string
-		// 	if schematicTags != "" {
-		// 		envTags = strings.Split(schematicTags, ",")
-		// 		userTagsArray = append(userTagsArray, envTags...)
-		// 	}
-		// 	snapshotConsistencyGroupPrototypeSnapshotsItem.UserTags = userTagsArray
-		// }
+		userTags := snapshotVal["tags"].(*schema.Set)
+		if userTags != nil && userTags.Len() != 0 {
+			userTagsArray := make([]string, userTags.Len())
+			for i, userTag := range userTags.List() {
+				userTagStr := userTag.(string)
+				userTagsArray[i] = userTagStr
+			}
+			schematicTags := os.Getenv("IC_ENV_TAGS")
+			var envTags []string
+			if schematicTags != "" {
+				envTags = strings.Split(schematicTags, ",")
+				userTagsArray = append(userTagsArray, envTags...)
+			}
+			snapshotConsistencyGroupPrototypeSnapshotsItem.UserTags = userTagsArray
+		}
 		snapshotConsistencyGroupPrototypeSnapshotsItemArray = append(snapshotConsistencyGroupPrototypeSnapshotsItemArray, *snapshotConsistencyGroupPrototypeSnapshotsItem)
 	}
 	snapshotConsistencyGroupPrototype.Snapshots = snapshotConsistencyGroupPrototypeSnapshotsItemArray

@@ -66029,6 +66029,9 @@ type Snapshot struct {
 	// The size of this snapshot rounded up to the next gigabyte.
 	Size *int64 `json:"size" validate:"required"`
 
+	// If present, the snapshot consistency group which created this snapshot.
+	SnapshotConsistencyGroup *SnapshotConsistencyGroupReference `json:"snapshot_consistency_group,omitempty"`
+
 	// If present, the image from which the data on this snapshot was most directly
 	// provisioned.
 	SourceImage *ImageReference `json:"source_image,omitempty"`
@@ -66149,6 +66152,10 @@ func UnmarshalSnapshot(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "size", &obj.Size)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshot_consistency_group", &obj.SnapshotConsistencyGroup, UnmarshalSnapshotConsistencyGroupReference)
 	if err != nil {
 		return
 	}
