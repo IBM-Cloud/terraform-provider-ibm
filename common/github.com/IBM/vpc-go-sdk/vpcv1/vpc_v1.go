@@ -9898,12 +9898,12 @@ func (vpc *VpcV1) ListBackupPoliciesWithContext(ctx context.Context, listBackupP
 // CreateBackupPolicy : Create a backup policy
 // This request creates a new backup policy from a backup policy prototype object. The prototype object is structured in
 // the same way as a retrieved backup policy, and contains the information necessary to create the new backup policy.
-func (vpc *VpcV1) CreateBackupPolicy(createBackupPolicyOptions *CreateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateBackupPolicy(createBackupPolicyOptions *CreateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.CreateBackupPolicyWithContext(context.Background(), createBackupPolicyOptions)
 }
 
 // CreateBackupPolicyWithContext is an alternate form of the CreateBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBackupPolicyOptions *CreateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBackupPolicyOptions *CreateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createBackupPolicyOptions, "createBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -9935,23 +9935,7 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	body := make(map[string]interface{})
-	if createBackupPolicyOptions.MatchUserTags != nil {
-		body["match_user_tags"] = createBackupPolicyOptions.MatchUserTags
-	}
-	if createBackupPolicyOptions.MatchResourceTypes != nil {
-		body["match_resource_types"] = createBackupPolicyOptions.MatchResourceTypes
-	}
-	if createBackupPolicyOptions.Name != nil {
-		body["name"] = createBackupPolicyOptions.Name
-	}
-	if createBackupPolicyOptions.Plans != nil {
-		body["plans"] = createBackupPolicyOptions.Plans
-	}
-	if createBackupPolicyOptions.ResourceGroup != nil {
-		body["resource_group"] = createBackupPolicyOptions.ResourceGroup
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createBackupPolicyOptions.BackupPolicyPrototype)
 	if err != nil {
 		return
 	}
@@ -24606,6 +24590,9 @@ func (addressPrefixPatch *AddressPrefixPatch) AsPatch() (_patch map[string]inter
 }
 
 // BackupPolicy : BackupPolicy struct
+// Models which "extend" this model:
+// - BackupPolicyMatchResourceTypeInstance
+// - BackupPolicyMatchResourceTypeVolume
 type BackupPolicy struct {
 	// The date and time that the backup policy was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -24626,6 +24613,14 @@ type BackupPolicy struct {
 
 	// The lifecycle state of the backup policy.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type,omitempty"`
 
 	// The resource types this backup policy applies to. Resources that have both a matching type and a matching user tag
 	// will be subject to the backup policy.
@@ -24650,6 +24645,15 @@ type BackupPolicy struct {
 
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	IncludedContent []string `json:"included_content,omitempty"`
 }
 
 // Constants associated with the BackupPolicy.LifecycleState property.
@@ -24667,7 +24671,8 @@ const (
 // Constants associated with the BackupPolicy.MatchResourceTypes property.
 // The resource type.
 const (
-	BackupPolicyMatchResourceTypesVolumeConst = "volume"
+	BackupPolicyMatchResourceTypesInstanceConst = "instance"
+	BackupPolicyMatchResourceTypesVolumeConst   = "volume"
 )
 
 // Constants associated with the BackupPolicy.ResourceType property.
@@ -24675,6 +24680,21 @@ const (
 const (
 	BackupPolicyResourceTypeBackupPolicyConst = "backup_policy"
 )
+
+// Constants associated with the BackupPolicy.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyIncludedContentDataVolumesConst = "data_volumes"
+)
+
+func (*BackupPolicy) isaBackupPolicy() bool {
+	return true
+}
+
+type BackupPolicyIntf interface {
+	isaBackupPolicy() bool
+}
 
 // UnmarshalBackupPolicy unmarshals an instance of BackupPolicy from the specified map of raw messages.
 func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -24703,6 +24723,10 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "match_resource_types", &obj.MatchResourceTypes)
 	if err != nil {
 		return
@@ -24727,6 +24751,10 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -24734,7 +24762,7 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 // BackupPolicyCollection : BackupPolicyCollection struct
 type BackupPolicyCollection struct {
 	// Collection of backup policies.
-	BackupPolicies []BackupPolicy `json:"backup_policies" validate:"required"`
+	BackupPolicies []BackupPolicyIntf `json:"backup_policies" validate:"required"`
 
 	// A link to the first page of resources.
 	First *BackupPolicyCollectionFirst `json:"first" validate:"required"`
@@ -25068,6 +25096,7 @@ func UnmarshalBackupPolicyJobCollectionNext(m map[string]json.RawMessage, result
 // [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
 // Models which "extend" this model:
 // - BackupPolicyJobSourceVolumeReference
+// - BackupPolicyJobSourceInstanceReference
 type BackupPolicyJobSource struct {
 	// The CRN for this volume.
 	CRN *string `json:"crn,omitempty"`
@@ -25192,6 +25221,11 @@ func UnmarshalBackupPolicyJobStatusReason(m map[string]json.RawMessage, result i
 
 // BackupPolicyPatch : BackupPolicyPatch struct
 type BackupPolicyPatch struct {
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+
 	// The user tags this backup policy will apply to (replacing any existing tags). Resources that have both a matching
 	// user tag and a matching type will be subject to the backup policy.
 	MatchUserTags []string `json:"match_user_tags,omitempty"`
@@ -25200,9 +25234,20 @@ type BackupPolicyPatch struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// Constants associated with the BackupPolicyPatch.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPatchIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPatchIncludedContentDataVolumesConst = "data_volumes"
+)
+
 // UnmarshalBackupPolicyPatch unmarshals an instance of BackupPolicyPatch from the specified map of raw messages.
 func UnmarshalBackupPolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyPatch)
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
 	if err != nil {
 		return
@@ -25838,6 +25883,101 @@ func UnmarshalBackupPolicyPlanRemoteRegionPolicyPrototype(m map[string]json.RawM
 		return
 	}
 	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototype : BackupPolicyPrototype struct
+// Models which "extend" this model:
+// - BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype
+// - BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype
+type BackupPolicyPrototype struct {
+	// The resource types this backup policy will apply to. Resources that have both a matching type and a matching user
+	// tag will be subject to the backup policy.
+	MatchResourceTypes []string `json:"match_resource_types,omitempty"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type,omitempty"`
+
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+}
+
+// Constants associated with the BackupPolicyPrototype.MatchResourceTypes property.
+// The resource type.
+const (
+	BackupPolicyPrototypeMatchResourceTypesInstanceConst = "instance"
+	BackupPolicyPrototypeMatchResourceTypesVolumeConst   = "volume"
+)
+
+// Constants associated with the BackupPolicyPrototype.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPrototypeIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPrototypeIncludedContentDataVolumesConst = "data_volumes"
+)
+
+func (*BackupPolicyPrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+type BackupPolicyPrototypeIntf interface {
+	isaBackupPolicyPrototype() bool
+}
+
+// UnmarshalBackupPolicyPrototype unmarshals an instance of BackupPolicyPrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototype)
+	err = core.UnmarshalPrimitive(m, "match_resource_types", &obj.MatchResourceTypes)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
 	if err != nil {
 		return
 	}
@@ -28800,69 +28940,23 @@ func UnmarshalCloudObjectStorageObjectReference(m map[string]json.RawMessage, re
 
 // CreateBackupPolicyOptions : The CreateBackupPolicy options.
 type CreateBackupPolicyOptions struct {
-	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
-	// will be subject to the backup policy.
-	MatchUserTags []string `json:"match_user_tags" validate:"required"`
-
-	// The resource types this backup policy will apply to. Resources that have both a matching type and a matching user
-	// tag will be subject to the backup policy.
-	MatchResourceTypes []string `json:"match_resource_types,omitempty"`
-
-	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
-	// the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// The prototype objects for backup plans to be created for this backup policy.
-	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
-
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+	// The backup policy prototype object.
+	BackupPolicyPrototype BackupPolicyPrototypeIntf `json:"BackupPolicyPrototype" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
-// Constants associated with the CreateBackupPolicyOptions.MatchResourceTypes property.
-// The resource type.
-const (
-	CreateBackupPolicyOptionsMatchResourceTypesVolumeConst = "volume"
-)
-
 // NewCreateBackupPolicyOptions : Instantiate CreateBackupPolicyOptions
-func (*VpcV1) NewCreateBackupPolicyOptions(matchUserTags []string) *CreateBackupPolicyOptions {
+func (*VpcV1) NewCreateBackupPolicyOptions(backupPolicyPrototype BackupPolicyPrototypeIntf) *CreateBackupPolicyOptions {
 	return &CreateBackupPolicyOptions{
-		MatchUserTags: matchUserTags,
+		BackupPolicyPrototype: backupPolicyPrototype,
 	}
 }
 
-// SetMatchUserTags : Allow user to set MatchUserTags
-func (_options *CreateBackupPolicyOptions) SetMatchUserTags(matchUserTags []string) *CreateBackupPolicyOptions {
-	_options.MatchUserTags = matchUserTags
-	return _options
-}
-
-// SetMatchResourceTypes : Allow user to set MatchResourceTypes
-func (_options *CreateBackupPolicyOptions) SetMatchResourceTypes(matchResourceTypes []string) *CreateBackupPolicyOptions {
-	_options.MatchResourceTypes = matchResourceTypes
-	return _options
-}
-
-// SetName : Allow user to set Name
-func (_options *CreateBackupPolicyOptions) SetName(name string) *CreateBackupPolicyOptions {
-	_options.Name = core.StringPtr(name)
-	return _options
-}
-
-// SetPlans : Allow user to set Plans
-func (_options *CreateBackupPolicyOptions) SetPlans(plans []BackupPolicyPlanPrototype) *CreateBackupPolicyOptions {
-	_options.Plans = plans
-	return _options
-}
-
-// SetResourceGroup : Allow user to set ResourceGroup
-func (_options *CreateBackupPolicyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateBackupPolicyOptions {
-	_options.ResourceGroup = resourceGroup
+// SetBackupPolicyPrototype : Allow user to set BackupPolicyPrototype
+func (_options *CreateBackupPolicyOptions) SetBackupPolicyPrototype(backupPolicyPrototype BackupPolicyPrototypeIntf) *CreateBackupPolicyOptions {
+	_options.BackupPolicyPrototype = backupPolicyPrototype
 	return _options
 }
 
@@ -76475,6 +76569,70 @@ func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (e
 	return
 }
 
+// BackupPolicyJobSourceInstanceReference : BackupPolicyJobSourceInstanceReference struct
+// This model "extends" BackupPolicyJobSource
+type BackupPolicyJobSourceInstanceReference struct {
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *InstanceReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this virtual server instance. The name is unique across all virtual server instances in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyJobSourceInstanceReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyJobSourceInstanceReferenceResourceTypeInstanceConst = "instance"
+)
+
+func (*BackupPolicyJobSourceInstanceReference) isaBackupPolicyJobSource() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyJobSourceInstanceReference unmarshals an instance of BackupPolicyJobSourceInstanceReference from the specified map of raw messages.
+func UnmarshalBackupPolicyJobSourceInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobSourceInstanceReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalInstanceReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // BackupPolicyJobSourceVolumeReference : BackupPolicyJobSourceVolumeReference struct
 // This model "extends" BackupPolicyJobSource
 type BackupPolicyJobSourceVolumeReference struct {
@@ -101478,7 +101636,7 @@ func (pager *BackupPoliciesPager) HasNext() bool {
 }
 
 // GetNextWithContext returns the next page of results using the specified Context.
-func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page []BackupPolicyIntf, err error) {
 	if !pager.HasNext() {
 		return nil, fmt.Errorf("no more results available")
 	}
@@ -101509,9 +101667,9 @@ func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page 
 
 // GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
 // until all pages of results have been retrieved.
-func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicyIntf, err error) {
 	for pager.HasNext() {
-		var nextPage []BackupPolicy
+		var nextPage []BackupPolicyIntf
 		nextPage, err = pager.GetNextWithContext(ctx)
 		if err != nil {
 			return
@@ -101522,12 +101680,12 @@ func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allIte
 }
 
 // GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
-func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicyIntf, err error) {
 	return pager.GetNextWithContext(context.Background())
 }
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
-func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicyIntf, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
