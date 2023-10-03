@@ -45,6 +45,9 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Required:    true,
 				Description: "Secret name",
 				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator(
+					"ibm_container_ingress_secret_opaque",
+					"secret_name"),
 			},
 			"secret_namespace": {
 				Type:        schema.TypeString,
@@ -121,6 +124,16 @@ func ResourceIBMContainerIngressSecretOpaqueValidator() *validate.ResourceValida
 			Required:                   true,
 			CloudDataType:              "cluster",
 			CloudDataRange:             []string{"resolved_to:id"}})
+
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 "secret_name",
+		ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+		Type:                       validate.TypeString,
+		Required:                   true,
+		Regexp:                     `^([a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)$`,
+		MinValueLength:             1,
+		MaxValueLength:             63,
+	})
 
 	iBMContainerIngressInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_container_ingress_secret_opaque", Schema: validateSchema}
 	return &iBMContainerIngressInstanceValidator
@@ -261,6 +274,7 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 		Namespace: secretNamespace,
 	}
 
+	ingressAPI := ingressClient.Ingresses()
 	if d.HasChange("fields") {
 		oldList, newList := d.GetChange("fields")
 
@@ -276,7 +290,6 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 		remove := os.Difference(ns).List()
 		add := ns.Difference(os).List()
 
-		ingressAPI := ingressClient.Ingresses()
 		if len(remove) > 0 {
 			actualSecret, err := ingressAPI.GetIngressSecret(cluster, secretName, secretNamespace)
 			if err != nil {
@@ -341,6 +354,11 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 			if err != nil {
 				return err
 			}
+		}
+	} else {
+		_, err = ingressAPI.UpdateIngressSecret(params)
+		if err != nil {
+			return err
 		}
 	}
 
