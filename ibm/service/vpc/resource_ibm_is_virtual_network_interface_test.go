@@ -17,16 +17,35 @@ import (
 
 func TestAccIBMIsVirtualNetworkInterfaceBasic(t *testing.T) {
 	var conf vpcv1.VirtualNetworkInterface
-
+	vpcname := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfvpngw-subnet-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tfvpngw-createname-%d", acctest.RandIntRange(10, 100))
+	enable_infrastructure_nat := true
+	allow_ip_spoofing := true
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIsVirtualNetworkInterfaceDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsVirtualNetworkInterfaceConfigBasic(),
+				Config: testAccCheckIBMIsVirtualNetworkInterfaceConfigBasic(vpcname, subnetname, vniname, enable_infrastructure_nat, allow_ip_spoofing),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsVirtualNetworkInterfaceExists("ibm_is_virtual_network_interface.is_virtual_network_interface", conf),
+					testAccCheckIBMIsVirtualNetworkInterfaceExists("ibm_is_virtual_network_interface.testacc_vni", conf),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "subnet"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "name"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "vpc.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "zone"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "primary_ip.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "ips.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "id"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface.testacc_vni", "enable_infrastructure_nat", "true"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface.testacc_vni", "lifecycle_state", "stable"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface.testacc_vni", "resource_type", "virtual_network_interface"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface.testacc_vni", "resource_group"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface.testacc_vni", "allow_ip_spoofing", "true"),
 				),
 			},
 		},
@@ -77,11 +96,27 @@ func TestAccIBMIsVirtualNetworkInterfaceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIsVirtualNetworkInterfaceConfigBasic() string {
+func testAccCheckIBMIsVirtualNetworkInterfaceConfigBasic(vpcname, subnetname, vniname string, enablenat, allowipspoofing bool) string {
 	return fmt.Sprintf(`
-		resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instance" {
-		}
-	`)
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		total_ipv4_address_count = 16
+	
+	}
+	
+	resource "ibm_is_virtual_network_interface" "testacc_vni"{
+		name = "%s"
+		subnet = ibm_is_subnet.testacc_subnet.id
+		enable_infrastructure_nat = %t
+		allow_ip_spoofing = %t
+	}
+	`, vpcname, subnetname, acc.ISZoneName, vniname, enablenat, allowipspoofing)
 }
 
 func testAccCheckIBMIsVirtualNetworkInterfaceConfig(allowIPSpoofing string, autoDelete string, enableInfrastructureNat string, name string) string {

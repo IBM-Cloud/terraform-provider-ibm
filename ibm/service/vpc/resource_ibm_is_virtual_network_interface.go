@@ -161,126 +161,24 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				},
 			},
 			"resource_group": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The resource group for this virtual network interface.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this resource group.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The unique identifier for this resource group.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name for this resource group.",
-						},
-					},
-				},
+				Description: "The resource group id for this virtual network interface.",
 			},
-			"security_groups": &schema.Schema{
-				Type:        schema.TypeList,
+			"security_groups": {
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
 				Description: "The security groups for this virtual network interface.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The security group's CRN.",
-						},
-						"deleted": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"more_info": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Link to documentation about deleted resources.",
-									},
-								},
-							},
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The security group's canonical URL.",
-						},
-						"security_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The unique identifier for this security group.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name for this security group. The name is unique across all security groups for the VPC.",
-						},
-					},
-				},
 			},
 			"subnet": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
+				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The associated subnet.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The CRN for this subnet.",
-						},
-						"deleted": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"more_info": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Link to documentation about deleted resources.",
-									},
-								},
-							},
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this subnet.",
-						},
-						"subnet": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The unique identifier for this subnet.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
-						},
-						"resource_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The resource type.",
-						},
-					},
-				},
+				Description: "The associated subnet id.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -404,23 +302,9 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				},
 			},
 			"zone": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The zone this virtual network interface resides in.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this zone.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The globally unique name for this zone.",
-						},
-					},
-				},
+				Description: "The zone name this virtual network interface resides in.",
 			},
 		},
 	}
@@ -492,20 +376,20 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 	}
 	if _, ok := d.GetOk("security_groups"); ok {
 		var securityGroups []vpcv1.SecurityGroupIdentityIntf
-		for _, v := range d.Get("security_groups").([]interface{}) {
-			value := v.(map[string]interface{})
-			securityGroupsItem, err := resourceIBMIsVirtualNetworkInterfaceMapToSecurityGroupIdentity(value)
-			if err != nil {
-				return diag.FromErr(err)
+		sg := d.Get("security_groups").(*schema.Set)
+		for _, v := range sg.List() {
+			value := v.(string)
+			securityGroupsItem := &vpcv1.SecurityGroupIdentity{
+				ID: &value,
 			}
 			securityGroups = append(securityGroups, securityGroupsItem)
 		}
 		createVirtualNetworkInterfaceOptions.SetSecurityGroups(securityGroups)
 	}
-	if _, ok := d.GetOk("subnet"); ok {
-		subnetModel, err := resourceIBMIsVirtualNetworkInterfaceMapToSubnetIdentity(d.Get("subnet.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+	if subnetOk, ok := d.GetOk("subnet"); ok {
+		subnetid := subnetOk.(string)
+		subnetModel := &vpcv1.SubnetIdentity{
+			ID: &subnetid,
 		}
 		createVirtualNetworkInterfaceOptions.SetSubnet(subnetModel)
 	}
@@ -584,35 +468,21 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.ResourceGroup) {
-		resourceGroupMap, err := resourceIBMIsVirtualNetworkInterfaceResourceGroupReferenceToMap(virtualNetworkInterface.ResourceGroup)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("resource_group", []map[string]interface{}{resourceGroupMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
-		}
+		d.Set("resource_group", virtualNetworkInterface.ResourceGroup.ID)
 	}
 	if !core.IsNil(virtualNetworkInterface.SecurityGroups) {
-		securityGroups := []map[string]interface{}{}
+		securityGroups := make([]string, 0)
 		for _, securityGroupsItem := range virtualNetworkInterface.SecurityGroups {
-			securityGroupsItemMap, err := resourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceToMap(&securityGroupsItem)
-			if err != nil {
-				return diag.FromErr(err)
+			if securityGroupsItem.ID != nil {
+				securityGroups = append(securityGroups, *securityGroupsItem.ID)
 			}
-			securityGroups = append(securityGroups, securityGroupsItemMap)
 		}
 		if err = d.Set("security_groups", securityGroups); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting security_groups: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting security_groups for vni: %s", err))
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.Subnet) {
-		subnetMap, err := resourceIBMIsVirtualNetworkInterfaceSubnetReferenceToMap(virtualNetworkInterface.Subnet)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("subnet", []map[string]interface{}{subnetMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting subnet: %s", err))
-		}
+		d.Set("subnet", virtualNetworkInterface.Subnet.ID)
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(virtualNetworkInterface.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
@@ -652,12 +522,9 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 	if err = d.Set("vpc", []map[string]interface{}{vpcMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting vpc: %s", err))
 	}
-	zoneMap, err := resourceIBMIsVirtualNetworkInterfaceZoneReferenceToMap(virtualNetworkInterface.Zone)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("zone", []map[string]interface{}{zoneMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting zone: %s", err))
+
+	if virtualNetworkInterface.Zone != nil {
+		d.Set("zone", *virtualNetworkInterface.Zone.Name)
 	}
 
 	return nil
@@ -778,70 +645,6 @@ func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrototypeRe
 	return model, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceMapToSecurityGroupIdentity(modelMap map[string]interface{}) (vpcv1.SecurityGroupIdentityIntf, error) {
-	model := &vpcv1.SecurityGroupIdentity{}
-	if modelMap["security_group"] != nil && modelMap["security_group"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["security_group"].(string))
-	}
-	if modelMap["crn"] != nil && modelMap["crn"].(string) != "" {
-		model.CRN = core.StringPtr(modelMap["crn"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
-		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToSecurityGroupIdentityByID(modelMap map[string]interface{}) (*vpcv1.SecurityGroupIdentityByID, error) {
-	model := &vpcv1.SecurityGroupIdentityByID{}
-	model.ID = core.StringPtr(modelMap["security_group"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToSecurityGroupIdentityByCRN(modelMap map[string]interface{}) (*vpcv1.SecurityGroupIdentityByCRN, error) {
-	model := &vpcv1.SecurityGroupIdentityByCRN{}
-	model.CRN = core.StringPtr(modelMap["crn"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToSecurityGroupIdentityByHref(modelMap map[string]interface{}) (*vpcv1.SecurityGroupIdentityByHref, error) {
-	model := &vpcv1.SecurityGroupIdentityByHref{}
-	model.Href = core.StringPtr(modelMap["href"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToSubnetIdentity(modelMap map[string]interface{}) (vpcv1.SubnetIdentityIntf, error) {
-	model := &vpcv1.SubnetIdentity{}
-	if modelMap["subnet"] != nil && modelMap["subnet"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["subnet"].(string))
-	}
-	if modelMap["crn"] != nil && modelMap["crn"].(string) != "" {
-		model.CRN = core.StringPtr(modelMap["crn"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
-		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToSubnetIdentityByID(modelMap map[string]interface{}) (*vpcv1.SubnetIdentityByID, error) {
-	model := &vpcv1.SubnetIdentityByID{}
-	model.ID = core.StringPtr(modelMap["subnet"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToSubnetIdentityByCRN(modelMap map[string]interface{}) (*vpcv1.SubnetIdentityByCRN, error) {
-	model := &vpcv1.SubnetIdentityByCRN{}
-	model.CRN = core.StringPtr(modelMap["crn"].(string))
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToSubnetIdentityByHref(modelMap map[string]interface{}) (*vpcv1.SubnetIdentityByHref, error) {
-	model := &vpcv1.SubnetIdentityByHref{}
-	model.Href = core.StringPtr(modelMap["href"].(string))
-	return model, nil
-}
-
 func resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["address"] = model.Address
@@ -865,14 +668,6 @@ func resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceDeletedToMap(model *
 	return modelMap, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceResourceGroupReferenceToMap(model *vpcv1.ResourceGroupReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["href"] = model.Href
-	modelMap["id"] = model.ID
-	modelMap["name"] = model.Name
-	return modelMap, nil
-}
-
 func resourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceToMap(model *vpcv1.SecurityGroupReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["crn"] = model.CRN
@@ -890,29 +685,6 @@ func resourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceToMap(model *vpcv
 }
 
 func resourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceDeletedToMap(model *vpcv1.SecurityGroupReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = model.MoreInfo
-	return modelMap, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceSubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["crn"] = model.CRN
-	if model.Deleted != nil {
-		deletedMap, err := resourceIBMIsVirtualNetworkInterfaceSubnetReferenceDeletedToMap(model.Deleted)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	modelMap["href"] = model.Href
-	modelMap["subnet"] = model.ID
-	modelMap["name"] = model.Name
-	modelMap["resource_type"] = model.ResourceType
-	return modelMap, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -1039,12 +811,5 @@ func resourceIBMIsVirtualNetworkInterfaceVPCReferenceToMap(model *vpcv1.VPCRefer
 func resourceIBMIsVirtualNetworkInterfaceVPCReferenceDeletedToMap(model *vpcv1.VPCReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
-	return modelMap, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["href"] = model.Href
-	modelMap["name"] = model.Name
 	return modelMap, nil
 }

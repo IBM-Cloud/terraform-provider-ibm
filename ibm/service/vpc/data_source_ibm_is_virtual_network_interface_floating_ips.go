@@ -114,11 +114,12 @@ func dataSourceIBMIsVirtualNetworkInterfaceFloatingIPsRead(context context.Conte
 
 		l["crn"] = floatingIP.CRN
 		l["href"] = floatingIP.Href
-		// if deleted, err := resourceIBMIsVirtualNetworkInterfaceFloatingIPNetworkInterfaceReferenceDeletedToMap(floatingIP.Deleted); err != nil {
-		// 	return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
-		// } else {
-		// 	l["deleted"] = deleted
-		// }
+		deleted := make(map[string]interface{})
+
+		if floatingIP.Deleted != nil && floatingIP.Deleted.MoreInfo != nil {
+			deleted["more_info"] = floatingIP.Deleted
+		}
+		l["deleted"] = []map[string]interface{}{deleted}
 		floatingIpsInfo = append(floatingIpsInfo, l)
 	}
 	d.SetId(dataSourceIBMISVirtualNetworkInterfaceFloatingIPsID(d))

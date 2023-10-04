@@ -140,11 +140,12 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPGet(d *schema.ResourceData, f
 	if err := d.Set("href", floatingIP.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	if deleted, err := resourceIBMIsVirtualNetworkInterfaceFloatingIPNetworkInterfaceReferenceDeletedToMap(floatingIP.Deleted); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
-	} else {
-		d.Set("deleted", deleted)
+	deleted := make(map[string]interface{})
+
+	if floatingIP.Deleted != nil && floatingIP.Deleted.MoreInfo != nil {
+		deleted["more_info"] = floatingIP.Deleted
 	}
+	d.Set("deleted", []map[string]interface{}{deleted})
 
 	return nil
 }
@@ -172,26 +173,6 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPDelete(context context.Contex
 	d.SetId("")
 
 	return nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceFloatingIPNetworkInterfaceReferenceDeletedToMap(model *vpcv1.FloatingIPReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model != nil {
-		modelMap["more_info"] = model.MoreInfo
-	}
-	return modelMap, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceFloatingIPReservedIPReferenceDeletedToMap(model *vpcv1.FloatingIPReferenceDeleted) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model != nil {
-		deletedMap, err := resourceIBMIsVirtualNetworkInterfaceFloatingIPNetworkInterfaceReferenceDeletedToMap(model)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["deleted"] = []map[string]interface{}{deletedMap}
-	}
-	return modelMap, nil
 }
 
 func MakeTerraformVNIFloatingIpID(id1, id2 string) string {
