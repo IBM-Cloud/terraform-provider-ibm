@@ -75,7 +75,7 @@ func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigBasic() s
 
 		data "ibm_is_virtual_network_interface_floating_ip" "is_floating_ip_instance" {
 			virtual_network_interface = "virtual_network_interface_id"
-			flating_ip = "flating_ip_id"
+			floating_ip = "floating_ip_id"
 		}
 	`)
 }

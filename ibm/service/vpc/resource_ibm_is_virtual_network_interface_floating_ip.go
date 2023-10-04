@@ -174,7 +174,9 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPDelete(context context.Contex
 
 func resourceIBMIsVirtualNetworkInterfaceFloatingIPNetworkInterfaceReferenceDeletedToMap(model *vpcv1.FloatingIPReferenceDeleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = model.MoreInfo
+	if model != nil {
+		modelMap["more_info"] = model.MoreInfo
+	}
 	return modelMap, nil
 }
 

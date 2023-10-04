@@ -485,17 +485,18 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		vpcCrn := vpcCrnIntf.(string)
 		listBareMetalServersOptions.VPCCRN = &vpcCrn
 	}
+	//sdk
 	// if subnetIntf, ok := d.GetOk("network_interfaces_subnet"); ok {
-	// 	// subnetId := subnetIntf.(string)
-	// 	// listBareMetalServersOptions.NetworkInterfacesSubnetID = &subnetId
+	// 	subnetId := subnetIntf.(string)
+	// 	listBareMetalServersOptions.NetworkInterfacesSubnetID = &subnetId
 	// }
 	// if subnetNameIntf, ok := d.GetOk("network_interfaces_subnet_name"); ok {
-	// 	// subnetName := subnetNameIntf.(string)
-	// 	// listBareMetalServersOptions.NetworkInterfacesSubnetName = &subnetName
+	// 	subnetName := subnetNameIntf.(string)
+	// 	listBareMetalServersOptions.NetworkInterfacesSubnetName = &subnetName
 	// }
 	// if subnetCrnIntf, ok := d.GetOk("network_interfaces_subnet_crn"); ok {
-	// 	// subnetCrn := subnetCrnIntf.(string)
-	// 	// listBareMetalServersOptions.NetworkInterfacesSubnetCRN = &subnetCrn
+	// 	subnetCrn := subnetCrnIntf.(string)
+	// 	listBareMetalServersOptions.NetworkInterfacesSubnetCRN = &subnetCrn
 	// }
 	for {
 

@@ -443,6 +443,7 @@ func dataSourceShareTargetVNIToMap(VNIItem vpcv1.VirtualNetworkInterfaceReferenc
 	if VNIItem.CRN != nil {
 		subnetMap["crn"] = VNIItem.CRN
 	}
+	// sdk
 	// if VNIItem.Deleted != nil {
 	// 	deletedList := []map[string]interface{}{}
 	// 	deletedMap := dataSourceShareTargetVNIDeletedToMap(*VNIItem.Deleted)

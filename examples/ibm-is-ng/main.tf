@@ -1257,6 +1257,7 @@ data "ibm_is_share" "is_share" {
 
 data "ibm_is_shares" "is_shares" {
 }
+
 // vpc dns resolution bindings
 
   // list all dns resolution bindings on a vpc
@@ -1434,4 +1435,12 @@ data "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
 
 data "ibm_is_virtual_network_interface_floating_ips" "vni_fips" {
   virtual_network_interface = <vni_id>
+}
+
+data "ibm_is_virtual_network_interface_ips" "is_vni_ips" {
+	virtual_network_interface = "0726-89789ff7-3157-4261-8aa9-75140a4710bb"
+}
+data "ibm_is_virtual_network_interface_ip" "is_vni_ip" {
+	virtual_network_interface = "0726-89789ff7-3157-4261-8aa9-75140a4710bb"
+	reserved_ip = "0726-9880e9da-8ef2-4088-bfd0-a260b927dc44"
 }

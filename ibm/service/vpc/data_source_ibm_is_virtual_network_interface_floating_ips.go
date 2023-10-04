@@ -32,9 +32,9 @@ func DataSourceIBMIsVirtualNetworkInterfaceFloatingIPs() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"floating_ip": &schema.Schema{
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The floating IP identifier",
 						},
 						"name": &schema.Schema{
@@ -44,13 +44,13 @@ func DataSourceIBMIsVirtualNetworkInterfaceFloatingIPs() *schema.Resource {
 						},
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"more_info": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Link to documentation about deleted resources",
 									},
 								},
@@ -106,7 +106,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceFloatingIPsRead(context context.Conte
 	floatingIpsInfo := make([]map[string]interface{}, 0)
 	for _, floatingIP := range allrecs {
 		l := map[string]interface{}{}
-
+		l["id"] = *floatingIP.ID
 		if !core.IsNil(floatingIP.Name) {
 			l["name"] = floatingIP.Name
 		}
@@ -114,13 +114,12 @@ func dataSourceIBMIsVirtualNetworkInterfaceFloatingIPsRead(context context.Conte
 
 		l["crn"] = floatingIP.CRN
 		l["href"] = floatingIP.Href
-		if deleted, err := resourceIBMIsVirtualNetworkInterfaceFloatingIPNetworkInterfaceReferenceDeletedToMap(floatingIP.Deleted); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
-		} else {
-			l["deleted"] = deleted
-		}
+		// if deleted, err := resourceIBMIsVirtualNetworkInterfaceFloatingIPNetworkInterfaceReferenceDeletedToMap(floatingIP.Deleted); err != nil {
+		// 	return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+		// } else {
+		// 	l["deleted"] = deleted
+		// }
 		floatingIpsInfo = append(floatingIpsInfo, l)
-
 	}
 	d.SetId(dataSourceIBMISVirtualNetworkInterfaceFloatingIPsID(d))
 	d.Set("floating_ips", floatingIpsInfo)
