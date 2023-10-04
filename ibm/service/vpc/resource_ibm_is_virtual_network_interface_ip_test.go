@@ -94,7 +94,6 @@ func testAccCheckIBMIsVirtualNetworkInterfaceIPExists(n string, obj vpcv1.Reserv
 		if err != nil {
 			return err
 		}
-
 		getSubnetVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(parts[0])
 		getSubnetVirtualNetworkInterfaceIPOptions.SetID(parts[1])
 
@@ -102,7 +101,6 @@ func testAccCheckIBMIsVirtualNetworkInterfaceIPExists(n string, obj vpcv1.Reserv
 		if err != nil {
 			return err
 		}
-
 		obj = *reservedIP
 		return nil
 	}
@@ -117,14 +115,11 @@ func testAccCheckIBMIsVirtualNetworkInterfaceIPDestroy(s *terraform.State) error
 		if rs.Type != "ibm_is_virtual_network_interface_ip" {
 			continue
 		}
-
 		getSubnetVirtualNetworkInterfaceIPOptions := &vpcv1.GetVirtualNetworkInterfaceIPOptions{}
-
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
-
 		getSubnetVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(parts[0])
 		getSubnetVirtualNetworkInterfaceIPOptions.SetID(parts[1])
 
@@ -137,6 +132,5 @@ func testAccCheckIBMIsVirtualNetworkInterfaceIPDestroy(s *terraform.State) error
 			return fmt.Errorf("Error checking for VirtualNetworkInterfaceIP (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
-
 	return nil
 }

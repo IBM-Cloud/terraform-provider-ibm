@@ -111,7 +111,7 @@ func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDestroy(s *terraform.Stat
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_is_floating_ip" {
+		if rs.Type != "ibm_is_virtual_network_interface_floating_ip" {
 			continue
 		}
 		vniid, fipid, err := vpc.ParseVNIFloatingIpTerraformID(rs.Primary.ID)
