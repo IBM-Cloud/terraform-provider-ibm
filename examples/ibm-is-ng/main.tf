@@ -1388,64 +1388,59 @@ resource "ibm_is_image_obsolete" "example" {
 
 
 // vni
-resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instance" {
-  allow_ip_spoofing = true
-  auto_delete       = true
-  enable_infrastructure_nat = true
-  ips {
-    address = "192.168.3.4"
-    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e/reserved_ips/6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    id = "6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    name = "my-reserved-ip"
-  }
-  name = "my-virtual-network-interface"
-  primary_ip {
-    address = "192.168.3.4"
-    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e/reserved_ips/6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    id = "6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-    name = "my-reserved-ip"
-  }
-  resource_group {
-    id = "fee82deba12e4c0fb69c3b09d1f12345"
-  }
-  security_groups {
-    crn = "crn:v1:bluemix:public:is:us-south:a/123456::security-group:be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-    deleted {
-      more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-    }
-    href = "https://us-south.iaas.cloud.ibm.com/v1/security_groups/be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-    id = "be5df5ca-12a0-494b-907e-aa6ec2bfa271"
-    name = "my-security-group"
-  }
-  subnet {
-    crn = "crn:v1:bluemix:public:is:us-south-1:a/123456::subnet:7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-    href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-    id = "7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-  }
-}
-resource "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
-  virtual_network_interface = <vni_id>
-  floating_ip 				= <fip_id>
+
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "${var.name}-vpc"
 }
 
-data "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
-  virtual_network_interface = <vni_id>
-  floating_ip 				= <fip_id>
+resource "ibm_is_subnet" "testacc_subnet" {
+	name = "${var.name}-subnet"
+	vpc = ibm_is_vpc.testacc_vpc.id
+	zone = "${var.region}-2"
+	total_ipv4_address_count = 16
+
 }
 
-data "ibm_is_virtual_network_interface_floating_ips" "vni_fips" {
-  virtual_network_interface = <vni_id>
+resource "ibm_is_virtual_network_interface" "testacc_vni"{
+	name = "${var.name}"
+    subnet = ibm_is_subnet.testacc_subnet.id
+	enable_infrastructure_nat = true
+	allow_ip_spoofing = true
 }
 
-resource "ibm_is_virtual_network_interface_ip" "is_floating_ip_instance" {
-	virtual_network_interface = "0726-89789ff7-3157-4261-8aa9-75140a4710bb"
-	reserved_ip = "0726-2c1ffe98-6542-4b9e-bb84-6d9efe93e68f"
+resource "ibm_is_floating_ip" "testacc_floatingip" {
+	name = "${var.name}-floating"
+	zone = ibm_is_subnet.testacc_subnet.zone
+}
+resource "ibm_is_virtual_network_interface_floating_ip" "testacc_vni_floatingip" {
+	virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
+	floating_ip = ibm_is_floating_ip.testacc_floatingip.id
+}
+data "ibm_is_virtual_network_interface_floating_ip" "is_vni_floating_ip" {
+    depends_on = [ ibm_is_virtual_network_interface_floating_ip.testacc_vni_floatingip ]
+	virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
+	floating_ip = ibm_is_floating_ip.testacc_floatingip.id
+}
+data "ibm_is_virtual_network_interface_floating_ips" "is_vni_floating_ips" {
+    depends_on = [ ibm_is_virtual_network_interface_floating_ip.testacc_vni_floatingip ]
+	virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
 }
 
-data "ibm_is_virtual_network_interface_ips" "is_vni_ips" {
-	virtual_network_interface = "0726-89789ff7-3157-4261-8aa9-75140a4710bb"
+data "ibm_is_virtual_network_interface_ips" "is_vni_reservedips" {
+    depends_on = [ ibm_is_virtual_network_interface_ip.testacc_vni_reservedip ]
+	virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
 }
-data "ibm_is_virtual_network_interface_ip" "is_vni_ip" {
-	virtual_network_interface = "0726-89789ff7-3157-4261-8aa9-75140a4710bb"
-	reserved_ip = "0726-9880e9da-8ef2-4088-bfd0-a260b927dc44"
+data "ibm_is_virtual_network_interface_ip" "is_vni_reservedip" {
+    depends_on = [ ibm_is_virtual_network_interface_ip.testacc_vni_reservedip ]
+	virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
+	reserved_ip = ibm_is_subnet_reserved_ip.testacc_reservedip.reserved_ip
+}
+
+resource "ibm_is_subnet_reserved_ip" "testacc_reservedip" {
+	subnet = ibm_is_subnet.testacc_subnet.id
+	name = "${var.name}-reserved-ip"
+}
+resource "ibm_is_virtual_network_interface_ip" "testacc_vni_reservedip" {
+	virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
+	reserved_ip = ibm_is_subnet_reserved_ip.testacc_reservedip.reserved_ip
 }
