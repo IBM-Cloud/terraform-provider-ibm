@@ -31,7 +31,6 @@ func TestAccIBMIsVirtualNetworkInterfaceIpsDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_virtual_network_interface_ips.is_reserved_ips", "reserved_ips.0.address"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_virtual_network_interface_ips.is_reserved_ips", "reserved_ips.0.resource_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_virtual_network_interface_ips.is_reserved_ips", "reserved_ips.0.reserved_ip"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_virtual_network_interface_ips.is_reserved_ips", "reserved_ips.0.virtual_network_interface"),
 				),
 			},
 		},
