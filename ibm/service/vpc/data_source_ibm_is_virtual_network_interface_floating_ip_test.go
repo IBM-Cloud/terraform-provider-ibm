@@ -40,7 +40,7 @@ func TestAccIBMIsVirtualNetworkInterfaceFloatingIPDataSourceBasic(t *testing.T) 
 
 func testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPDataSourceConfigBasic(vpcname, subnetname, vniname, floatingipname string) string {
 	return testAccCheckIBMIsVirtualNetworkInterfaceFloatingIPConfigBasic(vpcname, subnetname, vniname, floatingipname) + fmt.Sprintf(`
-		data "ibm_is_virtual_network_interface_floating_ip" "is_floating_ip_instance" {
+		data "ibm_is_virtual_network_interface_floating_ip" "is_floating_ip" {
 			virtual_network_interface = ibm_is_virtual_network_interface_floating_ip.testacc_vni_floatingip.virtual_network_interface
 			floating_ip = ibm_is_virtual_network_interface_floating_ip.testacc_vni_floatingip.floating_ip
 		}

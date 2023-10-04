@@ -35,8 +35,8 @@ After your data source is created, you can read values from the following attrib
 	- `crn` - (String) The CRN for this floating IP.
 	- `href` - (String) The URL for this floating IP.
 	- `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-	Nested scheme for **deleted**:
-	- `more_info` - (String) Link to documentation about deleted resources.
+		Nested scheme for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
 	- `name` - (String) The name for this floating IP. The name is unique across all floating IPs in the region.
 
 	

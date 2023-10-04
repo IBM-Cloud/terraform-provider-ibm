@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_network_interface_ips"
 description: |-
-  Get information about ReservedIPCollection
+  Get information about ReservedIP Collection of a Virtual Network Interface
 subcategory: "Virtual Private Cloud API"
 ---
 

@@ -2,13 +2,13 @@
 layout: "ibm"
 page_title: "IBM : ibm_is_virtual_network_interface_ip"
 description: |-
-  Get information about Virtual NetworkInterface Ip
+  Get information about Virtual Network Interface Reserved Ip
 subcategory: "Virtual Private Cloud API"
 ---
 
 # ibm_is_virtual_network_interface_ip
 
-Provides a read-only data source to retrieve information about a Virtual NetworkInterface Ip. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Provides a read-only data source to retrieve information about a Virtual Network Interface Reserved Ip. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
