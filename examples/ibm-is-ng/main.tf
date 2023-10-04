@@ -1437,6 +1437,11 @@ data "ibm_is_virtual_network_interface_floating_ips" "vni_fips" {
   virtual_network_interface = <vni_id>
 }
 
+resource "ibm_is_virtual_network_interface_ip" "is_floating_ip_instance" {
+	virtual_network_interface = "0726-89789ff7-3157-4261-8aa9-75140a4710bb"
+	reserved_ip = "0726-2c1ffe98-6542-4b9e-bb84-6d9efe93e68f"
+}
+
 data "ibm_is_virtual_network_interface_ips" "is_vni_ips" {
 	virtual_network_interface = "0726-89789ff7-3157-4261-8aa9-75140a4710bb"
 }
