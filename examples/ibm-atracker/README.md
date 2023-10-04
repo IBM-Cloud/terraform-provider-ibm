@@ -2,7 +2,7 @@
 
 This example illustrates how to use the AtrackerV2
 
-These types of resources are supported:
+The following types of resources are supported:
 
 * Activity Tracker Target
 * Activity Tracker Route
@@ -10,7 +10,7 @@ These types of resources are supported:
 
 ## Usage
 
-To run this example you need to execute:
+To run this example, execute the following commands:
 
 ```bash
 $ terraform init
@@ -29,7 +29,10 @@ atracker_target resource:
 resource "atracker_target" "atracker_target_instance" {
   name = var.atracker_target_name
   target_type = var.atracker_target_target_type
+  region = var.atracker_target_region
   cos_endpoint = var.atracker_target_cos_endpoint
+  logdna_endpoint = var.atracker_target_logdna_endpoint
+  eventstreams_endpoint = var.atracker_target_eventstreams_endpoint
 }
 ```
 atracker_route resource:
@@ -37,7 +40,6 @@ atracker_route resource:
 ```hcl
 resource "atracker_route" "atracker_route_instance" {
   name = var.atracker_route_name
-  receive_global_events = var.atracker_route_receive_global_events
   rules = var.atracker_route_rules
 }
 ```
@@ -98,9 +100,15 @@ data "atracker_routes" "atracker_routes_instance" {
 | name | The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
 | target_type | The type of the target. | `string` | true |
 | cos_endpoint | Property values for a Cloud Object Storage Endpoint. | `` | true |
+| eventstreams_endpoint | Property values for the Event Streams Endpoint in responses. | `` | false |
 | name | The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
-| receive_global_events | Indicates whether or not all global events should be forwarded to this region. | `bool` | true |
-| rules | Routing rules that will be evaluated in their order of the array. | `list()` | true |
+| rules | The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped. | `list()` | true |
+| default_targets | The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event. | `list(string)` | false |
+| permitted_target_regions | If present then only these regions may be used to define a target. | `list(string)` | false |
+| metadata_region_primary | To store all your meta data in a single region. | `string` | true |
+| metadata_region_backup | To store all your meta data in a backup region. | `string` | false |
+| private_api_endpoint_only | If you set this true then you cannot access api through public network. | `bool` | true |
+| region | Limit the query to the specified region. | `string` | false |
 | name | The name of the target resource. | `string` | false |
 | name | The name of the route. | `string` | false |
 

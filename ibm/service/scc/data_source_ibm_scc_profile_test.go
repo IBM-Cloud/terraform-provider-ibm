@@ -19,11 +19,11 @@ func TestAccIbmSccProfileDataSourceBasic(t *testing.T) {
 	profileProfileType := "custom"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileDataSourceConfigBasic(profileProfileName, profileProfileDescription, profileProfileType),
+				Config: testAccCheckIbmSccProfileDataSourceConfigBasic(acc.SccInstanceID, profileProfileName, profileProfileDescription, profileProfileType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "profile_id"),
@@ -39,11 +39,11 @@ func TestAccIbmSccProfileDataSourceAllArgs(t *testing.T) {
 	profileProfileType := "custom"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileDataSourceConfig(profileProfileName, profileProfileDescription, profileProfileType),
+				Config: testAccCheckIbmSccProfileDataSourceConfig(acc.SccInstanceID, profileProfileName, profileProfileDescription, profileProfileType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profile.scc_profile_instance", "profile_name"),
@@ -68,9 +68,10 @@ func TestAccIbmSccProfileDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccProfileDataSourceConfigBasic(profileProfileName string, profileProfileDescription string, profileProfileType string) string {
+func testAccCheckIbmSccProfileDataSourceConfigBasic(instanceID string, profileProfileName string, profileProfileDescription string, profileProfileType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
@@ -111,26 +112,27 @@ func testAccCheckIbmSccProfileDataSourceConfigBasic(profileProfileName string, p
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
 			controls {
-				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
-			}
-			default_parameters {
 			}
 		}
 
 		data "ibm_scc_profile" "scc_profile_instance" {
-			profile_id = ibm_scc_profile.scc_profile_instance.id
+			profile_id = resource.ibm_scc_profile.scc_profile_instance.profile_id
+			instance_id = resource.ibm_scc_profile.scc_profile_instance.instance_id
 		}
-	`, profileProfileName, profileProfileDescription, profileProfileType)
+	`, instanceID, profileProfileName, profileProfileDescription, profileProfileType)
 }
 
-func testAccCheckIbmSccProfileDataSourceConfig(profileProfileName string, profileProfileDescription string, profileProfileType string) string {
+func testAccCheckIbmSccProfileDataSourceConfig(instanceID string, profileProfileName string, profileProfileDescription string, profileProfileType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
@@ -171,11 +173,12 @@ func testAccCheckIbmSccProfileDataSourceConfig(profileProfileName string, profil
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
 			controls {
-				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
 			default_parameters {
@@ -183,7 +186,8 @@ func testAccCheckIbmSccProfileDataSourceConfig(profileProfileName string, profil
 		}
 
 		data "ibm_scc_profile" "scc_profile_instance" {
-			profile_id = ibm_scc_profile.scc_profile_instance.id
+			profile_id = resource.ibm_scc_profile.scc_profile_instance.profile_id
+			instance_id = resource.ibm_scc_profile.scc_profile_instance.instance_id
 		}
-	`, profileProfileName, profileProfileDescription, profileProfileType)
+	`, instanceID, profileProfileName, profileProfileDescription, profileProfileType)
 }

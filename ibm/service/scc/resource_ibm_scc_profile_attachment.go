@@ -19,7 +19,7 @@ import (
 )
 
 func ResourceIbmSccProfileAttachment() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		CreateContext: resourceIbmSccProfileAttachmentCreate,
 		ReadContext:   resourceIbmSccProfileAttachmentRead,
 		UpdateContext: resourceIbmSccProfileAttachmentUpdate,
@@ -27,6 +27,11 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"profile_attachment_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The profile attachment ID.",
+			},
 			"profile_id": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -38,11 +43,6 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The account ID that is associated to the attachment.",
-			},
-			"instance_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The instance ID of the account that is associated to the attachment.",
 			},
 			"scope": {
 				Type:        schema.TypeList,
@@ -244,7 +244,7 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				Description: "The ID of the attachment.",
 			},
 		},
-	}
+	})
 }
 
 func ResourceIbmSccProfileAttachmentValidator() *validate.ResourceValidator {
@@ -273,7 +273,8 @@ func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.Re
 
 	bodyModelMap := map[string]interface{}{}
 	createAttachmentOptions := &securityandcompliancecenterapiv3.CreateAttachmentOptions{}
-
+	instance_id := d.Get("instance_id").(string)
+	bodyModelMap["instance_id"] = instance_id
 	if _, ok := d.GetOk("profile_id"); ok {
 		bodyModelMap["profile_id"] = d.Get("profile_id")
 	}
@@ -314,7 +315,7 @@ func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("CreateAttachmentWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createAttachmentOptions.ProfileID, *attachmentPrototype.Attachments[0].ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", instance_id, *createAttachmentOptions.ProfileID, *attachmentPrototype.Attachments[0].ID))
 
 	return resourceIbmSccProfileAttachmentRead(context, d, meta)
 }
@@ -332,8 +333,9 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	getProfileAttachmentOptions.SetProfileID(parts[0])
-	getProfileAttachmentOptions.SetAttachmentID(parts[1])
+	getProfileAttachmentOptions.SetInstanceID(parts[0])
+	getProfileAttachmentOptions.SetProfileID(parts[1])
+	getProfileAttachmentOptions.SetAttachmentID(parts[2])
 
 	attachmentItem, response, err := securityandcompliancecenterapiClient.GetProfileAttachmentWithContext(context, getProfileAttachmentOptions)
 	if err != nil {
@@ -345,6 +347,14 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("GetProfileAttachmentWithContext failed %s\n%s", err, response))
 	}
 
+	if err = d.Set("instance_id", parts[0]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
+	if !core.IsNil(attachmentItem.ID) {
+		if err = d.Set("profile_attachment_id", attachmentItem.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
+		}
+	}
 	if !core.IsNil(attachmentItem.ProfileID) {
 		if err = d.Set("profile_id", attachmentItem.ProfileID); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
@@ -353,11 +363,6 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 	if !core.IsNil(attachmentItem.AccountID) {
 		if err = d.Set("account_id", attachmentItem.AccountID); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
-		}
-	}
-	if !core.IsNil(attachmentItem.InstanceID) {
-		if err = d.Set("instance_id", attachmentItem.InstanceID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.Scope) {
@@ -471,8 +476,9 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	replaceProfileAttachmentOptions.SetProfileID(parts[0])
-	replaceProfileAttachmentOptions.SetAttachmentID(parts[1])
+	replaceProfileAttachmentOptions.SetInstanceID(parts[0])
+	replaceProfileAttachmentOptions.SetProfileID(parts[1])
+	replaceProfileAttachmentOptions.SetAttachmentID(parts[2])
 
 	hasChange := false
 
@@ -564,8 +570,9 @@ func resourceIbmSccProfileAttachmentDelete(context context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	deleteProfileAttachmentOptions.SetProfileID(parts[0])
-	deleteProfileAttachmentOptions.SetAttachmentID(parts[1])
+	deleteProfileAttachmentOptions.SetInstanceID(parts[0])
+	deleteProfileAttachmentOptions.SetProfileID(parts[1])
+	deleteProfileAttachmentOptions.SetAttachmentID(parts[2])
 
 	_, response, err := securityandcompliancecenterapiClient.DeleteProfileAttachmentWithContext(context, deleteProfileAttachmentOptions)
 	if err != nil {
@@ -816,6 +823,7 @@ func resourceIbmSccProfileAttachmentMapToAttachmentPrototype(modelMap map[string
 	}
 	attachments = append(attachments, *attachmentsItemModel)
 	model.Attachments = attachments
+	model.SetInstanceID(modelMap["instance_id"].(string))
 	return model, nil
 }
 
