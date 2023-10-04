@@ -18,95 +18,61 @@ import (
 
 func TestAccIBMIsVirtualNetworkInterfaceIPBasic(t *testing.T) {
 	var conf vpcv1.ReservedIPReference
-	subnetID := fmt.Sprintf("tf_subnet_id_%d", acctest.RandIntRange(10, 100))
-
+	vpcname := fmt.Sprintf("tfp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfp-subnet-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tfp-createname-%d", acctest.RandIntRange(10, 100))
+	reservedipname := fmt.Sprintf("tfp-reservedip-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIsVirtualNetworkInterfaceIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsVirtualNetworkInterfaceIPConfigBasic(subnetID),
+				Config: testAccCheckIBMIsVirtualNetworkInterfaceIPConfigBasic(vpcname, subnetname, vniname, reservedipname),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsVirtualNetworkInterfaceIPExists("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", conf),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "subnet_id", subnetID),
+					testAccCheckIBMIsVirtualNetworkInterfaceIPExists("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", conf),
+					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", "resource_type", "subnet_reserved_ip"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", "address"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", "name"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", "reserved_ip"),
+					resource.TestCheckResourceAttrSet("ibm_is_virtual_network_interface_ip.testacc_vni_reservedip", "virtual_network_interface"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMIsVirtualNetworkInterfaceIPAllArgs(t *testing.T) {
-	var conf vpcv1.ReservedIPReference
-	subnetID := fmt.Sprintf("tf_subnet_id_%d", acctest.RandIntRange(10, 100))
-	address := fmt.Sprintf("tf_address_%d", acctest.RandIntRange(10, 100))
-	autoDelete := "false"
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	addressUpdate := fmt.Sprintf("tf_address_%d", acctest.RandIntRange(10, 100))
-	autoDeleteUpdate := "true"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMIsVirtualNetworkInterfaceIPDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMIsVirtualNetworkInterfaceIPConfig(subnetID, address, autoDelete, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsVirtualNetworkInterfaceIPExists("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", conf),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "subnet_id", subnetID),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "address", address),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "auto_delete", autoDelete),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "name", name),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMIsVirtualNetworkInterfaceIPConfig(subnetID, addressUpdate, autoDeleteUpdate, nameUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "subnet_id", subnetID),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "address", addressUpdate),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "auto_delete", autoDeleteUpdate),
-					resource.TestCheckResourceAttr("ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip", "name", nameUpdate),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_is_virtual_network_interface_ip.is_virtual_network_interface_ip",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func testAccCheckIBMIsVirtualNetworkInterfaceIPConfigBasic(subnetID string) string {
+func testAccCheckIBMIsVirtualNetworkInterfaceIPConfigBasic(vpcname, subnetname, vniname, reservedipname string) string {
 	return fmt.Sprintf(`
-		resource "ibm_is_virtual_network_interface_ip" "is_virtual_network_interface_ip_instance" {
-			subnet_id = "%s"
-		}
-	`, subnetID)
-}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		total_ipv4_address_count = 16
+	
+	}
+	
+	resource "ibm_is_virtual_network_interface" "testacc_vni"{
+		name = "%s"
+		subnet = ibm_is_subnet.testacc_subnet.id
+	}
 
-func testAccCheckIBMIsVirtualNetworkInterfaceIPConfig(subnetID string, address string, autoDelete string, name string) string {
-	return fmt.Sprintf(`
+	resource "ibm_is_subnet_reserved_ip" "testacc_reservedip" {
+		subnet = ibm_is_subnet.testacc_subnet.id
+		name = "%s"
+	}
+	resource "ibm_is_virtual_network_interface_ip" "testacc_vni_reservedip" {
+		virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
+		reserved_ip = ibm_is_subnet_reserved_ip.testacc_reservedip.reserved_ip
+	}
 
-		resource "ibm_is_virtual_network_interface_ip" "is_virtual_network_interface_ip_instance" {
-			subnet_id = "%s"
-			address = "%s"
-			auto_delete = %s
-			name = "%s"
-			target {
-				crn = "crn:v1:bluemix:public:is:us-south:a/123456::endpoint-gateway:r134-d7cc5196-9864-48c4-82d8-3f30da41fcc5"
-				deleted {
-					more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-				}
-				href = "https://us-south.iaas.cloud.ibm.com/v1/endpoint_gateways/r134-d7cc5196-9864-48c4-82d8-3f30da41fcc5"
-				id = "r134-d7cc5196-9864-48c4-82d8-3f30da41fcc5"
-				name = "my-endpoint-gateway"
-				resource_type = "endpoint_gateway"
-			}
-		}
-	`, subnetID, address, autoDelete, name)
+	`, vpcname, subnetname, acc.ISZoneName, vniname, reservedipname)
 }
 
 func testAccCheckIBMIsVirtualNetworkInterfaceIPExists(n string, obj vpcv1.ReservedIPReference) resource.TestCheckFunc {
