@@ -41,8 +41,8 @@ func TestAccIBMIsVirtualNetworkInterfaceIpDataSourceBasic(t *testing.T) {
 func testAccCheckIBMIsVirtualNetworkInterfaceIpDataSourceConfigBasic(vpcname, subnetname, vniname, reservedipname string) string {
 	return testAccCheckIBMIsVirtualNetworkInterfaceIPConfigBasic(vpcname, subnetname, vniname, reservedipname) + fmt.Sprintf(`
 		data "ibm_is_virtual_network_interface_ip" "is_reserved_ip" {
-			virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
-			reserved_ip = ibm_is_subnet_reserved_ip.testacc_reservedip.reserved_ip
+			virtual_network_interface = ibm_is_virtual_network_interface_ip.testacc_vni_reservedip.virtual_network_interface
+			reserved_ip = ibm_is_virtual_network_interface_ip.testacc_vni_reservedip.reserved_ip
 		}
 	`)
 }

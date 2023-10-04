@@ -106,7 +106,7 @@ func resourceIBMIsVirtualNetworkInterfaceIPRead(context context.Context, d *sche
 			return nil
 		}
 		log.Printf("[DEBUG] GetVirtualNetworkInterfaceIPWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceIPWithContext failed %s\n%s", err, response))
+		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceIPWithContext failed for resource %s\n%s", err, response))
 	}
 
 	if !core.IsNil(reservedIP.Address) {

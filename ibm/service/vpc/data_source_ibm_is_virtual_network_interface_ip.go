@@ -72,7 +72,7 @@ func dataSourceIsVirtualNetworkInterfaceIPRead(context context.Context, d *schem
 	reservedIP, response, err := vpcClient.GetVirtualNetworkInterfaceIPWithContext(context, getVirtualNetworkInterfaceIPOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetVirtualNetworkInterfaceIPWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceIPWithContext failed %s\n%s", err, response))
+		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceIPWithContext failed for datasource %s\n%s", err, response))
 	}
 
 	d.SetId(*reservedIP.ID)
