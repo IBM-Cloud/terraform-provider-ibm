@@ -27,10 +27,12 @@ func ResourceIBMIsVirtualNetworkInterfaceFloatingIP() *schema.Resource {
 			"virtual_network_interface": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The virtual network interface identifier",
 			},
 			"floating_ip": &schema.Schema{
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Required:    true,
 				Description: "The floating IP identifier",
 			},
@@ -42,13 +44,13 @@ func ResourceIBMIsVirtualNetworkInterfaceFloatingIP() *schema.Resource {
 
 			"deleted": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"more_info": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Link to documentation about deleted resources",
 						},
 					},
