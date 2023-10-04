@@ -75,6 +75,7 @@ var (
 	ISZoneName2                     string
 	ISZoneName3                     string
 	IsResourceGroupID               string
+	ISResourceCrn                   string
 	ISCIDR                          string
 	ISCIDR2                         string
 	ISPublicSSHKeyFilePath          string
@@ -650,6 +651,11 @@ func init() {
 	if IsResourceGroupID == "" {
 		IsResourceGroupID = "c01d34dff4364763476834c990398zz8"
 		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
+	}
+	ISResourceCrn = os.Getenv("IS_RESOURCE_INSTANCE_CRN")
+	if ISResourceCrn == "" {
+		ISResourceCrn = "crn:v1:bluemix:public:cloud-object-storage:global:a/fugeggfcgjebvrburvgurgvugfr:236764224-f48fu4-f4h84-9db3-4f94fh::"
+		fmt.Println("[INFO] Set the environment variable IS_RESOURCE_CRN for testing with created resource instance")
 	}
 
 	IsImage = os.Getenv("IS_IMAGE")

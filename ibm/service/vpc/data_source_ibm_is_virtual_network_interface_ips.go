@@ -46,6 +46,11 @@ func DataSourceIBMIsVirtualNetworkInterfaceIPs() *schema.Resource {
 							Computed:    true,
 							Description: "The unique identifier for this reserved IP.",
 						},
+						"reserved_ip": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The unique identifier for this reserved IP.",
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -124,6 +129,7 @@ func dataSourceIBMIsReservedIpsReservedIPToMap(model *vpcv1.ReservedIPReference)
 	modelMap["address"] = model.Address
 	modelMap["href"] = model.Href
 	modelMap["id"] = model.ID
+	modelMap["reserved_ip"] = model.ID
 	modelMap["name"] = model.Name
 	modelMap["resource_type"] = model.ResourceType
 	return modelMap, nil
