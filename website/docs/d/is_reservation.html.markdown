@@ -25,21 +25,21 @@ provider "ibm" {
 
 ```terraform
 resource "ibm_is_reservation" "res" {
-	capacity {
-		total = 5
-	  }
-	  committed_use {
-		term = "one_year"
-	}
-	profile {
-		name = "ba2-2x8"
-		resource_type = "instance_profile"
-	}
-	zone = "us-east-3"
-	name = "reservation-name"
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name          = "ba2-2x8"
+    resource_type = "instance_profile"
+  }
+  zone = "us-east-3"
+  name = "reservation-name"
 }
 data "ibm_is_reservation" "ds_res" {
-	name = ibm_is_reservation.res.name
+  name = ibm_is_reservation.res.name
 }
 
 ```
@@ -47,22 +47,22 @@ data "ibm_is_reservation" "ds_res" {
 
 ```terraform
 resource "ibm_is_reservation" "res" {
-			capacity {
-				total = 5
-			  }
-			  committed_use {
-				term = "one_year"
-			  }
-			  profile {
-				name = "ba2-2x8"
-				resource_type = "instance_profile"
-			  }
-			  zone = "us-east-3"
-			  name = "reservation-name"
-		}
-		data "ibm_is_reservation" "ds_res" {
-		    identifier = ibm_is_reservation.res.id
-		}
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name          = "ba2-2x8"
+    resource_type = "instance_profile"
+  }
+  zone = "us-east-3"
+  name = "reservation-name"
+}
+data "ibm_is_reservation" "ds_res" {
+  identifier = ibm_is_reservation.res.id
+}
 
 ```
 

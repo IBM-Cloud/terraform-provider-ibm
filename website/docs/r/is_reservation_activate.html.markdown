@@ -33,7 +33,7 @@ resource "ibm_is_reservation" "example" {
     term = "one_year"
   }
   profile {
-    name = "ba2-2x8"
+    name          = "ba2-2x8"
     resource_type = "instance_profile"
   }
   zone = "us-east-3"
