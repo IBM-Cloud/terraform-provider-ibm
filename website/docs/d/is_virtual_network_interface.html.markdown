@@ -57,12 +57,26 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+- `allow_ip_spoofing` - (Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
 - `auto_delete` - (Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
 - `created_at` - (String) The date and time that the virtual network interface was created.
 - `crn` - (String) The CRN for this virtual network interface.
+- `enable_infrastructure_nat` - (Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the virtual network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
 - `href` - (String) The URL for this virtual network interface.
 - `id` - The unique identifier of the VirtualNetworkInterface.
+- `ips` - (List) The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.
+	Nested schema for **ips**:
+	- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this reserved IP.
+	- `id` - (String) The unique identifier for this reserved IP.
+	- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+	- `resource_type` - (String) The resource type.
+
 - `lifecycle_state` - (String) The lifecycle state of the virtual network interface.
+- `mac_address` - (String) The MAC address of the virtual network interface. May be absent if `lifecycle_state` is `pending`.
 - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
 - `primary_ip` - (List) The reserved IP for this virtual network interface.May be absent when `lifecycle_state` is `pending`.
 	Nested scheme for **primary_ip**:
