@@ -64,12 +64,3 @@ func testAccCheckIbmSmArbitrarySecretDataSourceConfigBasic() string {
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }
-
-/*
-
-data "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
-			instance_id   = "%s"
-			region = "%s"
-			secret_id = ibm_sm_arbitrary_secret.sm_arbitrary_secret_instance.secret_id
-		}
-*/
