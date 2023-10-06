@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -79,7 +80,7 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 						"auto_delete": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Computed:    true,
+							Default:     true,
 							Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
 						},
 						"href": &schema.Schema{
@@ -576,29 +577,56 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 		log.Printf("[INFO] vnip2 ipsoldmap old map %s", output(oldips))
 		log.Printf("[INFO] vnip2 ipsnewmap new map %s", output(newIPs))
 
-		ov := oldips.(*schema.Set)
-		nv := newIPs.(*schema.Set)
-		remove := (ov.Difference(nv).List())
-		add := (nv.Difference(ov).List())
-		log.Printf("[INFO] vnip2 add map %s", output(add))
-		log.Printf("[INFO] vnip2 remove map %s", output(remove))
+		os := oldips.(*schema.Set)
+		ns := newIPs.(*schema.Set)
 
-		if add != nil && len(add) > 0 {
-			for _, ipItem := range add {
-				value := ipItem.(map[string]interface{})
-				if value["reserved_ip"] != nil && value["reserved_ip"].(string) != "" {
-					reservedipid := value["reserved_ip"].(string)
-					addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
-					addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(id)
-					addVirtualNetworkInterfaceIPOptions.SetID(reservedipid)
-					_, response, err := sess.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
-					if err != nil {
-						log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response)
-						return diag.FromErr(fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response))
+		for _, nA := range ns.List() {
+			newPack := nA.(map[string]interface{})
+			for _, oA := range os.List() {
+				oldPack := oA.(map[string]interface{})
+				if strings.Compare(newPack["address"].(string), oldPack["address"].(string)) == 0 {
+					reserved_ip := oldPack["reserved_ip"].(string)
+					subnetId := d.Get("subnet").(string)
+					newName := newPack["name"].(string)
+					newAutoDelete := newPack["auto_delete"].(bool)
+
+					oldName := oldPack["name"].(string)
+					oldAutoDelete := oldPack["auto_delete"].(bool)
+
+					if newName != oldName || newAutoDelete != oldAutoDelete {
+
+						updatereservedipoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+							SubnetID: &subnetId,
+							ID:       &reserved_ip,
+						}
+
+						reservedIpPatchModel := &vpcv1.ReservedIPPatch{}
+						if strings.Compare(newName, oldName) != 0 {
+							reservedIpPatchModel.Name = &newName
+						}
+
+						if newAutoDelete != oldAutoDelete {
+							reservedIpPatchModel.AutoDelete = &newAutoDelete
+						}
+
+						reservedIpPatch, err := reservedIpPatchModel.AsPatch()
+						if err != nil {
+							return diag.FromErr(fmt.Errorf("[ERROR] Error calling asPatch for ReservedIPPatch: %s", err))
+						}
+						updatereservedipoptions.ReservedIPPatch = reservedIpPatch
+						log.Printf("[INFO] vnip2 updatereservedipoptions %s", output(updatereservedipoptions))
+						_, response, err := sess.UpdateSubnetReservedIP(updatereservedipoptions)
+						if err != nil {
+							return diag.FromErr(fmt.Errorf("[ERROR] Error while updating reserved ip(%s) of vni(%s) \n%s: %q", reserved_ip, d.Id(), err, response))
+						}
+						ns.Remove(nA)
+						os.Remove(oA)
 					}
 				}
 			}
 		}
+		remove := os.Difference(ns).List()
+		log.Printf("[INFO] vnip2 remove map %s", output(remove))
 		if remove != nil && len(remove) > 0 {
 			subnetId := d.Get("subnet").(string)
 			for _, ipItem := range remove {
@@ -627,6 +655,26 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 				}
 			}
 		}
+		add := ns.Difference(os).List()
+		log.Printf("[INFO] vnip2 add map %s", output(add))
+
+		if add != nil && len(add) > 0 {
+			for _, ipItem := range add {
+				value := ipItem.(map[string]interface{})
+				if value["reserved_ip"] != nil && value["reserved_ip"].(string) != "" {
+					reservedipid := value["reserved_ip"].(string)
+					addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
+					addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(id)
+					addVirtualNetworkInterfaceIPOptions.SetID(reservedipid)
+					_, response, err := sess.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
+					if err != nil {
+						log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response)
+						return diag.FromErr(fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response))
+					}
+				}
+			}
+		}
+
 	}
 	if !d.IsNewResource() && d.HasChange("primary_ip") {
 		subnetId := d.Get("subnet").(string)
@@ -981,6 +1029,8 @@ func hashIpsList(v interface{}) int {
 	var buf bytes.Buffer
 	a := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", a["address"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", a["reserved_ip"].(string)))
 	return conns.String(buf.String())
 }
 func output(vnimap interface{}) string {
