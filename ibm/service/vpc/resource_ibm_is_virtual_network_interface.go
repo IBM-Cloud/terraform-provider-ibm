@@ -4,15 +4,20 @@
 package vpc
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -44,9 +49,10 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 			},
 			"ips": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
+				Set:         hashIpsList,
 				Description: "The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -84,6 +90,7 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 						"reserved_ip": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The unique identifier for this reserved IP.",
 						},
 						"name": &schema.Schema{
@@ -170,7 +177,6 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "The security groups for this virtual network interface.",
@@ -347,7 +353,7 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 	}
 	if _, ok := d.GetOk("ips"); ok {
 		var ips []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf
-		for _, v := range d.Get("ips").([]interface{}) {
+		for _, v := range d.Get("ips").(*schema.Set).List() {
 			value := v.(map[string]interface{})
 			ipsItem, err := resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfaceIPsReservedIPPrototype(value)
 			if err != nil {
@@ -427,35 +433,37 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 
 	if !core.IsNil(virtualNetworkInterface.AllowIPSpoofing) {
 		if err = d.Set("allow_ip_spoofing", virtualNetworkInterface.AllowIPSpoofing); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting allow_ip_spoofing: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting allow_ip_spoofing: %s", err))
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.AutoDelete) {
 		if err = d.Set("auto_delete", virtualNetworkInterface.AutoDelete); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting auto_delete: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting auto_delete: %s", err))
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.EnableInfrastructureNat) {
 		if err = d.Set("enable_infrastructure_nat", virtualNetworkInterface.EnableInfrastructureNat); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting enable_infrastructure_nat: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting enable_infrastructure_nat: %s", err))
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.Ips) {
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range virtualNetworkInterface.Ips {
-			ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem)
-			if err != nil {
-				return diag.FromErr(err)
+			if *virtualNetworkInterface.PrimaryIP.ID != *ipsItem.ID {
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				ips = append(ips, ipsItemMap)
 			}
-			ips = append(ips, ipsItemMap)
 		}
 		if err = d.Set("ips", ips); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting ips: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting ips: %s", err))
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.Name) {
 		if err = d.Set("name", virtualNetworkInterface.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.PrimaryIP) {
@@ -464,7 +472,7 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 			return diag.FromErr(err)
 		}
 		if err = d.Set("primary_ip", []map[string]interface{}{primaryIPMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting primary_ip: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting primary_ip: %s", err))
 		}
 	}
 	if !core.IsNil(virtualNetworkInterface.ResourceGroup) {
@@ -485,24 +493,24 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		d.Set("subnet", virtualNetworkInterface.Subnet.ID)
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(virtualNetworkInterface.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", virtualNetworkInterface.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
 	}
 	if err = d.Set("href", virtualNetworkInterface.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", virtualNetworkInterface.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 	if !core.IsNil(virtualNetworkInterface.MacAddress) {
 		if err = d.Set("mac_address", virtualNetworkInterface.MacAddress); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting mac_address: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting mac_address: %s", err))
 		}
 	}
 	if err = d.Set("resource_type", virtualNetworkInterface.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if !core.IsNil(virtualNetworkInterface.Target) {
 		targetMap, err := resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetToMap(virtualNetworkInterface.Target)
@@ -510,7 +518,7 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 			return diag.FromErr(err)
 		}
 		if err = d.Set("target", []map[string]interface{}{targetMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting target: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting target: %s", err))
 		}
 	} else {
 		d.Set("target", nil)
@@ -520,7 +528,7 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		return diag.FromErr(err)
 	}
 	if err = d.Set("vpc", []map[string]interface{}{vpcMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting vpc: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpc: %s", err))
 	}
 
 	if virtualNetworkInterface.Zone != nil {
@@ -535,10 +543,10 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	id := d.Id()
 	updateVirtualNetworkInterfaceOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{}
 
-	updateVirtualNetworkInterfaceOptions.SetID(d.Id())
+	updateVirtualNetworkInterfaceOptions.SetID(id)
 
 	hasChange := false
 
@@ -562,6 +570,130 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 		newName := d.Get("name").(string)
 		patchVals.Name = &newName
 		hasChange = true
+	}
+	if d.HasChange("ips") {
+		oldips, newIPs := d.GetChange("ips")
+		log.Printf("[INFO] vnip2 ipsoldmap old map %s", output(oldips))
+		log.Printf("[INFO] vnip2 ipsnewmap new map %s", output(newIPs))
+
+		ov := oldips.(*schema.Set)
+		nv := newIPs.(*schema.Set)
+		remove := (ov.Difference(nv).List())
+		add := (nv.Difference(ov).List())
+		log.Printf("[INFO] vnip2 add map %s", output(add))
+		log.Printf("[INFO] vnip2 remove map %s", output(remove))
+
+		if add != nil && len(add) > 0 {
+			for _, ipItem := range add {
+				value := ipItem.(map[string]interface{})
+				if value["reserved_ip"] != nil && value["reserved_ip"].(string) != "" {
+					reservedipid := value["reserved_ip"].(string)
+					addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
+					addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(id)
+					addVirtualNetworkInterfaceIPOptions.SetID(reservedipid)
+					_, response, err := sess.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
+					if err != nil {
+						log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response)
+						return diag.FromErr(fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response))
+					}
+				}
+			}
+		}
+		if remove != nil && len(remove) > 0 {
+			subnetId := d.Get("subnet").(string)
+			for _, ipItem := range remove {
+				value := ipItem.(map[string]interface{})
+				if value["reserved_ip"] != nil && value["reserved_ip"].(string) != "" {
+					reservedipid := value["reserved_ip"].(string)
+					removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
+					removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(id)
+					removeVirtualNetworkInterfaceIPOptions.SetID(reservedipid)
+					response, err := sess.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
+					if err != nil {
+						log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response)
+						return diag.FromErr(fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response))
+					}
+				}
+				if value["address"] != nil && value["address"].(string) != "" {
+					reservedipid := value["reserved_ip"].(string)
+					removeSubnetReservedIPOptions := &vpcv1.DeleteSubnetReservedIPOptions{}
+					removeSubnetReservedIPOptions.SetSubnetID(subnetId)
+					removeSubnetReservedIPOptions.SetID(reservedipid)
+					response, err := sess.DeleteSubnetReservedIPWithContext(context, removeSubnetReservedIPOptions)
+					if err != nil {
+						log.Printf("[DEBUG] DeleteSubnetReservedIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response)
+						return diag.FromErr(fmt.Errorf("DeleteSubnetReservedIPWithContext failed in VirtualNetworkInterface patch %s\n%s", err, response))
+					}
+				}
+			}
+		}
+	}
+	if !d.IsNewResource() && d.HasChange("primary_ip") {
+		subnetId := d.Get("subnet").(string)
+		ripId := d.Get("primary_ip.0.reserved_ip").(string)
+		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+			SubnetID: &subnetId,
+			ID:       &ripId,
+		}
+		reservedIpPath := &vpcv1.ReservedIPPatch{}
+		if d.HasChange("primary_ip.0.name") {
+			name := d.Get("primary_ip.0.name").(string)
+			reservedIpPath.Name = &name
+		}
+		if d.HasChange("primary_ip.0.auto_delete") {
+			auto := d.Get("primary_ip.0.auto_delete").(bool)
+			reservedIpPath.AutoDelete = &auto
+		}
+		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err))
+		}
+		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
+		_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response))
+		}
+	}
+	if d.HasChange("security_groups") && !d.IsNewResource() {
+		ovs, nvs := d.GetChange("security_groups")
+		vniId := d.Id()
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+		remove := flex.ExpandStringList(ov.Difference(nv).List())
+		add := flex.ExpandStringList(nv.Difference(ov).List())
+		if len(add) > 0 {
+			for i := range add {
+				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &add[i],
+					ID:              &vniId,
+				}
+				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], d.Id(), err, response))
+				}
+				_, err = isWaitForVirtualNetworkInterfaceAvailable(sess, vniId, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
+		}
+		if len(remove) > 0 {
+			for i := range remove {
+				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+					SecurityGroupID: &remove[i],
+					ID:              &vniId,
+				}
+				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response))
+				}
+				_, err = isWaitForVirtualNetworkInterfaceAvailable(sess, vniId, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
 	}
 
 	if hasChange {
@@ -747,6 +879,37 @@ func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetShareMount
 	return modelMap, nil
 }
 
+func isWaitForVirtualNetworkInterfaceAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for VirtualNetworkInterface (%s) to be available.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"", "pending"},
+		Target:     []string{"done", "failed", "stable"},
+		Refresh:    isVirtualNetworkInterfaceRefreshFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isVirtualNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		vnigetoptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+			ID: &id,
+		}
+		vni, response, err := client.GetVirtualNetworkInterface(vnigetoptions)
+		if err != nil {
+			return nil, "failed", fmt.Errorf("[ERROR] Error getting vni: %s\n%s", err, response)
+		}
+		if *vni.LifecycleState == "failed" || *vni.LifecycleState == "suspended" {
+			return vni, *vni.LifecycleState, fmt.Errorf("[ERROR] Error VirtualNetworkInterface in : %s state", *vni.LifecycleState)
+		}
+		return vni, *vni.LifecycleState, nil
+	}
+}
+
 func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContextToMap(model *vpcv1.VirtualNetworkInterfaceTargetInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContext) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	// if model.Deleted != nil {
@@ -812,4 +975,19 @@ func resourceIBMIsVirtualNetworkInterfaceVPCReferenceDeletedToMap(model *vpcv1.V
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
+}
+
+func hashIpsList(v interface{}) int {
+	var buf bytes.Buffer
+	a := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-", a["address"].(string)))
+	return conns.String(buf.String())
+}
+func output(vnimap interface{}) string {
+	output, err := json.MarshalIndent(vnimap, "", "    ")
+	if err == nil {
+		return fmt.Sprintf("block %+v\n", string(output))
+	} else {
+		return fmt.Sprintf("block : %#v", vnimap)
+	}
 }
