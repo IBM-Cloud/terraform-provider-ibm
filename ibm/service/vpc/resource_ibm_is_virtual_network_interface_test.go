@@ -149,10 +149,10 @@ func testAccCheckIBMIsVirtualNetworkInterfaceConfig(vpcname, subnetname, vniname
 		enable_infrastructure_nat = %t
 		allow_ip_spoofing = %t
 		ips {
-		    address = "10.240.64.12"
+		    address = "10.240.0.7"
 		}
 		primary_ip {
-		    address = "10.240.64.11"
+		    address = "10.240.0.9"
 		}
 	}
 	`, vpcname, subnetname, acc.ISZoneName, vniname, enablenat, allowipspoofing)
@@ -172,29 +172,29 @@ func testAccCheckIBMIsVirtualNetworkInterfaceConfigUpdate(vpcname, subnetname, v
 	}
 	resource "ibm_is_security_group" "testacc_security_group1" {
 		name = "%s"
-		vpc  = "r134-6d509c8a-470e-4cdd-a82c-103f2353f5fc"
+		vpc  = ibm_is_vpc.testacc_vpc.id
 	}
 	resource "ibm_is_security_group" "testacc_security_group2" {
 		name = "%s"
-		vpc  ="r134-6d509c8a-470e-4cdd-a82c-103f2353f5fc"
+		vpc  =ibm_is_vpc.testacc_vpc.id
 	}
 	resource "ibm_is_subnet_reserved_ip" "testacc_reservedips" {
 		subnet = ibm_is_subnet.testacc_subnet.id
 		name = "%s"
 	}
-	resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instance" {
+	resource "ibm_is_virtual_network_interface" "testacc_vni" {
 		name = "%s"
 		subnet = ibm_is_subnet.testacc_subnet.id
 		enable_infrastructure_nat = %t
 		allow_ip_spoofing = %t
 		ips {
-		    address = "10.240.64.12"
+		    address = "10.240.0.7"
 		}
 		ips {
 		    reserved_ip = ibm_is_subnet_reserved_ip.testacc_reservedips.reserved_ip
 		}
 		primary_ip {
-		    address = "10.240.64.11"
+		    address = "10.240.0.9"
 		}
 		security_groups = [ibm_is_security_group.testacc_security_group2.id, ibm_is_security_group.testacc_security_group1.id]
 	}
