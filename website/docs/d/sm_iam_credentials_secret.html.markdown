@@ -9,7 +9,7 @@ subcategory: "Secrets Manager"
 # ibm_sm_iam_credentials_secret
 
 Provides a read-only data source for an IAM credentials secret. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
-The data source can be defined by providing either the secret id or by secret name with secret group name.
+The data source can be defined by providing the secret ID or the secret and secret group names.
 
 ## Example Usage
 
