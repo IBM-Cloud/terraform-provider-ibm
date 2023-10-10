@@ -498,6 +498,8 @@ func Provider() *schema.Provider {
 			"ibm_is_volume_profile":                  vpc.DataSourceIBMISVolumeProfile(),
 			"ibm_is_volume_profiles":                 vpc.DataSourceIBMISVolumeProfiles(),
 			"ibm_is_vpc":                             vpc.DataSourceIBMISVPC(),
+			"ibm_is_vpc_dns_resolution_binding":      vpc.DataSourceIBMIsVPCDnsResolutionBinding(),
+			"ibm_is_vpc_dns_resolution_bindings":     vpc.DataSourceIBMIsVPCDnsResolutionBindings(),
 			"ibm_is_vpcs":                            vpc.DataSourceIBMISVPCs(),
 			"ibm_is_vpn_gateway":                     vpc.DataSourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateways":                    vpc.DataSourceIBMISVPNGateways(),
@@ -797,6 +799,7 @@ func Provider() *schema.Provider {
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
+			"ibm_cd_toolchains":                        cdtoolchain.DataSourceIBMCdToolchains(),
 			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.DataSourceIBMCdToolchainToolKeyprotect(),
 			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.DataSourceIBMCdToolchainToolSecretsmanager(),
 			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.DataSourceIBMCdToolchainToolBitbucketgit(),
@@ -1062,6 +1065,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpn_gateway_connection":                 vpc.ResourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpc":                                    vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                     vpc.ResourceIBMISVpcAddressPrefix(),
+			"ibm_is_vpc_dns_resolution_binding":             vpc.ResourceIBMIsVPCDnsResolutionBinding(),
 			"ibm_is_vpc_routing_table":                      vpc.ResourceIBMISVPCRoutingTable(),
 			"ibm_is_vpc_routing_table_route":                vpc.ResourceIBMISVPCRoutingTableRoute(),
 			"ibm_is_vpn_server":                             vpc.ResourceIBMIsVPNServer(),

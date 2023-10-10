@@ -17,11 +17,11 @@ func TestAccIbmSccRuleDataSourceBasic(t *testing.T) {
 	ruleDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleDataSourceConfigBasic(ruleDescription),
+				Config: testAccCheckIbmSccRuleDataSourceConfigBasic(acc.SccInstanceID, ruleDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "rule_id"),
@@ -48,11 +48,11 @@ func TestAccIbmSccRuleDataSourceAllArgs(t *testing.T) {
 	ruleVersion := "0.0.1"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccRuleDataSourceConfig(ruleDescription, ruleVersion),
+				Config: testAccCheckIbmSccRuleDataSourceConfig(acc.SccInstanceID, ruleDescription, ruleVersion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_rule.scc_rule_instance", "rule_id"),
@@ -75,9 +75,10 @@ func TestAccIbmSccRuleDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccRuleDataSourceConfigBasic(ruleDescription string) string {
+func testAccCheckIbmSccRuleDataSourceConfigBasic(instanceID string, ruleDescription string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_rule" "scc_rule_instance" {
+			instance_id = "%s"
 			description = "%s"
 			target {
 				service_name = "cloud-object-storage"
@@ -97,14 +98,16 @@ func testAccCheckIbmSccRuleDataSourceConfigBasic(ruleDescription string) string 
 		}
 
 		data "ibm_scc_rule" "scc_rule_instance" {
-			rule_id = ibm_scc_rule.scc_rule_instance.id
+			instance_id = resource.ibm_scc_rule.scc_rule_instance.instance_id
+			rule_id = resource.ibm_scc_rule.scc_rule_instance.rule_id
 		}
-	`, ruleDescription)
+	`, instanceID, ruleDescription)
 }
 
-func testAccCheckIbmSccRuleDataSourceConfig(ruleDescription string, ruleVersion string) string {
+func testAccCheckIbmSccRuleDataSourceConfig(instanceID string, ruleDescription string, ruleVersion string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_rule" "scc_rule_instance" {
+			instance_id = "%s"
 			description = "%s"
 			target {
 				service_name = "cloud-object-storage"
@@ -124,7 +127,8 @@ func testAccCheckIbmSccRuleDataSourceConfig(ruleDescription string, ruleVersion 
 		}
 
 		data "ibm_scc_rule" "scc_rule_instance" {
-			rule_id = ibm_scc_rule.scc_rule_instance.id
+			instance_id = resource.ibm_scc_rule.scc_rule_instance.instance_id
+			rule_id = resource.ibm_scc_rule.scc_rule_instance.rule_id
 		}
-	`, ruleDescription, ruleVersion)
+	`, instanceID, ruleDescription, ruleVersion)
 }

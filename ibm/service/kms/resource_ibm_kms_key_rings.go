@@ -153,7 +153,9 @@ func resourceIBMKmsKeyRingDelete(d *schema.ResourceData, meta interface{}) error
 	err = kpAPI.DeleteKeyRing(context.Background(), id[0], kp.WithForce(force_delete))
 	if err != nil {
 		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
+		// Key ring deletion used to occur by silencing the 409 failed deletion and allowing instance deletion to clean it up
+		// Will be deprecated in the future in favor of force_delete flag
+		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
 			return nil
 		} else {
 			return fmt.Errorf(" failed to Destroy key ring with error: %s", err)
