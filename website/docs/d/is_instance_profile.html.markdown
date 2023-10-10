@@ -89,6 +89,7 @@ In addition to the argument reference list, you can access the following attribu
       - `default` - (String) The disk interface used for attaching the disk.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
       - `type` - (String) The type for this profile field.
       - `values` - (String) The supported disk interfaces used for attaching the disk.
+- `status` - (String) The status of the instance profile. Values coule be, `previous`: This instance profile is an older revision, but remains provisionable and usable. `current`: This profile is the latest revision.
 - `family` - (String) The family of the virtual server instance profile.
 - `gpu_count` - (List) Nested `gpu_count` blocks have the following structure:
   Nested scheme for `gpu_count`:

@@ -522,6 +522,11 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the instance profile.",
+			},
 			isInstanceVCPUArchitecture: &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -656,6 +661,9 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 		}
 
 	}
+	if profile.Status != nil {
+		d.Set("status", profile.Status)
+	}
 	if profile.Bandwidth != nil {
 		err = d.Set("bandwidth", dataSourceInstanceProfileFlattenBandwidth(*profile.Bandwidth.(*vpcv1.InstanceProfileBandwidth)))
 		if err != nil {
@@ -715,7 +723,7 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 		}
 	}
 	if profile.NumaCount != nil {
-		err = d.Set("numa_count", dataSourceInstanceProfileFlattenNumaCount(*profile.NumaCount.(*vpcv1.InstanceProfileNuma)))
+		err = d.Set("numa_count", dataSourceInstanceProfileFlattenNumaCount(*profile.NumaCount.(*vpcv1.InstanceProfileNumaCount)))
 		if err != nil {
 			return err
 		}
@@ -1207,7 +1215,7 @@ func dataSourceInstanceProfileTotalVolumeBandwidthToMap(bandwidthItem vpcv1.Inst
 	return bandwidthMap
 }
 
-func dataSourceInstanceProfileFlattenNumaCount(result vpcv1.InstanceProfileNuma) (finalList []map[string]interface{}) {
+func dataSourceInstanceProfileFlattenNumaCount(result vpcv1.InstanceProfileNumaCount) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceInstanceProfileNumaCountToMap(result)
 	finalList = append(finalList, finalMap)
@@ -1215,7 +1223,7 @@ func dataSourceInstanceProfileFlattenNumaCount(result vpcv1.InstanceProfileNuma)
 	return finalList
 }
 
-func dataSourceInstanceProfileNumaCountToMap(numaItem vpcv1.InstanceProfileNuma) (numaMap map[string]interface{}) {
+func dataSourceInstanceProfileNumaCountToMap(numaItem vpcv1.InstanceProfileNumaCount) (numaMap map[string]interface{}) {
 	numaMap = map[string]interface{}{}
 
 	if numaItem.Type != nil {

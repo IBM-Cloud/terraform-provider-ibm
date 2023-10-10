@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2022-09-13
+// API Version: 2023-10-10
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,13 +46,13 @@ type VpcV1 struct {
 	// `2`.
 	generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-09-26`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
+	// and `2023-10-10`.
 	Version *string
 }
 
 // DefaultServiceURL is the default URL to make service requests to.
-const DefaultServiceURL = "https://au-syd.iaas.cloud.ibm.com/v1"
+const DefaultServiceURL = "https://us-south.iaas.cloud.ibm.com/v1"
 
 // DefaultServiceName is the default key used to find external configuration information.
 const DefaultServiceName = "vpc"
@@ -63,8 +63,8 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-09-26`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
+	// and `2023-10-10`.
 	Version *string
 }
 
@@ -122,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-05-26")
+		options.Version = core.StringPtr("2023-10-10")
 	}
 
 	service = &VpcV1{
@@ -297,6 +297,9 @@ func (vpc *VpcV1) CreateVPCWithContext(ctx context.Context, createVPCOptions *Cr
 	if createVPCOptions.ClassicAccess != nil {
 		body["classic_access"] = createVPCOptions.ClassicAccess
 	}
+	if createVPCOptions.Dns != nil {
+		body["dns"] = createVPCOptions.Dns
+	}
 	if createVPCOptions.Name != nil {
 		body["name"] = createVPCOptions.Name
 	}
@@ -330,10 +333,15 @@ func (vpc *VpcV1) CreateVPCWithContext(ctx context.Context, createVPCOptions *Cr
 }
 
 // DeleteVPC : Delete a VPC
-// This request deletes a VPC. This operation cannot be reversed. For this request to succeed, the VPC must not contain
-// any instances, subnets, public gateways, or endpoint gateways. All security groups and network ACLs associated with
-// the VPC are automatically deleted. All flow log collectors with `auto_delete` set to `true` targeting the VPC or any
-// resource in the VPC are automatically deleted.
+// This request deletes a VPC. This operation cannot be reversed.
+//
+// For this request to succeed:
+// - Instances, subnets, public gateways, and endpoint gateways must not reside in this VPC
+// - The VPC must not be providing DNS resolution for any other VPCs
+// - If `dns.enable_hub` is `true`, `dns.resolution_binding_count` must be zero
+//
+// All security groups and network ACLs associated with the VPC are automatically deleted. All flow log collectors with
+// `auto_delete` set to `true` targeting the VPC or any resource in the VPC are automatically deleted.
 func (vpc *VpcV1) DeleteVPC(deleteVPCOptions *DeleteVPCOptions) (response *core.DetailedResponse, err error) {
 	return vpc.DeleteVPCWithContext(context.Background(), deleteVPCOptions)
 }
@@ -368,6 +376,9 @@ func (vpc *VpcV1) DeleteVPCWithContext(ctx context.Context, deleteVPCOptions *De
 	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPC")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
+	}
+	if deleteVPCOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*deleteVPCOptions.IfMatch))
 	}
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
@@ -486,6 +497,9 @@ func (vpc *VpcV1) UpdateVPCWithContext(ctx context.Context, updateVPCOptions *Up
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
+	if updateVPCOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*updateVPCOptions.IfMatch))
+	}
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
@@ -1040,6 +1054,379 @@ func (vpc *VpcV1) UpdateVPCAddressPrefixWithContext(ctx context.Context, updateV
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalAddressPrefix)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListVPCDnsResolutionBindings : List all DNS resolution bindings for a VPC
+// This request lists all DNS resolution bindings for a VPC. A DNS resolution binding represents an association with
+// another VPC for centralizing DNS name resolution.
+//
+// If the VPC specified by the identifier in the URL is a DNS hub VPC (has `dns.enable_hub` set to `true`) then there is
+// one binding for each VPC bound to the hub VPC. The endpoint gateways in the bound VPCs can allow (using
+// `allow_dns_resolution_binding`) the hub VPC to centralize resolution of their DNS names.
+//
+// If the VPC specified by the identifier in the URL is not a DNS hub VPC, then there is at most one binding (to a hub
+// VPC). The endpoint gateways in the VPC specified by the identifier in the URL can allow (using
+// `allow_dns_resolution_binding`) its hub VPC to centralize resolution of their DNS names.
+//
+// To make use of centralized DNS resolution, a VPC bound to a DNS hub VPC must delegate DNS resolution to its hub VPC
+// by setting `dns.resolver.type` to `delegate`.
+//
+// The bindings will be sorted by their `created_at` property values, with newest bindings first. Bindings with
+// identical `created_at` property values will in turn be sorted by ascending `name` property values.
+func (vpc *VpcV1) ListVPCDnsResolutionBindings(listVPCDnsResolutionBindingsOptions *ListVPCDnsResolutionBindingsOptions) (result *VpcdnsResolutionBindingCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListVPCDnsResolutionBindingsWithContext(context.Background(), listVPCDnsResolutionBindingsOptions)
+}
+
+// ListVPCDnsResolutionBindingsWithContext is an alternate form of the ListVPCDnsResolutionBindings method which supports a Context parameter
+func (vpc *VpcV1) ListVPCDnsResolutionBindingsWithContext(ctx context.Context, listVPCDnsResolutionBindingsOptions *ListVPCDnsResolutionBindingsOptions) (result *VpcdnsResolutionBindingCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVPCDnsResolutionBindingsOptions, "listVPCDnsResolutionBindingsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listVPCDnsResolutionBindingsOptions, "listVPCDnsResolutionBindingsOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"vpc_id": *listVPCDnsResolutionBindingsOptions.VPCID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/dns_resolution_bindings`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listVPCDnsResolutionBindingsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVPCDnsResolutionBindings")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listVPCDnsResolutionBindingsOptions.Sort != nil {
+		builder.AddQuery("sort", fmt.Sprint(*listVPCDnsResolutionBindingsOptions.Sort))
+	}
+	if listVPCDnsResolutionBindingsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listVPCDnsResolutionBindingsOptions.Start))
+	}
+	if listVPCDnsResolutionBindingsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listVPCDnsResolutionBindingsOptions.Limit))
+	}
+	if listVPCDnsResolutionBindingsOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listVPCDnsResolutionBindingsOptions.Name))
+	}
+	if listVPCDnsResolutionBindingsOptions.VPCCRN != nil {
+		builder.AddQuery("vpc.crn", fmt.Sprint(*listVPCDnsResolutionBindingsOptions.VPCCRN))
+	}
+	if listVPCDnsResolutionBindingsOptions.VPCName != nil {
+		builder.AddQuery("vpc.name", fmt.Sprint(*listVPCDnsResolutionBindingsOptions.VPCName))
+	}
+	if listVPCDnsResolutionBindingsOptions.AccountID != nil {
+		builder.AddQuery("account.id", fmt.Sprint(*listVPCDnsResolutionBindingsOptions.AccountID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVpcdnsResolutionBindingCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateVPCDnsResolutionBinding : Create a DNS resolution binding
+// This request creates a new DNS resolution binding from a DNS resolution binding prototype object. The prototype
+// object is structured in the same way as a retrieved DNS resolution binding, and contains the information necessary to
+// create the new DNS resolution binding.
+//
+// For this request to succeed, `dns.enable_hub` must be `false` for the VPC specified by the identifier in the URL, and
+// the VPC must not already have a DNS resolution binding.
+//
+// # TODO: finalize topic name with docs team See [Configuring endpoint gateway DNS
+// sharing](/docs/vpc?topic=vpc-hub-spoke-model) for more information.
+func (vpc *VpcV1) CreateVPCDnsResolutionBinding(createVPCDnsResolutionBindingOptions *CreateVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
+	return vpc.CreateVPCDnsResolutionBindingWithContext(context.Background(), createVPCDnsResolutionBindingOptions)
+}
+
+// CreateVPCDnsResolutionBindingWithContext is an alternate form of the CreateVPCDnsResolutionBinding method which supports a Context parameter
+func (vpc *VpcV1) CreateVPCDnsResolutionBindingWithContext(ctx context.Context, createVPCDnsResolutionBindingOptions *CreateVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createVPCDnsResolutionBindingOptions, "createVPCDnsResolutionBindingOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createVPCDnsResolutionBindingOptions, "createVPCDnsResolutionBindingOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"vpc_id": *createVPCDnsResolutionBindingOptions.VPCID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/dns_resolution_bindings`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createVPCDnsResolutionBindingOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVPCDnsResolutionBinding")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	body := make(map[string]interface{})
+	if createVPCDnsResolutionBindingOptions.VPC != nil {
+		body["vpc"] = createVPCDnsResolutionBindingOptions.VPC
+	}
+	if createVPCDnsResolutionBindingOptions.Name != nil {
+		body["name"] = createVPCDnsResolutionBindingOptions.Name
+	}
+	_, err = builder.SetBodyContentJSON(body)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVpcdnsResolutionBinding)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteVPCDnsResolutionBinding : Delete a DNS resolution binding
+// This request deletes a DNS resolution binding. This operation cannot be reversed.
+//
+// A DNS resolution binding for a VPC with `dns.enable_hub` set to `true` cannot be deleted.
+func (vpc *VpcV1) DeleteVPCDnsResolutionBinding(deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (response *core.DetailedResponse, err error) {
+	return vpc.DeleteVPCDnsResolutionBindingWithContext(context.Background(), deleteVPCDnsResolutionBindingOptions)
+}
+
+// DeleteVPCDnsResolutionBindingWithContext is an alternate form of the DeleteVPCDnsResolutionBinding method which supports a Context parameter
+func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteVPCDnsResolutionBindingOptions, "deleteVPCDnsResolutionBindingOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteVPCDnsResolutionBindingOptions, "deleteVPCDnsResolutionBindingOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"vpc_id": *deleteVPCDnsResolutionBindingOptions.VPCID,
+		"id":     *deleteVPCDnsResolutionBindingOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/dns_resolution_bindings/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteVPCDnsResolutionBindingOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVPCDnsResolutionBinding")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+
+	return
+}
+
+// GetVPCDnsResolutionBinding : Retrieve a DNS resolution binding
+// This request retrieves a single DNS resolution binding specified by the identifier in the URL.
+func (vpc *VpcV1) GetVPCDnsResolutionBinding(getVPCDnsResolutionBindingOptions *GetVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
+	return vpc.GetVPCDnsResolutionBindingWithContext(context.Background(), getVPCDnsResolutionBindingOptions)
+}
+
+// GetVPCDnsResolutionBindingWithContext is an alternate form of the GetVPCDnsResolutionBinding method which supports a Context parameter
+func (vpc *VpcV1) GetVPCDnsResolutionBindingWithContext(ctx context.Context, getVPCDnsResolutionBindingOptions *GetVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVPCDnsResolutionBindingOptions, "getVPCDnsResolutionBindingOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getVPCDnsResolutionBindingOptions, "getVPCDnsResolutionBindingOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"vpc_id": *getVPCDnsResolutionBindingOptions.VPCID,
+		"id":     *getVPCDnsResolutionBindingOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/dns_resolution_bindings/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getVPCDnsResolutionBindingOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVPCDnsResolutionBinding")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVpcdnsResolutionBinding)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateVPCDnsResolutionBinding : Update a DNS resolution binding
+// This request updates a DNS resolution binding with the information in a provided DNS resolution binding patch. The
+// DNS resolution binding patch object is structured in the same way as a retrieved DNS resolution binding and contains
+// only the information to be updated.
+func (vpc *VpcV1) UpdateVPCDnsResolutionBinding(updateVPCDnsResolutionBindingOptions *UpdateVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
+	return vpc.UpdateVPCDnsResolutionBindingWithContext(context.Background(), updateVPCDnsResolutionBindingOptions)
+}
+
+// UpdateVPCDnsResolutionBindingWithContext is an alternate form of the UpdateVPCDnsResolutionBinding method which supports a Context parameter
+func (vpc *VpcV1) UpdateVPCDnsResolutionBindingWithContext(ctx context.Context, updateVPCDnsResolutionBindingOptions *UpdateVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVPCDnsResolutionBindingOptions, "updateVPCDnsResolutionBindingOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateVPCDnsResolutionBindingOptions, "updateVPCDnsResolutionBindingOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"vpc_id": *updateVPCDnsResolutionBindingOptions.VPCID,
+		"id":     *updateVPCDnsResolutionBindingOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/dns_resolution_bindings/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateVPCDnsResolutionBindingOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVPCDnsResolutionBinding")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateVPCDnsResolutionBindingOptions.VpcdnsResolutionBindingPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVpcdnsResolutionBinding)
 		if err != nil {
 			return
 		}
@@ -6304,8 +6691,8 @@ func (vpc *VpcV1) AddInstanceNetworkInterfaceFloatingIPWithContext(ctx context.C
 	return
 }
 
-// ListInstanceNetworkInterfaceIps : List all reserved IPs bound to an instance network interface
-// This request lists all reserved IPs bound to an instance network interface.
+// ListInstanceNetworkInterfaceIps : List the primary reserved IP for an instance network interface
+// This request lists the primary reserved IP for an instance network interface.
 func (vpc *VpcV1) ListInstanceNetworkInterfaceIps(listInstanceNetworkInterfaceIpsOptions *ListInstanceNetworkInterfaceIpsOptions) (result *ReservedIPCollectionInstanceNetworkInterfaceContext, response *core.DetailedResponse, err error) {
 	return vpc.ListInstanceNetworkInterfaceIpsWithContext(context.Background(), listInstanceNetworkInterfaceIpsOptions)
 }
@@ -6374,9 +6761,8 @@ func (vpc *VpcV1) ListInstanceNetworkInterfaceIpsWithContext(ctx context.Context
 	return
 }
 
-// GetInstanceNetworkInterfaceIP : Retrieve bound reserved IP
-// This request retrieves the specified reserved IP address if it is bound to the network interface and instance
-// specified in the URL.
+// GetInstanceNetworkInterfaceIP : Retrieve the primary reserved IP
+// This request retrieves the primary reserved IP for an instance network interface.
 func (vpc *VpcV1) GetInstanceNetworkInterfaceIP(getInstanceNetworkInterfaceIPOptions *GetInstanceNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
 	return vpc.GetInstanceNetworkInterfaceIPWithContext(context.Background(), getInstanceNetworkInterfaceIPOptions)
 }
@@ -9564,6 +9950,9 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	if createBackupPolicyOptions.ResourceGroup != nil {
 		body["resource_group"] = createBackupPolicyOptions.ResourceGroup
 	}
+	if createBackupPolicyOptions.Scope != nil {
+		body["scope"] = createBackupPolicyOptions.Scope
+	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
@@ -10825,15 +11214,6 @@ func (vpc *VpcV1) ListBareMetalServersWithContext(ctx context.Context, listBareM
 	if listBareMetalServersOptions.VPCName != nil {
 		builder.AddQuery("vpc.name", fmt.Sprint(*listBareMetalServersOptions.VPCName))
 	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetID != nil {
-		builder.AddQuery("network_interfaces.subnet.id", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetID))
-	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetCRN != nil {
-		builder.AddQuery("network_interfaces.subnet.crn", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetCRN))
-	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetName != nil {
-		builder.AddQuery("network_interfaces.subnet.name", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetName))
-	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -11818,8 +12198,8 @@ func (vpc *VpcV1) AddBareMetalServerNetworkInterfaceFloatingIPWithContext(ctx co
 	return
 }
 
-// ListBareMetalServerNetworkInterfaceIps : List all reserved IPs bound to a bare metal server network interface
-// This request lists all reserved IPs bound to a bare metal server network interface.
+// ListBareMetalServerNetworkInterfaceIps : List the primary reserved IP for a bare metal server network interface
+// This request lists the primary reserved IP for a bare metal server network interface.
 func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIps(listBareMetalServerNetworkInterfaceIpsOptions *ListBareMetalServerNetworkInterfaceIpsOptions) (result *ReservedIPCollectionBareMetalServerNetworkInterfaceContext, response *core.DetailedResponse, err error) {
 	return vpc.ListBareMetalServerNetworkInterfaceIpsWithContext(context.Background(), listBareMetalServerNetworkInterfaceIpsOptions)
 }
@@ -11882,9 +12262,8 @@ func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIpsWithContext(ctx context.
 	return
 }
 
-// GetBareMetalServerNetworkInterfaceIP : Retrieve bound reserved IP
-// This request retrieves the specified reserved IP address if it is bound to the network interface for the bare metal
-// server specified in the URL.
+// GetBareMetalServerNetworkInterfaceIP : Retrieve the primary reserved IP
+// This request retrieves the primary reserved IP for a bare metal server network interface.
 func (vpc *VpcV1) GetBareMetalServerNetworkInterfaceIP(getBareMetalServerNetworkInterfaceIPOptions *GetBareMetalServerNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
 	return vpc.GetBareMetalServerNetworkInterfaceIPWithContext(context.Background(), getBareMetalServerNetworkInterfaceIPOptions)
 }
@@ -22477,6 +22856,18 @@ func (vpc *VpcV1) ListEndpointGatewaysWithContext(ctx context.Context, listEndpo
 	if listEndpointGatewaysOptions.ResourceGroupID != nil {
 		builder.AddQuery("resource_group.id", fmt.Sprint(*listEndpointGatewaysOptions.ResourceGroupID))
 	}
+	if listEndpointGatewaysOptions.VPCID != nil {
+		builder.AddQuery("vpc.id", fmt.Sprint(*listEndpointGatewaysOptions.VPCID))
+	}
+	if listEndpointGatewaysOptions.VPCCRN != nil {
+		builder.AddQuery("vpc.crn", fmt.Sprint(*listEndpointGatewaysOptions.VPCCRN))
+	}
+	if listEndpointGatewaysOptions.VPCName != nil {
+		builder.AddQuery("vpc.name", fmt.Sprint(*listEndpointGatewaysOptions.VPCName))
+	}
+	if listEndpointGatewaysOptions.AllowDnsResolutionBinding != nil {
+		builder.AddQuery("allow_dns_resolution_binding", fmt.Sprint(*listEndpointGatewaysOptions.AllowDnsResolutionBinding))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -22545,6 +22936,9 @@ func (vpc *VpcV1) CreateEndpointGatewayWithContext(ctx context.Context, createEn
 	}
 	if createEndpointGatewayOptions.VPC != nil {
 		body["vpc"] = createEndpointGatewayOptions.VPC
+	}
+	if createEndpointGatewayOptions.AllowDnsResolutionBinding != nil {
+		body["allow_dns_resolution_binding"] = createEndpointGatewayOptions.AllowDnsResolutionBinding
 	}
 	if createEndpointGatewayOptions.Ips != nil {
 		body["ips"] = createEndpointGatewayOptions.Ips
@@ -23863,6 +24257,22 @@ type BackupPolicy struct {
 	// The CRN for this backup policy.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this backup policy.
 	Href *string `json:"href" validate:"required"`
 
@@ -23900,7 +24310,25 @@ type BackupPolicy struct {
 
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The scope for this backup policy.
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
 }
+
+// Constants associated with the BackupPolicy.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyHealthStateDegradedConst     = "degraded"
+	BackupPolicyHealthStateFaultedConst      = "faulted"
+	BackupPolicyHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyHealthStateOkConst           = "ok"
+)
 
 // Constants associated with the BackupPolicy.LifecycleState property.
 // The lifecycle state of the backup policy.
@@ -23934,6 +24362,14 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
 	}
@@ -23974,6 +24410,10 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
 	if err != nil {
 		return
 	}
@@ -24066,6 +24506,43 @@ type BackupPolicyCollectionNext struct {
 func UnmarshalBackupPolicyCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyHealthReason : BackupPolicyHealthReason struct
+type BackupPolicyHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the BackupPolicyHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	BackupPolicyHealthReasonCodeMissingServiceAuthorizationPoliciesConst = "missing_service_authorization_policies"
+)
+
+// UnmarshalBackupPolicyHealthReason unmarshals an instance of BackupPolicyHealthReason from the specified map of raw messages.
+func UnmarshalBackupPolicyHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -25088,6 +25565,83 @@ func UnmarshalBackupPolicyPlanRemoteRegionPolicyPrototype(m map[string]json.RawM
 		return
 	}
 	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScope : The scope for this backup policy.
+// Models which "extend" this model:
+// - BackupPolicyScopeEnterpriseReference
+// - BackupPolicyScopeAccountReference
+type BackupPolicyScope struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+
+	// The unique identifier for this enterprise.
+	ID *string `json:"id,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type,omitempty"`
+}
+
+// Constants associated with the BackupPolicyScope.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeResourceTypeEnterpriseConst = "enterprise"
+)
+
+func (*BackupPolicyScope) isaBackupPolicyScope() bool {
+	return true
+}
+
+type BackupPolicyScopeIntf interface {
+	isaBackupPolicyScope() bool
+}
+
+// UnmarshalBackupPolicyScope unmarshals an instance of BackupPolicyScope from the specified map of raw messages.
+func UnmarshalBackupPolicyScope(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScope)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototype : The scope to use for this backup policy.
+//
+// If unspecified, the policy will be scoped to the account.
+// Models which "extend" this model:
+// - BackupPolicyScopePrototypeEnterpriseIdentity
+type BackupPolicyScopePrototype struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*BackupPolicyScopePrototype) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+type BackupPolicyScopePrototypeIntf interface {
+	isaBackupPolicyScopePrototype() bool
+}
+
+// UnmarshalBackupPolicyScopePrototype unmarshals an instance of BackupPolicyScopePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototype)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
@@ -28150,8 +28704,13 @@ type CreateBackupPolicyOptions struct {
 	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The scope to use for this backup policy.
+	//
+	// If unspecified, the policy will be scoped to the account.
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -28197,6 +28756,12 @@ func (_options *CreateBackupPolicyOptions) SetPlans(plans []BackupPolicyPlanProt
 // SetResourceGroup : Allow user to set ResourceGroup
 func (_options *CreateBackupPolicyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateBackupPolicyOptions {
 	_options.ResourceGroup = resourceGroup
+	return _options
+}
+
+// SetScope : Allow user to set Scope
+func (_options *CreateBackupPolicyOptions) SetScope(scope BackupPolicyScopePrototypeIntf) *CreateBackupPolicyOptions {
+	_options.Scope = scope
 	return _options
 }
 
@@ -28435,7 +29000,7 @@ type CreateBareMetalServerOptions struct {
 	NetworkInterfaces []BareMetalServerNetworkInterfacePrototypeIntf `json:"network_interfaces,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	TrustedPlatformModule *BareMetalServerTrustedPlatformModulePrototype `json:"trusted_platform_module,omitempty"`
@@ -28542,7 +29107,7 @@ type CreateDedicatedHostGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -28639,6 +29204,13 @@ type CreateEndpointGatewayOptions struct {
 	// The VPC this endpoint gateway will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
+	// Indicates whether to allow DNS resolution for this endpoint gateway when the VPC this endpoint gateway resides in
+	// has a DNS resolution binding to a VPC with `dns.enable_hub` set to `true`.
+	//
+	// Must be `true` if the VPC this endpoint gateway resides in has `dns.enable_hub` set to
+	// `true`.
+	AllowDnsResolutionBinding *bool `json:"allow_dns_resolution_binding,omitempty"`
+
 	// The reserved IPs to bind to this endpoint gateway. At most one reserved IP per zone is allowed.
 	Ips []EndpointGatewayReservedIPIntf `json:"ips,omitempty"`
 
@@ -28647,7 +29219,7 @@ type CreateEndpointGatewayOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this endpoint gateway. If unspecified, the VPC's default security group is used.
@@ -28674,6 +29246,12 @@ func (_options *CreateEndpointGatewayOptions) SetTarget(target EndpointGatewayTa
 // SetVPC : Allow user to set VPC
 func (_options *CreateEndpointGatewayOptions) SetVPC(vpc VPCIdentityIntf) *CreateEndpointGatewayOptions {
 	_options.VPC = vpc
+	return _options
+}
+
+// SetAllowDnsResolutionBinding : Allow user to set AllowDnsResolutionBinding
+func (_options *CreateEndpointGatewayOptions) SetAllowDnsResolutionBinding(allowDnsResolutionBinding bool) *CreateEndpointGatewayOptions {
+	_options.AllowDnsResolutionBinding = core.BoolPtr(allowDnsResolutionBinding)
 	return _options
 }
 
@@ -28756,7 +29334,7 @@ type CreateFlowLogCollectorOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -28829,7 +29407,7 @@ type CreateIkePolicyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29293,7 +29871,7 @@ type CreateInstanceGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29582,7 +30160,7 @@ type CreateIpsecPolicyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29700,7 +30278,7 @@ type CreateKeyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The crypto-system used by this key.
@@ -30213,7 +30791,7 @@ type CreateLoadBalancerOptions struct {
 	Profile LoadBalancerProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Indicates whether route mode is enabled for this load balancer.
@@ -30611,7 +31189,7 @@ type CreatePlacementGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -30677,7 +31255,7 @@ type CreatePublicGatewayOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -30738,7 +31316,7 @@ type CreateSecurityGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The prototype objects for rules to be created for this security group. If unspecified, no rules will be created,
@@ -31351,6 +31929,59 @@ func (options *CreateVPCAddressPrefixOptions) SetHeaders(param map[string]string
 	return options
 }
 
+// CreateVPCDnsResolutionBindingOptions : The CreateVPCDnsResolutionBinding options.
+type CreateVPCDnsResolutionBindingOptions struct {
+	// The VPC identifier.
+	VPCID *string `json:"vpc_id" validate:"required,ne="`
+
+	// Another VPC to bind this VPC to for DNS resolution. The VPC must have
+	// `dns.enable_hub` set to `true`, and may be in a different account (subject to
+	// IAM policies).
+	//
+	// Additionally, the VPC specified in the URL (this VPC) must have `dns.enable_hub`
+	// set to `false` and a `dns.resolution_binding_count` of zero.
+	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
+
+	// The name for this DNS resolution binding. The name must not be used by another DNS resolution binding for the VPC.
+	// If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateVPCDnsResolutionBindingOptions : Instantiate CreateVPCDnsResolutionBindingOptions
+func (*VpcV1) NewCreateVPCDnsResolutionBindingOptions(vpcID string, vpc VPCIdentityIntf) *CreateVPCDnsResolutionBindingOptions {
+	return &CreateVPCDnsResolutionBindingOptions{
+		VPCID: core.StringPtr(vpcID),
+		VPC:   vpc,
+	}
+}
+
+// SetVPCID : Allow user to set VPCID
+func (_options *CreateVPCDnsResolutionBindingOptions) SetVPCID(vpcID string) *CreateVPCDnsResolutionBindingOptions {
+	_options.VPCID = core.StringPtr(vpcID)
+	return _options
+}
+
+// SetVPC : Allow user to set VPC
+func (_options *CreateVPCDnsResolutionBindingOptions) SetVPC(vpc VPCIdentityIntf) *CreateVPCDnsResolutionBindingOptions {
+	_options.VPC = vpc
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *CreateVPCDnsResolutionBindingOptions) SetName(name string) *CreateVPCDnsResolutionBindingOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateVPCDnsResolutionBindingOptions) SetHeaders(param map[string]string) *CreateVPCDnsResolutionBindingOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateVPCOptions : The CreateVPC options.
 type CreateVPCOptions struct {
 	// Indicates whether a [default address prefix](https://cloud.ibm.com/docs/vpc?topic=vpc-configuring-address-prefixes)
@@ -31366,12 +31997,18 @@ type CreateVPCOptions struct {
 	// connected in this way. This value is set at creation and subsequently immutable.
 	ClassicAccess *bool `json:"classic_access,omitempty"`
 
+	// The DNS configuration for this VPC.
+	//
+	// If unspecified, the system will assign DNS servers capable of resolving hosts and endpoint
+	// gateways within this VPC, and hosts on the internet.
+	Dns *VpcdnsPrototype `json:"dns,omitempty"`
+
 	// The name for this VPC. The name must not be used by another VPC in the region. If unspecified, the name will be a
 	// hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -31404,6 +32041,12 @@ func (_options *CreateVPCOptions) SetAddressPrefixManagement(addressPrefixManage
 // SetClassicAccess : Allow user to set ClassicAccess
 func (_options *CreateVPCOptions) SetClassicAccess(classicAccess bool) *CreateVPCOptions {
 	_options.ClassicAccess = core.BoolPtr(classicAccess)
+	return _options
+}
+
+// SetDns : Allow user to set Dns
+func (_options *CreateVPCOptions) SetDns(dns *VpcdnsPrototype) *CreateVPCOptions {
+	_options.Dns = dns
 	return _options
 }
 
@@ -31906,7 +32549,7 @@ type CreateVPNServerOptions struct {
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this VPN server. If unspecified, the VPC's default security group is used.
@@ -32130,6 +32773,71 @@ type DnsInstanceReference struct {
 func UnmarshalDnsInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DnsInstanceReference)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DnsServer : A DNS server.
+type DnsServer struct {
+	// The IP address.
+	//
+	// This property may add support for IPv6 addresses in the future. When processing a value in this property, verify
+	// that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the
+	// error, or bypass the resource on which the unexpected IP address format was encountered.
+	Address *string `json:"address" validate:"required"`
+
+	// If present, DHCP configuration for this zone will have this DNS server listed first.
+	ZoneAffinity *ZoneReference `json:"zone_affinity,omitempty"`
+}
+
+// UnmarshalDnsServer unmarshals an instance of DnsServer from the specified map of raw messages.
+func UnmarshalDnsServer(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsServer)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone_affinity", &obj.ZoneAffinity, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DnsServerPrototype : DnsServerPrototype struct
+type DnsServerPrototype struct {
+	// The IP address.
+	//
+	// This property may add support for IPv6 addresses in the future. When processing a value in this property, verify
+	// that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the
+	// error, or bypass the resource on which the unexpected IP address format was encountered.
+	Address *string `json:"address" validate:"required"`
+
+	// DHCP configuration for the specified zone will have this DNS server listed first.
+	ZoneAffinity ZoneIdentityIntf `json:"zone_affinity,omitempty"`
+}
+
+// NewDnsServerPrototype : Instantiate DnsServerPrototype (Generic Model Constructor)
+func (*VpcV1) NewDnsServerPrototype(address string) (_model *DnsServerPrototype, err error) {
+	_model = &DnsServerPrototype{
+		Address: core.StringPtr(address),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalDnsServerPrototype unmarshals an instance of DnsServerPrototype from the specified map of raw messages.
+func UnmarshalDnsServerPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsServerPrototype)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone_affinity", &obj.ZoneAffinity, UnmarshalZoneIdentity)
 	if err != nil {
 		return
 	}
@@ -33892,7 +34600,7 @@ type DedicatedHostPrototype struct {
 	Profile DedicatedHostProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The dedicated host group for this dedicated host.
@@ -35995,10 +36703,51 @@ func (options *DeleteVPCAddressPrefixOptions) SetHeaders(param map[string]string
 	return options
 }
 
+// DeleteVPCDnsResolutionBindingOptions : The DeleteVPCDnsResolutionBinding options.
+type DeleteVPCDnsResolutionBindingOptions struct {
+	// The VPC identifier.
+	VPCID *string `json:"vpc_id" validate:"required,ne="`
+
+	// The DNS resolution binding identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteVPCDnsResolutionBindingOptions : Instantiate DeleteVPCDnsResolutionBindingOptions
+func (*VpcV1) NewDeleteVPCDnsResolutionBindingOptions(vpcID string, id string) *DeleteVPCDnsResolutionBindingOptions {
+	return &DeleteVPCDnsResolutionBindingOptions{
+		VPCID: core.StringPtr(vpcID),
+		ID:    core.StringPtr(id),
+	}
+}
+
+// SetVPCID : Allow user to set VPCID
+func (_options *DeleteVPCDnsResolutionBindingOptions) SetVPCID(vpcID string) *DeleteVPCDnsResolutionBindingOptions {
+	_options.VPCID = core.StringPtr(vpcID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *DeleteVPCDnsResolutionBindingOptions) SetID(id string) *DeleteVPCDnsResolutionBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteVPCDnsResolutionBindingOptions) SetHeaders(param map[string]string) *DeleteVPCDnsResolutionBindingOptions {
+	options.Headers = param
+	return options
+}
+
 // DeleteVPCOptions : The DeleteVPC options.
 type DeleteVPCOptions struct {
 	// The VPC identifier.
 	ID *string `json:"id" validate:"required,ne="`
+
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	IfMatch *string `json:"If-Match,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -36014,6 +36763,12 @@ func (*VpcV1) NewDeleteVPCOptions(id string) *DeleteVPCOptions {
 // SetID : Allow user to set ID
 func (_options *DeleteVPCOptions) SetID(id string) *DeleteVPCOptions {
 	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *DeleteVPCOptions) SetIfMatch(ifMatch string) *DeleteVPCOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
 	return _options
 }
 
@@ -36451,6 +37206,10 @@ func UnmarshalEncryptionKeyReference(m map[string]json.RawMessage, result interf
 
 // EndpointGateway : EndpointGateway struct
 type EndpointGateway struct {
+	// Indicates whether to allow DNS resolution for this endpoint gateway when the VPC this endpoint gateway resides in
+	// has a DNS resolution binding to a VPC with `dns.enable_hub` set to `true`.
+	AllowDnsResolutionBinding *bool `json:"allow_dns_resolution_binding" validate:"required"`
+
 	// The date and time that the endpoint gateway was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
@@ -36540,6 +37299,10 @@ const (
 // UnmarshalEndpointGateway unmarshals an instance of EndpointGateway from the specified map of raw messages.
 func UnmarshalEndpointGateway(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(EndpointGateway)
+	err = core.UnmarshalPrimitive(m, "allow_dns_resolution_binding", &obj.AllowDnsResolutionBinding)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
 	if err != nil {
 		return
@@ -36698,6 +37461,13 @@ func UnmarshalEndpointGatewayCollectionNext(m map[string]json.RawMessage, result
 
 // EndpointGatewayPatch : EndpointGatewayPatch struct
 type EndpointGatewayPatch struct {
+	// Indicates whether to allow DNS resolution for this endpoint gateway when the VPC this endpoint gateway resides in
+	// has a DNS resolution binding to a VPC with `dns.enable_hub` set to `true`.
+	//
+	// Must be `true` if the VPC this endpoint gateway resides in has `dns.enable_hub` set to
+	// `true`.
+	AllowDnsResolutionBinding *bool `json:"allow_dns_resolution_binding,omitempty"`
+
 	// The name for this endpoint gateway. The name must not be used by another endpoint gateway in the VPC.
 	Name *string `json:"name,omitempty"`
 }
@@ -36705,6 +37475,10 @@ type EndpointGatewayPatch struct {
 // UnmarshalEndpointGatewayPatch unmarshals an instance of EndpointGatewayPatch from the specified map of raw messages.
 func UnmarshalEndpointGatewayPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(EndpointGatewayPatch)
+	err = core.UnmarshalPrimitive(m, "allow_dns_resolution_binding", &obj.AllowDnsResolutionBinding)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -36734,6 +37508,92 @@ type EndpointGatewayReferenceDeleted struct {
 func UnmarshalEndpointGatewayReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(EndpointGatewayReferenceDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// EndpointGatewayReferenceRemote : EndpointGatewayReferenceRemote struct
+type EndpointGatewayReferenceRemote struct {
+	// The CRN for this endpoint gateway.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this endpoint gateway.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this endpoint gateway.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this endpoint gateway. The name is unique across all endpoint gateways in the VPC.
+	Name *string `json:"name" validate:"required"`
+
+	// If present, this property indicates that the resource associated with this reference
+	// is remote and therefore may not be directly retrievable.
+	Remote *EndpointGatewayRemote `json:"remote,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the EndpointGatewayReferenceRemote.ResourceType property.
+// The resource type.
+const (
+	EndpointGatewayReferenceRemoteResourceTypeEndpointGatewayConst = "endpoint_gateway"
+)
+
+// UnmarshalEndpointGatewayReferenceRemote unmarshals an instance of EndpointGatewayReferenceRemote from the specified map of raw messages.
+func UnmarshalEndpointGatewayReferenceRemote(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(EndpointGatewayReferenceRemote)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalEndpointGatewayRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// EndpointGatewayRemote : If present, this property indicates that the resource associated with this reference is remote and therefore may not
+// be directly retrievable.
+type EndpointGatewayRemote struct {
+	// If present, this property indicates that the referenced resource is remote to this
+	// account, and identifies the owning account.
+	Account *AccountReference `json:"account,omitempty"`
+
+	// If present, this property indicates that the referenced resource is remote to this
+	// region, and identifies the native region.
+	Region *RegionReference `json:"region,omitempty"`
+}
+
+// UnmarshalEndpointGatewayRemote unmarshals an instance of EndpointGatewayRemote from the specified map of raw messages.
+func UnmarshalEndpointGatewayRemote(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(EndpointGatewayRemote)
+	err = core.UnmarshalModel(m, "account", &obj.Account, UnmarshalAccountReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionReference)
 	if err != nil {
 		return
 	}
@@ -37211,7 +38071,7 @@ type FloatingIPPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The zone this floating IP will reside in.
@@ -40500,6 +41360,44 @@ func (options *GetVPCDefaultSecurityGroupOptions) SetHeaders(param map[string]st
 	return options
 }
 
+// GetVPCDnsResolutionBindingOptions : The GetVPCDnsResolutionBinding options.
+type GetVPCDnsResolutionBindingOptions struct {
+	// The VPC identifier.
+	VPCID *string `json:"vpc_id" validate:"required,ne="`
+
+	// The DNS resolution binding identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetVPCDnsResolutionBindingOptions : Instantiate GetVPCDnsResolutionBindingOptions
+func (*VpcV1) NewGetVPCDnsResolutionBindingOptions(vpcID string, id string) *GetVPCDnsResolutionBindingOptions {
+	return &GetVPCDnsResolutionBindingOptions{
+		VPCID: core.StringPtr(vpcID),
+		ID:    core.StringPtr(id),
+	}
+}
+
+// SetVPCID : Allow user to set VPCID
+func (_options *GetVPCDnsResolutionBindingOptions) SetVPCID(vpcID string) *GetVPCDnsResolutionBindingOptions {
+	_options.VPCID = core.StringPtr(vpcID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetVPCDnsResolutionBindingOptions) SetID(id string) *GetVPCDnsResolutionBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetVPCDnsResolutionBindingOptions) SetHeaders(param map[string]string) *GetVPCDnsResolutionBindingOptions {
+	options.Headers = param
+	return options
+}
+
 // GetVPCOptions : The GetVPC options.
 type GetVPCOptions struct {
 	// The VPC identifier.
@@ -42540,7 +43438,7 @@ type ImagePrototype struct {
 	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
@@ -47561,7 +48459,7 @@ type InstancePrototype struct {
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -48221,7 +49119,7 @@ type InstanceTemplatePrototype struct {
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -49263,18 +50161,6 @@ type ListBareMetalServersOptions struct {
 	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.id`
-	// property matching the specified identifier.
-	NetworkInterfacesSubnetID *string `json:"network_interfaces.subnet.id,omitempty"`
-
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.crn`
-	// property matching the specified CRN.
-	NetworkInterfacesSubnetCRN *string `json:"network_interfaces.subnet.crn,omitempty"`
-
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.name`
-	// property matching the exact specified name.
-	NetworkInterfacesSubnetName *string `json:"network_interfaces.subnet.name,omitempty"`
-
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -49323,24 +50209,6 @@ func (_options *ListBareMetalServersOptions) SetVPCCRN(vpcCRN string) *ListBareM
 // SetVPCName : Allow user to set VPCName
 func (_options *ListBareMetalServersOptions) SetVPCName(vpcName string) *ListBareMetalServersOptions {
 	_options.VPCName = core.StringPtr(vpcName)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetID : Allow user to set NetworkInterfacesSubnetID
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetID(networkInterfacesSubnetID string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetID = core.StringPtr(networkInterfacesSubnetID)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetCRN : Allow user to set NetworkInterfacesSubnetCRN
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetCRN(networkInterfacesSubnetCRN string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetCRN = core.StringPtr(networkInterfacesSubnetCRN)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetName : Allow user to set NetworkInterfacesSubnetName
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetName(networkInterfacesSubnetName string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetName = core.StringPtr(networkInterfacesSubnetName)
 	return _options
 }
 
@@ -49627,6 +50495,19 @@ type ListEndpointGatewaysOptions struct {
 	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
+	// Filters the collection to resources with a `vpc.id` property matching the specified identifier.
+	VPCID *string `json:"vpc.id,omitempty"`
+
+	// Filters the collection to resources with a `vpc.crn` property matching the specified CRN.
+	VPCCRN *string `json:"vpc.crn,omitempty"`
+
+	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
+	VPCName *string `json:"vpc.name,omitempty"`
+
+	// Filters the collection to endpoint gateways with an `allow_dns_resolution_binding` property matching the specified
+	// value.
+	AllowDnsResolutionBinding *bool `json:"allow_dns_resolution_binding,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -49657,6 +50538,30 @@ func (_options *ListEndpointGatewaysOptions) SetLimit(limit int64) *ListEndpoint
 // SetResourceGroupID : Allow user to set ResourceGroupID
 func (_options *ListEndpointGatewaysOptions) SetResourceGroupID(resourceGroupID string) *ListEndpointGatewaysOptions {
 	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
+}
+
+// SetVPCID : Allow user to set VPCID
+func (_options *ListEndpointGatewaysOptions) SetVPCID(vpcID string) *ListEndpointGatewaysOptions {
+	_options.VPCID = core.StringPtr(vpcID)
+	return _options
+}
+
+// SetVPCCRN : Allow user to set VPCCRN
+func (_options *ListEndpointGatewaysOptions) SetVPCCRN(vpcCRN string) *ListEndpointGatewaysOptions {
+	_options.VPCCRN = core.StringPtr(vpcCRN)
+	return _options
+}
+
+// SetVPCName : Allow user to set VPCName
+func (_options *ListEndpointGatewaysOptions) SetVPCName(vpcName string) *ListEndpointGatewaysOptions {
+	_options.VPCName = core.StringPtr(vpcName)
+	return _options
+}
+
+// SetAllowDnsResolutionBinding : Allow user to set AllowDnsResolutionBinding
+func (_options *ListEndpointGatewaysOptions) SetAllowDnsResolutionBinding(allowDnsResolutionBinding bool) *ListEndpointGatewaysOptions {
+	_options.AllowDnsResolutionBinding = core.BoolPtr(allowDnsResolutionBinding)
 	return _options
 }
 
@@ -52215,6 +53120,109 @@ func (_options *ListVPCAddressPrefixesOptions) SetLimit(limit int64) *ListVPCAdd
 
 // SetHeaders : Allow user to set Headers
 func (options *ListVPCAddressPrefixesOptions) SetHeaders(param map[string]string) *ListVPCAddressPrefixesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListVPCDnsResolutionBindingsOptions : The ListVPCDnsResolutionBindings options.
+type ListVPCDnsResolutionBindingsOptions struct {
+	// The VPC identifier.
+	VPCID *string `json:"vpc_id" validate:"required,ne="`
+
+	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+	// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+	Sort *string `json:"sort,omitempty"`
+
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources with a `name` property matching the exact specified name.
+	Name *string `json:"name,omitempty"`
+
+	// Filters the collection to resources with a `vpc.crn` property matching the specified CRN.
+	VPCCRN *string `json:"vpc.crn,omitempty"`
+
+	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
+	VPCName *string `json:"vpc.name,omitempty"`
+
+	// Filters the collection to resources with a `vpc.remote.account.id` property matching the specified account
+	// identifier.
+	AccountID *string `json:"account.id,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the ListVPCDnsResolutionBindingsOptions.Sort property.
+// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+const (
+	ListVPCDnsResolutionBindingsOptionsSortCreatedAtConst = "created_at"
+	ListVPCDnsResolutionBindingsOptionsSortNameConst      = "name"
+)
+
+// NewListVPCDnsResolutionBindingsOptions : Instantiate ListVPCDnsResolutionBindingsOptions
+func (*VpcV1) NewListVPCDnsResolutionBindingsOptions(vpcID string) *ListVPCDnsResolutionBindingsOptions {
+	return &ListVPCDnsResolutionBindingsOptions{
+		VPCID: core.StringPtr(vpcID),
+	}
+}
+
+// SetVPCID : Allow user to set VPCID
+func (_options *ListVPCDnsResolutionBindingsOptions) SetVPCID(vpcID string) *ListVPCDnsResolutionBindingsOptions {
+	_options.VPCID = core.StringPtr(vpcID)
+	return _options
+}
+
+// SetSort : Allow user to set Sort
+func (_options *ListVPCDnsResolutionBindingsOptions) SetSort(sort string) *ListVPCDnsResolutionBindingsOptions {
+	_options.Sort = core.StringPtr(sort)
+	return _options
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListVPCDnsResolutionBindingsOptions) SetStart(start string) *ListVPCDnsResolutionBindingsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListVPCDnsResolutionBindingsOptions) SetLimit(limit int64) *ListVPCDnsResolutionBindingsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *ListVPCDnsResolutionBindingsOptions) SetName(name string) *ListVPCDnsResolutionBindingsOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetVPCCRN : Allow user to set VPCCRN
+func (_options *ListVPCDnsResolutionBindingsOptions) SetVPCCRN(vpcCRN string) *ListVPCDnsResolutionBindingsOptions {
+	_options.VPCCRN = core.StringPtr(vpcCRN)
+	return _options
+}
+
+// SetVPCName : Allow user to set VPCName
+func (_options *ListVPCDnsResolutionBindingsOptions) SetVPCName(vpcName string) *ListVPCDnsResolutionBindingsOptions {
+	_options.VPCName = core.StringPtr(vpcName)
+	return _options
+}
+
+// SetAccountID : Allow user to set AccountID
+func (_options *ListVPCDnsResolutionBindingsOptions) SetAccountID(accountID string) *ListVPCDnsResolutionBindingsOptions {
+	_options.AccountID = core.StringPtr(accountID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListVPCDnsResolutionBindingsOptions) SetHeaders(param map[string]string) *ListVPCDnsResolutionBindingsOptions {
 	options.Headers = param
 	return options
 }
@@ -57052,7 +58060,7 @@ type NetworkACLPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The VPC this network ACL will reside in.
@@ -59251,7 +60259,7 @@ type PublicGatewayFloatingIPPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 }
 
@@ -60667,7 +61675,7 @@ func UnmarshalResourceFilter(m map[string]json.RawMessage, result interface{}) (
 }
 
 // ResourceGroupIdentity : The resource group to use. If unspecified, the account's [default resource
-// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 // Models which "extend" this model:
 // - ResourceGroupIdentityByID
 type ResourceGroupIdentity struct {
@@ -64222,16 +65230,15 @@ type ShareMountTargetVirtualNetworkInterfacePrototype struct {
 	// an available address on the subnet will be automatically selected and reserved.
 	PrimaryIP VirtualNetworkInterfacePrimaryIPPrototypeIntf `json:"primary_ip,omitempty"`
 
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// The resource group to use for this virtual network interface. If unspecified, the
+	// share's resource group will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC
 	// for the subnet is used.
 	SecurityGroups []SecurityGroupIdentityIntf `json:"security_groups,omitempty"`
 
-	// The associated subnet. Required if `primary_ip` does not specify a reserved IP and
-	// `primary_ip.address` is not specified.
+	// The associated subnet. Required if `primary_ip` does not specify a reserved IP.
 	Subnet SubnetIdentityIntf `json:"subnet,omitempty"`
 }
 
@@ -64811,7 +65818,7 @@ type SharePrototype struct {
 	InitialOwner *ShareInitialOwner `json:"initial_owner,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The size of the file share rounded up to the next gigabyte.
@@ -65658,7 +66665,7 @@ type SnapshotPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
@@ -66333,7 +67340,7 @@ type SubnetPrototype struct {
 	PublicGateway PublicGatewayIdentityIntf `json:"public_gateway,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The routing table to use for this subnet. If unspecified, the default routing table
@@ -68879,6 +69886,54 @@ func (options *UpdateVPCAddressPrefixOptions) SetHeaders(param map[string]string
 	return options
 }
 
+// UpdateVPCDnsResolutionBindingOptions : The UpdateVPCDnsResolutionBinding options.
+type UpdateVPCDnsResolutionBindingOptions struct {
+	// The VPC identifier.
+	VPCID *string `json:"vpc_id" validate:"required,ne="`
+
+	// The DNS resolution binding identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The DNS resolution binding patch.
+	VpcdnsResolutionBindingPatch map[string]interface{} `json:"VpcdnsResolutionBinding_patch" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateVPCDnsResolutionBindingOptions : Instantiate UpdateVPCDnsResolutionBindingOptions
+func (*VpcV1) NewUpdateVPCDnsResolutionBindingOptions(vpcID string, id string, vpcdnsResolutionBindingPatch map[string]interface{}) *UpdateVPCDnsResolutionBindingOptions {
+	return &UpdateVPCDnsResolutionBindingOptions{
+		VPCID:                        core.StringPtr(vpcID),
+		ID:                           core.StringPtr(id),
+		VpcdnsResolutionBindingPatch: vpcdnsResolutionBindingPatch,
+	}
+}
+
+// SetVPCID : Allow user to set VPCID
+func (_options *UpdateVPCDnsResolutionBindingOptions) SetVPCID(vpcID string) *UpdateVPCDnsResolutionBindingOptions {
+	_options.VPCID = core.StringPtr(vpcID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateVPCDnsResolutionBindingOptions) SetID(id string) *UpdateVPCDnsResolutionBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetVpcdnsResolutionBindingPatch : Allow user to set VpcdnsResolutionBindingPatch
+func (_options *UpdateVPCDnsResolutionBindingOptions) SetVpcdnsResolutionBindingPatch(vpcdnsResolutionBindingPatch map[string]interface{}) *UpdateVPCDnsResolutionBindingOptions {
+	_options.VpcdnsResolutionBindingPatch = vpcdnsResolutionBindingPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateVPCDnsResolutionBindingOptions) SetHeaders(param map[string]string) *UpdateVPCDnsResolutionBindingOptions {
+	options.Headers = param
+	return options
+}
+
 // UpdateVPCOptions : The UpdateVPC options.
 type UpdateVPCOptions struct {
 	// The VPC identifier.
@@ -68886,6 +69941,9 @@ type UpdateVPCOptions struct {
 
 	// The VPC patch.
 	VPCPatch map[string]interface{} `json:"VPC_patch" validate:"required"`
+
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	IfMatch *string `json:"If-Match,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -68908,6 +69966,12 @@ func (_options *UpdateVPCOptions) SetID(id string) *UpdateVPCOptions {
 // SetVPCPatch : Allow user to set VPCPatch
 func (_options *UpdateVPCOptions) SetVPCPatch(vpcPatch map[string]interface{}) *UpdateVPCOptions {
 	_options.VPCPatch = vpcPatch
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *UpdateVPCOptions) SetIfMatch(ifMatch string) *UpdateVPCOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
 	return _options
 }
 
@@ -69322,6 +70386,25 @@ type VPC struct {
 	// default.
 	DefaultSecurityGroup *SecurityGroupReference `json:"default_security_group" validate:"required"`
 
+	// The DNS configuration for this VPC.
+	Dns *Vpcdns `json:"dns" validate:"required"`
+
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPCHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this VPC.
 	Href *string `json:"href" validate:"required"`
 
@@ -69340,6 +70423,21 @@ type VPC struct {
 	// The status of this VPC.
 	Status *string `json:"status" validate:"required"`
 }
+
+// Constants associated with the VPC.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPCHealthStateDegradedConst     = "degraded"
+	VPCHealthStateFaultedConst      = "faulted"
+	VPCHealthStateInapplicableConst = "inapplicable"
+	VPCHealthStateOkConst           = "ok"
+)
 
 // Constants associated with the VPC.ResourceType property.
 // The resource type.
@@ -69384,6 +70482,18 @@ func UnmarshalVPC(m map[string]json.RawMessage, result interface{}) (err error) 
 		return
 	}
 	err = core.UnmarshalModel(m, "default_security_group", &obj.DefaultSecurityGroup, UnmarshalSecurityGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "dns", &obj.Dns, UnmarshalVpcdns)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPCHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
 	}
@@ -69531,6 +70641,604 @@ func UnmarshalVPCCollectionNext(m map[string]json.RawMessage, result interface{}
 	return
 }
 
+// Vpcdns : The DNS configuration for this VPC.
+type Vpcdns struct {
+	// Indicates whether this VPC is enabled as a DNS name resolution hub.
+	EnableHub *bool `json:"enable_hub" validate:"required"`
+
+	// The number of DNS resolution bindings for this VPC.
+	ResolutionBindingCount *int64 `json:"resolution_binding_count" validate:"required"`
+
+	// The DNS resolver configuration for the VPC.
+	Resolver VpcdnsResolverIntf `json:"resolver" validate:"required"`
+}
+
+// UnmarshalVpcdns unmarshals an instance of Vpcdns from the specified map of raw messages.
+func UnmarshalVpcdns(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(Vpcdns)
+	err = core.UnmarshalPrimitive(m, "enable_hub", &obj.EnableHub)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resolution_binding_count", &obj.ResolutionBindingCount)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resolver", &obj.Resolver, UnmarshalVpcdnsResolver)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsPatch : The DNS configuration for this VPC.
+type VpcdnsPatch struct {
+	// Indicates whether this VPC is enabled as a DNS name resolution hub.
+	//
+	// Updating the value to `true` requires `allow_dns_resolution_binding` to be `true` for all endpoint gateways residing
+	// in this VPC.
+	//
+	// Changing the value requires `dns.resolution_binding_count` to be zero.
+	EnableHub *bool `json:"enable_hub,omitempty"`
+
+	Resolver *VpcdnsResolverPatch `json:"resolver,omitempty"`
+}
+
+// UnmarshalVpcdnsPatch unmarshals an instance of VpcdnsPatch from the specified map of raw messages.
+func UnmarshalVpcdnsPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsPatch)
+	err = core.UnmarshalPrimitive(m, "enable_hub", &obj.EnableHub)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resolver", &obj.Resolver, UnmarshalVpcdnsResolverPatch)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsPrototype : The DNS configuration for this VPC.
+//
+// If unspecified, the system will assign DNS servers capable of resolving hosts and endpoint gateways within this VPC,
+// and hosts on the internet.
+type VpcdnsPrototype struct {
+	// Indicates whether this VPC is enabled as a DNS name resolution hub.
+	EnableHub *bool `json:"enable_hub,omitempty"`
+
+	Resolver VpcdnsResolverPrototypeIntf `json:"resolver,omitempty"`
+}
+
+// UnmarshalVpcdnsPrototype unmarshals an instance of VpcdnsPrototype from the specified map of raw messages.
+func UnmarshalVpcdnsPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsPrototype)
+	err = core.UnmarshalPrimitive(m, "enable_hub", &obj.EnableHub)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resolver", &obj.Resolver, UnmarshalVpcdnsResolverPrototype)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolutionBinding : VpcdnsResolutionBinding struct
+type VpcdnsResolutionBinding struct {
+	// The date and time that the DNS resolution binding was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The endpoint gateways that have `allow_dns_resolution_binding` set to `true` and reside in the VPC that has
+	// `dns.enable_hub` set to `false`.
+	//
+	// The endpoint gateways may be remote and therefore may not be directly retrievable.
+	EndpointGateways []EndpointGatewayReferenceRemote `json:"endpoint_gateways" validate:"required"`
+
+	// The URL for this DNS resolution binding.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this DNS resolution binding.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the DNS resolution binding.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this DNS resolution binding. The name is unique across all DNS resolution bindings for the VPC.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The VPC bound to for DNS resolution.
+	//
+	// The VPC may be remote and therefore may not be directly retrievable.
+	VPC *VPCReferenceRemote `json:"vpc" validate:"required"`
+}
+
+// Constants associated with the VpcdnsResolutionBinding.LifecycleState property.
+// The lifecycle state of the DNS resolution binding.
+const (
+	VpcdnsResolutionBindingLifecycleStateDeletingConst  = "deleting"
+	VpcdnsResolutionBindingLifecycleStateFailedConst    = "failed"
+	VpcdnsResolutionBindingLifecycleStatePendingConst   = "pending"
+	VpcdnsResolutionBindingLifecycleStateStableConst    = "stable"
+	VpcdnsResolutionBindingLifecycleStateSuspendedConst = "suspended"
+	VpcdnsResolutionBindingLifecycleStateUpdatingConst  = "updating"
+	VpcdnsResolutionBindingLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the VpcdnsResolutionBinding.ResourceType property.
+// The resource type.
+const (
+	VpcdnsResolutionBindingResourceTypeVPCDnsResolutionBindingConst = "vpc_dns_resolution_binding"
+)
+
+// UnmarshalVpcdnsResolutionBinding unmarshals an instance of VpcdnsResolutionBinding from the specified map of raw messages.
+func UnmarshalVpcdnsResolutionBinding(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolutionBinding)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "endpoint_gateways", &obj.EndpointGateways, UnmarshalEndpointGatewayReferenceRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReferenceRemote)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolutionBindingCollection : VpcdnsResolutionBindingCollection struct
+type VpcdnsResolutionBindingCollection struct {
+	// Collection of DNS resolution bindings for this VPC.
+	DnsResolutionBindings []VpcdnsResolutionBinding `json:"dns_resolution_bindings" validate:"required"`
+
+	// A link to the first page of resources.
+	First *VpcdnsResolutionBindingCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *VpcdnsResolutionBindingCollectionNext `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalVpcdnsResolutionBindingCollection unmarshals an instance of VpcdnsResolutionBindingCollection from the specified map of raw messages.
+func UnmarshalVpcdnsResolutionBindingCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolutionBindingCollection)
+	err = core.UnmarshalModel(m, "dns_resolution_bindings", &obj.DnsResolutionBindings, UnmarshalVpcdnsResolutionBinding)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalVpcdnsResolutionBindingCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalVpcdnsResolutionBindingCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *VpcdnsResolutionBindingCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// VpcdnsResolutionBindingPatch : VpcdnsResolutionBindingPatch struct
+type VpcdnsResolutionBindingPatch struct {
+	// The name for this DNS resolution binding. The name must not be used by another DNS resolution binding for the VPC.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalVpcdnsResolutionBindingPatch unmarshals an instance of VpcdnsResolutionBindingPatch from the specified map of raw messages.
+func UnmarshalVpcdnsResolutionBindingPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolutionBindingPatch)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the VpcdnsResolutionBindingPatch
+func (vpcdnsResolutionBindingPatch *VpcdnsResolutionBindingPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(vpcdnsResolutionBindingPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
+}
+
+// VpcdnsResolver : VpcdnsResolver struct
+// Models which "extend" this model:
+// - VpcdnsResolverTypeDelegated
+// - VpcdnsResolverTypeManual
+// - VpcdnsResolverTypeSystem
+type VpcdnsResolver struct {
+	// The DNS servers for this VPC. The servers are populated:
+	//
+	// - by the system when `dns.resolver.type` is `system`
+	// - using the DNS servers in `dns.resolver.vpc` when `dns.resolver.type` is `delegated`
+	// - using `dns.resolver.manual_servers` when the `dns.resolver.type` is `manual`.
+	Servers []DnsServer `json:"servers" validate:"required"`
+
+	// The type of the DNS resolver used for the VPC.
+	//
+	// - `delegated`: DNS server addresses are provided by the DNS resolver of the VPC
+	//                specified in `dns.resolver.vpc`.
+	// - `manual`: DNS server addresses are specified in `dns.resolver.manual_servers`.
+	// - `system`: DNS server addresses are provided by the system.
+	Type *string `json:"type" validate:"required"`
+
+	// The VPC whose DNS resolver provides the DNS server addresses for this VPC.
+	//
+	// The VPC may be remote and therefore may not be directly retrievable.
+	VPC *VPCReferenceDnsResolverContext `json:"vpc,omitempty"`
+
+	// The manually specified DNS servers for this VPC.
+	ManualServers []DnsServer `json:"manual_servers,omitempty"`
+
+	// The configuration of the system DNS resolver for this VPC.
+	//
+	// - `custom_resolver`: A custom DNS resolver is configured for this VPC.
+	//
+	// - `private_resolver`: A private DNS resolver is configured for this VPC. Applicable when
+	//   the VPC has either or both of the following:
+	//
+	//     - at least one endpoint gateway residing in it
+	//     - a [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it
+	//
+	// - `default`: The provider default DNS resolvers are configured for this VPC.
+	//
+	//   This system DNS resolver configuration is used when the VPC has:
+	//
+	//   - no custom DNS resolver configured for it, and
+	//   - no endpoint gateways residing in it, and
+	//   - no [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it.
+	Configuration *string `json:"configuration,omitempty"`
+}
+
+// Constants associated with the VpcdnsResolver.Type property.
+// The type of the DNS resolver used for the VPC.
+//
+//   - `delegated`: DNS server addresses are provided by the DNS resolver of the VPC
+//     specified in `dns.resolver.vpc`.
+//   - `manual`: DNS server addresses are specified in `dns.resolver.manual_servers`.
+//   - `system`: DNS server addresses are provided by the system.
+const (
+	VpcdnsResolverTypeDelegatedConst = "delegated"
+	VpcdnsResolverTypeManualConst    = "manual"
+	VpcdnsResolverTypeSystemConst    = "system"
+)
+
+// Constants associated with the VpcdnsResolver.Configuration property.
+// The configuration of the system DNS resolver for this VPC.
+//
+// - `custom_resolver`: A custom DNS resolver is configured for this VPC.
+//
+//   - `private_resolver`: A private DNS resolver is configured for this VPC. Applicable when
+//     the VPC has either or both of the following:
+//
+//   - at least one endpoint gateway residing in it
+//
+//   - a [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it
+//
+// - `default`: The provider default DNS resolvers are configured for this VPC.
+//
+//	This system DNS resolver configuration is used when the VPC has:
+//
+//	- no custom DNS resolver configured for it, and
+//	- no endpoint gateways residing in it, and
+//	- no [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it.
+const (
+	VpcdnsResolverConfigurationCustomResolverConst  = "custom_resolver"
+	VpcdnsResolverConfigurationDefaultConst         = "default"
+	VpcdnsResolverConfigurationPrivateResolverConst = "private_resolver"
+)
+
+func (*VpcdnsResolver) isaVpcdnsResolver() bool {
+	return true
+}
+
+type VpcdnsResolverIntf interface {
+	isaVpcdnsResolver() bool
+}
+
+// UnmarshalVpcdnsResolver unmarshals an instance of VpcdnsResolver from the specified map of raw messages.
+func UnmarshalVpcdnsResolver(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolver)
+	err = core.UnmarshalModel(m, "servers", &obj.Servers, UnmarshalDnsServer)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReferenceDnsResolverContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "manual_servers", &obj.ManualServers, UnmarshalDnsServer)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "configuration", &obj.Configuration)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverPatch : VpcdnsResolverPatch struct
+type VpcdnsResolverPatch struct {
+	// The DNS servers to use for this VPC, replacing any existing servers. All the DNS servers must either:
+	//
+	// - have a unique `zone_affinity`, or
+	// - not have a `zone_affinity`.
+	//
+	// `dns.resolver.manual_servers` must be set if and only if `dns.resolver.type` is `manual`.
+	ManualServers []DnsServerPrototype `json:"manual_servers,omitempty"`
+
+	// The type of the DNS resolver to use.
+	//
+	// - `delegated`: DNS server addresses will be provided by the resolver for the VPC
+	//                specified in `dns.resolver.vpc`. Requires `dns.enable_hub` to be
+	//                `false`.
+	// - `manual`: DNS server addresses are specified in `dns.resolver.manual_servers`.
+	// - `system`: DNS server addresses will be provided by the system and depend on the
+	//             configuration.
+	//
+	// Updating from `manual` requires `dns.resolver.manual_servers` to be specified as
+	// `null`.
+	//
+	// Updating to `manual` requires `dns.resolver.manual_servers` to be specified and not empty.
+	//
+	// Updating from `delegated` requires `dns.resolver.vpc` to be specified as `null`.
+	Type *string `json:"type,omitempty"`
+
+	// The VPC to provide DNS server addresses for this VPC.  The specified VPC must be configured
+	// with a [DNS Services](https://cloud.ibm.com/docs/dns-svcs) custom resolver and must be in
+	// one of this VPC's DNS resolution bindings.
+	//
+	// Specify `null` to remove an existing VPC.
+	//
+	// This property must be set if and only if `dns.resolver.type` is `delegated`.
+	VPC VpcdnsResolverVPCPatchIntf `json:"vpc,omitempty"`
+}
+
+// Constants associated with the VpcdnsResolverPatch.Type property.
+// The type of the DNS resolver to use.
+//
+//   - `delegated`: DNS server addresses will be provided by the resolver for the VPC
+//     specified in `dns.resolver.vpc`. Requires `dns.enable_hub` to be
+//     `false`.
+//   - `manual`: DNS server addresses are specified in `dns.resolver.manual_servers`.
+//   - `system`: DNS server addresses will be provided by the system and depend on the
+//     configuration.
+//
+// Updating from `manual` requires `dns.resolver.manual_servers` to be specified as
+// `null`.
+//
+// Updating to `manual` requires `dns.resolver.manual_servers` to be specified and not empty.
+//
+// Updating from `delegated` requires `dns.resolver.vpc` to be specified as `null`.
+const (
+	VpcdnsResolverPatchTypeDelegatedConst = "delegated"
+	VpcdnsResolverPatchTypeManualConst    = "manual"
+	VpcdnsResolverPatchTypeSystemConst    = "system"
+)
+
+// UnmarshalVpcdnsResolverPatch unmarshals an instance of VpcdnsResolverPatch from the specified map of raw messages.
+func UnmarshalVpcdnsResolverPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverPatch)
+	err = core.UnmarshalModel(m, "manual_servers", &obj.ManualServers, UnmarshalDnsServerPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVpcdnsResolverVPCPatch)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverPrototype : VpcdnsResolverPrototype struct
+// Models which "extend" this model:
+// - VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype
+// - VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype
+type VpcdnsResolverPrototype struct {
+	// The type of the DNS resolver to use.
+	//
+	// - `manual`: DNS server addresses are specified in `dns.resolver.manual_servers`.
+	// - `system`: DNS server addresses will be provided by the system and depend on the
+	//             configuration.
+	Type *string `json:"type,omitempty"`
+
+	// The DNS servers to use for this VPC. All the DNS servers must either:
+	//
+	// - have a unique `zone_affinity`, or
+	// - not have a `zone_affinity`.
+	ManualServers []DnsServerPrototype `json:"manual_servers,omitempty"`
+}
+
+// Constants associated with the VpcdnsResolverPrototype.Type property.
+// The type of the DNS resolver to use.
+//
+//   - `manual`: DNS server addresses are specified in `dns.resolver.manual_servers`.
+//   - `system`: DNS server addresses will be provided by the system and depend on the
+//     configuration.
+const (
+	VpcdnsResolverPrototypeTypeManualConst = "manual"
+	VpcdnsResolverPrototypeTypeSystemConst = "system"
+)
+
+func (*VpcdnsResolverPrototype) isaVpcdnsResolverPrototype() bool {
+	return true
+}
+
+type VpcdnsResolverPrototypeIntf interface {
+	isaVpcdnsResolverPrototype() bool
+}
+
+// UnmarshalVpcdnsResolverPrototype unmarshals an instance of VpcdnsResolverPrototype from the specified map of raw messages.
+func UnmarshalVpcdnsResolverPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverPrototype)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "manual_servers", &obj.ManualServers, UnmarshalDnsServerPrototype)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverVPCPatch : The VPC to provide DNS server addresses for this VPC.  The specified VPC must be configured with a [DNS
+// Services](https://cloud.ibm.com/docs/dns-svcs) custom resolver and must be in one of this VPC's DNS resolution
+// bindings.
+//
+// Specify `null` to remove an existing VPC.
+//
+// This property must be set if and only if `dns.resolver.type` is `delegated`.
+// Models which "extend" this model:
+// - VpcdnsResolverVPCPatchVPCIdentityByID
+// - VpcdnsResolverVPCPatchVPCIdentityByCRN
+// - VpcdnsResolverVPCPatchVPCIdentityByHref
+type VpcdnsResolverVPCPatch struct {
+	// The unique identifier for this VPC.
+	ID *string `json:"id,omitempty"`
+
+	// The CRN for this VPC.
+	CRN *string `json:"crn,omitempty"`
+
+	// The URL for this VPC.
+	Href *string `json:"href,omitempty"`
+}
+
+func (*VpcdnsResolverVPCPatch) isaVpcdnsResolverVPCPatch() bool {
+	return true
+}
+
+type VpcdnsResolverVPCPatchIntf interface {
+	isaVpcdnsResolverVPCPatch() bool
+}
+
+// UnmarshalVpcdnsResolverVPCPatch unmarshals an instance of VpcdnsResolverVPCPatch from the specified map of raw messages.
+func UnmarshalVpcdnsResolverVPCPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverVPCPatch)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPCHealthReason : VPCHealthReason struct
+type VPCHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPCHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPCHealthReasonCodeDnsResolutionBindingFailedConst = "dns_resolution_binding_failed"
+)
+
+// UnmarshalVPCHealthReason unmarshals an instance of VPCHealthReason from the specified map of raw messages.
+func UnmarshalVPCHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPCHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPCIdentity : Identifies a VPC by a unique property.
 // Models which "extend" this model:
 // - VPCIdentityByID
@@ -69576,6 +71284,9 @@ func UnmarshalVPCIdentity(m map[string]json.RawMessage, result interface{}) (err
 
 // VPCPatch : VPCPatch struct
 type VPCPatch struct {
+	// The DNS configuration for this VPC.
+	Dns *VpcdnsPatch `json:"dns,omitempty"`
+
 	// The name for this VPC. The name must not be used by another VPC in the region.
 	Name *string `json:"name,omitempty"`
 }
@@ -69583,6 +71294,10 @@ type VPCPatch struct {
 // UnmarshalVPCPatch unmarshals an instance of VPCPatch from the specified map of raw messages.
 func UnmarshalVPCPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPCPatch)
+	err = core.UnmarshalModel(m, "dns", &obj.Dns, UnmarshalVpcdnsPatch)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -69660,6 +71375,75 @@ func UnmarshalVPCReference(m map[string]json.RawMessage, result interface{}) (er
 	return
 }
 
+// VPCReferenceDnsResolverContext : A VPC whose DNS resolver is delegated to provide DNS servers for this VPC.
+//
+// The VPC may be remote and therefore may not be directly retrievable.
+type VPCReferenceDnsResolverContext struct {
+	// The CRN for this VPC.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *VPCReferenceDnsResolverContextDeleted `json:"deleted,omitempty"`
+
+	// The URL for this VPC.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this VPC. The name is unique across all VPCs in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// If present, this property indicates that the resource associated with this reference
+	// is remote and therefore may not be directly retrievable.
+	Remote *VPCRemote `json:"remote,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the VPCReferenceDnsResolverContext.ResourceType property.
+// The resource type.
+const (
+	VPCReferenceDnsResolverContextResourceTypeVPCConst = "vpc"
+)
+
+// UnmarshalVPCReferenceDnsResolverContext unmarshals an instance of VPCReferenceDnsResolverContext from the specified map of raw messages.
+func UnmarshalVPCReferenceDnsResolverContext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPCReferenceDnsResolverContext)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVPCReferenceDnsResolverContextDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalVPCRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPCReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VPCReferenceDeleted struct {
@@ -69671,6 +71455,110 @@ type VPCReferenceDeleted struct {
 func UnmarshalVPCReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPCReferenceDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPCReferenceDnsResolverContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
+// information.
+type VPCReferenceDnsResolverContextDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalVPCReferenceDnsResolverContextDeleted unmarshals an instance of VPCReferenceDnsResolverContextDeleted from the specified map of raw messages.
+func UnmarshalVPCReferenceDnsResolverContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPCReferenceDnsResolverContextDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPCReferenceRemote : VPCReferenceRemote struct
+type VPCReferenceRemote struct {
+	// The CRN for this VPC.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The URL for this VPC.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this VPC. The name is unique across all VPCs in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// If present, this property indicates that the resource associated with this reference
+	// is remote and therefore may not be directly retrievable.
+	Remote *VPCRemote `json:"remote,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the VPCReferenceRemote.ResourceType property.
+// The resource type.
+const (
+	VPCReferenceRemoteResourceTypeVPCConst = "vpc"
+)
+
+// UnmarshalVPCReferenceRemote unmarshals an instance of VPCReferenceRemote from the specified map of raw messages.
+func UnmarshalVPCReferenceRemote(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPCReferenceRemote)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalVPCRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPCRemote : If present, this property indicates that the resource associated with this reference is remote and therefore may not
+// be directly retrievable.
+type VPCRemote struct {
+	// If present, this property indicates that the referenced resource is remote to this
+	// account, and identifies the owning account.
+	Account *AccountReference `json:"account,omitempty"`
+
+	// If present, this property indicates that the referenced resource is remote to this
+	// region, and identifies the native region.
+	Region *RegionReference `json:"region,omitempty"`
+}
+
+// UnmarshalVPCRemote unmarshals an instance of VPCRemote from the specified map of raw messages.
+func UnmarshalVPCRemote(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPCRemote)
+	err = core.UnmarshalModel(m, "account", &obj.Account, UnmarshalAccountReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionReference)
 	if err != nil {
 		return
 	}
@@ -69692,11 +71580,43 @@ type VPNGateway struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -69710,9 +71630,6 @@ type VPNGateway struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -69722,19 +71639,37 @@ type VPNGateway struct {
 	Mode *string `json:"mode,omitempty"`
 }
 
+// Constants associated with the VPNGateway.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayHealthStateDegradedConst     = "degraded"
+	VPNGatewayHealthStateFaultedConst      = "faulted"
+	VPNGatewayHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGateway.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayLifecycleStateFailedConst    = "failed"
+	VPNGatewayLifecycleStatePendingConst   = "pending"
+	VPNGatewayLifecycleStateStableConst    = "stable"
+	VPNGatewayLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGateway.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGateway.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayStatusAvailableConst = "available"
-	VPNGatewayStatusDeletingConst  = "deleting"
-	VPNGatewayStatusFailedConst    = "failed"
-	VPNGatewayStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGateway.Mode property.
@@ -69766,11 +71701,27 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -69787,10 +71738,6 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -69951,6 +71898,27 @@ type VPNGatewayConnection struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// Routing protocols are disabled for this VPN gateway connection.
 	RoutingProtocol *string `json:"routing_protocol,omitempty"`
 
@@ -70060,6 +72028,10 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
 	if err != nil {
 		return
 	}
@@ -70669,6 +72641,27 @@ type VPNGatewayConnectionStaticRouteModeTunnel struct {
 
 	// The status of the VPN Tunnel.
 	Status *string `json:"status" validate:"required"`
+
+	// The reasons for the current VPN gateway connection tunnels status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionTunnelStatusReason `json:"status_reasons" validate:"required"`
 }
 
 // Constants associated with the VPNGatewayConnectionStaticRouteModeTunnel.Status property.
@@ -70689,12 +72682,209 @@ func UnmarshalVPNGatewayConnectionStaticRouteModeTunnel(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionTunnelStatusReason)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayConnectionStatusReason : VPNGatewayConnectionStatusReason struct
+type VPNGatewayConnectionStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this VPN gateway connection's status.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayConnectionStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	VPNGatewayConnectionStatusReasonCodeCannotAuthenticateConnectionConst   = "cannot_authenticate_connection"
+	VPNGatewayConnectionStatusReasonCodeIkePolicyMismatchConst              = "ike_policy_mismatch"
+	VPNGatewayConnectionStatusReasonCodeIkeV1IDLocalRemoteCIDRMismatchConst = "ike_v1_id_local_remote_cidr_mismatch"
+	VPNGatewayConnectionStatusReasonCodeIkeV2LocalRemoteCIDRMismatchConst   = "ike_v2_local_remote_cidr_mismatch"
+	VPNGatewayConnectionStatusReasonCodeInternalErrorConst                  = "internal_error"
+	VPNGatewayConnectionStatusReasonCodeIpsecPolicyMismatchConst            = "ipsec_policy_mismatch"
+	VPNGatewayConnectionStatusReasonCodePeerNotRespondingConst              = "peer_not_responding"
+)
+
+// UnmarshalVPNGatewayConnectionStatusReason unmarshals an instance of VPNGatewayConnectionStatusReason from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayConnectionTunnelStatusReason : VPNGatewayConnectionTunnelStatusReason struct
+type VPNGatewayConnectionTunnelStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this VPN gateway connection tunnel's status.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayConnectionTunnelStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	VPNGatewayConnectionTunnelStatusReasonCodeCannotAuthenticateConnectionConst   = "cannot_authenticate_connection"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkePolicyMismatchConst              = "ike_policy_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkeV1IDLocalRemoteCIDRMismatchConst = "ike_v1_id_local_remote_cidr_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkeV2LocalRemoteCIDRMismatchConst   = "ike_v2_local_remote_cidr_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeInternalErrorConst                  = "internal_error"
+	VPNGatewayConnectionTunnelStatusReasonCodeIpsecPolicyMismatchConst            = "ipsec_policy_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodePeerNotRespondingConst              = "peer_not_responding"
+)
+
+// UnmarshalVPNGatewayConnectionTunnelStatusReason unmarshals an instance of VPNGatewayConnectionTunnelStatusReason from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionTunnelStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionTunnelStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayHealthReason : VPNGatewayHealthReason struct
+type VPNGatewayHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNGatewayHealthReasonCodeCannotCreateVPCRouteConst   = "cannot_create_vpc_route"
+	VPNGatewayHealthReasonCodeCannotReserveIPAddressConst = "cannot_reserve_ip_address"
+	VPNGatewayHealthReasonCodeInternalErrorConst          = "internal_error"
+)
+
+// UnmarshalVPNGatewayHealthReason unmarshals an instance of VPNGatewayHealthReason from the specified map of raw messages.
+func UnmarshalVPNGatewayHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayLifecycleReason : VPNGatewayLifecycleReason struct
+type VPNGatewayLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNGatewayLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNGatewayLifecycleReason unmarshals an instance of VPNGatewayLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNGatewayLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // VPNGatewayMember : VPNGatewayMember struct
 type VPNGatewayMember struct {
+	// The reasons for the current VPN gateway member health_state (if any):
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayMemberHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The reasons for the current VPN gateway member lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayMemberLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway member.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
 	// The reserved IP address assigned to the VPN gateway member.
 	//
 	// This property will be present only when the VPN gateway status is `available`.
@@ -70705,10 +72895,34 @@ type VPNGatewayMember struct {
 
 	// The high availability role assigned to the VPN gateway member.
 	Role *string `json:"role" validate:"required"`
-
-	// The status of the VPN gateway member.
-	Status *string `json:"status" validate:"required"`
 }
+
+// Constants associated with the VPNGatewayMember.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayMemberHealthStateDegradedConst     = "degraded"
+	VPNGatewayMemberHealthStateFaultedConst      = "faulted"
+	VPNGatewayMemberHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayMemberHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayMember.LifecycleState property.
+// The lifecycle state of the VPN gateway member.
+const (
+	VPNGatewayMemberLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayMemberLifecycleStateFailedConst    = "failed"
+	VPNGatewayMemberLifecycleStatePendingConst   = "pending"
+	VPNGatewayMemberLifecycleStateStableConst    = "stable"
+	VPNGatewayMemberLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayMemberLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayMemberLifecycleStateWaitingConst   = "waiting"
+)
 
 // Constants associated with the VPNGatewayMember.Role property.
 // The high availability role assigned to the VPN gateway member.
@@ -70717,18 +72931,25 @@ const (
 	VPNGatewayMemberRoleStandbyConst = "standby"
 )
 
-// Constants associated with the VPNGatewayMember.Status property.
-// The status of the VPN gateway member.
-const (
-	VPNGatewayMemberStatusAvailableConst = "available"
-	VPNGatewayMemberStatusDeletingConst  = "deleting"
-	VPNGatewayMemberStatusFailedConst    = "failed"
-	VPNGatewayMemberStatusPendingConst   = "pending"
-)
-
 // UnmarshalVPNGatewayMember unmarshals an instance of VPNGatewayMember from the specified map of raw messages.
 func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayMember)
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayMemberHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayMemberLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "private_ip", &obj.PrivateIP, UnmarshalReservedIPReference)
 	if err != nil {
 		return
@@ -70741,7 +72962,78 @@ func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayMemberHealthReason : VPNGatewayMemberHealthReason struct
+type VPNGatewayMemberHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayMemberHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNGatewayMemberHealthReasonCodeCannotReserveIPAddressConst = "cannot_reserve_ip_address"
+	VPNGatewayMemberHealthReasonCodeInternalErrorConst          = "internal_error"
+)
+
+// UnmarshalVPNGatewayMemberHealthReason unmarshals an instance of VPNGatewayMemberHealthReason from the specified map of raw messages.
+func UnmarshalVPNGatewayMemberHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayMemberHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayMemberLifecycleReason : VPNGatewayMemberLifecycleReason struct
+type VPNGatewayMemberLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayMemberLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNGatewayMemberLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNGatewayMemberLifecycleReason unmarshals an instance of VPNGatewayMemberLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNGatewayMemberLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayMemberLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -70786,7 +73078,7 @@ type VPNGatewayPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Identifies a subnet by a unique property.
@@ -70888,6 +73180,23 @@ type VPNServer struct {
 	// Indicates whether the split tunneling is enabled on this VPN server.
 	EnableSplitTunneling *bool `json:"enable_split_tunneling" validate:"required"`
 
+	// The reasons for the current VPN server health_state (if any):
+	// - `cannot_access_client_certificate`: VPN server's client certificate is inaccessible
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
+	//   `Secrets Manager`)
+	// - `cannot_access_server_certificate`: VPN server's server certificate is inaccessible
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
+	//   `Secrets Manager`)
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNServerHealthReason `json:"health_reasons" validate:"required"`
+
 	// The health of this resource.
 	// - `ok`: No abnormal behavior detected
 	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
@@ -70905,6 +73214,15 @@ type VPNServer struct {
 
 	// The unique identifier for this VPN server.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN server lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNServerLifecycleReason `json:"lifecycle_reasons" validate:"required"`
 
 	// The lifecycle state of the VPN server.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
@@ -71020,6 +73338,10 @@ func UnmarshalVPNServer(m map[string]json.RawMessage, result interface{}) (err e
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNServerHealthReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
@@ -71033,6 +73355,10 @@ func UnmarshalVPNServer(m map[string]json.RawMessage, result interface{}) (err e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNServerLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -71537,6 +73863,84 @@ func UnmarshalVPNServerCollectionNext(m map[string]json.RawMessage, result inter
 	return
 }
 
+// VPNServerHealthReason : VPNServerHealthReason struct
+type VPNServerHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNServerHealthReasonCodeCannotAccessClientCertificateConst = "cannot_access_client_certificate"
+	VPNServerHealthReasonCodeCannotAccessServerCertificateConst = "cannot_access_server_certificate"
+	VPNServerHealthReasonCodeCannotCreateVPCRouteConst          = "cannot_create_vpc_route"
+	VPNServerHealthReasonCodeCannotReserveIPAddressConst        = "cannot_reserve_ip_address"
+	VPNServerHealthReasonCodeInternalErrorConst                 = "internal_error"
+)
+
+// UnmarshalVPNServerHealthReason unmarshals an instance of VPNServerHealthReason from the specified map of raw messages.
+func UnmarshalVPNServerHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerLifecycleReason : VPNServerLifecycleReason struct
+type VPNServerLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNServerLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNServerLifecycleReason unmarshals an instance of VPNServerLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNServerLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPNServerPatch : VPNServerPatch struct
 type VPNServerPatch struct {
 	// The certificate instance for this VPN server.
@@ -71684,11 +74088,37 @@ type VPNServerRoute struct {
 	// be dropped.
 	Destination *string `json:"destination" validate:"required"`
 
+	// The reasons for the current VPN server route health_state (if any):
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNServerRouteHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this VPN route.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN route.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN server route lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNServerRouteLifecycleReason `json:"lifecycle_reasons" validate:"required"`
 
 	// The lifecycle state of the VPN route.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
@@ -71713,6 +74143,21 @@ const (
 	VPNServerRouteActionDeliverConst   = "deliver"
 	VPNServerRouteActionDropConst      = "drop"
 	VPNServerRouteActionTranslateConst = "translate"
+)
+
+// Constants associated with the VPNServerRoute.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNServerRouteHealthStateDegradedConst     = "degraded"
+	VPNServerRouteHealthStateFaultedConst      = "faulted"
+	VPNServerRouteHealthStateInapplicableConst = "inapplicable"
+	VPNServerRouteHealthStateOkConst           = "ok"
 )
 
 // Constants associated with the VPNServerRoute.LifecycleState property.
@@ -71748,11 +74193,23 @@ func UnmarshalVPNServerRoute(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNServerRouteHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNServerRouteLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -71857,6 +74314,80 @@ type VPNServerRouteCollectionNext struct {
 func UnmarshalVPNServerRouteCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNServerRouteCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerRouteHealthReason : VPNServerRouteHealthReason struct
+type VPNServerRouteHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerRouteHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNServerRouteHealthReasonCodeInternalErrorConst = "internal_error"
+)
+
+// UnmarshalVPNServerRouteHealthReason unmarshals an instance of VPNServerRouteHealthReason from the specified map of raw messages.
+func UnmarshalVPNServerRouteHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerRouteHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerRouteLifecycleReason : VPNServerRouteLifecycleReason struct
+type VPNServerRouteLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerRouteLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNServerRouteLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNServerRouteLifecycleReason unmarshals an instance of VPNServerRouteLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNServerRouteLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerRouteLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -72212,10 +74743,6 @@ type VirtualNetworkInterfaceReferenceAttachmentContext struct {
 	// The CRN for this virtual network interface.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted, and provides
-	// some supplementary information.
-	Deleted *VirtualNetworkInterfaceReferenceAttachmentContextDeleted `json:"deleted,omitempty"`
-
 	// The URL for this virtual network interface.
 	Href *string `json:"href" validate:"required"`
 
@@ -72242,10 +74769,6 @@ func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContext(m map[string]jso
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -72266,24 +74789,6 @@ func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContext(m map[string]jso
 	return
 }
 
-// VirtualNetworkInterfaceReferenceAttachmentContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
-// information.
-type VirtualNetworkInterfaceReferenceAttachmentContextDeleted struct {
-	// Link to documentation about deleted resources.
-	MoreInfo *string `json:"more_info" validate:"required"`
-}
-
-// UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceAttachmentContextDeleted from the specified map of raw messages.
-func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VirtualNetworkInterfaceReferenceAttachmentContextDeleted)
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VirtualNetworkInterfaceReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VirtualNetworkInterfaceReferenceDeleted struct {
@@ -72294,24 +74799,6 @@ type VirtualNetworkInterfaceReferenceDeleted struct {
 // UnmarshalVirtualNetworkInterfaceReferenceDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceDeleted from the specified map of raw messages.
 func UnmarshalVirtualNetworkInterfaceReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VirtualNetworkInterfaceReferenceDeleted)
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
-// information.
-type VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted struct {
-	// Link to documentation about deleted resources.
-	MoreInfo *string `json:"more_info" validate:"required"`
-}
-
-// UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted from the specified map of raw messages.
-func UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
@@ -73719,7 +76206,7 @@ type VolumePrototype struct {
 	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
@@ -74172,6 +76659,40 @@ func UnmarshalVolumeStatusReason(m map[string]json.RawMessage, result interface{
 	return
 }
 
+// VpcdnsResolutionBindingCollectionFirst : A link to the first page of resources.
+type VpcdnsResolutionBindingCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalVpcdnsResolutionBindingCollectionFirst unmarshals an instance of VpcdnsResolutionBindingCollectionFirst from the specified map of raw messages.
+func UnmarshalVpcdnsResolutionBindingCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolutionBindingCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolutionBindingCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type VpcdnsResolutionBindingCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalVpcdnsResolutionBindingCollectionNext unmarshals an instance of VpcdnsResolutionBindingCollectionNext from the specified map of raw messages.
+func UnmarshalVpcdnsResolutionBindingCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolutionBindingCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // Zone : Zone struct
 type Zone struct {
 	// The URL for this zone.
@@ -74355,6 +76876,116 @@ func UnmarshalBackupPolicyJobSourceVolumeReference(m map[string]json.RawMessage,
 		return
 	}
 	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalVolumeRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototypeEnterpriseIdentity : Identifies an enterprise by a unique property.
+// Models which "extend" this model:
+// - BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN
+// This model "extends" BackupPolicyScopePrototype
+type BackupPolicyScopePrototypeEnterpriseIdentity struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentity) isaBackupPolicyScopePrototypeEnterpriseIdentity() bool {
+	return true
+}
+
+type BackupPolicyScopePrototypeEnterpriseIdentityIntf interface {
+	BackupPolicyScopePrototypeIntf
+	isaBackupPolicyScopePrototypeEnterpriseIdentity() bool
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentity) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopePrototypeEnterpriseIdentity unmarshals an instance of BackupPolicyScopePrototypeEnterpriseIdentity from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototypeEnterpriseIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototypeEnterpriseIdentity)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopeAccountReference : BackupPolicyScopeAccountReference struct
+// This model "extends" BackupPolicyScope
+type BackupPolicyScopeAccountReference struct {
+	// The unique identifier for this account.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyScopeAccountReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeAccountReferenceResourceTypeAccountConst = "account"
+)
+
+func (*BackupPolicyScopeAccountReference) isaBackupPolicyScope() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopeAccountReference unmarshals an instance of BackupPolicyScopeAccountReference from the specified map of raw messages.
+func UnmarshalBackupPolicyScopeAccountReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopeAccountReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopeEnterpriseReference : BackupPolicyScopeEnterpriseReference struct
+// This model "extends" BackupPolicyScope
+type BackupPolicyScopeEnterpriseReference struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The unique identifier for this enterprise.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyScopeEnterpriseReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeEnterpriseReferenceResourceTypeEnterpriseConst = "enterprise"
+)
+
+func (*BackupPolicyScopeEnterpriseReference) isaBackupPolicyScope() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopeEnterpriseReference unmarshals an instance of BackupPolicyScopeEnterpriseReference from the specified map of raw messages.
+func UnmarshalBackupPolicyScopeEnterpriseReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopeEnterpriseReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -87363,7 +89994,7 @@ type PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 }
 
@@ -88009,10 +90640,6 @@ type ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext str
 	// The CRN for this virtual network interface.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted, and provides
-	// some supplementary information.
-	Deleted *VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted `json:"deleted,omitempty"`
-
 	// The URL for this virtual network interface.
 	Href *string `json:"href" validate:"required"`
 
@@ -88040,10 +90667,6 @@ func (*ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext) 
 func UnmarshalReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted)
 	if err != nil {
 		return
 	}
@@ -90128,16 +92751,15 @@ type ShareMountTargetVirtualNetworkInterfacePrototypeVirtualNetworkInterfaceProt
 	// an available address on the subnet will be automatically selected and reserved.
 	PrimaryIP VirtualNetworkInterfacePrimaryIPPrototypeIntf `json:"primary_ip,omitempty"`
 
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// The resource group to use for this virtual network interface. If unspecified, the
+	// share's resource group will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC
 	// for the subnet is used.
 	SecurityGroups []SecurityGroupIdentityIntf `json:"security_groups,omitempty"`
 
-	// The associated subnet. Required if `primary_ip` does not specify a reserved IP and
-	// `primary_ip.address` is not specified.
+	// The associated subnet. Required if `primary_ip` does not specify a reserved IP.
 	Subnet SubnetIdentityIntf `json:"subnet,omitempty"`
 }
 
@@ -90650,7 +93272,7 @@ type SharePrototypeShareBySize struct {
 	InitialOwner *ShareInitialOwner `json:"initial_owner,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The size of the file share rounded up to the next gigabyte.
@@ -91526,6 +94148,358 @@ func UnmarshalTrustedProfileIdentityTrustedProfileByID(m map[string]json.RawMess
 	return
 }
 
+// VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype : Manually specify the DNS server addresses for this VPC.
+// This model "extends" VpcdnsResolverPrototype
+type VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype struct {
+	// The DNS servers to use for this VPC. All the DNS servers must either:
+	//
+	// - have a unique `zone_affinity`, or
+	// - not have a `zone_affinity`.
+	ManualServers []DnsServerPrototype `json:"manual_servers" validate:"required"`
+
+	// The type of the DNS resolver to use.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype.Type property.
+// The type of the DNS resolver to use.
+const (
+	VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototypeTypeManualConst = "manual"
+)
+
+// NewVpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype : Instantiate VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype (Generic Model Constructor)
+func (*VpcV1) NewVpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype(manualServers []DnsServerPrototype, typeVar string) (_model *VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype, err error) {
+	_model = &VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype{
+		ManualServers: manualServers,
+		Type:          core.StringPtr(typeVar),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype) isaVpcdnsResolverPrototype() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype unmarshals an instance of VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype from the specified map of raw messages.
+func UnmarshalVpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype)
+	err = core.UnmarshalModel(m, "manual_servers", &obj.ManualServers, UnmarshalDnsServerPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype : The system will provide DNS server addresses for this VPC. The system-provided DNS server addresses depend on whether
+// any endpoint gateways reside in the VPC, and whether a
+// [DNS Services](https://cloud.ibm.com/docs/dns-svcs) instance is configured for the VPC.
+// This model "extends" VpcdnsResolverPrototype
+type VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype struct {
+	// The type of the DNS resolver to use.
+	Type *string `json:"type,omitempty"`
+}
+
+// Constants associated with the VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype.Type property.
+// The type of the DNS resolver to use.
+const (
+	VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototypeTypeSystemConst = "system"
+)
+
+func (*VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype) isaVpcdnsResolverPrototype() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype unmarshals an instance of VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype from the specified map of raw messages.
+func UnmarshalVpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverPrototypeVpcdnsResolverTypeSystemPrototype)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverTypeDelegated : The DNS server addresses are delegated to the DNS resolver of another VPC.
+// This model "extends" VpcdnsResolver
+type VpcdnsResolverTypeDelegated struct {
+	// The DNS servers for this VPC. The servers are populated:
+	//
+	// - by the system when `dns.resolver.type` is `system`
+	// - using the DNS servers in `dns.resolver.vpc` when `dns.resolver.type` is `delegated`
+	// - using `dns.resolver.manual_servers` when the `dns.resolver.type` is `manual`.
+	Servers []DnsServer `json:"servers" validate:"required"`
+
+	// The type of the DNS resolver used for the VPC.
+	Type *string `json:"type" validate:"required"`
+
+	// The VPC whose DNS resolver provides the DNS server addresses for this VPC.
+	//
+	// The VPC may be remote and therefore may not be directly retrievable.
+	VPC *VPCReferenceDnsResolverContext `json:"vpc" validate:"required"`
+}
+
+// Constants associated with the VpcdnsResolverTypeDelegated.Type property.
+// The type of the DNS resolver used for the VPC.
+const (
+	VpcdnsResolverTypeDelegatedTypeDelegatedConst = "delegated"
+)
+
+func (*VpcdnsResolverTypeDelegated) isaVpcdnsResolver() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverTypeDelegated unmarshals an instance of VpcdnsResolverTypeDelegated from the specified map of raw messages.
+func UnmarshalVpcdnsResolverTypeDelegated(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverTypeDelegated)
+	err = core.UnmarshalModel(m, "servers", &obj.Servers, UnmarshalDnsServer)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReferenceDnsResolverContext)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverTypeManual : The DNS server addresses are manually specified.
+// This model "extends" VpcdnsResolver
+type VpcdnsResolverTypeManual struct {
+	// The DNS servers for this VPC. The servers are populated:
+	//
+	// - by the system when `dns.resolver.type` is `system`
+	// - using the DNS servers in `dns.resolver.vpc` when `dns.resolver.type` is `delegated`
+	// - using `dns.resolver.manual_servers` when the `dns.resolver.type` is `manual`.
+	Servers []DnsServer `json:"servers" validate:"required"`
+
+	// The manually specified DNS servers for this VPC.
+	ManualServers []DnsServer `json:"manual_servers" validate:"required"`
+
+	// The type of the DNS resolver used for the VPC.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the VpcdnsResolverTypeManual.Type property.
+// The type of the DNS resolver used for the VPC.
+const (
+	VpcdnsResolverTypeManualTypeManualConst = "manual"
+)
+
+func (*VpcdnsResolverTypeManual) isaVpcdnsResolver() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverTypeManual unmarshals an instance of VpcdnsResolverTypeManual from the specified map of raw messages.
+func UnmarshalVpcdnsResolverTypeManual(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverTypeManual)
+	err = core.UnmarshalModel(m, "servers", &obj.Servers, UnmarshalDnsServer)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "manual_servers", &obj.ManualServers, UnmarshalDnsServer)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverTypeSystem : The DNS server addresses are provided by the system and depend on the configuration.
+// This model "extends" VpcdnsResolver
+type VpcdnsResolverTypeSystem struct {
+	// The DNS servers for this VPC. The servers are populated:
+	//
+	// - by the system when `dns.resolver.type` is `system`
+	// - using the DNS servers in `dns.resolver.vpc` when `dns.resolver.type` is `delegated`
+	// - using `dns.resolver.manual_servers` when the `dns.resolver.type` is `manual`.
+	Servers []DnsServer `json:"servers" validate:"required"`
+
+	// The configuration of the system DNS resolver for this VPC.
+	//
+	// - `custom_resolver`: A custom DNS resolver is configured for this VPC.
+	//
+	// - `private_resolver`: A private DNS resolver is configured for this VPC. Applicable when
+	//   the VPC has either or both of the following:
+	//
+	//     - at least one endpoint gateway residing in it
+	//     - a [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it
+	//
+	// - `default`: The provider default DNS resolvers are configured for this VPC.
+	//
+	//   This system DNS resolver configuration is used when the VPC has:
+	//
+	//   - no custom DNS resolver configured for it, and
+	//   - no endpoint gateways residing in it, and
+	//   - no [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it.
+	Configuration *string `json:"configuration" validate:"required"`
+
+	// The type of the DNS resolver used for the VPC.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the VpcdnsResolverTypeSystem.Configuration property.
+// The configuration of the system DNS resolver for this VPC.
+//
+// - `custom_resolver`: A custom DNS resolver is configured for this VPC.
+//
+//   - `private_resolver`: A private DNS resolver is configured for this VPC. Applicable when
+//     the VPC has either or both of the following:
+//
+//   - at least one endpoint gateway residing in it
+//
+//   - a [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it
+//
+// - `default`: The provider default DNS resolvers are configured for this VPC.
+//
+//	This system DNS resolver configuration is used when the VPC has:
+//
+//	- no custom DNS resolver configured for it, and
+//	- no endpoint gateways residing in it, and
+//	- no [DNS Services](https://cloud.ibm.com/docs/dns-svcs) private zone configured for it.
+const (
+	VpcdnsResolverTypeSystemConfigurationCustomResolverConst  = "custom_resolver"
+	VpcdnsResolverTypeSystemConfigurationDefaultConst         = "default"
+	VpcdnsResolverTypeSystemConfigurationPrivateResolverConst = "private_resolver"
+)
+
+// Constants associated with the VpcdnsResolverTypeSystem.Type property.
+// The type of the DNS resolver used for the VPC.
+const (
+	VpcdnsResolverTypeSystemTypeSystemConst = "system"
+)
+
+func (*VpcdnsResolverTypeSystem) isaVpcdnsResolver() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverTypeSystem unmarshals an instance of VpcdnsResolverTypeSystem from the specified map of raw messages.
+func UnmarshalVpcdnsResolverTypeSystem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverTypeSystem)
+	err = core.UnmarshalModel(m, "servers", &obj.Servers, UnmarshalDnsServer)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "configuration", &obj.Configuration)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverVPCPatchVPCIdentityByCRN : VpcdnsResolverVPCPatchVPCIdentityByCRN struct
+// This model "extends" VpcdnsResolverVPCPatch
+type VpcdnsResolverVPCPatchVPCIdentityByCRN struct {
+	// The CRN for this VPC.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewVpcdnsResolverVPCPatchVPCIdentityByCRN : Instantiate VpcdnsResolverVPCPatchVPCIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewVpcdnsResolverVPCPatchVPCIdentityByCRN(crn string) (_model *VpcdnsResolverVPCPatchVPCIdentityByCRN, err error) {
+	_model = &VpcdnsResolverVPCPatchVPCIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*VpcdnsResolverVPCPatchVPCIdentityByCRN) isaVpcdnsResolverVPCPatch() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverVPCPatchVPCIdentityByCRN unmarshals an instance of VpcdnsResolverVPCPatchVPCIdentityByCRN from the specified map of raw messages.
+func UnmarshalVpcdnsResolverVPCPatchVPCIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverVPCPatchVPCIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverVPCPatchVPCIdentityByHref : VpcdnsResolverVPCPatchVPCIdentityByHref struct
+// This model "extends" VpcdnsResolverVPCPatch
+type VpcdnsResolverVPCPatchVPCIdentityByHref struct {
+	// The URL for this VPC.
+	Href *string `json:"href" validate:"required"`
+}
+
+// NewVpcdnsResolverVPCPatchVPCIdentityByHref : Instantiate VpcdnsResolverVPCPatchVPCIdentityByHref (Generic Model Constructor)
+func (*VpcV1) NewVpcdnsResolverVPCPatchVPCIdentityByHref(href string) (_model *VpcdnsResolverVPCPatchVPCIdentityByHref, err error) {
+	_model = &VpcdnsResolverVPCPatchVPCIdentityByHref{
+		Href: core.StringPtr(href),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*VpcdnsResolverVPCPatchVPCIdentityByHref) isaVpcdnsResolverVPCPatch() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverVPCPatchVPCIdentityByHref unmarshals an instance of VpcdnsResolverVPCPatchVPCIdentityByHref from the specified map of raw messages.
+func UnmarshalVpcdnsResolverVPCPatchVPCIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverVPCPatchVPCIdentityByHref)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VpcdnsResolverVPCPatchVPCIdentityByID : VpcdnsResolverVPCPatchVPCIdentityByID struct
+// This model "extends" VpcdnsResolverVPCPatch
+type VpcdnsResolverVPCPatchVPCIdentityByID struct {
+	// The unique identifier for this VPC.
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewVpcdnsResolverVPCPatchVPCIdentityByID : Instantiate VpcdnsResolverVPCPatchVPCIdentityByID (Generic Model Constructor)
+func (*VpcV1) NewVpcdnsResolverVPCPatchVPCIdentityByID(id string) (_model *VpcdnsResolverVPCPatchVPCIdentityByID, err error) {
+	_model = &VpcdnsResolverVPCPatchVPCIdentityByID{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*VpcdnsResolverVPCPatchVPCIdentityByID) isaVpcdnsResolverVPCPatch() bool {
+	return true
+}
+
+// UnmarshalVpcdnsResolverVPCPatchVPCIdentityByID unmarshals an instance of VpcdnsResolverVPCPatchVPCIdentityByID from the specified map of raw messages.
+func UnmarshalVpcdnsResolverVPCPatchVPCIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VpcdnsResolverVPCPatchVPCIdentityByID)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPCIdentityByCRN : VPCIdentityByCRN struct
 // This model "extends" VPCIdentity
 type VPCIdentityByCRN struct {
@@ -91997,6 +94971,27 @@ type VPNGatewayConnectionPolicyMode struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// The local CIDRs for this resource.
 	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
 
@@ -92090,6 +95085,10 @@ func UnmarshalVPNGatewayConnectionPolicyMode(m map[string]json.RawMessage, resul
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
 	if err != nil {
 		return
 	}
@@ -92324,6 +95323,27 @@ type VPNGatewayConnectionStaticRouteMode struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// Routing protocols are disabled for this VPN gateway connection.
 	RoutingProtocol *string `json:"routing_protocol" validate:"required"`
 
@@ -92426,6 +95446,10 @@ func UnmarshalVPNGatewayConnectionStaticRouteMode(m map[string]json.RawMessage, 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "routing_protocol", &obj.RoutingProtocol)
 	if err != nil {
 		return
@@ -92450,11 +95474,43 @@ type VPNGatewayPolicyMode struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -92468,9 +95524,6 @@ type VPNGatewayPolicyMode struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -92480,19 +95533,37 @@ type VPNGatewayPolicyMode struct {
 	Mode *string `json:"mode" validate:"required"`
 }
 
+// Constants associated with the VPNGatewayPolicyMode.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayPolicyModeHealthStateDegradedConst     = "degraded"
+	VPNGatewayPolicyModeHealthStateFaultedConst      = "faulted"
+	VPNGatewayPolicyModeHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayPolicyModeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayPolicyMode.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayPolicyModeLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayPolicyModeLifecycleStateFailedConst    = "failed"
+	VPNGatewayPolicyModeLifecycleStatePendingConst   = "pending"
+	VPNGatewayPolicyModeLifecycleStateStableConst    = "stable"
+	VPNGatewayPolicyModeLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayPolicyModeLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayPolicyModeLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGatewayPolicyMode.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayPolicyModeResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGatewayPolicyMode.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayPolicyModeStatusAvailableConst = "available"
-	VPNGatewayPolicyModeStatusDeletingConst  = "deleting"
-	VPNGatewayPolicyModeStatusFailedConst    = "failed"
-	VPNGatewayPolicyModeStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGatewayPolicyMode.Mode property.
@@ -92520,11 +95591,27 @@ func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -92541,10 +95628,6 @@ func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -92690,11 +95773,43 @@ type VPNGatewayRouteMode struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -92708,9 +95823,6 @@ type VPNGatewayRouteMode struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -92720,19 +95832,37 @@ type VPNGatewayRouteMode struct {
 	Mode *string `json:"mode" validate:"required"`
 }
 
+// Constants associated with the VPNGatewayRouteMode.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayRouteModeHealthStateDegradedConst     = "degraded"
+	VPNGatewayRouteModeHealthStateFaultedConst      = "faulted"
+	VPNGatewayRouteModeHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayRouteModeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayRouteMode.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayRouteModeLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayRouteModeLifecycleStateFailedConst    = "failed"
+	VPNGatewayRouteModeLifecycleStatePendingConst   = "pending"
+	VPNGatewayRouteModeLifecycleStateStableConst    = "stable"
+	VPNGatewayRouteModeLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayRouteModeLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayRouteModeLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGatewayRouteMode.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayRouteModeResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGatewayRouteMode.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayRouteModeStatusAvailableConst = "available"
-	VPNGatewayRouteModeStatusDeletingConst  = "deleting"
-	VPNGatewayRouteModeStatusFailedConst    = "failed"
-	VPNGatewayRouteModeStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGatewayRouteMode.Mode property.
@@ -92760,11 +95890,27 @@ func UnmarshalVPNGatewayRouteMode(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -92781,10 +95927,6 @@ func UnmarshalVPNGatewayRouteMode(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -93699,6 +96841,41 @@ func (*ZoneIdentityByName) isaZoneIdentity() bool {
 func UnmarshalZoneIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ZoneIdentityByName)
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN : BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN struct
+// This model "extends" BackupPolicyScopePrototypeEnterpriseIdentity
+type BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN : Instantiate BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN(crn string) (_model *BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN, err error) {
+	_model = &BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN) isaBackupPolicyScopePrototypeEnterpriseIdentity() bool {
+	return true
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN unmarshals an instance of BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
@@ -97397,6 +100574,91 @@ func (pager *VPCAddressPrefixesPager) GetNext() (page []AddressPrefix, err error
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *VPCAddressPrefixesPager) GetAll() (allItems []AddressPrefix, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// VPCDnsResolutionBindingsPager can be used to simplify the use of the "ListVPCDnsResolutionBindings" method.
+type VPCDnsResolutionBindingsPager struct {
+	hasNext     bool
+	options     *ListVPCDnsResolutionBindingsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPCDnsResolutionBindingsPager returns a new VPCDnsResolutionBindingsPager instance.
+func (vpc *VpcV1) NewVPCDnsResolutionBindingsPager(options *ListVPCDnsResolutionBindingsOptions) (pager *VPCDnsResolutionBindingsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPCDnsResolutionBindingsOptions = *options
+	pager = &VPCDnsResolutionBindingsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPCDnsResolutionBindingsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPCDnsResolutionBindingsPager) GetNextWithContext(ctx context.Context) (page []VpcdnsResolutionBinding, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPCDnsResolutionBindingsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.DnsResolutionBindings
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPCDnsResolutionBindingsPager) GetAllWithContext(ctx context.Context) (allItems []VpcdnsResolutionBinding, err error) {
+	for pager.HasNext() {
+		var nextPage []VpcdnsResolutionBinding
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPCDnsResolutionBindingsPager) GetNext() (page []VpcdnsResolutionBinding, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPCDnsResolutionBindingsPager) GetAll() (allItems []VpcdnsResolutionBinding, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
