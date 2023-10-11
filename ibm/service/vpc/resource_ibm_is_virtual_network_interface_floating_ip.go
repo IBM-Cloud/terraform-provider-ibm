@@ -95,7 +95,7 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPCreate(context context.Contex
 	d.SetId(MakeTerraformVNIFloatingIpID(vniId, fipId))
 	resourceIBMIsVirtualNetworkInterfaceFloatingIPGet(d, floatingIP)
 
-	return resourceIBMIsVirtualNetworkInterfaceFloatingIPRead(context, d, meta)
+	return nil
 }
 
 func resourceIBMIsVirtualNetworkInterfaceFloatingIPRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
