@@ -142,6 +142,31 @@ func ResourceIBMIsVPNServer() *schema.Resource {
 				Computed:    true,
 				Description: "The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.",
 			},
+			"health_reasons": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this health state.",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this health state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this health state.",
+						},
+					},
+				},
+			},
 			"hostname": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -161,6 +186,32 @@ func ResourceIBMIsVPNServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The lifecycle state of the VPN server.",
+			},
+			"lifecycle_reasons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
+						},
+					},
+				},
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
@@ -680,6 +731,11 @@ func resourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("health_state", vpnServer.HealthState); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_state: %s", err))
 	}
+	if vpnServer.HealthReasons != nil {
+		if err := d.Set("health_reasons", resourceVPNServerFlattenHealthReasons(vpnServer.HealthReasons)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_reasons: %s", err))
+		}
+	}
 	if err = d.Set("hostname", vpnServer.Hostname); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting hostname: %s", err))
 	}
@@ -688,6 +744,11 @@ func resourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceData,
 	}
 	if err = d.Set("lifecycle_state", vpnServer.LifecycleState); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+	}
+	if vpnServer.LifecycleReasons != nil {
+		if err := d.Set("lifecycle_reasons", resourceVPNServerFlattenLifecycleReasons(vpnServer.LifecycleReasons)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_reasons: %s", err))
+		}
 	}
 	privateIps := []map[string]interface{}{}
 	for _, privateIpsItem := range vpnServer.PrivateIps {
@@ -977,4 +1038,36 @@ func isWaitForVPNServerDeleted(context context.Context, sess *vpcv1.VpcV1, d *sc
 	}
 
 	return stateConf.WaitForState()
+}
+
+func resourceVPNServerFlattenLifecycleReasons(lifecycleReasons []vpcv1.VPNServerLifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
+	lifecycleReasonsList = make([]map[string]interface{}, 0)
+	for _, lr := range lifecycleReasons {
+		currentLR := map[string]interface{}{}
+		if lr.Code != nil && lr.Message != nil {
+			currentLR[isInstanceLifecycleReasonsCode] = *lr.Code
+			currentLR[isInstanceLifecycleReasonsMessage] = *lr.Message
+			if lr.MoreInfo != nil {
+				currentLR[isInstanceLifecycleReasonsMoreInfo] = *lr.MoreInfo
+			}
+			lifecycleReasonsList = append(lifecycleReasonsList, currentLR)
+		}
+	}
+	return lifecycleReasonsList
+}
+
+func resourceVPNServerFlattenHealthReasons(healthReasons []vpcv1.VPNServerHealthReason) (healthReasonsList []map[string]interface{}) {
+	healthReasonsList = make([]map[string]interface{}, 0)
+	for _, hr := range healthReasons {
+		currentHR := map[string]interface{}{}
+		if hr.Code != nil && hr.Message != nil {
+			currentHR[isVolumeHealthReasonsCode] = *hr.Code
+			currentHR[isVolumeHealthReasonsMessage] = *hr.Message
+			if hr.MoreInfo != nil {
+				currentHR[isVolumeHealthReasonsMoreInfo] = *hr.MoreInfo
+			}
+			healthReasonsList = append(healthReasonsList, currentHR)
+		}
+	}
+	return healthReasonsList
 }

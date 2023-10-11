@@ -22,18 +22,27 @@ var iamCredentialsTtl = "259200"          // 3 days in seconds
 var modifiedIamCredentialsTtl = "7776000" // 3 months in seconds
 
 /*
-   api_key_id:
-     $ref: '#/components/schemas/ApiKeyId'
-   service_id:
-     $ref: '#/components/schemas/ServiceId'
-   service_id_is_static:
-     $ref: '#/components/schemas/ServiceIdIsStatic'
-   reuse_api_key:
-     $ref: '#/components/schemas/ReuseApiKey'
-   rotation:
-     $ref: '#/components/schemas/RotationPolicy'
-   next_rotation_date:
+api_key_id:
 
+	$ref: '#/components/schemas/ApiKeyId'
+
+service_id:
+
+	$ref: '#/components/schemas/ServiceId'
+
+service_id_is_static:
+
+	$ref: '#/components/schemas/ServiceIdIsStatic'
+
+reuse_api_key:
+
+	$ref: '#/components/schemas/ReuseApiKey'
+
+rotation:
+
+	$ref: '#/components/schemas/RotationPolicy'
+
+next_rotation_date:
 */
 func TestAccIbmSmIamCredentialsSecretBasic(t *testing.T) {
 	resourceName := "ibm_sm_iam_credentials_secret.sm_iam_credentials_secret"
