@@ -1,3 +1,9 @@
+# 1.58.1 (Oct 04, 2023)
+
+Bug Fixes
+* Timing issue while destroying Key Protect resources ([4837](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4837))
+* ibm_cos_bucket data lookup is throwing NoSuchWebsiteConfiguration in new version 1.58.0 ([4838](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4838))
+* Metrics router and atracker: Updated platform-services-go-sdk to fetch Madrid endpoint ([4830](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4830))
 # 1.58.0 (Sep 29, 2023)
 
 Features
