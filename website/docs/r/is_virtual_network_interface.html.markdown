@@ -30,17 +30,10 @@ You can specify the following arguments for this resource.
 - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
 - `enable_infrastructure_nat` - (Optional, Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
 
-~> **NOTE** to update/add new `ips` only existing `reserved_ip` is supported, new reserved_ip creation on update is not supported as it leads to unmanaged(dangling) reserved ips.
+~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
 - `ips` - (Optional, List) The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.
 	Nested schema for **ips**:
-	- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (Required, String) Link to documentation about deleted resources.
-	- `href` - (Required, String) The URL for this reserved IP.
 	- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
-	- `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-	- `resource_type` - (Computed, String) The resource type.
 - `name` - (Optional, String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
 - `primary_ip` - (Optional, List) The reserved IP for this virtual network interface.
 	Nested schema for **primary_ip**:
