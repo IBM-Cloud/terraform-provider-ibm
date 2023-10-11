@@ -125,8 +125,6 @@ In addition to all argument references listed, you can access the following attr
     - `resource_type` - (String) The resource type.
 
 - `resource_type` - (String) The type of resource referenced.
-- `version` - Version of the VPNServer.
-
 
 ## Import
 

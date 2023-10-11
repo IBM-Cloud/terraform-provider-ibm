@@ -387,7 +387,7 @@ func resourceIbmSmKvSecretUpdate(context context.Context, d *schema.ResourceData
 			if hasChange {
 				// Before returning an error, call the read function to update the Terraform state with the change
 				// that was already applied to the metadata
-				resourceIbmSmArbitrarySecretRead(context, d, meta)
+				resourceIbmSmKvSecretRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] CreateSecretVersionWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("CreateSecretVersionWithContext failed %s\n%s", err, response))
@@ -406,7 +406,7 @@ func resourceIbmSmKvSecretUpdate(context context.Context, d *schema.ResourceData
 		if err != nil {
 			if hasChange {
 				// Call the read function to update the Terraform state with the change already applied to the metadata
-				resourceIbmSmArbitrarySecretRead(context, d, meta)
+				resourceIbmSmKvSecretRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))

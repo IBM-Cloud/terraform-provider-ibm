@@ -37,6 +37,8 @@ func TestAccIbmSmImportedCertificateDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate", "serial_number"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate", "validity.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate", "certificate"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate_by_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_imported_certificate.sm_imported_certificate_by_name", "secret_group_name"),
 				),
 			},
 		},
@@ -61,5 +63,12 @@ func testAccCheckIbmSmImportedCertificateDataSourceConfigBasic() string {
 			region = "%s"
 			secret_id = ibm_sm_imported_certificate.sm_imported_certificate_instance.secret_id
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerImportedCertificatePathToCertificate, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+
+		data "ibm_sm_imported_certificate" "sm_imported_certificate_by_name" {
+			instance_id   = "%s"
+			region = "%s"
+			name = ibm_sm_imported_certificate.sm_imported_certificate_instance.name
+			secret_group_name = "default"
+		}
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerImportedCertificatePathToCertificate, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

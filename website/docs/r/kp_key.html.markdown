@@ -11,9 +11,8 @@ description: |-
 
 Create, or delete a Key Protect standard or root key. To use the `ibm_kp_key` resource, the region parameter in the `provider.tf` file must be set to the same region that your Key Protect service instance. If region parameter is not specified, `us-south` is used as default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by  Terraform and the  Terraform action fails.
 
-**Note**
-
-The `ibm_kp_key` resource will be deprecated shortly, as a replacement, you can use `ibm_kms_key` resource.
+~>**Deprecated:**
+The `ibm_kp_key` resource is deprecated, as a replacement, you can use `ibm_kms_key` resource.
 
 
 ## Example usage
@@ -35,9 +34,15 @@ resource "ibm_cos_bucket" "smart-us-south" {
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
   storage_class        = "smart"
-  key_protect          = ibm_kp_key.test.id
+  kms_key_crn          = ibm_kp_key.test.id
 }
 ```
+
+  **Note:**
+  
+ `key_protect` attribute to associate a kms_key with a COS bucket has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
+
+
 ## Argument reference
 Review the argument references that you can specify for your resource.
 

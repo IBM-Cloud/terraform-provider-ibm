@@ -55,6 +55,7 @@ const (
 	isInstanceCPUArch                 = "architecture"
 	isInstanceCPUCores                = "cores"
 	isInstanceCPUCount                = "count"
+	isInstanceCPUManufacturer         = "manufacturer"
 	isInstanceGpu                     = "gpu"
 	isInstanceGpuCores                = "cores"
 	isInstanceGpuCount                = "count"
@@ -173,10 +174,6 @@ func ResourceIBMISInstance() *schema.Resource {
 		},
 
 		CustomizeDiff: customdiff.All(
-			customdiff.Sequence(
-				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-					return flex.InstanceProfileValidate(diff)
-				}),
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceTagsCustomizeDiff(diff)
@@ -718,6 +715,11 @@ func ResourceIBMISInstance() *schema.Resource {
 						isInstanceCPUCount: {
 							Type:     schema.TypeInt,
 							Computed: true,
+						},
+						isInstanceCPUManufacturer: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer",
 						},
 					},
 				},
@@ -3137,6 +3139,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		currentCPU := map[string]interface{}{}
 		currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
 		currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
+		currentCPU[isInstanceCPUManufacturer] = instance.Vcpu.Manufacturer
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)

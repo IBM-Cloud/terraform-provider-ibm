@@ -21,8 +21,6 @@ func TestAccIBMCdTektonPipelineTriggerPropertyBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.TriggerProperty
 	name := "trig-prop-1"
 	typeVar := "text"
-	typeVarUpdate := "text"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -36,13 +34,6 @@ func TestAccIBMCdTektonPipelineTriggerPropertyBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic("", "", name, typeVarUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVarUpdate),
-				),
-			},
 		},
 	})
 }
@@ -50,10 +41,9 @@ func TestAccIBMCdTektonPipelineTriggerPropertyBasic(t *testing.T) {
 func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 	var conf cdtektonpipelinev2.TriggerProperty
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	typeVar := "text"
 	value := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	typeVar := "text"
 	path := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
-	typeVarUpdate := "text"
 	valueUpdate := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	pathUpdate := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
@@ -63,20 +53,20 @@ func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineTriggerPropertyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, typeVar, value, path),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, value, typeVar, path),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineTriggerPropertyExists("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", conf),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "value", value),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, typeVarUpdate, valueUpdate, pathUpdate),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, valueUpdate, typeVar, pathUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVarUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "value", valueUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 				),
 			},
 			resource.TestStep{
@@ -157,7 +147,7 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic(pipelineID string
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerPropertyConfig(pipelineID string, triggerID string, name string, typeVar string, value string, path string) string {
+func testAccCheckIBMCdTektonPipelineTriggerPropertyConfig(pipelineID string, triggerID string, name string, value string, typeVar string, path string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`

@@ -428,28 +428,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
 			},
-			"whitelist": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"address": {
-							Description:  "Whitelist IP address in CIDR notation",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validate.ValidateCIDR,
-						},
-						"description": {
-							Description:  "Unique white list description",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringLenBetween(1, 32),
-						},
-					},
-				},
-				Deprecated:    "Whitelist is deprecated please use allowlist",
-				ConflictsWith: []string{"allowlist"},
-			},
 			"allowlist": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -469,7 +447,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				ConflictsWith: []string{"whitelist"},
 			},
 			"logical_replication_slot": {
 				Type:     schema.TypeSet,
@@ -823,6 +800,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						"cpu": {
 							Type:        schema.TypeList,
 							Description: "CPU Auto Scaling",
+							Deprecated:  "This field is deprecated, auto scaling cpu is unsupported by IBM Cloud Databases",
 							Optional:    true,
 							Computed:    true,
 							MaxItems:    1,
@@ -929,7 +907,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, enterprise",
+			AllowedValues:              "standard, enterprise, enterprise-sharding",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -951,18 +929,18 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 }
 
 type Params struct {
-	Version             string `json:"version,omitempty"`
-	KeyProtectKey       string `json:"disk_encryption_key_crn,omitempty"`
-	BackUpEncryptionCRN string `json:"backup_encryption_key_crn,omitempty"`
-	Memory              int    `json:"members_memory_allocation_mb,omitempty"`
-	Disk                int    `json:"members_disk_allocation_mb,omitempty"`
-	CPU                 int    `json:"members_cpu_allocation_count,omitempty"`
-	KeyProtectInstance  string `json:"disk_encryption_instance_crn,omitempty"`
-	ServiceEndpoints    string `json:"service-endpoints,omitempty"`
-	BackupID            string `json:"backup-id,omitempty"`
-	RemoteLeaderID      string `json:"remote_leader_id,omitempty"`
-	PITRDeploymentID    string `json:"point_in_time_recovery_deployment_id,omitempty"`
-	PITRTimeStamp       string `json:"point_in_time_recovery_time,omitempty"`
+	Version             string  `json:"version,omitempty"`
+	KeyProtectKey       string  `json:"disk_encryption_key_crn,omitempty"`
+	BackUpEncryptionCRN string  `json:"backup_encryption_key_crn,omitempty"`
+	Memory              int     `json:"members_memory_allocation_mb,omitempty"`
+	Disk                int     `json:"members_disk_allocation_mb,omitempty"`
+	CPU                 int     `json:"members_cpu_allocation_count,omitempty"`
+	KeyProtectInstance  string  `json:"disk_encryption_instance_crn,omitempty"`
+	ServiceEndpoints    string  `json:"service-endpoints,omitempty"`
+	BackupID            string  `json:"backup-id,omitempty"`
+	RemoteLeaderID      string  `json:"remote_leader_id,omitempty"`
+	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
+	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
 }
 
 type Group struct {
@@ -1005,6 +983,10 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 
 	if service == "mongodb" && _plan == "enterprise" {
 		service = "mongodbee"
+	}
+
+	if service == "mongodb" && _plan == "enterprise-sharding" {
+		service = "mongodbees"
 	}
 
 	getDefaultScalingGroupsOptions := cloudDatabasesClient.NewGetDefaultScalingGroupsOptions(service)
@@ -1329,7 +1311,11 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		if serviceName == "databases-for-mongodb" && plan == "enterprise-sharding" {
+			return diag.FromErr(fmt.Errorf("%s %s is not available yet in this region", serviceName, plan))
+		} else {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		}
 	}
 	if len(deployments) == 0 {
 		return diag.FromErr(fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan))
@@ -1423,12 +1409,21 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
 		params.RemoteLeaderID = remoteLeader.(string)
 	}
+
 	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
 		params.PITRDeploymentID = pitrID.(string)
 	}
-	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); ok {
-		params.PITRTimeStamp = pitrTime.(string)
+
+	pitrOk := !d.GetRawConfig().AsValueMap()["point_in_time_recovery_time"].IsNull()
+	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); pitrOk {
+		if !ok {
+			pitrTime = ""
+		}
+
+		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
+		params.PITRTimeStamp = &pitrTimeTrimmed
 	}
+
 	serviceEndpoint := d.Get("service_endpoints").(string)
 	params.ServiceEndpoints = serviceEndpoint
 	parameters, _ := json.Marshal(params)
@@ -1584,16 +1579,12 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	_, hasWhitelist := d.GetOk("whitelist")
 	_, hasAllowlist := d.GetOk("allowlist")
 
-	if hasWhitelist || hasAllowlist {
+	if hasAllowlist {
 		var ipAddresses *schema.Set
-		if hasWhitelist {
-			ipAddresses = d.Get("whitelist").(*schema.Set)
-		} else {
-			ipAddresses = d.Get("allowlist").(*schema.Set)
-		}
+
+		ipAddresses = d.Get("allowlist").(*schema.Set)
 
 		entries := flex.ExpandAllowlist(ipAddresses)
 
@@ -1894,8 +1885,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
-	_, hasWhitelist := d.GetOk("whitelist")
-
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
 		ID: &instanceID,
 	}
@@ -1906,11 +1895,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
 	}
 
-	if hasWhitelist {
-		d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	} else {
-		d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	}
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
@@ -2247,15 +2232,12 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChange("whitelist") || d.HasChange("allowlist") {
+	if d.HasChange("allowlist") {
 		_, hasAllowlist := d.GetOk("allowlist")
-		_, hasWhitelist := d.GetOk("whitelist")
 
 		var entries interface{}
 
-		if hasWhitelist {
-			_, entries = d.GetChange("whitelist")
-		} else if hasAllowlist {
+		if hasAllowlist {
 			_, entries = d.GetChange("allowlist")
 		}
 
@@ -2280,7 +2262,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", instanceID, err))
+				"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
 		}
 	}
 
@@ -3170,11 +3152,18 @@ func userUpdateCreate(userData map[string]interface{}, instanceID string, meta i
 		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
 	}
 
-	taskID := *changeUserPasswordResponse.Task.ID
-	updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+	updatePass := true // Assume that update password passed
 
-	if err != nil {
-		log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+	if userData["type"].(string) == "ops_manager" && response.StatusCode == 404 {
+		updatePass = false // when user_password api can't find an ops_manager user, it returns a 404 and does not get to the point of creating a task
+	} else {
+		// when user_password api can't find a database user, its task fails
+		taskID := *changeUserPasswordResponse.Task.ID
+		updatePass, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+		if err != nil {
+			log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+		}
 	}
 
 	// Updating the password has failed

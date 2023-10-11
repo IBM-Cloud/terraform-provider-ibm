@@ -95,7 +95,7 @@ resource "ibm_cos_bucket" "smart-us-south" {
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
   storage_class        = "smart"
-  key_protect          = data.ibm_kms_key.test.key.0.crn
+  kms_key_crn          = data.ibm_kms_key.test.key.0.crn
 }
 
 ```
@@ -168,7 +168,11 @@ In addition to all argument reference list, you can access the following attribu
   - `rule_id` - (String)  Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted.
 - `hard_quota` - (String) Maximum bytes for the bucket.
 - `id` - (String) The ID of the bucket.
-- `key_protect` - (String) The CRN of the IBM Key Protect instance where a root key is already provisioned. 
+- `kms_key_crn` - (String) The CRN of the IBM Key Protect instance where a root key is already provisioned. 
+  **Note:**
+
+ `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
+
 - `metrics_monitoring`- (List) Nested block with the following structure.
    
   Nested scheme for `metrics_monitoring`:
@@ -220,6 +224,8 @@ In addition to all argument reference list, you can access the following attribu
 **Note:**
 
  Either days or years should be provided for default retention, both cannot be used simultaneoulsy.
+
+ - `website_endpoint` - (String) Website endpoint, if the bucket is configured with a website. If not, this will be an empty string.
 
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.

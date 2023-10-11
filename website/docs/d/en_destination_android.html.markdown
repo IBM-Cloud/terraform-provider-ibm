@@ -58,6 +58,4 @@ In addition to all argument references listed, you can access the following attr
 
   - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
 
-  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
-
 - `updated_at` - (String) Last updated time.

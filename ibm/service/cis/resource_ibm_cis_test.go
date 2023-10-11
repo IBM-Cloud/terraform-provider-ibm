@@ -49,7 +49,7 @@ func TestAccIBMCisInstance_Basic(t *testing.T) {
 					testAccCheckIBMCisInstanceExists(name, &cisInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "internet-svcs"),
-					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "plan", "standard-next"),
 					resource.TestCheckResourceAttr(name, "location", "global"),
 				),
 			},
@@ -110,7 +110,7 @@ func TestAccIBMCisInstance_import(t *testing.T) {
 					testAccCheckIBMCisInstanceExists(resourceName, &cisInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "internet-svcs"),
-					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard-next"),
 					resource.TestCheckResourceAttr(resourceName, "location", "global"),
 				),
 			},
@@ -254,7 +254,7 @@ func testAccCheckIBMCisInstance_basic(CisResourceGroup string, name string) stri
 	  resource "ibm_cis" "cis" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
-		plan              = "standard"
+		plan              = "standar-next"
 		location          = "global"
 	  }
 				`, CisResourceGroup, name)

@@ -21,6 +21,35 @@ var payload = "secret-credentials"
 var modifiedPayload = "modified-credentials"
 
 func TestAccIbmSmArbitrarySecretBasic(t *testing.T) {
+	resourceName := "ibm_sm_arbitrary_secret.sm_arbitrary_secret_basic"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmArbitrarySecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: arbitrarySecretConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "1"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIbmSmArbitrarySecretAllArgs(t *testing.T) {
 	resourceName := "ibm_sm_arbitrary_secret.sm_arbitrary_secret"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,7 +57,7 @@ func TestAccIbmSmArbitrarySecretBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSmArbitrarySecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSmArbitrarySecretConfigBasic(),
+				Config: arbitrarySecretConfigAllArgs(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSmArbitrarySecretCreated(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
@@ -56,7 +85,15 @@ func TestAccIbmSmArbitrarySecretBasic(t *testing.T) {
 	})
 }
 
-var arbitrarySecretConfigFormat = `
+var arbitrarySecretBasicConfigFormat = `
+		resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret_basic" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			payload = "%s"
+		}`
+
+var arbitrarySecretFullConfigFormat = `
 		resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
 			instance_id   = "%s"
   			region        = "%s"
@@ -69,13 +106,18 @@ var arbitrarySecretConfigFormat = `
 			secret_group_id = "default"
 		}`
 
-func testAccCheckIbmSmArbitrarySecretConfigBasic() string {
-	return fmt.Sprintf(arbitrarySecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+func arbitrarySecretConfigBasic() string {
+	return fmt.Sprintf(arbitrarySecretBasicConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		arbitrarySecretName, payload)
+}
+
+func arbitrarySecretConfigAllArgs() string {
+	return fmt.Sprintf(arbitrarySecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		arbitrarySecretName, description, label, payload, expirationDate, customMetadata)
 }
 
 func testAccCheckIbmSmArbitrarySecretConfigUpdated() string {
-	return fmt.Sprintf(arbitrarySecretConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+	return fmt.Sprintf(arbitrarySecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		modifiedArbitrarySecretName, modifiedDescription, modifiedLabel, modifiedPayload, modifiedExpirationDate, modifiedCustomMetadata)
 }
 

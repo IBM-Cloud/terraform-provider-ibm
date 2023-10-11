@@ -304,7 +304,7 @@ resource "ibm_cos_bucket" "hpcs-enabled" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
-  key_protect          = ibm_kms_key.key.id
+  kms_key_crn          = ibm_kms_key.key.id
 }
 
 //HPCS - UKO plan
@@ -314,7 +314,7 @@ resource "ibm_cos_bucket" "hpcs-uko-enabled" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
-  key_protect           = var.hpcs_uko_rootkeycrn
+  kms_key_crn           = var.hpcs_uko_rootkeycrn
 }
 resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
@@ -394,5 +394,110 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
         days = 6
       }
     }
+  }
+}
+
+
+
+#COS static webhosting
+
+
+# Create a bucket
+resource "ibm_cos_bucket" "cos_bucket_website_configuration" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+
+data "ibm_iam_access_group" "public_access_group" {
+  access_group_name = "Public Access"
+}
+
+# Give public access to above mentioned bucket
+resource "ibm_iam_access_group_policy" "policy" { 
+  depends_on = [ibm_cos_bucket.cos_bucket_website_configuration] 
+  access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id 
+  roles = ["Object Reader"] 
+
+  resources { 
+    service = "cloud-object-storage" 
+    resource_type = "bucket" 
+    resource_instance_id = "COS instance guid"  # eg : 94xxxxxx-3xxx-4xxx-8xxx-7xxxxxxxxx7
+    resource = ibm_cos_bucket.cos_bucket_website_configuration.bucket_name
+  } 
+} 
+
+# Add basic website configuration on a COS bucket
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index.html"
+    }
+  }
+}
+
+# Add a request redirect website configuration on a COS bucket
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    redirect_all_requests_to{
+			host_name = "exampleBucketName"
+			protocol = "https"
+		}
+  }
+}
+
+
+# Add a website configuration on a COS bucket with routing rule
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index.html"
+    }
+    routing_rule {
+      condition {
+        key_prefix_equals = "pages/"
+      }
+      redirect {
+        replace_key_prefix_with = "web_pages/"
+      }
+    }
+  }
+}
+
+# Add a website configuration on a COS bucket with JSON routing rule
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+      }
+    index_document{
+      suffix = "index.html"
+    }
+   routing_rules = <<EOF
+			[{
+			    "Condition": {
+			        "KeyPrefixEquals": "pages/"
+			     },
+			     "Redirect": {
+			        "ReplaceKeyPrefixWith": "webpages/"
+			     }
+			 }]
+			 EOF
   }
 }

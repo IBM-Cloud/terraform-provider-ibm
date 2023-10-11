@@ -8,7 +8,7 @@ subcategory: "Activity Tracker"
 
 # ibm_atracker_routes
 
-Provides a read-only data source for atracker_routes. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source to retrieve information about atracker_routes. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 

@@ -364,11 +364,6 @@ func ResourceIBMIsVPNServer() *schema.Resource {
 				Description:  "The type of resource referenced.",
 			},
 
-			"version": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			isVPNServerAccessTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -770,10 +765,6 @@ func resourceIBMIsVPNServerRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
 	}
 
-	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting version: %s", err))
-	}
-
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpnServer.CRN, "", isVPNServerAccessTagType)
 	if err != nil {
 		log.Printf(
@@ -932,8 +923,6 @@ func resourceIBMIsVPNServerUpdate(context context.Context, d *schema.ResourceDat
 		hasChange = true
 	}
 
-	updateVPNServerOptions.SetIfMatch(d.Get("version").(string))
-
 	getVPNServerOptions := &vpcv1.GetVPNServerOptions{}
 	getVPNServerOptions.SetID(d.Id())
 	vpnServer, response, err := sess.GetVPNServerWithContext(context, getVPNServerOptions)
@@ -991,13 +980,24 @@ func resourceIBMIsVPNServerDelete(context context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	getVPNServerOptions := &vpcv1.GetVPNServerOptions{}
+	getVPNServerOptions.SetID(d.Id())
+	_, response, err := sess.GetVPNServerWithContext(context, getVPNServerOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetVPNServerWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("[ERROR] GetVPNServerWithContext failed %s\n%s", err, response))
+	}
+	etag := response.Headers.Get("Etag")
 	deleteVPNServerOptions := &vpcv1.DeleteVPNServerOptions{}
-
 	deleteVPNServerOptions.SetID(d.Id())
+	deleteVPNServerOptions.SetIfMatch(etag)
 
-	deleteVPNServerOptions.SetIfMatch(d.Get("version").(string))
-
-	response, err := sess.DeleteVPNServerWithContext(context, deleteVPNServerOptions)
+	response, err = sess.DeleteVPNServerWithContext(context, deleteVPNServerOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVPNServerWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("[ERROR] DeleteVPNServerWithContext failed %s\n%s", err, response))

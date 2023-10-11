@@ -30,6 +30,8 @@ func TestAccIbmSmPublicCertificateDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "common_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "key_algorithm"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate", "rotation.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate_by_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_public_certificate.sm_public_certificate_by_name", "secret_group_name"),
 				),
 			},
 		},
@@ -68,8 +70,15 @@ func testAccCheckIbmSmPublicCertificateDataSourceConfigBasic() string {
 			region        = "%s"
 			secret_id = ibm_sm_public_certificate.sm_public_certificate_instance.secret_id
 		}
+
+		data "ibm_sm_public_certificate" "sm_public_certificate_by_name" {
+			instance_id   = "%s"
+			region = "%s"
+			name = ibm_sm_public_certificate.sm_public_certificate_instance.name
+			secret_group_name = "default"
+		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateLetsEncryptEnvironment, acc.SecretsManagerPublicCertificateLetsEncryptPrivateKey,
 		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateCisCrn,
-		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerPublicCertificateCommonName,
-		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, generatePublicCertCommonName(),
+		acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

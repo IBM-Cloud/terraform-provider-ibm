@@ -19,7 +19,7 @@ import (
 )
 
 func TestAccIBMIAMTrustedProfilePolicyBasic(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -51,7 +51,7 @@ func TestAccIBMIAMTrustedProfilePolicyBasic(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Service(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -82,7 +82,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_ServiceType(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -104,7 +104,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_ServiceType(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -126,7 +126,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Group(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -148,7 +148,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Type(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -169,7 +169,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_import(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_trusted_profile_policy.policy"
 
@@ -197,7 +197,7 @@ func TestAccIBMIAMTrustedProfilePolicy_import(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_account_management(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_trusted_profile_policy.policy"
 
@@ -220,7 +220,7 @@ func TestAccIBMIAMTrustedProfilePolicy_account_management(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicyWithCustomRole(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
@@ -243,7 +243,7 @@ func TestAccIBMIAMTrustedProfilePolicyWithCustomRole(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -272,7 +272,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Tags(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -302,7 +302,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Tags(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Transaction_Id(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -325,7 +325,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Transaction_Id(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Weekly_Custom(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -361,7 +361,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Weekly_Custom(
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Weekly_All_Day(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -387,7 +387,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Weekly_All_Day
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Once(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -412,7 +412,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Time_Based_Conditions_Once(t *testin
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -437,7 +437,7 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Update_To_Time_Based_Conditions(t *t
 }
 
 func TestAccIBMIAMTrustedProfilePolicy_With_ServiceGroupID(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -498,7 +498,7 @@ func testAccCheckIBMIAMTrustedProfilePolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMTrustedProfilePolicyExists(n string, obj iampolicymanagementv1.V2Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMTrustedProfilePolicyExists(n string, obj iampolicymanagementv1.V2PolicyTemplateMetaData) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
