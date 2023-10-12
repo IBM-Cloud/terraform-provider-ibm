@@ -52,18 +52,18 @@ func ResourceIbmSccProfile() *schema.Resource {
 			},
 			"controls": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The array of controls that are used to create the profile.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"control_library_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The ID of the control library that contains the profile.",
 						},
 						"control_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The unique ID of the control inside the control library.",
 						},
 						"control_library_version": {
@@ -266,18 +266,13 @@ func ResourceIbmSccProfile() *schema.Resource {
 			},
 			"profile_version": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The version status of the profile.",
 			},
 			"version_group_label": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version group label of the profile.",
-			},
-			"instance_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The instance ID.",
 			},
 			"latest": {
 				Type:        schema.TypeBool,
@@ -372,6 +367,8 @@ func resourceIbmSccProfileCreate(context context.Context, d *schema.ResourceData
 	bodyModelMap["profile_type"] = "custom"
 	if _, ok := d.GetOk("controls"); ok {
 		bodyModelMap["controls"] = d.Get("controls")
+	} else {
+		bodyModelMap["controls"] = []interface{}{}
 	}
 	if _, ok := d.GetOk("default_parameters"); ok {
 		bodyModelMap["default_parameters"] = d.Get("default_parameters")
@@ -553,7 +550,9 @@ func resourceIbmSccProfileUpdate(context context.Context, d *schema.ResourceData
 	if d.HasChange("profile_description") {
 		hasChange = true
 	}
-
+	if d.HasChange("profile_version") {
+		hasChange = true
+	}
 	if hasChange {
 		if _, ok := d.GetOk("controls"); ok {
 			bodyModelMap["controls"] = d.Get("controls")
@@ -567,14 +566,16 @@ func resourceIbmSccProfileUpdate(context context.Context, d *schema.ResourceData
 		if _, ok := d.GetOk("profile_description"); ok {
 			bodyModelMap["profile_description"] = d.Get("profile_description")
 		}
-
+		if _, ok := d.GetOk("profile_version"); ok {
+			bodyModelMap["profile_version"] = d.Get("profile_version")
+		}
 		convertedModel, err := resourceIbmSccProfileMapToReplaceProfileOptions(bodyModelMap)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		replaceProfileOptions = convertedModel
-		replaceProfileOptions.SetProfileID(d.Id())
+		replaceProfileOptions.SetProfileID(d.Get("profile_id").(string))
 		_, response, err := securityandcompliancecenterapiClient.ReplaceProfileWithContext(context, replaceProfileOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ReplaceProfileWithContext failed %s\n%s", err, response)
@@ -678,6 +679,7 @@ func resourceIbmSccProfileMapToReplaceProfileOptions(modelMap map[string]interfa
 	model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
 	model.ProfileDescription = core.StringPtr(modelMap["profile_description"].(string))
 	model.ProfileType = core.StringPtr(modelMap["profile_type"].(string))
+	model.ProfileVersion = core.StringPtr(modelMap["profile_version"].(string))
 	controls := []securityandcompliancecenterapiv3.ProfileControlsPrototype{}
 	for _, controlsItem := range modelMap["controls"].([]interface{}) {
 		controlsItemModel, err := resourceIbmSccProfileMapToProfileControlsPrototype(controlsItem.(map[string]interface{}))
