@@ -417,9 +417,6 @@ func dataSourceIBMIsVPNGatewayRead(context context.Context, d *schema.ResourceDa
 	if err = d.Set("resource_type", vpnGateway.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
-	if err = d.Set("status", vpnGateway.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
-	}
 	if err = d.Set("health_state", vpnGateway.HealthState); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_state: %s", err))
 	}
@@ -525,9 +522,6 @@ func dataSourceVPNGatewayMembersToMap(membersItem vpcv1.VPNGatewayMember) (membe
 	}
 	if membersItem.Role != nil {
 		membersMap["role"] = membersItem.Role
-	}
-	if membersItem.Status != nil {
-		membersMap["status"] = membersItem.Status
 	}
 
 	return membersMap

@@ -37,6 +37,10 @@ const (
 	isVPNGatewayPrivateIPAddress  = "private_ip_address"
 	isVPNGatewayPrivateIPAddress2 = "private_ip_address2"
 	isVPNGatewayAccessTags        = "access_tags"
+	isVPNGatewayHealthState       = "health_state"
+	isVPNGatewayHealthReasons     = "health_reasons"
+	isVPNGatewayLifecycleState    = "lifecycle_state"
+	isVPNGatewayLifecycleReasons  = "lifecycle_reasons"
 )
 
 func ResourceIBMISVPNGateway() *schema.Resource {
@@ -96,12 +100,12 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 				Description: "The status of the VPN gateway",
 			},
 
-			"health_state": &schema.Schema{
+			isVPNGatewayHealthState: &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.",
 			},
-			"health_reasons": {
+			isVPNGatewayHealthReasons: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -209,12 +213,12 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Created Time of the VPN Gateway",
 			},
-			"lifecycle_state": &schema.Schema{
+			isVPNGatewayLifecycleState: &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The lifecycle state of the VPN route.",
 			},
-			"lifecycle_reasons": {
+			isVPNGatewayLifecycleReasons: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The reasons for the current lifecycle_state (if any).",
@@ -472,7 +476,7 @@ func isVpnGatewayRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.StateR
 		}
 		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
-		if *vpnGateway.Status == "available" || *vpnGateway.Status == "failed" || *vpnGateway.Status == "running" {
+		if *vpnGateway.LifecycleState == "stable" || *vpnGateway.LifecycleState == "failed" || *vpnGateway.LifecycleState == "suspended" {
 			return vpnGateway, isVPNGatewayProvisioningDone, nil
 		}
 
@@ -510,17 +514,16 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 	d.Set(isVPNGatewayName, *vpnGateway.Name)
 	d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID)
-	d.Set(isVPNGatewayStatus, *vpnGateway.Status)
-	if err = d.Set("health_state", vpnGateway.HealthState); err != nil {
+	if err = d.Set(isVPNGatewayHealthState, vpnGateway.HealthState); err != nil {
 		return fmt.Errorf("[ERROR] Error setting health_state: %s", err)
 	}
-	if err := d.Set("health_reasons", resourceVPNGatewayRouteFlattenHealthReasons(vpnGateway.HealthReasons)); err != nil {
+	if err := d.Set(isVPNGatewayHealthReasons, resourceVPNGatewayRouteFlattenHealthReasons(vpnGateway.HealthReasons)); err != nil {
 		return fmt.Errorf("[ERROR] Error setting health_reasons: %s", err)
 	}
-	if err = d.Set("lifecycle_state", vpnGateway.LifecycleState); err != nil {
+	if err = d.Set(isVPNGatewayLifecycleState, vpnGateway.LifecycleState); err != nil {
 		return fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err)
 	}
-	if err := d.Set("lifecycle_reasons", resourceVPNGatewayFlattenLifecycleReasons(vpnGateway.LifecycleReasons)); err != nil {
+	if err := d.Set(isVPNGatewayLifecycleReasons, resourceVPNGatewayFlattenLifecycleReasons(vpnGateway.LifecycleReasons)); err != nil {
 		return fmt.Errorf("[ERROR] Error setting lifecycle_reasons: %s", err)
 	}
 	members := []vpcv1.VPNGatewayMember{}
@@ -562,7 +565,6 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(flex.ResourceName, *vpnGateway.Name)
 	d.Set(flex.ResourceCRN, *vpnGateway.CRN)
 	d.Set(isVPNGatewayCRN, *vpnGateway.CRN)
-	d.Set(flex.ResourceStatus, *vpnGateway.Status)
 	if vpnGateway.ResourceGroup != nil {
 		d.Set(flex.ResourceGroupName, *vpnGateway.ResourceGroup.Name)
 		d.Set(isVPNGatewayResourceGroup, *vpnGateway.ResourceGroup.ID)
@@ -575,7 +577,6 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 			if memberIP.PublicIP != nil {
 				currentMemberIP["address"] = *memberIP.PublicIP.Address
 				currentMemberIP["role"] = *memberIP.Role
-				currentMemberIP["status"] = *memberIP.Status
 				vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
 			}
 			if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {

@@ -39,6 +39,7 @@ const (
 	isVPNGatewayConnectionTunnels                   = "tunnels"
 	isVPNGatewayConnectionResourcetype              = "resource_type"
 	isVPNGatewayConnectionCreatedat                 = "created_at"
+	isVPNGatewayConnectionStatusreasons             = "status_reasons"
 )
 
 func ResourceIBMISVPNGatewayConnection() *schema.Resource {
@@ -152,7 +153,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 				Computed:    true,
 				Description: "VPN gateway connection status",
 			},
-			"status_reasons": {
+			isVPNGatewayConnectionStatusreasons: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The reasons for the current status (if any).",
@@ -428,7 +429,7 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	if vpnGatewayConnection.Status != nil {
 		d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
 	}
-	if err := d.Set("status_reasons", resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+	if err := d.Set(isVPNGatewayConnectionStatusreasons, resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
 		return fmt.Errorf("[ERROR] Error setting status_reasons: %s", err)
 	}
 	if vpnGatewayConnection.ResourceType != nil {

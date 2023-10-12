@@ -98,12 +98,12 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 							Computed:    true,
 							Description: "The status of the VPN gateway",
 						},
-						"health_state": &schema.Schema{
+						isVPNGatewayHealthState: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.",
 						},
-						"health_reasons": {
+						isVPNGatewayHealthReasons: {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -128,12 +128,12 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 								},
 							},
 						},
-						"lifecycle_state": &schema.Schema{
+						isVPNGatewayLifecycleState: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The lifecycle state of the VPN route.",
 						},
-						"lifecycle_reasons": {
+						isVPNGatewayLifecycleReasons: {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The reasons for the current lifecycle_state (if any).",
@@ -278,11 +278,10 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 		gateway[isVPNGatewayName] = *data.Name
 		gateway[isVPNGatewayCreatedAt] = data.CreatedAt.String()
 		gateway[isVPNGatewayResourceType] = *data.ResourceType
-		gateway[isVPNGatewayStatus] = *data.Status
-		gateway["health_state"] = *data.HealthState
-		gateway["health_reasons"] = resourceVPNGatewayRouteFlattenHealthReasons(data.HealthReasons)
-		gateway["lifecycle_state"] = *data.LifecycleState
-		gateway["lifecycle_reasons"] = resourceVPNGatewayFlattenLifecycleReasons(data.LifecycleReasons)
+		gateway[isVPNGatewayHealthState] = *data.HealthState
+		gateway[isVPNGatewayHealthReasons] = resourceVPNGatewayRouteFlattenHealthReasons(data.HealthReasons)
+		gateway[isVPNGatewayLifecycleState] = *data.LifecycleState
+		gateway[isVPNGatewayLifecycleReasons] = resourceVPNGatewayFlattenLifecycleReasons(data.LifecycleReasons)
 		gateway[isVPNGatewayMode] = *data.Mode
 		gateway[isVPNGatewayResourceGroup] = *data.ResourceGroup.ID
 		gateway[isVPNGatewaySubnet] = *data.Subnet.ID
@@ -307,7 +306,6 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 				if memberIP.PublicIP != nil {
 					currentMemberIP["address"] = *memberIP.PublicIP.Address
 					currentMemberIP["role"] = *memberIP.Role
-					currentMemberIP["status"] = *memberIP.Status
 					vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
 				}
 				if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {
