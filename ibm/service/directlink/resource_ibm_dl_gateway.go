@@ -452,6 +452,7 @@ func ResourceIBMDLGateway() *schema.Resource {
 			},
 			dlVlan: {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "VLAN allocated for this gateway",
 			},
@@ -858,6 +859,11 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 		if default_import_route_filter, ok := d.GetOk(dlDefault_import_route_filter); ok {
 			gatewayDedicatedTemplateModel.DefaultImportRouteFilter = NewStrPointer(default_import_route_filter.(string))
+		}
+
+		if vlan, ok := d.GetOk(dlConnectionMode); ok {
+			mapped_vlan := int64(vlan.(int))
+			gatewayDedicatedTemplateModel.Vlan = &mapped_vlan
 		}
 		createGatewayOptionsModel.GatewayTemplate = gatewayDedicatedTemplateModel
 
@@ -1599,6 +1605,10 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 			updateGatewayOptionsModel.MacsecConfig = gatewayMacsecConfigTemplatePatchModel
 		} else {
 			updateGatewayOptionsModel.MacsecConfig = nil
+		}
+		if d.HasChange(dlVlan) {
+			vlan := int64(d.Get(dlVlan).(int))
+			updateGatewayOptionsModel.Vlan = &vlan
 		}
 	}
 	name := d.Get(dlName).(string)
