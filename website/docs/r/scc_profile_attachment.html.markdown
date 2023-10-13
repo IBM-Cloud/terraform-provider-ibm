@@ -58,9 +58,11 @@ Nested schema for **scope**:
 	* `properties` - (List) The properties supported for scoping by this environment.
 	  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
 	Nested schema for **properties**:
-		* `name` - (String) The name of the property.
+        -> NOTE: Defining the `scope_type` value must be either `account`, `account.resource_group`, `enterprise`, `enterprise.account` and `enterprise.account_group`."
+        -> NOTE: Defining the `scope_id` value will be the id of the `scope_type`(ex. `enterprise.account_group` will be the ID of the account_group within an enterprise)
+		* `name` - (Required, String) The name of the property.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
-		* `value` - (String) The value of the property.
+		* `value` - (Required, String) The value of the property.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `notifications` - (List) The request payload of the attachment notifications.
 Nested schema for **notifications**:

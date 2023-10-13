@@ -671,6 +671,8 @@ func resourceIbmSccProfileMapToProfilePrototype(modelMap map[string]interface{})
 		}
 	}
 	model.DefaultParameters = defaultParameters
+  // TODO: Validate all the Controls have default Parameters for any parameters found
+  // Use the instance_id associated
 	return model, nil
 }
 
