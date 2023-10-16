@@ -5,6 +5,7 @@ package kubernetes_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -65,6 +66,21 @@ func TestAccIBMContainerIngressSecretTLS_Basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"region", "issuer_name"},
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerIngressSecretTLS_InvalidName(t *testing.T) {
+	secretName := fmt.Sprintf("-)tf-container-ingress-secret-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerIngressSecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMContainerIngressSecretTLSBasic(secretName),
+				ExpectError: regexp.MustCompile(".*should match regexp"),
 			},
 		},
 	})

@@ -5,6 +5,7 @@ package kubernetes_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -71,6 +72,22 @@ func TestAccIBMContainerIngressSecretOpaque_Basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"region", "issuer_name"},
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerIngressSecretOpaque_InvalidName(t *testing.T) {
+	secretName := fmt.Sprintf(")-tf-container-ingress-secret-name-opaque-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerIngressSecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMContainerIngressSecretOpaqueBasic(secretName),
+				ExpectError: regexp.MustCompile(".*should match regexp"),
 			},
 		},
 	})
