@@ -266,6 +266,7 @@ func ResourceIbmSccProfile() *schema.Resource {
 			},
 			"profile_version": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The version status of the profile.",
 			},
@@ -671,8 +672,8 @@ func resourceIbmSccProfileMapToProfilePrototype(modelMap map[string]interface{})
 		}
 	}
 	model.DefaultParameters = defaultParameters
-  // TODO: Validate all the Controls have default Parameters for any parameters found
-  // Use the instance_id associated
+	// TODO: Validate all the Controls have default Parameters for any parameters found
+	// Use the instance_id associated
 	return model, nil
 }
 
