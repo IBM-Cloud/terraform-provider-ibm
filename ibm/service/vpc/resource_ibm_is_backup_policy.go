@@ -27,12 +27,22 @@ func ResourceIBMIsBackupPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"match_resource_types": &schema.Schema{
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
-				Set:         schema.HashString,
-				Description: "A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Computed:      true,
+				Set:           schema.HashString,
+				Deprecated:    "match_resource_types is being deprecated. Use match_resource_type instead",
+				Description:   "A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
+				ConflictsWith: []string{"match_resource_type"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+			},
+			"match_resource_type": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Default:       "volume",
+				ConflictsWith: []string{"match_resource_types"},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_backup_policy", "match_resource_types"),
+				Description:   "A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
 			},
 			"match_user_tags": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -118,7 +128,7 @@ func ResourceIBMIsBackupPolicyValidator() *validate.ResourceValidator {
 	)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "match_resource_types",
+			Identifier:                 "match_resource_type",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
@@ -139,9 +149,14 @@ func resourceIBMIsBackupPolicyCreate(context context.Context, d *schema.Resource
 
 	createBackupPolicyOptions := &vpcv1.CreateBackupPolicyOptions{}
 
-	if _, ok := d.GetOk("match_resource_types"); ok {
+	if matchResourceType, ok := d.GetOk("match_resource_type"); ok {
+		matchResourceTypes := matchResourceType.(string)
+		matchResourceTypesList := []string{matchResourceTypes}
+		createBackupPolicyOptions.SetMatchResourceTypes(matchResourceTypesList)
+	} else if _, ok := d.GetOk("match_resource_types"); ok {
 		createBackupPolicyOptions.SetMatchResourceTypes(flex.ExpandStringList((d.Get("match_resource_types").(*schema.Set)).List()))
 	}
+
 	if _, ok := d.GetOk("match_user_tags"); ok {
 		createBackupPolicyOptions.SetMatchUserTags((flex.ExpandStringList((d.Get("match_user_tags").(*schema.Set)).List())))
 	}
@@ -190,6 +205,13 @@ func resourceIBMIsBackupPolicyRead(context context.Context, d *schema.ResourceDa
 	if backupPolicy.MatchResourceTypes != nil {
 		if err = d.Set("match_resource_types", backupPolicy.MatchResourceTypes); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_types: %s", err))
+		}
+	}
+	if backupPolicy.MatchResourceTypes != nil {
+		for _, matchResourceTypes := range backupPolicy.MatchResourceTypes {
+			if err = d.Set("match_resource_type", matchResourceTypes); err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
+			}
 		}
 	}
 	if backupPolicy.MatchUserTags != nil {
