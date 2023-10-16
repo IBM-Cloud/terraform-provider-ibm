@@ -99,6 +99,13 @@ In addition to all argument references listed, you can access the following attr
 
 - `status` - (String) The status of a VPN gateway connection.
 
+- `status_reasons` - (List) Array of reasons for the current status (if any).
+
+  Nested `status_reasons`:
+    - `code` - (String) The status reason code.
+    - `message` - (String) An explanation of the status reason.
+    - `more_info` - (String) Link to documentation about this status reason
+
 - `tunnels` - (List) The VPN tunnel configuration for this VPN gateway connection (in static route mode).
   Nested scheme for **tunnels**:
 	- `public_ip_address` - (String) The IP address of the VPN gateway member in which the tunnel resides. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
