@@ -246,13 +246,9 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	matchResourceType := make([]string, 0)
-	if backupPolicy.MatchResourceTypes != nil {
-		for _, matchResourceTyp := range backupPolicy.MatchResourceTypes {
-			matchResourceType = append(matchResourceType, matchResourceTyp)
-		}
+	if backupPolicy.MatchResourceType != nil {
+		d.Set("match_resource_types", []string{*backupPolicy.MatchResourceType})
 	}
-	d.Set("match_resource_types", matchResourceType)
 
 	if backupPolicy.IncludedContent != nil {
 		if err = d.Set("included_content", backupPolicy.IncludedContent); err != nil {

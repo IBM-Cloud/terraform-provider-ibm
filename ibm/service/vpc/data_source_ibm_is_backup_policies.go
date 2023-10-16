@@ -282,8 +282,8 @@ func dataSourceBackupPolicyCollectionBackupPoliciesToMap(backupPoliciesItem vpcv
 	if backupPoliciesItem.LastJobCompletedAt != nil {
 		backupPoliciesMap["last_job_completed_at"] = flex.DateTimeToString(backupPoliciesItem.LastJobCompletedAt)
 	}
-	if backupPoliciesItem.MatchResourceTypes != nil {
-		backupPoliciesMap["match_resource_types"] = backupPoliciesItem.MatchResourceTypes
+	if backupPoliciesItem.MatchResourceType != nil {
+		backupPoliciesMap["match_resource_types"] = []string{*backupPoliciesItem.MatchResourceType}
 	}
 	if backupPoliciesItem.MatchUserTags != nil {
 		backupPoliciesMap["match_user_tags"] = backupPoliciesItem.MatchUserTags

@@ -122,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-08-08")
+		options.Version = core.StringPtr("2023-09-01")
 	}
 
 	service = &VpcV1{
@@ -9856,8 +9856,10 @@ func (vpc *VpcV1) ListBackupPoliciesWithContext(ctx context.Context, listBackupP
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+	// builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 	if listBackupPoliciesOptions.Start != nil {
 		builder.AddQuery("start", fmt.Sprint(*listBackupPoliciesOptions.Start))
 	}
@@ -9932,8 +9934,9 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
 
 	_, err = builder.SetBodyContentJSON(createBackupPolicyOptions.BackupPolicyPrototype)
 	if err != nil {
@@ -10535,8 +10538,9 @@ func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBacku
 		builder.AddHeader("If-Match", fmt.Sprint(*deleteBackupPolicyOptions.IfMatch))
 	}
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
 
 	request, err := builder.Build()
 	if err != nil {
@@ -10598,9 +10602,9 @@ func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolic
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-
+	builder.AddQuery("future_version", fmt.Sprint("true"))
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -10666,8 +10670,9 @@ func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBacku
 		builder.AddHeader("If-Match", fmt.Sprint(*updateBackupPolicyOptions.IfMatch))
 	}
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("future_version", fmt.Sprint("true"))
 
 	_, err = builder.SetBodyContentJSON(updateBackupPolicyOptions.BackupPolicyPatch)
 	if err != nil {
