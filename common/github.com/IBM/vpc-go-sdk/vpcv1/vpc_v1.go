@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2023.
+ * (C) Copyright IBM Corp. 2021, 2022, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2022-09-20
+// API Version: 2022-09-13
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -47,7 +47,7 @@ type VpcV1 struct {
 	generation *int64
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-09-20`.
+	// and `2023-10-04`.
 	Version *string
 }
 
@@ -64,7 +64,7 @@ type VpcV1Options struct {
 	Authenticator core.Authenticator
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-09-20`.
+	// and `2023-10-04`.
 	Version *string
 }
 
@@ -6691,8 +6691,8 @@ func (vpc *VpcV1) AddInstanceNetworkInterfaceFloatingIPWithContext(ctx context.C
 	return
 }
 
-// ListInstanceNetworkInterfaceIps : List all reserved IPs bound to an instance network interface
-// This request lists all reserved IPs bound to an instance network interface.
+// ListInstanceNetworkInterfaceIps : List the primary reserved IP for an instance network interface
+// This request lists the primary reserved IP for an instance network interface.
 func (vpc *VpcV1) ListInstanceNetworkInterfaceIps(listInstanceNetworkInterfaceIpsOptions *ListInstanceNetworkInterfaceIpsOptions) (result *ReservedIPCollectionInstanceNetworkInterfaceContext, response *core.DetailedResponse, err error) {
 	return vpc.ListInstanceNetworkInterfaceIpsWithContext(context.Background(), listInstanceNetworkInterfaceIpsOptions)
 }
@@ -6761,9 +6761,8 @@ func (vpc *VpcV1) ListInstanceNetworkInterfaceIpsWithContext(ctx context.Context
 	return
 }
 
-// GetInstanceNetworkInterfaceIP : Retrieve bound reserved IP
-// This request retrieves the specified reserved IP address if it is bound to the network interface and instance
-// specified in the URL.
+// GetInstanceNetworkInterfaceIP : Retrieve the primary reserved IP
+// This request retrieves the primary reserved IP for an instance network interface.
 func (vpc *VpcV1) GetInstanceNetworkInterfaceIP(getInstanceNetworkInterfaceIPOptions *GetInstanceNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
 	return vpc.GetInstanceNetworkInterfaceIPWithContext(context.Background(), getInstanceNetworkInterfaceIPOptions)
 }
@@ -9951,6 +9950,9 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	if createBackupPolicyOptions.ResourceGroup != nil {
 		body["resource_group"] = createBackupPolicyOptions.ResourceGroup
 	}
+	if createBackupPolicyOptions.Scope != nil {
+		body["scope"] = createBackupPolicyOptions.Scope
+	}
 	_, err = builder.SetBodyContentJSON(body)
 	if err != nil {
 		return
@@ -11212,15 +11214,6 @@ func (vpc *VpcV1) ListBareMetalServersWithContext(ctx context.Context, listBareM
 	if listBareMetalServersOptions.VPCName != nil {
 		builder.AddQuery("vpc.name", fmt.Sprint(*listBareMetalServersOptions.VPCName))
 	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetID != nil {
-		builder.AddQuery("network_interfaces.subnet.id", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetID))
-	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetCRN != nil {
-		builder.AddQuery("network_interfaces.subnet.crn", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetCRN))
-	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetName != nil {
-		builder.AddQuery("network_interfaces.subnet.name", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetName))
-	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -12205,8 +12198,8 @@ func (vpc *VpcV1) AddBareMetalServerNetworkInterfaceFloatingIPWithContext(ctx co
 	return
 }
 
-// ListBareMetalServerNetworkInterfaceIps : List all reserved IPs bound to a bare metal server network interface
-// This request lists all reserved IPs bound to a bare metal server network interface.
+// ListBareMetalServerNetworkInterfaceIps : List the primary reserved IP for a bare metal server network interface
+// This request lists the primary reserved IP for a bare metal server network interface.
 func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIps(listBareMetalServerNetworkInterfaceIpsOptions *ListBareMetalServerNetworkInterfaceIpsOptions) (result *ReservedIPCollectionBareMetalServerNetworkInterfaceContext, response *core.DetailedResponse, err error) {
 	return vpc.ListBareMetalServerNetworkInterfaceIpsWithContext(context.Background(), listBareMetalServerNetworkInterfaceIpsOptions)
 }
@@ -12269,9 +12262,8 @@ func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIpsWithContext(ctx context.
 	return
 }
 
-// GetBareMetalServerNetworkInterfaceIP : Retrieve bound reserved IP
-// This request retrieves the specified reserved IP address if it is bound to the network interface for the bare metal
-// server specified in the URL.
+// GetBareMetalServerNetworkInterfaceIP : Retrieve the primary reserved IP
+// This request retrieves the primary reserved IP for a bare metal server network interface.
 func (vpc *VpcV1) GetBareMetalServerNetworkInterfaceIP(getBareMetalServerNetworkInterfaceIPOptions *GetBareMetalServerNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
 	return vpc.GetBareMetalServerNetworkInterfaceIPWithContext(context.Background(), getBareMetalServerNetworkInterfaceIPOptions)
 }
@@ -24265,6 +24257,22 @@ type BackupPolicy struct {
 	// The CRN for this backup policy.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this backup policy.
 	Href *string `json:"href" validate:"required"`
 
@@ -24302,7 +24310,25 @@ type BackupPolicy struct {
 
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The scope for this backup policy.
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
 }
+
+// Constants associated with the BackupPolicy.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyHealthStateDegradedConst     = "degraded"
+	BackupPolicyHealthStateFaultedConst      = "faulted"
+	BackupPolicyHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyHealthStateOkConst           = "ok"
+)
 
 // Constants associated with the BackupPolicy.LifecycleState property.
 // The lifecycle state of the backup policy.
@@ -24336,6 +24362,14 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
 	}
@@ -24376,6 +24410,10 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
 	if err != nil {
 		return
 	}
@@ -24468,6 +24506,43 @@ type BackupPolicyCollectionNext struct {
 func UnmarshalBackupPolicyCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyHealthReason : BackupPolicyHealthReason struct
+type BackupPolicyHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the BackupPolicyHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	BackupPolicyHealthReasonCodeMissingServiceAuthorizationPoliciesConst = "missing_service_authorization_policies"
+)
+
+// UnmarshalBackupPolicyHealthReason unmarshals an instance of BackupPolicyHealthReason from the specified map of raw messages.
+func UnmarshalBackupPolicyHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -25490,6 +25565,83 @@ func UnmarshalBackupPolicyPlanRemoteRegionPolicyPrototype(m map[string]json.RawM
 		return
 	}
 	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScope : The scope for this backup policy.
+// Models which "extend" this model:
+// - BackupPolicyScopeEnterpriseReference
+// - BackupPolicyScopeAccountReference
+type BackupPolicyScope struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+
+	// The unique identifier for this enterprise.
+	ID *string `json:"id,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type,omitempty"`
+}
+
+// Constants associated with the BackupPolicyScope.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeResourceTypeEnterpriseConst = "enterprise"
+)
+
+func (*BackupPolicyScope) isaBackupPolicyScope() bool {
+	return true
+}
+
+type BackupPolicyScopeIntf interface {
+	isaBackupPolicyScope() bool
+}
+
+// UnmarshalBackupPolicyScope unmarshals an instance of BackupPolicyScope from the specified map of raw messages.
+func UnmarshalBackupPolicyScope(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScope)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototype : The scope to use for this backup policy.
+//
+// If unspecified, the policy will be scoped to the account.
+// Models which "extend" this model:
+// - BackupPolicyScopePrototypeEnterpriseIdentity
+type BackupPolicyScopePrototype struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*BackupPolicyScopePrototype) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+type BackupPolicyScopePrototypeIntf interface {
+	isaBackupPolicyScopePrototype() bool
+}
+
+// UnmarshalBackupPolicyScopePrototype unmarshals an instance of BackupPolicyScopePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototype)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
@@ -28468,8 +28620,13 @@ type CreateBackupPolicyOptions struct {
 	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The scope to use for this backup policy.
+	//
+	// If unspecified, the policy will be scoped to the account.
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -28515,6 +28672,12 @@ func (_options *CreateBackupPolicyOptions) SetPlans(plans []BackupPolicyPlanProt
 // SetResourceGroup : Allow user to set ResourceGroup
 func (_options *CreateBackupPolicyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateBackupPolicyOptions {
 	_options.ResourceGroup = resourceGroup
+	return _options
+}
+
+// SetScope : Allow user to set Scope
+func (_options *CreateBackupPolicyOptions) SetScope(scope BackupPolicyScopePrototypeIntf) *CreateBackupPolicyOptions {
+	_options.Scope = scope
 	return _options
 }
 
@@ -28753,7 +28916,7 @@ type CreateBareMetalServerOptions struct {
 	NetworkInterfaces []BareMetalServerNetworkInterfacePrototypeIntf `json:"network_interfaces,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	TrustedPlatformModule *BareMetalServerTrustedPlatformModulePrototype `json:"trusted_platform_module,omitempty"`
@@ -28860,7 +29023,7 @@ type CreateDedicatedHostGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -28972,7 +29135,7 @@ type CreateEndpointGatewayOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this endpoint gateway. If unspecified, the VPC's default security group is used.
@@ -29087,7 +29250,7 @@ type CreateFlowLogCollectorOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29160,7 +29323,7 @@ type CreateIkePolicyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29624,7 +29787,7 @@ type CreateInstanceGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29913,7 +30076,7 @@ type CreateIpsecPolicyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -30031,7 +30194,7 @@ type CreateKeyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The crypto-system used by this key.
@@ -30544,7 +30707,7 @@ type CreateLoadBalancerOptions struct {
 	Profile LoadBalancerProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Indicates whether route mode is enabled for this load balancer.
@@ -30942,7 +31105,7 @@ type CreatePlacementGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -31008,7 +31171,7 @@ type CreatePublicGatewayOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -31069,7 +31232,7 @@ type CreateSecurityGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The prototype objects for rules to be created for this security group. If unspecified, no rules will be created,
@@ -31611,7 +31774,7 @@ type CreateVPCOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -32152,7 +32315,7 @@ type CreateVPNServerOptions struct {
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this VPN server. If unspecified, the VPC's default security group is used.
@@ -34110,7 +34273,7 @@ type DedicatedHostPrototype struct {
 	Profile DedicatedHostProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The dedicated host group for this dedicated host.
@@ -37581,7 +37744,7 @@ type FloatingIPPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The zone this floating IP will reside in.
@@ -42798,7 +42961,7 @@ type ImagePrototype struct {
 	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
@@ -47724,7 +47887,7 @@ type InstancePrototype struct {
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -48384,7 +48547,7 @@ type InstanceTemplatePrototype struct {
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -49426,18 +49589,6 @@ type ListBareMetalServersOptions struct {
 	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.id`
-	// property matching the specified identifier.
-	NetworkInterfacesSubnetID *string `json:"network_interfaces.subnet.id,omitempty"`
-
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.crn`
-	// property matching the specified CRN.
-	NetworkInterfacesSubnetCRN *string `json:"network_interfaces.subnet.crn,omitempty"`
-
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.name`
-	// property matching the exact specified name.
-	NetworkInterfacesSubnetName *string `json:"network_interfaces.subnet.name,omitempty"`
-
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -49486,24 +49637,6 @@ func (_options *ListBareMetalServersOptions) SetVPCCRN(vpcCRN string) *ListBareM
 // SetVPCName : Allow user to set VPCName
 func (_options *ListBareMetalServersOptions) SetVPCName(vpcName string) *ListBareMetalServersOptions {
 	_options.VPCName = core.StringPtr(vpcName)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetID : Allow user to set NetworkInterfacesSubnetID
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetID(networkInterfacesSubnetID string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetID = core.StringPtr(networkInterfacesSubnetID)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetCRN : Allow user to set NetworkInterfacesSubnetCRN
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetCRN(networkInterfacesSubnetCRN string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetCRN = core.StringPtr(networkInterfacesSubnetCRN)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetName : Allow user to set NetworkInterfacesSubnetName
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetName(networkInterfacesSubnetName string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetName = core.StringPtr(networkInterfacesSubnetName)
 	return _options
 }
 
@@ -57355,7 +57488,7 @@ type NetworkACLPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The VPC this network ACL will reside in.
@@ -59554,7 +59687,7 @@ type PublicGatewayFloatingIPPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 }
 
@@ -60970,7 +61103,7 @@ func UnmarshalResourceFilter(m map[string]json.RawMessage, result interface{}) (
 }
 
 // ResourceGroupIdentity : The resource group to use. If unspecified, the account's [default resource
-// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 // Models which "extend" this model:
 // - ResourceGroupIdentityByID
 type ResourceGroupIdentity struct {
@@ -64525,16 +64658,15 @@ type ShareMountTargetVirtualNetworkInterfacePrototype struct {
 	// an available address on the subnet will be automatically selected and reserved.
 	PrimaryIP VirtualNetworkInterfacePrimaryIPPrototypeIntf `json:"primary_ip,omitempty"`
 
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// The resource group to use for this virtual network interface. If unspecified, the
+	// share's resource group will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC
 	// for the subnet is used.
 	SecurityGroups []SecurityGroupIdentityIntf `json:"security_groups,omitempty"`
 
-	// The associated subnet. Required if `primary_ip` does not specify a reserved IP and
-	// `primary_ip.address` is not specified.
+	// The associated subnet. Required if `primary_ip` does not specify a reserved IP.
 	Subnet SubnetIdentityIntf `json:"subnet,omitempty"`
 }
 
@@ -65114,7 +65246,7 @@ type SharePrototype struct {
 	InitialOwner *ShareInitialOwner `json:"initial_owner,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The size of the file share rounded up to the next gigabyte.
@@ -65961,7 +66093,7 @@ type SnapshotPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
@@ -66636,7 +66768,7 @@ type SubnetPrototype struct {
 	PublicGateway PublicGatewayIdentityIntf `json:"public_gateway,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The routing table to use for this subnet. If unspecified, the default routing table
@@ -71820,7 +71952,7 @@ type VPNGatewayPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Identifies a subnet by a unique property.
@@ -73246,10 +73378,6 @@ type VirtualNetworkInterfaceReferenceAttachmentContext struct {
 	// The CRN for this virtual network interface.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted, and provides
-	// some supplementary information.
-	Deleted *VirtualNetworkInterfaceReferenceAttachmentContextDeleted `json:"deleted,omitempty"`
-
 	// The URL for this virtual network interface.
 	Href *string `json:"href" validate:"required"`
 
@@ -73276,10 +73404,6 @@ func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContext(m map[string]jso
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -73300,24 +73424,6 @@ func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContext(m map[string]jso
 	return
 }
 
-// VirtualNetworkInterfaceReferenceAttachmentContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
-// information.
-type VirtualNetworkInterfaceReferenceAttachmentContextDeleted struct {
-	// Link to documentation about deleted resources.
-	MoreInfo *string `json:"more_info" validate:"required"`
-}
-
-// UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceAttachmentContextDeleted from the specified map of raw messages.
-func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VirtualNetworkInterfaceReferenceAttachmentContextDeleted)
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VirtualNetworkInterfaceReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VirtualNetworkInterfaceReferenceDeleted struct {
@@ -73328,24 +73434,6 @@ type VirtualNetworkInterfaceReferenceDeleted struct {
 // UnmarshalVirtualNetworkInterfaceReferenceDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceDeleted from the specified map of raw messages.
 func UnmarshalVirtualNetworkInterfaceReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VirtualNetworkInterfaceReferenceDeleted)
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
-// information.
-type VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted struct {
-	// Link to documentation about deleted resources.
-	MoreInfo *string `json:"more_info" validate:"required"`
-}
-
-// UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted from the specified map of raw messages.
-func UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
@@ -74753,7 +74841,7 @@ type VolumePrototype struct {
 	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
@@ -75423,6 +75511,116 @@ func UnmarshalBackupPolicyJobSourceVolumeReference(m map[string]json.RawMessage,
 		return
 	}
 	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalVolumeRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototypeEnterpriseIdentity : Identifies an enterprise by a unique property.
+// Models which "extend" this model:
+// - BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN
+// This model "extends" BackupPolicyScopePrototype
+type BackupPolicyScopePrototypeEnterpriseIdentity struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentity) isaBackupPolicyScopePrototypeEnterpriseIdentity() bool {
+	return true
+}
+
+type BackupPolicyScopePrototypeEnterpriseIdentityIntf interface {
+	BackupPolicyScopePrototypeIntf
+	isaBackupPolicyScopePrototypeEnterpriseIdentity() bool
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentity) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopePrototypeEnterpriseIdentity unmarshals an instance of BackupPolicyScopePrototypeEnterpriseIdentity from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototypeEnterpriseIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototypeEnterpriseIdentity)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopeAccountReference : BackupPolicyScopeAccountReference struct
+// This model "extends" BackupPolicyScope
+type BackupPolicyScopeAccountReference struct {
+	// The unique identifier for this account.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyScopeAccountReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeAccountReferenceResourceTypeAccountConst = "account"
+)
+
+func (*BackupPolicyScopeAccountReference) isaBackupPolicyScope() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopeAccountReference unmarshals an instance of BackupPolicyScopeAccountReference from the specified map of raw messages.
+func UnmarshalBackupPolicyScopeAccountReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopeAccountReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopeEnterpriseReference : BackupPolicyScopeEnterpriseReference struct
+// This model "extends" BackupPolicyScope
+type BackupPolicyScopeEnterpriseReference struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The unique identifier for this enterprise.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyScopeEnterpriseReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeEnterpriseReferenceResourceTypeEnterpriseConst = "enterprise"
+)
+
+func (*BackupPolicyScopeEnterpriseReference) isaBackupPolicyScope() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopeEnterpriseReference unmarshals an instance of BackupPolicyScopeEnterpriseReference from the specified map of raw messages.
+func UnmarshalBackupPolicyScopeEnterpriseReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopeEnterpriseReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -88274,7 +88472,7 @@ type PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 }
 
@@ -88920,10 +89118,6 @@ type ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext str
 	// The CRN for this virtual network interface.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted, and provides
-	// some supplementary information.
-	Deleted *VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted `json:"deleted,omitempty"`
-
 	// The URL for this virtual network interface.
 	Href *string `json:"href" validate:"required"`
 
@@ -88951,10 +89145,6 @@ func (*ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext) 
 func UnmarshalReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted)
 	if err != nil {
 		return
 	}
@@ -91039,16 +91229,15 @@ type ShareMountTargetVirtualNetworkInterfacePrototypeVirtualNetworkInterfaceProt
 	// an available address on the subnet will be automatically selected and reserved.
 	PrimaryIP VirtualNetworkInterfacePrimaryIPPrototypeIntf `json:"primary_ip,omitempty"`
 
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// The resource group to use for this virtual network interface. If unspecified, the
+	// share's resource group will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC
 	// for the subnet is used.
 	SecurityGroups []SecurityGroupIdentityIntf `json:"security_groups,omitempty"`
 
-	// The associated subnet. Required if `primary_ip` does not specify a reserved IP and
-	// `primary_ip.address` is not specified.
+	// The associated subnet. Required if `primary_ip` does not specify a reserved IP.
 	Subnet SubnetIdentityIntf `json:"subnet,omitempty"`
 }
 
@@ -91561,7 +91750,7 @@ type SharePrototypeShareBySize struct {
 	InitialOwner *ShareInitialOwner `json:"initial_owner,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The size of the file share rounded up to the next gigabyte.
@@ -94962,6 +95151,41 @@ func (*ZoneIdentityByName) isaZoneIdentity() bool {
 func UnmarshalZoneIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ZoneIdentityByName)
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN : BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN struct
+// This model "extends" BackupPolicyScopePrototypeEnterpriseIdentity
+type BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN : Instantiate BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN(crn string) (_model *BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN, err error) {
+	_model = &BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN) isaBackupPolicyScopePrototypeEnterpriseIdentity() bool {
+	return true
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN unmarshals an instance of BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
