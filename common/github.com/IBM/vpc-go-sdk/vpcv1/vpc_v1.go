@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2022-09-13
+// API Version: 2023-10-10
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,13 +46,13 @@ type VpcV1 struct {
 	// `2`.
 	generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-10-04`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
+	// and `2023-10-11`.
 	Version *string
 }
 
 // DefaultServiceURL is the default URL to make service requests to.
-const DefaultServiceURL = "https://us-south.iaas.cloud.ibm.com/v1"
+const DefaultServiceURL = "https://au-syd.iaas.cloud.ibm.com/v1"
 
 // DefaultServiceName is the default key used to find external configuration information.
 const DefaultServiceName = "vpc"
@@ -63,8 +63,8 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-10-04`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
+	// and `2023-10-11`.
 	Version *string
 }
 
@@ -122,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-08-08")
+		options.Version = core.StringPtr("2023-10-10")
 	}
 
 	service = &VpcV1{
@@ -1518,13 +1518,13 @@ func (vpc *VpcV1) ListVPCRoutesWithContext(ctx context.Context, listVPCRoutesOpt
 // same way as a retrieved route, and contains the information necessary to create the new route. The request will fail
 // if the new route will cause a loop.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *CreateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	return vpc.CreateVPCRouteWithContext(context.Background(), createVPCRouteOptions)
 }
 
 // CreateVPCRouteWithContext is an alternate form of the CreateVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteOptions *CreateVPCRouteOptions) (result *CreateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: CreateVPCRoute")
 	err = core.ValidateNotNil(createVPCRouteOptions, "createVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1596,7 +1596,7 @@ func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteO
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalCreateVPCRouteResponse)
 		if err != nil {
 			return
 		}
@@ -1664,13 +1664,13 @@ func (vpc *VpcV1) DeleteVPCRouteWithContext(ctx context.Context, deleteVPCRouteO
 // GetVPCRoute : Retrieve a VPC route
 // This request retrieves a single route specified by the identifier in the URL.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *GetVPCRouteResponse, response *core.DetailedResponse, err error) {
 	return vpc.GetVPCRouteWithContext(context.Background(), getVPCRouteOptions)
 }
 
 // GetVPCRouteWithContext is an alternate form of the GetVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions *GetVPCRouteOptions) (result *GetVPCRouteResponse, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: GetVPCRoute")
 	err = core.ValidateNotNil(getVPCRouteOptions, "getVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1718,7 +1718,7 @@ func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalGetVPCRouteResponse)
 		if err != nil {
 			return
 		}
@@ -1732,13 +1732,13 @@ func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions
 // This request updates a route with the information in a provided route patch. The route patch object is structured in
 // the same way as a retrieved route and contains only the information to be updated.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *UpdateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	return vpc.UpdateVPCRouteWithContext(context.Background(), updateVPCRouteOptions)
 }
 
 // UpdateVPCRouteWithContext is an alternate form of the UpdateVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteOptions *UpdateVPCRouteOptions) (result *UpdateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: UpdateVPCRoute")
 	err = core.ValidateNotNil(updateVPCRouteOptions, "updateVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1792,7 +1792,7 @@ func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteO
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalUpdateVPCRouteResponse)
 		if err != nil {
 			return
 		}
@@ -28921,10 +28921,7 @@ type CreateBareMetalServerOptions struct {
 
 	TrustedPlatformModule *BareMetalServerTrustedPlatformModulePrototype `json:"trusted_platform_module,omitempty"`
 
-	// The VPC this bare metal server will reside in.
-	//
-	// If specified, it must match the VPC for the subnets that the network interfaces of
-	// the bare metal server are attached to.
+	// Identifies a VPC by a unique property.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -30065,7 +30062,6 @@ type CreateIpsecPolicyOptions struct {
 	// `aes256gcm16`.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
-	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs" validate:"required"`
 
 	// The key lifetime in seconds.
@@ -30111,7 +30107,6 @@ const (
 )
 
 // Constants associated with the CreateIpsecPolicyOptions.Pfs property.
-// Perfect Forward Secrecy.
 const (
 	CreateIpsecPolicyOptionsPfsDisabledConst = "disabled"
 	CreateIpsecPolicyOptionsPfsGroup14Const  = "group_14"
@@ -31588,6 +31583,156 @@ func (_options *CreateSubnetReservedIPOptions) SetTarget(target ReservedIPTarget
 func (options *CreateSubnetReservedIPOptions) SetHeaders(param map[string]string) *CreateSubnetReservedIPOptions {
 	options.Headers = param
 	return options
+}
+
+// CreateVPCRouteResponse : CreateVPCRouteResponse struct
+type CreateVPCRouteResponse struct {
+	// The action to perform with a packet matching the route:
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+	// - `deliver`: deliver the packet to the specified `next_hop`
+	// - `drop`: drop the packet.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that the route was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// If present, the resource that created the route. Routes with this property present cannot
+	// be directly deleted. All routes with an `origin` of `service` will have this property set,
+	// and future `origin` values may also have this property set.
+	Creator RouteCreatorIntf `json:"creator,omitempty"`
+
+	// The destination CIDR of the route.
+	Destination *string `json:"destination" validate:"required"`
+
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the route.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this route. The name is unique across all routes in the routing table.
+	Name *string `json:"name" validate:"required"`
+
+	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
+	// other `action` values, its `address` will be `0.0.0.0`.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
+
+	// The origin of this route:
+	// - `service`: route was directly created by a service
+	// - `user`: route was directly created by a user
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+	// unexpected property value was encountered.
+	Origin *string `json:"origin,omitempty"`
+
+	// The priority of this route. Smaller values have higher priority.
+	//
+	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
+	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
+	// distributed between them.
+	Priority *int64 `json:"priority" validate:"required"`
+
+	// The zone the route applies to. (Traffic from subnets in this zone will be
+	// subject to this route.).
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the CreateVPCRouteResponse.Action property.
+// The action to perform with a packet matching the route:
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+// - `deliver`: deliver the packet to the specified `next_hop`
+// - `drop`: drop the packet.
+const (
+	CreateVPCRouteResponseActionDelegateConst    = "delegate"
+	CreateVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
+	CreateVPCRouteResponseActionDeliverConst     = "deliver"
+	CreateVPCRouteResponseActionDropConst        = "drop"
+)
+
+// Constants associated with the CreateVPCRouteResponse.LifecycleState property.
+// The lifecycle state of the route.
+const (
+	CreateVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
+	CreateVPCRouteResponseLifecycleStateFailedConst    = "failed"
+	CreateVPCRouteResponseLifecycleStatePendingConst   = "pending"
+	CreateVPCRouteResponseLifecycleStateStableConst    = "stable"
+	CreateVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
+	CreateVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
+	CreateVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the CreateVPCRouteResponse.Origin property.
+// The origin of this route:
+// - `service`: route was directly created by a service
+// - `user`: route was directly created by a user
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+// unexpected property value was encountered.
+const (
+	CreateVPCRouteResponseOriginServiceConst = "service"
+	CreateVPCRouteResponseOriginUserConst    = "user"
+)
+
+// UnmarshalCreateVPCRouteResponse unmarshals an instance of CreateVPCRouteResponse from the specified map of raw messages.
+func UnmarshalCreateVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(CreateVPCRouteResponse)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
 }
 
 // CreateVolumeOptions : The CreateVolume options.
@@ -40677,6 +40822,156 @@ func (options *GetSubnetRoutingTableOptions) SetHeaders(param map[string]string)
 	return options
 }
 
+// GetVPCRouteResponse : GetVPCRouteResponse struct
+type GetVPCRouteResponse struct {
+	// The action to perform with a packet matching the route:
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+	// - `deliver`: deliver the packet to the specified `next_hop`
+	// - `drop`: drop the packet.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that the route was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// If present, the resource that created the route. Routes with this property present cannot
+	// be directly deleted. All routes with an `origin` of `service` will have this property set,
+	// and future `origin` values may also have this property set.
+	Creator RouteCreatorIntf `json:"creator,omitempty"`
+
+	// The destination CIDR of the route.
+	Destination *string `json:"destination" validate:"required"`
+
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the route.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this route. The name is unique across all routes in the routing table.
+	Name *string `json:"name" validate:"required"`
+
+	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
+	// other `action` values, its `address` will be `0.0.0.0`.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
+
+	// The origin of this route:
+	// - `service`: route was directly created by a service
+	// - `user`: route was directly created by a user
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+	// unexpected property value was encountered.
+	Origin *string `json:"origin,omitempty"`
+
+	// The priority of this route. Smaller values have higher priority.
+	//
+	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
+	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
+	// distributed between them.
+	Priority *int64 `json:"priority" validate:"required"`
+
+	// The zone the route applies to. (Traffic from subnets in this zone will be
+	// subject to this route.).
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the GetVPCRouteResponse.Action property.
+// The action to perform with a packet matching the route:
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+// - `deliver`: deliver the packet to the specified `next_hop`
+// - `drop`: drop the packet.
+const (
+	GetVPCRouteResponseActionDelegateConst    = "delegate"
+	GetVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
+	GetVPCRouteResponseActionDeliverConst     = "deliver"
+	GetVPCRouteResponseActionDropConst        = "drop"
+)
+
+// Constants associated with the GetVPCRouteResponse.LifecycleState property.
+// The lifecycle state of the route.
+const (
+	GetVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
+	GetVPCRouteResponseLifecycleStateFailedConst    = "failed"
+	GetVPCRouteResponseLifecycleStatePendingConst   = "pending"
+	GetVPCRouteResponseLifecycleStateStableConst    = "stable"
+	GetVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
+	GetVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
+	GetVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the GetVPCRouteResponse.Origin property.
+// The origin of this route:
+// - `service`: route was directly created by a service
+// - `user`: route was directly created by a user
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+// unexpected property value was encountered.
+const (
+	GetVPCRouteResponseOriginServiceConst = "service"
+	GetVPCRouteResponseOriginUserConst    = "user"
+)
+
+// UnmarshalGetVPCRouteResponse unmarshals an instance of GetVPCRouteResponse from the specified map of raw messages.
+func UnmarshalGetVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(GetVPCRouteResponse)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // GetVirtualNetworkInterfaceOptions : The GetVirtualNetworkInterface options.
 type GetVirtualNetworkInterfaceOptions struct {
 	// The virtual network interface identifier.
@@ -41671,7 +41966,6 @@ type IPsecPolicy struct {
 	// The name for this IPsec policy. The name is unique across all IPsec policies in the region.
 	Name *string `json:"name" validate:"required"`
 
-	// Perfect Forward Secrecy
 	//
 	// Groups `group_2` and `group_5` have been deprecated.
 	Pfs *string `json:"pfs" validate:"required"`
@@ -41727,7 +42021,6 @@ const (
 )
 
 // Constants associated with the IPsecPolicy.Pfs property.
-// Perfect Forward Secrecy
 //
 // Groups `group_2` and `group_5` have been deprecated.
 const (
@@ -41932,7 +42225,6 @@ type IPsecPolicyPatch struct {
 	// The name for this IPsec policy. The name must not be used by another IPsec policy in the region.
 	Name *string `json:"name,omitempty"`
 
-	// Perfect Forward Secrecy.
 	Pfs *string `json:"pfs,omitempty"`
 }
 
@@ -41964,7 +42256,6 @@ const (
 )
 
 // Constants associated with the IPsecPolicyPatch.Pfs property.
-// Perfect Forward Secrecy.
 const (
 	IPsecPolicyPatchPfsDisabledConst = "disabled"
 	IPsecPolicyPatchPfsGroup14Const  = "group_14"
@@ -69030,6 +69321,156 @@ func (options *UpdateSubnetReservedIPOptions) SetHeaders(param map[string]string
 	return options
 }
 
+// UpdateVPCRouteResponse : UpdateVPCRouteResponse struct
+type UpdateVPCRouteResponse struct {
+	// The action to perform with a packet matching the route:
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+	// - `deliver`: deliver the packet to the specified `next_hop`
+	// - `drop`: drop the packet.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that the route was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// If present, the resource that created the route. Routes with this property present cannot
+	// be directly deleted. All routes with an `origin` of `service` will have this property set,
+	// and future `origin` values may also have this property set.
+	Creator RouteCreatorIntf `json:"creator,omitempty"`
+
+	// The destination CIDR of the route.
+	Destination *string `json:"destination" validate:"required"`
+
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the route.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this route. The name is unique across all routes in the routing table.
+	Name *string `json:"name" validate:"required"`
+
+	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
+	// other `action` values, its `address` will be `0.0.0.0`.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
+
+	// The origin of this route:
+	// - `service`: route was directly created by a service
+	// - `user`: route was directly created by a user
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+	// unexpected property value was encountered.
+	Origin *string `json:"origin,omitempty"`
+
+	// The priority of this route. Smaller values have higher priority.
+	//
+	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
+	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
+	// distributed between them.
+	Priority *int64 `json:"priority" validate:"required"`
+
+	// The zone the route applies to. (Traffic from subnets in this zone will be
+	// subject to this route.).
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the UpdateVPCRouteResponse.Action property.
+// The action to perform with a packet matching the route:
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+// - `deliver`: deliver the packet to the specified `next_hop`
+// - `drop`: drop the packet.
+const (
+	UpdateVPCRouteResponseActionDelegateConst    = "delegate"
+	UpdateVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
+	UpdateVPCRouteResponseActionDeliverConst     = "deliver"
+	UpdateVPCRouteResponseActionDropConst        = "drop"
+)
+
+// Constants associated with the UpdateVPCRouteResponse.LifecycleState property.
+// The lifecycle state of the route.
+const (
+	UpdateVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
+	UpdateVPCRouteResponseLifecycleStateFailedConst    = "failed"
+	UpdateVPCRouteResponseLifecycleStatePendingConst   = "pending"
+	UpdateVPCRouteResponseLifecycleStateStableConst    = "stable"
+	UpdateVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
+	UpdateVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
+	UpdateVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the UpdateVPCRouteResponse.Origin property.
+// The origin of this route:
+// - `service`: route was directly created by a service
+// - `user`: route was directly created by a user
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+// unexpected property value was encountered.
+const (
+	UpdateVPCRouteResponseOriginServiceConst = "service"
+	UpdateVPCRouteResponseOriginUserConst    = "user"
+)
+
+// UnmarshalUpdateVPCRouteResponse unmarshals an instance of UpdateVPCRouteResponse from the specified map of raw messages.
+func UnmarshalUpdateVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(UpdateVPCRouteResponse)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // UpdateVirtualNetworkInterfaceOptions : The UpdateVirtualNetworkInterface options.
 type UpdateVirtualNetworkInterfaceOptions struct {
 	// The virtual network interface identifier.
@@ -70858,11 +71299,43 @@ type VPNGateway struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -70876,9 +71349,6 @@ type VPNGateway struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -70888,19 +71358,37 @@ type VPNGateway struct {
 	Mode *string `json:"mode,omitempty"`
 }
 
+// Constants associated with the VPNGateway.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayHealthStateDegradedConst     = "degraded"
+	VPNGatewayHealthStateFaultedConst      = "faulted"
+	VPNGatewayHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGateway.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayLifecycleStateFailedConst    = "failed"
+	VPNGatewayLifecycleStatePendingConst   = "pending"
+	VPNGatewayLifecycleStateStableConst    = "stable"
+	VPNGatewayLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGateway.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGateway.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayStatusAvailableConst = "available"
-	VPNGatewayStatusDeletingConst  = "deleting"
-	VPNGatewayStatusFailedConst    = "failed"
-	VPNGatewayStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGateway.Mode property.
@@ -70932,11 +71420,27 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -70953,10 +71457,6 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -71117,6 +71617,27 @@ type VPNGatewayConnection struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// Routing protocols are disabled for this VPN gateway connection.
 	RoutingProtocol *string `json:"routing_protocol,omitempty"`
 
@@ -71226,6 +71747,10 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
 	if err != nil {
 		return
 	}
@@ -71835,6 +72360,27 @@ type VPNGatewayConnectionStaticRouteModeTunnel struct {
 
 	// The status of the VPN Tunnel.
 	Status *string `json:"status" validate:"required"`
+
+	// The reasons for the current VPN gateway connection tunnels status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionTunnelStatusReason `json:"status_reasons" validate:"required"`
 }
 
 // Constants associated with the VPNGatewayConnectionStaticRouteModeTunnel.Status property.
@@ -71855,12 +72401,209 @@ func UnmarshalVPNGatewayConnectionStaticRouteModeTunnel(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionTunnelStatusReason)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayConnectionStatusReason : VPNGatewayConnectionStatusReason struct
+type VPNGatewayConnectionStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this VPN gateway connection's status.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayConnectionStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	VPNGatewayConnectionStatusReasonCodeCannotAuthenticateConnectionConst   = "cannot_authenticate_connection"
+	VPNGatewayConnectionStatusReasonCodeIkePolicyMismatchConst              = "ike_policy_mismatch"
+	VPNGatewayConnectionStatusReasonCodeIkeV1IDLocalRemoteCIDRMismatchConst = "ike_v1_id_local_remote_cidr_mismatch"
+	VPNGatewayConnectionStatusReasonCodeIkeV2LocalRemoteCIDRMismatchConst   = "ike_v2_local_remote_cidr_mismatch"
+	VPNGatewayConnectionStatusReasonCodeInternalErrorConst                  = "internal_error"
+	VPNGatewayConnectionStatusReasonCodeIpsecPolicyMismatchConst            = "ipsec_policy_mismatch"
+	VPNGatewayConnectionStatusReasonCodePeerNotRespondingConst              = "peer_not_responding"
+)
+
+// UnmarshalVPNGatewayConnectionStatusReason unmarshals an instance of VPNGatewayConnectionStatusReason from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayConnectionTunnelStatusReason : VPNGatewayConnectionTunnelStatusReason struct
+type VPNGatewayConnectionTunnelStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this VPN gateway connection tunnel's status.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayConnectionTunnelStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	VPNGatewayConnectionTunnelStatusReasonCodeCannotAuthenticateConnectionConst   = "cannot_authenticate_connection"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkePolicyMismatchConst              = "ike_policy_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkeV1IDLocalRemoteCIDRMismatchConst = "ike_v1_id_local_remote_cidr_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkeV2LocalRemoteCIDRMismatchConst   = "ike_v2_local_remote_cidr_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeInternalErrorConst                  = "internal_error"
+	VPNGatewayConnectionTunnelStatusReasonCodeIpsecPolicyMismatchConst            = "ipsec_policy_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodePeerNotRespondingConst              = "peer_not_responding"
+)
+
+// UnmarshalVPNGatewayConnectionTunnelStatusReason unmarshals an instance of VPNGatewayConnectionTunnelStatusReason from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionTunnelStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionTunnelStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayHealthReason : VPNGatewayHealthReason struct
+type VPNGatewayHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNGatewayHealthReasonCodeCannotCreateVPCRouteConst   = "cannot_create_vpc_route"
+	VPNGatewayHealthReasonCodeCannotReserveIPAddressConst = "cannot_reserve_ip_address"
+	VPNGatewayHealthReasonCodeInternalErrorConst          = "internal_error"
+)
+
+// UnmarshalVPNGatewayHealthReason unmarshals an instance of VPNGatewayHealthReason from the specified map of raw messages.
+func UnmarshalVPNGatewayHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayLifecycleReason : VPNGatewayLifecycleReason struct
+type VPNGatewayLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNGatewayLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNGatewayLifecycleReason unmarshals an instance of VPNGatewayLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNGatewayLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // VPNGatewayMember : VPNGatewayMember struct
 type VPNGatewayMember struct {
+	// The reasons for the current VPN gateway member health_state (if any):
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayMemberHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The reasons for the current VPN gateway member lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayMemberLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway member.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
 	// The reserved IP address assigned to the VPN gateway member.
 	//
 	// This property will be present only when the VPN gateway status is `available`.
@@ -71871,10 +72614,34 @@ type VPNGatewayMember struct {
 
 	// The high availability role assigned to the VPN gateway member.
 	Role *string `json:"role" validate:"required"`
-
-	// The status of the VPN gateway member.
-	Status *string `json:"status" validate:"required"`
 }
+
+// Constants associated with the VPNGatewayMember.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayMemberHealthStateDegradedConst     = "degraded"
+	VPNGatewayMemberHealthStateFaultedConst      = "faulted"
+	VPNGatewayMemberHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayMemberHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayMember.LifecycleState property.
+// The lifecycle state of the VPN gateway member.
+const (
+	VPNGatewayMemberLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayMemberLifecycleStateFailedConst    = "failed"
+	VPNGatewayMemberLifecycleStatePendingConst   = "pending"
+	VPNGatewayMemberLifecycleStateStableConst    = "stable"
+	VPNGatewayMemberLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayMemberLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayMemberLifecycleStateWaitingConst   = "waiting"
+)
 
 // Constants associated with the VPNGatewayMember.Role property.
 // The high availability role assigned to the VPN gateway member.
@@ -71883,18 +72650,25 @@ const (
 	VPNGatewayMemberRoleStandbyConst = "standby"
 )
 
-// Constants associated with the VPNGatewayMember.Status property.
-// The status of the VPN gateway member.
-const (
-	VPNGatewayMemberStatusAvailableConst = "available"
-	VPNGatewayMemberStatusDeletingConst  = "deleting"
-	VPNGatewayMemberStatusFailedConst    = "failed"
-	VPNGatewayMemberStatusPendingConst   = "pending"
-)
-
 // UnmarshalVPNGatewayMember unmarshals an instance of VPNGatewayMember from the specified map of raw messages.
 func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayMember)
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayMemberHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayMemberLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "private_ip", &obj.PrivateIP, UnmarshalReservedIPReference)
 	if err != nil {
 		return
@@ -71907,7 +72681,78 @@ func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayMemberHealthReason : VPNGatewayMemberHealthReason struct
+type VPNGatewayMemberHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayMemberHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNGatewayMemberHealthReasonCodeCannotReserveIPAddressConst = "cannot_reserve_ip_address"
+	VPNGatewayMemberHealthReasonCodeInternalErrorConst          = "internal_error"
+)
+
+// UnmarshalVPNGatewayMemberHealthReason unmarshals an instance of VPNGatewayMemberHealthReason from the specified map of raw messages.
+func UnmarshalVPNGatewayMemberHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayMemberHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayMemberLifecycleReason : VPNGatewayMemberLifecycleReason struct
+type VPNGatewayMemberLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayMemberLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNGatewayMemberLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNGatewayMemberLifecycleReason unmarshals an instance of VPNGatewayMemberLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNGatewayMemberLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayMemberLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -72054,6 +72899,19 @@ type VPNServer struct {
 	// Indicates whether the split tunneling is enabled on this VPN server.
 	EnableSplitTunneling *bool `json:"enable_split_tunneling" validate:"required"`
 
+	// The reasons for the current VPN server health_state (if any):
+	// - `cannot_access_client_certificate`: VPN server's client certificate is inaccessible
+	// - `cannot_access_server_certificate`: VPN server's server certificate is inaccessible
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNServerHealthReason `json:"health_reasons" validate:"required"`
+
 	// The health of this resource.
 	// - `ok`: No abnormal behavior detected
 	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
@@ -72071,6 +72929,15 @@ type VPNServer struct {
 
 	// The unique identifier for this VPN server.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN server lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNServerLifecycleReason `json:"lifecycle_reasons" validate:"required"`
 
 	// The lifecycle state of the VPN server.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
@@ -72186,6 +73053,10 @@ func UnmarshalVPNServer(m map[string]json.RawMessage, result interface{}) (err e
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNServerHealthReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
@@ -72199,6 +73070,10 @@ func UnmarshalVPNServer(m map[string]json.RawMessage, result interface{}) (err e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNServerLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -72703,6 +73578,84 @@ func UnmarshalVPNServerCollectionNext(m map[string]json.RawMessage, result inter
 	return
 }
 
+// VPNServerHealthReason : VPNServerHealthReason struct
+type VPNServerHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNServerHealthReasonCodeCannotAccessClientCertificateConst = "cannot_access_client_certificate"
+	VPNServerHealthReasonCodeCannotAccessServerCertificateConst = "cannot_access_server_certificate"
+	VPNServerHealthReasonCodeCannotCreateVPCRouteConst          = "cannot_create_vpc_route"
+	VPNServerHealthReasonCodeCannotReserveIPAddressConst        = "cannot_reserve_ip_address"
+	VPNServerHealthReasonCodeInternalErrorConst                 = "internal_error"
+)
+
+// UnmarshalVPNServerHealthReason unmarshals an instance of VPNServerHealthReason from the specified map of raw messages.
+func UnmarshalVPNServerHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerLifecycleReason : VPNServerLifecycleReason struct
+type VPNServerLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNServerLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNServerLifecycleReason unmarshals an instance of VPNServerLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNServerLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPNServerPatch : VPNServerPatch struct
 type VPNServerPatch struct {
 	// The certificate instance for this VPN server.
@@ -72850,11 +73803,37 @@ type VPNServerRoute struct {
 	// be dropped.
 	Destination *string `json:"destination" validate:"required"`
 
+	// The reasons for the current VPN server route health_state (if any):
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNServerRouteHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this VPN route.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN route.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN server route lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNServerRouteLifecycleReason `json:"lifecycle_reasons" validate:"required"`
 
 	// The lifecycle state of the VPN route.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
@@ -72879,6 +73858,21 @@ const (
 	VPNServerRouteActionDeliverConst   = "deliver"
 	VPNServerRouteActionDropConst      = "drop"
 	VPNServerRouteActionTranslateConst = "translate"
+)
+
+// Constants associated with the VPNServerRoute.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNServerRouteHealthStateDegradedConst     = "degraded"
+	VPNServerRouteHealthStateFaultedConst      = "faulted"
+	VPNServerRouteHealthStateInapplicableConst = "inapplicable"
+	VPNServerRouteHealthStateOkConst           = "ok"
 )
 
 // Constants associated with the VPNServerRoute.LifecycleState property.
@@ -72914,11 +73908,23 @@ func UnmarshalVPNServerRoute(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNServerRouteHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNServerRouteLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -73023,6 +74029,80 @@ type VPNServerRouteCollectionNext struct {
 func UnmarshalVPNServerRouteCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNServerRouteCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerRouteHealthReason : VPNServerRouteHealthReason struct
+type VPNServerRouteHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerRouteHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNServerRouteHealthReasonCodeInternalErrorConst = "internal_error"
+)
+
+// UnmarshalVPNServerRouteHealthReason unmarshals an instance of VPNServerRouteHealthReason from the specified map of raw messages.
+func UnmarshalVPNServerRouteHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerRouteHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerRouteLifecycleReason : VPNServerRouteLifecycleReason struct
+type VPNServerRouteLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerRouteLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNServerRouteLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNServerRouteLifecycleReason unmarshals an instance of VPNServerRouteLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNServerRouteLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerRouteLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -93449,6 +94529,27 @@ type VPNGatewayConnectionPolicyMode struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// The local CIDRs for this resource.
 	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
 
@@ -93545,6 +94646,10 @@ func UnmarshalVPNGatewayConnectionPolicyMode(m map[string]json.RawMessage, resul
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
@@ -93587,12 +94692,12 @@ type VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype struct
 }
 
 // NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype : Instantiate VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype (Generic Model Constructor)
-func (*VpcV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(peerAddress string, psk string, localCIDRs []string, peerCIDRs []string) (_model *VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype, err error) {
+func (*VpcV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(peerAddress string, psk string, LocalCIDRs []string, PeerCIDRs []string) (_model *VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype, err error) {
 	_model = &VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype{
 		PeerAddress: core.StringPtr(peerAddress),
 		Psk:         core.StringPtr(psk),
-		LocalCIDRs:  localCIDRs,
-		PeerCIDRs:   peerCIDRs,
+		LocalCIDRs:  LocalCIDRs,
+		PeerCIDRs:   PeerCIDRs,
 	}
 	err = core.ValidateStruct(_model, "required parameters")
 	return
@@ -93776,6 +94881,27 @@ type VPNGatewayConnectionStaticRouteMode struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration,
+	//   and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// Routing protocols are disabled for this VPN gateway connection.
 	RoutingProtocol *string `json:"routing_protocol" validate:"required"`
 
@@ -93878,6 +95004,10 @@ func UnmarshalVPNGatewayConnectionStaticRouteMode(m map[string]json.RawMessage, 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "routing_protocol", &obj.RoutingProtocol)
 	if err != nil {
 		return
@@ -93902,11 +95032,43 @@ type VPNGatewayPolicyMode struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -93920,9 +95082,6 @@ type VPNGatewayPolicyMode struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -93932,19 +95091,37 @@ type VPNGatewayPolicyMode struct {
 	Mode *string `json:"mode" validate:"required"`
 }
 
+// Constants associated with the VPNGatewayPolicyMode.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayPolicyModeHealthStateDegradedConst     = "degraded"
+	VPNGatewayPolicyModeHealthStateFaultedConst      = "faulted"
+	VPNGatewayPolicyModeHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayPolicyModeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayPolicyMode.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayPolicyModeLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayPolicyModeLifecycleStateFailedConst    = "failed"
+	VPNGatewayPolicyModeLifecycleStatePendingConst   = "pending"
+	VPNGatewayPolicyModeLifecycleStateStableConst    = "stable"
+	VPNGatewayPolicyModeLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayPolicyModeLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayPolicyModeLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGatewayPolicyMode.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayPolicyModeResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGatewayPolicyMode.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayPolicyModeStatusAvailableConst = "available"
-	VPNGatewayPolicyModeStatusDeletingConst  = "deleting"
-	VPNGatewayPolicyModeStatusFailedConst    = "failed"
-	VPNGatewayPolicyModeStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGatewayPolicyMode.Mode property.
@@ -93972,11 +95149,27 @@ func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -93993,10 +95186,6 @@ func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -94142,11 +95331,43 @@ type VPNGatewayRouteMode struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -94160,9 +95381,6 @@ type VPNGatewayRouteMode struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -94172,19 +95390,37 @@ type VPNGatewayRouteMode struct {
 	Mode *string `json:"mode" validate:"required"`
 }
 
+// Constants associated with the VPNGatewayRouteMode.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayRouteModeHealthStateDegradedConst     = "degraded"
+	VPNGatewayRouteModeHealthStateFaultedConst      = "faulted"
+	VPNGatewayRouteModeHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayRouteModeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayRouteMode.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayRouteModeLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayRouteModeLifecycleStateFailedConst    = "failed"
+	VPNGatewayRouteModeLifecycleStatePendingConst   = "pending"
+	VPNGatewayRouteModeLifecycleStateStableConst    = "stable"
+	VPNGatewayRouteModeLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayRouteModeLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayRouteModeLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGatewayRouteMode.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayRouteModeResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGatewayRouteMode.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayRouteModeStatusAvailableConst = "available"
-	VPNGatewayRouteModeStatusDeletingConst  = "deleting"
-	VPNGatewayRouteModeStatusFailedConst    = "failed"
-	VPNGatewayRouteModeStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGatewayRouteMode.Mode property.
@@ -94212,11 +95448,27 @@ func UnmarshalVPNGatewayRouteMode(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -94233,10 +95485,6 @@ func UnmarshalVPNGatewayRouteMode(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}

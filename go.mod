@@ -29,7 +29,7 @@ require (
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.2
 	github.com/IBM/schematics-go-sdk v0.2.1
-	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.0
+	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.1
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
 	github.com/IBM/vpc-go-sdk v0.42.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
@@ -54,7 +54,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
-	golang.org/x/crypto v0.11.0
+	golang.org/x/crypto v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.26.3
@@ -198,11 +198,11 @@ require (
 	github.com/zclconf/go-cty v1.11.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.6 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
-	golang.org/x/net v0.12.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-	golang.org/x/term v0.10.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

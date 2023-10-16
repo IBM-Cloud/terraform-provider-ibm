@@ -54,6 +54,7 @@ func TestAccIBMIsVPNServerRouteBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_is_vpn_server_route.is_vpn_server_route", "created_at"),
 					resource.TestCheckResourceAttrSet("ibm_is_vpn_server_route.is_vpn_server_route", "href"),
 					resource.TestCheckResourceAttrSet("ibm_is_vpn_server_route.is_vpn_server_route", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_server_route.is_vpn_server_route", "health_state"),
 					resource.TestCheckResourceAttrSet("ibm_is_vpn_server_route.is_vpn_server_route", "resource_type"),
 					resource.TestCheckResourceAttrSet("ibm_is_vpn_server_route.is_vpn_server_route", "vpn_route"),
 				),
