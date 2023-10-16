@@ -73,37 +73,27 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Description: "The configuration labels.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
+						"environment": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the project environment.",
+						},
 						"authorizations": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Description: "The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"trusted_profile": &schema.Schema{
-										Type:        schema.TypeList,
-										MaxItems:    1,
+									"trusted_profile_id": &schema.Schema{
+										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The trusted profile for authorizations.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The unique ID.",
-												},
-												"target_iam_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The unique ID.",
-												},
-											},
-										},
+										Description: "The trusted profile ID.",
 									},
 									"method": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+										Description: "The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.",
 									},
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
@@ -464,6 +454,9 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(modelMap
 		}
 		model.Labels = labels
 	}
+	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
+		model.Environment = core.StringPtr(modelMap["environment"].(string))
+	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectConfigMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -500,29 +493,14 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(modelMap
 
 func resourceIbmProjectConfigMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
 	model := &projectv1.ProjectConfigAuth{}
-	if modelMap["trusted_profile"] != nil && len(modelMap["trusted_profile"].([]interface{})) > 0 {
-		TrustedProfileModel, err := resourceIbmProjectConfigMapToProjectConfigAuthTrustedProfile(modelMap["trusted_profile"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.TrustedProfile = TrustedProfileModel
+	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
+		model.TrustedProfileID = core.StringPtr(modelMap["trusted_profile_id"].(string))
 	}
 	if modelMap["method"] != nil && modelMap["method"].(string) != "" {
 		model.Method = core.StringPtr(modelMap["method"].(string))
 	}
 	if modelMap["api_key"] != nil && modelMap["api_key"].(string) != "" {
 		model.ApiKey = core.StringPtr(modelMap["api_key"].(string))
-	}
-	return model, nil
-}
-
-func resourceIbmProjectConfigMapToProjectConfigAuthTrustedProfile(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuthTrustedProfile, error) {
-	model := &projectv1.ProjectConfigAuthTrustedProfile{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["target_iam_id"] != nil && modelMap["target_iam_id"].(string) != "" {
-		model.TargetIamID = core.StringPtr(modelMap["target_iam_id"].(string))
 	}
 	return model, nil
 }
@@ -580,6 +558,9 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(mod
 		}
 		model.Labels = labels
 	}
+	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
+		model.Environment = core.StringPtr(modelMap["environment"].(string))
+	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectConfigMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -630,6 +611,9 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 	}
 	if model.Labels != nil {
 		modelMap["labels"] = model.Labels
+	}
+	if model.Environment != nil {
+		modelMap["environment"] = model.Environment
 	}
 	if model.Authorizations != nil {
 		authorizationsMap, err := resourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
@@ -683,29 +667,14 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 
 func resourceIbmProjectConfigProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.TrustedProfile != nil {
-		trustedProfileMap, err := resourceIbmProjectConfigProjectConfigAuthTrustedProfileToMap(model.TrustedProfile)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["trusted_profile"] = []map[string]interface{}{trustedProfileMap}
+	if model.TrustedProfileID != nil {
+		modelMap["trusted_profile_id"] = model.TrustedProfileID
 	}
 	if model.Method != nil {
 		modelMap["method"] = model.Method
 	}
 	if model.ApiKey != nil {
 		modelMap["api_key"] = model.ApiKey
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectConfigProjectConfigAuthTrustedProfileToMap(model *projectv1.ProjectConfigAuthTrustedProfile) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.TargetIamID != nil {
-		modelMap["target_iam_id"] = model.TargetIamID
 	}
 	return modelMap, nil
 }

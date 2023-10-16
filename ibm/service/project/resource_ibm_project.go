@@ -220,6 +220,56 @@ func ResourceIbmProject() *schema.Resource {
 					},
 				},
 			},
+			"environments": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The project environments. These environments are only included in the response if project environments were created on the project.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The environment id as a friendly name.",
+						},
+						"project_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The unique ID.",
+						},
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A relative URL.",
+						},
+						"definition": &schema.Schema{
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
+							Required:    true,
+							Description: "The environment definition used in the project collection.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The name of the environment.",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The description of the environment.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -374,6 +424,19 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
 		}
 	}
+	if !core.IsNil(project.Environments) {
+		environments := []map[string]interface{}{}
+		for _, environmentsItem := range project.Environments {
+			environmentsItemMap, err := resourceIbmProjectProjectEnvironmentCollectionMemberToMap(&environmentsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			environments = append(environments, environmentsItemMap)
+		}
+		if err = d.Set("environments", environments); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting environments: %s", err))
+		}
+	}
 
 	return nil
 }
@@ -473,6 +536,9 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 		}
 		model.Labels = labels
 	}
+	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
+		model.Environment = core.StringPtr(modelMap["environment"].(string))
+	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -509,29 +575,14 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 
 func resourceIbmProjectMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
 	model := &projectv1.ProjectConfigAuth{}
-	if modelMap["trusted_profile"] != nil && len(modelMap["trusted_profile"].([]interface{})) > 0 {
-		TrustedProfileModel, err := resourceIbmProjectMapToProjectConfigAuthTrustedProfile(modelMap["trusted_profile"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.TrustedProfile = TrustedProfileModel
+	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
+		model.TrustedProfileID = core.StringPtr(modelMap["trusted_profile_id"].(string))
 	}
 	if modelMap["method"] != nil && modelMap["method"].(string) != "" {
 		model.Method = core.StringPtr(modelMap["method"].(string))
 	}
 	if modelMap["api_key"] != nil && modelMap["api_key"].(string) != "" {
 		model.ApiKey = core.StringPtr(modelMap["api_key"].(string))
-	}
-	return model, nil
-}
-
-func resourceIbmProjectMapToProjectConfigAuthTrustedProfile(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuthTrustedProfile, error) {
-	model := &projectv1.ProjectConfigAuthTrustedProfile{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["target_iam_id"] != nil && modelMap["target_iam_id"].(string) != "" {
-		model.TargetIamID = core.StringPtr(modelMap["target_iam_id"].(string))
 	}
 	return model, nil
 }
@@ -617,6 +668,20 @@ func resourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulative
 
 func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.ProjectConfigCollectionMember) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.ApprovedVersion != nil {
+		approvedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
+	}
+	if model.DeployedVersion != nil {
+		deployedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.DeployedVersion)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deployed_version"] = []map[string]interface{}{deployedVersionMap}
+	}
 	modelMap["id"] = model.ID
 	modelMap["project_id"] = model.ProjectID
 	modelMap["version"] = flex.IntValue(model.Version)
@@ -641,6 +706,17 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 	}
 	if model.LastSave != nil {
 		modelMap["last_save"] = model.LastSave.String()
+	}
+	if model.References != nil {
+		references := make(map[string]interface{})
+		for k, v := range model.References {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			references[k] = string(bytes)
+		}
+		modelMap["references"] = references
 	}
 	if model.LastValidated != nil {
 		lastValidatedMap, err := resourceIbmProjectLastValidatedActionWithSummaryToMap(model.LastValidated)
@@ -676,6 +752,19 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	return modelMap, nil
+}
+
+func resourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.NeedsAttentionState != nil {
+		modelMap["needs_attention_state"] = model.NeedsAttentionState
+	}
+	modelMap["state"] = model.State
+	modelMap["version"] = flex.IntValue(model.Version)
+	if model.Href != nil {
+		modelMap["href"] = model.Href
+	}
 	return modelMap, nil
 }
 
@@ -956,6 +1045,31 @@ func resourceIbmProjectSchematicsWorkspaceToMap(model *projectv1.SchematicsWorks
 }
 
 func resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model *projectv1.ProjectConfigDefinitionNameDescription) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectProjectEnvironmentCollectionMemberToMap(model *projectv1.ProjectEnvironmentCollectionMember) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	modelMap["project_id"] = model.ProjectID
+	modelMap["created_at"] = model.CreatedAt.String()
+	modelMap["href"] = model.Href
+	definitionMap, err := resourceIbmProjectEnvironmentDefinitionNameDescriptionToMap(model.Definition)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	return modelMap, nil
+}
+
+func resourceIbmProjectEnvironmentDefinitionNameDescriptionToMap(model *projectv1.EnvironmentDefinitionNameDescription) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = model.Name

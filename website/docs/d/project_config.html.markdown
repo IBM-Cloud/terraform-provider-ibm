@@ -37,18 +37,14 @@ After your data source is created, you can read values from the following attrib
 
 * `definition` - (List) The type and output of a project configuration.
 Nested schema for **definition**:
-	* `authorizations` - (List) The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.
+	* `authorizations` - (List) The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.
 	Nested schema for **authorizations**:
 		* `api_key` - (String) The IBM Cloud API Key.
 		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
-		* `method` - (String) The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.
+		* `method` - (String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
-		* `trusted_profile` - (List) The trusted profile for authorizations.
-		Nested schema for **trusted_profile**:
-			* `id` - (String) The unique ID.
-			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-			* `target_iam_id` - (String) The unique ID.
-			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `trusted_profile_id` - (String) The trusted profile ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `compliance_profile` - (List) The profile required for compliance.
 	Nested schema for **compliance_profile**:
 		* `attachment_id` - (String) The unique ID.
@@ -63,6 +59,8 @@ Nested schema for **definition**:
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
 	* `description` - (String) A project configuration description.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
+	* `environment` - (String) The ID of the project environment.
+	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `input` - (List) The input variables for configuration definition and environment.
 	Nested schema for **input**:
 	* `labels` - (List) The configuration labels.

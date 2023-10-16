@@ -117,35 +117,26 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"environment": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the project environment.",
+						},
 						"authorizations": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The authorization for a configuration.You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Description: "The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"trusted_profile": &schema.Schema{
-										Type:        schema.TypeList,
+									"trusted_profile_id": &schema.Schema{
+										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The trusted profile for authorizations.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The unique ID.",
-												},
-												"target_iam_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The unique ID.",
-												},
-											},
-										},
+										Description: "The trusted profile ID.",
 									},
 									"method": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The authorization for a configuration. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+										Description: "The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.",
 									},
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
@@ -345,6 +336,9 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *proje
 	if model.Labels != nil {
 		modelMap["labels"] = model.Labels
 	}
+	if model.Environment != nil {
+		modelMap["environment"] = model.Environment
+	}
 	if model.Authorizations != nil {
 		authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
 		if err != nil {
@@ -393,29 +387,14 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *proje
 
 func dataSourceIbmProjectConfigProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.TrustedProfile != nil {
-		trustedProfileMap, err := dataSourceIbmProjectConfigProjectConfigAuthTrustedProfileToMap(model.TrustedProfile)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["trusted_profile"] = []map[string]interface{}{trustedProfileMap}
+	if model.TrustedProfileID != nil {
+		modelMap["trusted_profile_id"] = model.TrustedProfileID
 	}
 	if model.Method != nil {
 		modelMap["method"] = model.Method
 	}
 	if model.ApiKey != nil {
 		modelMap["api_key"] = model.ApiKey
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProjectConfigProjectConfigAuthTrustedProfileToMap(model *projectv1.ProjectConfigAuthTrustedProfile) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.TargetIamID != nil {
-		modelMap["target_iam_id"] = model.TargetIamID
 	}
 	return modelMap, nil
 }
