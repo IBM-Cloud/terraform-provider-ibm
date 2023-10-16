@@ -34,7 +34,11 @@ resource "ibm_is_backup_policy" "example" {
 ## Argument Reference
 
 Review the argument reference that you can specify for your resource.
+- `included_content` - (Optional, List) The included content for backups created using this policy. Allowed values are `boot_volume`, `data_volumes`.
 
+~> **Note**
+  `boot_volume`: Include the instance's boot volume.</br>
+  `data_volumes`: Include the instance's data volumes.
 - `match_resource_types` - (Optional, List) A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy. The default value is `["volume"]`.
 
 ~> **Note**
