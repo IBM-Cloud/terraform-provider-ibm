@@ -244,3 +244,48 @@ func testAccCheckIBMIsBackupPolicyDestroy(s *terraform.State) error {
 
 	return nil
 }
+
+func TestAccIBMIsBackupPolicyBasicWithScope(t *testing.T) {
+	backupPolicyName := fmt.Sprintf("tfbakuppolicyname%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsBackupPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsBackupPolicyConfigBasicWithScope(backupPolicyName, acc.EnterpriseCRN),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_is_backup_policy.is_backup_policy", "name", backupPolicyName),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "match_resource_types.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "match_user_tags.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "resource_group"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "scope.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "scope.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "resource_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "version"),
+				),
+			},
+			{
+				ResourceName:      "ibm_is_backup_policy.is_backup_policy",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsBackupPolicyConfigBasicWithScope(backupPolicyName, entCrn string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_backup_policy" "is_backup_policy" {
+		match_user_tags = ["dev:test"]
+		name            = "%s"
+		scope {
+			crn = "%s"
+		}
+	}`, backupPolicyName, entCrn)
+}
