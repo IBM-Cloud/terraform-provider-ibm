@@ -76,6 +76,17 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Computed:    true,
 				Description: "Status of the secret",
 			},
+			"update_secret": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Updates secret from secrets manager if true",
+			},
+			"last_updated_timestamp": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Timestamp secret was last updated",
+			},
 			"fields": {
 				Type:        schema.TypeSet,
 				Required:    true,
@@ -218,6 +229,7 @@ func resourceIBMContainerIngressSecretOpaqueRead(d *schema.ResourceData, meta in
 	d.Set("persistence", ingressSecretConfig.Persistence)
 	d.Set("user_managed", ingressSecretConfig.UserManaged)
 	d.Set("status", ingressSecretConfig.Status)
+	d.Set("last_updated_timestamp", ingressSecretConfig.LastUpdatedTimestamp)
 
 	if len(ingressSecretConfig.Fields) > 0 {
 		d.Set("fields", flex.FlattenOpaqueSecret(ingressSecretConfig.Fields))
@@ -355,13 +367,13 @@ func resourceIBMContainerIngressSecretOpaqueUpdate(d *schema.ResourceData, meta 
 				return err
 			}
 		}
-	} else {
+	} else if d.HasChange("update_secret") {
+		// user wants to force an upstream secret update from secrets manager onto kube cluster w/out changing crn
 		_, err = ingressAPI.UpdateIngressSecret(params)
 		if err != nil {
 			return err
 		}
 	}
-
 	return resourceIBMContainerIngressSecretOpaqueRead(d, meta)
 }
 

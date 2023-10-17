@@ -95,6 +95,12 @@ func ResourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Computed:    true,
 				Description: "Timestamp secret was last updated",
 			},
+			"update_secret": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Updates secret from secrets manager if true",
+			},
 		},
 	}
 }
@@ -249,7 +255,8 @@ func resourceIBMContainerIngressSecretTLSUpdate(d *schema.ResourceData, meta int
 		if err != nil {
 			return err
 		}
-	} else {
+	} else if d.HasChange("update_secret") {
+		// user wants to force an upstream secret update from secrets manager onto kube cluster w/out changing crn
 		_, err = ingressAPI.UpdateIngressSecret(params)
 		if err != nil {
 			return err
