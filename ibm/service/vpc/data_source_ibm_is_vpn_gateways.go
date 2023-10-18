@@ -218,7 +218,7 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 		gateway[isVPNGatewayName] = *data.Name
 		gateway[isVPNGatewayCreatedAt] = data.CreatedAt.String()
 		gateway[isVPNGatewayResourceType] = *data.ResourceType
-		gateway[isVPNGatewayStatus] = *data.Status
+		gateway[isVPNGatewayStatus] = *data.LifecycleState
 		gateway[isVPNGatewayMode] = *data.Mode
 		gateway[isVPNGatewayResourceGroup] = *data.ResourceGroup.ID
 		gateway[isVPNGatewaySubnet] = *data.Subnet.ID
@@ -243,7 +243,7 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 				if memberIP.PublicIP != nil {
 					currentMemberIP["address"] = *memberIP.PublicIP.Address
 					currentMemberIP["role"] = *memberIP.Role
-					currentMemberIP["status"] = *memberIP.Status
+					currentMemberIP["status"] = *memberIP.LifecycleState
 					vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
 				}
 				if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {
