@@ -31,7 +31,7 @@ require (
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.1
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
-	github.com/IBM/vpc-go-sdk v0.42.0
+	github.com/IBM/vpc-go-sdk v0.43.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
@@ -231,5 +231,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.com/IBM/vpc-go-sdk v0.42.0 => ./common/github.com/IBM/vpc-go-sdk
