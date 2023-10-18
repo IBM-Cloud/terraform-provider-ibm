@@ -485,7 +485,6 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		vpcCrn := vpcCrnIntf.(string)
 		listBareMetalServersOptions.VPCCRN = &vpcCrn
 	}
-	//sdk
 	// if subnetIntf, ok := d.GetOk("network_interfaces_subnet"); ok {
 	// 	subnetId := subnetIntf.(string)
 	// 	listBareMetalServersOptions.NetworkInterfacesSubnetID = &subnetId
