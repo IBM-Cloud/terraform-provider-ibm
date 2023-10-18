@@ -710,6 +710,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_link":                                satellite.DataSourceIBMSatelliteLink(),
 			"ibm_satellite_endpoint":                            satellite.DataSourceIBMSatelliteEndpoint(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.DataSourceIBMSatelliteClusterWorkerPoolAttachment(),
+			"ibm_satellite_storage_configuration":               satellite.DataSourceIBMSatelliteStorageConfiguration(),
+			"ibm_satellite_storage_assignment":                  satellite.DataSourceIBMSatelliteStorageAssignment(),
 
 			// Catalog related resources
 			"ibm_cm_catalog":           catalogmanagement.DataSourceIBMCmCatalog(),
@@ -1233,6 +1235,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster":                             satellite.ResourceIBMSatelliteCluster(),
 			"ibm_satellite_cluster_worker_pool":                 satellite.ResourceIBMSatelliteClusterWorkerPool(),
 			"ibm_satellite_link":                                satellite.ResourceIBMSatelliteLink(),
+			"ibm_satellite_storage_configuration":               satellite.ResourceIBMSatelliteStorageConfiguration(),
+			"ibm_satellite_storage_assignment":                  satellite.ResourceIBMSatelliteStorageAssignment(),
 			"ibm_satellite_endpoint":                            satellite.ResourceIBMSatelliteEndpoint(),
 			"ibm_satellite_location_nlb_dns":                    satellite.ResourceIBMSatelliteLocationNlbDns(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),

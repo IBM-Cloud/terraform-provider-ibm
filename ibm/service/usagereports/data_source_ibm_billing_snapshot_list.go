@@ -42,32 +42,6 @@ func DataSourceIBMBillingSnapshotList() *schema.Resource {
 				Computed:    true,
 				Description: "Number of total snapshots.",
 			},
-			"first": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Reference to the first page of the search query.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"next": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Reference to the next page of the search query if any.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
 			"snapshots": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -213,67 +187,61 @@ func dataSourceIBMBillingSnapshotListRead(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	getReportsSnapshotOptions := &usagereportsv4.GetReportsSnapshotOptions{}
-
+	var next_ref string
+	var snapshotList []usagereportsv4.SnapshotListSnapshotsItem
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	for {
+		getReportsSnapshotOptions := &usagereportsv4.GetReportsSnapshotOptions{}
+		if next_ref != "" {
+			getReportsSnapshotOptions.SetStart(next_ref)
+		}
 
-	getReportsSnapshotOptions.SetAccountID(userDetails.UserAccount)
-	getReportsSnapshotOptions.SetMonth(d.Get("month").(string))
-	if _, ok := d.GetOk("date_from"); ok {
-		getReportsSnapshotOptions.SetDateFrom(int64(d.Get("date_from").(int)))
-	}
-	if _, ok := d.GetOk("date_to"); ok {
-		getReportsSnapshotOptions.SetDateTo(int64(d.Get("date_to").(int)))
-	}
+		getReportsSnapshotOptions.SetAccountID(userDetails.UserAccount)
+		getReportsSnapshotOptions.SetMonth(d.Get("month").(string))
+		if _, ok := d.GetOk("date_from"); ok {
+			getReportsSnapshotOptions.SetDateFrom(int64(d.Get("date_from").(int)))
+		}
+		if _, ok := d.GetOk("date_to"); ok {
+			getReportsSnapshotOptions.SetDateTo(int64(d.Get("date_to").(int)))
+		}
 
-	snapshotList, response, err := usageReportsClient.GetReportsSnapshotWithContext(context, getReportsSnapshotOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetReportsSnapshotWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetReportsSnapshotWithContext failed %s\n%s", err, response))
+		snapshotListResponse, response, err := usageReportsClient.GetReportsSnapshotWithContext(context, getReportsSnapshotOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetReportsSnapshotWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("GetReportsSnapshotWithContext failed %s\n%s", err, response))
+		}
+		if snapshotListResponse.Snapshots != nil && len(snapshotListResponse.Snapshots) > 0 {
+			snapshotList = append(snapshotList, snapshotListResponse.Snapshots...)
+		}
+		if snapshotListResponse.Next == nil || snapshotListResponse.Next.Offset == nil {
+			break
+		}
+		next_ref = *snapshotListResponse.Next.Offset
+		if err != nil {
+			log.Printf("[DEBUG] ListAccountGroupsWithContext failed. Error occurred while parsing NextURL: %s", err)
+			return diag.FromErr(err)
+		}
+		if next_ref == "" {
+			break
+		}
 	}
 
 	d.SetId(dataSourceIBMBillingSnapshotListID(d))
 
-	if err = d.Set("snapshotcount", flex.IntValue(snapshotList.Count)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting count: %s", err))
-	}
-
-	first := []map[string]interface{}{}
-	if snapshotList.First != nil {
-		modelMap, err := dataSourceIBMBillingSnapshotListSnapshotListFirstToMap(snapshotList.First)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		first = append(first, modelMap)
-	}
-	if err = d.Set("first", first); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-	}
-
-	next := []map[string]interface{}{}
-	if snapshotList.Next != nil {
-		modelMap, err := dataSourceIBMBillingSnapshotListSnapshotListNextToMap(snapshotList.Next)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		next = append(next, modelMap)
-	}
-	if err = d.Set("next", next); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+	if len(snapshotList) == 0 {
+		return diag.FromErr(fmt.Errorf("no snapshots found for account: %s", userDetails.UserAccount))
 	}
 
 	snapshots := []map[string]interface{}{}
-	if snapshotList.Snapshots != nil {
-		for _, modelItem := range snapshotList.Snapshots {
-			modelMap, err := dataSourceIBMBillingSnapshotListSnapshotListSnapshotsItemToMap(&modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			snapshots = append(snapshots, modelMap)
+	for _, modelItem := range snapshotList {
+		modelMap, err := dataSourceIBMBillingSnapshotListSnapshotListSnapshotsItemToMap(&modelItem)
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		snapshots = append(snapshots, modelMap)
 	}
 	if err = d.Set("snapshots", snapshots); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting snapshots %s", err))
@@ -285,22 +253,6 @@ func dataSourceIBMBillingSnapshotListRead(context context.Context, d *schema.Res
 // dataSourceIBMBillingSnapshotListID returns a reasonable ID for the list.
 func dataSourceIBMBillingSnapshotListID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
-}
-
-func dataSourceIBMBillingSnapshotListSnapshotListFirstToMap(model *usagereportsv4.SnapshotListFirst) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMBillingSnapshotListSnapshotListNextToMap(model *usagereportsv4.SnapshotListNext) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
 }
 
 func dataSourceIBMBillingSnapshotListSnapshotListSnapshotsItemToMap(model *usagereportsv4.SnapshotListSnapshotsItem) (map[string]interface{}, error) {

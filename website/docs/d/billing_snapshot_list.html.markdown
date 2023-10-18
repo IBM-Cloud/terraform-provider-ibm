@@ -34,15 +34,6 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the billing_snapshot_list.
 * `count` - (Integer) Number of total snapshots.
-
-* `first` - (List) Reference to the first page of the search query.
-Nested schema for **first**:
-	* `href` - (String)
-
-* `next` - (List) Reference to the next page of the search query if any.
-Nested schema for **next**:
-	* `href` - (String)
-
 * `snapshots` - (List) 
 Nested schema for **snapshots**:
 	* `account_id` - (String) Account ID for which billing report snapshot is configured.
