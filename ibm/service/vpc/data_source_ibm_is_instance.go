@@ -785,8 +785,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	}
 
 	d.Set(isInstanceMemory, *instance.Memory)
-	d.Set("numa_count", *instance.NumaCount)
-
+	if instance.NumaCount != nil {
+		d.Set("numa_count", *instance.NumaCount)
+	}
 	gpuList := make([]map[string]interface{}, 0)
 	if instance.Gpu != nil {
 		currentGpu := map[string]interface{}{}

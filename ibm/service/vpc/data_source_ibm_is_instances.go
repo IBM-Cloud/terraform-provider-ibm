@@ -840,7 +840,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		l["crn"] = *instance.CRN
 		l["name"] = *instance.Name
 		l["memory"] = *instance.Memory
-		l["numa_count"] = *instance.NumaCount
+		if instance.NumaCount != nil {
+			l["numa_count"] = *instance.NumaCount
+		}
 		if instance.MetadataService != nil {
 			l[isInstanceMetadataServiceEnabled] = *instance.MetadataService.Enabled
 			metadataService := []map[string]interface{}{}
