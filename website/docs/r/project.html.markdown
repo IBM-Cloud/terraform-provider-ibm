@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_project"
 description: |-
   Manages project.
-subcategory: "Projects API"
+subcategory: "Projects"
 ---
 
 # ibm_project
