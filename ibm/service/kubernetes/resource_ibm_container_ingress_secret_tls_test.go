@@ -213,6 +213,6 @@ resource "ibm_container_ingress_secret_tls" "secret" {
   secret_namespace = "%s"
   cert_crn    = "%s"
   persistence = "%t"
-  update_secret = "%t"
-}`, acc.ClusterName, secretName, "ibm-cert-store", acc.CertCRN, true, true)
+  update_secret = "%d"
+}`, acc.ClusterName, secretName, "ibm-cert-store", acc.CertCRN, true, 1)
 }

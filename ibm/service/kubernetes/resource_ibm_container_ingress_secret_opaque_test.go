@@ -244,9 +244,9 @@ resource "ibm_container_ingress_secret_opaque" "secret" {
   secret_namespace = "%s"
   cluster  = "%s"
   persistence = "%t"
-  update_secret = "%t"
+  update_secret = "%d"
   fields {
 	crn = "%s"
   }
-}`, secretName, "ibm-cert-store", acc.ClusterName, true, true, acc.SecretCRN)
+}`, secretName, "ibm-cert-store", acc.ClusterName, true, 1, acc.SecretCRN)
 }

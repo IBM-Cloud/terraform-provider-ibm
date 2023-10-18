@@ -77,10 +77,10 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 				Description: "Status of the secret",
 			},
 			"update_secret": {
-				Type:        schema.TypeBool,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     false,
-				Description: "Updates secret from secrets manager if true",
+				Description: "Updates secret from secrets manager if value is changed (increment each usage)",
 			},
 			"last_updated_timestamp": {
 				Type:        schema.TypeString,

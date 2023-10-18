@@ -96,10 +96,10 @@ func ResourceIBMContainerIngressSecretTLS() *schema.Resource {
 				Description: "Timestamp secret was last updated",
 			},
 			"update_secret": {
-				Type:        schema.TypeBool,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     false,
-				Description: "Updates secret from secrets manager if true",
+				Description: "Updates secret from secrets manager if value is changed (increment each usage)",
 			},
 		},
 	}
