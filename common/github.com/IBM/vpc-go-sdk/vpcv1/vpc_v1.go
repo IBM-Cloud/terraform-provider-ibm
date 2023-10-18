@@ -47,12 +47,12 @@ type VpcV1 struct {
 	generation *int64
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
-	// and `2023-10-10`.
+	// and `2023-10-18`.
 	Version *string
 }
 
 // DefaultServiceURL is the default URL to make service requests to.
-const DefaultServiceURL = "https://us-south.iaas.cloud.ibm.com/v1"
+const DefaultServiceURL = "https://au-syd.iaas.cloud.ibm.com/v1"
 
 // DefaultServiceName is the default key used to find external configuration information.
 const DefaultServiceName = "vpc"
@@ -64,7 +64,7 @@ type VpcV1Options struct {
 	Authenticator core.Authenticator
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
-	// and `2023-10-10`.
+	// and `2023-10-18`.
 	Version *string
 }
 
@@ -122,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-10-10")
+		options.Version = core.StringPtr("2023-10-17")
 	}
 
 	service = &VpcV1{
@@ -1170,8 +1170,7 @@ func (vpc *VpcV1) ListVPCDnsResolutionBindingsWithContext(ctx context.Context, l
 // For this request to succeed, `dns.enable_hub` must be `false` for the VPC specified by the identifier in the URL, and
 // the VPC must not already have a DNS resolution binding.
 //
-// # TODO: finalize topic name with docs team See [Configuring endpoint gateway DNS
-// sharing](/docs/vpc?topic=vpc-hub-spoke-model) for more information.
+// See [About DNS sharing for VPE gateways](/docs/vpc?topic=vpc-hub-spoke-model) for more information.
 func (vpc *VpcV1) CreateVPCDnsResolutionBinding(createVPCDnsResolutionBindingOptions *CreateVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
 	return vpc.CreateVPCDnsResolutionBindingWithContext(context.Background(), createVPCDnsResolutionBindingOptions)
 }
@@ -27108,21 +27107,6 @@ type BareMetalServerProfile struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the bare metal server profile:
-	//   - `previous`:  This bare metal server profile is an older revision, but remains
-	//   provisionable and usable.
-	//   - `current`:  This profile is the latest revision.
-	//
-	// Note that revisions are indicated by the generation of a bare metal server profile.  Refer to the [profile naming
-	// conventions]
-	// (https://cloud.ibm.com/docs/vpc?topic=vpc-bare-metal-servers-profile&interface=ui#profile-naming-rule) for
-	// information on how generations are defined within a bare metal server profile.
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the profile on which the
-	// unexpected property value was encountered.
-	Status *string `json:"status" validate:"required"`
-
 	// The supported trusted platform module modes for this bare metal server profile.
 	SupportedTrustedPlatformModuleModes *BareMetalServerProfileSupportedTrustedPlatformModuleModes `json:"supported_trusted_platform_module_modes" validate:"required"`
 }
@@ -27131,25 +27115,6 @@ type BareMetalServerProfile struct {
 // The resource type.
 const (
 	BareMetalServerProfileResourceTypeBareMetalServerProfileConst = "bare_metal_server_profile"
-)
-
-// Constants associated with the BareMetalServerProfile.Status property.
-// The status of the bare metal server profile:
-//   - `previous`:  This bare metal server profile is an older revision, but remains
-//     provisionable and usable.
-//   - `current`:  This profile is the latest revision.
-//
-// Note that revisions are indicated by the generation of a bare metal server profile.  Refer to the [profile naming
-// conventions]
-// (https://cloud.ibm.com/docs/vpc?topic=vpc-bare-metal-servers-profile&interface=ui#profile-naming-rule) for
-// information on how generations are defined within a bare metal server profile.
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the profile on which the
-// unexpected property value was encountered.
-const (
-	BareMetalServerProfileStatusCurrentConst  = "current"
-	BareMetalServerProfileStatusPreviousConst = "previous"
 )
 
 // UnmarshalBareMetalServerProfile unmarshals an instance of BareMetalServerProfile from the specified map of raw messages.
@@ -27204,10 +27169,6 @@ func UnmarshalBareMetalServerProfile(m map[string]json.RawMessage, result interf
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -28158,52 +28119,6 @@ func UnmarshalBareMetalServerProfileSupportedTrustedPlatformModuleModes(m map[st
 	return
 }
 
-// BareMetalServerPrototypeVPC : The VPC this bare metal server will reside in.
-//
-// If specified, it must match the VPC for the subnets that the network interfaces of the bare metal server are attached
-// to.
-// Models which "extend" this model:
-// - BareMetalServerPrototypeVPCVPCIdentityByID
-// - BareMetalServerPrototypeVPCVPCIdentityByCRN
-// - BareMetalServerPrototypeVPCVPCIdentityByHref
-type BareMetalServerPrototypeVPC struct {
-	// The unique identifier for this VPC.
-	ID *string `json:"id,omitempty"`
-
-	// The CRN for this VPC.
-	CRN *string `json:"crn,omitempty"`
-
-	// The URL for this VPC.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*BareMetalServerPrototypeVPC) isaBareMetalServerPrototypeVPC() bool {
-	return true
-}
-
-type BareMetalServerPrototypeVPCIntf interface {
-	isaBareMetalServerPrototypeVPC() bool
-}
-
-// UnmarshalBareMetalServerPrototypeVPC unmarshals an instance of BareMetalServerPrototypeVPC from the specified map of raw messages.
-func UnmarshalBareMetalServerPrototypeVPC(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(BareMetalServerPrototypeVPC)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // BareMetalServerStatusReason : BareMetalServerStatusReason struct
 type BareMetalServerStatusReason struct {
 	// The status reason code:
@@ -29005,11 +28920,8 @@ type CreateBareMetalServerOptions struct {
 
 	TrustedPlatformModule *BareMetalServerTrustedPlatformModulePrototype `json:"trusted_platform_module,omitempty"`
 
-	// The VPC this bare metal server will reside in.
-	//
-	// If specified, it must match the VPC for the subnets that the network interfaces of
-	// the bare metal server are attached to.
-	VPC BareMetalServerPrototypeVPCIntf `json:"vpc,omitempty"`
+	// Identifies a VPC by a unique property.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -29080,7 +28992,7 @@ func (_options *CreateBareMetalServerOptions) SetTrustedPlatformModule(trustedPl
 }
 
 // SetVPC : Allow user to set VPC
-func (_options *CreateBareMetalServerOptions) SetVPC(vpc BareMetalServerPrototypeVPCIntf) *CreateBareMetalServerOptions {
+func (_options *CreateBareMetalServerOptions) SetVPC(vpc VPCIdentityIntf) *CreateBareMetalServerOptions {
 	_options.VPC = vpc
 	return _options
 }
@@ -43745,7 +43657,7 @@ type Instance struct {
 
 	// The number of NUMA nodes this virtual server instance is provisioned on.
 	//
-	// This property may be absent if the instance's `status` is not `running`.
+	// This property will be absent if the instance's `status` is not `running`.
 	NumaCount *int64 `json:"numa_count,omitempty"`
 
 	// The placement restrictions for the virtual server instance.
@@ -71217,7 +71129,7 @@ type VPCHealthReason struct {
 // Constants associated with the VPCHealthReason.Code property.
 // A snake case string succinctly identifying the reason for this health state.
 const (
-	VPCHealthReasonCodeDnsResolutionBindingFailedConst = "dns_resolution_binding_failed"
+	VPCHealthReasonCodeInternalErrorConst = "internal_error"
 )
 
 // UnmarshalVPCHealthReason unmarshals an instance of VPCHealthReason from the specified map of raw messages.
@@ -71911,8 +71823,8 @@ type VPNGatewayConnection struct {
 	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
 	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
 	//   (check the IPsec policies on both sides of the VPN)
-	// - `peer_not_responding`: No response from peer (check network ACL configuration,
-	//   and on-premise firewall configuration)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
 	//
 	// The enumerated reason code values for this property will expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
@@ -72655,8 +72567,8 @@ type VPNGatewayConnectionStaticRouteModeTunnel struct {
 	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
 	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
 	//   (check the IPsec policies on both sides of the VPN)
-	// - `peer_not_responding`: No response from peer (check network ACL configuration,
-	//   and on-premise firewall configuration)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
 	//
 	// The enumerated reason code values for this property will expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
@@ -79065,99 +78977,6 @@ func UnmarshalBareMetalServerProfileNetworkInterfaceCountRange(m map[string]json
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// BareMetalServerPrototypeVPCVPCIdentityByCRN : BareMetalServerPrototypeVPCVPCIdentityByCRN struct
-// This model "extends" BareMetalServerPrototypeVPC
-type BareMetalServerPrototypeVPCVPCIdentityByCRN struct {
-	// The CRN for this VPC.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewBareMetalServerPrototypeVPCVPCIdentityByCRN : Instantiate BareMetalServerPrototypeVPCVPCIdentityByCRN (Generic Model Constructor)
-func (*VpcV1) NewBareMetalServerPrototypeVPCVPCIdentityByCRN(crn string) (_model *BareMetalServerPrototypeVPCVPCIdentityByCRN, err error) {
-	_model = &BareMetalServerPrototypeVPCVPCIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*BareMetalServerPrototypeVPCVPCIdentityByCRN) isaBareMetalServerPrototypeVPC() bool {
-	return true
-}
-
-// UnmarshalBareMetalServerPrototypeVPCVPCIdentityByCRN unmarshals an instance of BareMetalServerPrototypeVPCVPCIdentityByCRN from the specified map of raw messages.
-func UnmarshalBareMetalServerPrototypeVPCVPCIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(BareMetalServerPrototypeVPCVPCIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// BareMetalServerPrototypeVPCVPCIdentityByHref : BareMetalServerPrototypeVPCVPCIdentityByHref struct
-// This model "extends" BareMetalServerPrototypeVPC
-type BareMetalServerPrototypeVPCVPCIdentityByHref struct {
-	// The URL for this VPC.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewBareMetalServerPrototypeVPCVPCIdentityByHref : Instantiate BareMetalServerPrototypeVPCVPCIdentityByHref (Generic Model Constructor)
-func (*VpcV1) NewBareMetalServerPrototypeVPCVPCIdentityByHref(href string) (_model *BareMetalServerPrototypeVPCVPCIdentityByHref, err error) {
-	_model = &BareMetalServerPrototypeVPCVPCIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*BareMetalServerPrototypeVPCVPCIdentityByHref) isaBareMetalServerPrototypeVPC() bool {
-	return true
-}
-
-// UnmarshalBareMetalServerPrototypeVPCVPCIdentityByHref unmarshals an instance of BareMetalServerPrototypeVPCVPCIdentityByHref from the specified map of raw messages.
-func UnmarshalBareMetalServerPrototypeVPCVPCIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(BareMetalServerPrototypeVPCVPCIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// BareMetalServerPrototypeVPCVPCIdentityByID : BareMetalServerPrototypeVPCVPCIdentityByID struct
-// This model "extends" BareMetalServerPrototypeVPC
-type BareMetalServerPrototypeVPCVPCIdentityByID struct {
-	// The unique identifier for this VPC.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewBareMetalServerPrototypeVPCVPCIdentityByID : Instantiate BareMetalServerPrototypeVPCVPCIdentityByID (Generic Model Constructor)
-func (*VpcV1) NewBareMetalServerPrototypeVPCVPCIdentityByID(id string) (_model *BareMetalServerPrototypeVPCVPCIdentityByID, err error) {
-	_model = &BareMetalServerPrototypeVPCVPCIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*BareMetalServerPrototypeVPCVPCIdentityByID) isaBareMetalServerPrototypeVPC() bool {
-	return true
-}
-
-// UnmarshalBareMetalServerPrototypeVPCVPCIdentityByID unmarshals an instance of BareMetalServerPrototypeVPCVPCIdentityByID from the specified map of raw messages.
-func UnmarshalBareMetalServerPrototypeVPCVPCIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(BareMetalServerPrototypeVPCVPCIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -94984,8 +94803,8 @@ type VPNGatewayConnectionPolicyMode struct {
 	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
 	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
 	//   (check the IPsec policies on both sides of the VPN)
-	// - `peer_not_responding`: No response from peer (check network ACL configuration,
-	//   and on-premise firewall configuration)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
 	//
 	// The enumerated reason code values for this property will expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
@@ -95336,8 +95155,8 @@ type VPNGatewayConnectionStaticRouteMode struct {
 	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
 	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
 	//   (check the IPsec policies on both sides of the VPN)
-	// - `peer_not_responding`: No response from peer (check network ACL configuration,
-	//   and on-premise firewall configuration)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
 	//
 	// The enumerated reason code values for this property will expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
