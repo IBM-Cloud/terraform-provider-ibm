@@ -34,6 +34,7 @@ Review the argument references that you can specify for your resource.
 - `secret_name` - (Required, String) The name of the kubernetes secret.
 - `secret_namespace` - (Required, String) The namespace of the kubernetes secret.
 - `persistence`  - (Bool) Persist the secret data in your cluster. If the secret is later deleted from the command line or OpenShift web console, the secret is automatically re-created in your cluster.
+- `update_secret` - (Optional, Integer) This argument is used to force update from upstream secrets manager instance that stores secret. Increment the value to force an update to your Ingress secret for changes made to the upstream secrets manager secret. 
  `fields` - (Required, List) List of fields of the opaque secret.
   Nested scheme for `fields`:
   - `crn` - (Required, String) Secrets manager secret crn
