@@ -251,7 +251,7 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 				Description: "The total amount of memory in gibibytes for this host.",
 			},
 			"numa": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The dedicated host NUMA configuration",
 				Elem: &schema.Resource{
@@ -638,8 +638,8 @@ func dataSourceDedicatedHostInstancesDeletedToMap(deletedItem vpcv1.InstanceRefe
 	return deletedMap
 }
 
-func dataSourceDedicatedHostFlattenNumaNodes(nodeItem vpcv1.DedicatedHostNuma) (numaNodeMap map[string]interface{}) {
-	numaNodeMap = map[string]interface{}{}
+func dataSourceDedicatedHostFlattenNumaNodes(nodeItem vpcv1.DedicatedHostNuma) (numaNodes []map[string]interface{}) {
+	numaNodeMap := map[string]interface{}{}
 
 	if nodeItem.Count != nil {
 		numaNodeMap["count"] = *nodeItem.Count
@@ -651,7 +651,8 @@ func dataSourceDedicatedHostFlattenNumaNodes(nodeItem vpcv1.DedicatedHostNuma) (
 		}
 		numaNodeMap["nodes"] = nodesList
 	}
-	return numaNodeMap
+	numaNodes = append(numaNodes, numaNodeMap)
+	return numaNodes
 }
 
 func dataSourceDedicatedHostNodesToMap(nodes vpcv1.DedicatedHostNumaNode) (node map[string]interface{}) {

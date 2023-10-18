@@ -276,7 +276,7 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 							Description: "The unique user-defined name for this dedicated host. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
 						"numa": {
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The dedicated host NUMA configuration",
 							Elem: &schema.Resource{
