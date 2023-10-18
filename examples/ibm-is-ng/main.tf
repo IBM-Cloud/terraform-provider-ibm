@@ -1143,6 +1143,20 @@ data "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   name             = "my-backup-policy-plan"
 }
 
+//backup policies for enterprise
+
+resource "ibm_is_backup_policy" "ent-baas-example" {
+  match_user_tags = ["tag1"]
+  name            = "example-enterprise-backup-policy"
+  scope {
+    crn = "crn:v1:bluemix:public:is:us-south:a/123456::reservation:7187-ba49df72-37b8-43ac-98da-f8e029de0e63"
+  }
+}
+
+data "ibm_is_backup_policy" "enterprise_backup" {
+  name = ibm_is_backup_policy.ent-baas-example.name
+}
+
 // Vpn Server
 resource "ibm_is_vpn_server" "is_vpn_server" {
   certificate_crn = var.is_certificate_crn
