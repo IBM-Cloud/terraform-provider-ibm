@@ -4,21 +4,15 @@
 package database
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
-	"path/filepath"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -113,12 +107,6 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key_protect_key_id": {
-							Description: "Key protect key id",
-							Type:        schema.TypeString,
-							Computed:    true,
-							Deprecated:  "This field is deprecated and has been replaced by disk_encryption_key_crn",
-						},
 						"disk_encryption_key_crn": {
 							Description: "Disk encryption key crn",
 							Type:        schema.TypeString,
@@ -157,112 +145,6 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
-			"cert_file_path": {
-				Description: "The absolute path to certificate PEM file",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"connectionstrings": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Description: "User name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"composed": {
-							Description: "Connection string",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"scheme": {
-							Description: "DB scheme",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"certname": {
-							Description: "Certificate Name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"certbase64": {
-							Description: "Certificate in base64 encoding",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"bundlename": {
-							Description: "Cassandra Bundle Name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"bundlebase64": {
-							Description: "Cassandra base64 encoding",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"password": {
-							Description: "Password",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"queryoptions": {
-							Description: "DB query options",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"database": {
-							Description: "DB name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"path": {
-							Description: "DB path",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"hosts": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"hostname": {
-										Description: "DB host name",
-										Type:        schema.TypeString,
-										Computed:    true,
-									},
-									"port": {
-										Description: "DB port",
-										Type:        schema.TypeString,
-										Computed:    true,
-									},
-								},
-							},
-						},
-					},
-				},
-				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
-			},
-			"whitelist": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"address": {
-							Description: "Whitelist IP address in CIDR notation",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"description": {
-							Description: "Unique white list description",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-					},
-				},
-				Deprecated: "The whitelist field is deprecated please use allowlist",
-			},
 			"allowlist": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -274,7 +156,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 						},
 						"description": {
-							Description: "Unique white list description",
+							Description: "Unique allowlist description",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -760,17 +642,25 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	icdId := flex.EscapeUrlParm(instance.ID)
-	cdb, err := icdClient.Cdbs().GetCdb(icdId)
+	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
+		ID: core.StringPtr(instance.ID),
+	}
+	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+		if response.StatusCode == 404 {
 			return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 		}
-		return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, err)
+		return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instance.ID, err)
 	}
-	d.Set("adminuser", cdb.AdminUser)
-	d.Set("version", cdb.Version)
-	if &cdb.PlatformOptions != nil {
-		d.Set("platform_options", flex.ExpandPlatformOptions(cdb.PlatformOptions))
+
+	deployment := getDeploymentInfoResponse.Deployment
+	adminUser := deployment.AdminUsernames["database"]
+
+	d.Set("adminuser", adminUser)
+	d.Set("version", deployment.Version)
+
+	if deployment.PlatformOptions != nil {
+		d.Set("platform_options", flex.ExpandPlatformOptions(*deployment))
 	}
 
 	groupList, err := icdClient.Groups().GetGroups(icdId)
@@ -803,63 +693,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
-
-	connectionEndpoint := "public"
-	if instance.Parameters != nil {
-		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
-			if endpoint == "private" {
-				connectionEndpoint = "private"
-			}
-		}
-
-	}
-
-	var connectionStrings []flex.CsEntry
-	//ICD does not implement a GetUsers API. Users populated from tf configuration.
-	tfusers := d.Get("users").(*schema.Set)
-	users := flex.ExpandUsers(tfusers)
-	user := icdv4.User{
-		UserName: cdb.AdminUser,
-	}
-	users = append(users, user)
-	for _, user := range users {
-		userName := user.UserName
-		csEntry, err := getConnectionString(d, userName, connectionEndpoint, meta)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting user connection string for user (%s): %s", userName, err)
-		}
-		connectionStrings = append(connectionStrings, csEntry)
-	}
-	d.Set("connectionstrings", flex.FlattenConnectionStrings(connectionStrings))
-
-	connStr := connectionStrings[0]
-	certFile, err := filepath.Abs(connStr.CertName + ".pem")
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error generating certificate file path: %s", err)
-	}
-	content, err := base64.StdEncoding.DecodeString(connStr.CertBase64)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error decoding certificate content: %s", err)
-	}
-	if err := ioutil.WriteFile(certFile, content, 0644); err != nil {
-		return fmt.Errorf("[ERROR] Error writing certificate to file: %s", err)
-	}
-	d.Set("cert_file_path", certFile)
-	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
-		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting database (%s) configuration schema : %s", icdId, err)
-		}
-		s, err := json.Marshal(configSchema)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error marshalling the database configuration schema: %s", err)
-		}
-
-		if err = d.Set("configuration_schema", string(s)); err != nil {
-			return fmt.Errorf("[ERROR] Error setting the database configuration schema: %s", err)
-		}
-	}
 
 	return nil
 }

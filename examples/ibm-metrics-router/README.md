@@ -1,4 +1,4 @@
-# Example for IBM Cloud Metrics Routing V3 Example
+# Example for IBM Cloud Metrics Routing
 
 This example illustrates how to use the MetricsRouterV3
 

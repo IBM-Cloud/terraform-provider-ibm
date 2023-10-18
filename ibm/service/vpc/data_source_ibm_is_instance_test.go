@@ -50,6 +50,42 @@ func TestAccIBMISInstanceDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISInstanceDataSource_PKCS8SSH(t *testing.T) {
+
+	vpcname := fmt.Sprintf("tfins-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfins-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
+	resName := "data.ibm_is_instance.ds_instance"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceDataSourcePKCS8SSHConfig(vpcname, subnetname, sshname, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						resName, "name", instanceName),
+					resource.TestCheckResourceAttr(
+						resName, "tags.#", "1"),
+					resource.TestCheckResourceAttrSet(
+						resName, "primary_network_interface.0.port_speed"),
+					resource.TestCheckResourceAttrSet(
+						resName, "availability_policy_host_failure"),
+					resource.TestCheckResourceAttrSet(
+						resName, "lifecycle_state"),
+					resource.TestCheckResourceAttr(
+						resName, "lifecycle_reasons.#", "0"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.0.manufacturer"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISInstanceDataSource_reserved_ip(t *testing.T) {
 
 	vpcname := fmt.Sprintf("tfins-vpc-%d", acctest.RandIntRange(10, 100))
@@ -128,6 +164,46 @@ data "ibm_is_instance" "ds_instance" {
   private_key = file("./test-fixtures/.ssh/id_rsa")
   passphrase  = ""
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName)
+}
+func testAccCheckIBMISInstanceDataSourcePKCS8SSHConfig(vpcname, subnetname, sshname, instanceName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = file("%s")
+	}
+
+	resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+			subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+			subnet = ibm_is_subnet.testacc_subnet.id
+			name   = "eth1"
+		}
+		tags = ["tag1"]
+	}
+	data "ibm_is_instance" "ds_instance" {
+		name        = ibm_is_instance.testacc_instance.name
+		private_key = file("%s")
+		passphrase  = ""
+	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, acc.ISPublicSSHKeyFilePath, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName, acc.ISPrivateSSHKeyFilePath)
 }
 
 func testAccCheckIBMISInstanceDataSourceReservedIpConfig(vpcname, subnetname, sshname, publicKey, instanceName string) string {

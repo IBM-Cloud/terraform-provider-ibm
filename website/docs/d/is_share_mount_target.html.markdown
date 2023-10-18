@@ -11,14 +11,6 @@ subcategory: "VPC infrastructure"
 Provides a read-only data source for ShareMountTarget. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 
-~> **NOTE**
-IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
-
-~> **NOTE**
-This is a Beta feature and it is subject to change in the GA release 
-
-
-
 ## Example Usage
 
 ```hcl
@@ -28,7 +20,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_share" "example" {
   name    = "example-share"
   size    = 200
-  profile = "tier-3iops"
+  profile = "dp2"
   zone    = "us-south-2"
 }
 
@@ -61,6 +53,7 @@ The following attributes are exported:
 - `mount_path` - The mount path for the share.The IP addresses used in the mount path are currently within the IBM services IP range, but are expected to change to be within one of the VPC's subnets in the future.
 - `name` - The user-defined name for this share target.
 - `resource_type` - The type of resource referenced.
+- `transit_encryption` - (String) The transit encryption mode for this share target.
 - `vpc` - The VPC to which this share target is allowing to mount the file share. Nested `vpc` blocks have the following structure:
 	- `crn` - The CRN for this VPC.
 	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:

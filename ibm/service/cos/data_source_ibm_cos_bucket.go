@@ -18,6 +18,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
@@ -421,6 +422,130 @@ func DataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"website_configuration": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"error_document": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"index_document": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"suffix": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"redirect_all_requests_to": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"protocol": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"routing_rule": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Rules that define when a redirect is applied and the redirect behavior.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"condition": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "A condition that must be met for the specified redirect to be applie.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"http_error_code_returned_equals": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The HTTP error code when the redirect is applied. Valid codes are 4XX or 5XX..",
+												},
+												"key_prefix_equals": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The object key name prefix when the redirect is applied..",
+												},
+											},
+										},
+									},
+									"redirect": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: ".",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"host_name": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The host name the request should be redirected to.",
+												},
+												"http_redirect_code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The HTTP redirect code to use on the response. Valid codes are 3XX except 300..",
+												},
+												"protocol": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Protocol to be used in the Location header that is returned in the response.",
+												},
+												"replace_key_prefix_with": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The prefix of the object key name that replaces the value of KeyPrefixEquals in the redirect request.",
+												},
+												"replace_key_with": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The object key to be used in the Location header that is returned in the response.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"routing_rules": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Rules that define when a redirect is applied and the redirect behavior.",
+							StateFunc: func(v interface{}) string {
+								json, _ := structure.NormalizeJsonString(v)
+								return json
+							},
+						},
+					},
+				},
+			},
+			"website_endpoint": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -566,11 +691,13 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion, endpointType)
 	d.SetId(bucketID)
-	if *head.IBMSSEKPEnabled == true {
-		if keyProtectFlag == true {
-			d.Set("key_protect", head.IBMSSEKPCrkId)
-		} else {
-			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+	if head.IBMSSEKPEnabled != nil {
+		if *head.IBMSSEKPEnabled == true {
+			if keyProtectFlag == true {
+				d.Set("key_protect", head.IBMSSEKPCrkId)
+			} else {
+				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+			}
 		}
 	}
 
@@ -719,6 +846,25 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		objectLockConfiguration := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
 		if len(objectLockConfiguration) > 0 {
 			d.Set("object_lock_configuration", objectLockConfiguration)
+		}
+	} //getBucketConfiguration
+	getBucketWebsiteConfigurationInput := &s3.GetBucketWebsiteInput{
+		Bucket: aws.String(bucketName),
+	}
+	outputwebsite, err := s3Client.GetBucketWebsite(getBucketWebsiteConfigurationInput)
+	var outputptr *s3.WebsiteConfiguration
+	outputptr = (*s3.WebsiteConfiguration)(outputwebsite)
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") && !strings.Contains(err.Error(), "The specified bucket does not have a website configuration") {
+		return err
+	}
+	if outputwebsite.IndexDocument != nil || outputwebsite.RedirectAllRequestsTo != nil {
+		websiteConfiguration := flex.WebsiteConfigurationGet(outputptr)
+		if len(websiteConfiguration) > 0 {
+			d.Set("website_configuration", websiteConfiguration)
+		}
+		websiteEndpoint := getWebsiteEndpoint(bucketName, bucketRegion)
+		if websiteEndpoint != "" {
+			d.Set("website_endpoint", websiteEndpoint)
 		}
 	}
 

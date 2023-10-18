@@ -129,6 +129,13 @@ variable "sm_public_certificate_secret_group_id" {
   default     = "default"
 }
 
+// Resource arguments for sm_public_certificate_action_validate_manual_dns
+variable "sm_public_certificate_action_validate_manual_dns_secret_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
 // Resource arguments for sm_kv_secret
 variable "sm_kv_secret_name" {
   description = "The human-readable name of your secret."

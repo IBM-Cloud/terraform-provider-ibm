@@ -60,11 +60,14 @@ In addition to all argument reference list, you can access the following attribu
   
       Nested scheme for **version**:
         - `crn` - (String) The CRN for this version of a catalog offering
+- `created_at` - (String) The date and time that the image was created
 - `checksum`-  (String) The `SHA256` checksum of the image.
 - `crn` - (String) The CRN for this image.
+- `deprecation_at` - (String) The deprecation date and time (UTC) for this image. If absent, no deprecation date and time has been set.
 - `encryption` - (String) The type of encryption used of the image.
 - `encryption_key`-  (String) The CRN of the Key Protect or Hyper Protect Crypto Service root key for this resource.
 - `id` - (String) The unique identifier of the image.
+- `obsolescence_at` - (String) The obsolescence date and time (UTC) for this image. If absent, no obsolescence date and time has been set.
 - `os` - (String) The name of the operating system.
 - `status` - (String) The status of this image.
 - `source_volume` - The source volume id of the image.
