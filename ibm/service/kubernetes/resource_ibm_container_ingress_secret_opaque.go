@@ -79,7 +79,6 @@ func ResourceIBMContainerIngressSecretOpaque() *schema.Resource {
 			"update_secret": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     false,
 				Description: "Updates secret from secrets manager if value is changed (increment each usage)",
 			},
 			"last_updated_timestamp": {
