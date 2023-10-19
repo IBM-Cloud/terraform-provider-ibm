@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20230927110736-d84df0f30e60
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20231017073329-75ebe90c98ba
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230822142550-30562e113de9
 	github.com/IBM-Cloud/power-go-client v1.2.4
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -24,14 +24,14 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
 	github.com/IBM/networking-go-sdk v0.42.2
-	github.com/IBM/platform-services-go-sdk v0.50.4
+	github.com/IBM/platform-services-go-sdk v0.52.0
 	github.com/IBM/project-go-sdk v0.0.92
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.2
 	github.com/IBM/schematics-go-sdk v0.2.2
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.1
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
-	github.com/IBM/vpc-go-sdk v0.42.0
+	github.com/IBM/vpc-go-sdk v0.43.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -232,5 +232,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.com/IBM/vpc-go-sdk v0.42.0 => ./common/github.com/IBM/vpc-go-sdk

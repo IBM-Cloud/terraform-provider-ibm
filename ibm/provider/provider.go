@@ -50,6 +50,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -664,6 +665,9 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account_groups": enterprise.DataSourceIBMEnterpriseAccountGroups(),
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
 
+			// //Added for Usage Reports
+			"ibm_billing_snapshot_list": usagereports.DataSourceIBMBillingSnapshotList(),
+
 			// Added for Secrets Manager
 			// V1 data sources:
 			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
@@ -1195,6 +1199,9 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account_group": enterprise.ResourceIBMEnterpriseAccountGroup(),
 			"ibm_enterprise_account":       enterprise.ResourceIBMEnterpriseAccount(),
 
+			// //Added for Usage Reports
+			"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshot(),
+
 			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),
 			"ibm_schematics_action":         schematics.ResourceIBMSchematicsAction(),
@@ -1579,6 +1586,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_authorization_policy":    iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
 				"ibm_iam_policy_template":         iampolicy.ResourceIBMIAMPolicyTemplateValidator(),
 				"ibm_iam_policy_template_version": iampolicy.ResourceIBMIAMPolicyTemplateVersionValidator(),
+
+				// // Added for Usage Reports
+				"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshotValidator(),
 
 				// // Added for Secrets Manager
 				"ibm_sm_secret_group":                                                secretsmanager.ResourceIbmSmSecretGroupValidator(),
