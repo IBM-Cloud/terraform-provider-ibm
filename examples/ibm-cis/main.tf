@@ -532,10 +532,10 @@ data "ibm_cis_logpush_jobs" "test" {
 }
 
 #CIS MTLS instance
-resource "ibm_cis_mtls" “test” {
+resource "ibm_cis_mtls" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
-  certificate               = <<EOT 
+  certificate               = <<EOT
                               "-----BEGIN CERTIFICATE----- 
                               -------END CERTIFICATE-----"
                               EOT
@@ -544,7 +544,7 @@ resource "ibm_cis_mtls" “test” {
 }
 
 #CIS MTLS app and policy instance
-resource "ibm_cis_mtls_app" “test” {
+resource "ibm_cis_mtls_app" "test" {
   cis_id                  = ibm_cis.web_domain.id
   domain_id               = ibm_cis_domain.web_domain.id
   name                    = "MY_APP"
@@ -553,7 +553,7 @@ resource "ibm_cis_mtls_app" “test” {
 }
 
 # Create Mtls APP and policy with certficate rule and common rule 
-resource "ibm_cis_mtls_app" “test2” {
+resource "ibm_cis_mtls_app" "test2" {
   cis_id                  = ibm_cis.web_domain.id
   domain_id               = ibm_cis_domain.web_domain.id
   name                    = "MY_APP"
@@ -565,7 +565,7 @@ resource "ibm_cis_mtls_app" “test2” {
 }
 
 # Create Mtls APP and policy with policy action
-resource "ibm_cis_mtls_app" “test3” {
+resource "ibm_cis_mtls_app" "test3" {
   cis_id                  = ibm_cis.web_domain.id
   domain_id               = ibm_cis_domain.web_domain.id
   name                    = "MY_APP"
@@ -578,14 +578,14 @@ resource "ibm_cis_mtls_app" “test3” {
 }
 
 # Upload zone level authentication certificate
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
                               ------END CERTIFICATE-------"
                               EOT
-  private_key               = <<EOT #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN-----
                                -----END-------"
                               EOT
@@ -593,14 +593,14 @@ resource "ibm_cis_origin_auth" “test” {
 }
 
 # Upload host level authentication certificate
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE----
                               ------END CERTIFICATE------"
                               EOT
-  private_key               = <<EOT #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN-----
                                -----END-------"
                               EOT
@@ -609,14 +609,14 @@ resource "ibm_cis_origin_auth" “test” {
 }
 
 # Update zone level authentication setting
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
                                -----END CERTIFICATE-------"
                               EOT
-  private_key               = <<EOT  #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN------
                                -----END--------"
                               EOT
@@ -625,14 +625,14 @@ resource "ibm_cis_origin_auth" “test” {
 }
 
 # Update host level authentication setting
-resource "ibm_cis_origin_auth" “test” {
+resource "ibm_cis_origin_auth" "test" {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
                                -----END CERTIFICATE-------"
                               EOT
-  private_key               = <<EOT #pragma: whitelist secret
+  private_key               = <<EOT
                               "-----BEGIN-----
                                -----END-------"
                               EOT
