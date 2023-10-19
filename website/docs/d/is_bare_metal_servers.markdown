@@ -36,9 +36,6 @@ Review the argument references that you can specify for your data source.
 - `vpc_name` (Optional, String) The name of the vpc this bare metal server is in
 - `vpc_crn` (Optional, String) The CRN of the vpc this bare metal server is in
 - `name` - (Optional, String) The name of the dedicated host group
-- `network_interfaces_subnet` - (Optional, String) The ID of the subnet of the bare metal server network interfaces
-- `network_interfaces_subnet_crn` - (Optional, String) The CRN of the subnet of the bare metal server network interfaces
-- `network_interfaces_subnet_name` - (Optional, String) The name of the subnet of the bare metal server network interfaces
 
 ## Attribute Reference
 

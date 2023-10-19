@@ -28,7 +28,7 @@ func TestAccIBMEventStreamsSchemaBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMEventStreamsSchemaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEventStreamsSchemaConfigBasicWithExistingInstance(SZREnterpriseInstanceName, "szr"),
+				Config: testAccCheckIBMEventStreamsSchemaConfigBasicWithExistingInstance(getTestInstanceName(szrKey), "szr"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsSchemaExists("ibm_event_streams_schema.es_schema", conf, ""),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
@@ -38,7 +38,7 @@ func TestAccIBMEventStreamsSchemaBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMEventStreamsSchemaConfigBasicWithExistingInstance(MZREnterpriseInstanceName, "mzr"),
+				Config: testAccCheckIBMEventStreamsSchemaConfigBasicWithExistingInstance(getTestInstanceName(mzrKey), "mzr"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsSchemaExists("ibm_event_streams_schema.es_schema", conf, ""),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
@@ -60,7 +60,7 @@ func TestAccIBMEventStreamsSchemaAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMEventStreamsSchemaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEventStreamsSchemaWithSchemaIDWithExistingInstance(MZREnterpriseInstanceName, schemaID),
+				Config: testAccCheckIBMEventStreamsSchemaWithSchemaIDWithExistingInstance(getTestInstanceName(mzrKey), schemaID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsSchemaExists("ibm_event_streams_schema.es_schema", conf, schemaID),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
@@ -81,7 +81,7 @@ func TestAccIBMEventStreamsSchemaImport(t *testing.T) {
 		CheckDestroy: testAccCheckIBMEventStreamsSchemaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEventStreamsSchemaWithSchemaIDWithExistingInstance(MZREnterpriseInstanceName, schemaID),
+				Config: testAccCheckIBMEventStreamsSchemaWithSchemaIDWithExistingInstance(getTestInstanceName(mzrKey), schemaID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsSchemaExists("ibm_event_streams_schema.es_schema", conf, schemaID),
 					resource.TestCheckResourceAttrSet("ibm_event_streams_schema.es_schema", "schema"),

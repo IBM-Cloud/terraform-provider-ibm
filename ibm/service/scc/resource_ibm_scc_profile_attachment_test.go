@@ -20,12 +20,12 @@ func TestAccIbmSccProfileAttachmentBasic(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.AttachmentItem
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfigBasic(),
+				Config: testAccCheckIbmSccProfileAttachmentConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 				),
@@ -38,18 +38,18 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.AttachmentItem
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmSccProfileAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileAttachmentConfig(),
+				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
 				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 			resource.TestStep{
@@ -61,9 +61,10 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccProfileAttachmentConfigBasic() string {
+func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
@@ -104,11 +105,12 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic() string {
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_name = "profile_name"
 			profile_description = "profile_description"
 			profile_type = "custom"
 			controls {
-				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
 			default_parameters {
@@ -116,7 +118,8 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic() string {
 		}
 
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
-			profile_id = ibm_scc_profile.scc_profile_instance.id
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
+			profile_id = ibm_scc_profile.scc_profile_instance.profile_id
 			name = "profile_attachment_name"
 			description = "scc_profile_attachment_description"
 			scope {
@@ -140,13 +143,13 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic() string {
 				}
 			}
 		}
-	`)
+	`, instanceID)
 }
 
-func testAccCheckIbmSccProfileAttachmentConfig() string {
-	return fmt.Sprint(`
-
+func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
+	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
+			instance_id = "%s"
 			control_library_name = "control_library_name"
 			control_library_description = "control_library_description"
 			control_library_type = "custom"
@@ -187,11 +190,12 @@ func testAccCheckIbmSccProfileAttachmentConfig() string {
 		}
 
 		resource "ibm_scc_profile" "scc_profile_instance" {
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_name = "profile_name"
 			profile_description = "profile_description"
 			profile_type = "custom"
 			controls {
-				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.id
+				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
 			}
 			default_parameters {
@@ -199,7 +203,8 @@ func testAccCheckIbmSccProfileAttachmentConfig() string {
 		}
 
 		resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
-			profile_id = ibm_scc_profile.scc_profile_instance.id
+			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
+			profile_id = ibm_scc_profile.scc_profile_instance.profile_id
 			name = "profile_attachment_name"
 			description = "scc_profile_attachment_description"
 			scope {
@@ -223,7 +228,7 @@ func testAccCheckIbmSccProfileAttachmentConfig() string {
 				}
 			}
 		}
-	`)
+	`, instanceID)
 }
 
 func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcompliancecenterapiv3.AttachmentItem) resource.TestCheckFunc {
@@ -246,8 +251,9 @@ func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcomplian
 			return err
 		}
 
-		getProfileAttachmentOptions.SetProfileID(parts[0])
-		getProfileAttachmentOptions.SetAttachmentID(parts[1])
+		getProfileAttachmentOptions.SetInstanceID(parts[0])
+		getProfileAttachmentOptions.SetProfileID(parts[1])
+		getProfileAttachmentOptions.SetAttachmentID(parts[2])
 
 		attachmentItem, _, err := securityandcompliancecenterapiClient.GetProfileAttachment(getProfileAttachmentOptions)
 		if err != nil {
@@ -276,8 +282,9 @@ func testAccCheckIbmSccProfileAttachmentDestroy(s *terraform.State) error {
 			return err
 		}
 
-		getProfileAttachmentOptions.SetProfileID(parts[0])
-		getProfileAttachmentOptions.SetAttachmentID(parts[1])
+		getProfileAttachmentOptions.SetInstanceID(parts[0])
+		getProfileAttachmentOptions.SetProfileID(parts[1])
+		getProfileAttachmentOptions.SetAttachmentID(parts[2])
 
 		// Try to find the key
 		_, response, err := securityandcompliancecenterapiClient.GetProfileAttachment(getProfileAttachmentOptions)

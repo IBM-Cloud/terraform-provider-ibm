@@ -50,6 +50,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -498,6 +499,8 @@ func Provider() *schema.Provider {
 			"ibm_is_volume_profile":                  vpc.DataSourceIBMISVolumeProfile(),
 			"ibm_is_volume_profiles":                 vpc.DataSourceIBMISVolumeProfiles(),
 			"ibm_is_vpc":                             vpc.DataSourceIBMISVPC(),
+			"ibm_is_vpc_dns_resolution_binding":      vpc.DataSourceIBMIsVPCDnsResolutionBinding(),
+			"ibm_is_vpc_dns_resolution_bindings":     vpc.DataSourceIBMIsVPCDnsResolutionBindings(),
 			"ibm_is_vpcs":                            vpc.DataSourceIBMISVPCs(),
 			"ibm_is_vpn_gateway":                     vpc.DataSourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateways":                    vpc.DataSourceIBMISVPNGateways(),
@@ -662,6 +665,9 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account_groups": enterprise.DataSourceIBMEnterpriseAccountGroups(),
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
 
+			// //Added for Usage Reports
+			"ibm_billing_snapshot_list": usagereports.DataSourceIBMBillingSnapshotList(),
+
 			// Added for Secrets Manager
 			// V1 data sources:
 			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
@@ -704,6 +710,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_link":                                satellite.DataSourceIBMSatelliteLink(),
 			"ibm_satellite_endpoint":                            satellite.DataSourceIBMSatelliteEndpoint(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.DataSourceIBMSatelliteClusterWorkerPoolAttachment(),
+			"ibm_satellite_storage_configuration":               satellite.DataSourceIBMSatelliteStorageConfiguration(),
+			"ibm_satellite_storage_assignment":                  satellite.DataSourceIBMSatelliteStorageAssignment(),
 
 			// Catalog related resources
 			"ibm_cm_catalog":           catalogmanagement.DataSourceIBMCmCatalog(),
@@ -795,6 +803,7 @@ func Provider() *schema.Provider {
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
+			"ibm_cd_toolchains":                        cdtoolchain.DataSourceIBMCdToolchains(),
 			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.DataSourceIBMCdToolchainToolKeyprotect(),
 			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.DataSourceIBMCdToolchainToolSecretsmanager(),
 			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.DataSourceIBMCdToolchainToolBitbucketgit(),
@@ -954,6 +963,7 @@ func Provider() *schema.Provider {
 			"ibm_cos_bucket_replication_rule":              cos.ResourceIBMCOSBucketReplicationConfiguration(),
 			"ibm_cos_bucket_object":                        cos.ResourceIBMCOSBucketObject(),
 			"ibm_cos_bucket_object_lock_configuration":     cos.ResourceIBMCOSBucketObjectlock(),
+			"ibm_cos_bucket_website_configuration":         cos.ResourceIBMCOSBucketWebsiteConfiguration(),
 			"ibm_dns_domain":                               classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":      classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                            classicinfrastructure.ResourceIBMDNSSecondary(),
@@ -1059,6 +1069,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpn_gateway_connection":                 vpc.ResourceIBMISVPNGatewayConnection(),
 			"ibm_is_vpc":                                    vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                     vpc.ResourceIBMISVpcAddressPrefix(),
+			"ibm_is_vpc_dns_resolution_binding":             vpc.ResourceIBMIsVPCDnsResolutionBinding(),
 			"ibm_is_vpc_routing_table":                      vpc.ResourceIBMISVPCRoutingTable(),
 			"ibm_is_vpc_routing_table_route":                vpc.ResourceIBMISVPCRoutingTableRoute(),
 			"ibm_is_vpn_server":                             vpc.ResourceIBMIsVPNServer(),
@@ -1187,6 +1198,9 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account_group": enterprise.ResourceIBMEnterpriseAccountGroup(),
 			"ibm_enterprise_account":       enterprise.ResourceIBMEnterpriseAccount(),
 
+			// //Added for Usage Reports
+			"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshot(),
+
 			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),
 			"ibm_schematics_action":         schematics.ResourceIBMSchematicsAction(),
@@ -1221,6 +1235,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster":                             satellite.ResourceIBMSatelliteCluster(),
 			"ibm_satellite_cluster_worker_pool":                 satellite.ResourceIBMSatelliteClusterWorkerPool(),
 			"ibm_satellite_link":                                satellite.ResourceIBMSatelliteLink(),
+			"ibm_satellite_storage_configuration":               satellite.ResourceIBMSatelliteStorageConfiguration(),
+			"ibm_satellite_storage_assignment":                  satellite.ResourceIBMSatelliteStorageAssignment(),
 			"ibm_satellite_endpoint":                            satellite.ResourceIBMSatelliteEndpoint(),
 			"ibm_satellite_location_nlb_dns":                    satellite.ResourceIBMSatelliteLocationNlbDns(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
@@ -1568,6 +1584,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_authorization_policy":    iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
 				"ibm_iam_policy_template":         iampolicy.ResourceIBMIAMPolicyTemplateValidator(),
 				"ibm_iam_policy_template_version": iampolicy.ResourceIBMIAMPolicyTemplateVersionValidator(),
+
+				// // Added for Usage Reports
+				"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshotValidator(),
 
 				// // Added for Secrets Manager
 				"ibm_sm_secret_group":                                                secretsmanager.ResourceIbmSmSecretGroupValidator(),

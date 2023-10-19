@@ -17,7 +17,7 @@ import (
 )
 
 func DataSourceIbmSccReportTags() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccReportTagsRead,
 
 		Schema: map[string]*schema.Schema{
@@ -60,7 +60,7 @@ func DataSourceIbmSccReportTags() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccReportTagsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -72,6 +72,7 @@ func dataSourceIbmSccReportTagsRead(context context.Context, d *schema.ResourceD
 	getReportTagsOptions := &securityandcompliancecenterapiv3.GetReportTagsOptions{}
 
 	getReportTagsOptions.SetReportID(d.Get("report_id").(string))
+	getReportTagsOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	reportTags, response, err := resultsClient.GetReportTagsWithContext(context, getReportTagsOptions)
 	if err != nil {
