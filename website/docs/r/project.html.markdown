@@ -35,9 +35,9 @@ Nested schema for **definition**:
 	* `destroy_on_delete` - (Required, Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.
 	* `name` - (Required, String) The name of the project.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
-* `location` - (Required, String) The IBM Cloud location where a resource is deployed.
+* `location` - (Required, Forces new resource, String) The IBM Cloud location where a resource is deployed.
   * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
-* `resource_group` - (Required, String) The resource group where the project's data and tools are created.
+* `resource_group` - (Required, Forces new resource, String) The resource group where the project's data and tools are created.
   * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
 
 ## Attribute Reference

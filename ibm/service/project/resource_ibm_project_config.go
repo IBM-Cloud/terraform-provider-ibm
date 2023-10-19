@@ -141,6 +141,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 						"locator_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "A dotted value of catalogID.versionID.",
 						},
 						"input": &schema.Schema{
@@ -390,10 +391,6 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 
 	hasChange := false
 
-	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id"))
-	}
 	if d.HasChange("definition") {
 		definition, err := resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {

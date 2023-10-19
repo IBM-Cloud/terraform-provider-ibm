@@ -31,12 +31,14 @@ func ResourceIbmProject() *schema.Resource {
 			"location": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_project", "location"),
 				Description:  "The IBM Cloud location where a resource is deployed.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The resource group where the project's data and tools are created.",
 			},
 			"definition": &schema.Schema{
@@ -316,18 +318,6 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 	createProjectOptions.SetDefinition(definitionModel)
 	createProjectOptions.SetLocation(d.Get("location").(string))
 	createProjectOptions.SetResourceGroup(d.Get("resource_group").(string))
-	if _, ok := d.GetOk("configs"); ok {
-		var configs []projectv1.ProjectConfigPrototype
-		for _, v := range d.Get("configs").([]interface{}) {
-			value := v.(map[string]interface{})
-			configsItem, err := resourceIbmProjectMapToProjectConfigPrototype(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			configs = append(configs, *configsItem)
-		}
-		createProjectOptions.SetConfigs(configs)
-	}
 
 	project, response, err := projectClient.CreateProjectWithContext(context, createProjectOptions)
 	if err != nil {

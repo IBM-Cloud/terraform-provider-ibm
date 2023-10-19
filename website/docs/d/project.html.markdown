@@ -106,10 +106,10 @@ Nested schema for **environments**:
 * `event_notifications_crn` - (String) The CRN of the event notifications instance if one is connected to this project.
   * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 
-* `location` - (String) The IBM Cloud location where a resource is deployed.
+* `location` - (Forces new resource, String) The IBM Cloud location where a resource is deployed.
   * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
 
-* `resource_group` - (String) The resource group where the project's data and tools are created.
+* `resource_group` - (Forces new resource, String) The resource group where the project's data and tools are created.
   * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
 
 * `state` - (String) The project status value.

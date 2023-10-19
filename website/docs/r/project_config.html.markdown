@@ -69,7 +69,7 @@ Nested schema for **definition**:
 	Nested schema for **input**:
 	* `labels` - (Optional, List) The configuration labels.
 	  * Constraints: The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.
-	* `locator_id` - (Required, String) A dotted value of catalogID.versionID.
+	* `locator_id` - (Required, Forces new resource, String) A dotted value of catalogID.versionID.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (Required, String) The configuration name.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
