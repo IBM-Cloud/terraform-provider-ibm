@@ -132,7 +132,7 @@ variable "schematics_action_bastion" {
   default     = [ { example: "object" } ]
 }
 variable "schematics_action_targets_ini" {
-  description = "Inventory of host and host group for the playbook in `INI` file format. For example, `"targets_ini": "[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5"`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps)."
+  description = "Inventory of host and host group for the playbook in `INI` file format. For example, `'targets_ini': '[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5'`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps)."
   type        = string
   default     = "placeholder"
 }
