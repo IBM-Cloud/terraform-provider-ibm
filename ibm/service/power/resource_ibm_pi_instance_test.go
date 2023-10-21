@@ -41,6 +41,7 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 		pi_volume_name       = "%[2]s"
 		pi_volume_shareable  = true
 		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_type       = "%[6]s"
 		pi_cloud_instance_id = "%[1]s"
 	  }
 	  resource "ibm_pi_instance" "power_instance" {
@@ -53,13 +54,14 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 		pi_sys_type           = "s922"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
 		pi_health_status      = "%[5]s"
 		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
 		pi_network {
 			network_id = data.ibm_pi_network.power_networks.id
 		}
 	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
 }
 
 func testAccCheckIBMPIInstanceDeploymentTypeConfig(name, instanceHealthStatus string) string {

@@ -78,9 +78,8 @@ Review the argument references that you can specify for your resource.
   - `pi_image_bucket_region` is required with `pi_image_bucket_name`
 - `pi_image_secret_key` - (Optional, String, Sensitive) Cloud Object Storage secret key; required for buckets with private access.
   - `pi_image_secret_key` is required with `pi_image_access_key`
-- `pi_image_storage_pool` - (Optional, String) Storage pool where the image will be loaded, if provided then `pi_image_storage_type` and `pi_affinity_policy` will be ignored.
-- `pi_image_storage_type` - (Optional, String) Type of storage. Will be ignored if `pi_image_storage_pool` or `pi_affinity_policy` is provided. If only using `pi_image_storage_type` for storage selection then the storage pool with the most available space will be selected.
-
+- `pi_image_storage_pool` - (Optional, String) Storage pool where the image will be loaded, if provided then `pi_affinity_policy` will be ignored.
+- `pi_image_storage_type` - (Optional, String) Type of storage; If not specified, default is tier3.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
