@@ -107,7 +107,8 @@ Review the argument references that you can specify for your resource.
 - `key_name` - (Required, Forces new resource, String) The name of the key.
 - `key_ring_id` - (Optional, Forces new resource, String) The ID of the key ring where you want to add your Key Protect key. The default value is `default`.
 - `payload` - (Optional, Forces new resource, String) The base64 encoded key that you want to store and manage in the service. To import an existing key, provide a 256-bit key. To generate a new key, omit this parameter.
-- `standard_key`- (Optional, Bool) Set flag **true** for standard key, and **false** for root key. Default value is **false**.Yes.
+- `standard_key`- (Optional, Bool) Set flag **true** for standard key, and **false** for root key. Default value is **false**.
+- `description`- (Optional, Forces new resource, String) An optional description that can be added to the key during creation.
 - `policies` - (Optional, List) Set policies for a key, for an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys. Policies follow the following structure. (This attribute is deprecated)
 
   Nested scheme for `policies`:

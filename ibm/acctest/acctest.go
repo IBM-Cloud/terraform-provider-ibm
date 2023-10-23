@@ -68,6 +68,7 @@ var (
 	UpdatedCertCRN                  string
 	SecretCRN                       string
 	SecretCRN2                      string
+	EnterpriseCRN                   string
 	InstanceCRN                     string
 	SecretGroupID                   string
 	RegionName                      string
@@ -228,6 +229,16 @@ var (
 
 // Enterprise Management
 var Account_to_be_imported string
+
+// Billing Snapshot Configuration
+var Cos_bucket string
+var Cos_location string
+var Cos_bucket_update string
+var Cos_location_update string
+var Cos_reports_folder string
+var Snapshot_date_from string
+var Snapshot_date_to string
+var Snapshot_month string
 
 // Secuity and Complinace Center
 var (
@@ -1216,6 +1227,38 @@ func init() {
 	if Account_to_be_imported == "" {
 		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
 	}
+	Cos_bucket = os.Getenv("COS_BUCKET")
+	if Cos_bucket == "" {
+		fmt.Println("[INFO] Set the environment variable COS_BUCKET for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Cos_location = os.Getenv("COS_LOCATION")
+	if Cos_location == "" {
+		fmt.Println("[INFO] Set the environment variable COS_LOCATION for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Cos_bucket_update = os.Getenv("COS_BUCKET_UPDATE")
+	if Cos_bucket_update == "" {
+		fmt.Println("[INFO] Set the environment variable COS_BUCKET_UPDATE for testing update operation on billing snapshot configuration API")
+	}
+	Cos_location_update = os.Getenv("COS_LOCATION_UPDATE")
+	if Cos_location_update == "" {
+		fmt.Println("[INFO] Set the environment variable COS_LOCATION_UPDATE for testing update operation on billing snapshot configuration API")
+	}
+	Cos_reports_folder = os.Getenv("COS_REPORTS_FOLDER")
+	if Cos_reports_folder == "" {
+		fmt.Println("[INFO] Set the environment variable COS_REPORTS_FOLDER for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Snapshot_date_from = os.Getenv("SNAPSHOT_DATE_FROM")
+	if Snapshot_date_from == "" {
+		fmt.Println("[INFO] Set the environment variable SNAPSHOT_DATE_FROM for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Snapshot_date_to = os.Getenv("SNAPSHOT_DATE_TO")
+	if Snapshot_date_to == "" {
+		fmt.Println("[INFO] Set the environment variable SNAPSHOT_DATE_TO for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Snapshot_month = os.Getenv("SNAPSHOT_MONTH")
+	if Snapshot_month == "" {
+		fmt.Println("[INFO] Set the environment variable SNAPSHOT_MONTH for testing CRUD operations on billing snapshot configuration APIs")
+	}
 	HpcsAdmin1 = os.Getenv("IBM_HPCS_ADMIN1")
 	if HpcsAdmin1 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN1 with a VALID HPCS Admin Key1 Path")
@@ -1444,6 +1487,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
 
+	EnterpriseCRN = os.Getenv("ENTERPRISE_CRN")
+	if EnterpriseCRN == "" {
+		fmt.Println("[WARN] Set the environment variable ENTERPRISE_CRN for testing enterprise backup policy, the tests will fail if this is not set")
+	}
+
 	CeResourceGroupID = os.Getenv("IBM_CODE_ENGINE_RESOURCE_GROUP_ID")
 	if CeResourceGroupID == "" {
 		CeResourceGroupID = ""
@@ -1613,6 +1661,12 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	}
 	if CeProjectId == "" {
 		t.Fatal("IBM_CODE_ENGINE_PROJECT_INSTANCE_ID must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckUsage(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
 }
 
