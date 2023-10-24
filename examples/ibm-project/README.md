@@ -34,8 +34,8 @@ project resource:
 
 ```hcl
 resource "project" "project_instance" {
-  resource_group = var.project_resource_group
   location = var.project_location
+  resource_group = var.project_resource_group
   definition = var.project_definition
 }
 ```
@@ -86,9 +86,9 @@ data "project" "project_instance" {
 | project_id | The unique project ID. | `string` | true |
 | schematics | A schematics workspace associated to a project configuration. | `` | false |
 | definition | The type and output of a project configuration. | `` | true |
+| location | The IBM Cloud location where a resource is deployed. | `string` | true |
 | resource_group | The resource group where the project's data and tools are created. | `string` | true |
-| location | The location where the project's data and tools are created. | `string` | true |
-| definition | The definition of the project. | `` | false |
+| definition | The definition of the project. | `` | true |
 | project_id | The unique project ID. | `string` | true |
 | id | The unique config ID. | `string` | true |
 | id | The unique project ID. | `string` | true |

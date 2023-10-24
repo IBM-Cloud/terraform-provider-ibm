@@ -3,6 +3,7 @@
 output "ibm_project_config" {
   value       = ibm_project_config.project_config_instance
   description = "project_config resource instance"
+  sensitive   = true
 }
 // This output allows project data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed

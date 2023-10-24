@@ -46,7 +46,7 @@ Nested schema for **definition**:
 		* `api_key` - (Optional, String) The IBM Cloud API Key.
 		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
 		* `method` - (Optional, String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
-		  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]*$/`.
+		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (Optional, String) The trusted profile ID.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `compliance_profile` - (Optional, List) The profile required for compliance.
@@ -65,32 +65,24 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
 	* `environment` - (Optional, String) The ID of the project environment.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `input` - (Optional, List) The input variables for configuration definition and environment.
-	Nested schema for **input**:
+	* `inputs` - (Optional, List) The input variables for configuration definition and environment.
+	Nested schema for **inputs**:
 	* `labels` - (Optional, List) The configuration labels.
 	  * Constraints: The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.
 	* `locator_id` - (Required, Forces new resource, String) A dotted value of catalogID.versionID.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (Required, String) The configuration name.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
-	* `output` - (Optional, List) The outputs of a Schematics template property.
-	  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
-	Nested schema for **output**:
-		* `description` - (Optional, String) A short explanation of the output value.
-		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
-		* `name` - (Required, String) The variable name.
-		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-		* `value` - (Optional, String) Can be any value - a string, number, boolean, array, or object.
-	* `setting` - (Optional, List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
-	Nested schema for **setting**:
+	* `settings` - (Optional, List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
+	Nested schema for **settings**:
 	* `type` - (Computed, String) The type of a project configuration manual property.
 	  * Constraints: Allowable values are: `terraform_template`, `schematics_blueprint`.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `schematics` - (Optional, List) A schematics workspace associated to a project configuration.
 Nested schema for **schematics**:
-	* `workspace_id` - (Optional, String) An existing schematics workspace ID.
-	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.-]+$/`.
+	* `workspace_crn` - (Optional, String) An existing schematics workspace CRN.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 
 ## Attribute Reference
 
@@ -99,13 +91,21 @@ After your resource is created, you can read values from the listed arguments an
 * `id` - The unique identifier of the project_config.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
-* `last_save` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+* `last_saved_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `needs_attention_state` - (List) The needs attention state of a configuration.
   * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+* `outputs` - (List) The outputs of a Schematics template property.
+  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+Nested schema for **outputs**:
+	* `description` - (String) A short explanation of the output value.
+	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
+	* `name` - (String) The variable name.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
+	* `value` - (String) Can be any value - a string, number, boolean, array, or object.
 * `project_config_id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `state` - (String) The state of the configuration.
-  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superceded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
+  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
 * `update_available` - (Boolean) The flag that indicates whether a configuration update is available.
 * `user_modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `version` - (Integer) The version of the configuration.

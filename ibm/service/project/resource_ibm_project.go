@@ -5,7 +5,6 @@ package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -142,26 +141,10 @@ func ResourceIbmProject() *schema.Resource {
 							Required:    true,
 							Description: "The version of the configuration.",
 						},
-						"is_draft": &schema.Schema{
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "The flag that indicates whether the version of the configuration is draft, or active.",
-						},
-						"needs_attention_state": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The needs attention state of a configuration.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The state of the configuration.",
-						},
-						"update_available": &schema.Schema{
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "The flag that indicates whether a configuration update is available.",
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
@@ -172,26 +155,6 @@ func ResourceIbmProject() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
-						},
-						"last_save": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
-						},
-						"schematics": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "A schematics workspace associated to a project configuration.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"workspace_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "An existing schematics workspace ID.",
-									},
-								},
-							},
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -546,19 +509,19 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
-	if modelMap["input"] != nil && len(modelMap["input"].([]interface{})) > 0 {
-		InputModel, err := resourceIbmProjectMapToInputVariable(modelMap["input"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["inputs"] != nil && len(modelMap["inputs"].([]interface{})) > 0 {
+		InputsModel, err := resourceIbmProjectMapToInputVariable(modelMap["inputs"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.Input = InputModel
+		model.Inputs = InputsModel
 	}
-	if modelMap["setting"] != nil && len(modelMap["setting"].([]interface{})) > 0 {
-		SettingModel, err := resourceIbmProjectMapToProjectConfigSetting(modelMap["setting"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["settings"] != nil && len(modelMap["settings"].([]interface{})) > 0 {
+		SettingsModel, err := resourceIbmProjectMapToProjectConfigSetting(modelMap["settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.Setting = SettingModel
+		model.Settings = SettingsModel
 	}
 	return model, nil
 }
@@ -609,8 +572,8 @@ func resourceIbmProjectMapToProjectConfigSetting(modelMap map[string]interface{}
 
 func resourceIbmProjectMapToSchematicsWorkspace(modelMap map[string]interface{}) (*projectv1.SchematicsWorkspace, error) {
 	model := &projectv1.SchematicsWorkspace{}
-	if modelMap["workspace_id"] != nil && modelMap["workspace_id"].(string) != "" {
-		model.WorkspaceID = core.StringPtr(modelMap["workspace_id"].(string))
+	if modelMap["workspace_crn"] != nil && modelMap["workspace_crn"].(string) != "" {
+		model.WorkspaceCrn = core.StringPtr(modelMap["workspace_crn"].(string))
 	}
 	return model, nil
 }
@@ -675,66 +638,12 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 	modelMap["id"] = model.ID
 	modelMap["project_id"] = model.ProjectID
 	modelMap["version"] = flex.IntValue(model.Version)
-	modelMap["is_draft"] = model.IsDraft
-	if model.NeedsAttentionState != nil {
-		modelMap["needs_attention_state"] = model.NeedsAttentionState
-	}
 	modelMap["state"] = model.State
-	modelMap["update_available"] = model.UpdateAvailable
 	if model.CreatedAt != nil {
 		modelMap["created_at"] = model.CreatedAt.String()
 	}
 	if model.UserModifiedAt != nil {
 		modelMap["user_modified_at"] = model.UserModifiedAt.String()
-	}
-	if model.LastApproved != nil {
-		lastApprovedMap, err := resourceIbmProjectProjectConfigMetadataLastApprovedToMap(model.LastApproved)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["last_approved"] = []map[string]interface{}{lastApprovedMap}
-	}
-	if model.LastSave != nil {
-		modelMap["last_save"] = model.LastSave.String()
-	}
-	if model.References != nil {
-		references := make(map[string]interface{})
-		for k, v := range model.References {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			references[k] = string(bytes)
-		}
-		modelMap["references"] = references
-	}
-	if model.LastValidated != nil {
-		lastValidatedMap, err := resourceIbmProjectLastValidatedActionWithSummaryToMap(model.LastValidated)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["last_validated"] = []map[string]interface{}{lastValidatedMap}
-	}
-	if model.LastDeployed != nil {
-		lastDeployedMap, err := resourceIbmProjectLastActionWithSummaryToMap(model.LastDeployed)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["last_deployed"] = []map[string]interface{}{lastDeployedMap}
-	}
-	if model.LastUndeployed != nil {
-		lastUndeployedMap, err := resourceIbmProjectLastActionWithSummaryToMap(model.LastUndeployed)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["last_undeployed"] = []map[string]interface{}{lastUndeployedMap}
-	}
-	if model.Schematics != nil {
-		schematicsMap, err := resourceIbmProjectSchematicsWorkspaceToMap(model.Schematics)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["schematics"] = []map[string]interface{}{schematicsMap}
 	}
 	modelMap["href"] = model.Href
 	definitionMap, err := resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)
@@ -747,289 +656,10 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 
 func resourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.NeedsAttentionState != nil {
-		modelMap["needs_attention_state"] = model.NeedsAttentionState
-	}
 	modelMap["state"] = model.State
 	modelMap["version"] = flex.IntValue(model.Version)
 	if model.Href != nil {
 		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectProjectConfigMetadataLastApprovedToMap(model *projectv1.ProjectConfigMetadataLastApproved) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["is_forced"] = model.IsForced
-	if model.Comment != nil {
-		modelMap["comment"] = model.Comment
-	}
-	modelMap["timestamp"] = model.Timestamp.String()
-	modelMap["user_id"] = model.UserID
-	return modelMap, nil
-}
-
-func resourceIbmProjectLastValidatedActionWithSummaryToMap(model *projectv1.LastValidatedActionWithSummary) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	if model.Result != nil {
-		modelMap["result"] = model.Result
-	}
-	if model.PreJob != nil {
-		preJobMap, err := resourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PreJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["pre_job"] = []map[string]interface{}{preJobMap}
-	}
-	if model.PostJob != nil {
-		postJobMap, err := resourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PostJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["post_job"] = []map[string]interface{}{postJobMap}
-	}
-	if model.Job != nil {
-		jobMap, err := resourceIbmProjectActionJobWithIdAndSummaryToMap(model.Job)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["job"] = []map[string]interface{}{jobMap}
-	}
-	if model.CostEstimate != nil {
-		costEstimateMap, err := resourceIbmProjectProjectConfigMetadataCostEstimateToMap(model.CostEstimate)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["cost_estimate"] = []map[string]interface{}{costEstimateMap}
-	}
-	if model.CraLogs != nil {
-		craLogsMap, err := resourceIbmProjectProjectConfigMetadataCraLogsToMap(model.CraLogs)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["cra_logs"] = []map[string]interface{}{craLogsMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model *projectv1.PrePostActionJobWithIdAndSummary) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Summary != nil {
-		summary := make(map[string]interface{})
-		for k, v := range model.Summary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			summary[k] = string(bytes)
-		}
-		modelMap["summary"] = summary
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectActionJobWithIdAndSummaryToMap(model *projectv1.ActionJobWithIdAndSummary) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Summary != nil {
-		summaryMap, err := resourceIbmProjectActionJobSummaryToMap(model.Summary)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["summary"] = []map[string]interface{}{summaryMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectActionJobSummaryToMap(model *projectv1.ActionJobSummary) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.PlanSummary != nil {
-		planSummary := make(map[string]interface{})
-		for k, v := range model.PlanSummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			planSummary[k] = string(bytes)
-		}
-		modelMap["plan_summary"] = planSummary
-	}
-	if model.ApplySummary != nil {
-		applySummary := make(map[string]interface{})
-		for k, v := range model.ApplySummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			applySummary[k] = string(bytes)
-		}
-		modelMap["apply_summary"] = applySummary
-	}
-	if model.DestroySummary != nil {
-		destroySummary := make(map[string]interface{})
-		for k, v := range model.DestroySummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			destroySummary[k] = string(bytes)
-		}
-		modelMap["destroy_summary"] = destroySummary
-	}
-	if model.MessageSummary != nil {
-		messageSummary := make(map[string]interface{})
-		for k, v := range model.MessageSummary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			messageSummary[k] = string(bytes)
-		}
-		modelMap["message_summary"] = messageSummary
-	}
-	if model.PlanMessages != nil {
-		planMessages := make(map[string]interface{})
-		for k, v := range model.PlanMessages {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			planMessages[k] = string(bytes)
-		}
-		modelMap["plan_messages"] = planMessages
-	}
-	if model.ApplyMessages != nil {
-		applyMessages := make(map[string]interface{})
-		for k, v := range model.ApplyMessages {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			applyMessages[k] = string(bytes)
-		}
-		modelMap["apply_messages"] = applyMessages
-	}
-	if model.DestroyMessages != nil {
-		destroyMessages := make(map[string]interface{})
-		for k, v := range model.DestroyMessages {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			destroyMessages[k] = string(bytes)
-		}
-		modelMap["destroy_messages"] = destroyMessages
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectProjectConfigMetadataCostEstimateToMap(model *projectv1.ProjectConfigMetadataCostEstimate) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Version != nil {
-		modelMap["version"] = model.Version
-	}
-	if model.Currency != nil {
-		modelMap["currency"] = model.Currency
-	}
-	if model.TotalHourlyCost != nil {
-		modelMap["total_hourly_cost"] = model.TotalHourlyCost
-	}
-	if model.TotalMonthlyCost != nil {
-		modelMap["total_monthly_cost"] = model.TotalMonthlyCost
-	}
-	if model.PastTotalHourlyCost != nil {
-		modelMap["past_total_hourly_cost"] = model.PastTotalHourlyCost
-	}
-	if model.PastTotalMonthlyCost != nil {
-		modelMap["past_total_monthly_cost"] = model.PastTotalMonthlyCost
-	}
-	if model.DiffTotalHourlyCost != nil {
-		modelMap["diff_total_hourly_cost"] = model.DiffTotalHourlyCost
-	}
-	if model.DiffTotalMonthlyCost != nil {
-		modelMap["diff_total_monthly_cost"] = model.DiffTotalMonthlyCost
-	}
-	if model.TimeGenerated != nil {
-		modelMap["time_generated"] = model.TimeGenerated.String()
-	}
-	if model.UserID != nil {
-		modelMap["user_id"] = model.UserID
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectProjectConfigMetadataCraLogsToMap(model *projectv1.ProjectConfigMetadataCraLogs) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.CraVersion != nil {
-		modelMap["cra_version"] = model.CraVersion
-	}
-	if model.SchemaVersion != nil {
-		modelMap["schema_version"] = model.SchemaVersion
-	}
-	if model.Status != nil {
-		modelMap["status"] = model.Status
-	}
-	if model.Summary != nil {
-		summary := make(map[string]interface{})
-		for k, v := range model.Summary {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			summary[k] = string(bytes)
-		}
-		modelMap["summary"] = summary
-	}
-	if model.Timestamp != nil {
-		modelMap["timestamp"] = model.Timestamp.String()
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectLastActionWithSummaryToMap(model *projectv1.LastActionWithSummary) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	if model.Result != nil {
-		modelMap["result"] = model.Result
-	}
-	if model.PreJob != nil {
-		preJobMap, err := resourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PreJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["pre_job"] = []map[string]interface{}{preJobMap}
-	}
-	if model.PostJob != nil {
-		postJobMap, err := resourceIbmProjectPrePostActionJobWithIdAndSummaryToMap(model.PostJob)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["post_job"] = []map[string]interface{}{postJobMap}
-	}
-	if model.Job != nil {
-		jobMap, err := resourceIbmProjectActionJobWithIdAndSummaryToMap(model.Job)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["job"] = []map[string]interface{}{jobMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProjectSchematicsWorkspaceToMap(model *projectv1.SchematicsWorkspace) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.WorkspaceID != nil {
-		modelMap["workspace_id"] = model.WorkspaceID
 	}
 	return modelMap, nil
 }

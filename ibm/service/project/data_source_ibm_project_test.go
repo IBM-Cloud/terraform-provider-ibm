@@ -13,15 +13,15 @@ import (
 )
 
 func TestAccIbmProjectDataSourceBasic(t *testing.T) {
-	projectResourceGroup := fmt.Sprintf("Default")
 	projectLocation := fmt.Sprintf("us-south")
+	projectResourceGroup := fmt.Sprintf("Default")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup, projectLocation),
+				Config: testAccCheckIbmProjectDataSourceConfigBasic(projectLocation, projectResourceGroup),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
@@ -31,11 +31,11 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup string, projectLocation string) string {
+func testAccCheckIbmProjectDataSourceConfigBasic(projectLocation string, projectResourceGroup string) string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			resource_group = "%s"
 			location = "%s"
+			resource_group = "%s"
 			definition {
                 name = "acme-microservice"
                 description = "acme-microservice description"
@@ -46,5 +46,5 @@ func testAccCheckIbmProjectDataSourceConfigBasic(projectResourceGroup string, pr
 		data "ibm_project" "project_instance" {
 			id = ibm_project.project_instance.id
 		}
-	`, projectResourceGroup, projectLocation)
+	`, projectLocation, projectResourceGroup)
 }

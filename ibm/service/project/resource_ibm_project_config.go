@@ -41,10 +41,10 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Description: "A schematics workspace associated to a project configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"workspace_id": &schema.Schema{
+						"workspace_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "An existing schematics workspace ID.",
+							Description: "An existing schematics workspace CRN.",
 						},
 					},
 				},
@@ -98,6 +98,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Sensitive:   true,
 										Description: "The IBM Cloud API Key.",
 									},
 								},
@@ -144,7 +145,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							ForceNew:    true,
 							Description: "A dotted value of catalogID.versionID.",
 						},
-						"input": &schema.Schema{
+						"inputs": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
@@ -153,7 +154,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 								Schema: map[string]*schema.Schema{},
 							},
 						},
-						"setting": &schema.Schema{
+						"settings": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
@@ -166,30 +167,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type of a project configuration manual property.",
-						},
-						"output": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The outputs of a Schematics template property.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The variable name.",
-									},
-									"description": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A short explanation of the output value.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Can be any value - a string, number, boolean, array, or object.",
-									},
-								},
-							},
 						},
 					},
 				},
@@ -210,16 +187,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Description: "The needs attention state of a configuration.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"state": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The state of the configuration.",
-			},
-			"update_available": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "The flag that indicates whether a configuration update is available.",
-			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -230,10 +197,44 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
-			"last_save": &schema.Schema{
+			"last_saved_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+			},
+			"outputs": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The outputs of a Schematics template property.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The variable name.",
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A short explanation of the output value.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Can be any value - a string, number, boolean, array, or object.",
+						},
+					},
+				},
+			},
+			"state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The state of the configuration.",
+			},
+			"update_available": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "The flag that indicates whether a configuration update is available.",
 			},
 			"project_config_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -345,12 +346,6 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting needs_attention_state: %s", err))
 		}
 	}
-	if err = d.Set("state", projectConfig.State); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
-	}
-	if err = d.Set("update_available", projectConfig.UpdateAvailable); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting update_available: %s", err))
-	}
 	if !core.IsNil(projectConfig.CreatedAt) {
 		if err = d.Set("created_at", flex.DateTimeToString(projectConfig.CreatedAt)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
@@ -361,10 +356,29 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting user_modified_at: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.LastSave) {
-		if err = d.Set("last_save", flex.DateTimeToString(projectConfig.LastSave)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_save: %s", err))
+	if !core.IsNil(projectConfig.LastSavedAt) {
+		if err = d.Set("last_saved_at", flex.DateTimeToString(projectConfig.LastSavedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting last_saved_at: %s", err))
 		}
+	}
+	if !core.IsNil(projectConfig.Outputs) {
+		outputs := []map[string]interface{}{}
+		for _, outputsItem := range projectConfig.Outputs {
+			outputsItemMap, err := resourceIbmProjectConfigOutputValueToMap(&outputsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			outputs = append(outputs, outputsItemMap)
+		}
+		if err = d.Set("outputs", outputs); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting outputs: %s", err))
+		}
+	}
+	if err = d.Set("state", projectConfig.State); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if err = d.Set("update_available", projectConfig.UpdateAvailable); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting update_available: %s", err))
 	}
 	if err = d.Set("project_config_id", projectConfig.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting project_config_id: %s", err))
@@ -471,19 +485,19 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(modelMap
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
-	if modelMap["input"] != nil && len(modelMap["input"].([]interface{})) > 0 {
-		InputModel, err := resourceIbmProjectConfigMapToInputVariable(modelMap["input"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["inputs"] != nil && len(modelMap["inputs"].([]interface{})) > 0 {
+		InputsModel, err := resourceIbmProjectConfigMapToInputVariable(modelMap["inputs"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.Input = InputModel
+		model.Inputs = InputsModel
 	}
-	if modelMap["setting"] != nil && len(modelMap["setting"].([]interface{})) > 0 {
-		SettingModel, err := resourceIbmProjectConfigMapToProjectConfigSetting(modelMap["setting"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["settings"] != nil && len(modelMap["settings"].([]interface{})) > 0 {
+		SettingsModel, err := resourceIbmProjectConfigMapToProjectConfigSetting(modelMap["settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.Setting = SettingModel
+		model.Settings = SettingsModel
 	}
 	return model, nil
 }
@@ -534,8 +548,8 @@ func resourceIbmProjectConfigMapToProjectConfigSetting(modelMap map[string]inter
 
 func resourceIbmProjectConfigMapToSchematicsWorkspace(modelMap map[string]interface{}) (*projectv1.SchematicsWorkspace, error) {
 	model := &projectv1.SchematicsWorkspace{}
-	if modelMap["workspace_id"] != nil && modelMap["workspace_id"].(string) != "" {
-		model.WorkspaceID = core.StringPtr(modelMap["workspace_id"].(string))
+	if modelMap["workspace_crn"] != nil && modelMap["workspace_crn"].(string) != "" {
+		model.WorkspaceCrn = core.StringPtr(modelMap["workspace_crn"].(string))
 	}
 	return model, nil
 }
@@ -575,27 +589,27 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(mod
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
-	if modelMap["input"] != nil && len(modelMap["input"].([]interface{})) > 0 {
-		InputModel, err := resourceIbmProjectConfigMapToInputVariable(modelMap["input"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["inputs"] != nil && len(modelMap["inputs"].([]interface{})) > 0 {
+		InputsModel, err := resourceIbmProjectConfigMapToInputVariable(modelMap["inputs"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.Input = InputModel
+		model.Inputs = InputsModel
 	}
-	if modelMap["setting"] != nil && len(modelMap["setting"].([]interface{})) > 0 {
-		SettingModel, err := resourceIbmProjectConfigMapToProjectConfigSetting(modelMap["setting"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["settings"] != nil && len(modelMap["settings"].([]interface{})) > 0 {
+		SettingsModel, err := resourceIbmProjectConfigMapToProjectConfigSetting(modelMap["settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.Setting = SettingModel
+		model.Settings = SettingsModel
 	}
 	return model, nil
 }
 
 func resourceIbmProjectConfigSchematicsWorkspaceToMap(model *projectv1.SchematicsWorkspace) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.WorkspaceID != nil {
-		modelMap["workspace_id"] = model.WorkspaceID
+	if model.WorkspaceCrn != nil {
+		modelMap["workspace_crn"] = model.WorkspaceCrn
 	}
 	return modelMap, nil
 }
@@ -629,35 +643,24 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 		}
 	}
 	modelMap["locator_id"] = model.LocatorID
-	if model.Input != nil {
-		inputMap, err := resourceIbmProjectConfigInputVariableToMap(model.Input)
+	if model.Inputs != nil {
+		inputsMap, err := resourceIbmProjectConfigInputVariableToMap(model.Inputs)
 		if err != nil {
 			return modelMap, err
 		}
-		if len(inputMap) > 0 {
-			modelMap["input"] = []map[string]interface{}{inputMap}
+		if len(inputsMap) > 0 {
+			modelMap["inputs"] = []map[string]interface{}{inputsMap}
 		}
 	}
-	if model.Setting != nil {
-		settingMap, err := resourceIbmProjectConfigProjectConfigSettingToMap(model.Setting)
+	if model.Settings != nil {
+		settingsMap, err := resourceIbmProjectConfigProjectConfigSettingToMap(model.Settings)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["setting"] = []map[string]interface{}{settingMap}
+		modelMap["settings"] = []map[string]interface{}{settingsMap}
 	}
 	if model.Type != nil {
 		modelMap["type"] = model.Type
-	}
-	if model.Output != nil {
-		output := []map[string]interface{}{}
-		for _, outputItem := range model.Output {
-			outputItemMap, err := resourceIbmProjectConfigOutputValueToMap(&outputItem)
-			if err != nil {
-				return modelMap, err
-			}
-			output = append(output, outputItemMap)
-		}
-		modelMap["output"] = output
 	}
 	return modelMap, nil
 }

@@ -42,8 +42,8 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 func testAccCheckIbmProjectConfigConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			resource_group = "Default"
 			location = "us-south"
+			resource_group = "Default"
 			definition {
                 name = "acme-microservice"
                 description = "acme-microservice description"
@@ -57,11 +57,17 @@ func testAccCheckIbmProjectConfigConfigBasic() string {
                 name = "stage-environment"
                 labels = ["env:stage"]
                 authorizations {
-                    method = "API_KEY"
+                    method = "api_key"
                     api_key = "%s"
                }
                locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
             }
+            lifecycle {
+                ignore_changes = [
+                    definition[0].authorizations[0].api_key,
+                ]
+            }
+
 		}
 	`, acc.ProjectsConfigApiKey)
 }

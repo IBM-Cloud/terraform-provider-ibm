@@ -17,10 +17,8 @@ import (
 
 func TestAccIbmProjectBasic(t *testing.T) {
 	var conf projectv1.Project
-	resourceGroup := fmt.Sprintf("Default")
 	location := fmt.Sprintf("us-south")
-	resourceGroupUpdate := fmt.Sprintf("Default")
-	locationUpdate := fmt.Sprintf("us-south")
+	resourceGroup := fmt.Sprintf("Default")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,18 +26,11 @@ func TestAccIbmProjectBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmProjectDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProjectConfigBasic(resourceGroup, location),
+				Config: testAccCheckIbmProjectConfigBasic(location, resourceGroup),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmProjectExists("ibm_project.project_instance", conf),
-					resource.TestCheckResourceAttr("ibm_project.project_instance", "resource_group", resourceGroup),
 					resource.TestCheckResourceAttr("ibm_project.project_instance", "location", location),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIbmProjectConfigBasic(resourceGroupUpdate, locationUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_project.project_instance", "resource_group", resourceGroupUpdate),
-					resource.TestCheckResourceAttr("ibm_project.project_instance", "location", locationUpdate),
+					resource.TestCheckResourceAttr("ibm_project.project_instance", "resource_group", resourceGroup),
 				),
 			},
 			resource.TestStep{
@@ -51,18 +42,18 @@ func TestAccIbmProjectBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmProjectConfigBasic(resourceGroup string, location string) string {
+func testAccCheckIbmProjectConfigBasic(location string, resourceGroup string) string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			resource_group = "%s"
 			location = "%s"
+			resource_group = "%s"
 			definition {
                 name = "acme-microservice"
                 description = "acme-microservice description"
                 destroy_on_delete = true
             }
 		}
-	`, resourceGroup, location)
+	`, location, resourceGroup)
 }
 
 func testAccCheckIbmProjectExists(n string, obj projectv1.Project) resource.TestCheckFunc {
