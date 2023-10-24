@@ -151,6 +151,35 @@ func TestAccIBMContainerIngressSecretOpaque_ForceUpdate(t *testing.T) {
 						if originalTS == value {
 							return fmt.Errorf("error timestamp not changed, indicates update didnt go through. original: %s, actual: %s", originalTS, value)
 						}
+						originalTS = value // check if another update will execute without a change to `update_secret`
+						return nil
+					}),
+				),
+			},
+			{
+				Config:             testAccCheckIBMContainerIngressSecretOpaqueForceUpdate(secretName),
+				ExpectNonEmptyPlan: false,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "cluster", acc.ClusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "secret_name", secretName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "secret_namespace", "ibm-cert-store"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "persistence", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "type", "Opaque"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "fields.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "user_managed", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_opaque.secret", "status", "created"),
+					resource.TestCheckResourceAttrWith("ibm_container_ingress_secret_opaque.secret", "last_updated_timestamp", func(value string) error {
+						if originalTS != value {
+							return fmt.Errorf("error timestamp has changed, indicates update was called again even though no modification of fields. exptected: %s, actual: %s", originalTS, value)
+						}
 						return nil
 					}),
 				),

@@ -139,6 +139,29 @@ func TestAccIBMContainerIngressSecretTLS_BasicForceUpdate(t *testing.T) {
 						if originalTS == value {
 							return fmt.Errorf("error timestamp not changed, indicates update didnt go through. original: %s, actual: %s", originalTS, value)
 						}
+						originalTS = value // check if another update will execute without a change to `update_secret`
+						return nil
+					}),
+				),
+			},
+			{
+				Config:             testAccCheckIBMContainerIngressSecretTLSForceUpdate(secretName),
+				ExpectNonEmptyPlan: false,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_name", secretName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_namespace", "ibm-cert-store"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "cert_crn", acc.CertCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "user_managed", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "status", "created"),
+					resource.TestCheckResourceAttrWith("ibm_container_ingress_secret_tls.secret", "last_updated_timestamp", func(value string) error {
+						if originalTS != value {
+							return fmt.Errorf("error timestamp has changed, indicates update was called again even though no modification of fields. exptected: %s, actual: %s", originalTS, value)
+						}
 						return nil
 					}),
 				),
