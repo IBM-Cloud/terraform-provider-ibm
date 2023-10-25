@@ -486,6 +486,29 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"network_attachment_count": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum value for this profile field",
+						},
+						"min": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum value for this profile field",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+					},
+				},
+			},
 			"port_speed": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -692,6 +715,12 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	}
 	if profile.NetworkInterfaceCount != nil {
 		err = d.Set("network_interface_count", dataSourceInstanceProfileFlattenNetworkInterfaceCount(*profile.NetworkInterfaceCount.(*vpcv1.InstanceProfileNetworkInterfaceCount)))
+		if err != nil {
+			return err
+		}
+	}
+	if profile.NetworkAttachmentCount != nil {
+		err = d.Set("network_attachment_count", dataSourceInstanceProfileFlattenNetworkAttachmentCount(*profile.NetworkAttachmentCount.(*vpcv1.InstanceProfileNetworkAttachmentCount)))
 		if err != nil {
 			return err
 		}
@@ -919,6 +948,28 @@ func dataSourceInstanceProfileFlattenNetworkInterfaceCount(result vpcv1.Instance
 	finalList = append(finalList, finalMap)
 
 	return finalList
+}
+func dataSourceInstanceProfileFlattenNetworkAttachmentCount(result vpcv1.InstanceProfileNetworkAttachmentCount) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileNetworkAttachmentCount(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileNetworkAttachmentCount(networkAttachmentCountItem vpcv1.InstanceProfileNetworkAttachmentCount) (networkAttachmentCountMap map[string]interface{}) {
+	networkAttachmentCountMap = map[string]interface{}{}
+
+	if networkAttachmentCountItem.Max != nil {
+		networkAttachmentCountMap["max"] = networkAttachmentCountItem.Max
+	}
+	if networkAttachmentCountItem.Min != nil {
+		networkAttachmentCountMap["min"] = networkAttachmentCountItem.Min
+	}
+	if networkAttachmentCountItem.Type != nil {
+		networkAttachmentCountMap["type"] = networkAttachmentCountItem.Type
+	}
+	return networkAttachmentCountMap
 }
 
 func dataSourceInstanceProfileNetworkInterfaceCount(networkInterfaceCountItem vpcv1.InstanceProfileNetworkInterfaceCount) (networkInterfaceCountMap map[string]interface{}) {

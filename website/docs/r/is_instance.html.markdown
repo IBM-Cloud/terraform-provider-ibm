@@ -24,7 +24,7 @@ Create, update, or delete a Virtual Servers for VPC instance. For more informati
 
 ## Example usage
 
-### Sample for creating an instance in a VPC.
+### Sample for creating an instance in a VPC using virtual network interface and network attachments.
 
 ```terraform
 resource "ibm_is_vpc" "example" {
@@ -43,6 +43,63 @@ resource "ibm_is_ssh_key" "example" {
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 }
 
+resource "ibm_is_virtual_network_interface" "example"{
+	name 						            = "example-vni"
+	allow_ip_spoofing 			    = false
+	enable_infrastructure_nat 	= true
+	primary_ip {
+		auto_delete 	  = false
+    address 		    = "10.240.0.8"
+	}
+	subnet   = ibm_is_subnet.example.id
+}
+
+resource "ibm_is_instance" "example" {
+  name                      = "example-instance"
+  image                     = ibm_is_image.example.id
+  profile                   = "bx2-2x8"
+  metadata_service_enabled  = false
+
+  boot_volume {
+    encryption = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
+  }
+
+  primary_network_attachment {
+    name = "vexample-primary-att"
+    virtual_network_interface { 
+      id = ibm_is_virtual_network_interface.example.id
+    }
+  }
+
+  network_attachments {
+    name = "example-network-att"
+    virtual_network_interface {
+      name = "example-net-vni"
+			auto_delete = true
+			enable_infrastructure_nat = true
+			primary_ip {
+				auto_delete 	= true
+				address 		= "10.240.0.6"
+			}
+			subnet = ibm_is_subnet.example.id
+    }
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = ibm_is_subnet.example.zone
+  keys = [ibm_is_ssh_key.example.id]
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+```
+
+### Sample for creating an instance in a VPC.
+
+```terraform
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
@@ -474,6 +531,36 @@ Review the argument references that you can specify for your resource.
   - `protocol` - (Optional, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
   - `response_hop_limit` - (Optional, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The instance name.
+- `network_attachments` - (Optional, List) The network attachments for this virtual server instance, including the primary network attachment.
+  Nested schema for **network_attachments**:
+	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	Nested schema for **deleted**:
+		- `more_info` - (Required, String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this network attachment.
+    ~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
+	- `id` - (String) The unique identifier for this network attachment.
+	- `name` - (Required, String)
+	- `primary_ip` - (Required, List) The primary IP address of the virtual network interface for the network attachment.
+	  Nested schema for **primary_ip**:
+		- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (Required, String) Link to documentation about deleted resources.
+		- `href` - (Required, String) The URL for this reserved IP.
+		- `id` - (Required, String) The unique identifier for this reserved IP.
+		- `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (String) The resource type.
+	- `subnet` - (Required, List) The subnet of the virtual network interface for the network attachment.
+	  Nested schema for **subnet**:
+		- `crn` - (Required, String) The CRN for this subnet.
+		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		Nested schema for **deleted**:
+			- `more_info` - (Required, String) Link to documentation about deleted resources.
+		- `href` - (Required, String) The URL for this subnet.
+		- `id` - (Required, String) The unique identifier for this subnet.
+		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+		- `resource_type` - (String) The resource type.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
     -> **Allowed vNIC per profile.** Follow the vNIC count as per the instance profile's `network_interface_count`. For details see  [`is_instance_profile`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profile) or [`is_instance_profiles`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profiles).
@@ -496,6 +583,35 @@ Review the argument references that you can specify for your resource.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`- (Optional, List of strings)A comma separated list of security groups to add to the primary network interface.
 - `placement_group` - (Optional, string) Unique Identifier of the Placement Group for restricting the placement of the instance
+- `primary_network_attachment` - (Optional, List) The primary network attachment for this virtual server instance.
+  Nested schema for **primary_network_attachment**:
+	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	Nested schema for **deleted**:
+		- `more_info` - (Required, String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this network attachment.
+	- `id` - (String) The unique identifier for this network attachment.
+	- `name` - (Required, String)
+	- `primary_ip` - (Required, List) The primary IP address of the virtual network interface for the network attachment.
+	  Nested schema for **primary_ip**:
+		- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (Required, String) Link to documentation about deleted resources.
+		- `href` - (Required, String) The URL for this reserved IP.
+		- `id` - (Required, String) The unique identifier for this reserved IP.
+		- `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+		- `resource_type` - (String) The resource type.
+	- `resource_type` - (String) The resource type.
+	- `subnet` - (Required, List) The subnet of the virtual network interface for the network attachment.
+	  Nested schema for **subnet**:
+		- `crn` - (Required, String) The CRN for this subnet.
+		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (Required, String) Link to documentation about deleted resources.
+		- `href` - (Required, String) The URL for this subnet.
+		- `id` - (Required, String) The unique identifier for this subnet.
+		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+		- `resource_type` - (String) The resource type.
 - `primary_network_interface` - (Required, List) A nested block describes the primary network interface of this instance. Only one primary network interface can be specified for an instance. When using `instance_template`, `primary_network_interface` is not required.
 
   Nested scheme for `primary_network_interface`:
