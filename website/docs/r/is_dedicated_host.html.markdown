@@ -108,6 +108,15 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state`-  (String) The lifecycle state of the dedicated host resource.
 - `memory`-  (String) The total amount of memory in `GB` for this host.
 - `name`-  (String) The unique user defined name for this dedicated host.
+- `numa` - The NUMA configuration for this dedicated host.
+  
+  Nested scheme for `numa`:
+    - `count` - (Integer) The total number of NUMA nodes for this dedicated host.
+    - `nodes` - (List) The NUMA nodes for this dedicated host.
+      
+      Nested scheme for `nodes`:
+        - `available_vcpu` - (Integer) The available VCPU for this NUMA node.
+        - `vcpu` - (Integer) The total VCPU capacity for this NUMA node.
 - `profile`-  (String) The profile this dedicated host uses.
 - `provisionable`-  (String) Indicates whether this dedicated host is available for instance creation.
 - `resource_group`-  (String) The unique identifier of the resource group for this dedicated host.

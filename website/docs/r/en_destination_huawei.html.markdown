@@ -21,7 +21,7 @@ resource "ibm_en_destination_huawei" "huawei_en_destination" {
   config {
     params {
       client_id   = "5237288990"
-      client_secret  = "36228ghutwervhudokmksiegfevssavdvywvwww"
+      client_secret  = "36228ghutwervhudokmksiegfevssavdvywvwww" // pragma: allowlist secret
       pre_prod = false
     }
   }

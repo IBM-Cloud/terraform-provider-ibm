@@ -35,6 +35,8 @@ func TestAccIBMISVPNGateway_basic(t *testing.T) {
 					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "health_state"),
 				),
 			},
 		},
