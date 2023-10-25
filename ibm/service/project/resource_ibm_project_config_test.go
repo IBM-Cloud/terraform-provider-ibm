@@ -51,6 +51,7 @@ func testAccCheckIbmProjectConfigConfigBasic() string {
                 destroy_on_delete = true
             }
 		}
+
 		resource "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
 			definition {
@@ -67,7 +68,6 @@ func testAccCheckIbmProjectConfigConfigBasic() string {
                     definition[0].authorizations[0].api_key,
                 ]
             }
-
 		}
 	`, acc.ProjectsConfigApiKey)
 }

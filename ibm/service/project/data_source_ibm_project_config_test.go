@@ -62,7 +62,6 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic() string {
                     definition[0].authorizations[0].api_key,
                 ]
             }
-
 		}
 
 		data "ibm_project_config" "project_config_instance" {
