@@ -131,11 +131,6 @@ func ResourceIbmProject() *schema.Resource {
 							Required:    true,
 							Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
 						},
-						"project_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The unique ID.",
-						},
 						"version": &schema.Schema{
 							Type:        schema.TypeInt,
 							Required:    true,
@@ -159,7 +154,7 @@ func ResourceIbmProject() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "A relative URL.",
+							Description: "A URL.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -182,6 +177,48 @@ func ResourceIbmProject() *schema.Resource {
 								},
 							},
 						},
+						"project": &schema.Schema{
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
+							Required:    true,
+							Description: "The project referenced by this resource.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The unique ID.",
+									},
+									"definition": &schema.Schema{
+										Type:        schema.TypeList,
+										MinItems:    1,
+										MaxItems:    1,
+										Required:    true,
+										Description: "The definition of the project reference.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The name of the project.",
+												},
+											},
+										},
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A URL.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -196,10 +233,47 @@ func ResourceIbmProject() *schema.Resource {
 							Required:    true,
 							Description: "The environment id as a friendly name.",
 						},
-						"project_id": &schema.Schema{
-							Type:        schema.TypeString,
+						"project": &schema.Schema{
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
 							Required:    true,
-							Description: "The unique ID.",
+							Description: "The project referenced by this resource.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The unique ID.",
+									},
+									"definition": &schema.Schema{
+										Type:        schema.TypeList,
+										MinItems:    1,
+										MaxItems:    1,
+										Required:    true,
+										Description: "The definition of the project reference.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The name of the project.",
+												},
+											},
+										},
+									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A URL.",
+									},
+								},
+							},
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
@@ -209,7 +283,7 @@ func ResourceIbmProject() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "A relative URL.",
+							Description: "A URL.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -636,7 +710,6 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 		modelMap["deployed_version"] = []map[string]interface{}{deployedVersionMap}
 	}
 	modelMap["id"] = model.ID
-	modelMap["project_id"] = model.ProjectID
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["state"] = model.State
 	if model.CreatedAt != nil {
@@ -651,6 +724,11 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	projectMap, err := resourceIbmProjectProjectReferenceToMap(model.Project)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["project"] = []map[string]interface{}{projectMap}
 	return modelMap, nil
 }
 
@@ -658,9 +736,7 @@ func resourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.Project
 	modelMap := make(map[string]interface{})
 	modelMap["state"] = model.State
 	modelMap["version"] = flex.IntValue(model.Version)
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
+	modelMap["href"] = model.Href
 	return modelMap, nil
 }
 
@@ -675,10 +751,33 @@ func resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model *projec
 	return modelMap, nil
 }
 
+func resourceIbmProjectProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	definitionMap, err := resourceIbmProjectProjectDefinitionReferenceToMap(model.Definition)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	modelMap["crn"] = model.Crn
+	modelMap["href"] = model.Href
+	return modelMap, nil
+}
+
+func resourceIbmProjectProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = model.Name
+	return modelMap, nil
+}
+
 func resourceIbmProjectProjectEnvironmentCollectionMemberToMap(model *projectv1.ProjectEnvironmentCollectionMember) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
-	modelMap["project_id"] = model.ProjectID
+	projectMap, err := resourceIbmProjectProjectReferenceToMap(model.Project)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["project"] = []map[string]interface{}{projectMap}
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["href"] = model.Href
 	definitionMap, err := resourceIbmProjectEnvironmentDefinitionNameDescriptionToMap(model.Definition)

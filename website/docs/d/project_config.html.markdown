@@ -41,7 +41,7 @@ Nested schema for **definition**:
 	Nested schema for **authorizations**:
 		* `api_key` - (String) The IBM Cloud API Key.
 		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
-		* `method` - (String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
+		* `method` - (String) The authorization method. You can authorize by using a trusted profile or an API key in Se~~~~crets Manager.
 		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (String) The trusted profile ID.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
@@ -89,6 +89,19 @@ Nested schema for **outputs**:
 	* `name` - (String) The variable name.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
 	* `value` - (String) Can be any value - a string, number, boolean, array, or object.
+
+* `project` - (List) The project referenced by this resource.
+Nested schema for **project**:
+	* `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
+	* `definition` - (List) The definition of the project reference.
+	Nested schema for **definition**:
+		* `name` - (String) The name of the project.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
+	* `href` - (String) A URL.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
+	* `id` - (String) The unique ID.
+	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 
 * `project_config_id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.

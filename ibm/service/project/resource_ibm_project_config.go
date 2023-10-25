@@ -225,6 +225,46 @@ func ResourceIbmProjectConfig() *schema.Resource {
 					},
 				},
 			},
+			"project": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The project referenced by this resource.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The unique ID.",
+						},
+						"definition": &schema.Schema{
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
+							Required:    true,
+							Description: "The definition of the project reference.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The name of the project.",
+									},
+								},
+							},
+						},
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A URL.",
+						},
+					},
+				},
+			},
 			"state": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -320,9 +360,6 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("GetConfigWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("project_id", projectConfig.ProjectID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project_id: %s", err))
-	}
 	definitionMap, err := resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(projectConfig.Definition)
 	if err != nil {
 		return diag.FromErr(err)
@@ -372,6 +409,13 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		if err = d.Set("outputs", outputs); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting outputs: %s", err))
 		}
+	}
+	projectMap, err := resourceIbmProjectConfigProjectReferenceToMap(projectConfig.Project)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("project", []map[string]interface{}{projectMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting project: %s", err))
 	}
 	if err = d.Set("state", projectConfig.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
@@ -717,5 +761,24 @@ func resourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectConfigProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	definitionMap, err := resourceIbmProjectConfigProjectDefinitionReferenceToMap(model.Definition)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	modelMap["crn"] = model.Crn
+	modelMap["href"] = model.Href
+	return modelMap, nil
+}
+
+func resourceIbmProjectConfigProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = model.Name
 	return modelMap, nil
 }

@@ -93,6 +93,44 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 					},
 				},
 			},
+			"project": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The project referenced by this resource.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique ID.",
+						},
+						"definition": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The definition of the project reference.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the project.",
+									},
+								},
+							},
+						},
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A URL.",
+						},
+					},
+				},
+			},
 			"schematics": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -298,6 +336,18 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting outputs %s", err))
 	}
 
+	project := []map[string]interface{}{}
+	if projectConfig.Project != nil {
+		modelMap, err := dataSourceIbmProjectConfigProjectReferenceToMap(projectConfig.Project)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		project = append(project, modelMap)
+	}
+	if err = d.Set("project", project); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting project %s", err))
+	}
+
 	schematics := []map[string]interface{}{}
 	if projectConfig.Schematics != nil {
 		modelMap, err := dataSourceIbmProjectConfigSchematicsWorkspaceToMap(projectConfig.Schematics)
@@ -342,6 +392,25 @@ func dataSourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (m
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectConfigProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID
+	definitionMap, err := dataSourceIbmProjectConfigProjectDefinitionReferenceToMap(model.Definition)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	modelMap["crn"] = model.Crn
+	modelMap["href"] = model.Href
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectConfigProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = model.Name
 	return modelMap, nil
 }
 

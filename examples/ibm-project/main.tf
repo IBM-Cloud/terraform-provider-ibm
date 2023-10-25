@@ -26,8 +26,8 @@ resource "ibm_project_config" "project_config_instance" {
 
 // Provision project resource instance
 resource "ibm_project" "project_instance" {
-  resource_group = var.project_resource_group
   location = var.project_location
+  resource_group = var.project_resource_group
   definition {
     name = "My static website"
     description = "Sample static website test using the IBM catalog deployable architecture"

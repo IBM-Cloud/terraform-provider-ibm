@@ -31,9 +31,10 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_project_config.project_config_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_project_config.project_config_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"project_id"},
 			},
 		},
 	})
@@ -50,7 +51,6 @@ func testAccCheckIbmProjectConfigConfigBasic() string {
                 destroy_on_delete = true
             }
 		}
-
 		resource "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project.project_instance.id
 			definition {

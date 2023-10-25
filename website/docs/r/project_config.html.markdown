@@ -14,13 +14,13 @@ Create, update, and delete project_configs with this resource.
 
 ```hcl
 resource "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project.project_instance.project_id
+  project_id = ibm_project.project_instance.id
   definition {
     name = "static-website-dev"
     labels = [ "env:dev", "billing:internal" ]
     description = "Website - development"
     authorizations {
-      method = "APIKEY"
+      method = "api_key"
       api_key = "<your_apikey_here>"
     }
     locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
@@ -102,6 +102,18 @@ Nested schema for **outputs**:
 	* `name` - (String) The variable name.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
 	* `value` - (String) Can be any value - a string, number, boolean, array, or object.
+* `project` - (List) The project referenced by this resource.
+Nested schema for **project**:
+	* `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
+	* `definition` - (List) The definition of the project reference.
+	Nested schema for **definition**:
+		* `name` - (String) The name of the project.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
+	* `href` - (String) A URL.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
+	* `id` - (String) The unique ID.
+	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `project_config_id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `state` - (String) The state of the configuration.
