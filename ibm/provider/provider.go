@@ -570,6 +570,13 @@ func Provider() *schema.Provider {
 			"ibm_schematics_job":            schematics.DataSourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.DataSourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.DataSourceIBMSchematicsResourceQuery(),
+			"ibm_schematics_policies":       schematics.DataSourceIbmSchematicsPolicies(),
+			"ibm_schematics_policy":         schematics.DataSourceIbmSchematicsPolicy(),
+			"ibm_schematics_agents":         schematics.DataSourceIbmSchematicsAgents(),
+			"ibm_schematics_agent":          schematics.DataSourceIbmSchematicsAgent(),
+			"ibm_schematics_agent_prs":      schematics.DataSourceIbmSchematicsAgentPrs(),
+			"ibm_schematics_agent_deploy":   schematics.DataSourceIbmSchematicsAgentDeploy(),
+			"ibm_schematics_agent_health":   schematics.DataSourceIbmSchematicsAgentHealth(),
 
 			// Added for Power Resources
 			"ibm_pi_catalog_images":                         power.DataSourceIBMPICatalogImages(),
@@ -1211,6 +1218,11 @@ func Provider() *schema.Provider {
 			"ibm_schematics_job":            schematics.ResourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.ResourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
+			"ibm_schematics_policy":         schematics.ResourceIbmSchematicsPolicy(),
+			"ibm_schematics_agent":          schematics.ResourceIbmSchematicsAgent(),
+			"ibm_schematics_agent_prs":      schematics.ResourceIbmSchematicsAgentPrs(),
+			"ibm_schematics_agent_deploy":   schematics.ResourceIbmSchematicsAgentDeploy(),
+			"ibm_schematics_agent_health":   schematics.ResourceIbmSchematicsAgentHealth(),
 
 			// Added for Secrets Manager
 			"ibm_sm_secret_group":                                                secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmSecretGroup()),
@@ -1503,6 +1515,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_schematics_workspace":                schematics.ResourceIBMSchematicsWorkspaceValidator(),
 				"ibm_schematics_inventory":                schematics.ResourceIBMSchematicsInventoryValidator(),
 				"ibm_schematics_resource_query":           schematics.ResourceIBMSchematicsResourceQueryValidator(),
+				"ibm_schematics_policy":                   schematics.ResourceIbmSchematicsPolicyValidator(),
 				"ibm_resource_instance":                   resourcecontroller.ResourceIBMResourceInstanceValidator(),
 				"ibm_resource_key":                        resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
