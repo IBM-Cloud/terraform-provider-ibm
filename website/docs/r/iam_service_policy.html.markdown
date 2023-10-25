@@ -266,6 +266,7 @@ resource "ibm_iam_service_policy" "policy" {
     value    = "IAM"
   }
 }
+```
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 

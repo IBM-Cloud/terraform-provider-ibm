@@ -129,7 +129,7 @@ Review the argument references that you can specify for your resource.
           While using `zone_affinity`, if fewer DNS servers are specified than the number of zones, then default servers will be created and terraform would show change. Its advised to provide `address` for all `zone_affinity`.
 
 
-      - `type` - (Optional, String) The type of the DNS resolver to use.
+      - `type` - (Optional, String) The type of the DNS resolver to use. To update the resolver type, specify the `type` explicitly.
 
         ~> **Note:** 
           `delegated`: DNS server addresses will be provided by the resolver for the VPC specified in dns.resolver.vpc. Requires dns.enable_hub to be false.<br/>

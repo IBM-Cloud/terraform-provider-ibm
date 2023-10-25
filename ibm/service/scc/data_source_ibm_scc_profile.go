@@ -17,7 +17,7 @@ import (
 )
 
 func DataSourceIbmSccProfile() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccProfileRead,
 
 		Schema: map[string]*schema.Schema{
@@ -316,7 +316,7 @@ func DataSourceIbmSccProfile() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -328,6 +328,7 @@ func dataSourceIbmSccProfileRead(context context.Context, d *schema.ResourceData
 	getProfileOptions := &securityandcompliancecenterapiv3.GetProfileOptions{}
 
 	getProfileOptions.SetProfileID(d.Get("profile_id").(string))
+	getProfileOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	profile, response, err := securityandcompliancecenterapiClient.GetProfileWithContext(context, getProfileOptions)
 	if err != nil {
@@ -355,10 +356,6 @@ func dataSourceIbmSccProfileRead(context context.Context, d *schema.ResourceData
 
 	if err = d.Set("version_group_label", profile.VersionGroupLabel); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting version_group_label: %s", err))
-	}
-
-	if err = d.Set("instance_id", profile.InstanceID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 
 	if err = d.Set("latest", profile.Latest); err != nil {

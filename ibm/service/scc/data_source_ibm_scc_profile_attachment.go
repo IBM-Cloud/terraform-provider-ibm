@@ -17,7 +17,7 @@ import (
 )
 
 func DataSourceIbmSccProfileAttachment() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccProfileAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
@@ -224,7 +224,7 @@ func DataSourceIbmSccProfileAttachment() *schema.Resource {
 				Description: "The description for the attachment.",
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccProfileAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -237,6 +237,7 @@ func dataSourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Re
 
 	getProfileAttachmentOptions.SetAttachmentID(d.Get("attachment_id").(string))
 	getProfileAttachmentOptions.SetProfileID(d.Get("profile_id").(string))
+	getProfileAttachmentOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	attachmentItem, response, err := securityandcompliancecenterapiClient.GetProfileAttachmentWithContext(context, getProfileAttachmentOptions)
 	if err != nil {
