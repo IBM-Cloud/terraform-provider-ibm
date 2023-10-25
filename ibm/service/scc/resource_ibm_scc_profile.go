@@ -52,7 +52,7 @@ func ResourceIbmSccProfile() *schema.Resource {
 			},
 			"controls": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The array of controls that are used to create the profile.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
