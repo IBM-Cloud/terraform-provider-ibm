@@ -146,12 +146,14 @@ const (
 
 	// status
 	// common status states
-	StatusShutoff = "SHUTOFF"
-	StatusActive  = "ACTIVE"
-	StatusResize  = "RESIZE"
-	StatusError   = "ERROR"
-	StatusBuild   = "BUILD"
-	StatusPending = "PENDING"
-	SctionStart   = "start"
-	SctionStop    = "stop"
+	StatusShutoff        = "SHUTOFF"
+	StatusActive         = "ACTIVE"
+	StatusResize         = "RESIZE"
+	StatusError          = "ERROR"
+	StatusBuild          = "BUILD"
+	StatusPending        = "PENDING"
+	SctionStart          = "start"
+	SctionStop           = "stop"
+	PIVolumeCloneDone    = "completed"
+	PIVolumeCloneRunning = "running"
 )

@@ -185,8 +185,8 @@ func isWaitForIBMPIVolumeCloneCompletion(ctx context.Context, client *st.IBMPICl
 	log.Printf("Waiting for Volume clone (%s) to be completed.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{helpers.PIVolumeCloneRunning},
-		Target:     []string{helpers.PIVolumeCloneDone},
+		Pending:    []string{PIVolumeCloneRunning},
+		Target:     []string{PIVolumeCloneDone},
 		Refresh:    isIBMPIVolumeCloneRefreshFunc(client, id),
 		Delay:      10 * time.Second,
 		MinTimeout: 2 * time.Minute,
@@ -204,10 +204,10 @@ func isIBMPIVolumeCloneRefreshFunc(client *st.IBMPICloneVolumeClient, id string)
 		}
 
 		if *volClone.Status == "completed" {
-			return volClone, helpers.PIVolumeCloneDone, nil
+			return volClone, PIVolumeCloneDone, nil
 		}
 
-		return volClone, helpers.PIVolumeCloneRunning, nil
+		return volClone, PIVolumeCloneRunning, nil
 	}
 }
 

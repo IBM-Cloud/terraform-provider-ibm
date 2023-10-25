@@ -63,7 +63,7 @@ In addition to all argument reference list, you can access the following attribu
   - `source_volume_id` - (String) The ID of the source volume.
 - `id` - (String) The unique identifier of the volume clone. The ID is composed of `<pi_cloud_instance_id>/<volume_clone_task_id>`.
 - `volume_clone_failure_reason` - (String) The reason for the failure of the volume clone task.
-- `volume_clone_percent_complete` - (String) The completion percentage of the volume clone task.
+- `volume_clone_percent_complete` - (Integer) The completion percentage of the volume clone task.
 - `volume_clone_status` - (String) The status of the volume clone task.
 - `volume_clone_task_id` - (String) The ID of the volume clone task.
 
