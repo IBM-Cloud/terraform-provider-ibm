@@ -20,6 +20,8 @@ data "ibm_is_virtual_network_interfaces" "example" {
 
 ## Attribute Reference
 
+- `resource_group` - (Optional, String) The ID of the Resource group these virtual network interfaces belong to.
+
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `virtual_network_interfaces` - (List) Collection of virtual network interfaces.

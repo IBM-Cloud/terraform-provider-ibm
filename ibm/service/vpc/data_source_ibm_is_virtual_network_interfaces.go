@@ -411,24 +411,38 @@ func DataSourceIBMIsVirtualNetworkInterfaces() *schema.Resource {
 					},
 				},
 			},
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group these virtual network interfaces belong to",
+			},
 		},
 	}
 }
 
 func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcbetaClient, err := meta.(conns.ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	listVirtualNetworkInterfacesOptions := &vpcv1.ListVirtualNetworkInterfacesOptions{}
-
-	vniCollection, response, err := vpcbetaClient.ListVirtualNetworkInterfacesWithContext(context, listVirtualNetworkInterfacesOptions)
-	//log.Printf(len(vniCollection.VirtualNetworkInterfaces))
-	if err != nil {
-		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response))
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listVirtualNetworkInterfacesOptions.ResourceGroupID = &resGroup
 	}
+	var pager *vpcv1.VirtualNetworkInterfacesPager
+	pager, err = vpcClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	allItems, err := pager.GetAll()
+	if err != nil {
+		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s", err)
+		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
+	}
+
 	// var pager *vpcv1.VirtualNetworkInterfacesPager
 	// pager, err = vpcbetaClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
 	// if err != nil {
@@ -444,7 +458,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 	d.SetId(dataSourceIBMIsVirtualNetworkInterfacesID(d))
 
 	mapSlice := []map[string]interface{}{}
-	for _, modelItem := range vniCollection.VirtualNetworkInterfaces {
+	for _, modelItem := range allItems {
 		modelMap, err := dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(&modelItem)
 		if err != nil {
 			return diag.FromErr(err)
