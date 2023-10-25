@@ -203,7 +203,7 @@ func isIBMPIVolumeCloneRefreshFunc(client *st.IBMPICloneVolumeClient, id string)
 			return nil, "", err
 		}
 
-		if *volClone.Status == "completed" {
+		if *volClone.Status == PIVolumeCloneDone {
 			return volClone, PIVolumeCloneDone, nil
 		}
 
