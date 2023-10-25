@@ -62,4 +62,26 @@ The following attributes are exported:
 	- `id` - The unique identifier for this VPC.
 	- `name` - The unique user-defined name for this VPC.
 	- `resource_type` - The resource type.
+- `primary_ip` - The primary IP address of the virtual network interface for the share mount target. Nested `primary_ip` blocks have the following structure:
+  - `address` - The IP address.
+	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+		- `more_info` - Link to documentation about deleted resources.
+	- `href` - The URL for this reserved IP.
+	- `id` - The unique identifier for this reserved IP.
+	- `name` - The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+	- `resource_type` - The resource type.
+- `subnet` - The subnet of the virtual network interface for the share mount target. Nested `vpc` blocks have the following structure:
+	- `crn` - The CRN for this subnet.
+	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+		- `more_info` - Link to documentation about deleted resources.
+	- `href` - The URL for this subnet.
+	- `id` - The unique identifier for this subnet.
+	- `name` - The unique user-defined name for this subnet.
+	- `resource_type` - The resource type.
+- `virtual_network_interface` - The virtual network interface for this file share mount target.. Nested `subnet` blocks have the following structure:
+	- `crn` - The CRN for this virtual network interface.
+	- `href` - The URL for this virtual network interface.
+	- `id` - The unique identifier for this virtual network interface.
+	- `name` - The unique user-defined name for this virtual network interface.
+	- `resource_type` - The resource type.
 

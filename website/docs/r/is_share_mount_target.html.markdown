@@ -90,6 +90,25 @@ resource "ibm_is_share_mount_target" "mtarget1" {
   }
   name  = "my-example-mount-target"
 }
+
+//Create mount target with VNI ID
+resource "ibm_is_subnet" "example" {
+  name                     = "my-subnet"
+  vpc                      = ibm_is_vpc.vpc2.id
+  zone                     = "br-sao-2"
+  total_ipv4_address_count = 16
+}
+resource "ibm_is_virtual_network_interface" "example" {
+  name   = "my-example-vni"
+  subnet = ibm_is_subnet.example.id
+}
+resource "ibm_is_share_mount_target" "mtarget1" {
+  share = ibm_is_share.share.id
+  virtual_network_interface {
+    id = ibm_is_virtual_network_interface.example.id
+  }
+  name = "my-example-mount-target"
+}
 ```
 ## Argument Reference
 
@@ -99,19 +118,28 @@ The following arguments are supported:
 - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
   - `name` - (Required, String) Name for this virtual network interface.
   Nested scheme for `virtual_network_interface`:
+  - `id` - (Optional) The ID for virtual network interface. Mutually exclusive with other `virtual_network_interface` arguments.
+  
+  ~> **Note**
+    `id` is mutually exclusive with other `virtual_network_interface` prototype arguments
   - `primary_ip` - (Optional, List) The primary IP address to bind to the virtual network interface. May be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP.
 
       Nested scheme for `primary_ip`:
+      
       - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Defaults to `true`
       - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
+      
       - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
-      - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+      - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP.
+
+  ~> **Note**
+    Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
+
   - `resource_group` - (Optional, String) The ID of the resource group to use.
   - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
   - `subnet` - (Optional, string) The associated subnet.
     
-    ~> **Note**
-    Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
+    
 
 - `vpc` - (Optional, string) The VPC in which instances can mount the file share using this share target. Required if the share's `access_control_mode` is vpc.
   ~> **Note**
@@ -126,7 +154,9 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-
+- `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
+  - `auto_delete` - (Bool) Indicates whether this virtual network interface will be automatically deleted when target is deleted
+  - `enable_infrastructure_nat` - (Bool) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
 - `mount_target` - The unique identifier of the share target
 - `created_at` - The date and time that the share target was created.
 - `href` - The URL for this share target.
