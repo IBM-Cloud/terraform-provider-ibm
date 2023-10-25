@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_email'
+page_title: 'IBM : ibm_en_subscription_custom_email'
 description: |-
-  Get information about a Email subscription
+  Get information about a Custom Email subscription
 ---
 
-# ibm_en_subscription_email
+# ibm_en_subscription_custom_email
 
-Provides a read-only data source for Email subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Custom Email subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_subscription_email" "email_subscription" {
+data "ibm_en_subscription_custom_email" "custom_domain_email_subscription" {
   instance_guid   = ibm_resource_instance.en_terraform_test_resource.guid
-  subscription_id = ibm_en_subscription_email.subscriptionemail.subscription_id
+  subscription_id = ibm_en_subscription_custom_email.subscriptioncustomemail.subscription_id
 }
 ```
 
@@ -49,7 +49,13 @@ In addition to all argument references listed, you can access the following attr
 
   - `reply_to_mail` - (String) The email address to reply to.
 
-  - `signing_enabled`- (Boolean) Signing webhook attributes.
+  - `from_name` - (String) The name of email address from which email is sourced.
+
+  - `from_email` - (String) The email from where it is sourced.  
+
+  - `template_id_notification` - (String) The templete id for notification.  
+
+  - `template_id_invitation` - (String) The templete id for invitation.  
 
   - `susbscribed`- (Map) The Email address who have subscribed for topic.
 
