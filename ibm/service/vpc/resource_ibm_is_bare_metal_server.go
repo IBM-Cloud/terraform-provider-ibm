@@ -1296,7 +1296,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 
 	if v, ok := d.GetOk(isBareMetalServerVPC); ok {
 		vpc := v.(string)
-		options.VPC = &vpcv1.VPCIdentity{
+		options.VPC = &vpcv1.BareMetalServerPrototypeVPC{
 			ID: &vpc,
 		}
 	}
