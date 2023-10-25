@@ -12,13 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMPIVolumeCloneTask_basic(t *testing.T) {
+func TestAccIBMPIVolumeClone_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIVolumeCloneTaskConfig(),
+				Config: testAccCheckIBMPIVolumeCloneBasicConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pi_volume_clone.testacc_ds_volume_clone", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pi_volume_clone.testacc_ds_volume_clone", "volume_clone_status"),
@@ -28,7 +28,7 @@ func TestAccIBMPIVolumeCloneTask_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPIVolumeCloneTaskConfig() string {
+func testAccCheckIBMPIVolumeCloneBasicConfig() string {
 	return fmt.Sprintf(`
 data "ibm_pi_volume_clone" "testacc_ds_volume_clone" {
     pi_volume_clone_task_id   	= "%s"
