@@ -691,6 +691,7 @@ In addition to all argument reference list, you can access the following attribu
   - `resource_type` - (String) The resource type.
 - `id` - (String) The ID of the instance.
 - `memory`- (Integer) The amount of memory that is allocated to the instance in gigabytes.
+- `numa_count` - (Integer) The number of NUMA nodes this instance is provisioned on. This property may be absent if the instance's status is not running.
 - `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
 
   Nested scheme for `network_interfaces`:

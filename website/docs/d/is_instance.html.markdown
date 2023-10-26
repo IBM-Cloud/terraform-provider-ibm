@@ -202,6 +202,7 @@ In addition to all argument reference list, you can access the following attribu
   - `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
   - `subnet` - (String) The ID of the subnet that is used in the more network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
+- `numa_count` - (Integer) The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.
 - `password` - (String) The password that you can use to access your instance.
 - `placement_target`- (List) The placement restrictions for the virtual server instance.
 
