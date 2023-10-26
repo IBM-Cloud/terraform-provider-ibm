@@ -156,14 +156,6 @@ const (
 	SctionStop           = "stop"
 	PIVolumeCloneDone    = "completed"
 	PIVolumeCloneRunning = "running"
-	StatusShutoff = "SHUTOFF"
-	StatusActive  = "ACTIVE"
-	StatusResize  = "RESIZE"
-	StatusError   = "ERROR"
-	StatusBuild   = "BUILD"
-	StatusPending = "PENDING"
-	SctionStart   = "start"
-	SctionStop    = "stop"
 
 	// Workspaces
 	Attr_WorkspaceCapabilities = "pi_workspace_capabilities"
