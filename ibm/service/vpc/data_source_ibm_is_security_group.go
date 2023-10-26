@@ -20,6 +20,7 @@ const (
 	isSgRuleDirection = "direction"
 	isSgRuleIPVersion = "ip_version"
 	isSgRuleRemote    = "remote"
+	isSgRuleLocal     = "local"
 	isSgRuleType      = "type"
 	isSgRuleCode      = "code"
 	isSgRulePortMax   = "port_max"
@@ -79,6 +80,12 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
+						},
+
+						isSgRuleLocal: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Security group local ip: an IP address, a CIDR block",
 						},
 
 						isSgRuleType: {
@@ -248,6 +255,16 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 								}
 							}
 						}
+						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
+						if ok {
+							if local != nil && reflect.ValueOf(local).IsNil() == false {
+								if local.Address != nil {
+									r[isSgRuleLocal] = local.Address
+								} else if local.CIDRBlock != nil {
+									r[isSgRuleLocal] = local.CIDRBlock
+								}
+							}
+						}
 						rules = append(rules, r)
 					}
 
@@ -270,6 +287,16 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 									r[isSgRuleRemote] = remote.Address
 								} else if remote.CIDRBlock != nil {
 									r[isSgRuleRemote] = remote.CIDRBlock
+								}
+							}
+						}
+						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
+						if ok {
+							if local != nil && reflect.ValueOf(local).IsNil() == false {
+								if local.Address != nil {
+									r[isSgRuleLocal] = local.Address
+								} else if local.CIDRBlock != nil {
+									r[isSgRuleLocal] = local.CIDRBlock
 								}
 							}
 						}
@@ -300,6 +327,16 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 									r[isSgRuleRemote] = remote.Address
 								} else if remote.CIDRBlock != nil {
 									r[isSgRuleRemote] = remote.CIDRBlock
+								}
+							}
+						}
+						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
+						if ok {
+							if local != nil && reflect.ValueOf(local).IsNil() == false {
+								if local.Address != nil {
+									r[isSgRuleLocal] = local.Address
+								} else if local.CIDRBlock != nil {
+									r[isSgRuleLocal] = local.CIDRBlock
 								}
 							}
 						}
