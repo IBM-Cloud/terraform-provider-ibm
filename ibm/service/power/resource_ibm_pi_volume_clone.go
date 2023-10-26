@@ -58,7 +58,7 @@ func ResourceIBMPIVolumeClone() *schema.Resource {
 				ForceNew:    true,
 				Description: "Target storage tier for the cloned volumes.",
 			},
-			PITargetReplicationEnabled: {
+			helpers.PIReplicationEnabled: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    true,
@@ -110,7 +110,7 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 		body.TargetStorageTier = v.(string)
 	}
 
-	if v, ok := d.GetOk(PITargetReplicationEnabled); ok {
+	if v, ok := d.GetOk(helpers.PIReplicationEnabled); ok {
 		value := v.(bool)
 		body.TargetReplicationEnabled = &value
 	}

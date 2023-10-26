@@ -82,10 +82,9 @@ const (
 	PIAntiAffinityVolumes   = "pi_anti_affinity_volumes"
 
 	// Volume Clone
-	PIVolumeCloneName          = "pi_volume_clone_name"
-	PIVolumeCloneTaskID        = "pi_volume_clone_task_id"
-	PITargetStorageTier        = "pi_target_storage_tier"
-	PITargetReplicationEnabled = "pi_target_replication_enabled"
+	PIVolumeCloneName   = "pi_volume_clone_name"
+	PIVolumeCloneTaskID = "pi_volume_clone_task_id"
+	PITargetStorageTier = "pi_target_storage_tier"
 
 	// IBM PI Volume Group
 	PIVolumeGroupName                 = "pi_volume_group_name"

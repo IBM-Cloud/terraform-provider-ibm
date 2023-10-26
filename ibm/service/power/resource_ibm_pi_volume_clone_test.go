@@ -76,7 +76,7 @@ func testAccCheckIBMPIVolumeCloneConfig(name string) string {
 		pi_volume_clone_name     		= "%[2]s"
 		pi_volume_ids 					= [ibm_pi_volume.power_volume[0].volume_id,ibm_pi_volume.power_volume[1].volume_id]
 		pi_target_storage_tier 			= "%[3]s"
-		pi_target_replication_enabled 	= %[4]v
+		pi_replication_enabled 			= %[4]v
 	}
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_target_storage_tier, false)
 }
