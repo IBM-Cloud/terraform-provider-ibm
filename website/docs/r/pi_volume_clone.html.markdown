@@ -49,9 +49,9 @@ ibm_pi_volume_clone provides the following [timeouts](https://www.terraform.io/d
 Review the argument references that you can specify for your resource. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_volume_clone_name` - (Required, String) The base name of the newly cloned volume(s).
 - `pi_replication_enabled` - (Optional, Boolean) Indicates whether the cloned volume should have replication enabled. If no value is provided, it will default to the replication status of the source volume(s).
 - `pi_target_storage_tier` - (Optional, String) The storage tier for the cloned volume(s).
+- `pi_volume_clone_name` - (Required, String) The base name of the newly cloned volume(s).
 - `pi_volume_ids` - (Required, Set of String) List of volumes to be cloned.
 
 ## Attribute reference
