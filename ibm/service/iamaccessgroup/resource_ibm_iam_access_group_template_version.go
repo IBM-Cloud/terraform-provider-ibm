@@ -179,11 +179,6 @@ func ResourceIBMIAMAccessGroupTemplateVersion() *schema.Resource {
 																Optional:    true,
 																Description: "Action control for removing this enterprise-managed dynamic rule.",
 															},
-															"update": {
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Action control for updating this enterprise-managed dynamic rule.",
-															},
 														},
 													},
 												},
@@ -206,11 +201,6 @@ func ResourceIBMIAMAccessGroupTemplateVersion() *schema.Resource {
 													Type:        schema.TypeBool,
 													Optional:    true,
 													Description: "Action control for removing enterprise-managed dynamic rules in an enterprise-managed access group.",
-												},
-												"update": {
-													Type:        schema.TypeBool,
-													Optional:    true,
-													Description: "Action control for updating enterprise-managed dynamic rules in an enterprise-managed access group.",
 												},
 											},
 										},
@@ -757,9 +747,6 @@ func resourceIBMIAMAccessGroupTemplateVersionMapToRuleActionControls(modelMap ma
 	if modelMap["remove"] != nil {
 		model.Remove = core.BoolPtr(modelMap["remove"].(bool))
 	}
-	if modelMap["update"] != nil {
-		model.Update = core.BoolPtr(modelMap["update"].(bool))
-	}
 	return model, nil
 }
 
@@ -770,9 +757,6 @@ func resourceIBMIAMAccessGroupTemplateVersionMapToAssertionsActionControls(model
 	}
 	if modelMap["remove"] != nil {
 		model.Remove = core.BoolPtr(modelMap["remove"].(bool))
-	}
-	if modelMap["update"] != nil {
-		model.Update = core.BoolPtr(modelMap["update"].(bool))
 	}
 	return model, nil
 }
@@ -941,9 +925,6 @@ func resourceIBMIAMAccessGroupTemplateVersionRuleActionControlsToMap(model *iama
 	if model.Remove != nil {
 		modelMap["remove"] = model.Remove
 	}
-	if model.Update != nil {
-		modelMap["update"] = model.Update
-	}
 	return modelMap, nil
 }
 
@@ -954,9 +935,6 @@ func resourceIBMIAMAccessGroupTemplateVersionAssertionsActionControlsToMap(model
 	}
 	if model.Remove != nil {
 		modelMap["remove"] = model.Remove
-	}
-	if model.Update != nil {
-		modelMap["update"] = model.Update
 	}
 	return modelMap, nil
 }

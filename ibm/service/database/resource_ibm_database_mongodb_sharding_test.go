@@ -36,8 +36,8 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
@@ -54,8 +54,8 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "86016"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -71,8 +71,8 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -95,8 +95,15 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_disk_allocation_mb   = 122880
-    	members_memory_allocation_mb = 86016
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 14336
+			}
+			 disk {
+				allocation_mb = 20480
+			}
+		}
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -128,9 +135,18 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 86016
-		members_disk_allocation_mb   = 122880
-		members_cpu_allocation_count = 36
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 28672
+			}
+			 disk {
+				allocation_mb = 40960
+			}
+			cpu {
+				allocation_count = 9
+			}
+		}
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -138,8 +154,8 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		}
 		users {
 		  name     = "user124"
-		  password = "password12password"
-		  type     = "database"
+		  password = "password$12password"
+		  type     = "ops_manager"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -171,8 +187,15 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_disk_allocation_mb   = 122880
-    	members_memory_allocation_mb = 86016
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 14336
+			}
+			 disk {
+				allocation_mb = 40960
+			}
+		}
 		service_endpoints            = "public"
 		timeouts {
 			create = "480m"
