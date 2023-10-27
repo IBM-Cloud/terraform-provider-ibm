@@ -460,6 +460,51 @@ resource "ibm_database" "es" {
   }
 }
 ```
+### Sample Elasticsearch Platinum instance
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "es" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "es-platinum"
+  service                      = "databases-for-elasticsearch"
+  plan                         = "platinum"
+  location                     = "eu-gb"
+  adminpassword                = "password12"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    memory {
+      allocation_mb = 1024
+    }
+    disk {
+      allocation_mb = 5120
+    }
+    cpu {
+      allocation_count = 3
+    }
+  }
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+  allowlist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
 ### Updating configuration for postgres database
 
 ```terraform
@@ -623,7 +668,7 @@ Review the argument reference that you can specify for your resource.
         - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
-- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), cassandra (`databases-for-cassandra`), and mongodb(`databases-for-mongodb`)
+- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), cassandra (`databases-for-cassandra`), and mongodb(`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
 - `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
