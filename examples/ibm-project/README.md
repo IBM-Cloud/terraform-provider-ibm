@@ -47,14 +47,14 @@ project_config data source:
 ```hcl
 data "project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.id
-  id = ibm_project_config.project_config_instance.project_config_id
+  project_config_id = ibm_project_config.project_config_instance.project_config_id
 }
 ```
 project data source:
 
 ```hcl
 data "project" "project_instance" {
-  id = ibm_project.project_instance.id
+  project_id = ibm_project.project_instance.id
 }
 ```
 
@@ -90,8 +90,8 @@ data "project" "project_instance" {
 | resource_group | The resource group where the project's data and tools are created. | `string` | true |
 | definition | The definition of the project. | `` | true |
 | project_id | The unique project ID. | `string` | true |
-| id | The unique config ID. | `string` | true |
-| id | The unique project ID. | `string` | true |
+| project_config_id | The unique config ID. | `string` | true |
+| project_id | The unique project ID. | `string` | true |
 
 ## Outputs
 

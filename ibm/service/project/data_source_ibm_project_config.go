@@ -26,15 +26,10 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Required:    true,
 				Description: "The unique project ID.",
 			},
-			"id": &schema.Schema{
+			"project_config_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The unique config ID.",
-			},
-			"project_config_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.",
 			},
 			"version": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -59,7 +54,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
-			"user_modified_at": &schema.Schema{
+			"modified_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
@@ -171,14 +166,6 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "A project configuration description.",
 						},
-						"labels": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The configuration labels.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
 						"environment": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -284,7 +271,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	getConfigOptions := &projectv1.GetConfigOptions{}
 
 	getConfigOptions.SetProjectID(d.Get("project_id").(string))
-	getConfigOptions.SetID(d.Get("id").(string))
+	getConfigOptions.SetID(d.Get("project_config_id").(string))
 
 	projectConfig, response, err := projectClient.GetConfigWithContext(context, getConfigOptions)
 	if err != nil {
@@ -293,10 +280,6 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getConfigOptions.ProjectID, *getConfigOptions.ID))
-
-	if err = d.Set("project_config_id", projectConfig.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project_config_id: %s", err))
-	}
 
 	if err = d.Set("version", flex.IntValue(projectConfig.Version)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
@@ -314,8 +297,8 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("user_modified_at", flex.DateTimeToString(projectConfig.UserModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting user_modified_at: %s", err))
+	if err = d.Set("modified_at", flex.DateTimeToString(projectConfig.ModifiedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
 	}
 
 	if err = d.Set("last_saved_at", flex.DateTimeToString(projectConfig.LastSavedAt)); err != nil {
@@ -427,9 +410,6 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *proje
 	modelMap["name"] = model.Name
 	if model.Description != nil {
 		modelMap["description"] = model.Description
-	}
-	if model.Labels != nil {
-		modelMap["labels"] = model.Labels
 	}
 	if model.Environment != nil {
 		modelMap["environment"] = model.Environment

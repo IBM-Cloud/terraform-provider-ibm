@@ -31,12 +31,12 @@ variable "project_config_project_id" {
 variable "project_config_id" {
   description = "The unique config ID."
   type        = string
-  default     = "id"
+  default     = "project_config_id"
 }
 
 // Data source arguments for project
 variable "project_id" {
   description = "The unique project ID."
   type        = string
-  default     = "id"
+  default     = "project_id"
 }

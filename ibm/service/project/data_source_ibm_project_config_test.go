@@ -25,6 +25,9 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_config_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "version"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "is_draft"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "modified_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "update_available"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.#"),
@@ -50,7 +53,6 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic() string {
 			project_id = ibm_project.project_instance.id
             definition {
                 name = "stage-environment"
-                labels = ["env:stage"]
                 authorizations {
                     method = "api_key"
                     api_key = "%s"
@@ -66,7 +68,7 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic() string {
 
 		data "ibm_project_config" "project_config_instance" {
 			project_id = ibm_project_config.project_config_instance.project_id
-			id = ibm_project_config.project_config_instance.project_config_id
+			project_config_id = ibm_project_config.project_config_instance.project_config_id
 		}
 	`, acc.ProjectsConfigApiKey)
 }

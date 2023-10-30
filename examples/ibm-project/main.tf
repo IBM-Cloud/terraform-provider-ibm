@@ -7,7 +7,6 @@ resource "ibm_project_config" "project_config_instance" {
   project_id = ibm_project.project_instance.project_id
   definition {
     name = "static-website-dev"
-    labels = [ "env:dev", "billing:internal" ]
     description = "Website - development"
     authorizations {
       method = "api_key"
@@ -37,11 +36,11 @@ resource "ibm_project" "project_instance" {
 
 // Create project_config data source
 data "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project.project_instance.id
-  id = ibm_project_config.project_config_instance.project_config_id
+  project_id = ibm_project_config.project_config_instance.project_id
+  project_config_id = ibm_project_config.project_config_instance.project_config_id
 }
 
 // Create project data source
 data "ibm_project" "project_instance" {
-  id = ibm_project.project_instance.id
+  project_id = ibm_project.project_instance.id
 }

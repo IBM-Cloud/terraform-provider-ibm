@@ -67,12 +67,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Optional:    true,
 							Description: "A project configuration description.",
 						},
-						"labels": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The configuration labels.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
 						"environment": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -191,7 +185,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
-			"user_modified_at": &schema.Schema{
+			"modified_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
@@ -382,15 +376,11 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting needs_attention_state: %s", err))
 		}
 	}
-	if !core.IsNil(projectConfig.CreatedAt) {
-		if err = d.Set("created_at", flex.DateTimeToString(projectConfig.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-		}
+	if err = d.Set("created_at", flex.DateTimeToString(projectConfig.CreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if !core.IsNil(projectConfig.UserModifiedAt) {
-		if err = d.Set("user_modified_at", flex.DateTimeToString(projectConfig.UserModifiedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting user_modified_at: %s", err))
-		}
+	if err = d.Set("modified_at", flex.DateTimeToString(projectConfig.ModifiedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
 	}
 	if !core.IsNil(projectConfig.LastSavedAt) {
 		if err = d.Set("last_saved_at", flex.DateTimeToString(projectConfig.LastSavedAt)); err != nil {
@@ -501,13 +491,6 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(modelMap
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["labels"] != nil {
-		labels := []string{}
-		for _, labelsItem := range modelMap["labels"].([]interface{}) {
-			labels = append(labels, labelsItem.(string))
-		}
-		model.Labels = labels
-	}
 	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
 		model.Environment = core.StringPtr(modelMap["environment"].(string))
 	}
@@ -605,13 +588,6 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(mod
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["labels"] != nil {
-		labels := []string{}
-		for _, labelsItem := range modelMap["labels"].([]interface{}) {
-			labels = append(labels, labelsItem.(string))
-		}
-		model.Labels = labels
-	}
 	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
 		model.Environment = core.StringPtr(modelMap["environment"].(string))
 	}
@@ -662,9 +638,6 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 	modelMap["name"] = model.Name
 	if model.Description != nil {
 		modelMap["description"] = model.Description
-	}
-	if model.Labels != nil {
-		modelMap["labels"] = model.Labels
 	}
 	if model.Environment != nil {
 		modelMap["environment"] = model.Environment

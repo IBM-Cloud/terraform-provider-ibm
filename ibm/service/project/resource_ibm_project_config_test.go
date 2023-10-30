@@ -56,7 +56,6 @@ func testAccCheckIbmProjectConfigConfigBasic() string {
 			project_id = ibm_project.project_instance.id
 			definition {
                 name = "stage-environment"
-                labels = ["env:stage"]
                 authorizations {
                     method = "api_key"
                     api_key = "%s"

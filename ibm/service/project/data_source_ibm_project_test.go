@@ -24,6 +24,12 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmProjectDataSourceConfigBasic(projectLocation, projectResourceGroup),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "project_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "location"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
 				),
 			},
@@ -44,7 +50,7 @@ func testAccCheckIbmProjectDataSourceConfigBasic(projectLocation string, project
 		}
 
 		data "ibm_project" "project_instance" {
-			id = ibm_project.project_instance.id
+			project_id = ibm_project.project_instance.id
 		}
 	`, projectLocation, projectResourceGroup)
 }

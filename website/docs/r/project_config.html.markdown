@@ -14,7 +14,6 @@ Create, update, and delete project_configs with this resource.
 
 ```hcl
 resource "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project.project_instance.id
   definition {
     name = "static-website-dev"
     labels = [ "env:dev", "billing:internal" ]
@@ -32,6 +31,7 @@ resource "ibm_project_config" "project_config_instance" {
       value = "static-website-dev-app-repo"
     }
   }
+  project_id = ibm_project.project_instance.id
 }
 ```
 
@@ -67,8 +67,6 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `inputs` - (Optional, List) The input variables for configuration definition and environment.
 	Nested schema for **inputs**:
-	* `labels` - (Optional, List) The configuration labels.
-	  * Constraints: The list items must match regular expression `/^[_\\-a-z0-9:\/=]+$/`. The maximum length is `10000` items. The minimum length is `0` items.
 	* `locator_id` - (Required, Forces new resource, String) A dotted value of catalogID.versionID.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (Required, String) The configuration name.
@@ -92,10 +90,11 @@ After your resource is created, you can read values from the listed arguments an
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
 * `last_saved_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+* `modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `needs_attention_state` - (List) The needs attention state of a configuration.
-  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+  * Constraints: The default value is `[]`. The maximum length is `10000` items. The minimum length is `0` items.
 * `outputs` - (List) The outputs of a Schematics template property.
-  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+  * Constraints: The default value is `[]`. The maximum length is `10000` items. The minimum length is `0` items.
 Nested schema for **outputs**:
 	* `description` - (String) A short explanation of the output value.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s).*\\S$/`.
@@ -119,7 +118,6 @@ Nested schema for **project**:
 * `state` - (String) The state of the configuration.
   * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
 * `update_available` - (Boolean) The flag that indicates whether a configuration update is available.
-* `user_modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `version` - (Integer) The version of the configuration.
 
 

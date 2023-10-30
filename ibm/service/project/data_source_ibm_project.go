@@ -21,7 +21,7 @@ func DataSourceIbmProject() *schema.Resource {
 		ReadContext: dataSourceIbmProjectRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The unique project ID.",
@@ -116,7 +116,7 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 						},
-						"user_modified_at": &schema.Schema{
+						"modified_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
@@ -303,7 +303,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	getProjectOptions := &projectv1.GetProjectOptions{}
 
-	getProjectOptions.SetID(d.Get("id").(string))
+	getProjectOptions.SetID(d.Get("project_id").(string))
 
 	project, response, err := projectClient.GetProjectWithContext(context, getProjectOptions)
 	if err != nil {
@@ -437,8 +437,8 @@ func dataSourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Pro
 	if model.CreatedAt != nil {
 		modelMap["created_at"] = model.CreatedAt.String()
 	}
-	if model.UserModifiedAt != nil {
-		modelMap["user_modified_at"] = model.UserModifiedAt.String()
+	if model.ModifiedAt != nil {
+		modelMap["modified_at"] = model.ModifiedAt.String()
 	}
 	modelMap["href"] = model.Href
 	definitionMap, err := dataSourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)

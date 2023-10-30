@@ -146,7 +146,7 @@ func ResourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 						},
-						"user_modified_at": &schema.Schema{
+						"modified_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
@@ -400,15 +400,11 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 	if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
 	}
-	if !core.IsNil(project.Crn) {
-		if err = d.Set("crn", project.Crn); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-		}
+	if err = d.Set("crn", project.Crn); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if !core.IsNil(project.CreatedAt) {
-		if err = d.Set("created_at", flex.DateTimeToString(project.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-		}
+	if err = d.Set("created_at", flex.DateTimeToString(project.CreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if !core.IsNil(project.CumulativeNeedsAttentionView) {
 		cumulativeNeedsAttentionView := []map[string]interface{}{}
@@ -428,10 +424,8 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view_error: %s", err))
 		}
 	}
-	if !core.IsNil(project.State) {
-		if err = d.Set("state", project.State); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
-		}
+	if err = d.Set("state", project.State); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 	if !core.IsNil(project.EventNotificationsCrn) {
 		if err = d.Set("event_notifications_crn", project.EventNotificationsCrn); err != nil {
@@ -555,13 +549,6 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
-	}
-	if modelMap["labels"] != nil {
-		labels := []string{}
-		for _, labelsItem := range modelMap["labels"].([]interface{}) {
-			labels = append(labels, labelsItem.(string))
-		}
-		model.Labels = labels
 	}
 	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
 		model.Environment = core.StringPtr(modelMap["environment"].(string))
@@ -715,8 +702,8 @@ func resourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Proje
 	if model.CreatedAt != nil {
 		modelMap["created_at"] = model.CreatedAt.String()
 	}
-	if model.UserModifiedAt != nil {
-		modelMap["user_modified_at"] = model.UserModifiedAt.String()
+	if model.ModifiedAt != nil {
+		modelMap["modified_at"] = model.ModifiedAt.String()
 	}
 	modelMap["href"] = model.Href
 	definitionMap, err := resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)

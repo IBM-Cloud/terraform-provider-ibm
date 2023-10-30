@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about a project. You ca
 
 ```hcl
 data "ibm_project" "project" {
-	id = ibm_project.project_instance.id
+	project_id = ibm_project.project_instance.id
 }
 ```
 
@@ -22,7 +22,7 @@ data "ibm_project" "project" {
 
 You can specify the following arguments for this data source.
 
-* `id` - (Required, Forces new resource, String) The unique project ID.
+* `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 
 ## Attribute Reference
@@ -31,7 +31,7 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the project.
 * `configs` - (List) The project configurations. These configurations are only included in the response of creating a project if a configs array is specified in the request payload.
-  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+  * Constraints: The default value is `[]`. The maximum length is `10000` items. The minimum length is `0` items.
 Nested schema for **configs**:
 	* `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 	* `definition` - (List) The name and description of a project configuration.
@@ -44,6 +44,7 @@ Nested schema for **configs**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+	* `modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 	* `project` - (List) The project referenced by this resource.
 	Nested schema for **project**:
 		* `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
@@ -58,7 +59,6 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `state` - (String) The state of the configuration.
 	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
-	* `user_modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 	* `version` - (Integer) The version of the configuration.
 
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
@@ -67,7 +67,7 @@ Nested schema for **configs**:
   * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 
 * `cumulative_needs_attention_view` - (List) The cumulative list of needs attention items for a project. If the view is successfully retrieved, an array which could be empty is returned.
-  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+  * Constraints: The default value is `[]`. The maximum length is `10000` items. The minimum length is `0` items.
 Nested schema for **cumulative_needs_attention_view**:
 	* `config_id` - (String) A unique ID for the configuration.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
@@ -78,6 +78,7 @@ Nested schema for **cumulative_needs_attention_view**:
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 
 * `cumulative_needs_attention_view_error` - (Boolean) True indicates that the fetch of the needs attention items failed. It only exists if there was an error while retrieving the cumulative needs attention view.
+  * Constraints: The default value is `false`.
 
 * `definition` - (List) The definition of the project.
 Nested schema for **definition**:
@@ -88,7 +89,7 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
 
 * `environments` - (List) The project environments. These environments are only included in the response if project environments were created on the project.
-  * Constraints: The maximum length is `10000` items. The minimum length is `0` items.
+  * Constraints: The default value is `[]`. The maximum length is `10000` items. The minimum length is `0` items.
 Nested schema for **environments**:
 	* `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 	* `definition` - (List) The environment definition used in the project collection.
