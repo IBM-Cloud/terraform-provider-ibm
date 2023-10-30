@@ -13,7 +13,7 @@ require (
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918
 	github.com/IBM/container-registry-go-sdk v1.1.0
-	github.com/IBM/continuous-delivery-go-sdk v1.2.0
+	github.com/IBM/continuous-delivery-go-sdk v1.2.1
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.7
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
@@ -27,7 +27,7 @@ require (
 	github.com/IBM/platform-services-go-sdk v0.52.0
 	github.com/IBM/project-go-sdk v0.0.96
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
-	github.com/IBM/scc-go-sdk/v5 v5.1.2
+	github.com/IBM/scc-go-sdk/v5 v5.1.3
 	github.com/IBM/schematics-go-sdk v0.2.2
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.1
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
@@ -211,7 +211,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
-	google.golang.org/grpc v1.57.0 // indirect
+	google.golang.org/grpc v1.57.1 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

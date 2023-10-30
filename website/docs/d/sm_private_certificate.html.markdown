@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_sm_private_certificate"
 description: |-
-Get information about PrivateCertificate
+  Get information about PrivateCertificate
 subcategory: "Secrets Manager"
 ---
 
