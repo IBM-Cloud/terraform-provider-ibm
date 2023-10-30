@@ -129,6 +129,14 @@ You can access the following attribute references after your data source is crea
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
 
+    - `network_attachment_count` - (List) The number of network attachments supported on an instance with this profile
+
+        Nested scheme for `network_attachment_count`:
+        - `max` - (Integer) The maximum number of network attachments supported by an instance using this profile.
+        - `min` - (Integer) The minimum number of network attachments supported by an instance using this profile.
+        - `type` - (String) The type for this profile field, Ex: range or dependent.
+
+
   - `network_interface_count` - (List)
   
       Nested scheme for `network_interface_count`:

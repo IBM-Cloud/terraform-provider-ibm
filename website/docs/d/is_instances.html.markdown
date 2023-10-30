@@ -111,7 +111,37 @@ In addition to all argument reference list, you can access the following attribu
        - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
        - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
        - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
-       
+
+	- `network_attachments` - (List) The network attachments for this virtual server instance, including the primary network attachment.
+		Nested schema for **network_attachments**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this network attachment.
+		- `id` - (String) The unique identifier for this network attachment.
+		- `name` - (String)
+		- `primary_ip` - (List) The primary IP address of the virtual network interface for the network attachment.
+			Nested schema for **primary_ip**:
+			- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (String) The URL for this reserved IP.
+			- `id` - (String) The unique identifier for this reserved IP.
+			- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+			- `resource_type` - (String) The resource type.
+		- `resource_type` - (String) The resource type.
+		- `subnet` - (List) The subnet of the virtual network interface for the network attachment.
+			Nested schema for **subnet**:
+			- `crn` - (String) The CRN for this subnet.
+			- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (String) The URL for this subnet.
+			- `id` - (String) The unique identifier for this subnet.
+			- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+			- `resource_type` - (String) The resource type.
+
 	- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
 	  Nested scheme for `network_interfaces`:
@@ -139,6 +169,36 @@ In addition to all argument reference list, you can access the following attribu
 		- `id` - (String) The unique identifier for this placement target resource.
 		- `name` - (String) The unique user-defined name for this placement target resource. If unspecified, the name will be a hyphenated list of randomly-selected words.
 		- `resource_type` - (String) The type of resource referenced.
+	- `primary_network_attachment` - (List) The primary network attachment for this virtual server instance.
+		Nested schema for **primary_network_attachment**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this network attachment.
+		- `id` - (String) The unique identifier for this network attachment.
+		- `name` - (String)
+		- `primary_ip` - (List) The primary IP address of the virtual network interface for the network attachment.
+			Nested schema for **primary_ip**:
+			- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (String) The URL for this reserved IP.
+			- `id` - (String) The unique identifier for this reserved IP.
+			- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+			- `resource_type` - (String) The resource type.
+		- `resource_type` - (String) The resource type.
+		- `subnet` - (List) The subnet of the virtual network interface for the network attachment.
+			Nested schema for **subnet**:
+			- `crn` - (String) The CRN for this subnet.
+			- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+				Nested schema for **deleted**:
+				- `more_info` - (String) Link to documentation about deleted resources.
+			- `href` - (String) The URL for this subnet.
+			- `id` - (String) The unique identifier for this subnet.
+			- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+			- `resource_type` - (String) The resource type.
+
 	- `primary_network_interface`- (List) A list of primary network interfaces that were created for the instance. 
 
 	  Nested scheme for `primary_network_interface`:

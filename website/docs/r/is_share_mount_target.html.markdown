@@ -154,6 +154,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+
 - `access_control_mode` - (String) The access control mode for the share.
 - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
 - `auto_delete` - (Bool) Indicates whether this virtual network interface will be automatically deleted when target is deleted

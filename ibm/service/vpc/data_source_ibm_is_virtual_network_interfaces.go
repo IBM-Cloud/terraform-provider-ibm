@@ -9,7 +9,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -28,11 +28,78 @@ func DataSourceIBMIsVirtualNetworkInterfaces() *schema.Resource {
 				Description: "Collection of virtual network interfaces.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+
+						// vni p2 changes
+						"allow_ip_spoofing": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
+						},
+						"enable_infrastructure_nat": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the virtual network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
+						},
+						"ips": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+						"mac_address": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The MAC address of the virtual network interface. May be absent if `lifecycle_state` is `pending`.",
+						},
+
 						"auto_delete": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
 						},
+
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -344,25 +411,39 @@ func DataSourceIBMIsVirtualNetworkInterfaces() *schema.Resource {
 					},
 				},
 			},
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group these virtual network interfaces belong to",
+			},
 		},
 	}
 }
 
 func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcbetaClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listVirtualNetworkInterfacesOptions := &vpcbetav1.ListVirtualNetworkInterfacesOptions{}
-
-	vniCollection, response, err := vpcbetaClient.ListVirtualNetworkInterfacesWithContext(context, listVirtualNetworkInterfacesOptions)
-	//log.Printf(len(vniCollection.VirtualNetworkInterfaces))
-	if err != nil {
-		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s\n%s", err, response))
+	listVirtualNetworkInterfacesOptions := &vpcv1.ListVirtualNetworkInterfacesOptions{}
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listVirtualNetworkInterfacesOptions.ResourceGroupID = &resGroup
 	}
-	// var pager *vpcbetav1.VirtualNetworkInterfacesPager
+	var pager *vpcv1.VirtualNetworkInterfacesPager
+	pager, err = vpcClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	allItems, err := pager.GetAll()
+	if err != nil {
+		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s", err)
+		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
+	}
+
+	// var pager *vpcv1.VirtualNetworkInterfacesPager
 	// pager, err = vpcbetaClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
 	// if err != nil {
 	// 	return diag.FromErr(err)
@@ -377,7 +458,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 	d.SetId(dataSourceIBMIsVirtualNetworkInterfacesID(d))
 
 	mapSlice := []map[string]interface{}{}
-	for _, modelItem := range vniCollection.VirtualNetworkInterfaces {
+	for _, modelItem := range allItems {
 		modelMap, err := dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(&modelItem)
 		if err != nil {
 			return diag.FromErr(err)
@@ -397,7 +478,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *vpcbetav1.VirtualNetworkInterface) (map[string]interface{}, error) {
+func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *vpcv1.VirtualNetworkInterface) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AutoDelete != nil {
 		modelMap["auto_delete"] = *model.AutoDelete
@@ -476,5 +557,25 @@ func dataSourceIBMIsVirtualNetworkInterfacesVirtualNetworkInterfaceToMap(model *
 		}
 		modelMap["zone"] = []map[string]interface{}{zoneMap}
 	}
+	// vni p2 changes
+
+	modelMap["mac_address"] = model.MacAddress
+	modelMap["allow_ip_spoofing"] = model.AllowIPSpoofing
+	modelMap["enable_infrastructure_nat"] = model.EnableInfrastructureNat
+
+	ips := []map[string]interface{}{}
+	if model.Ips != nil {
+		for _, modelItem := range model.Ips {
+			if *modelItem.ID != *model.PrimaryIP.ID {
+				modelMap, err := dataSourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&modelItem)
+				if err != nil {
+					return modelMap, err
+				}
+				ips = append(ips, modelMap)
+			}
+		}
+	}
+	modelMap["ips"] = ips
+
 	return modelMap, nil
 }
