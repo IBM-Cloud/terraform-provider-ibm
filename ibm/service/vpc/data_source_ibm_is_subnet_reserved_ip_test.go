@@ -48,10 +48,45 @@ func TestAccIBMISSubnetReservedIP_targetCrn(t *testing.T) {
 						terraformTag, "target_crn"),
 					resource.TestCheckResourceAttrSet(
 						terraformTag, "target"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISSubnetReservedIP_targetVni(t *testing.T) {
+	vpcName := fmt.Sprintf("tfresip-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tfresip-subnet-%d", acctest.RandIntRange(10, 100))
+	resIPName := fmt.Sprintf("tfresip-reservedip-%d", acctest.RandIntRange(10, 100))
+	vni := fmt.Sprintf("tfresip-vni-%d", acctest.RandIntRange(10, 100))
+	terraformTag := "data.ibm_is_subnet_reserved_ip.data_resip1"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMISReservedIPdataSoruceTargetVniConfig(vpcName, subnetName, resIPName, vni),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(terraformTag, "name", resIPName),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_virtual_endpoint_gateway_ip.example", "target.#"),
+						terraformTag, "target_crn"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_virtual_endpoint_gateway.example", "target.#"),
+						terraformTag, "target"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target_reference.#"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target_reference.0.href"),
+					resource.TestCheckResourceAttr(
+						terraformTag, "target_reference.0.resource_type", "virtual_network_interface"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target_reference.0.name"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target_reference.0.id"),
+					resource.TestCheckResourceAttrSet(
+						terraformTag, "target_reference.0.crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_virtual_network_interface.testacc_vni", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_virtual_network_interface.testacc_vni", "name"),
 				),
 			},
 		},
@@ -125,4 +160,40 @@ func testAccIBMISReservedIPdataSoruceTargetCrnConfig(vpcName, subnetName, reserv
 		}
 
       `, vpcName, subnetName, reservedIPName, gatewayName)
+}
+func testAccIBMISReservedIPdataSoruceTargetVniConfig(vpcName, subnetName, reservedIPName, vniname string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "vpc1" {
+			name = "%s"
+		}
+
+		resource "ibm_is_subnet" "subnet1" {
+			name                     = "%s"
+			vpc                      = ibm_is_vpc.vpc1.id
+			zone                     = "%s"
+			total_ipv4_address_count = 256
+		}
+		resource "ibm_is_virtual_network_interface" "testacc_vni"{
+			name 						= "%s"
+			allow_ip_spoofing 			= false
+			enable_infrastructure_nat 	= true
+			primary_ip {
+				auto_delete 	= false
+				address 		= cidrhost(cidrsubnet(ibm_is_subnet.subnet1.ipv4_cidr_block, 4, 6), 0)
+			}
+			subnet = ibm_is_subnet.subnet1.id
+		}
+
+		resource "ibm_is_subnet_reserved_ip" "resip1" {
+			subnet = ibm_is_subnet.subnet1.id
+			name = "%s"
+			target = ibm_is_virtual_network_interface.testacc_vni.id
+		}
+
+		data "ibm_is_subnet_reserved_ip" "data_resip1" {
+			subnet = ibm_is_subnet.subnet1.id
+			reserved_ip = ibm_is_subnet_reserved_ip.resip1.reserved_ip
+		}
+
+      `, vpcName, subnetName, acc.ISZoneName, vniname, reservedIPName)
 }

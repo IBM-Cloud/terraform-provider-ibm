@@ -14,8 +14,8 @@ Create, read, and delete Virtual Network Interface Floating IP with this resourc
 
 ```terrform
 resource "ibm_is_virtual_network_interface_floating_ip" "vni_fip" {
-  virtual_network_interface = <vni_id>
-  floating_ip 				= <fip_id>
+  virtual_network_interface   =   ibm_is_virtual_network_interface.example.id
+  floating_ip                 =   ibm_is_floating_ip.example.id
 }
 ```
 

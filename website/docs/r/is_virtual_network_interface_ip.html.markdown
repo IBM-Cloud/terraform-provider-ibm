@@ -14,8 +14,8 @@ Create, update, and delete ReservedIP virtual network instance attachment with t
 
 ```hcl
 resource "ibm_is_virtual_network_interface_ip" "is_reserved_ip_instance" {
-  reserved_ip = "subnet_id"
-  virtual_network_interface = "subnet_id"
+  reserved_ip               = ibm_is_subnet_reserved_ip.example.reserved_ip
+  virtual_network_interface = ibm_is_virtual_network_interface.example.id
 }
 ```
 

@@ -587,9 +587,10 @@ func ResourceIBMISInstance() *schema.Resource {
 										Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 									},
 									"ips": &schema.Schema{
-										Type:        schema.TypeList,
+										Type:        schema.TypeSet,
 										Optional:    true,
 										Computed:    true,
+										Set:         hashIpsList,
 										Description: "The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
@@ -914,9 +915,10 @@ func ResourceIBMISInstance() *schema.Resource {
 										Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 									},
 									"ips": &schema.Schema{
-										Type:        schema.TypeList,
+										Type:        schema.TypeSet,
 										Optional:    true,
 										Computed:    true,
+										Set:         hashIpsList,
 										Description: "The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
@@ -5414,7 +5416,7 @@ func resourceIBMIsInstanceMapToVirtualNetworkInterfacePrototypeAttachmentContext
 	}
 	if modelMap["ips"] != nil {
 		ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
-		for _, ipsItem := range modelMap["ips"].([]interface{}) {
+		for _, ipsItem := range modelMap["ips"].(*schema.Set).List() {
 			ipsItemModel, err := resourceIBMIsInstanceMapToVirtualNetworkInterfaceIPsReservedIPPrototype(ipsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err

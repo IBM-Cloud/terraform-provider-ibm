@@ -104,7 +104,7 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 						"auto_delete": &schema.Schema{
 							Type:          schema.TypeBool,
 							Optional:      true,
-							Default:       true,
+							Computed:      true,
 							ConflictsWith: []string{"virtual_network_interface.0.id"},
 							Description:   "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
 						},
@@ -116,9 +116,10 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 							Description:   "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 						},
 						"ips": &schema.Schema{
-							Type:          schema.TypeList,
+							Type:          schema.TypeSet,
 							Optional:      true,
 							Computed:      true,
+							Set:           hashIpsList,
 							ConflictsWith: []string{"virtual_network_interface.0.id"},
 							Description:   "The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.",
 							Elem: &schema.Resource{
@@ -550,7 +551,7 @@ func resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototy
 	}
 	if modelMap["ips"] != nil {
 		ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
-		for _, ipsItem := range modelMap["ips"].([]interface{}) {
+		for _, ipsItem := range modelMap["ips"].(*schema.Set).List() {
 			ipsItemModel, err := resourceIBMIsInstanceNetworkAttachmentMapToVirtualNetworkInterfaceIPPrototype(ipsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
@@ -743,7 +744,7 @@ func resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototy
 	}
 	if modelMap["ips"] != nil {
 		ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
-		for _, ipsItem := range modelMap["ips"].([]interface{}) {
+		for _, ipsItem := range modelMap["ips"].(*schema.Set).List() {
 			ipsItemModel, err := resourceIBMIsInstanceNetworkAttachmentMapToVirtualNetworkInterfaceIPPrototype(ipsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
