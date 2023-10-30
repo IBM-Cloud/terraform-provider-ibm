@@ -443,18 +443,6 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
 	}
 
-	// var pager *vpcv1.VirtualNetworkInterfacesPager
-	// pager, err = vpcbetaClient.NewVirtualNetworkInterfacesPager(listVirtualNetworkInterfacesOptions)
-	// if err != nil {
-	// 	return diag.FromErr(err)
-	// }
-
-	// allItems, err := pager.GetAll()
-	// if err != nil {
-	// 	log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s", err)
-	// 	return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
-	// }
-
 	d.SetId(dataSourceIBMIsVirtualNetworkInterfacesID(d))
 
 	mapSlice := []map[string]interface{}{}

@@ -404,7 +404,7 @@ func DataSourceIBMIsVirtualNetworkInterface() *schema.Resource {
 }
 
 func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcbetaClient, err := meta.(conns.ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -413,7 +413,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 
 	getVirtualNetworkInterfaceOptions.SetID(d.Get("virtual_network_interface").(string))
 
-	virtualNetworkInterface, response, err := vpcbetaClient.GetVirtualNetworkInterfaceWithContext(context, getVirtualNetworkInterfaceOptions)
+	virtualNetworkInterface, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, getVirtualNetworkInterfaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response))
