@@ -154,16 +154,23 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+
+- `access_control_mode` - (String) The access control mode for the share.
 - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
-  - `auto_delete` - (Bool) Indicates whether this virtual network interface will be automatically deleted when target is deleted
-  - `enable_infrastructure_nat` - (Bool) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
-- `mount_target` - The unique identifier of the share target
-- `created_at` - The date and time that the share target was created.
-- `href` - The URL for this share target.
-- `id` - The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_mount_target_id\>
-- `lifecycle_state` - The lifecycle state of the mount target.
-- `mount_path` - The mount path for the share.The IP addresses used in the mount path are currently within the IBM services IP range, but are expected to change to be within one of the VPC's subnets in the future.
-- `resource_type` - The type of resource referenced.
+- `auto_delete` - (Bool) Indicates whether this virtual network interface will be automatically deleted when target is deleted
+- `enable_infrastructure_nat` - (Bool) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
+- `mount_path` - (String) The mount path for the share. The server component of the mount path may be either an IP address or a fully qualified domain name.
+
+    This property will be absent if the lifecycle_state of the mount target is 'pending', failed, or deleting.
+
+    -> **If the share's access_control_mode is:**
+    &#x2022; security_group: The IP address used in the mount path is the primary_ip address of the virtual network interface for this share mount target. </br>
+    &#x2022; vpc: The fully-qualified domain name used in the mount path is an address that resolves to the share mount target. </br>
+- `created_at` - (String)The date and time that the share target was created.
+- `href` - (String)The URL for this share target.
+- `id` - (String)The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_mount_target_id\>
+- `lifecycle_state` - (String)The lifecycle state of the mount target.
+- `resource_type` - (String) The type of resource referenced.
 - `transit_encryption` - (String) The transit encryption mode for this share target.
 
 ## Import

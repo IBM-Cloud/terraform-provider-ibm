@@ -33,8 +33,8 @@ data "ibm_is_flow_log" "example" {
 
 Review the argument reference that you can specify for your data source.
 
-- `identifier` - (Optional, String) The ID of the subnet, This is required when `name` is not specified.
-- `name` - (Optional, String) The name of the subnet,  This is required when `identifier` is not specified.
+- `identifier` - (Optional, String) The ID of the flow log collector, This is required when `name` is not specified.
+- `name` - (Optional, String) The name of the flow log collector,  This is required when `identifier` is not specified.
 
 ## Attribute reference
 
