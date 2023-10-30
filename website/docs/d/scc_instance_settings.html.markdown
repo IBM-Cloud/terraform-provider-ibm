@@ -10,6 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Provides a read-only data source to retrieve information about scc_instance_settings. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
