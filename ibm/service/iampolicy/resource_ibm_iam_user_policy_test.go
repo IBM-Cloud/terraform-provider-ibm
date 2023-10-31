@@ -159,27 +159,27 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_user_policy.policy"
 
-		resource.Test(t, resource.TestCase{
-			PreCheck:     func() { acc.TestAccPreCheck(t) },
-			Providers:    acc.TestAccProviders,
-			CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
-			Steps: []resource.TestStep{
-				{
-					Config: testAccCheckIBMIAMUserPolicyImport(name),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccCheckIBMIAMUserPolicyExists(resourceName, conf),
-						resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
-					),
-				},
-				{
-					ResourceName:            resourceName,
-					ImportState:             true,
-					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"resources", "resource_attributes", "transaction_id"},
-				},
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyImport(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists(resourceName, conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+				),
 			},
-		})
-	}
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"resources", "resource_attributes", "transaction_id"},
+			},
+		},
+	})
+}
 func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
