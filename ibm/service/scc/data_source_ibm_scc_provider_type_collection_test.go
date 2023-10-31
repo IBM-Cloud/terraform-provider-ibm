@@ -18,7 +18,7 @@ func TestAccIbmSccProviderTypeCollectionDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeCollectionDataSourceConfigBasic(),
+				Config: testAccCheckIbmSccProviderTypeCollectionDataSourceConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_collection.scc_provider_type_collection_instance", "id"),
 				),
@@ -27,9 +27,10 @@ func TestAccIbmSccProviderTypeCollectionDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccProviderTypeCollectionDataSourceConfigBasic() string {
+func testAccCheckIbmSccProviderTypeCollectionDataSourceConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_provider_type_collection" "scc_provider_type_collection_instance" {
+			instance_id = "%s"
 		}
-	`)
+	`, instanceID)
 }
