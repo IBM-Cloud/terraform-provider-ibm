@@ -1641,42 +1641,54 @@ func FlattenV2PolicyResourceTags(resource iampolicymanagementv1.V2PolicyResource
 	return result
 }
 
+func getConditionValues(v interface{}) []string {
+	var values []string
+	switch value := v.(type) {
+	case string:
+		values = append(values, value)
+	case []interface{}:
+		for _, v := range value {
+			values = append(values, fmt.Sprint(v))
+		}
+	case nil:
+	default:
+		values = append(values, fmt.Sprintf("%v", value))
+	}
+	return values
+}
+
 func FlattenRuleConditions(rule iampolicymanagementv1.V2PolicyRule) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0)
 	if len(rule.Conditions) > 0 {
 		for _, c := range rule.Conditions {
-			var values []string
-			switch value := c.Value.(type) {
-			case string:
-				values = append(values, value)
-			case []interface{}:
-				for _, v := range value {
-					values = append(values, fmt.Sprint(v))
+			if len(c.Conditions) > 0 {
+				nestedConditions := make([]map[string]interface{}, 0)
+				for _, nc := range c.Conditions {
+					values := getConditionValues(nc.Value)
+					nestedCondition := map[string]interface{}{
+						"key":      nc.Key,
+						"value":    values,
+						"operator": nc.Operator,
+					}
+					nestedConditions = append(nestedConditions, nestedCondition)
 				}
-			default:
-				values = append(values, value.(string))
+				condition := map[string]interface{}{
+					"operator":   c.Operator,
+					"conditions": nestedConditions,
+				}
+				result = append(result, condition)
+			} else {
+				values := getConditionValues(c.Value)
+				condition := map[string]interface{}{
+					"key":      c.Key,
+					"value":    values,
+					"operator": c.Operator,
+				}
+				result = append(result, condition)
 			}
-
-			condition := map[string]interface{}{
-				"key":      c.Key,
-				"value":    values,
-				"operator": c.Operator,
-			}
-			result = append(result, condition)
 		}
 	} else {
-		var values []string
-		switch value := rule.Value.(type) {
-		case string:
-			values = append(values, value)
-		case []interface{}:
-			for _, v := range value {
-				values = append(values, fmt.Sprint(v))
-			}
-		default:
-			values = append(values, value.(string))
-		}
-
+		values := getConditionValues(rule.Value)
 		condition := map[string]interface{}{
 			"key":      rule.Key,
 			"value":    values,
@@ -3932,33 +3944,57 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 	return iampolicymanagementv1.CreateV2PolicyOptions{Control: policyControl, Resource: &policyResource}, nil
 }
 
+func generatePolicyRuleCondition(c map[string]interface{}) iampolicymanagementv1.RuleAttribute {
+	key := c["key"].(string)
+	operator := c["operator"].(string)
+	r := iampolicymanagementv1.RuleAttribute{
+		Key:      &key,
+		Operator: &operator,
+	}
+
+	interfaceValues := c["value"].([]interface{})
+	values := make([]string, len(interfaceValues))
+	for i, v := range interfaceValues {
+		values[i] = fmt.Sprint(v)
+	}
+
+	if len(values) > 1 {
+		r.Value = &values
+	} else if operator == "stringExists" && values[0] == "true" {
+		r.Value = true
+	} else if operator == "stringExists" && values[0] == "false" {
+		r.Value = false
+	} else {
+		r.Value = &values[0]
+	}
+	return r
+}
+
 func GeneratePolicyRule(d *schema.ResourceData, ruleConditions interface{}) *iampolicymanagementv1.V2PolicyRule {
-	conditions := []iampolicymanagementv1.RuleAttribute{}
+	conditions := []iampolicymanagementv1.RuleAttributeWithConditions{}
 
-	for _, condition := range ruleConditions.(*schema.Set).List() {
-		c := condition.(map[string]interface{})
-		key := c["key"].(string)
-		operator := c["operator"].(string)
-		r := iampolicymanagementv1.RuleAttribute{
-			Key:      &key,
-			Operator: &operator,
-		}
-
-		interfaceValues := c["value"].([]interface{})
-		values := make([]string, len(interfaceValues))
-		for i, v := range interfaceValues {
-			values[i] = fmt.Sprint(v)
-		}
-
-		if len(values) > 1 {
-			r.Value = &values
-		} else if operator == "stringExists" && values[0] == "true" {
-			r.Value = true
+	for _, ruleCondition := range ruleConditions.(*schema.Set).List() {
+		rc := ruleCondition.(map[string]interface{})
+		con := rc["conditions"].([]interface{})
+		if len(con) > 0 {
+			nestedConditions := []iampolicymanagementv1.RuleAttribute{}
+			for _, nc := range con {
+				nestedConditions = append(nestedConditions, generatePolicyRuleCondition(nc.(map[string]interface{})))
+			}
+			ruleAttributeWithConditions := iampolicymanagementv1.RuleAttributeWithConditions{}
+			nestedConditionsOperator := rc["operator"].(string)
+			ruleAttributeWithConditions.Operator = &nestedConditionsOperator
+			ruleAttributeWithConditions.Conditions = nestedConditions
+			conditions = append(conditions, ruleAttributeWithConditions)
 		} else {
-			r.Value = &values[0]
+			ruleAttribute := generatePolicyRuleCondition(rc)
+			ruleAttributeWithConditions := iampolicymanagementv1.RuleAttributeWithConditions{
+				Key:      ruleAttribute.Key,
+				Operator: ruleAttribute.Operator,
+				Value:    ruleAttribute.Value,
+			}
+			conditions = append(conditions, ruleAttributeWithConditions)
 		}
-
-		conditions = append(conditions, r)
 	}
 	rule := new(iampolicymanagementv1.V2PolicyRule)
 	if len(conditions) == 1 {

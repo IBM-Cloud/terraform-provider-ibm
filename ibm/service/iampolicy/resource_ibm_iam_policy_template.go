@@ -125,7 +125,7 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"key": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Optional:    true,
 										Description: "Key of the condition",
 									},
 									"operator": {
@@ -135,9 +135,34 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 									},
 									"value": {
 										Type:        schema.TypeList,
-										Required:    true,
+										Optional:    true,
 										Elem:        &schema.Schema{Type: schema.TypeString},
 										Description: "Value of the condition",
+									},
+									"conditions": {
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Additional Rule conditions enforced by the policy",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"key": {
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "Key of the condition",
+												},
+												"operator": {
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "Operator of the condition",
+												},
+												"value": {
+													Type:        schema.TypeList,
+													Required:    true,
+													Elem:        &schema.Schema{Type: schema.TypeString},
+													Description: "Value of the condition",
+												},
+											},
+										},
 									},
 								},
 							},
@@ -268,12 +293,12 @@ func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagement
 	}
 
 	if modelMap["rule_conditions"] != nil && len(modelMap["rule_conditions"].(*schema.Set).List()) > 0 {
-		conditions := []iampolicymanagementv1.RuleAttribute{}
+		conditions := []iampolicymanagementv1.RuleAttributeWithConditions{}
 		for _, condition := range modelMap["rule_conditions"].(*schema.Set).List() {
 			c := condition.(map[string]interface{})
 			key := c["key"].(string)
 			operator := c["operator"].(string)
-			r := iampolicymanagementv1.RuleAttribute{
+			r := iampolicymanagementv1.RuleAttributeWithConditions{
 				Key:      &key,
 				Operator: &operator,
 			}
