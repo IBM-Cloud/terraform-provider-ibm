@@ -51,15 +51,16 @@ func TestAccSatelliteClusterWorkerPool_Entitlement(t *testing.T) {
 	operatingSystem := "REDHAT_8_64"
 	workerPoolName := fmt.Sprintf("tf-wp-%d", acctest.RandIntRange(10, 100))
 	resource_prefix := "tf-satellite"
+	publicKey := acc.SatelliteSSHPubKey
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckSatelliteSSH(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckSatelliteClusterWorkerPoolDestroy,
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteClusterWorkerPoolCreateEntitlement(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix),
+				Config: testAccCheckSatelliteClusterWorkerPoolCreateEntitlement(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix, publicKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteClusterWorkerPoolExists("ibm_satellite_cluster_worker_pool.create_wp", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_cluster.create_cluster", "name", clusterName),
@@ -291,7 +292,7 @@ func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, ope
 `, locationName, resource_prefix, resource_prefix, resource_prefix, resource_prefix, resource_prefix, clusterName, workerPoolName, operatingSystem)
 }
 
-func testAccCheckSatelliteClusterWorkerPoolCreateEntitlement(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix string) string {
+func testAccCheckSatelliteClusterWorkerPoolCreateEntitlement(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix, publicKey string) string {
 	return fmt.Sprintf(`
 
 	variable "location_zones" {
@@ -336,7 +337,7 @@ func testAccCheckSatelliteClusterWorkerPoolCreateEntitlement(clusterName, locati
 	  
 	resource "ibm_is_ssh_key" "satellite_ssh" {	  
 		name        = "%s-ibm-ssh"
-		public_key  = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+		public_key  = "%s"
 	}
 	  
 	resource "ibm_is_instance" "satellite_instance" {
@@ -415,5 +416,5 @@ func testAccCheckSatelliteClusterWorkerPoolCreateEntitlement(clusterName, locati
 		cluster = ibm_satellite_cluster.create_cluster.id
 	}
 
-`, locationName, resource_prefix, resource_prefix, resource_prefix, resource_prefix, resource_prefix, clusterName, workerPoolName, operatingSystem)
+`, locationName, resource_prefix, resource_prefix, resource_prefix, publicKey, resource_prefix, resource_prefix, clusterName, workerPoolName, operatingSystem)
 }
