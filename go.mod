@@ -53,6 +53,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
+	github.ibm.com/ibmcloud/networking-go-sdk v1.1.5
 	golang.org/x/crypto v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
