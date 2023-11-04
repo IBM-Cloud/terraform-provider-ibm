@@ -9,6 +9,7 @@ The following types of resources are supported:
 * code_engine_build
 * code_engine_config_map
 * code_engine_job
+* code_engine_job_run
 * code_engine_project
 * code_engine_secret
 
@@ -91,6 +92,17 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
 
 ```
 
+code_engine_job_run resource:
+
+```hcl
+resource "ibm_code_engine_job_run" "code_engine_job_run_instance" {
+  project_id      = var.code_engine_project_id
+  job_name        = var.code_engine_job_name
+  name            = var.code_engine_job_run_name
+}
+
+```
+
 code_engine_secret resource:
 
 ```hcl
@@ -160,6 +172,16 @@ code_engine_job data source:
 data "ibm_code_engine_job" "code_engine_job_instance" {
   project_id = var.code_engine_project_id
   name       = var.code_engine_job_name
+}
+
+```
+
+code_engine_job_run data source:
+
+```hcl
+data "ibm_code_engine_job_run" "code_engine_job_run_instance" {
+  project_id = var.code_engine_project_id
+  name       = var.code_engine_job_run_name
 }
 
 ```

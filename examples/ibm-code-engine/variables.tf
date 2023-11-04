@@ -95,6 +95,12 @@ variable "code_engine_job_name" {
   default     = "my-job"
 }
 
+variable "code_engine_job_run_name" {
+  description = "The name of the job run. Use a name that is unique within the project."
+  type        = string
+  default     = "my-job-run"
+}
+
 // Resource arguments for code_engine_secret with format service_access
 variable "code_engine_secret_service_access_name" {
   description = "The name of the service access secret"

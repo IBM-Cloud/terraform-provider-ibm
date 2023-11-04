@@ -29,6 +29,12 @@ output "ibm_code_engine_job" {
   value       = ibm_code_engine_job.code_engine_job_instance
   description = "code_engine_job resource instance"
 }
+// This allows code_engine_job_run data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_code_engine_job_run" {
+  value       = ibm_code_engine_job_run.code_engine_job_run_instance
+  description = "code_engine_job resource instance"
+}
 // This allows code_engine_secret data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
 output "ibm_code_engine_secret" {

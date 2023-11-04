@@ -64,6 +64,13 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
   name            = var.code_engine_job_name
 }
 
+// Provision code_engine_job_run resource instance
+resource "ibm_code_engine_job_run" "code_engine_job_run_instance" {
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+  name       = var.code_engine_job_run_name
+  job_name   = ibm_code_engine_job.code_engine_job_instance.name
+}
+
 // Provision code_engine_secret resource instance for format service_access
 
 resource "ibm_code_engine_secret" "code_engine_secret_service_access" {
@@ -132,6 +139,12 @@ data "ibm_code_engine_build" "code_engine_build_data" {
 data "ibm_code_engine_job" "code_engine_job_data" {
   project_id = data.ibm_code_engine_project.code_engine_project_data.project_id
   name       = var.code_engine_job_name
+}
+
+// Create code_engine_job_run data source
+data "ibm_code_engine_job_run" "code_engine_job_run_data" {
+  project_id = data.ibm_code_engine_project.code_engine_project_data.project_id
+  name       = var.code_engine_job_run_name
 }
 
 // Create code_engine_binding data source
