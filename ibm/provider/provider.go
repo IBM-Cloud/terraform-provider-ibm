@@ -853,6 +853,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_build":      codeengine.DataSourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map": codeengine.DataSourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_job_run":    codeengine.DataSourceIbmCodeEngineJobRun(),
 			"ibm_code_engine_project":    codeengine.DataSourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
 
@@ -1365,6 +1366,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_job_run":    codeengine.ResourceIbmCodeEngineJobRun(),
 			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
 
@@ -1621,6 +1623,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuildValidator(),
 				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_job_run":    codeengine.ResourceIbmCodeEngineJobRunValidator(),
 				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
 				"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
 
