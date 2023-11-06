@@ -352,6 +352,46 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Minimum Virtual Cores Assigned to the PVMInstance",
 			},
+			"pi_software_licenses": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Optional:    true,
+				Description: "List of software licenses",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ibmiCSS": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "IBMi Cloud Storage Solution",
+						},
+						"ibmiDBQ": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "IBMi DBQ",
+						},
+						"ibmiPHA": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "IBMi Power High Availability",
+						},
+						"ibmiRDS": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "IBMi Rational Dev Studio",
+						},
+						"ibmiRDSUsers": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "IBMi Rational Dev Studio Number of User Licenses",
+						},
+					},
+				},
+			},
 		},
 	}
 }
