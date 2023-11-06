@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20231017073329-75ebe90c98ba
-	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20230822142550-30562e113de9
+	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231106114255-c50117860a3c
 	github.com/IBM-Cloud/power-go-client v1.2.4
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
@@ -232,5 +232,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.com/IBM-Cloud/container-services-go-sdk => ../container-services-go-sdk
