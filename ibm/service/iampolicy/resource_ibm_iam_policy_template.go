@@ -293,12 +293,12 @@ func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagement
 	}
 
 	if modelMap["rule_conditions"] != nil && len(modelMap["rule_conditions"].(*schema.Set).List()) > 0 {
-		conditions := []iampolicymanagementv1.RuleAttributeWithConditions{}
+		conditions := []iampolicymanagementv1.RuleWithNestedConditionsConditionsItemIntf{}
 		for _, condition := range modelMap["rule_conditions"].(*schema.Set).List() {
 			c := condition.(map[string]interface{})
 			key := c["key"].(string)
 			operator := c["operator"].(string)
-			r := iampolicymanagementv1.RuleAttributeWithConditions{
+			r := &iampolicymanagementv1.RuleWithNestedConditionsConditionsItem{
 				Key:      &key,
 				Operator: &operator,
 			}
@@ -321,9 +321,10 @@ func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagement
 		}
 		rule := new(iampolicymanagementv1.V2PolicyRule)
 		if len(conditions) == 1 {
-			rule.Key = conditions[0].Key
-			rule.Operator = conditions[0].Operator
-			rule.Value = conditions[0].Value
+			ruleCondition := conditions[0].(*iampolicymanagementv1.RuleWithNestedConditionsConditionsItem)
+			rule.Key = ruleCondition.Key
+			rule.Operator = ruleCondition.Operator
+			rule.Value = ruleCondition.Value
 		} else {
 			ruleOperator := modelMap["rule_operator"].(string)
 			rule.Operator = &ruleOperator
