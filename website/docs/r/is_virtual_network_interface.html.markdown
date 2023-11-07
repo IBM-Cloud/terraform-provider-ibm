@@ -45,7 +45,7 @@ You can specify the following arguments for this resource.
 	- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
 	- `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
 	- `resource_type` - (Computed, String) The resource type.
-- `resource_group` - (Optional, List) The resource group id for this virtual network interface.
+- `resource_group` - (Optional, String) The resource group id for this virtual network interface.
 - `security_groups` - (Optional, Array of string) The security group ids list for this virtual network interface.
 - `subnet` - (Optional, List) The associated subnet id.
 

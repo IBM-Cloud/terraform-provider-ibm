@@ -385,12 +385,11 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 		}
 		createVirtualNetworkInterfaceOptions.SetPrimaryIP(primaryIPModel)
 	}
-	if _, ok := d.GetOk("resource_group"); ok {
-		resourceGroupModel, err := resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrototypeResourceGroup(d.Get("resource_group.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+	if rgOk, ok := d.GetOk("resource_group"); ok {
+		rg := rgOk.(string)
+		createVirtualNetworkInterfaceOptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: &rg,
 		}
-		createVirtualNetworkInterfaceOptions.SetResourceGroup(resourceGroupModel)
 	}
 	if _, ok := d.GetOk("security_groups"); ok {
 		var securityGroups []vpcv1.SecurityGroupIdentityIntf
@@ -857,14 +856,6 @@ func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrimaryIPRe
 	model.AutoDelete = core.BoolPtr(autodelete)
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	return model, nil
-}
-
-func resourceIBMIsVirtualNetworkInterfaceMapToVirtualNetworkInterfacePrototypeResourceGroup(modelMap map[string]interface{}) (vpcv1.ResourceGroupIdentityIntf, error) {
-	model := &vpcv1.ResourceGroupIdentity{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
 	return model, nil
 }
