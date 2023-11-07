@@ -57,6 +57,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+- `access_tags`  - (Array of Strings) Access management tags associated for the virtual network interface.
 - `allow_ip_spoofing` - (Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
 - `auto_delete` - (Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
 - `created_at` - (String) The date and time that the virtual network interface was created.
@@ -113,6 +114,7 @@ In addition to all argument references listed, you can access the following attr
 	- `id` - (String) The unique identifier for this subnet.
 	- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
 	- `resource_type` - (String) The resource type.
+- `tags` - (Array of Strings) The tags associated with the virtual netork interface.
 - `target` - (List) The target of this virtual network interface.If absent, this virtual network interface is not attached to a target.
 	Nested scheme for **target**:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.

@@ -35,6 +35,20 @@ func DataSourceIBMIsVirtualNetworkInterfaces() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
 						},
+						"tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "UserTags for the vni instance",
+						},
+						"access_tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "Access management tags for the vni instance",
+						},
 						"enable_infrastructure_nat": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -451,6 +465,21 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *modelItem.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of datasources vni (%s) tags: %s", *modelItem.ID, err)
+		}
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *modelItem.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of datasources vni (%s) access tags: %s", *modelItem.ID, err)
+		}
+
+		modelMap["tags"] = tags
+		modelMap["access_tags"] = accesstags
 		mapSlice = append(mapSlice, modelMap)
 	}
 

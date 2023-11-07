@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -17,6 +18,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -28,6 +30,24 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 		UpdateContext: resourceIBMIsVirtualNetworkInterfaceUpdate,
 		DeleteContext: resourceIBMIsVirtualNetworkInterfaceDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				}),
+		),
 
 		Schema: map[string]*schema.Schema{
 			"allow_ip_spoofing": &schema.Schema{
@@ -48,6 +68,23 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				Computed:    true,
 				Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 			},
+			"tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_volume", "tags")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "UserTags for the vni instance",
+			},
+			"access_tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_volume", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "Access management tags for the vni instance",
+			},
+
 			"ips": &schema.Schema{
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -419,7 +456,23 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 	}
 
 	d.SetId(*virtualNetworkInterface.ID)
-
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *virtualNetworkInterface.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vni (%s) tags: %s", d.Id(), err)
+		}
+	}
+	if _, ok := d.GetOk("access_tags"); ok {
+		oldList, newList := d.GetChange("access_tags")
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *virtualNetworkInterface.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vni (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return resourceIBMIsVirtualNetworkInterfaceRead(context, d, meta)
 }
 
@@ -548,6 +601,21 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		d.Set("zone", *virtualNetworkInterface.Zone.Name)
 	}
 
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *virtualNetworkInterface.CRN, "", isUserTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vni (%s) tags: %s", d.Id(), err)
+	}
+
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *virtualNetworkInterface.CRN, "", isAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vni (%s) access tags: %s", d.Id(), err)
+	}
+
+	d.Set("tags", tags)
+	d.Set("access_tags", accesstags)
+
 	return nil
 }
 
@@ -557,6 +625,24 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 		return diag.FromErr(err)
 	}
 	id := d.Id()
+
+	if d.HasChange("tags") {
+		oldList, newList := d.GetChange("tags")
+		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vni (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	if d.HasChange("access_tags") {
+		oldList, newList := d.GetChange("access_tags")
+		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get("crn").(string), "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vni (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	updateVirtualNetworkInterfaceOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{}
 
 	updateVirtualNetworkInterfaceOptions.SetID(id)
