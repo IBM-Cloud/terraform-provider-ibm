@@ -36,8 +36,15 @@ resource "ibm_database" "test_acc" {
   tags = ["tag1", "tag2"]
 
   // adminpassword                = "password12"
-  members_memory_allocation_mb = 3072
-  members_disk_allocation_mb   = 20480
+  group {
+    group_id = "member"
+    memory {
+      allocation_mb = 2048
+    }
+    disk {
+      allocation_mb = 10240
+    }
+  }
 
   users {
     name     = "user123"
