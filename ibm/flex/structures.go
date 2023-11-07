@@ -1661,7 +1661,7 @@ func FlattenRuleConditions(rule iampolicymanagementv1.V2PolicyRule) []map[string
 	result := make([]map[string]interface{}, 0)
 	if len(rule.Conditions) > 0 {
 		for _, cIntf := range rule.Conditions {
-			c := cIntf.(*iampolicymanagementv1.RuleWithNestedConditionsConditionsItem)
+			c := cIntf.(*iampolicymanagementv1.NestedCondition)
 			if len(c.Conditions) > 0 {
 				nestedConditions := make([]map[string]interface{}, 0)
 				for _, nc := range c.Conditions {
@@ -3972,7 +3972,7 @@ func generatePolicyRuleCondition(c map[string]interface{}) iampolicymanagementv1
 }
 
 func GeneratePolicyRule(d *schema.ResourceData, ruleConditions interface{}) *iampolicymanagementv1.V2PolicyRule {
-	conditions := []iampolicymanagementv1.RuleWithNestedConditionsConditionsItemIntf{}
+	conditions := []iampolicymanagementv1.NestedConditionIntf{}
 
 	for _, ruleCondition := range ruleConditions.(*schema.Set).List() {
 		rc := ruleCondition.(map[string]interface{})
@@ -3982,24 +3982,24 @@ func GeneratePolicyRule(d *schema.ResourceData, ruleConditions interface{}) *iam
 			for _, nc := range con {
 				nestedConditions = append(nestedConditions, generatePolicyRuleCondition(nc.(map[string]interface{})))
 			}
-			ruleWithNestedConditionsConditionsItem := &iampolicymanagementv1.RuleWithNestedConditionsConditionsItem{}
+			nestedCondition := &iampolicymanagementv1.NestedCondition{}
 			nestedConditionsOperator := rc["operator"].(string)
-			ruleWithNestedConditionsConditionsItem.Operator = &nestedConditionsOperator
-			ruleWithNestedConditionsConditionsItem.Conditions = nestedConditions
-			conditions = append(conditions, ruleWithNestedConditionsConditionsItem)
+			nestedCondition.Operator = &nestedConditionsOperator
+			nestedCondition.Conditions = nestedConditions
+			conditions = append(conditions, nestedCondition)
 		} else {
 			ruleAttribute := generatePolicyRuleCondition(rc)
-			ruleWithNestedConditionsConditionsItem := &iampolicymanagementv1.RuleWithNestedConditionsConditionsItem{
+			nestedCondition := &iampolicymanagementv1.NestedCondition{
 				Key:      ruleAttribute.Key,
 				Operator: ruleAttribute.Operator,
 				Value:    ruleAttribute.Value,
 			}
-			conditions = append(conditions, ruleWithNestedConditionsConditionsItem)
+			conditions = append(conditions, nestedCondition)
 		}
 	}
 	rule := new(iampolicymanagementv1.V2PolicyRule)
 	if len(conditions) == 1 {
-		ruleCondition := conditions[0].(*iampolicymanagementv1.RuleWithNestedConditionsConditionsItem)
+		ruleCondition := conditions[0].(*iampolicymanagementv1.NestedCondition)
 		rule.Key = ruleCondition.Key
 		rule.Operator = ruleCondition.Operator
 		rule.Value = ruleCondition.Value
