@@ -24,7 +24,6 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -132,6 +131,62 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceGroupBasic(t *testing.T) {
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMMongoDBEnterpriseDatabaseInstancePITR(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "Default"
+	var databaseInstanceOne string
+	var databaseInstanceTwo string
+	serviceName := fmt.Sprintf("tf-mongodbee-%d", acctest.RandIntRange(10, 100))
+	pitrServiceName := serviceName + "-pitr"
+	resourceName := "ibm_database." + serviceName
+	pitrResourceName := "ibm_database." + pitrServiceName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acc.TestAccPreCheck(t) },
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"time": {
+				Source:            "hashicorp/time",
+				VersionConstraint: ">=0.9.1",
+			},
+		},
+		ProviderFactories: acc.TestAccProviderFactories(),
+		CheckDestroy:      testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
+
+					resource.TestCheckResourceAttr(resourceName, "groups.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceName, "groups.1.count", "0"),
+					resource.TestCheckResourceAttr(resourceName, "groups.2.count", "0"),
+				),
+			},
+			{
+				Config: acc.ConfigCompose(acc.ConfigAlternateRegionProvider(),
+					testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGroup, serviceName),
+					testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal_PITR(databaseResourceGroup, serviceName)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
+					testAccCheckIBMDatabaseInstanceExists(pitrResourceName, &databaseInstanceTwo),
+					resource.TestCheckResourceAttr(pitrResourceName, "name", pitrServiceName),
+					resource.TestCheckResourceAttr(pitrResourceName, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(pitrResourceName, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(pitrResourceName, "location", acc.RegionAlternate()),
+					resource.TestCheckResourceAttr(pitrResourceName, "adminuser", "admin"),
+					resource.TestCheckResourceAttr(pitrResourceName, "groups.0.count", "3"),
+					resource.TestCheckResourceAttr(pitrResourceName, "groups.1.count", "0"),
+					resource.TestCheckResourceAttr(pitrResourceName, "groups.2.count", "0"),
 				),
 			},
 		},
@@ -314,4 +369,56 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 		}
 	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "enterprise"
+		location                     = "%[3]s"
+
+		timeouts {
+			create = "4h"
+			update = "4h"
+			delete = "15m"
+		}
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal_PITR(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	resource "time_sleep" "wait_time" {
+		create_duration = "1h"
+		depends_on      = [ibm_database.%[2]s]
+	}
+
+	resource "ibm_database" "%[2]s-pitr" {
+		provider                              = "%[1]s"
+		depends_on                            = [time_sleep.wait_time, ibm_database.%[2]s]
+
+		resource_group_id                     = data.ibm_resource_group.test_acc.id
+		name                                  = "%[2]s-pitr"
+		service                               = "databases-for-mongodb"
+		plan                                  = "enterprise"
+		location                              = "%[3]s"
+		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
+		point_in_time_recovery_time           = ""
+    offline_restore                       = true
+
+		timeouts {
+			create = "4h"
+			update = "4h"
+			delete = "15m"
+		}
+	}
+
+				`, acc.ProviderNameAlternate, name, acc.RegionAlternate())
 }
