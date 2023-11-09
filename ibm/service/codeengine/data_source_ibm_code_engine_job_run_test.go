@@ -30,7 +30,7 @@ func TestAccIbmCodeEngineJobRunDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_job_run.code_engine_job_run_instance", "job_run_id"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job_run.code_engine_job_run_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job_run.code_engine_job_run_instance", "name", jobRunName),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_job_run.code_engine_job_run_instance", "jobName", jobName),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_job_run.code_engine_job_run_instance", "job_name", jobName),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job_run.code_engine_job_run_instance", "resource_type", "job_run_v2"),
 				),
 			},
@@ -51,14 +51,14 @@ func testAccCheckIbmCodeEngineJobRunDataSourceConfigBasic(projectID string, jobI
 		}
 
 		resource "ibm_code_engine_job_run" "code_engine_job_run_instance" {
-			project_id = ibm_code_engine_project.ce_project.project_id
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			name       = "%s"
 			job_name   = ibm_code_engine_job.code_engine_job_instance.name
 		}
 
 		data "ibm_code_engine_job_run" "code_engine_job_run_instance" {
-			project_id = ibm_code_engine_project.ce_project.project_id
-			name       = data.ibm_code_engine_job_run.code_engine_job_run_instance.name
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
+			name       = ibm_code_engine_job_run.code_engine_job_run_instance.name
 		}
 
 
