@@ -12,10 +12,9 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 )
 
 const (
@@ -312,6 +311,9 @@ var (
 	CeProjectId         string
 	CeServiceInstanceID string
 	CeResourceKeyID     string
+	CeDomainMappingName string
+	CeTLSCert           string
+	CeTLSKey            string
 )
 
 // Satellite tests
@@ -1531,6 +1533,24 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_KEY_ID with the ID of a resource key to access a service instance")
 	}
 
+	CeDomainMappingName = os.Getenv("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME")
+	if CeDomainMappingName == "" {
+		CeDomainMappingName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME with the name of a domain mapping")
+	}
+
+	CeTLSCert = os.Getenv("IBM_CODE_ENGINE_TLS_CERT")
+	if CeTLSCert == "" {
+		CeTLSCert = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT with the TLS certificate in base64 format")
+	}
+
+	CeTLSKey = os.Getenv("IBM_CODE_ENGINE_TLS_KEY")
+	if CeTLSKey == "" {
+		CeTLSKey = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY with a TLS key in base64 format")
+	}
+
 	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
@@ -1696,6 +1716,21 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	}
 	if CeProjectId == "" {
 		t.Fatal("IBM_CODE_ENGINE_PROJECT_INSTANCE_ID must be set for acceptance tests")
+	}
+	if CeServiceInstanceID == "" {
+		t.Fatal("IBM_CODE_ENGINE_SERVICE_INSTANCE_ID must be set for acceptance tests")
+	}
+	if CeResourceKeyID == "" {
+		t.Fatal("IBM_CODE_ENGINE_RESOURCE_KEY_ID must be set for acceptance tests")
+	}
+	if CeDomainMappingName == "" {
+		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME must be set for acceptance tests")
+	}
+	if CeTLSCert == "" {
+		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_CERT must be set for acceptance tests")
+	}
+	if CeTLSKey == "" {
+		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_KEY must be set for acceptance tests")
 	}
 }
 
