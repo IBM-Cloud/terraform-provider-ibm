@@ -23,11 +23,11 @@ import (
 
 func ResourceIbmCodeEngineDomainMapping() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmCodeEngineDomainMappingCreate,
-		ReadContext:     resourceIbmCodeEngineDomainMappingRead,
-		UpdateContext:   resourceIbmCodeEngineDomainMappingUpdate,
-		DeleteContext:   resourceIbmCodeEngineDomainMappingDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmCodeEngineDomainMappingCreate,
+		ReadContext:   resourceIbmCodeEngineDomainMappingRead,
+		UpdateContext: resourceIbmCodeEngineDomainMappingUpdate,
+		DeleteContext: resourceIbmCodeEngineDomainMappingDelete,
+		Importer:      &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
@@ -35,11 +35,11 @@ func ResourceIbmCodeEngineDomainMapping() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"project_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_domain_mapping", "project_id"),
-				Description: "The ID of the project.",
+				Description:  "The ID of the project.",
 			},
 			"component": &schema.Schema{
 				Type:        schema.TypeList,
@@ -63,17 +63,17 @@ func ResourceIbmCodeEngineDomainMapping() *schema.Resource {
 				},
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_domain_mapping", "name"),
-				Description: "The name of the domain mapping.",
+				Description:  "The name of the domain mapping.",
 			},
 			"tls_secret": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_domain_mapping", "tls_secret"),
-				Description: "The name of the TLS secret that holds the certificate and private key of this domain mapping.",
+				Description:  "The name of the TLS secret that holds the certificate and private key of this domain mapping.",
 			},
 			"cname_target": &schema.Schema{
 				Type:        schema.TypeString,
@@ -373,8 +373,8 @@ func resourceIbmCodeEngineDomainMappingUpdate(context context.Context, d *schema
 
 	patchVals := &codeenginev2.DomainMappingPatch{}
 	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "project_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "project_id"))
 	}
 	if d.HasChange("name") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
