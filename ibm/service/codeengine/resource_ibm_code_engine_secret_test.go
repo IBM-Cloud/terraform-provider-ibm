@@ -238,8 +238,8 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 	format := "tls"
 	name := fmt.Sprintf("tf-secret-tls-%d", acctest.RandIntRange(10, 1000))
 	nameUpdate := fmt.Sprintf("tf-secret-tls-update-%d", acctest.RandIntRange(10, 1000))
-	tlsKey := decodeBase64(acc.CeTLSKey)
-	tlsCert := decodeBase64(acc.CeTLSCert)
+	tlsKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
+	tlsCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
 
 	projectID := acc.CeProjectId
 

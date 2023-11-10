@@ -19,8 +19,8 @@ func TestAccIbmCodeEngineDomainMappingDataSourceBasic(t *testing.T) {
 
 	projectID := acc.CeProjectId
 	domainMappingName := acc.CeDomainMappingName
-	domainMappingTLSKey := decodeBase64(acc.CeTLSKey)
-	domainMappingTLSCert := decodeBase64(acc.CeTLSCert)
+	domainMappingTLSKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
+	domainMappingTLSCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCodeEngine(t) },

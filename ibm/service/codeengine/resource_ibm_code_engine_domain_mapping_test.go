@@ -18,17 +18,22 @@ import (
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 )
 
+const (
+	CeTlsCert = "IBM_CODE_ENGINE_TLS_CERT"
+	CeTlsKey  = "IBM_CODE_ENGINE_TLS_KEY"
+)
+
 func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 	var conf codeenginev2.DomainMapping
 
-	appName := fmt.Sprintf("tf-app-domain-mapping-%d", acctest.RandIntRange(10, 1000))
-	updatedAppName := fmt.Sprintf("tf-app-domain-mapping-%d", acctest.RandIntRange(10, 1000))
+	app1Name := fmt.Sprintf("tf-app-domain-mapping-%d", acctest.RandIntRange(10, 1000))
+	app2Name := fmt.Sprintf("tf-app-domain-mapping-%d", acctest.RandIntRange(10, 1000))
 	secretName := fmt.Sprintf("tf-secret-domain-mapping-%d", acctest.RandIntRange(10, 1000))
 
 	projectID := acc.CeProjectId
 	domainMappingName := acc.CeDomainMappingName
-	domainMappingTLSKey := decodeBase64(acc.CeTLSKey)
-	domainMappingTLSCert := decodeBase64(acc.CeTLSCert)
+	domainMappingTLSKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
+	domainMappingTLSCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckCodeEngine(t) },
@@ -36,7 +41,7 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineDomainMappingDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, appName, domainMappingTLSKey, domainMappingTLSCert, secretName, domainMappingName),
+				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, domainMappingTLSKey, domainMappingTLSCert, secretName, app1Name, domainMappingName, "app1_instance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineDomainMappingExists("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", conf),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "id"),
@@ -49,12 +54,12 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "name", domainMappingName),
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "resource_type", "domain_mapping_v2"),
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "component.0.resource_type", "app_v2"),
-					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "component.0.name", appName),
+					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "component.0.name", app1Name),
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "tls_secret", secretName),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasicUpdate(projectID, appName, updatedAppName, domainMappingTLSKey, domainMappingTLSCert, secretName, domainMappingName),
+				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, domainMappingTLSKey, domainMappingTLSCert, secretName, app2Name, domainMappingName, "app2_instance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "id"),
 					resource.TestCheckResourceAttrSet("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "href"),
@@ -66,7 +71,7 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "name", domainMappingName),
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "resource_type", "domain_mapping_v2"),
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "component.0.resource_type", "app_v2"),
-					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "component.0.name", updatedAppName),
+					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "component.0.name", app2Name),
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "tls_secret", secretName),
 				),
 			},
@@ -74,66 +79,13 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, appName string, tlsKey string, tslCert string, secretName string, domainMappingName string) string {
+func testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID string, app1Name string, app2Name string, tlsKey string, tslCert string, secretName string, componentRefName string, domainMappingName string, dependsOn string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
 		}
 
-		resource "ibm_code_engine_app" "code_engine_app_instance" {
-			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
-			image_reference = "icr.io/codeengine/helloworld"
-			name = "%s"
-
-			lifecycle {
-				ignore_changes = [
-					run_env_variables
-				]
-			}
-		}
-
-		variable "tls_secret_data" {
-			type = map(string)
-  			default = {
-   				"tls_key" = <<EOT
-%s
-EOT
-				"tls_cert" = <<EOT
-%s
-EOT
-			}
-		}
-
-		resource "ibm_code_engine_secret" "code_engine_secret_instance" {
-			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
-			format = "tls"
-			name = "%s"
-			data = var.tls_secret_data
-		}
-
-	 	resource "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_instance" {
-			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
-			component {
-				name = ibm_code_engine_app.code_engine_app_instance.name
-				resource_type = "app_v2"
-			}
-			name = "%s"
-			tls_secret = ibm_code_engine_secret.code_engine_secret_instance.name
-
-			depends_on = [
-    			ibm_code_engine_app.code_engine_app_instance
-  			]
-		}
-	`, projectID, appName, tlsKey, tslCert, secretName, domainMappingName)
-}
-
-func testAccCheckIbmCodeEngineDomainMappingConfigBasicUpdate(projectID string, appName string, updatedAppName string, tlsKey string, tslCert string, secretName string, domainMappingName string) string {
-	return fmt.Sprintf(`
-		data "ibm_code_engine_project" "code_engine_project_instance" {
-			project_id = "%s"
-		}
-
-		resource "ibm_code_engine_app" "code_engine_app_instance" {
+		resource "ibm_code_engine_app" "code_engine_app1_instance" {
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			image_reference = "icr.io/codeengine/helloworld"
 			name = "%s"
@@ -179,17 +131,17 @@ EOT
 	 	resource "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_instance" {
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			component {
-				name = ibm_code_engine_app.code_engine_app2_instance.name
+				name = "%s"
 				resource_type = "app_v2"
 			}
 			name = "%s"
 			tls_secret = ibm_code_engine_secret.code_engine_secret_instance.name
 
 			depends_on = [
-    			ibm_code_engine_app.code_engine_app2_instance
+    			ibm_code_engine_app.code_engine_%s
   			]
 		}
-	`, projectID, appName, updatedAppName, tlsKey, tslCert, secretName, domainMappingName)
+	`, projectID, app1Name, app2Name, tlsKey, tslCert, secretName, componentRefName, domainMappingName, dependsOn)
 }
 
 func testAccCheckIbmCodeEngineDomainMappingExists(n string, obj codeenginev2.DomainMapping) resource.TestCheckFunc {
@@ -258,9 +210,10 @@ func testAccCheckIbmCodeEngineDomainMappingDestroy(s *terraform.State) error {
 	return nil
 }
 
-func decodeBase64(base64Text string) string {
+func decodeBase64EnvVar(base64Text string, envVar string) string {
 	decodedText, err := base64.StdEncoding.DecodeString(base64Text)
 	if err != nil {
+		fmt.Errorf("Error decoding environment variable %s: %s", envVar, err)
 		return ""
 	}
 	return string(decodedText)
