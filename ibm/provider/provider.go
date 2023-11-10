@@ -50,6 +50,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -569,6 +570,13 @@ func Provider() *schema.Provider {
 			"ibm_schematics_job":            schematics.DataSourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.DataSourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.DataSourceIBMSchematicsResourceQuery(),
+			"ibm_schematics_policies":       schematics.DataSourceIbmSchematicsPolicies(),
+			"ibm_schematics_policy":         schematics.DataSourceIbmSchematicsPolicy(),
+			"ibm_schematics_agents":         schematics.DataSourceIbmSchematicsAgents(),
+			"ibm_schematics_agent":          schematics.DataSourceIbmSchematicsAgent(),
+			"ibm_schematics_agent_prs":      schematics.DataSourceIbmSchematicsAgentPrs(),
+			"ibm_schematics_agent_deploy":   schematics.DataSourceIbmSchematicsAgentDeploy(),
+			"ibm_schematics_agent_health":   schematics.DataSourceIbmSchematicsAgentHealth(),
 
 			// Added for Power Resources
 			"ibm_pi_catalog_images":                         power.DataSourceIBMPICatalogImages(),
@@ -618,6 +626,10 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_remote_copy_relationship":        power.DataSourceIBMPIVolumeRemoteCopyRelationship(),
 			"ibm_pi_volume_onboardings":                     power.DataSourceIBMPIVolumeOnboardings(),
 			"ibm_pi_volume_onboarding":                      power.DataSourceIBMPIVolumeOnboarding(),
+			"ibm_pi_workspace":                              power.DatasourceIBMPIWorkspace(),
+			"ibm_pi_workspaces":                             power.DatasourceIBMPIWorkspaces(),
+			"ibm_pi_datacenter":                             power.DataSourceIBMPIDatacenter(),
+			"ibm_pi_datacenters":                            power.DataSourceIBMPIDatacenters(),
 
 			// Added for private dns zones
 
@@ -663,6 +675,9 @@ func Provider() *schema.Provider {
 			"ibm_enterprises":               enterprise.DataSourceIBMEnterprises(),
 			"ibm_enterprise_account_groups": enterprise.DataSourceIBMEnterpriseAccountGroups(),
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
+
+			// //Added for Usage Reports
+			"ibm_billing_snapshot_list": usagereports.DataSourceIBMBillingSnapshotList(),
 
 			// Added for Secrets Manager
 			// V1 data sources:
@@ -758,44 +773,46 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// Added for Event Notifications
-			"ibm_en_source":                 eventnotification.DataSourceIBMEnSource(),
-			"ibm_en_destinations":           eventnotification.DataSourceIBMEnDestinations(),
-			"ibm_en_topic":                  eventnotification.DataSourceIBMEnTopic(),
-			"ibm_en_topics":                 eventnotification.DataSourceIBMEnTopics(),
-			"ibm_en_subscriptions":          eventnotification.DataSourceIBMEnSubscriptions(),
-			"ibm_en_destination_webhook":    eventnotification.DataSourceIBMEnWebhookDestination(),
-			"ibm_en_destination_android":    eventnotification.DataSourceIBMEnFCMDestination(),
-			"ibm_en_destination_ios":        eventnotification.DataSourceIBMEnAPNSDestination(),
-			"ibm_en_destination_chrome":     eventnotification.DataSourceIBMEnChromeDestination(),
-			"ibm_en_destination_firefox":    eventnotification.DataSourceIBMEnFirefoxDestination(),
-			"ibm_en_destination_slack":      eventnotification.DataSourceIBMEnSlackDestination(),
-			"ibm_en_subscription_sms":       eventnotification.DataSourceIBMEnSMSSubscription(),
-			"ibm_en_subscription_email":     eventnotification.DataSourceIBMEnEmailSubscription(),
-			"ibm_en_subscription_webhook":   eventnotification.DataSourceIBMEnWebhookSubscription(),
-			"ibm_en_subscription_android":   eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_ios":       eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_chrome":    eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_firefox":   eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_slack":     eventnotification.DataSourceIBMEnSlackSubscription(),
-			"ibm_en_subscription_safari":    eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_destination_safari":     eventnotification.DataSourceIBMEnSafariDestination(),
-			"ibm_en_destination_msteams":    eventnotification.DataSourceIBMEnMSTeamsDestination(),
-			"ibm_en_subscription_msteams":   eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_destination_cf":         eventnotification.DataSourceIBMEnCFDestination(),
-			"ibm_en_subscription_cf":        eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_destination_pagerduty":  eventnotification.DataSourceIBMEnPagerDutyDestination(),
-			"ibm_en_subscription_pagerduty": eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_integration":            eventnotification.DataSourceIBMEnIntegration(),
-			"ibm_en_integrations":           eventnotification.DataSourceIBMEnIntegrations(),
-			"ibm_en_destination_sn":         eventnotification.DataSourceIBMEnServiceNowDestination(),
-			"ibm_en_subscription_sn":        eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_destination_ce":         eventnotification.DataSourceIBMEnCodeEngineDestination(),
-			"ibm_en_subscription_ce":        eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_destination_cos":        eventnotification.DataSourceIBMEnCOSDestination(),
-			"ibm_en_subscription_cos":       eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_destination_huawei":     eventnotification.DataSourceIBMEnHuaweiDestination(),
-			"ibm_en_subscription_huawei":    eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_sources":                eventnotification.DataSourceIBMEnSources(),
+			"ibm_en_source":                    eventnotification.DataSourceIBMEnSource(),
+			"ibm_en_destinations":              eventnotification.DataSourceIBMEnDestinations(),
+			"ibm_en_topic":                     eventnotification.DataSourceIBMEnTopic(),
+			"ibm_en_topics":                    eventnotification.DataSourceIBMEnTopics(),
+			"ibm_en_subscriptions":             eventnotification.DataSourceIBMEnSubscriptions(),
+			"ibm_en_destination_webhook":       eventnotification.DataSourceIBMEnWebhookDestination(),
+			"ibm_en_destination_android":       eventnotification.DataSourceIBMEnFCMDestination(),
+			"ibm_en_destination_ios":           eventnotification.DataSourceIBMEnAPNSDestination(),
+			"ibm_en_destination_chrome":        eventnotification.DataSourceIBMEnChromeDestination(),
+			"ibm_en_destination_firefox":       eventnotification.DataSourceIBMEnFirefoxDestination(),
+			"ibm_en_destination_slack":         eventnotification.DataSourceIBMEnSlackDestination(),
+			"ibm_en_subscription_sms":          eventnotification.DataSourceIBMEnSMSSubscription(),
+			"ibm_en_subscription_email":        eventnotification.DataSourceIBMEnEmailSubscription(),
+			"ibm_en_subscription_webhook":      eventnotification.DataSourceIBMEnWebhookSubscription(),
+			"ibm_en_subscription_android":      eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ios":          eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_chrome":       eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_firefox":      eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":        eventnotification.DataSourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":       eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":        eventnotification.DataSourceIBMEnSafariDestination(),
+			"ibm_en_destination_msteams":       eventnotification.DataSourceIBMEnMSTeamsDestination(),
+			"ibm_en_subscription_msteams":      eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_cf":            eventnotification.DataSourceIBMEnCFDestination(),
+			"ibm_en_subscription_cf":           eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_pagerduty":     eventnotification.DataSourceIBMEnPagerDutyDestination(),
+			"ibm_en_subscription_pagerduty":    eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_integration":               eventnotification.DataSourceIBMEnIntegration(),
+			"ibm_en_integrations":              eventnotification.DataSourceIBMEnIntegrations(),
+			"ibm_en_destination_sn":            eventnotification.DataSourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":           eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":            eventnotification.DataSourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":           eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_cos":           eventnotification.DataSourceIBMEnCOSDestination(),
+			"ibm_en_subscription_cos":          eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_huawei":        eventnotification.DataSourceIBMEnHuaweiDestination(),
+			"ibm_en_subscription_huawei":       eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_sources":                   eventnotification.DataSourceIBMEnSources(),
+			"ibm_en_destination_custom_email":  eventnotification.DataSourceIBMEnCustomEmailDestination(),
+			"ibm_en_subscription_custom_email": eventnotification.DataSourceIBMEnCustomEmailSubscription(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -840,7 +857,8 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_event_notification": project.DataSourceIbmProjectEventNotification(),
+			"ibm_project":        project.DataSourceIbmProject(),
+			"ibm_project_config": project.DataSourceIbmProjectConfig(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1194,12 +1212,20 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account_group": enterprise.ResourceIBMEnterpriseAccountGroup(),
 			"ibm_enterprise_account":       enterprise.ResourceIBMEnterpriseAccount(),
 
+			// //Added for Usage Reports
+			"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshot(),
+
 			// Added for Schematics
 			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),
 			"ibm_schematics_action":         schematics.ResourceIBMSchematicsAction(),
 			"ibm_schematics_job":            schematics.ResourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.ResourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
+			"ibm_schematics_policy":         schematics.ResourceIbmSchematicsPolicy(),
+			"ibm_schematics_agent":          schematics.ResourceIbmSchematicsAgent(),
+			"ibm_schematics_agent_prs":      schematics.ResourceIbmSchematicsAgentPrs(),
+			"ibm_schematics_agent_deploy":   schematics.ResourceIbmSchematicsAgentDeploy(),
+			"ibm_schematics_agent_health":   schematics.ResourceIbmSchematicsAgentHealth(),
 
 			// Added for Secrets Manager
 			"ibm_sm_secret_group":                                                secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmSecretGroup()),
@@ -1265,40 +1291,42 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
 
 			// Added for Event Notifications
-			"ibm_en_source":                 eventnotification.ResourceIBMEnSource(),
-			"ibm_en_topic":                  eventnotification.ResourceIBMEnTopic(),
-			"ibm_en_destination_webhook":    eventnotification.ResourceIBMEnWebhookDestination(),
-			"ibm_en_destination_android":    eventnotification.ResourceIBMEnFCMDestination(),
-			"ibm_en_destination_chrome":     eventnotification.ResourceIBMEnChromeDestination(),
-			"ibm_en_destination_firefox":    eventnotification.ResourceIBMEnFirefoxDestination(),
-			"ibm_en_destination_ios":        eventnotification.ResourceIBMEnAPNSDestination(),
-			"ibm_en_destination_slack":      eventnotification.ResourceIBMEnSlackDestination(),
-			"ibm_en_subscription_sms":       eventnotification.ResourceIBMEnSMSSubscription(),
-			"ibm_en_subscription_email":     eventnotification.ResourceIBMEnEmailSubscription(),
-			"ibm_en_subscription_webhook":   eventnotification.ResourceIBMEnWebhookSubscription(),
-			"ibm_en_subscription_android":   eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_ios":       eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_chrome":    eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_firefox":   eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_slack":     eventnotification.ResourceIBMEnSlackSubscription(),
-			"ibm_en_subscription_safari":    eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_safari":     eventnotification.ResourceIBMEnSafariDestination(),
-			"ibm_en_destination_msteams":    eventnotification.ResourceIBMEnMSTeamsDestination(),
-			"ibm_en_subscription_msteams":   eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_cf":         eventnotification.ResourceIBMEnCFDestination(),
-			"ibm_en_subscription_cf":        eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_pagerduty":  eventnotification.ResourceIBMEnPagerDutyDestination(),
-			"ibm_en_subscription_pagerduty": eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_integration":            eventnotification.ResourceIBMEnIntegration(),
-			"ibm_en_destination_sn":         eventnotification.ResourceIBMEnServiceNowDestination(),
-			"ibm_en_subscription_sn":        eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_ce":         eventnotification.ResourceIBMEnCodeEngineDestination(),
-			"ibm_en_subscription_ce":        eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_cos":        eventnotification.ResourceIBMEnCOSDestination(),
-			"ibm_en_subscription_cos":       eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_huawei":     eventnotification.ResourceIBMEnHuaweiDestination(),
-			"ibm_en_subscription_huawei":    eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_ibmsource":              eventnotification.ResourceIBMEnIBMSource(),
+			"ibm_en_source":                    eventnotification.ResourceIBMEnSource(),
+			"ibm_en_topic":                     eventnotification.ResourceIBMEnTopic(),
+			"ibm_en_destination_webhook":       eventnotification.ResourceIBMEnWebhookDestination(),
+			"ibm_en_destination_android":       eventnotification.ResourceIBMEnFCMDestination(),
+			"ibm_en_destination_chrome":        eventnotification.ResourceIBMEnChromeDestination(),
+			"ibm_en_destination_firefox":       eventnotification.ResourceIBMEnFirefoxDestination(),
+			"ibm_en_destination_ios":           eventnotification.ResourceIBMEnAPNSDestination(),
+			"ibm_en_destination_slack":         eventnotification.ResourceIBMEnSlackDestination(),
+			"ibm_en_subscription_sms":          eventnotification.ResourceIBMEnSMSSubscription(),
+			"ibm_en_subscription_email":        eventnotification.ResourceIBMEnEmailSubscription(),
+			"ibm_en_subscription_webhook":      eventnotification.ResourceIBMEnWebhookSubscription(),
+			"ibm_en_subscription_android":      eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ios":          eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_chrome":       eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_firefox":      eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":        eventnotification.ResourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":       eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":        eventnotification.ResourceIBMEnSafariDestination(),
+			"ibm_en_destination_msteams":       eventnotification.ResourceIBMEnMSTeamsDestination(),
+			"ibm_en_subscription_msteams":      eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_cf":            eventnotification.ResourceIBMEnCFDestination(),
+			"ibm_en_subscription_cf":           eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_pagerduty":     eventnotification.ResourceIBMEnPagerDutyDestination(),
+			"ibm_en_subscription_pagerduty":    eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_integration":               eventnotification.ResourceIBMEnIntegration(),
+			"ibm_en_destination_sn":            eventnotification.ResourceIBMEnServiceNowDestination(),
+			"ibm_en_subscription_sn":           eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_ce":            eventnotification.ResourceIBMEnCodeEngineDestination(),
+			"ibm_en_subscription_ce":           eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_cos":           eventnotification.ResourceIBMEnCOSDestination(),
+			"ibm_en_subscription_cos":          eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_huawei":        eventnotification.ResourceIBMEnHuaweiDestination(),
+			"ibm_en_subscription_huawei":       eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_ibmsource":                 eventnotification.ResourceIBMEnIBMSource(),
+			"ibm_en_destination_custom_email":  eventnotification.ResourceIBMEnCustomEmailDestination(),
+			"ibm_en_subscription_custom_email": eventnotification.ResourceIBMEnCustomEmailSubscription(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1342,7 +1370,8 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_instance": project.ResourceIbmProjectInstance(),
+			"ibm_project":        project.ResourceIbmProject(),
+			"ibm_project_config": project.ResourceIbmProjectConfig(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1492,6 +1521,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_schematics_workspace":                schematics.ResourceIBMSchematicsWorkspaceValidator(),
 				"ibm_schematics_inventory":                schematics.ResourceIBMSchematicsInventoryValidator(),
 				"ibm_schematics_resource_query":           schematics.ResourceIBMSchematicsResourceQueryValidator(),
+				"ibm_schematics_policy":                   schematics.ResourceIbmSchematicsPolicyValidator(),
 				"ibm_resource_instance":                   resourcecontroller.ResourceIBMResourceInstanceValidator(),
 				"ibm_resource_key":                        resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
@@ -1578,6 +1608,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_policy_template":         iampolicy.ResourceIBMIAMPolicyTemplateValidator(),
 				"ibm_iam_policy_template_version": iampolicy.ResourceIBMIAMPolicyTemplateVersionValidator(),
 
+				// // Added for Usage Reports
+				"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshotValidator(),
+
 				// // Added for Secrets Manager
 				"ibm_sm_secret_group":                                                secretsmanager.ResourceIbmSmSecretGroupValidator(),
 				"ibm_sm_en_registration":                                             secretsmanager.ResourceIbmSmEnRegistrationValidator(),
@@ -1594,7 +1627,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
 
 				// Added for Project
-				"ibm_project_instance": project.ResourceIbmProjectInstanceValidator(),
+				"ibm_project":        project.ResourceIbmProjectValidator(),
+				"ibm_project_config": project.ResourceIbmProjectConfigValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

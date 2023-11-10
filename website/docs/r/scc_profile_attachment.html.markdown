@@ -10,7 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete profile attachments with this resource.
 
-~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.ibm.com`).
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
@@ -58,9 +58,11 @@ Nested schema for **scope**:
 	* `properties` - (List) The properties supported for scoping by this environment.
 	  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
 	Nested schema for **properties**:
-		* `name` - (String) The name of the property.
+        -> NOTE: Defining the `scope_type` value must be either `account`, `account.resource_group`, `enterprise`, `enterprise.account` and `enterprise.account_group`."
+        -> NOTE: Defining the `scope_id` value will be the id of the `scope_type`(ex. `enterprise.account_group` will be the ID of the account_group within an enterprise)
+		* `name` - (Required, String) The name of the property.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
-		* `value` - (String) The value of the property.
+		* `value` - (Required, String) The value of the property.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `notifications` - (List) The request payload of the attachment notifications.
 Nested schema for **notifications**:

@@ -27,6 +27,7 @@ Review the argument references that you can specify for your resource.
 - `secret_name` - (Required, String) The name of the kubernetes secret.
 - `secret_namespace` - (Required, string) The namespace of the kubernetes secret.
 - `cert_crn` - (Required, string) The Secrets Manager crn for a secret of type certificate.
+- `update_secret` - (Optional, Integer) This argument is used to force update from upstream secrets manager instance that stores secret. Increment the value to force an update to your Ingress secret for changes made to the upstream secrets manager secret. 
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

@@ -19,7 +19,7 @@ import (
 )
 
 func DataSourceIbmSccProviderTypeCollection() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccProviderTypeCollectionRead,
 
 		Schema: map[string]*schema.Schema{
@@ -115,7 +115,7 @@ func DataSourceIbmSccProviderTypeCollection() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccProviderTypeCollectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -125,6 +125,7 @@ func dataSourceIbmSccProviderTypeCollectionRead(context context.Context, d *sche
 	}
 
 	listProviderTypesOptions := &securityandcompliancecenterapiv3.ListProviderTypesOptions{}
+	listProviderTypesOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	providerTypesCollection, response, err := securityAndComplianceCenterApIsClient.ListProviderTypesWithContext(context, listProviderTypesOptions)
 	if err != nil {
