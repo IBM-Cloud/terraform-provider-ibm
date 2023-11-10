@@ -2291,25 +2291,23 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 }
 
 func waitForICDReady(meta interface{}, instanceID string) error {
-	icdId := flex.EscapeUrlParm(instanceID)
-
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
 	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
 		ID: core.StringPtr(instanceID),
 	}
 
-	err := retry(func() (err error) {
-		getDeploymentInfoResponse, response, infoErr := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
+	err = retry(func() (err error) {
+		_, response, infoErr := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 		if infoErr != nil {
 			if response.StatusCode == 404 {
-				return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
+				return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
+			return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err)
 		}
 		return nil
 	})
