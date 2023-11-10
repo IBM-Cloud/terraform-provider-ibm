@@ -2307,7 +2307,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 			if response.StatusCode == 404 {
 				return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 			}
-			return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err)
+			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s", instanceID, err)
 		}
 		return nil
 	})
