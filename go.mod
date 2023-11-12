@@ -1,6 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.18
+go 1.20
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20231017073329-75ebe90c98ba
@@ -198,6 +198,7 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.11.0 // indirect
+	github.ibm.com/ibmcloud/networking-go-sdk v1.1.2 // indirect
 	go.mongodb.org/mongo-driver v1.11.6 // indirect
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
