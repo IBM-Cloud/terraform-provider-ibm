@@ -4,14 +4,23 @@
 package acctest
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
+	"sync"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
+)
+
+const (
+	ProviderName          = "ibm"
+	ProviderNameAlternate = "ibmalternate"
 )
 
 var (
@@ -146,7 +155,6 @@ var (
 	IksClusterVpcID           string
 	IksClusterSubnetID        string
 	IksClusterResourceGroupID string
-	IcdDbRegion               string
 	IcdDbDeploymentId         string
 	IcdDbBackupId             string
 	IcdDbTaskId               string
@@ -309,6 +317,9 @@ var (
 // for IAM Identity
 var IamIdentityAssignmentTargetAccountId string
 
+// Projects
+var ProjectsConfigApiKey string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -316,6 +327,11 @@ func init() {
 	}
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
+
+	ProjectsConfigApiKey = os.Getenv("IBM_PROJECTS_CONFIG_APIKEY")
+	if ProjectsConfigApiKey == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PROJECTS_CONFIG_APIKEY for testing IBM Projects Config resources, the tests will fail if this is not set")
+	}
 
 	AppIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if AppIDTenantID == "" {
@@ -848,12 +864,6 @@ func init() {
 	if ISSnapshotCRN == "" {
 		ISSnapshotCRN = "crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx"
 		fmt.Println("[INFO] Set the environment variable ISSnapshotCRN for ibm_is_snapshot resource else it is set to default value 'crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx'")
-	}
-
-	IcdDbRegion = os.Getenv("ICD_DB_REGION")
-	if IcdDbRegion == "" {
-		IcdDbRegion = "eu-gb"
-		fmt.Println("[INFO] Set the environment variable ICD_DB_REGION for testing ibm_cloud_databases else it is set to default value 'eu-gb'")
 	}
 
 	IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
@@ -1522,10 +1532,18 @@ var (
 	TestAccProvider  *schema.Provider
 )
 
+// testAccProviderConfigure ensures Provider is only configured once
+//
+// The PreCheck(t) function is invoked for every test and this prevents
+// extraneous reconfiguration to the same values each time. However, this does
+// not prevent reconfiguration that may happen should the address of
+// Provider be errantly reused in ProviderFactories.
+var testAccProviderConfigure sync.Once
+
 func init() {
 	TestAccProvider = provider.Provider()
 	TestAccProviders = map[string]*schema.Provider{
-		"ibm": TestAccProvider,
+		ProviderName: TestAccProvider,
 	}
 }
 
@@ -1549,6 +1567,13 @@ func TestAccPreCheck(t *testing.T) {
 	if v := os.Getenv("IAAS_CLASSIC_USERNAME"); v == "" {
 		t.Fatal("IAAS_CLASSIC_USERNAME must be set for acceptance tests")
 	}
+
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(context.Background(), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider: %s", diags[0].Summary)
+		}
+	})
 }
 
 func TestAccPreCheckEnterprise(t *testing.T) {
@@ -1687,4 +1712,46 @@ func TestAccPreCheckScc(t *testing.T) {
 	if SccReportID == "" {
 		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
 	}
+}
+
+func TestAccProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		ProviderName:          func() (*schema.Provider, error) { return provider.Provider(), nil },
+		ProviderNameAlternate: func() (*schema.Provider, error) { return provider.Provider(), nil },
+	}
+}
+
+func Region() string {
+	region, _ := schema.MultiEnvDefaultFunc([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south")()
+
+	return region.(string)
+}
+
+func RegionAlternate() string {
+	region, _ := schema.MultiEnvDefaultFunc([]string{"IC_REGION_ALTERNATE", "IBMCLOUD_REGION_ALTERNATE"}, "eu-gb")()
+
+	return region.(string)
+}
+
+func ConfigAlternateRegionProvider() string {
+	return configNamedRegionalProvider(ProviderNameAlternate, RegionAlternate())
+}
+
+// ConfigCompose can be called to concatenate multiple strings to build test configurations
+func ConfigCompose(config ...string) string {
+	var str strings.Builder
+
+	for _, conf := range config {
+		str.WriteString(conf)
+	}
+
+	return str.String()
+}
+
+func configNamedRegionalProvider(providerName string, region string) string {
+	return fmt.Sprintf(`
+provider %[1]q {
+  region = %[2]q
+}
+`, providerName, region)
 }
