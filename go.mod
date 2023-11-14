@@ -13,7 +13,7 @@ require (
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918
 	github.com/IBM/container-registry-go-sdk v1.1.0
-	github.com/IBM/continuous-delivery-go-sdk v1.2.1
+	github.com/IBM/continuous-delivery-go-sdk v1.3.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.7
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
@@ -24,7 +24,7 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
 	github.com/IBM/networking-go-sdk v0.42.2
-	github.com/IBM/platform-services-go-sdk v0.52.0
+	github.com/IBM/platform-services-go-sdk v0.53.1
 	github.com/IBM/project-go-sdk v0.0.99
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.3

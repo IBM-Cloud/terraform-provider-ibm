@@ -33,7 +33,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -50,7 +50,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -64,7 +64,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
@@ -79,7 +79,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
@@ -116,7 +116,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
@@ -138,7 +138,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
@@ -156,7 +156,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
@@ -173,7 +173,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "node_count", "4"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
@@ -212,7 +212,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
@@ -234,7 +234,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
@@ -256,7 +256,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
@@ -277,7 +277,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "node_count", "4"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
@@ -322,7 +322,7 @@ func TestAccIBMDatabaseInstanceElasticsearchPlatinumImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "platinum"),
-					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
 				),
 			},
 			{
@@ -354,7 +354,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		adminpassword                = "password12"
 		group {
 			group_id = "member"
-  
+
 			memory {
 			  allocation_mb = 1024
 			}
@@ -377,7 +377,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(databaseResourceGroup string, name string) string {
@@ -418,7 +418,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(database
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourceGroup string, name string) string {
@@ -442,7 +442,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourc
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(databaseResourceGroup string, name string) string {
@@ -477,7 +477,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(database
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResourceGroup string, name string) string {
@@ -525,7 +525,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(databaseResourceGroup string, name string) string {
@@ -580,7 +580,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseResourceGroup string, name string) string {
@@ -619,7 +619,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseRes
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseResourceGroup string, name string) string {
@@ -658,7 +658,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseRe
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseResourceGroup string, name string) string {
@@ -707,7 +707,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(databaseResourceGroup string, name string) string {
@@ -764,7 +764,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseResourceGroup string, name string) string {
@@ -804,7 +804,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseRe
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseResourceGroup string, name string) string {
@@ -843,7 +843,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseR
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResourceGroup string, name string) string {
@@ -867,5 +867,5 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResource
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
