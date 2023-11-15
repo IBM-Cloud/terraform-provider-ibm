@@ -330,7 +330,7 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			"ttl": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: StringIsIntBetween(60, 7776000),
+				ValidateFunc: StringIsIntBetween(86400, 7776000),
 				Description:  "The time-to-live (TTL) or lease duration to assign to generated credentials.",
 			},
 			"updated_at": &schema.Schema{

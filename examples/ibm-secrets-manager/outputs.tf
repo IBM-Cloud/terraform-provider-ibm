@@ -45,6 +45,12 @@ output "ibm_sm_iam_credentials_secret" {
   value       = ibm_sm_iam_credentials_secret.sm_iam_credentials_secret_instance
   description = "sm_iam_credentials_secret resource instance"
 }
+// This allows sm_service_credentials_secret data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_service_credentials_secret" {
+  value       = ibm_sm_service_credentials_secret.sm_service_credentials_secret_instance
+  description = "sm_service_credentials_secret resource instance"
+}
 // This allows sm_arbitrary_secret data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
 output "ibm_sm_arbitrary_secret" {

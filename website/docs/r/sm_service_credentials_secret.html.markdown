@@ -26,6 +26,15 @@ resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret" {
 		unit = "day"
   }
   secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
+  source_service {
+	instance {
+		crn = "crn:v1:staging:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
+	}
+	role {
+		crn = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
+	}
+	parameters = {"HMAC": true}
+  }
   ttl = "1800"
 }
 ```
@@ -38,19 +47,18 @@ Review the argument reference that you can specify for your resource.
 * `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
     * Constraints: Allowable values are: `private`, `public`.
+* `name` - (Required, String) The human-readable name of your secret.
+    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
-* `name` - (Required, String) The human-readable name of your secret.
-    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
 	* `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
 	* `interval` - (Optional, Integer) The length of the secret rotation time interval.
 	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Optional, Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 	* `unit` - (Optional, String) The units for the secret rotation time interval.
 	  * Constraints: Allowable values are: `day`, `month`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
@@ -59,21 +67,12 @@ Nested scheme for **rotation**:
 Nested scheme for **source_service**:
     * `instance` - (Optional, List) The source service instance identifier.
       Nested scheme for **instance**:
-      * `crn` - (Optional, String) A CRN that uniquely identifies a service credentials source.
-    * `parameters` - (Optional, List) Configuration options represented as key-value pairs. Service-defined options are used in the generation of credentials for some services. For example, Cloud Object Storage accepts the optional boolean parameter HMAC for creating specific kind of credentials.
+          * `crn` - (Optional, String) A CRN that uniquely identifies a service credentials source.
     * `role` - (Optional, List) The service-specific custom role object, CRN role is accepted. Refer to the service’s documentation for supported roles.
       Nested scheme for **role**:
-        * `crn` - (Optional, String) The service role CRN.
-    * `iam` - (Optional, List) The source service IAM data is returned in case IAM credentials where created for this secret.
-      Nested scheme for **iam**:
-        * `apikey` - (Optional, String) The IAM apikey metadata for the IAM credentials that were generated.
-        * `role` - (Optional, String) The IAM role for the generate service credentials.
-        * `serviceid` - (Optional, String) The IAM serviceid for the generated service credentials.
-    * `resource_key` - (Optional, List) The source service resource key data of the generated service credentials.
-      Nested scheme for **resource_key**:
-        * `crn` - (Optional, String) The resource key CRN of the generated service credentials.
-        * `name` - (Optional, String) The resource key name of the generated service credentials.
-* `ttl` - (Required, String) The time-to-live (TTL) or lease duration to assign to generated credentials. The TTL defines for how long each generated API key remains valid. The value should be an integer that specifies the number of seconds. Minimum duration is 60 seconds. Maximum is 7776000 seconds (90 days).
+          * `crn` - (Optional, String) The service role CRN.
+    * `parameters` - (Optional, List) Configuration options represented as key-value pairs. Service-defined options are used in the generation of credentials for some services. For example, Cloud Object Storage accepts the optional boolean parameter HMAC for creating specific kind of credentials.
+* `ttl` - (Required, String) The time-to-live (TTL) or lease duration to assign to generated credentials. The TTL defines for how long generated credentials remain valid. The value should be a string that specifies the number of seconds. Minimum duration is 86400 (1 day). Maximum is 7776000 seconds (90 days).
   * Constraints: The maximum length is `7` characters. The minimum length is `2` characters. 
 
 ## Attribute Reference
@@ -84,12 +83,43 @@ In addition to all argument references listed, you can access the following attr
 * `created_at` - (String) The date when a resource was created. The date format follows RFC 3339.
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
   * Constraints: The maximum length is `128` characters. The minimum length is `4` characters.
+* `credentials` - (List) The properties of the service credentials secret payload.
+  Nested scheme for **credentials**:
+      * `apikey` - (String) The API key that is generated for this secret.
+      * `cos_hmac_keys` - (String) The Cloud Object Storage HMAC keys that are returned after you create a service credentials secret.
+        Nested scheme for **cos_hmac_keys**:
+            * `access_key_id` - (String) The access key ID for Cloud Object Storage HMAC credentials.
+            * `secret_access_key` - (String) The secret access key ID for Cloud Object Storage HMAC credentials.
+      * `endpoints` - (String) The endpoints that are returned after you create a service credentials secret.
+      * `iam_apikey_description` - (String) The description of the generated IAM API key.
+      * `iam_apikey_name` - (String) The name of the generated IAM API key.
+      * `iam_role_crn` - (String) The IAM role CRN that is returned after you create a service credentials secret.
+      * `iam_serviceid_crn` - (String) The IAM serviceId CRN that is returned after you create a service credentials secret.
+      * `resource_instance_id` - (String) The resource instance CRN that is returned after you create a service credentials secret.
 * `crn` - (String) A CRN that uniquely identifies an IBM Cloud resource.
   * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 * `downloaded` - (Boolean) Indicates whether the secret data that is associated with a secret version was retrieved in a call to the service API.
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
+* `source_service` - (List) The properties required for creating the service credentials for the specified source service instance.
+  Nested scheme for **source_service**:
+      * `iam` - (List) The source service IAM data is returned in case IAM credentials where created for this secret.
+        Nested scheme for **iam**:
+            * `apikey` - (String) The IAM apikey metadata for the IAM credentials that were generated.
+              Nested scheme for **apikey**:
+                  * `name` - (String) The IAM API key name for the generated service credentials.
+                  * `description` - (String) The IAM API key description for the generated service credentials.
+            * `role` - (String) The IAM role for the generate service credentials.
+              Nested scheme for **role**:
+                  * `crn` - (String) The IAM role CRN assigned to the generated service credentials.
+            * `serviceid` - (String) The IAM serviceid for the generated service credentials.
+              Nested scheme for **serviceid**:
+                  * `crn` - (String) The IAM Service ID CRN.
+      * `resource_key` - (List) The source service resource key data of the generated service credentials.
+        Nested scheme for **resource_key**:
+            * `crn` - (String) The resource key CRN of the generated service credentials.
+            * `name` - (String) The resource key name of the generated service credentials.
 * `state` - (Integer) The secret state that is based on NIST SP 800-57. States are integers and correspond to the `Pre-activation = 0`, `Active = 1`,  `Suspended = 2`, `Deactivated = 3`, and `Destroyed = 5` values.
   * Constraints: Allowable values are: `0`, `1`, `2`, `3`, `5`.
 * `state_description` - (String) A text representation of the secret state.
