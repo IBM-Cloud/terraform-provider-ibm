@@ -12,7 +12,7 @@ import (
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_Basic(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -41,7 +41,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_Basic(t *testing.T) {
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_Without_Public_Access(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -69,7 +69,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_Without_Public_Access(t *t
 }
 func TestAccIBMCosBucket_Website_Configuration_Bucket_Index_Document_Only(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -96,7 +96,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_Index_Document_Only(t *tes
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Routing_Rule(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -133,7 +133,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Routing_Rule(t *testi
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_With_JSON_Routing_Rule(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -163,7 +163,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_With_JSON_Routing_Rule(t *
 }
 func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Routing_Rule_Condition_Only(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -192,7 +192,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Routing_Rule_Conditio
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Routing_Rule_Redirect_Only(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -227,7 +227,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Routing_Rule_Redirect
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Multiple_Routing_Rules(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -263,7 +263,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_With_Multiple_Routing_Rule
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_Upload_Object_With_Redirect(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -293,7 +293,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_Upload_Object_With_Redirec
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_Empty_Config(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -312,7 +312,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_Empty_Config(t *testing.T)
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_Index_And_Redirect_Together(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
@@ -333,7 +333,7 @@ func TestAccIBMCosBucket_Website_Configuration_Bucket_Index_And_Redirect_Togethe
 
 func TestAccIBMCosBucket_Website_Configuration_Bucket_No_Config(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("terraformStaticWebHosting%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-static-web-hosting%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us"
 	bucketClass := "standard"
 	bucketRegionType := "cross_region_location"
