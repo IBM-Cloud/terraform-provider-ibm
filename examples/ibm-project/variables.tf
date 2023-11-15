@@ -22,6 +22,13 @@ variable "project_resource_group" {
   default     = "Default"
 }
 
+// Resource arguments for project_environment
+variable "project_environment_project_id" {
+  description = "The unique project ID."
+  type        = string
+  default     = "project_id"
+}
+
 // Data source arguments for project_config
 variable "project_config_project_id" {
   description = "The unique project ID."
@@ -39,4 +46,16 @@ variable "project_id" {
   description = "The unique project ID."
   type        = string
   default     = "project_id"
+}
+
+// Data source arguments for project_environment
+variable "project_environment_project_id" {
+  description = "The unique project ID."
+  type        = string
+  default     = "project_id"
+}
+variable "project_environment_id" {
+  description = "The environment ID."
+  type        = string
+  default     = "project_environment_id"
 }

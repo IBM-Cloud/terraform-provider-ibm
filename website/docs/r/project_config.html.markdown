@@ -16,7 +16,6 @@ Create, update, and delete project_configs with this resource.
 resource "ibm_project_config" "project_config_instance" {
   definition {
     name = "static-website-dev"
-    labels = [ "env:dev", "billing:internal" ]
     description = "Website - development"
     authorizations {
       method = "api_key"
