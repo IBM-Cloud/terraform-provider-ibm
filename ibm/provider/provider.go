@@ -859,6 +859,7 @@ func Provider() *schema.Provider {
 			// Added for Project
 			"ibm_project":        project.DataSourceIbmProject(),
 			"ibm_project_config": project.DataSourceIbmProjectConfig(),
+			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1372,6 +1373,7 @@ func Provider() *schema.Provider {
 			// Added for Project
 			"ibm_project":        project.ResourceIbmProject(),
 			"ibm_project_config": project.ResourceIbmProjectConfig(),
+			"ibm_project_environment": project.ResourceIbmProjectEnvironment(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1629,6 +1631,7 @@ func Validator() validate.ValidatorDict {
 				// Added for Project
 				"ibm_project":        project.ResourceIbmProjectValidator(),
 				"ibm_project_config": project.ResourceIbmProjectConfigValidator(),
+				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
