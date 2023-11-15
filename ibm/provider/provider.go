@@ -710,6 +710,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecret()),
 			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecret()),
 			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecret()),
+			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
 			// //Added for Satellite
@@ -1234,6 +1235,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_public_certificate":                                          secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificate()),
 			"ibm_sm_private_certificate":                                         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificate()),
 			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsSecret()),
+			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmUsernamePasswordSecret()),
 			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmKvSecret()),
 			"ibm_sm_public_certificate_configuration_ca_lets_encrypt":            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateConfigurationCALetsEncrypt()),
