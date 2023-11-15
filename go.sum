@@ -123,8 +123,8 @@ github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918 h1:RfHezAVs
 github.com/IBM/code-engine-go-sdk v0.0.0-20230606173928-4863db061918/go.mod h1:IP6U/1NxgxzPeYdyiEwMaZyzelTw82JGHWl7bY78eQM=
 github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
 github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
-github.com/IBM/continuous-delivery-go-sdk v1.2.1 h1:MVclWmjW6LevbYgrA7PGJzS+Dmqy3/JBYUpBp/ct+Vk=
-github.com/IBM/continuous-delivery-go-sdk v1.2.1/go.mod h1:oW51tS5/MDCcEM7lUvjK1H9GFC/oKsRbyYfmvGyMGmw=
+github.com/IBM/continuous-delivery-go-sdk v1.3.0 h1:WsILMVpNWD/5G40ltWeXbOj4y5ODQSq1hKXAnDJuNjw=
+github.com/IBM/continuous-delivery-go-sdk v1.3.0/go.mod h1:oW51tS5/MDCcEM7lUvjK1H9GFC/oKsRbyYfmvGyMGmw=
 github.com/IBM/event-notifications-go-admin-sdk v0.2.7 h1:Y6YPiXZO3/oAhs7rY6ekowJAsf9J05g2UFq3wjFkuCs=
 github.com/IBM/event-notifications-go-admin-sdk v0.2.7/go.mod h1:iI6/TJt4GQBDsl8NYzoIYGnsNjMG0kOVIEl7mcM5v1E=
 github.com/IBM/eventstreams-go-sdk v1.4.0 h1:yS/Ns29sBOe8W2tynQmz9HTKqQZ0ckse4Py5Oy/F2rM=
@@ -155,8 +155,8 @@ github.com/IBM/keyprotect-go-client v0.12.2 h1:Cjxcqin9Pl0xz3MnxdiVd4v/eIa79xL3h
 github.com/IBM/keyprotect-go-client v0.12.2/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
 github.com/IBM/networking-go-sdk v0.42.2 h1:caqjx4jyFHi10Vlf3skHvlL6K3YJRVstsmCBmvdyqkA=
 github.com/IBM/networking-go-sdk v0.42.2/go.mod h1:lTUZwtUkMANMnrLHFIgRhHrkBfwASY/Iho1fabaPHxo=
-github.com/IBM/platform-services-go-sdk v0.52.0 h1:hbf640xE8T0Rwy2IUf5Pu4OATabGS4IDMnEInXUXs4o=
-github.com/IBM/platform-services-go-sdk v0.52.0/go.mod h1:6LxcUhIaSLP4SuQJXF9oLXBamSQogs5D9BcVwr4hmfU=
+github.com/IBM/platform-services-go-sdk v0.53.1 h1:axpK4dzlf+C+KgHQZWXoKSUMoV2t6OrR5kGGumUEXrI=
+github.com/IBM/platform-services-go-sdk v0.53.1/go.mod h1:CWSprvsCsXWvujmBzbtoJSmbRZS9FVV3O594b0t/GiM=
 github.com/IBM/project-go-sdk v0.1.1 h1:x1PkGUTkKpgxoXs/6IG4U1mk5BgaPEaRMVpXTs52rE4=
 github.com/IBM/project-go-sdk v0.1.1/go.mod h1:lqe0M4cKvABI1iHR1b+KfasVcxQL6nl2VJ8eOyQs8Ig=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=

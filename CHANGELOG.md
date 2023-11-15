@@ -1,3 +1,24 @@
+# 1.60.0-beta0 (Nov 15, 2023)
+Features
+* Support for Projects
+   - **Datasources**
+       - ibm_project
+       - ibm_project_config 
+   - **Resources**
+        - ibm_project
+        - ibm_project_config 
+Enhancements
+* support offline restore for MongoDB EE PITR ([4601](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4601))
+* bump ContinuousDelivery Go SDK version ([4918](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4918))
+* Added nest conditions to rule.conditions IAM Policies ([4896](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4896))
+* Updates to SCC tool ([4920](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4920))
+
+BugFixes
+* resolved nil pointer issue on vpn gateway resource ([4903](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4903))
+* Private/direct COS endpoint settings conflicts with IBM Cloud docs, VPE options, and COS config endpoint ([4919](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4919))
+* add missing required argument name to the doc ([4909](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4909))
+
+
 # 1.59.0 (Oct 30, 2023)
 
 Features
