@@ -314,6 +314,11 @@ var (
 	CeResourceKeyID     string
 )
 
+// Satellite tests
+var (
+	SatelliteSSHPubKey string
+)
+
 // for IAM Identity
 var IamIdentityAssignmentTargetAccountId string
 
@@ -1525,6 +1530,11 @@ func init() {
 		CeResourceKeyID = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_KEY_ID with the ID of a resource key to access a service instance")
 	}
+
+	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
+	if SatelliteSSHPubKey == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
+	}
 }
 
 var (
@@ -1711,6 +1721,13 @@ func TestAccPreCheckScc(t *testing.T) {
 
 	if SccReportID == "" {
 		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
+	}
+}
+
+func TestAccPreCheckSatelliteSSH(t *testing.T) {
+	TestAccPreCheck(t)
+	if SatelliteSSHPubKey == "" {
+		t.Fatal("IBM_SATELLITE_SSH_PUB_KEY missing. Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a VALID ssh public key")
 	}
 }
 
