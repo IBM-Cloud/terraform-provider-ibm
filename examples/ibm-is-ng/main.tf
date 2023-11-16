@@ -1399,3 +1399,12 @@ resource "ibm_is_image_deprecate" "example" {
 resource "ibm_is_image_obsolete" "example" {
   image     = ibm_is_image.image1.id
 }
+
+resource "ibm_is_share" "share" {
+  zone    = "us-east-1"
+  source_share_crn = "crn:v1:staging:public:is:us-south-1:a/efe5afc483594adaa8325e2b4d1290df::share:r134-d8c8821c-a227-451d-a9ed-0c0cd2358829"
+  encryption_key = "crn:v1:staging:public:kms:us-south:a/efe5afc483594adaa8325e2b4d1290df:1be45161-6dae-44ca-b248-837f98004057:key:3dd21cc5-cc20-4f7c-bc62-8ec9a8a3d1bd"
+  replication_cron_spec = "5 * * * *"
+  name    = "tfp-temp-crr"
+  profile = "dp2"
+}
