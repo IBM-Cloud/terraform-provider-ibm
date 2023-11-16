@@ -586,6 +586,30 @@ func ResourceIbmIsShare() *schema.Resource {
 				Computed:    true,
 				Description: "The completed date and time of last synchronization of the replica share to its source.",
 			},
+			"latest_sync": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Information about the latest synchronization for this file share.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"completed_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The completed date and time of last synchronization between the replica share and its source.",
+						},
+						"data_transferred": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The data transferred (in bytes) in the last synchronization between the replica and its source.",
+						},
+						"started_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The start date and time of last synchronization between the replica share and its source.",
+						},
+					},
+				},
+			},
 			"latest_job": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -1106,13 +1130,15 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
-	if share.LastSyncStartedAt != nil {
-		d.Set("last_sync_started_at", share.LastSyncStartedAt.String())
+	latest_syncs := []map[string]interface{}{}
+	if share.LatestSync != nil {
+		latest_sync := make(map[string]interface{})
+		latest_sync["completed_at"] = flex.DateTimeToString(share.LatestSync.CompletedAt)
+		latest_sync["data_transferred"] = *share.LatestSync.DataTransferred
+		latest_sync["started_at"] = flex.DateTimeToString(share.LatestSync.CompletedAt)
+		latest_syncs = append(latest_syncs, latest_sync)
 	}
-
-	if share.LastSyncCompletedAt != nil {
-		d.Set("last_sync_completed_at", share.LastSyncCompletedAt.String())
-	}
+	d.Set("latest_sync", latest_syncs)
 	latest_jobs := []map[string]interface{}{}
 	if share.LatestJob != nil {
 		latest_job := make(map[string]interface{})
