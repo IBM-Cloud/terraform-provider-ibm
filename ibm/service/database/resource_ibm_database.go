@@ -6,6 +6,7 @@ package database
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -50,8 +51,24 @@ const (
 	databaseTaskFailStatus     = "failed"
 )
 
+const (
+	databaseUserSpecialChars   = "-_"
+	opsManagerUserSpecialChars = "~!@#$%^&*()_-=+[]{}|;:,.<>/?"
+)
+
+const (
+	redisRBACRoleRegexPattern = `([+-][a-z]+\s?)+`
+)
+
+type DatabaseUser struct {
+	Username string
+	Password string
+	Role     string
+	Type     string
+}
+
 type userChange struct {
-	Old, New map[string]interface{}
+	Old, New *DatabaseUser
 }
 
 func retry(f func() error) (err error) {
@@ -84,7 +101,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 
 		CustomizeDiff: customdiff.All(
 			resourceIBMDatabaseInstanceDiff,
-			checkV5Groups),
+			validateGroupsDiff,
+			validateUsersDiff),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -157,7 +175,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "The admin user password for the instance",
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringLenBetween(10, 32),
+				ValidateFunc: validation.StringLenBetween(15, 32),
 				Sensitive:    true,
 				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 				//  return true
@@ -258,7 +276,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							Sensitive:    true,
-							ValidateFunc: validation.StringLenBetween(10, 32),
+							ValidateFunc: validation.StringLenBetween(15, 32),
 						},
 						"type": {
 							Description:  "User type",
@@ -968,50 +986,6 @@ func getGroups(instanceID string, meta interface{}) (groups []clouddatabasesv5.G
 	return groupsResponse.Groups, nil
 }
 
-// V5 Groups
-func checkGroupScaling(groupId string, resourceName string, value int, resource *GroupResource, nodeCount int) error {
-	if nodeCount == 0 {
-		nodeCount = 1
-	}
-	if resource.StepSize == 0 {
-		return fmt.Errorf("%s group must have members scaled > 0 before scaling %s", groupId, resourceName)
-	}
-	if value < resource.Minimum/nodeCount || value > resource.Maximum/nodeCount || value%(resource.StepSize/nodeCount) != 0 {
-		if !(value == 0 && resource.IsOptional) {
-			return fmt.Errorf("%s group %s must be >= %d and <= %d in increments of %d", groupId, resourceName, resource.Minimum/nodeCount, resource.Maximum/nodeCount, resource.StepSize/nodeCount)
-		}
-	}
-	if value != resource.Allocation/nodeCount && !resource.IsAdjustable {
-		return fmt.Errorf("%s can not change %s value after create", groupId, resourceName)
-	}
-	if value < resource.Allocation/nodeCount && !resource.CanScaleDown {
-		return fmt.Errorf("can not scale %s group %s below %d to %d", groupId, resourceName, resource.Allocation/nodeCount, value)
-	}
-	return nil
-}
-
-func checkGroupValue(name string, limits GroupResource, divider int, diff *schema.ResourceDiff) error {
-	if diff.HasChange(name) {
-		oldSetting, newSetting := diff.GetChange(name)
-		old := oldSetting.(int)
-		new := newSetting.(int)
-
-		if new < limits.Minimum/divider || new > limits.Maximum/divider || new%(limits.StepSize/divider) != 0 {
-			if !(new == 0 && limits.IsOptional) {
-				return fmt.Errorf("%s must be >= %d and <= %d in increments of %d", name, limits.Minimum/divider, limits.Maximum/divider/divider, limits.StepSize/divider)
-			}
-		}
-		if old != new && !limits.IsAdjustable {
-			return fmt.Errorf("%s can not change value after create", name)
-		}
-		if new < old && !limits.CanScaleDown {
-			return fmt.Errorf("%s can not scale down from %d to %d", name, old, new)
-		}
-		return nil
-	}
-	return nil
-}
-
 type CountLimit struct {
 	Units           string
 	AllocationCount int
@@ -1434,9 +1408,9 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 		}
 
-		for _, user := range userList.(*schema.Set).List() {
-			userEl := user.(map[string]interface{})
-			err := userUpdateCreate(userEl, instanceID, meta, d)
+		users := expandUsers(userList.(*schema.Set).List())
+		for _, user := range users {
+			err := userUpdateOrCreate(user, instanceID, meta, d)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -1983,37 +1957,15 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 	if d.HasChange("users") {
 		oldUsers, newUsers := d.GetChange("users")
-		userChanges := make(map[string]*userChange)
-		userKey := func(raw map[string]interface{}) string {
-			if raw["role"].(string) != "" {
-				return fmt.Sprintf("%s-%s-%s", raw["type"].(string), raw["role"].(string), raw["name"].(string))
-			} else {
-				return fmt.Sprintf("%s-%s", raw["type"].(string), raw["name"].(string))
-			}
-		}
-
-		for _, raw := range oldUsers.(*schema.Set).List() {
-			user := raw.(map[string]interface{})
-			k := userKey(user)
-			userChanges[k] = &userChange{Old: user}
-		}
-
-		for _, raw := range newUsers.(*schema.Set).List() {
-			user := raw.(map[string]interface{})
-			k := userKey(user)
-			if _, ok := userChanges[k]; !ok {
-				userChanges[k] = &userChange{}
-			}
-			userChanges[k].New = user
-		}
+		userChanges := expandUserChanges(oldUsers.(*schema.Set).List(), newUsers.(*schema.Set).List())
 
 		for _, change := range userChanges {
 			// Delete Old User
-			if change.Old != nil && change.New == nil {
+			if change.isDelete() {
 				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteDatabaseUserOptions{
 					ID:       &instanceID,
-					UserType: core.StringPtr(change.Old["type"].(string)),
-					Username: core.StringPtr(change.Old["name"].(string)),
+					UserType: core.StringPtr(change.Old.Type),
+					Username: core.StringPtr(change.Old.Username),
 				}
 
 				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteDatabaseUser(deleteDatabaseUserOptions)
@@ -2035,16 +1987,13 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 				continue
 			}
 
-			if change.New != nil {
-				// No change
-				if change.Old != nil && change.Old["password"].(string) == change.New["password"].(string) && change.Old["name"].(string) == change.New["name"].(string) {
-					continue
-				}
+			if !change.isUpdate() {
+				continue
+			}
 
-				err := userUpdateCreate(change.New, instanceID, meta, d)
-				if err != nil {
-					return diag.FromErr(err)
-				}
+			err := userUpdateOrCreate(change.New, instanceID, meta, d)
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -2732,7 +2681,103 @@ func expandGroups(_groups []interface{}) []*Group {
 	return groups
 }
 
-func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+// Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
+func userUpdateOrCreate(user *DatabaseUser, instanceID string, meta interface{}, d *schema.ResourceData) (err error) {
+	cloudDatabasesClient, _ := meta.(conns.ClientSession).CloudDatabasesV5()
+
+	var createUser = false
+
+	// Check if updating user is supported
+	if user.isUpdatable() {
+		// Attempt to update user password
+		passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
+			Password: core.StringPtr(user.Password),
+		}
+
+		changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
+			ID:       &instanceID,
+			UserType: core.StringPtr(user.Type),
+			Username: core.StringPtr(user.Username),
+			User:     passwordSettingUser,
+		}
+
+		changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
+
+		// user was found but an error occurs while triggering task
+		if response.StatusCode != 404 && err != nil {
+			return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
+		}
+
+		if response.StatusCode == 404 {
+			// User was not found, and must be recreated
+			createUser = true
+		} else {
+			// when user_password api can't find a database user, its task fails
+			taskID := *changeUserPasswordResponse.Task.ID
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+			if err != nil {
+				log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+			}
+		}
+
+		// No user found, or Update not supported
+		if createUser {
+			//Attempt to create user
+			userEntry := &clouddatabasesv5.User{
+				Username: core.StringPtr(user.Username),
+				Password: core.StringPtr(user.Password),
+			}
+
+			// User Role only for ops_manager user type
+			if user.Type == "ops_manager" && user.Role != "" {
+				userEntry.Role = core.StringPtr(user.Role)
+			}
+
+			createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
+				ID:       &instanceID,
+				UserType: core.StringPtr(user.Type),
+				User:     userEntry,
+			}
+
+			createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response)
+			}
+
+			taskID := *createDatabaseUserResponse.Task.ID
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err)
+			}
+		}
+	}
+	return nil
+}
+
+func validateGroupScaling(groupId string, resourceName string, value int, resource *GroupResource, nodeCount int) error {
+	if nodeCount == 0 {
+		nodeCount = 1
+	}
+	if resource.StepSize == 0 {
+		return fmt.Errorf("%s group must have members scaled > 0 before scaling %s", groupId, resourceName)
+	}
+	if value < resource.Minimum/nodeCount || value > resource.Maximum/nodeCount || value%(resource.StepSize/nodeCount) != 0 {
+		if !(value == 0 && resource.IsOptional) {
+			return fmt.Errorf("%s group %s must be >= %d and <= %d in increments of %d", groupId, resourceName, resource.Minimum/nodeCount, resource.Maximum/nodeCount, resource.StepSize/nodeCount)
+		}
+	}
+	if value != resource.Allocation/nodeCount && !resource.IsAdjustable {
+		return fmt.Errorf("%s can not change %s value after create", groupId, resourceName)
+	}
+	if value < resource.Allocation/nodeCount && !resource.CanScaleDown {
+		return fmt.Errorf("can not scale %s group %s below %d to %d", groupId, resourceName, resource.Allocation/nodeCount, value)
+	}
+	return nil
+}
+
+func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	service := diff.Get("service").(string)
 	plan := diff.Get("plan").(string)
@@ -2756,7 +2801,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
 
-		// Check group_ids are unique
+		// validate group_ids are unique
 		groupIds = make([]string, 0, len(tfGroups))
 		for _, g := range tfGroups {
 			groupIds = append(groupIds, g.ID)
@@ -2788,28 +2833,28 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 			nodeCount := groupDefaults.Members.Allocation
 
 			if group.Members != nil {
-				err = checkGroupScaling(groupId, "members", group.Members.Allocation, groupDefaults.Members, 1)
+				err = validateGroupScaling(groupId, "members", group.Members.Allocation, groupDefaults.Members, 1)
 				if err != nil {
 					return err
 				}
 			}
 
 			if group.Memory != nil {
-				err = checkGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
+				err = validateGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
 					return err
 				}
 			}
 
 			if group.Disk != nil {
-				err = checkGroupScaling(groupId, "disk", group.Disk.Allocation, groupDefaults.Disk, nodeCount)
+				err = validateGroupScaling(groupId, "disk", group.Disk.Allocation, groupDefaults.Disk, nodeCount)
 				if err != nil {
 					return err
 				}
 			}
 
 			if group.CPU != nil {
-				err = checkGroupScaling(groupId, "cpu", group.CPU.Allocation, groupDefaults.CPU, nodeCount)
+				err = validateGroupScaling(groupId, "cpu", group.CPU.Allocation, groupDefaults.CPU, nodeCount)
 				if err != nil {
 					return err
 				}
@@ -2820,73 +2865,138 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 	return nil
 }
 
-// Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
-func userUpdateCreate(userData map[string]interface{}, instanceID string, meta interface{}, d *schema.ResourceData) (err error) {
-	cloudDatabasesClient, _ := meta.(conns.ClientSession).CloudDatabasesV5()
-	// Attempt to update user password
-	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
-		Password: core.StringPtr(userData["password"].(string)),
-	}
+func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	oldUsers, newUsers := diff.GetChange("users")
+	userChanges := expandUserChanges(oldUsers.(*schema.Set).List(), newUsers.(*schema.Set).List())
 
-	changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
-		ID:       &instanceID,
-		UserType: core.StringPtr(userData["type"].(string)),
-		Username: core.StringPtr(userData["name"].(string)),
-		User:     passwordSettingUser,
-	}
-
-	changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
-
-	// user was found but an error occurs while triggering task
-	if response.StatusCode != 404 && err != nil {
-		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
-	}
-
-	updatePass := true // Assume that update password passed
-
-	if userData["type"].(string) == "ops_manager" && response.StatusCode == 404 {
-		updatePass = false // when user_password api can't find an ops_manager user, it returns a 404 and does not get to the point of creating a task
-	} else {
-		// when user_password api can't find a database user, its task fails
-		taskID := *changeUserPasswordResponse.Task.ID
-		updatePass, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-		if err != nil {
-			log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
-		}
-	}
-
-	// Updating the password has failed
-	if !updatePass {
-		//Attempt to create user
-		userEntry := &clouddatabasesv5.User{
-			Username: core.StringPtr(userData["name"].(string)),
-			Password: core.StringPtr(userData["password"].(string)),
+	for _, change := range userChanges {
+		if change.isDelete() {
+			continue
 		}
 
-		// User Role only for ops_manager user type
-		if userData["type"].(string) == "ops_manager" && userData["role"].(string) != "" {
-			userEntry.Role = core.StringPtr(userData["role"].(string))
-		}
-
-		createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-			ID:       &instanceID,
-			UserType: core.StringPtr(userData["type"].(string)),
-			User:     userEntry,
-		}
-
-		createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response)
-		}
-
-		taskID := *createDatabaseUserResponse.Task.ID
-		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err)
+		if change.isCreate() || change.isUpdate() {
+			err = change.New.Validate()
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
+}
+
+func expandUsers(_users []interface{}) []*DatabaseUser {
+	if len(_users) == 0 {
+		return nil
+	}
+
+	users := make([]*DatabaseUser, 0, len(_users))
+
+	for _, userRaw := range _users {
+		if tfUser, ok := userRaw.(map[string]interface{}); ok {
+
+			user := DatabaseUser{
+				Username: tfUser["name"].(string),
+				Password: tfUser["password"].(string),
+				Role:     tfUser["role"].(string),
+				Type:     tfUser["type"].(string),
+			}
+
+			users = append(users, &user)
+		}
+	}
+
+	return users
+}
+
+func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userChanges []*userChange) {
+	oldUsers := expandUsers(_oldUsers)
+	newUsers := expandUsers(_newUsers)
+
+	userChangeMap := make(map[string]*userChange)
+
+	for _, user := range oldUsers {
+		userChangeMap[user.ID()] = &userChange{Old: user}
+	}
+
+	for _, user := range newUsers {
+		if _, ok := userChangeMap[user.ID()]; !ok {
+			userChangeMap[user.ID()] = &userChange{}
+		}
+		userChangeMap[user.ID()].New = user
+	}
+
+	userChanges = make([]*userChange, 0, len(userChangeMap))
+
+	for _, user := range userChangeMap {
+		userChanges = append(userChanges, user)
+	}
+
+	return userChanges
+}
+
+func (c *userChange) isDelete() bool {
+	return c.Old != nil && c.New == nil
+}
+
+func (c *userChange) isCreate() bool {
+	return c.Old == nil && c.New != nil
+}
+
+func (c *userChange) isUpdate() bool {
+	return c.New != nil && c.Old != nil && c.Old.Password != c.New.Password
+}
+
+func (u *DatabaseUser) isUpdatable() bool {
+	return u.Type != "ops_manager"
+}
+
+func (u *DatabaseUser) ID() (id string) {
+	return fmt.Sprintf("%s-%s", u.Type, u.Username)
+}
+
+func (u *DatabaseUser) Validate() error {
+	var errs []error
+
+	var specialChars string
+	switch u.Type {
+	case "ops_manager":
+		specialChars = opsManagerUserSpecialChars
+	default:
+		specialChars = databaseUserSpecialChars
+	}
+
+	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^[a-zA-Z0-9%s]+$", specialChars))
+	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^[%s]", specialChars))
+	var containsLetter = regexp.MustCompile("[a-zA-Z]")
+	var containsNumber = regexp.MustCompile("[0-9]")
+	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("[%s]", specialChars))
+
+	if u.Type == "ops_manager" && !containsSpecialChar.MatchString(u.Password) {
+		errs = append(errs, fmt.Errorf(
+			"password must contain at least one special character (%s)", specialChars))
+	}
+
+	if u.Type == "database" && beginWithSpecialChar.MatchString(u.Password) {
+		errs = append(errs, fmt.Errorf(
+			"password must not begin with a special character (%s)", specialChars))
+	}
+
+	if !containsLetter.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one letter"))
+	}
+
+	if !containsNumber.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one number"))
+	}
+
+	if !allowedCharacters.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must not contain invalid characters"))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("database user (%s) validation error:\n%w", u.Username, errors.Join(errs...))
 }
