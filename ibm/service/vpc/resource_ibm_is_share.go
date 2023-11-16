@@ -50,10 +50,6 @@ func ResourceIbmIsShare() *schema.Resource {
 					return flex.ResourceValidateAccessTags(diff, v)
 				},
 			),
-			customdiff.Sequence(
-				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-					return flex.ResourceSharesValidate(diff)
-				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -718,7 +714,7 @@ func ResourceIbmIsShareValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeInt,
 			Optional:                   true,
 			MinValue:                   "100",
-			MaxValue:                   "48000",
+			MaxValue:                   "96000",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "name",

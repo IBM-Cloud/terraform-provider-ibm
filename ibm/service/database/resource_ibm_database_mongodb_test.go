@@ -36,10 +36,10 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "30720"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certname", regexp.MustCompile("[-a-z0-9]*")),
@@ -54,10 +54,10 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "30720"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.scheme", "mongodb"),
@@ -71,8 +71,8 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "30720"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "30720"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -117,7 +117,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "connectionstrings", "plan_validation"},
+					"wait_time_minutes", "connectionstrings"},
 			},
 		},
 	})
@@ -136,8 +136,15 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 30720
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 1024
+			}
+			 disk {
+				allocation_mb = 10240
+			}
+		}
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -163,8 +170,15 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 6144
-		members_disk_allocation_mb   = 30720
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 2048
+			}
+			 disk {
+				allocation_mb = 10240
+			}
+		}
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -198,8 +212,15 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 30720
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 1024
+			}
+			 disk {
+				allocation_mb = 10240
+			}
+		}
 	}
 	  
 				`, databaseResourceGroup, name, acc.IcdDbRegion)

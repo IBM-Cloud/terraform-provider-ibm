@@ -10,7 +10,7 @@ variable "metrics_router_target_name" {
   default     = "my-mr-target"
 }
 variable "metrics_router_target_destination_crn" {
-  description = "The CRN of a destination service instance or resource."
+  description = "The CRN of a destination service instance or resource. Ensure you have a service authorization between IBM Cloud Metrics Routing and your Cloud resource. Read [S2S authorization](https://cloud.ibm.com/docs/metrics-router?topic=metrics-router-target-monitoring&interface=ui#target-monitoring-ui) for details."
   type        = string
   default     = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 }

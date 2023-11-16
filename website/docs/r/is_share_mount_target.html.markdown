@@ -126,14 +126,20 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+- `access_control_mode` - (String) The access control mode for the share.
+- `mount_target` - (String) The unique identifier of the share target
+- `created_at` - (String) The date and time that the share target was created.
+- `href` - (String) The URL for this share target.
+- `id` - (String) The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_mount_target_id\>
+- `lifecycle_state` - (String) The lifecycle state of the mount target.
+- `mount_path` - (String) The mount path for the share. The server component of the mount path may be either an IP address or a fully qualified domain name.
 
-- `mount_target` - The unique identifier of the share target
-- `created_at` - The date and time that the share target was created.
-- `href` - The URL for this share target.
-- `id` - The unique identifier of the ShareTarget. The id is composed of \<ibm_is_share_id\>/\<ibm_is_share_mount_target_id\>
-- `lifecycle_state` - The lifecycle state of the mount target.
-- `mount_path` - The mount path for the share.The IP addresses used in the mount path are currently within the IBM services IP range, but are expected to change to be within one of the VPC's subnets in the future.
-- `resource_type` - The type of resource referenced.
+    This property will be absent if the lifecycle_state of the mount target is 'pending', failed, or deleting.
+
+    -> **If the share's access_control_mode is:**
+    &#x2022; security_group: The IP address used in the mount path is the primary_ip address of the virtual network interface for this share mount target. </br>
+    &#x2022; vpc: The fully-qualified domain name used in the mount path is an address that resolves to the share mount target. </br>
+- `resource_type` - (String) The type of resource referenced.
 - `transit_encryption` - (String) The transit encryption mode for this share target.
 
 ## Import

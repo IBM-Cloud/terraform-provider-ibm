@@ -82,7 +82,7 @@ The following arguments are supported:
   Nested scheme for `initial_owner`:
   - `gid` - (Optional, Integer) The initial group identifier for the file share.
   - `uid` - (Optional, Integer) The initial user identifier for the file share.
-- `iops` - (Optional, Integer) The maximum input/output operation performance bandwidth per second for the file share.
+- `iops` - (Optional, Integer) The maximum input/output operation performance bandwidth per second for the file share. For more information about the iops range for the given size, refer [File Storage for VPC profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)
 - `mount_targets` - (Optional, List) Share targets for the file share.
   - `name` - (Required, string) The user-defined name for this share target. Names must be unique within the share the share target resides in.
   - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
