@@ -14,11 +14,11 @@ import (
 
 func TestAccIbmSccInstanceSettingsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic(),
+			{
+				Config: testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_instance_settings.scc_instance_settings_tf", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_instance_settings.scc_instance_settings_tf", "event_notifications.#"),
@@ -29,9 +29,10 @@ func TestAccIbmSccInstanceSettingsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic() string {
+func testAccCheckIbmSccInstanceSettingsDataSourceConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_instance_settings" "scc_instance_settings_tf" {
+			instance_id = "%s"
 		}
-	`)
+	`, instanceID)
 }

@@ -72,8 +72,6 @@ func TestAccIBMEventStreamsTopicResourceBasic(t *testing.T) {
 	})
 }
 
-var existingInstanceName = "hyperion-preprod-spp-a-service"
-
 func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 	topicName := fmt.Sprintf("es_topic_%d", acctest.RandInt())
 	partitions := 1
@@ -86,7 +84,7 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(existingInstanceName, topicName, partitions),
+				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(getTestInstanceName(stdKey), topicName, partitions),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
@@ -100,7 +98,7 @@ func TestAccIBMEventStreamsTopicResourceWithExistingInstance(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(existingInstanceName, topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes),
+				Config: testAccCheckIBMEventStreamsTopicWithExistingInstanceWithConfig(getTestInstanceName(stdKey), topicName, partitions, cleanupPolicy, retentionBytes, retentionMs, segmentBytes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEventStreamsTopicExists("ibm_event_streams_topic.es_topic", topicName),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
@@ -348,12 +346,11 @@ func testAccCheckIBMEventStreamsTopicExists(n, topicName string) resource.TestCh
 
 var (
 	instanceCRN = "crn:v1:staging:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:c822a30e-bfff-4867-85ec-b805eeab1835::"
-	mytopicName = "mytopic"
-	topicID     = "crn:v1:staging:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:c822a30e-bfff-4867-85ec-b805eeab1835:topic:mytopic"
+	topicID     = "crn:v1:staging:public:messagehub:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:c822a30e-bfff-4867-85ec-b805eeab1835:topic:" + getTestTopicName()
 )
 
 func TestGetTopicID(t *testing.T) {
-	gotTopicID := getTopicID(instanceCRN, mytopicName)
+	gotTopicID := getTopicID(instanceCRN, getTestTopicName())
 	assert.Equal(t, topicID, gotTopicID)
 }
 
@@ -364,7 +361,7 @@ func TestGetInstanceCRN(t *testing.T) {
 
 func TestGetTopicName(t *testing.T) {
 	gotTopicName := getTopicName(topicID)
-	assert.Equal(t, mytopicName, gotTopicName)
+	assert.Equal(t, getTestTopicName(), gotTopicName)
 }
 
 func getTopicID(instanceCRN string, topicName string) string {

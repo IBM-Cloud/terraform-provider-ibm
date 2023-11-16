@@ -10,10 +10,13 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete control libraries by using this resource.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
+
 ## Example Usage
 
 ```hcl
 resource "ibm_scc_control_library" "scc_control_library_instance" {
+  instance_id = "00000000-1111-2222-3333-444444444444"
   control_library_description = "control_library_description"
   control_library_name = "control_library_name"
   control_library_type = "predefined"
@@ -60,6 +63,7 @@ resource "ibm_scc_control_library" "scc_control_library_instance" {
 
 You can specify the following arguments for this resource.
 
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 * `control_library_description` - (Required, String) The control library description.
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `control_library_name` - (Required, String) The control library name.
@@ -140,6 +144,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `controls_count` - (Optional, Integer) The number of controls.
 * `id` - The unique identifier of the scc_control_library.
+* `control_library_id` - (String) The ID that is associated with the created `control_library`
 * `account_id` - (String) The account ID.
   * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 * `control_parents_count` - (Integer) The number of parent controls in the control library.
@@ -154,14 +159,21 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_scc_control_library` resource by using `id`. The control library ID.
+You can import the `ibm_scc_control_library` resource by using `id`.
+The `id` property can be formed from `instance_id` and `control_library_id` in the following format:
+
+```
+<instance_id>/<control_library_id>
+```
+* `instance_id`: A string. The instance ID.
+* `control_library_id`: A string. The control library ID.
 
 # Syntax
 ```
-$ terraform import ibm_scc_control_library.scc_control_library <id>
+$ terraform import ibm_scc_control_library.scc_control_library <instance_id>/<control_library_id>
 ```
 
 # Example
 ```
-$ terraform import ibm_scc_control_library.scc_control_library f3517159-889e-4781-819a-89d89b747c85
+$ terraform import ibm_scc_control_library.scc_control_library 00000000-1111-2222-3333-444444444444/f3517159-889e-4781-819a-89d89b747c85
 ```

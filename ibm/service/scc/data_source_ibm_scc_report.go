@@ -16,7 +16,7 @@ import (
 )
 
 func DataSourceIbmSccReport() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccReportRead,
 
 		Schema: map[string]*schema.Schema{
@@ -176,7 +176,7 @@ func DataSourceIbmSccReport() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccReportRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -188,6 +188,7 @@ func dataSourceIbmSccReportRead(context context.Context, d *schema.ResourceData,
 	getReportOptions := &securityandcompliancecenterapiv3.GetReportOptions{}
 
 	getReportOptions.SetReportID(d.Get("report_id").(string))
+	getReportOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	report, response, err := resultsClient.GetReportWithContext(context, getReportOptions)
 	if err != nil {
