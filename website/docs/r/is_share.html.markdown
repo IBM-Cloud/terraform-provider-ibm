@@ -64,7 +64,7 @@ resource "ibm_is_share" "example-3" {
 resource "ibm_is_share" "example-4" {
   provider = ibm.ussouth
   zone                  = "us-south-3"
-  source_share_crn          = ibm_is_share.example.crn
+  source_share_crn      = ibm_is_share.example.crn
   name                  = "my-replica1"
   profile               = "dp2"
   replication_cron_spec = "0 */5 * * *"
@@ -148,7 +148,8 @@ The following arguments are supported:
 - `resource_group` - (Optional, String) The unique identifier for this resource group.
 - `replication_cron_spec` - (Optional, String) The cron specification for the file share replication schedule.
 - `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte.
-- `source_share` - (Optional, String) The ID or CRN of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
+- `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
+- `source_share_crn` - (Optional, String) The CRN of the source file share. 
 - `tags`  - (Optional, List of Strings) The list of user tags to attach to the share.
 - `zone` - (Required, string) The globally unique name for this zone.
 
@@ -165,8 +166,11 @@ The following attributes are exported:
 - `href` - (String) The URL for this share.
 - `id` - (String) The unique identifier of the Share.
 - `iops` - (Integer) The maximum input/output operation performance bandwidth per second for the file share.
-- `last_sync_started_at` - (String) The start date and time of last synchronization of the replica share to its source. This property will be present when the replication_role is replica and at least one replication_sync job has been started.
-- `last_sync_completed_at` - (String) The completed date and time of last synchronization of the replica share to its source. This property will be present when the replication_role is replica and at least one replication_sync job has been completed.
+- `latest_sync` - (List) Information about the latest synchronization for this file share.
+Nested `latest_sync` blocks have the following structure:
+  - `completed_at` - The completed date and time of last synchronization between the replica share and its source.
+  - `data_transferred` - The data transferred (in bytes) in the last synchronization between the replica and its source.
+  - `started_at` - The start date and time of last synchronization between the replica share and its source.
 - `latest_job` - (List) The latest job associated with this file share.This property will be absent if no jobs have been created for this file share. Nested `latest_job` blocks have the following structure:
   - `status` - (String) The status of the file share job
   - `status_reasons` - (List) The reasons for the file share job status (if any). Nested `status_reasons` blocks have the following structure:

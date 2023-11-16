@@ -529,7 +529,6 @@ func ResourceIbmIsShare() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: suppressCronSpecDiff,
 				Computed:         true,
-				RequiredWith:     []string{"source_share"},
 				ConflictsWith:    []string{"replica_share", "size"},
 				Description:      "The cron specification for the file share replication schedule.Replication of a share can be scheduled to occur at most once per hour.",
 			},
@@ -594,7 +593,7 @@ func ResourceIbmIsShare() *schema.Resource {
 							Description: "The completed date and time of last synchronization between the replica share and its source.",
 						},
 						"data_transferred": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The data transferred (in bytes) in the last synchronization between the replica and its source.",
 						},
@@ -770,17 +769,18 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		accessControlMode := accessControlModeIntf.(string)
 		sharePrototype.AccessControlMode = &accessControlMode
 	}
+	if encryptionKeyIntf, ok := d.GetOk("encryption_key"); ok {
+		encryptionKey := encryptionKeyIntf.(string)
+		encryptionKeyIdentity := &vpcv1.EncryptionKeyIdentity{
+			CRN: &encryptionKey,
+		}
+		sharePrototype.EncryptionKey = encryptionKeyIdentity
+	}
 	if sizeIntf, ok := d.GetOk("size"); ok {
 
 		size := int64(sizeIntf.(int))
 		sharePrototype.Size = &size
-		if encryptionKeyIntf, ok := d.GetOk("encryption_key"); ok {
-			encryptionKey := encryptionKeyIntf.(string)
-			encryptionKeyIdentity := &vpcv1.EncryptionKeyIdentity{
-				CRN: &encryptionKey,
-			}
-			sharePrototype.EncryptionKey = encryptionKeyIdentity
-		}
+
 		initial_owner := &vpcv1.ShareInitialOwner{}
 		if initialOwnerIntf, ok := d.GetOk("initial_owner"); ok {
 			initialOwnerMap := initialOwnerIntf.([]interface{})[0].(map[string]interface{})

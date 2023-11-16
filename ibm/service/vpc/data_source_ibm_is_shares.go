@@ -100,7 +100,7 @@ func DataSourceIbmIsShares() *schema.Resource {
 										Description: "The completed date and time of last synchronization between the replica share and its source.",
 									},
 									"data_transferred": &schema.Schema{
-										Type:        schema.TypeList,
+										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The data transferred (in bytes) in the last synchronization between the replica and its source.",
 									},
