@@ -65,9 +65,13 @@ data "ibm_is_subnets" "example4" {
 
 Review the argument references that you can specify for your data source. 
 
-* `resource_group` - (Optional, string) The id of the resource group.
-* `routing_table` - (Optional, string) The id of the routing table.
-* `routing_table_name` - (Optional, string) The name of the routing table.
+- `resource_group` - (Optional, string) The id of the resource group.
+- `routing_table` - (Optional, string) The id of the routing table.
+- `routing_table_name` - (Optional, string) The name of the routing table.
+- `vpc` - (Optional, string) The id of the vpc.
+- `vpc_crn` - (Optional, string) The crn of the vpc.
+- `vpc_name` - (Optional, string) The name of vpc.
+- `zone` - (Optional, string) The name of the zone.
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
