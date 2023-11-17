@@ -10,14 +10,6 @@ subcategory: "VPC infrastructure"
 
 Provides a read-only data source for Share. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-
-~> **NOTE**
-IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
-
-~> **NOTE**
-This is a Beta feature and it is subject to change in the GA release 
-
-
 ## Example Usage
 
 ```hcl

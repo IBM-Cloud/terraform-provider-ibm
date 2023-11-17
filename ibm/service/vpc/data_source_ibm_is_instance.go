@@ -531,6 +531,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Description: "Instance memory",
 			},
 
+			"numa_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.",
+			},
+
 			isInstanceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -779,7 +785,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	}
 
 	d.Set(isInstanceMemory, *instance.Memory)
-
+	if instance.NumaCount != nil {
+		d.Set("numa_count", *instance.NumaCount)
+	}
 	gpuList := make([]map[string]interface{}, 0)
 	if instance.Gpu != nil {
 		currentGpu := map[string]interface{}{}
@@ -926,20 +934,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				if keyFlag != "" {
 					block, err := pem.Decode(keybytes)
 					if block == nil {
-						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format")
+						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
 					}
 					isEncrypted := false
-					switch block.Type {
-					case "RSA PRIVATE KEY":
-						isEncrypted = x509.IsEncryptedPEMBlock(block)
-					case "OPENSSH PRIVATE KEY":
+					if block.Type == "OPENSSH PRIVATE KEY" {
 						var err error
 						isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
 						if err != nil {
 							return fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err)
 						}
-					default:
-						return fmt.Errorf("PEM and OpenSSH private key formats with RSA key type are supported, can not support this key file type: %s", err)
+					} else {
+						isEncrypted = x509.IsEncryptedPEMBlock(block)
 					}
 					passphrase := ""
 					var privateKey interface{}

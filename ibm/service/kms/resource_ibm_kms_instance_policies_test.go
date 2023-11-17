@@ -165,7 +165,7 @@ func TestAccIBMKMSInstancePolicy_invalid_interval_check(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMKmsInstancePolicyStandardConfigCheck(instanceName, rotation_interval, dual_auth_delete),
-				ExpectError: regexp.MustCompile("must contain a valid int value should be in range(1, 12)"),
+				ExpectError: regexp.MustCompile(`.*must contain a valid int value should be in range\(1, 12\).*`),
 			},
 		},
 	})
@@ -251,6 +251,7 @@ func testAccCheckIBMKmsInstancePolicyRotationCheck(instanceName string, rotation
 	  resource "ibm_kms_instance_policies" "test" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		  rotation {
+			enabled = true
 			interval_month = %d
 		  }
 	  }

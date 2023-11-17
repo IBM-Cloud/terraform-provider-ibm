@@ -11,7 +11,8 @@ This example uses below modules to set up the satellite location with IBM enviro
 5. [satellite-route](modules/route) This module will create openshift route.
 6. [satellite-endpoint](modules/endpoint) This module will create satellite endpoint.
 7. [satellite-dns](modules/dns) This module will register public IPs to control plane & open-shit cluster subdomain DNS records.
- 
+8. [satellite-storage-configuration](modules/configuration) This module will create and manage storage configurations in your satellite location.
+9. [satellite-storage-assignment](modules/assignment) This module will assign your storage configurations to clusters or cluster groups.
  
 ## Usage
 
@@ -115,6 +116,26 @@ module "satellite-endpoint" {
   client_certificate = var.client_certificate
 } 
 
+module "satellite-storage-configuration" {
+  source = "./modules/configuration"
+
+  location = var.location
+  config_name = var.config_name
+  storage_template_name = var.storage_template_name
+  storage_template_version = var.storage_template_version
+  user_config_parameters = var.user_config_parameters
+  user_secret_parameters = var.user_secret_parameters
+  storage_class_parameters = var.storage_class_parameters
+}
+
+module "satellite-storage-assignment"{
+  source = "./modules/assignment"
+
+  assignment_name = var.assignment_name
+  cluster = var.cluster
+  config = var.config
+  controller = var.controller
+}
 ```
 
 ## Note

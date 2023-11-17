@@ -36,6 +36,38 @@ func TestAccIBMISVirtualEndpointGateway_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVirtualEndpointGateway_AllowDnsResolutionBinding(t *testing.T) {
+	var endpointGateway string
+	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	enable_hub := false
+	name1 := fmt.Sprintf("tfvpngw-createname-%d", acctest.RandIntRange(10, 100))
+	name := "ibm_is_virtual_endpoint_gateway.endpoint_gateway"
+	allowDnsResolutionBindingTrue := true
+	allowDnsResolutionBindingFalse := false
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckisVirtualEndpointGatewayConfigAllowDnsResolutionBinding(vpcname1, name1, enable_hub, allowDnsResolutionBindingTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
+					resource.TestCheckResourceAttr(name, "name", name1),
+					resource.TestCheckResourceAttr(name, "allow_dns_resolution_binding", fmt.Sprintf("%t", allowDnsResolutionBindingTrue)),
+				),
+			},
+			{
+				Config: testAccCheckisVirtualEndpointGatewayConfigAllowDnsResolutionBinding(vpcname1, name1, enable_hub, allowDnsResolutionBindingFalse),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
+					resource.TestCheckResourceAttr(name, "name", name1),
+					resource.TestCheckResourceAttr(name, "allow_dns_resolution_binding", fmt.Sprintf("%t", allowDnsResolutionBindingFalse)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISVirtualEndpointGateway_CharacterCount(t *testing.T) {
 	var endpointGateway string
 	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
@@ -251,6 +283,25 @@ func testAccCheckisVirtualEndpointGatewayConfigBasic(vpcname1, subnetname1, name
 		vpc = ibm_is_vpc.testacc_vpc.id
 		resource_group = data.ibm_resource_group.test_acc.id
 	}`, vpcname1, subnetname1, acc.ISZoneName, acc.ISCIDR, name1)
+}
+
+func testAccCheckisVirtualEndpointGatewayConfigAllowDnsResolutionBinding(vpcname1, name1 string, enable_hub, allowDnsResolutionBinding bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+		dns {
+			enable_hub = %t
+		}
+	}
+	resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+		name 							= "%s"
+		target {
+			name          = "ibm-ntp-server"
+			resource_type = "provider_infrastructure_service"
+		}
+		vpc 							= ibm_is_vpc.testacc_vpc.id
+		allow_dns_resolution_binding 	= %t
+	}`, vpcname1, enable_hub, name1, allowDnsResolutionBinding)
 }
 
 func testAccCheckisVirtualEndpointGatewayConfigFullySpecified(vpcname1, subnetname1, name1 string) string {
