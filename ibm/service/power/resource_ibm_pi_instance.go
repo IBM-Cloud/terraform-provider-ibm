@@ -182,7 +182,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 							Computed: true,
 						},
 						"external_ip": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 					},
@@ -352,46 +352,71 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Minimum Virtual Cores Assigned to the PVMInstance",
 			},
-			"pi_software_licenses": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of software licenses",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ibmiCSS": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "IBMi Cloud Storage Solution",
-						},
-						"ibmiDBQ": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "IBMi DBQ",
-						},
-						"ibmiPHA": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "IBMi Power High Availability",
-						},
-						"ibmiRDS": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "IBMi Rational Dev Studio",
-						},
-						"ibmiRDSUsers": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "IBMi Rational Dev Studio Number of User Licenses",
-						},
-					},
-				},
+			PIInstanceIbmiCSS: {
+				Type:     schema.TypeBool,
+				Optional: true,
+				// Computed:    true,
+				Description: "IBMi Cloud Storage Solution",
 			},
+
+			PIInstanceIbmiPHA: {
+				Type:     schema.TypeBool,
+				Optional: true,
+				// Computed:    true,
+				Description: "IBMi Power High Availability",
+			},
+			PIInstanceIbmiRDS: {
+				Type:     schema.TypeBool,
+				Optional: true,
+				// Computed:    true,
+				Description: "IBMi Rational Dev Studio",
+			},
+			PIInstanceIbmiRDSUsers: {
+				Type:     schema.TypeInt,
+				Optional: true,
+				// Computed:    true,
+				Description: "IBMi Rational Dev Studio Number of User Licenses",
+			},
+			// "pi_software_licenses": {
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Optional:    true,
+			// 	Description: "List of software licenses",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"ibmiCSS": {
+			// 				Type:        schema.TypeBool,
+			// 				Optional:    true,
+			// 				Computed:    true,
+			// 				Description: "IBMi Cloud Storage Solution",
+			// 			},
+			// 			"ibmiDBQ": {
+			// 				Type:        schema.TypeBool,
+			// 				Optional:    true,
+			// 				Computed:    true,
+			// 				Description: "IBMi DBQ",
+			// 			},
+			// 			"ibmiPHA": {
+			// 				Type:        schema.TypeBool,
+			// 				Optional:    true,
+			// 				Computed:    true,
+			// 				Description: "IBMi Power High Availability",
+			// 			},
+			// 			"ibmiRDS": {
+			// 				Type:        schema.TypeBool,
+			// 				Optional:    true,
+			// 				Computed:    true,
+			// 				Description: "IBMi Rational Dev Studio",
+			// 			},
+			// 			"ibmiRDSUsers": {
+			// 				Type:        schema.TypeInt,
+			// 				Optional:    true,
+			// 				Computed:    true,
+			// 				Description: "IBMi Rational Dev Studio Number of User Licenses",
+			// 			},
+			// 		},
+			// 	},
+			// },
 		},
 	}
 }
@@ -536,6 +561,12 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(PIInstanceDeploymentType, powervmdata.DeploymentType)
+	if powervmdata.SoftwareLicenses != nil {
+		d.Set(PIInstanceIbmiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
+		d.Set(PIInstanceIbmiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(PIInstanceIbmiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
+		d.Set(PIInstanceIbmiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+	}
 	return nil
 }
 
@@ -793,6 +824,51 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				return diag.FromErr(err)
 			}
 		}
+	}
+	if d.HasChanges(PIInstanceIbmiCSS, PIInstanceIbmiPHA, PIInstanceIbmiRDS, PIInstanceIbmiRDSUsers) {
+		if d.Get("status") != "ACTIVE" {
+			return diag.Errorf("software licenses change requires the lpar to be in an active state")
+		}
+		var license bool
+		sl := &models.SoftwareLicenses{}
+		if d.HasChange(PIInstanceIbmiCSS) {
+			if ibmiCSS, ok := d.GetOk(PIInstanceIbmiCSS); ok {
+				license = ibmiCSS.(bool)
+				sl.IbmiCSS = &license
+			}
+		}
+		if d.HasChange(PIInstanceIbmiPHA) {
+			if ibmiPHA, ok := d.GetOk(PIInstanceIbmiPHA); ok {
+				license = ibmiPHA.(bool)
+				sl.IbmiPHA = &license
+			}
+		}
+		if d.HasChange(PIInstanceIbmiRDS) {
+			if ibmRDS, ok := d.GetOk(PIInstanceIbmiRDS); ok {
+				if ibmRDS == true {
+					if ibmrdsUsers, ok := d.GetOk(PIInstanceIbmiRDSUsers); ok {
+						if ibmrdsUsers.(int) < 1 {
+							return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
+						}
+						license = ibmRDS.(bool)
+						sl.IbmiRDS = &license
+						sl.IbmiRDSUsers = ibmrdsUsers.(int64)
+					}
+				}
+			}
+		}
+		updatebody := &models.PVMInstanceUpdate{SoftwareLicenses: sl}
+		_, err = client.Update(instanceID, updatebody)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		log.Printf("software license %s", PIInstanceIbmiCSS)
+		return diag.Errorf("software licenses change requires the lpar to be in an active state")
 	}
 
 	return resourceIBMPIInstanceRead(ctx, d, meta)
@@ -1325,24 +1401,56 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 	if spp, ok := d.GetOk(Arg_PIInstanceSharedProcessorPool); ok {
 		body.SharedProcessorPool = spp.(string)
 	}
-
-	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {
-		// check if using vtl image
-		// check if vtl image is stock image
-		imageData, err := imageClient.GetStockImage(imageid)
+	imageData, err := imageClient.GetStockImage(imageid)
+	if err != nil {
+		// check if vtl image is cloud instance image
+		imageData, err = imageClient.Get(imageid)
 		if err != nil {
-			// check if vtl image is cloud instance image
-			imageData, err = imageClient.Get(imageid)
-			if err != nil {
-				return nil, fmt.Errorf("image doesn't exist. %e", err)
-			}
+			return nil, fmt.Errorf("image doesn't exist. %e", err)
 		}
+	}
+	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {
 
 		if imageData.Specifications.ImageType == "stock-vtl" {
 			body.LicenseRepositoryCapacity = int64(lrc.(int))
 		} else {
 			return nil, fmt.Errorf("pi_license_repository_capacity should only be used when creating VTL instances. %e", err)
 		}
+	}
+
+	if imageData.Specifications.OperatingSystem == "ibmi" {
+		// Default value
+		falseBool := false
+		var license bool
+		sl := &models.SoftwareLicenses{
+			IbmiCSS:      &falseBool,
+			IbmiPHA:      &falseBool,
+			IbmiRDS:      &falseBool,
+			IbmiRDSUsers: 0,
+		}
+		if ibmiCSS, ok := d.GetOk(PIInstanceIbmiCSS); ok {
+			license = ibmiCSS.(bool)
+			sl.IbmiCSS = &license
+		}
+		if ibmiPHA, ok := d.GetOk(PIInstanceIbmiPHA); ok {
+			license = ibmiPHA.(bool)
+			sl.IbmiPHA = &license
+		}
+
+		if ibmRDS, ok := d.GetOk(PIInstanceIbmiRDS); ok {
+			if ibmRDS == true {
+				if ibmrdsUsers, ok := d.GetOk(PIInstanceIbmiRDSUsers); ok {
+					if ibmrdsUsers.(int) < 1 {
+						return nil, fmt.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
+					}
+					license = ibmRDS.(bool)
+					sl.IbmiRDS = &license
+					sl.IbmiRDSUsers = ibmrdsUsers.(int64)
+				}
+			}
+		}
+		body.SoftwareLicenses = sl
+
 	}
 
 	pvmList, err := client.Create(body)

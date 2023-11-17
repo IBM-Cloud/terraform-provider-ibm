@@ -84,9 +84,10 @@ In addition to all argument reference list, you can access the following attribu
 - `storage_type` - (String) The storage type where server is deployed.
 - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
 - `volumes` - (List of strings) The list of volume IDs that are attached to the instance.
-Ibmi software licenses for IBMi virtual server instances
-- `ibm_css` - (String) IBMi Cloud Storage Solution.
-- `ibmi_dbq` - (String) IBMi DBQ.
-- `ibmi_pha` - (String) IBMi Power High Availability.
-- `ibmi_rds` - (String) IBMi Rational Dev Studio.
+
+  **Notes** Ibmi software licenses for IBMi virtual server instances --software licenses currently only supports IBMi instances
+- `ibm_css` - (Bool) IBMi Cloud Storage Solution.
+- `ibmi_dbq` - (Bool) IBMi DBQ.
+- `ibmi_pha` - (Bool) IBMi Power High Availability.
+- `ibmi_rds` - (Bool) IBMi Rational Dev Studio.
 - `ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.

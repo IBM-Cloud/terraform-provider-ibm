@@ -46,6 +46,11 @@ const (
 	Arg_PVMInstanceId           = "pi_instance_id"
 	Arg_PVMInstanceActionType   = "pi_action"
 	Arg_PVMInstanceHealthStatus = "pi_health_status"
+	PIInstanceSoftwareLicenses  = "pi_software_licenses"
+	PIInstanceIbmiCSS           = "pi_ibmi_css"
+	PIInstanceIbmiPHA           = "pi_ibmi_pha"
+	PIInstanceIbmiRDS           = "pi_ibmi_rds"
+	PIInstanceIbmiRDSUsers      = "pi_ibmi_rds_users"
 
 	Attr_Status       = "status"
 	Attr_Progress     = "progress"
