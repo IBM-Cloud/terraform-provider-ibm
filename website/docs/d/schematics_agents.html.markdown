@@ -44,7 +44,7 @@ Nested scheme for **agents**:
 	* `id` - (String) The Agent registration id.
 	* `location` - (String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
 	  * Constraints: Allowable values are: `us-south`, `us-east`, `eu-gb`, `eu-de`.
-	* `name` - (String) The name of the agent (must be unique, for an account).
+	* `name` - (String) The name of the agent.
 	* `profile_id` - (String) The IAM trusted profile id, used by the Agent instance.
 	* `registered_at` - (String) The Agent registration date-time.
 	* `registered_by` - (String) The email address of an user who registered the Agent.
