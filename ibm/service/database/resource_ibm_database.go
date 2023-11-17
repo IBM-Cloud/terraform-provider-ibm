@@ -3014,5 +3014,13 @@ func (u *DatabaseUser) Validate() error {
 		return nil
 	}
 
-	return fmt.Errorf("database user (%s) validation error:\n%w", u.Username, errors.Join(errs...))
+	var b []byte
+	for i, err := range errs {
+		if i > 0 {
+			b = append(b, '\n')
+		}
+		b = append(b, err.Error()...)
+	}
+
+	return fmt.Errorf("database user (%s) validation error:\n%w", u.Username, errors.New(string(b)))
 }
