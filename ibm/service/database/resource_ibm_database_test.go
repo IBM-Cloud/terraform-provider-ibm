@@ -24,6 +24,14 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
+				Password: "-_pizzapizzapizza",
+				Type:     "database",
+			},
+			expectedError: "database user (testy) validation error:\npassword must not begin with a special character (_-)\npassword must contain at least one number",
+		},
+		{
+			user: DatabaseUser{
+				Username: "testy",
 				Password: "111111111111111",
 				Type:     "database",
 			},
