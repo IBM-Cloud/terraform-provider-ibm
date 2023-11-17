@@ -571,16 +571,6 @@ func ResourceIbmIsShare() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that the file share was last synchronized to its replica.This property will be present when the `replication_role` is `source`.",
 			},
-			"last_sync_started_at": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The start date and time of last synchronization of the replica share to its source.",
-			},
-			"last_sync_completed_at": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The completed date and time of last synchronization of the replica share to its source.",
-			},
 			"latest_sync": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,

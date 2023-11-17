@@ -64,7 +64,7 @@ resource "ibm_is_share" "example-3" {
 resource "ibm_is_share" "example-4" {
   provider = ibm.ussouth
   zone                  = "us-south-3"
-  source_share_crn      = ibm_is_share.example.crn
+  source_share_crn      = ibm_is_share.example-3.crn
   name                  = "my-replica1"
   profile               = "dp2"
   replication_cron_spec = "0 */5 * * *"
@@ -168,9 +168,9 @@ The following attributes are exported:
 - `iops` - (Integer) The maximum input/output operation performance bandwidth per second for the file share.
 - `latest_sync` - (List) Information about the latest synchronization for this file share.
 Nested `latest_sync` blocks have the following structure:
-  - `completed_at` - The completed date and time of last synchronization between the replica share and its source.
-  - `data_transferred` - The data transferred (in bytes) in the last synchronization between the replica and its source.
-  - `started_at` - The start date and time of last synchronization between the replica share and its source.
+  - `completed_at` - (String) The completed date and time of last synchronization between the replica share and its source.
+  - `data_transferred` - (Integer) The data transferred (in bytes) in the last synchronization between the replica and its source.
+  - `started_at` - (String) The start date and time of last synchronization between the replica share and its source.
 - `latest_job` - (List) The latest job associated with this file share.This property will be absent if no jobs have been created for this file share. Nested `latest_job` blocks have the following structure:
   - `status` - (String) The status of the file share job
   - `status_reasons` - (List) The reasons for the file share job status (if any). Nested `status_reasons` blocks have the following structure:
