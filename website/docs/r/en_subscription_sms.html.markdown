@@ -17,7 +17,7 @@ resource "ibm_en_subscription_sms" "sms_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
   name             = "News Subscription"
   description      = "SMS subscription for news alert"
-  destination_id   = "sms_destination_id"
+  destination_id   = [for s in toset(data.ibm_en_destinations.destinations.destinations): s.id if s.type == "sms_ibm"].0
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     invited = ["+15678923404", "+19643567389"]

@@ -33,10 +33,10 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
@@ -52,9 +52,9 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -68,9 +68,9 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -107,7 +107,7 @@ func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
 				),
 			},
 			{
@@ -115,7 +115,7 @@ func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation"},
+					"wait_time_minutes"},
 			},
 		},
 	})
@@ -137,8 +137,15 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 3072
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 1024
+			}
+			 disk {
+				allocation_mb = 1024
+			}
+		}
 		users {
 			name     = "user123"
 			password = "password12"
@@ -153,7 +160,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		}
 		CONFIGURATION
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup string, name string) string {
@@ -170,8 +177,15 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 6144
-		members_disk_allocation_mb   = 6144
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 2048
+			}
+			 disk {
+				allocation_mb = 2048
+			}
+		}
 		users {
 			name     = "user123"
 			password = "password12"
@@ -190,7 +204,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string, name string) string {
@@ -207,10 +221,17 @@ func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 6144
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 1024
+			}
+			 disk {
+				allocation_mb = 2048
+			}
+		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string, name string) string {
@@ -227,5 +248,5 @@ func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string,
 		plan              = "standard"
 		location          = "%[3]s"
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }

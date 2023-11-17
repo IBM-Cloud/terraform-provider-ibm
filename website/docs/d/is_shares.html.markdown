@@ -10,15 +10,6 @@ subcategory: "VPC infrastructure"
 
 Provides a read-only data source for ShareCollection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-
-~> **NOTE**
-IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
-
-~> **NOTE**
-This is a Beta feature and it is subject to change in the GA release 
-
-
-
 ## Example Usage
 
 ```hcl
@@ -72,7 +63,7 @@ The following attributes are exported:
 	- `resource_group` - The ID of the resource group for this file share.
 	- `resource_type` - The type of resource referenced.
 	- `size` - The size of the file share rounded up to the next gigabyte.
-	- `share_targets` - Mount targets for the file share. Nested `targets` blocks have the following structure:
+	- `mount_targets` - Mount targets for the file share. Nested `targets` blocks have the following structure:
     	- `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
     		- `more_info` - Link to documentation about deleted resources.
     	- `href` - The URL for this share target.
@@ -82,13 +73,13 @@ The following attributes are exported:
 	- `zone` - The name of the zone this file share will reside in.
 	- `access_tags`  - (String) Access management tags associated to the share.
 	- `tags`  - (String) User tags associated for to the share.
-	- `source_share` - The source file share for this replica file share.This property will be present when the `replication_role` is `replica`. Nested `source_share` blocks have the following structure:
-      - `crn` - The CRN for this file share.
-      - `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-        - `more_info` - Link to documentation about deleted resources.
-      - `href` - The URL for this file share.
-      - `id` - The unique identifier for this file share.
-      - `name` - The unique user-defined name for this file share.
-      - `resource_type` - The resource type.
+	- `source_share` - (List) The source file share for this replica file share.This property will be present when the `replication_role` is `replica`. Nested `source_share` blocks have the following structure:
+      - `crn` - (String) The CRN for this file share.
+      - `deleted` - (List)  If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+        - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (String) The URL for this file share.
+      - `id` - (String) The unique identifier for this file share.
+      - `name` - (String) The unique user-defined name for this file share.
+      - `resource_type` - (String) The resource type.
 - `total_count` - The total number of resources across all pages.
 

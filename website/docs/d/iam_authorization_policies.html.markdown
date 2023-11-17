@@ -38,12 +38,12 @@ In addition to all argument reference list, you can access the following attribu
   - `resources`- (List of objects) A nested block describes the resources in the policy.
 
     Nested scheme for `resources`:
-    - `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.
-    - `source_service_name` - (Required, Forces new resource, string) The source service name.
-    - `target_service_name` - (Required, Forces new resource, string) The target service name.
-    - `source_resource_instance_id` - (Optional, Forces new resource, string) The source resource instance id.
-    - `target_resource_instance_id` - (Optional, Forces new resource, string) The target resource instance id.
-    - `source_resource_type` - (Optional, Forces new resource, string) The resource type of source service.
-    - `target_resource_type` - (Optional, Forces new resource, string) The resource type of target service.
-    - `source_resource_group_id` - (Optional, Forces new resource, string) The source resource group id.
-    - `target_resource_group_id` - (Optional, Forces new resource, string) The target resource group id.
+    - `source_service_account` - (string) The account GUID of source service.
+    - `source_service_name` - (string) The source service name.
+    - `target_service_name` - (string) The target service name.
+    - `source_resource_instance_id` - (string) The source resource instance id.
+    - `target_resource_instance_id` - (string) The target resource instance id.
+    - `source_resource_type` - (string) The resource type of source service.
+    - `target_resource_type` - (string) The resource type of target service.
+    - `source_resource_group_id` - (string) The source resource group id.
+    - `target_resource_group_id` - (string) The target resource group id.

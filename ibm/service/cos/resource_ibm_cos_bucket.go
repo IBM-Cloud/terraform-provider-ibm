@@ -924,6 +924,9 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	}
 
 	if apiType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
@@ -1153,6 +1156,9 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	}
 
 	if apiType == "sl" {
 
@@ -1169,11 +1175,13 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if *head.IBMSSEKPEnabled == true {
-		if keyProtectFlag == true {
-			d.Set("key_protect", head.IBMSSEKPCrkId)
-		} else {
-			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+	if head.IBMSSEKPEnabled != nil {
+		if *head.IBMSSEKPEnabled == true {
+			if keyProtectFlag == true {
+				d.Set("key_protect", head.IBMSSEKPCrkId)
+			} else {
+				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+			}
 		}
 	}
 

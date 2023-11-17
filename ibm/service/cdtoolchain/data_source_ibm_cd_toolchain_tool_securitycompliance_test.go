@@ -87,10 +87,6 @@ func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfigBasic(tcNam
 			parameters {
 				name = "compliance"
 				evidence_namespace = "cd"
-				trigger_scan = "disabled"
-				api_key = "api_key"
-				scope = "my-scope"
-				profile = "IBM Cloud Security Best Practices v1.0.0"
 				evidence_repo_url = "https://github.example.com/<username>/compliance-evidence-<datestamp>"
 			}
 		}
@@ -118,10 +114,6 @@ func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfig(tcName str
 			parameters {
 				name = "compliance"
 				evidence_namespace = "cd"
-				trigger_scan = "disabled"
-				api_key = "api_key"
-				scope = "my-scope"
-				profile = "IBM Cloud Security Best Practices v1.0.0"
 				evidence_repo_url = "https://github.example.com/<username>/compliance-evidence-<datestamp>"
 			}
 			name = "%s"
