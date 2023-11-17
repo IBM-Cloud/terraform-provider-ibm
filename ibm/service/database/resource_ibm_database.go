@@ -52,8 +52,8 @@ const (
 )
 
 const (
-	databaseUserSpecialChars   = "-_"
-	opsManagerUserSpecialChars = "~!@#$%^&*()_-=+[]{}|;:,.<>/?"
+	databaseUserSpecialChars   = "_-"
+	opsManagerUserSpecialChars = "~!@#$%^&*()=+[]{}|;:,.<>/?_-"
 )
 
 const (
@@ -2982,11 +2982,24 @@ func (u *DatabaseUser) Validate() error {
 		specialChars = databaseUserSpecialChars
 	}
 
-	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^[a-zA-Z0-9%s]+$", specialChars))
-	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^[%s]", specialChars))
+	// Format for regexp
+	var specialCharPattern string
+	var bs strings.Builder
+	for i, c := range strings.Split(specialChars, "") {
+		if i > 0 {
+			bs.WriteByte('|')
+		}
+		bs.WriteString(regexp.QuoteMeta(c))
+	}
+
+	specialCharPattern = bs.String()
+
+	log.Printf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern)
+	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern))
+	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^(?:%s)", specialCharPattern))
 	var containsLetter = regexp.MustCompile("[a-zA-Z]")
 	var containsNumber = regexp.MustCompile("[0-9]")
-	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("[%s]", specialChars))
+	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("(?:%s)]", specialCharPattern))
 
 	if u.Type == "ops_manager" && !containsSpecialChar.MatchString(u.Password) {
 		errs = append(errs, fmt.Errorf(

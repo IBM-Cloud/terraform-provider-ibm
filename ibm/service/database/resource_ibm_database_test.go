@@ -48,6 +48,30 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
+				Password: "aaaaa11111aaaa",
+				Type:     "ops_manager",
+			},
+			expectedError: "database user (testy) validation error:\npassword must contain at least one special character (~!@#$%^&*()=+[]{}|;:,.<>/?_-)",
+		},
+		{
+			user: DatabaseUser{
+				Username: "testy",
+				Password: "~!@#$%^&*()=+[]{}|;:,.<>/?_-",
+				Type:     "ops_manager",
+			},
+			expectedError: "database user (testy) validation error:\npassword must contain at least one letter\npassword must contain at least one number",
+		},
+		{
+			user: DatabaseUser{
+				Username: "testy",
+				Password: "~!@#$%^&*()=+[]{}|;:,.<>/?_-a1",
+				Type:     "ops_manager",
+			},
+			expectedError: "",
+		},
+		{
+			user: DatabaseUser{
+				Username: "testy",
 				Password: "pizza1pizzapizza1",
 				Type:     "database",
 			},
@@ -58,7 +82,7 @@ func TestValidateUserPassword(t *testing.T) {
 		err := tc.user.Validate()
 		if tc.expectedError == "" {
 			if err != nil {
-				t.Errorf("TestValidateUserPassword: %q, %q unexpected error, %q", tc.user.Username, tc.user.Password, err.Error())
+				t.Errorf("TestValidateUserPassword: %q, %q unexpected error: %q", tc.user.Username, tc.user.Password, err.Error())
 			}
 		} else {
 			assert.Equal(t, tc.expectedError, err.Error())
