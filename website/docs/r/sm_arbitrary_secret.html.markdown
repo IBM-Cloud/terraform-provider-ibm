@@ -14,6 +14,7 @@ Provides a resource for ArbitrarySecret. This allows ArbitrarySecret to be creat
 
 ```hcl
 resource "ibm_sm_arbitrary_secret" "sm_arbitrary_secret" {
+  name          = "secret-name"
   instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   custom_metadata = {"key":"value"}

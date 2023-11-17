@@ -34,7 +34,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
@@ -55,7 +55,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
@@ -78,7 +78,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
@@ -103,7 +103,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
@@ -135,7 +135,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup string, name string) string {
@@ -143,7 +143,7 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
@@ -187,7 +187,7 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, name string) string {
@@ -195,7 +195,7 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
 	  }
-	  
+
 	  resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
@@ -220,5 +220,5 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 			delete = "15m"
 		}
 	  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
