@@ -2999,7 +2999,7 @@ func (u *DatabaseUser) Validate() error {
 	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^(?:%s)", specialCharPattern))
 	var containsLetter = regexp.MustCompile("[a-zA-Z]")
 	var containsNumber = regexp.MustCompile("[0-9]")
-	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("(?:%s)]", specialCharPattern))
+	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("(?:%s)", specialCharPattern))
 
 	if u.Type == "ops_manager" && !containsSpecialChar.MatchString(u.Password) {
 		errs = append(errs, fmt.Errorf(

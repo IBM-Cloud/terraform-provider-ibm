@@ -64,6 +64,14 @@ func TestValidateUserPassword(t *testing.T) {
 		{
 			user: DatabaseUser{
 				Username: "testy",
+				Password: "password12345678$password",
+				Type:     "ops_manager",
+			},
+			expectedError: "",
+		},
+		{
+			user: DatabaseUser{
+				Username: "testy",
 				Password: "~!@#$%^&*()=+[]{}|;:,.<>/?_-",
 				Type:     "ops_manager",
 			},
