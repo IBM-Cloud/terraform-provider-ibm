@@ -552,6 +552,10 @@ func resourceIbmSmServiceCredentialsSecretUpdate(context context.Context, d *sch
 		patchVals.Description = core.StringPtr(d.Get("description").(string))
 		hasChange = true
 	}
+	if d.HasChange("ttl") {
+		patchVals.TTL = core.StringPtr(d.Get("ttl").(string))
+		hasChange = true
+	}
 	if d.HasChange("labels") {
 		labels := d.Get("labels").([]interface{})
 		labelsParsed := make([]string, len(labels))
@@ -563,6 +567,15 @@ func resourceIbmSmServiceCredentialsSecretUpdate(context context.Context, d *sch
 	}
 	if d.HasChange("custom_metadata") {
 		patchVals.CustomMetadata = d.Get("custom_metadata").(map[string]interface{})
+		hasChange = true
+	}
+	if d.HasChange("rotation") {
+		RotationModel, err := resourceIbmSmServiceCredentialsSecretMapToRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			log.Printf("[DEBUG] UpdateSecretMetadataWithContext failed: Reading Rotation parameter failed: %s", err)
+			return diag.FromErr(fmt.Errorf("UpdateSecretMetadataWithContext failed: Reading Rotation parameter failed: %s", err))
+		}
+		patchVals.Rotation = RotationModel
 		hasChange = true
 	}
 
