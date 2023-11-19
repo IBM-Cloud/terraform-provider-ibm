@@ -81,6 +81,11 @@ func DataSourceIBMIsBackupPolicies() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"match_resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
+						},
 						"included_content": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -284,6 +289,7 @@ func dataSourceBackupPolicyCollectionBackupPoliciesToMap(backupPoliciesItem vpcv
 	}
 	if backupPoliciesItem.MatchResourceType != nil {
 		backupPoliciesMap["match_resource_types"] = []string{*backupPoliciesItem.MatchResourceType}
+		backupPoliciesMap["match_resource_type"] = *backupPoliciesItem.MatchResourceType
 	}
 	if backupPoliciesItem.MatchUserTags != nil {
 		backupPoliciesMap["match_user_tags"] = backupPoliciesItem.MatchUserTags

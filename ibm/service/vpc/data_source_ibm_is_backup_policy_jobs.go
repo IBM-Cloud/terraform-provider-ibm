@@ -110,6 +110,25 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 										Computed:    true,
 										Description: "The unique user-defined name for this backup policy plan.",
 									},
+									"remote": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this region.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The globally unique name for this region.",
+												},
+											},
+										},
+									},
 									"resource_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -542,6 +561,13 @@ func dataSourceBackupPolicyJobCollectionJobsBackupPolicyPlanToMap(backupPolicyPl
 	}
 	if backupPolicyPlanItem.Name != nil {
 		backupPolicyPlanMap["name"] = backupPolicyPlanItem.Name
+	}
+	if backupPolicyPlanItem.Remote != nil {
+		remoteMap, err := resourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanRemoteToMap(backupPolicyPlanItem.Remote)
+		if err != nil {
+			return remoteMap
+		}
+		backupPolicyPlanMap["remote"] = []map[string]interface{}{remoteMap}
 	}
 	if backupPolicyPlanItem.ResourceType != nil {
 		backupPolicyPlanMap["resource_type"] = backupPolicyPlanItem.ResourceType

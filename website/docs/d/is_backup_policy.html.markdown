@@ -46,6 +46,9 @@ In addition to all argument reference list, you can access the following attribu
 - `last_job_completed_at` - (String) he date and time that the most recent job for this backup policy completed.
 - `lifecycle_state` - (String) The lifecycle state of the backup policy.
 - `match_resource_types` - (List) A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.
+~> **Note**
+  `match_resource_types` is deprecated. Please use `match_resource_type` instead.
+- `match_resource_type` - (Optional, String) The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.
 - `match_user_tags` - (List) The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will be subject to the backup policy.
 - `name` - (String) The unique user-defined name for this backup policy.
 - `plans` - (List) The plans for the backup policy.

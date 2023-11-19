@@ -147,12 +147,10 @@ func ResourceIBMIsBackupPolicyValidator() *validate.ResourceValidator {
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "match_resource_type",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
-			MinValueLength:             1,
-			MaxValueLength:             128,
+			Required:                   true,
+			AllowedValues:              "instance, volume",
 		},
 	)
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_backup_policy", Schema: validateSchema}
@@ -230,8 +228,6 @@ func resourceIBMIsBackupPolicyRead(context context.Context, d *schema.ResourceDa
 		if err = d.Set("match_resource_types", matchResourceTypesList); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_types: %s", err))
 		}
-	}
-	if backupPolicy.MatchResourceType != nil {
 		if err = d.Set("match_resource_type", backupPolicy.MatchResourceType); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
 		}
