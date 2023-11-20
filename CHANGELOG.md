@@ -1,3 +1,8 @@
+# 1.59.1 (Nov 20, 2023)
+
+Bug Fixes
+* ibm_schematics_workspace: provider crash during terraform plan ([4907](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4907))
+
 # 1.59.0 (Oct 30, 2023)
 
 Features
