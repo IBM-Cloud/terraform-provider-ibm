@@ -593,11 +593,21 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 							Computed:    true,
 							Description: "The reservation affinity policy to use for this virtual server instance.",
 						},
-						isReservationAffinityPool: {
-							Type:        schema.TypeString,
+						isReservationAffinityPool: &schema.Schema{
+							Type:        schema.TypeList,
 							Optional:    true,
 							Computed:    true,
-							Description: "The ID of the reservation associated with this template.",
+							Description: "The pool of reservations available for use by this virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isReservationId: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The unique identifier for this reservation.",
+									},
+								},
+							},
 						},
 					},
 				},
