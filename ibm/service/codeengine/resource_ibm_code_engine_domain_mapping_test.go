@@ -6,8 +6,9 @@ package codeengine_test
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -40,7 +41,7 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineDomainMappingDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, domainMappingTLSKey, domainMappingTLSCert, secretName, app1Name, domainMappingName, "app1_instance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineDomainMappingExists("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", conf),
@@ -58,7 +59,7 @@ func TestAccIbmCodeEngineDomainMappingBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "tls_secret", secretName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineDomainMappingConfigBasic(projectID, app1Name, app2Name, domainMappingTLSKey, domainMappingTLSCert, secretName, app2Name, domainMappingName, "app2_instance"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "id"),
@@ -213,7 +214,7 @@ func testAccCheckIbmCodeEngineDomainMappingDestroy(s *terraform.State) error {
 func decodeBase64EnvVar(base64Text string, envVar string) string {
 	decodedText, err := base64.StdEncoding.DecodeString(base64Text)
 	if err != nil {
-		fmt.Errorf("Error decoding environment variable %s: %s", envVar, err)
+		fmt.Printf("Error decoding environment variable %s: %s", envVar, err)
 		return ""
 	}
 	return string(decodedText)
