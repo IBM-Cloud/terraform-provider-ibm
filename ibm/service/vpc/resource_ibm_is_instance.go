@@ -761,6 +761,12 @@ func ResourceIBMISInstance() *schema.Resource {
 				Description: "Instance memory",
 			},
 
+			"numa_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.",
+			},
+
 			isInstanceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,

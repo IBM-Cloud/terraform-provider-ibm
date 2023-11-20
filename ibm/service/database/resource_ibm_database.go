@@ -242,6 +242,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
+			"offline_restore": {
+				Description:      "Set offline restore mode for MongoDB Enterprise Edition",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
 			"users": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -872,6 +878,7 @@ type Params struct {
 	RemoteLeaderID      string  `json:"remote_leader_id,omitempty"`
 	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
 	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
+	OfflineRestore      bool    `json:"offline_restore,omitempty"`
 }
 
 type Group struct {
@@ -1030,6 +1037,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	}
 
 	service := diff.Get("service").(string)
+	plan := diff.Get("plan").(string)
 
 	_, logicalReplicationSet := diff.GetOk("logical_replication_slot")
 
@@ -1084,6 +1092,11 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		if len(invalidFields) != 0 {
 			return fmt.Errorf("[ERROR] configuration contained invalid field(s): %s", invalidFields)
 		}
+	}
+
+	_, offlineRestoreOk := diff.GetOk("offline_restore")
+	if offlineRestoreOk && service != "databases-for-mongodb" && plan != "enterprise" {
+		return fmt.Errorf("[ERROR] offline_restore is only supported for databases-for-mongodb enterprise")
 	}
 
 	return nil
@@ -1217,6 +1230,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
 		params.PITRTimeStamp = &pitrTimeTrimmed
+	}
+
+	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
+		params.OfflineRestore = offlineRestore.(bool)
 	}
 
 	serviceEndpoint := d.Get("service_endpoints").(string)
@@ -2330,7 +2347,6 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 	waitErr := waitForICDReady(meta, instanceID)
 	if waitErr != nil {
 		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
-
 	}
 
 	return stateConf.WaitForState()
