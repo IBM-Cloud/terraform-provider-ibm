@@ -269,6 +269,15 @@ Review the argument references that you can specify for your resource.
 	- `primary_ipv4_address` - (Optional, String) The IPv4 address assigned to the network interface.
   - `security_groups` - (Optional, List) List of security groups of the subnet.
   - `subnet` - (Required, Forces new resource, String) The VPC subnet to assign to the interface.
+- `reservation_affinity` - (Optional, List) The reservation affinity for the instance
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
+   ->**policy** 
+      </br>&#x2022; disabled: Reservations will not be used
+      </br>&#x2022; manual: Reservations in pool will be available for use
+  - `pool` - (Optional, String) The pool of reservations available for use by this virtual server instance. Specified reservations must have a status of active, and have the same profile and zone as this virtual server instance. The pool must be empty if policy is disabled, and must not be empty if policy is manual.
+    Nested scheme for `pool`:
+    - `id` - The unique identifier for this reservation
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `volume_attachments` - (Optional, Force new resource, List) A nested block describes the storage volume configuration for the template. 

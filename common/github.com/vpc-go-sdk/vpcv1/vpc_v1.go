@@ -4929,6 +4929,8 @@ func (vpc *VpcV1) ListInstanceProfilesWithContext(ctx context.Context, listInsta
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
+	builder.AddQuery("maturity", "development")
+	builder.AddQuery("version", "2023-11-20")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instance/profiles`, nil)
 	if err != nil {
@@ -4992,6 +4994,8 @@ func (vpc *VpcV1) GetInstanceProfileWithContext(ctx context.Context, getInstance
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
+	builder.AddQuery("maturity", "development")
+	builder.AddQuery("version", "2023-11-20")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instance/profiles/{name}`, pathParamsMap)
 	if err != nil {

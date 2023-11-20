@@ -239,6 +239,28 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"reservation_terms": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The type for this profile field",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The supported committed use terms for a reservation using this profile",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 						"total_volume_bandwidth": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -687,6 +709,10 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 
 		if profile.GpuModel != nil {
 			l["gpu_model"] = dataSourceInstanceProfileFlattenGPUModel(*profile.GpuModel)
+		}
+
+		if profile.ReservationTerms != nil {
+			l["reservation_terms"] = dataSourceInstanceProfileFlattenReservationTerms(*profile.ReservationTerms)
 		}
 
 		if profile.TotalVolumeBandwidth != nil {
