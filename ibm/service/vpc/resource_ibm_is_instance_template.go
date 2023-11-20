@@ -1637,7 +1637,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		reservationAffinity := []map[string]interface{}{}
 		reservationAffinityMap := map[string]interface{}{}
 
-		reservationAffinityMap[isReservationAffinityPolicy] = instance.ReservationAffinity.Policy
+		reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
 		if instance.ReservationAffinity.Pool != nil {
 			pool := instance.ReservationAffinity.Pool[0]
 			res := ""

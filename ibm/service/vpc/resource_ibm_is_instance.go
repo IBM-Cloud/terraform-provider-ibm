@@ -3485,8 +3485,8 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		reservationAffinity := []map[string]interface{}{}
 		reservationAffinityMap := map[string]interface{}{}
 
-		reservationAffinityMap[isReservationAffinityPolicy] = instance.ReservationAffinity.Policy
-		if instance.ReservationAffinity.Pool != nil {
+		reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
+		if instance.ReservationAffinity.Pool != nil && len(instance.ReservationAffinity.Pool) > 0 {
 			poolList := make([]map[string]interface{}, 0)
 			for _, pool := range instance.ReservationAffinity.Pool {
 				res := map[string]interface{}{}
@@ -3510,6 +3510,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isReservationAffinity, reservationAffinity)
 	}
 	if instance.Reservation != nil {
+		resList := make([]map[string]interface{}, 0)
 		res := map[string]interface{}{}
 
 		res[isReservationId] = *instance.Reservation.ID
@@ -3523,7 +3524,8 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			deletedList = append(deletedList, deletedMap)
 			res[isReservationDeleted] = deletedList
 		}
-		d.Set(isInstanceReservation, res)
+		resList = append(resList, res)
+		d.Set(isInstanceReservation, resList)
 	}
 
 	if instance.NetworkInterfaces != nil {

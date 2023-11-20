@@ -337,10 +337,10 @@ func resourceIBMISReservationCreate(d *schema.ResourceData, meta interface{}) er
 		resCommittedUse := d.Get(isReservationCommittedUse + ".0").(map[string]interface{})
 		reservationCommittedUsePrototype := &vpcv1.ReservationCommittedUsePrototype{}
 
-		if resCommittedUse[isReservationComittedUseTerm] != nil {
+		if resCommittedUse[isReservationComittedUseTerm] != nil && resCommittedUse[isReservationComittedUseTerm].(string) != "" {
 			reservationCommittedUsePrototype.Term = core.StringPtr(resCommittedUse[isReservationComittedUseTerm].(string))
 		}
-		if resCommittedUse[isReservationComittedUseExpirationPolicy] != nil {
+		if resCommittedUse[isReservationComittedUseExpirationPolicy] != nil && resCommittedUse[isReservationComittedUseExpirationPolicy].(string) != "" {
 			reservationCommittedUsePrototype.ExpirationPolicy = core.StringPtr(resCommittedUse[isReservationComittedUseExpirationPolicy].(string))
 		}
 		createReservationOptions.CommittedUse = reservationCommittedUsePrototype
@@ -350,26 +350,31 @@ func resourceIBMISReservationCreate(d *schema.ResourceData, meta interface{}) er
 		resProfile := d.Get(isReservationProfile + ".0").(map[string]interface{})
 		reservationProfilePrototype := &vpcv1.ReservationProfilePrototype{}
 
-		if resProfile[isReservationProfileName] != nil {
+		if resProfile[isReservationProfileName] != nil && resProfile[isReservationProfileName].(string) != "" {
 			reservationProfilePrototype.Name = core.StringPtr(resProfile[isReservationProfileName].(string))
 		}
-		if resProfile[isReservationProfileResourceType] != nil {
+		if resProfile[isReservationProfileResourceType] != nil && resProfile[isReservationProfileResourceType].(string) != "" {
 			reservationProfilePrototype.ResourceType = core.StringPtr(resProfile[isReservationProfileResourceType].(string))
 		}
 		createReservationOptions.Profile = reservationProfilePrototype
 	}
 
-	if _, ok := d.GetOk(isReservationZone); ok {
-		zone := core.StringPtr(d.Get(isReservationZone).(string))
-		createReservationOptions.Zone = &vpcv1.ZoneIdentity{Name: zone}
+	if zone, ok := d.GetOk(isReservationZone); ok {
+		if zone.(string) != "" {
+			createReservationOptions.Zone = &vpcv1.ZoneIdentity{Name: core.StringPtr(zone.(string))}
+		}
 	}
 
 	if name, ok := d.GetOk(isReservationName); ok {
-		createReservationOptions.Name = core.StringPtr(name.(string))
+		if name.(string) != "" {
+			createReservationOptions.Name = core.StringPtr(name.(string))
+		}
 	}
 
 	if affPol, ok := d.GetOk(isReservationAffinityPolicy); ok {
-		createReservationOptions.AffinityPolicy = core.StringPtr(affPol.(string))
+		if affPol.(string) != "" {
+			createReservationOptions.AffinityPolicy = core.StringPtr(affPol.(string))
+		}
 	}
 	sess, err := vpcClient(meta)
 
@@ -566,8 +571,10 @@ func resourceIBMISReservationUpdate(d *schema.ResourceData, meta interface{}) er
 	reservationPatchModel := &vpcv1.ReservationPatch{}
 	if d.HasChange(isReservationName) {
 		name = d.Get(isReservationName).(string)
-		reservationPatchModel.Name = &name
-		hasChanged = true
+		if name != "" {
+			reservationPatchModel.Name = &name
+			hasChanged = true
+		}
 	}
 	if d.HasChange(isReservationCapacity) {
 		capacityIntf := d.Get(isReservationCapacity)
@@ -586,7 +593,9 @@ func resourceIBMISReservationUpdate(d *schema.ResourceData, meta interface{}) er
 		cuPatch := &vpcv1.ReservationCommittedUsePatch{}
 		if d.HasChange(isReservationCommittedUse + ".0." + isReservationComittedUseExpirationPolicy) {
 			if expPolIntf, ok := committedUseMap[isReservationComittedUseExpirationPolicy]; ok {
-				cuPatch.ExpirationPolicy = core.StringPtr(string(expPolIntf.(string)))
+				if expPolIntf.(string) != "" {
+					cuPatch.ExpirationPolicy = core.StringPtr(string(expPolIntf.(string)))
+				}
 			}
 		}
 		if d.HasChange(isReservationCommittedUse + ".0." + isReservationComittedUseTerm) {
@@ -602,12 +611,16 @@ func resourceIBMISReservationUpdate(d *schema.ResourceData, meta interface{}) er
 		profPatch := &vpcv1.ReservationProfilePatch{}
 		if d.HasChange(isReservationProfile + ".0." + isReservationProfileName) {
 			if profNameIntf, ok := profileMap[isReservationProfileName]; ok {
-				profPatch.Name = core.StringPtr(string(profNameIntf.(string)))
+				if profNameIntf.(string) != "" {
+					profPatch.Name = core.StringPtr(string(profNameIntf.(string)))
+				}
 			}
 		}
 		if d.HasChange(isReservationProfile + ".0." + isReservationProfileResourceType) {
 			if resTypeIntf, ok := profileMap[isReservationProfileResourceType]; ok {
-				profPatch.ResourceType = core.StringPtr(string(resTypeIntf.(string)))
+				if resTypeIntf.(string) != "" {
+					profPatch.ResourceType = core.StringPtr(string(resTypeIntf.(string)))
+				}
 			}
 		}
 		reservationPatchModel.Profile = profPatch

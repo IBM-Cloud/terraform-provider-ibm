@@ -1207,7 +1207,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			reservationAffinity := []map[string]interface{}{}
 			reservationAffinityMap := map[string]interface{}{}
 
-			reservationAffinityMap[isReservationAffinityPolicy] = instance.ReservationAffinity.Policy
+			reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
 			if instance.ReservationAffinity.Pool != nil {
 				poolList := make([]map[string]interface{}, 0)
 				for _, pool := range instance.ReservationAffinity.Pool {
@@ -1232,6 +1232,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			l[isReservationAffinity] = reservationAffinity
 		}
 		if instance.Reservation != nil {
+			resList := make([]map[string]interface{}, 0)
 			res := map[string]interface{}{}
 
 			res[isReservationId] = *instance.Reservation.ID
@@ -1245,7 +1246,8 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 				deletedList = append(deletedList, deletedMap)
 				res[isReservationDeleted] = deletedList
 			}
-			l[isInstanceReservation] = res
+			resList = append(resList, res)
+			l[isInstanceReservation] = resList
 		}
 
 		instancesInfo = append(instancesInfo, l)

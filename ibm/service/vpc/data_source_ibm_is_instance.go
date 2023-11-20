@@ -1232,7 +1232,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		reservationAffinity := []map[string]interface{}{}
 		reservationAffinityMap := map[string]interface{}{}
 
-		reservationAffinityMap[isReservationAffinityPolicy] = instance.ReservationAffinity.Policy
+		reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
 		if instance.ReservationAffinity.Pool != nil {
 			poolList := make([]map[string]interface{}, 0)
 			for _, pool := range instance.ReservationAffinity.Pool {
@@ -1257,6 +1257,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		d.Set(isReservationAffinity, reservationAffinity)
 	}
 	if instance.Reservation != nil {
+		resList := make([]map[string]interface{}, 0)
 		res := map[string]interface{}{}
 
 		res[isReservationId] = *instance.Reservation.ID
@@ -1270,7 +1271,8 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			deletedList = append(deletedList, deletedMap)
 			res[isReservationDeleted] = deletedList
 		}
-		d.Set(isInstanceReservation, res)
+		resList = append(resList, res)
+		d.Set(isInstanceReservation, resList)
 	}
 	return nil
 
