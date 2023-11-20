@@ -21,7 +21,7 @@ resource "ibm_sm_imported_certificate" "sm_imported_certificate" {
   description = "Extended description for this secret."
   labels = ["my-label"]
   secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
-  certificate: "-----BEGIN CERTIFICATE-----\nMIIE3jCCBGSgAwIBAgIUZfTbf3adn87l5J2Q2Aw+6Vk/qhowCgYIKoZIzj0EAwIw\n-----END CERTIFICATE-----"
+  certificate = "-----BEGIN CERTIFICATE-----\nMIIE3jCCBGSgAwIBAgIUZfTbf3adn87l5J2Q2Aw+6Vk/qhowCgYIKoZIzj0EAwIw\n-----END CERTIFICATE-----"
 }
 ```
 

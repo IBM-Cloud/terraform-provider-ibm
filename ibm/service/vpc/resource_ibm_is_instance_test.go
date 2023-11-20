@@ -68,6 +68,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "vcpu.#"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "vcpu.0.manufacturer"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "numa_count"),
 				),
 			},
 		},
@@ -845,6 +847,36 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance_restore", "name", vsiRestore),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance_restore", "boot_volume.0.name", "boot-restore"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstance_Reservation(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	reservationname := fmt.Sprintf("tf-reservation-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceReservation(vpcname, subnetname, name, reservationname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "reservation_affinity.0.policy", "manual"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "reservation_affinity.0.pool"),
 				),
 			},
 		},
@@ -1637,6 +1669,53 @@ func testAccCheckIBMISInstancePlacement(vpcname, subnetname, sshname, publicKey,
 	  } 
 	 
 	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, volName, acc.ISZoneName, name, acc.IsImage, acc.InstanceProfileName, acc.DedicatedHostGroupID, acc.ISZoneName, acc.DedicatedHostName)
+}
+
+func testAccCheckIBMISInstanceReservation(vpcname, subnetname, name, reservationid string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  }
+
+	  resource "ibm_is_reservation" "testacc_reservation" {
+		capacity {
+			total = 10
+		  }
+		  committed_use {
+			term = "one_year"
+		  }
+		profile {
+			name = "ba2-2x8"
+			resource_type = "instance_profile"
+		  }
+		zone = "%s"
+	}
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc     = ibm_is_vpc.testacc_vpc.id
+		zone    = "%s"
+		reservation_affinity {
+			policy = "manual"
+			pool {
+				id = ibm_is_reservation.testacc_reservation.id
+			}
+		}
+	  }
+	 
+	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, acc.ISZoneName, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
 
 func testAccCheckIBMISInstanceByVolume(vpcname, subnetname, sshname, publicKey, volName, name, name1, sname string) string {

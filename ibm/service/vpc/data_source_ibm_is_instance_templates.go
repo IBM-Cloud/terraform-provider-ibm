@@ -428,6 +428,24 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						isReservationAffinity: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isReservationAffinityPolicyResp: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The reservation affinity policy to use for this virtual server instance.",
+									},
+									isReservationAffinityPool: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The reservation associated with this template.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -724,6 +742,26 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			}
 			bootVolList = append(bootVolList, bootVol)
 			template[isInstanceTemplatesBootVolumeAttachment] = bootVolList
+		}
+		if instance.ReservationAffinity != nil {
+			reservationAffinity := []map[string]interface{}{}
+			reservationAffinityMap := map[string]interface{}{}
+
+			reservationAffinityMap[isReservationAffinityPolicy] = instance.ReservationAffinity.Policy
+			if instance.ReservationAffinity.Pool != nil {
+				pool := instance.ReservationAffinity.Pool[0]
+				res := ""
+				if idPool, ok := pool.(*vpcv1.ReservationIdentityByID); ok {
+					res = *idPool.ID
+				} else if crnPool, ok := pool.(*vpcv1.ReservationIdentityByCRN); ok {
+					res = *crnPool.CRN
+				} else if hrefPool, ok := pool.(*vpcv1.ReservationIdentityByHref); ok {
+					res = *hrefPool.Href
+				}
+				reservationAffinityMap[isReservationAffinityPool] = res
+			}
+			reservationAffinity = append(reservationAffinity, reservationAffinityMap)
+			template[isReservationAffinity] = reservationAffinity
 		}
 
 		if instance.ResourceGroup != nil {
