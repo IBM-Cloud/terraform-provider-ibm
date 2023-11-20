@@ -1916,6 +1916,9 @@ func (vpc *VpcV1) CreateVPCRoutingTableWithContext(ctx context.Context, createVP
 
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
+	builder.AddQuery("version", "2023-11-16")
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "beta")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables`, pathParamsMap)
 	if err != nil {
@@ -2012,6 +2015,9 @@ func (vpc *VpcV1) DeleteVPCRoutingTableWithContext(ctx context.Context, deleteVP
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	builder = builder.WithContext(ctx)
+	builder.AddQuery("version", "2023-11-16")
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "beta")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}`, pathParamsMap)
 	if err != nil {
@@ -2067,6 +2073,9 @@ func (vpc *VpcV1) GetVPCRoutingTableWithContext(ctx context.Context, getVPCRouti
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
+	builder.AddQuery("version", "2023-11-16")
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "beta")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}`, pathParamsMap)
 	if err != nil {
@@ -2132,6 +2141,9 @@ func (vpc *VpcV1) UpdateVPCRoutingTableWithContext(ctx context.Context, updateVP
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	builder = builder.WithContext(ctx)
+	builder.AddQuery("version", "2023-11-16")
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "beta")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}`, pathParamsMap)
 	if err != nil {
