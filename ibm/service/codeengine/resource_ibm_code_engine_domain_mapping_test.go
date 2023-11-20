@@ -6,8 +6,9 @@ package codeengine_test
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -213,7 +214,7 @@ func testAccCheckIbmCodeEngineDomainMappingDestroy(s *terraform.State) error {
 func decodeBase64EnvVar(base64Text string, envVar string) string {
 	decodedText, err := base64.StdEncoding.DecodeString(base64Text)
 	if err != nil {
-		fmt.Errorf("Error decoding environment variable %s: %s", envVar, err)
+		_ = fmt.Errorf("Error decoding environment variable %s: %s", envVar, err)
 		return ""
 	}
 	return string(decodedText)

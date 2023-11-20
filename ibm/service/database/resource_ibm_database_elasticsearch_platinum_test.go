@@ -354,6 +354,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		adminpassword                = "password12"
 		group {
 			group_id = "member"
+			
 			memory {
 			  allocation_mb = 1024
 			}

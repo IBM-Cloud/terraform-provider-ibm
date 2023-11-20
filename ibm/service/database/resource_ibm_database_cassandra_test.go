@@ -454,6 +454,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 			disk {
 			  allocation_mb = 20480
 			}
+			
 			cpu {
 			  allocation_count = 6
 			}
