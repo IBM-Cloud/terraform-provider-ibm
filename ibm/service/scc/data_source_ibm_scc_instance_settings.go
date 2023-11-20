@@ -17,7 +17,7 @@ import (
 )
 
 func DataSourceIbmSccInstanceSettings() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccInstanceSettingsRead,
 
 		Schema: map[string]*schema.Schema{
@@ -80,7 +80,7 @@ func DataSourceIbmSccInstanceSettings() *schema.Resource {
 				},
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccInstanceSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -90,6 +90,7 @@ func dataSourceIbmSccInstanceSettingsRead(context context.Context, d *schema.Res
 	}
 
 	getSettingsOptions := &securityandcompliancecenterapiv3.GetSettingsOptions{}
+	getSettingsOptions.SetInstanceID(d.Get("instance_id").(string))
 
 	settings, response, err := adminClient.GetSettingsWithContext(context, getSettingsOptions)
 

@@ -69,7 +69,7 @@ func TestAccIBMIsBackupPolicyBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIsBackupPolicyInstance(t *testing.T) {
+func TestAccIBMIsBackupPolicyMatchResourceType(t *testing.T) {
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
@@ -84,7 +84,7 @@ func TestAccIBMIsBackupPolicyInstance(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsBackupPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsBackupPolicyInstanceConfigBasic(backupPolicyName, vpcname, subnetname, sshname, volname, name),
+				Config: testAccCheckIBMIsBackupPolicyConfigMatchResourceType(backupPolicyName, vpcname, subnetname, sshname, volname, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_backup_policy.is_backup_policy", "name", backupPolicyName),
 					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "match_resource_types.#"),
@@ -99,7 +99,7 @@ func TestAccIBMIsBackupPolicyInstance(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsBackupPolicyInstanceConfigBasic(backupPolicyNameUpdate, vpcname, subnetname, sshname, volname, name),
+				Config: testAccCheckIBMIsBackupPolicyConfigMatchResourceType(backupPolicyNameUpdate, vpcname, subnetname, sshname, volname, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_backup_policy.is_backup_policy", "name", backupPolicyNameUpdate),
 					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "match_resource_types.#"),
@@ -169,7 +169,7 @@ func testAccCheckIBMIsBackupPolicyConfigBasic(backupPolicyName string, vpcname, 
 	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, volName, acc.ISZoneName, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, backupPolicyName)
 }
 
-func testAccCheckIBMIsBackupPolicyInstanceConfigBasic(backupPolicyName string, vpcname, subnetname, sshname, volName, name string) string {
+func testAccCheckIBMIsBackupPolicyConfigMatchResourceType(backupPolicyName string, vpcname, subnetname, sshname, volName, name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -210,11 +210,10 @@ func testAccCheckIBMIsBackupPolicyInstanceConfigBasic(backupPolicyName string, v
 	  }
 
 	  resource "ibm_is_backup_policy" "is_backup_policy" {
-		match_resource_type = "instance"
 		depends_on  = [ibm_is_instance.testacc_instance]
 		match_user_tags = ["tag-0"]
+		match_resource_type = "volume"
 		name            = "%s"
-		included_content = ["boot_volume","data_volumes"]
 	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, volName, acc.ISZoneName, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, backupPolicyName)
 }
 
@@ -244,4 +243,49 @@ func testAccCheckIBMIsBackupPolicyDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestAccIBMIsBackupPolicyBasicWithScope(t *testing.T) {
+	backupPolicyName := fmt.Sprintf("tfbakuppolicyname%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsBackupPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsBackupPolicyConfigBasicWithScope(backupPolicyName, acc.EnterpriseCRN),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_is_backup_policy.is_backup_policy", "name", backupPolicyName),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "match_resource_types.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "match_user_tags.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "resource_group"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "scope.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "scope.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "resource_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_backup_policy.is_backup_policy", "version"),
+				),
+			},
+			{
+				ResourceName:      "ibm_is_backup_policy.is_backup_policy",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsBackupPolicyConfigBasicWithScope(backupPolicyName, entCrn string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_backup_policy" "is_backup_policy" {
+		match_user_tags = ["dev:test"]
+		name            = "%s"
+		scope {
+			crn = "%s"
+		}
+	}`, backupPolicyName, entCrn)
 }

@@ -56,7 +56,7 @@ func TestAccIBMISVPCDatasource_dns(t *testing.T) {
 			{
 				Config: testDSCheckIBMISVPCDnsConfig(name, server1Add, enableHubTrue),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc", vpc),
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc1", vpc),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_vpc.ds_vpc", "name", name),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "cse_source_addresses.#"),

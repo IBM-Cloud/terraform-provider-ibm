@@ -1,4 +1,5 @@
 resource "ibm_scc_control_library" "scc_demo_control_library" {
+  instance_id = "00000000-1111-2222-3333-444444444444"
   control_library_name = var.scc_control_library_name 
   control_library_description = var.scc_control_library_description
   control_library_type = "custom"
