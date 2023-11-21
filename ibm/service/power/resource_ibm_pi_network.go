@@ -90,10 +90,11 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Description:  "PI Maximum Transmission Unit",
 			},
 			helpers.PINetworkAccessConfig: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "PI network communication configuration",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"internal-only", "outbound-only", "bidirectional-static-route", "bidirectional-bgp", "bidirectional-l2out"}),
+				Description:  "PI network communication configuration",
 			},
 			helpers.PICloudInstanceId: {
 				Type:        schema.TypeString,
