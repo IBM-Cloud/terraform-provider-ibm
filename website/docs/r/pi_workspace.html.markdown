@@ -37,8 +37,13 @@ resource "ibm_pi_workspace" "powervs_service_instance" {
 
 Review the argument references that you can specify for your resource.
 
-- `id` - (String) Workspace ID.
 - `pi_name` - (Required, String) A descriptive name used to identify the workspace.
 - `pi_datacenter` - (Required, String) Target location or environment to create the resource instance.
 - `pi_resource_group_id` - (Required, String) The ID of the resource group where you want to create the workspace. You can retrieve the value from data source `ibm_resource_group`.
 - `pi_plan` -  (Required, String) Plan associated with the offering; Valid values are `public` or `private`.
+
+## Attribute reference
+
+In addition to all argument reference listed, you can access the following attribute references after your resource source is created.
+
+- `id` - (String) Workspace ID.

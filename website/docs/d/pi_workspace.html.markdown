@@ -43,7 +43,7 @@ Review the argument references that you can specify for your data source.
 
 ## Attribute reference
 
-In addition to all argument reference list, you can access the following attribute references after your data source is created.
+In addition to all argument reference listed, you can access the following attribute references after your data source is created.
 
 - `id - (String) Workspace ID.
 - `pi_workspace_capabilities` - (Map) Workspace Capabilities.
