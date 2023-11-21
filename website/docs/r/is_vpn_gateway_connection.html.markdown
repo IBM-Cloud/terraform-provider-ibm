@@ -114,6 +114,12 @@ In addition to all argument reference list, you can access the following attribu
 - `mode` -  (String) The mode of the `VPN gateway` either **policy** or **route**.
 - `resource_type` -  (String) The resource type (vpn_gateway_connection).
 - `status` -  (String) The status of a VPN gateway connection either `down` or `up`.
+- `status_reasons` - (List) Array of reasons for the current status (if any).
+
+  Nested `status_reasons`:
+    - `code` - (String) The status reason code.
+    - `message` - (String) An explanation of the status reason.
+    - `more_info` - (String) Link to documentation about this status reason
 - `tunnels` -  (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
   Nested scheme for `tunnels`

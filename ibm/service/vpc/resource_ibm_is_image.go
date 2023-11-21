@@ -13,6 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -44,6 +45,9 @@ const (
 	isImageAccessTags    = "access_tags"
 	isImageUserTagType   = "user"
 	isImageAccessTagType = "access"
+
+	isImageDeprecate = "deprecate"
+	isImageObsolete  = "obsolete"
 )
 
 func ResourceIBMISImage() *schema.Resource {
@@ -98,6 +102,35 @@ func ResourceIBMISImage() *schema.Resource {
 				ForceNew:    true,
 				Description: "A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image",
 			},
+
+			isImageCreatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time that the image was created",
+			},
+			isImageDeprecate: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Set to deprecate. You can set an image to `deprecated` as a warning to transition away from soon-to-be obsolete images. Deprecated images can be used to provision resources.",
+			},
+			isImageObsolete: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Set to obsolete. You can set an image to `obsolete` as a warning to transition away from soon-to-be deleted images. You can't use obsolete images to provision resources.",
+			},
+			isImageDeprecationAt: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The deprecation date and time (UTC) for this image. If absent, no deprecation date and time has been set.",
+			},
+			isImageObsolescenceAt: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The obsolescence date and time (UTC) for this image. If absent, no obsolescence date and time has been set.",
+			},
+
 			isImageEncryptionKey: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -291,6 +324,20 @@ func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, opera
 			Name: &operatingSystem,
 		},
 	}
+	if obsoleteAtOk, ok := d.GetOk(isImageObsolescenceAt); ok {
+		obsoleteAt, err := strfmt.ParseDateTime(obsoleteAtOk.(string))
+		if err != nil {
+			return err
+		}
+		imagePrototype.ObsolescenceAt = &obsoleteAt
+	}
+	if deprecateAtOk, ok := d.GetOk(isImageDeprecationAt); ok {
+		deprecateAt, err := strfmt.ParseDateTime(deprecateAtOk.(string))
+		if err != nil {
+			return err
+		}
+		imagePrototype.DeprecationAt = &deprecateAt
+	}
 	if encryptionKey, ok := d.GetOk(isImageEncryptionKey); ok {
 		encryptionKeyStr := encryptionKey.(string)
 		// Construct an instance of the EncryptionKeyReference model
@@ -359,10 +406,13 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	if err != nil || vol == nil {
 		return fmt.Errorf("[ERROR] Error retrieving Volume (%s) details: %s\n%s", volume, err, response)
 	}
-	if vol.VolumeAttachments == nil {
-		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not attached to a virtual server instance ", volume)
+	if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 {
+		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not attached to a virtual server instance", volume)
 	}
 	volAtt := &vol.VolumeAttachments[0]
+	if *volAtt.Type != "boot" {
+		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not boot volume", volume)
+	}
 	insId = *volAtt.Instance.ID
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &insId,
@@ -390,6 +440,21 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 		if err != nil {
 			return err
 		}
+	}
+
+	if obsoleteAtOk, ok := d.GetOk(isImageObsolescenceAt); ok {
+		obsoleteAt, err := strfmt.ParseDateTime(obsoleteAtOk.(string))
+		if err != nil {
+			return err
+		}
+		imagePrototype.ObsolescenceAt = &obsoleteAt
+	}
+	if deprecateAtOk, ok := d.GetOk(isImageDeprecationAt); ok {
+		deprecateAt, err := strfmt.ParseDateTime(deprecateAtOk.(string))
+		if err != nil {
+			return err
+		}
+		imagePrototype.DeprecationAt = &deprecateAt
 	}
 
 	if encryptionKey, ok := d.GetOk(isImageEncryptionKey); ok {
@@ -488,10 +553,42 @@ func resourceIBMISImageUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceIBMISImageRead(d, meta)
 }
 
-func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChanged bool) error {
+func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNameChanged bool) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
+	}
+	if d.HasChange(isImageDeprecate) && !d.IsNewResource() {
+		deprecateTrue := d.Get(isImageDeprecate).(bool)
+		if deprecateTrue {
+			deprecateImageOptions := &vpcv1.DeprecateImageOptions{
+				ID: &id,
+			}
+			response, err := sess.DeprecateImage(deprecateImageOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error during deprecate Image : %s\n%s", err, response)
+			}
+			_, err = isWaitForImageDeprecate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if d.HasChange(isImageObsolete) && !d.IsNewResource() {
+		obsoleteTrue := d.Get(isImageObsolete).(bool)
+		if obsoleteTrue {
+			obsoleteImageOptions := &vpcv1.ObsoleteImageOptions{
+				ID: &id,
+			}
+			response, err := sess.ObsoleteImage(obsoleteImageOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error during obsolete Image : %s\n%s", err, response)
+			}
+			_, err = isWaitForImageObsolete(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return err
+			}
+		}
 	}
 	if d.HasChange(isImageTags) {
 		options := &vpcv1.GetImageOptions{
@@ -514,7 +611,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		image, response, err := sess.GetImage(options)
 		if err != nil {
-			return fmt.Errorf("Error getting Image IP: %s\n%s", err, response)
+			return fmt.Errorf("[ERROR] Error getting Image crn: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isImageAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageAccessTagType)
@@ -523,23 +620,57 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 				"Error on update of resource vpc Image (%s) access tags: %s", id, err)
 		}
 	}
-	if hasChanged {
-		options := &vpcv1.UpdateImageOptions{
-			ID: &id,
-		}
-		imagePatchModel := &vpcv1.ImagePatch{
-			Name: &name,
-		}
-		imagePatch, err := imagePatchModel.AsPatch()
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for ImagePatch: %s", err)
-		}
-		options.ImagePatch = imagePatch
-		_, response, err := sess.UpdateImage(options)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error on update of resource vpc Image: %s\n%s", err, response)
+
+	options := &vpcv1.UpdateImageOptions{
+		ID: &id,
+	}
+	imagePatchModel := &vpcv1.ImagePatch{}
+	if hasNameChanged {
+		imagePatchModel.Name = &name
+	}
+	nullObsolescence := false
+	nullDeprecate := false
+	if d.HasChange(isImageObsolescenceAt) {
+		obsolescenceAt := d.Get(isImageObsolescenceAt).(string)
+		if obsolescenceAt == "null" {
+			nullObsolescence = true
+		} else {
+			obsoleteAt, err := strfmt.ParseDateTime(obsolescenceAt)
+			if err != nil {
+				return err
+			}
+			imagePatchModel.ObsolescenceAt = &obsoleteAt
 		}
 	}
+
+	if d.HasChange(isImageDeprecationAt) {
+		deprecationAt := d.Get(isImageDeprecationAt).(string)
+		if deprecationAt == "null" {
+			nullDeprecate = true
+		} else {
+			deprecateAt, err := strfmt.ParseDateTime(deprecationAt)
+			if err != nil {
+				return err
+			}
+			imagePatchModel.DeprecationAt = &deprecateAt
+		}
+	}
+	imagePatch, err := imagePatchModel.AsPatch()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error calling asPatch for ImagePatch: %s", err)
+	}
+	if nullDeprecate {
+		imagePatch["deprecation_at"] = nil
+	}
+	if nullObsolescence {
+		imagePatch["obsolescence_at"] = nil
+	}
+	options.ImagePatch = imagePatch
+	_, response, err := sess.UpdateImage(options)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error on update of resource vpc Image: %s\n%s", err, response)
+	}
+
 	return nil
 }
 
@@ -572,6 +703,16 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	// d.Set(isImageArchitecure, image.Architecture)
 	if image.MinimumProvisionedSize != nil {
 		d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)
+	}
+
+	if image.CreatedAt != nil {
+		d.Set(isImageCreatedAt, image.CreatedAt.String())
+	}
+	if image.DeprecationAt != nil {
+		d.Set(isImageDeprecationAt, image.DeprecationAt.String())
+	}
+	if image.ObsolescenceAt != nil {
+		d.Set(isImageObsolescenceAt, image.ObsolescenceAt.String())
 	}
 	d.Set(isImageName, *image.Name)
 	d.Set(isImageOperatingSystem, *image.OperatingSystem.Name)

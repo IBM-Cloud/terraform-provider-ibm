@@ -20,7 +20,7 @@ resource "ibm_cm_object" "cm_object" {
   kind = "preset_configuration"
   short_description = "short description"
   data = jsonencode(file("data.json"))
-  parent_id = <valid_offering_crn>
+  parent_id = "us-south"
   tags = [ "tag1", "tag2" ]
 }
 ```
@@ -32,7 +32,7 @@ Review the argument reference that you can specify for your resource.
 * `catalog_id` - (Required, Forces new resource, String) Catalog identifier.
 * `name` - (Required, String) The programmatic name of this object.
 * `kind` - (Required, String) Kind of object. Options are "vpe", "preset_configuration", or "proxy_source".
-* `parent_id` - (Optional, String) The parent for this specific object.
+* `parent_id` - (Optional, String) The parent region for this specific object.
 * `label` - (Optional, String) Display name in the requested language.
 * `tags` - (Optional, List) List of tags associated with this catalog.
 * `short_description` - (Optional, String) Short description in the requested language.
@@ -50,7 +50,7 @@ In addition to all argument references listed, you can access the following attr
 * `kind` - (String) Kind of object.
 * `label` - (String) Display name in the requested language.
 * `name` - (String) The programmatic name of this object.
-* `parent_id` - (String) The parent for this specific object.
+* `parent_id` - (String) The parent region for this specific object.
 * `publish` - Publish information.
 * Nested scheme for **publish**:
 	* `permit_ibm_public_publish` - (Boolean) Is it permitted to request publishing to IBM or Public.

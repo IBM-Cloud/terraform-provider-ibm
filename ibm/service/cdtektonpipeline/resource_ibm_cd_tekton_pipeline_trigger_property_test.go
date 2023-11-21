@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -19,16 +19,19 @@ import (
 
 func TestAccIBMCdTektonPipelineTriggerPropertyBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.TriggerProperty
-
+	name := "trig-prop-1"
+	typeVar := "text"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCdTektonPipelineTriggerPropertyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic("", ""),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic("", "", name, typeVar),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineTriggerPropertyExists("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", conf),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name", name),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 				),
 			},
 		},
@@ -42,7 +45,6 @@ func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 	typeVar := "text"
 	path := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 	valueUpdate := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
-	typeVarUpdate := "text"
 	pathUpdate := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -60,11 +62,11 @@ func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, valueUpdate, typeVarUpdate, pathUpdate),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyConfig("", "", name, valueUpdate, typeVar, pathUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "name", name),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "value", valueUpdate),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVarUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type", typeVar),
 				),
 			},
 			resource.TestStep{
@@ -76,7 +78,7 @@ func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic(pipelineID string, triggerID string) string {
+func testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic(pipelineID string, triggerID string, name string, typeVar string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -95,6 +97,7 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic(pipelineID string
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}
@@ -127,12 +130,12 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyConfigBasic(pipelineID string
 		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			type = "manual"
-			event_listener = "listener"
 			depends_on = [
 				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
 			]
 			name = "trigger"
+			type = "manual"
+			event_listener = "listener"
 		}
 		resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
@@ -163,6 +166,7 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyConfig(pipelineID string, tri
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			next_build_number = 5
 			worker {
 				id = "public"
 			}
@@ -195,21 +199,21 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyConfig(pipelineID string, tri
 		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			type = "manual"
-			event_listener = "listener"
 			depends_on = [
 				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
 			]
 			name = "trigger"
+			type = "manual"
+			event_listener = "listener"
 		}
 		resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.trigger_id
 			name = "%s"
-			value = "%s"
 			type = "%s"
+			value = "%s"
 		}
-	`, rgName, tcName, name, value, typeVar)
+	`, rgName, tcName, name, typeVar, value)
 }
 
 func testAccCheckIBMCdTektonPipelineTriggerPropertyExists(n string, obj cdtektonpipelinev2.TriggerProperty) resource.TestCheckFunc {

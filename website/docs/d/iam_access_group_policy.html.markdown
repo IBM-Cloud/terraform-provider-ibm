@@ -61,6 +61,7 @@ In addition to all argument reference list, you can access the following attribu
       - `resource_group_id` - (String) The ID of the resource group.
       - `resource_instance_id`- (String) The ID of resource instance of the policy definition.
       - `service_type`- (String) The service type of the policy definition.
+      - `service_group_id` (String) The service group id of the policy definition.
       - `attributes` (Map)  A set of resource attributes in the format `name=value,name=value`.
 
   - `resource_tags`- (List of objects) A nested block describes the access management tags in the policy.
@@ -69,3 +70,19 @@ In addition to all argument reference list, you can access the following attribu
     - `name` - (String) The key of an access management tag. 
     - `value` - (String) The value of an access management tag.
     - `operator` - (String) Operator of an attribute.
+
+  - `rule_conditions` - (List of objects) A nested block describing the rule conditions of this policy.
+
+      Nested schema for `rule_conditions`:
+        - `key` - (String) The key of a rule condition.
+        - `operator` - (String) The operator of a rule condition.
+        - `value` - (List of Strings) The value of a rule condition.
+        - `conditions` - (List of Objects) A nested block describing additional rule conditions of this policy.
+
+          Nested schema for `conditions`:
+            - `key` - (String) The key of a condition.
+            - `operator` - (String) The operator of a condition.
+            - `value` - (List of Strings) The value of a condition.
+
+  - `rule_operator` - (String) The operator used to evaluate multiple rule conditions, e.g., all must be satisfied with `and`.
+  - `pattern` - (String) The pattern that the rule follows, e.g., `time-based-conditions:weekly:all-day`.

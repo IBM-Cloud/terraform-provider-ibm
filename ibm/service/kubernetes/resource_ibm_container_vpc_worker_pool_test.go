@@ -235,6 +235,27 @@ func testAccCheckIBMVpcContainerWorkerPoolUpdate(name string) string {
 func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 
 	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+	testChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+		resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "taints.#", "1"),
+	}
+	if acc.CrkID != "" {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(
+				"ibm_container_vpc_worker_pool.test_pool", "kms_instance_id", acc.KmsInstanceID),
+			resource.TestCheckResourceAttr(
+				"ibm_container_vpc_worker_pool.test_pool", "crk", acc.CrkID),
+		)
+	}
+	if acc.WorkerPoolSecondaryStorage != "" {
+		testChecks = append(testChecks, resource.TestCheckResourceAttr(
+			"ibm_container_vpc_worker_pool.test_pool", "secondary_storage", acc.WorkerPoolSecondaryStorage),
+		)
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -242,15 +263,15 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMVpcContainerWorkerPoolEnvvar(name),
+				Check:  resource.ComposeTestCheckFunc(testChecks...),
+			},
+			{
+				Config: testAccCheckIBMVpcContainerWorkerPoolEnvvarUpdate(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
+						"ibm_container_vpc_worker_pool.test_pool", "worker_count", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "kms_instance_id", acc.KmsInstanceID),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "crk", acc.CrkID),
+						"ibm_container_vpc_worker_pool.test_pool", "taints.#", "0"),
 				),
 			},
 			{
@@ -315,21 +336,46 @@ func testAccCheckIBMVpcContainerWorkerPoolDedicatedHostCreate(clusterName, name,
 }
 
 func testAccCheckIBMVpcContainerWorkerPoolEnvvar(name string) string {
-	return fmt.Sprintf(`
+	return fmt.Sprintf(testAccCheckIBMContainerVpcClusterEnvvar(name)+`
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
-	  cluster           = "%[2]s"
+	  cluster           = ibm_container_vpc_cluster.cluster.id
 	  worker_pool_name  = "%[1]s"
 	  flavor            = "bx2.4x16"
-	  vpc_id            = "%[3]s"
+	  vpc_id            = "%[2]s"
 	  worker_count      = 1
 	  zones {
-		subnet_id = "%[4]s"
+		subnet_id = "%[3]s"
 		name      = "us-south-1"
 	  }
-	  kms_instance_id = "%[5]s"
-	  crk = "%[6]s"
+	  kms_instance_id = "%[4]s"
+	  crk = "%[5]s"
+	  secondary_storage = "%[6]s"
+	  taints {
+		key    = "key1"
+		value  = "value1"
+		effect = "NoSchedule"
+	  }
 	}
-		`, name, acc.IksClusterID, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
+		`, name, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.WorkerPoolSecondaryStorage)
+}
+
+func testAccCheckIBMVpcContainerWorkerPoolEnvvarUpdate(name string) string {
+	return fmt.Sprintf(testAccCheckIBMContainerVpcClusterEnvvar(name)+`
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = ibm_container_vpc_cluster.cluster.id
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "bx2.4x16"
+	  vpc_id            = "%[2]s"
+	  worker_count      = 2
+	  zones {
+		subnet_id = "%[3]s"
+		name      = "us-south-1"
+	  }
+	  kms_instance_id = "%[4]s"
+	  crk = "%[5]s"
+	  secondary_storage = "%[6]s"
+	}
+		`, name, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.WorkerPoolSecondaryStorage)
 }
 
 func testAccCheckIBMVpcContainerWorkerPoolKmsAccountEnvvar(name string) string {
@@ -392,14 +438,14 @@ func testAccCheckIBMOpcContainerWorkerPoolBasic(name, openshiftFlavour, openShif
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
 	  cluster           = ibm_container_vpc_cluster.cluster.id
 	  worker_pool_name  = "%[1]s"
-	  flavor            = "%s"
-	  worker_count      = "%s"
-	  vpc_id            = data.ibm_is_vpc.vpc.id
-	  resource_group_id = data.ibm_resource_group.resource_group.id
- 	  operating_system  = "%s"
+	  flavor            = "%[5]s"
+	  worker_count      = "%[6]s"
+	  vpc_id            = "%[2]s"
+	  resource_group_id = "%[3]s"
+ 	  operating_system  = "%[7]s"
 	  entitlement       = "cloud_pak"
 	  zones {
-		subnet_id = data.ibm_is_subnet.subnet.id
+		subnet_id = "%[4]s"
 		name      = "us-south-1"
 	  }
 	  labels = {
@@ -407,5 +453,5 @@ func testAccCheckIBMOpcContainerWorkerPoolBasic(name, openshiftFlavour, openShif
 		"test1" = "test-pool1"
 	  }
 	}
-		`, name, openshiftFlavour, openShiftworkerCount, operatingSystem)
+		`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, openshiftFlavour, openShiftworkerCount, operatingSystem)
 }

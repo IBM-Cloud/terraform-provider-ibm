@@ -18,6 +18,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
@@ -71,6 +72,11 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 			"key_protect": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of the key you want to use data at rest encryption",
+			},
+			"kms_key_crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "CRN of the key you want to use data at rest encryption",
@@ -365,6 +371,181 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "sets a maximum amount of storage (in bytes) available for a bucket",
 			},
+			"object_lock": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Description",
+			},
+			"object_lock_configuration": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Bucket level object lock settings includes Days, Years, Mode.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"object_lock_enabled": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Enable object lock on a COS bucket. This can be used to enable objectlock on an existing bucket",
+						},
+						"object_lock_rule": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default_retention": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "An object lock configuration on the object at a bucket level, in the form of a days , years and mode that establishes a point in time after which the object can be deleted. This is applied at bucket level hence it is by default applied to all the object in the bucket unless a seperate retention period is set on the object.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"mode": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Retention modes apply different levels of protection to the objects.",
+												},
+												"years": {
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Retention period in terms of years after which the object can be deleted.",
+												},
+												"days": {
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Retention period in terms of days after which the object can be deleted.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"website_configuration": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"error_document": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"index_document": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"suffix": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"redirect_all_requests_to": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"protocol": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"routing_rule": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Rules that define when a redirect is applied and the redirect behavior.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"condition": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "A condition that must be met for the specified redirect to be applie.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"http_error_code_returned_equals": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The HTTP error code when the redirect is applied. Valid codes are 4XX or 5XX..",
+												},
+												"key_prefix_equals": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The object key name prefix when the redirect is applied..",
+												},
+											},
+										},
+									},
+									"redirect": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: ".",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"host_name": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The host name the request should be redirected to.",
+												},
+												"http_redirect_code": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The HTTP redirect code to use on the response. Valid codes are 3XX except 300..",
+												},
+												"protocol": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Protocol to be used in the Location header that is returned in the response.",
+												},
+												"replace_key_prefix_with": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The prefix of the object key name that replaces the value of KeyPrefixEquals in the redirect request.",
+												},
+												"replace_key_with": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The object key to be used in the Location header that is returned in the response.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"routing_rules": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Rules that define when a redirect is applied and the redirect behavior.",
+							StateFunc: func(v interface{}) string {
+								json, _ := structure.NormalizeJsonString(v)
+								return json
+							},
+						},
+					},
+				},
+			},
+			"website_endpoint": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -402,6 +583,7 @@ func DataSourceIBMCosBucketValidator() *validate.ResourceValidator {
 }
 func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
+	var keyProtectFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -411,6 +593,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
 	endpointType := d.Get("endpoint_type").(string)
+	if _, ok := d.GetOk("key_protect"); ok {
+		keyProtectFlag = true
+	}
 
 	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint string
 
@@ -506,7 +691,16 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketID := fmt.Sprintf("%s:%s:%s:meta:%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName, bucketLocationConvert(bucketType), bucketRegion, endpointType)
 	d.SetId(bucketID)
-	d.Set("key_protect", head.IBMSSEKPCrkId)
+	if head.IBMSSEKPEnabled != nil {
+		if *head.IBMSSEKPEnabled == true {
+			if keyProtectFlag == true {
+				d.Set("key_protect", head.IBMSSEKPCrkId)
+			} else {
+				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+			}
+		}
+	}
+
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
@@ -525,6 +719,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
+	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
 	}
 
 	if bucketType == "sl" {
@@ -636,6 +833,41 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		replicationRules := flex.ReplicationRuleGet(replicationptr.ReplicationConfiguration)
 		if len(replicationRules) > 0 {
 			d.Set("replication_rule", replicationRules)
+		}
+	}
+	// reading objectlock for bucket
+	getObjectLockConfigurationInput := &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
+	if output.ObjectLockConfiguration != nil {
+		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
+		if objectLockEnabled == "Enabled" {
+			d.Set("object_lock", true)
+		}
+		objectLockConfigurationptr := output.ObjectLockConfiguration
+		objectLockConfiguration := flex.ObjectLockConfigurationGet(objectLockConfigurationptr)
+		if len(objectLockConfiguration) > 0 {
+			d.Set("object_lock_configuration", objectLockConfiguration)
+		}
+	} //getBucketConfiguration
+	getBucketWebsiteConfigurationInput := &s3.GetBucketWebsiteInput{
+		Bucket: aws.String(bucketName),
+	}
+	outputwebsite, err := s3Client.GetBucketWebsite(getBucketWebsiteConfigurationInput)
+	var outputptr *s3.WebsiteConfiguration
+	outputptr = (*s3.WebsiteConfiguration)(outputwebsite)
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") && !strings.Contains(err.Error(), "The specified bucket does not have a website configuration") {
+		return err
+	}
+	if outputwebsite.IndexDocument != nil || outputwebsite.RedirectAllRequestsTo != nil {
+		websiteConfiguration := flex.WebsiteConfigurationGet(outputptr)
+		if len(websiteConfiguration) > 0 {
+			d.Set("website_configuration", websiteConfiguration)
+		}
+		websiteEndpoint := getWebsiteEndpoint(bucketName, bucketRegion)
+		if websiteEndpoint != "" {
+			d.Set("website_endpoint", websiteEndpoint)
 		}
 	}
 

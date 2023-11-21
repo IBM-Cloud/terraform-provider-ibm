@@ -25,6 +25,22 @@ func TestAccIBMPIInstanceAction(t *testing.T) {
 				),
 			},
 			{
+				// Try to stop already stopped instance
+				Config: testAccCheckIBMPIInstanceActionConfig("stop"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_pi_instance_action.example", "status", "SHUTOFF"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceActionConfig("start"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_pi_instance_action.example", "status", "ACTIVE"),
+				),
+			},
+			{
+				// Try to start already started instance
 				Config: testAccCheckIBMPIInstanceActionConfig("start"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(

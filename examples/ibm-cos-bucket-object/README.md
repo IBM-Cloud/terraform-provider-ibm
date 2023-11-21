@@ -42,6 +42,38 @@ data "ibm_cos_bucket_object" "object" {
 }
 ```
 
+## COS Object Lock
+
+**Note:**
+
+ COS bucket must have Object Lock enabled.
+
+ibm_cos_bucket_object Object Lock:
+
+```hcl
+resource "ibm_cos_bucket_object" "object" {
+  bucket_crn      = ibm_cos_bucket.bucket.crn
+  bucket_location = ibm_cos_bucket.bucket.cross_region_location
+  content         = "Hello World 2"
+  key             = "plaintext5.txt"
+  object_lock_mode              = "COMPLIANCE"
+  object_lock_retain_until_date = "2023-02-15T18:00:00Z"
+  object_lock_legal_hold_status = "ON"
+  force_delete = true
+}
+```
+## COS Website Redirect
+
+
+```hcl
+resource "ibm_cos_bucket_object" "object" {
+  bucket_crn      = ibm_cos_bucket.bucket.crn
+  bucket_location = ibm_cos_bucket.bucket.cross_region_location
+  key             = "page1.html"
+  website_redirect = "/page2.html"
+}
+```
+
 ## Requirements
 
 | Name | Version |
@@ -66,6 +98,10 @@ data "ibm_cos_bucket_object" "object" {
 | endpoint\_type | The type of endpoint used to access COS. Valid options are "public", "private", and "direct". Defaults to "public". | `string` | false |
 | etag | MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`. | `string` | false |
 | key | The name of the object in the COS bucket. | `string` | true |
+| object_lock_legal_hold_status | An object lock configuration on the object, the valid states are ON/OFF. When ON prevents deletion of the object version. | `string` | false |
+| object_lock_mode | Retention modes apply different levels of protection to the objects. | `string` | false |
+| object_lock_legal_hold_status | An object cannot be deleted when the current time is earlier than the retainUntilDate. After this date, the object can be deleted. | `string` | false |
+| website_redirect | To redirect the request for a particular object. | `string` | false |
 
 ## Outputs
 

@@ -5,6 +5,7 @@ package iampolicy_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -18,7 +19,7 @@ import (
 )
 
 func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -48,7 +49,7 @@ func TestAccIBMIAMAccessGroupPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -78,7 +79,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_ServiceType(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -100,7 +101,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ServiceType(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -122,7 +123,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -144,7 +145,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -165,7 +166,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
@@ -193,7 +194,7 @@ func TestAccIBMIAMAccessGroupPolicy_import(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group_policy.policy"
 
@@ -215,8 +216,8 @@ func TestAccIBMIAMAccessGroupPolicy_account_management(t *testing.T) {
 	})
 }
 
-func TestAccIBMIAMAccessGroupPolicy_With_Attributese(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+func TestAccIBMIAMAccessGroupPolicy_With_Attributes(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -238,7 +239,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Attributese(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Attributes(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -267,7 +268,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Attributes(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Service_Specific_Roles(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -288,7 +289,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service_Specific_Roles(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
@@ -311,7 +312,7 @@ func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Resource_Tags(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -341,7 +342,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Tags(t *testing.T) {
 }
 
 func TestAccIBMIAMAccessGroupPolicy_With_Transaction_Id(t *testing.T) {
-	var conf iampolicymanagementv1.Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -371,6 +372,178 @@ func TestAccIBMIAMAccessGroupPolicy_With_Transaction_Id(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_Custom(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyWeeklyCustomHours(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "time-based-conditions:weekly:custom-hours"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.#", "3"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.2.key", "{{environment.attributes.day_of_week}}"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.2.value.#", "5"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Custom Hours Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateConditions(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "time-based-conditions:weekly:custom-hours"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.2.value.#", "4"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Custom Hours Update for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Weekly_All_Day(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyWeeklyAllDay(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "time-based-conditions:weekly:all-day"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.0.key", "{{environment.attributes.day_of_week}}"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.0.value.#", "5"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy All Day Weekly Time-Based Conditions Creation for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_Time_Based_Conditions_Once(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyTimeBasedOnce(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "time-based-conditions:once"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "rule_conditions.0.key", "{{environment.attributes.current_date_time}}"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Once Time-Based Conditions Creation for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyResourceAttributes(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+			{
+				Config:      testAccCheckIBMIAMAccessGroupPolicyUpdateConditions(name),
+				ExpectError: regexp.MustCompile("Error: Cannot use rule_conditions, rule_operator, or pattern when updating v1/policy. Delete existing v1/policy and create using rule_conditions and pattern."),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_ServiceGroupID(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_attributes.0.value", "IAM"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateWithServiceGroupId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_Attribute_Based_Condition(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Attribute Based Condition Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Attribute Based Condition Update for test scenario"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	iamPolicyManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -388,11 +561,11 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 
 		accessGroupPolicyID := parts[1]
 
-		getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		getPolicyOptions := iamPolicyManagementClient.NewGetV2PolicyOptions(
 			accessGroupPolicyID,
 		)
 
-		destroyedPolicy, response, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		destroyedPolicy, response, err := iamPolicyManagementClient.GetV2Policy(getPolicyOptions)
 
 		if err == nil && *destroyedPolicy.State != "deleted" {
 			return fmt.Errorf("Access group policy still exists: %s\n", rs.Primary.ID)
@@ -404,7 +577,7 @@ func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagementv1.Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagementv1.V2PolicyTemplateMetaData) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -426,11 +599,11 @@ func testAccCheckIBMIAMAccessGroupPolicyExists(n string, obj iampolicymanagement
 
 		accessGroupPolicyID := parts[1]
 
-		getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+		getPolicyOptions := iamPolicyManagementClient.NewGetV2PolicyOptions(
 			accessGroupPolicyID,
 		)
 
-		policy, _, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+		policy, _, err := iamPolicyManagementClient.GetV2Policy(getPolicyOptions)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error retrieving Policy %s err: %s", accessGroupPolicyID, err)
 		}
@@ -826,5 +999,295 @@ func testAccCheckIBMIAMAccessGroupPolicyTransactionIdUpdate(name string) string 
 				value    = "messagehub"
 			}
 	  	}
+	`, name)
+}
+func testAccCheckIBMIAMAccessGroupPolicyWeeklyCustomHours(name string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_iam_access_group" "accgrp"  {
+		  name = "%s"
+		  }
+
+		  resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Viewer"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.day_of_week}}"
+				operator = "dayOfWeekAnyOf"
+				value = ["1+00:00","2+00:00","3+00:00","4+00:00", "5+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeGreaterThanOrEquals"
+				value = ["09:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeLessThanOrEquals"
+				value = ["17:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:weekly:custom-hours"
+			description = "IAM Access Group Policy Custom Hours Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyUpdateConditions(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+			}
+
+			resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Viewer", "Manager"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.day_of_week}}"
+				operator = "dayOfWeekAnyOf"
+				value = ["1+00:00","2+00:00","3+00:00","4+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeGreaterThanOrEquals"
+				value = ["09:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_time}}"
+				operator = "timeLessThanOrEquals"
+				value = ["17:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:weekly:custom-hours"
+			description = "IAM Access Group Policy Custom Hours Update for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyWeeklyAllDay(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+			}
+
+			resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Viewer"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.day_of_week}}"
+				operator = "dayOfWeekAnyOf"
+				value = ["1+00:00","2+00:00","3+00:00","4+00:00", "5+00:00"]
+			}
+
+		  pattern = "time-based-conditions:weekly:all-day"
+			description = "IAM Access Group Policy All Day Weekly Time-Based Conditions Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyTimeBasedOnce(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+			}
+
+			resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Viewer"]
+			resources {
+				 service = "kms"
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeGreaterThanOrEquals"
+				value = ["2022-10-01T12:00:00+00:00"]
+			}
+			rule_conditions {
+				key = "{{environment.attributes.current_date_time}}"
+				operator = "dateTimeLessThanOrEquals"
+				value = ["2022-10-31T12:00:00+00:00"]
+			}
+			rule_operator = "and"
+		  pattern = "time-based-conditions:once"
+			description = "IAM Access Group Policy Once Time-Based Conditions Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+			}
+
+			resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Service ID creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyUpdateWithServiceGroupId(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+			}
+
+			resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Service ID creator", "User API key creator"]
+    		resource_attributes {
+         		name     = "service_group_id"
+         		operator = "stringEquals"
+         		value    = "IAM"
+			}
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Access Group Policy Attribute Based Condition Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyUpdateAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Reader", "Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Access Group Policy Attribute Based Condition Update for test scenario"
+		}
 	`, name)
 }

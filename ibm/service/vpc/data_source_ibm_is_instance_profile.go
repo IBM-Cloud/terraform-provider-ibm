@@ -12,6 +12,8 @@ const (
 	isInstanceProfileName         = "name"
 	isInstanceProfileFamily       = "family"
 	isInstanceProfileArchitecture = "architecture"
+	isInstanceVCPUArchitecture    = "vcpu_architecture"
+	isInstanceVCPUManufacturer    = "vcpu_manufacturer"
 )
 
 func DataSourceIBMISInstanceProfile() *schema.Resource {
@@ -461,6 +463,47 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"network_interface_count": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum value for this profile field",
+						},
+						"min": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum value for this profile field",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+					},
+				},
+			},
+			"numa_count": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
+			},
 			"port_speed": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -479,7 +522,12 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
-			"vcpu_architecture": {
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the instance profile.",
+			},
+			isInstanceVCPUArchitecture: &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -502,7 +550,30 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
-			"vcpu_count": {
+			isInstanceVCPUManufacturer: &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default VCPU manufacturer for an instance with this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer for an instance with this profile.",
+						},
+					},
+				},
+			},
+			"vcpu_count": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -590,6 +661,9 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 		}
 
 	}
+	if profile.Status != nil {
+		d.Set("status", profile.Status)
+	}
 	if profile.Bandwidth != nil {
 		err = d.Set("bandwidth", dataSourceInstanceProfileFlattenBandwidth(*profile.Bandwidth.(*vpcv1.InstanceProfileBandwidth)))
 		if err != nil {
@@ -642,6 +716,18 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 			return err
 		}
 	}
+	if profile.NetworkInterfaceCount != nil {
+		err = d.Set("network_interface_count", dataSourceInstanceProfileFlattenNetworkInterfaceCount(*profile.NetworkInterfaceCount.(*vpcv1.InstanceProfileNetworkInterfaceCount)))
+		if err != nil {
+			return err
+		}
+	}
+	if profile.NumaCount != nil {
+		err = d.Set("numa_count", dataSourceInstanceProfileFlattenNumaCount(*profile.NumaCount.(*vpcv1.InstanceProfileNumaCount)))
+		if err != nil {
+			return err
+		}
+	}
 	if profile.PortSpeed != nil {
 		err = d.Set("port_speed", dataSourceInstanceProfileFlattenPortSpeed(*profile.PortSpeed.(*vpcv1.InstanceProfilePortSpeed)))
 		if err != nil {
@@ -650,7 +736,15 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	}
 
 	if profile.VcpuArchitecture != nil {
-		err = d.Set("vcpu_architecture", dataSourceInstanceProfileFlattenVcpuArchitecture(*profile.VcpuArchitecture))
+		err = d.Set(isInstanceVCPUArchitecture, dataSourceInstanceProfileFlattenVcpuArchitecture(*profile.VcpuArchitecture))
+		if err != nil {
+			return err
+		}
+	}
+
+	// Manufacturer details added.
+	if profile.VcpuManufacturer != nil {
+		err = d.Set(isInstanceVCPUManufacturer, dataSourceInstanceProfileFlattenVcpuManufacture(*profile.VcpuManufacturer))
 		if err != nil {
 			return err
 		}
@@ -851,6 +945,29 @@ func dataSourceInstanceProfileMemoryToMap(memoryItem vpcv1.InstanceProfileMemory
 	return memoryMap
 }
 
+func dataSourceInstanceProfileFlattenNetworkInterfaceCount(result vpcv1.InstanceProfileNetworkInterfaceCount) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileNetworkInterfaceCount(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileNetworkInterfaceCount(networkInterfaceCountItem vpcv1.InstanceProfileNetworkInterfaceCount) (networkInterfaceCountMap map[string]interface{}) {
+	networkInterfaceCountMap = map[string]interface{}{}
+
+	if networkInterfaceCountItem.Max != nil {
+		networkInterfaceCountMap["max"] = networkInterfaceCountItem.Max
+	}
+	if networkInterfaceCountItem.Min != nil {
+		networkInterfaceCountMap["min"] = networkInterfaceCountItem.Min
+	}
+	if networkInterfaceCountItem.Type != nil {
+		networkInterfaceCountMap["type"] = networkInterfaceCountItem.Type
+	}
+	return networkInterfaceCountMap
+}
+
 func dataSourceInstanceProfileFlattenPortSpeed(result vpcv1.InstanceProfilePortSpeed) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceInstanceProfilePortSpeedToMap(result)
@@ -894,6 +1011,31 @@ func dataSourceInstanceProfileVcpuArchitectureToMap(vcpuArchitectureItem vpcv1.I
 	}
 
 	return vcpuArchitectureMap
+}
+
+/* Changes for the AMD Support VCPU Manufacturer */
+func dataSourceInstanceProfileFlattenVcpuManufacture(result vpcv1.InstanceProfileVcpuManufacturer) (fl []map[string]interface{}) {
+	fl = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileVcpuManufacturerToMap(result)
+	fl = append(fl, finalMap)
+
+	return fl
+}
+
+func dataSourceInstanceProfileVcpuManufacturerToMap(vcpuManufacutererItem vpcv1.InstanceProfileVcpuManufacturer) (vcpuManufacturerMap map[string]interface{}) {
+	vcpuManufacturerMap = map[string]interface{}{}
+
+	if vcpuManufacutererItem.Default != nil {
+		vcpuManufacturerMap["default"] = vcpuManufacutererItem.Default
+	}
+	if vcpuManufacutererItem.Type != nil {
+		vcpuManufacturerMap["type"] = vcpuManufacutererItem.Type
+	}
+	if vcpuManufacutererItem.Value != nil {
+		vcpuManufacturerMap["value"] = vcpuManufacutererItem.Value
+	}
+
+	return vcpuManufacturerMap
 }
 
 func dataSourceInstanceProfileFlattenVcpuCount(result vpcv1.InstanceProfileVcpu) (finalList []map[string]interface{}) {
@@ -1071,4 +1213,25 @@ func dataSourceInstanceProfileTotalVolumeBandwidthToMap(bandwidthItem vpcv1.Inst
 	}
 
 	return bandwidthMap
+}
+
+func dataSourceInstanceProfileFlattenNumaCount(result vpcv1.InstanceProfileNumaCount) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileNumaCountToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileNumaCountToMap(numaItem vpcv1.InstanceProfileNumaCount) (numaMap map[string]interface{}) {
+	numaMap = map[string]interface{}{}
+
+	if numaItem.Type != nil {
+		numaMap["type"] = numaItem.Type
+	}
+	if numaItem.Value != nil {
+		numaMap["value"] = numaItem.Value
+	}
+
+	return numaMap
 }

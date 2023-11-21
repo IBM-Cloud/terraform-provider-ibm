@@ -100,6 +100,9 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+
+    -> **NOTE:** `allow_dns_resolution_binding` is a select location availability, invitation only feature. If used in other regions may lead to inconsistencies in state management.
+- `allow_dns_resolution_binding` - (Optional, bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
 - `name` - (Required, Forces new resource, String) The endpoint gateway name.
 - `ips`  (Optional, List) The endpoint gateway resource group.
 
@@ -119,11 +122,11 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `target`:
   - `crn` - (Optional, Forces new resource, String) The CRN for this provider cloud service, or the CRN for the user's instance of a provider cloud service.
 
-    **NOTE:** If `crn` is not specified, `name` must be specified. 
+     -> **NOTE:** If `crn` is not specified, `name` must be specified. 
   - `name` - (Optional, Forces new resource, String) The endpoint gateway target name.
 
-    **NOTE:** If `name` is not specified, `crn` must be specified. 
-  - `resource_type` - (Required, String) The endpoint gateway target resource type. The possible values are `provider_cloud_service`, `provider_infrastructure_service`, `private_path_service_gateway`.
+      -> **NOTE:** If `name` is not specified, `crn` must be specified. 
+  - `resource_type` - (Required, String) The endpoint gateway target resource type. The possible values are `provider_cloud_service`, `provider_infrastructure_service`.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 
 ~> **NOTE:** `ips` configured inline in this resource are not modifiable. Prefer using `ibm_is_virtual_endpoint_gateway_ip` resource to bind/unbind new reserved IPs to endpoint gateways and use the resource `ibm_is_subnet_reserved_ip` to create new reserved IP.
@@ -145,6 +148,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `lifecycle_state` - (String) The lifecycle state of the endpoint gateway.
 - `resource_type` - (String) The endpoint gateway resource type.
+- `service_endpoints`- (Array of Strings) The fully qualified domain names for the target service. A fully qualified domain name for the target service
 
 ## Import
 The `ibm_is_virtual_endpoint_gateway` resource can be imported by using virtual endpoint gateway ID.

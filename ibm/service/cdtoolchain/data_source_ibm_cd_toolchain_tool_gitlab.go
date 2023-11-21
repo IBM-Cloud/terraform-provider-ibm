@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -73,7 +73,7 @@ func DataSourceIBMCdToolchainToolGitlab() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool name.",
+				Description: "Name of the tool.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -89,7 +89,12 @@ func DataSourceIBMCdToolchainToolGitlab() *schema.Resource {
 						"git_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Set this value to 'gitlab' for gitlab.com, or to the GUID of a custom GitLab server.",
+							Description: "Set this value to 'gitlab' for gitlab.com, or 'gitlabcustom' for a custom GitLab server.",
+						},
+						"title": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The title of the server. e.g. My GitLab Enterprise Server.",
 						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -100,6 +105,16 @@ func DataSourceIBMCdToolchainToolGitlab() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The default branch of the git repository.",
+						},
+						"root_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Root URL of the server. e.g. https://gitlab.example.com.",
+						},
+						"blind_connection": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Setting this value to true means the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.",
 						},
 						"owner_id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -129,7 +144,7 @@ func DataSourceIBMCdToolchainToolGitlab() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.",
+							Description: "The operation that should be performed to initialize the new tool integration. Use 'new' or 'new_if_not_exists' to create a new git repository, 'clone' or 'clone_if_not_exists' to clone an existing repository into a new git repository, 'fork' or 'fork_if_not_exists' to fork an existing git repository, or 'link' to link to an existing git repository. If you attempt to apply a resource with type 'new', 'clone', or 'fork' when the target repo already exists, the attempt will fail. If you apply a resource with type 'new_if_not_exists`, 'clone_if_not_exists', or 'fork_if_not_exists' when the target repo already exists, the existing repo will be used as-is.",
 						},
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -150,6 +165,17 @@ func DataSourceIBMCdToolchainToolGitlab() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the GitLab project.",
+						},
+						"auth_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.",
+						},
+						"api_token": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "Personal Access Token. Required if ‘auth_type’ is set to ‘pat’, ignored otherwise.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -249,10 +275,10 @@ func dataSourceIBMCdToolchainToolGitlabRead(context context.Context, d *schema.R
 func dataSourceIBMCdToolchainToolGitlabToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
-		modelMap["ui_href"] = *model.UIHref
+		modelMap["ui_href"] = model.UIHref
 	}
 	if model.APIHref != nil {
-		modelMap["api_href"] = *model.APIHref
+		modelMap["api_href"] = model.APIHref
 	}
 	return modelMap, nil
 }

@@ -59,7 +59,32 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
+			isInstanceMetadataService: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceMetadataServiceEnabled1: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+						},
 
+						isInstanceMetadataServiceProtocol: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+						},
+
+						isInstanceMetadataServiceRespHopLimit: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The hop limit (IP time to live) for IP response packets from the metadata service",
+						},
+					},
+				},
+			},
 			isInstancePEM: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -460,6 +485,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 							Computed:    true,
 							Description: "Instance vCPU count",
 						},
+						// Added for AMD support, manufacturer details.
+						isInstanceCPUManufacturer: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Instance vCPU Manufacturer",
+						},
 					},
 				},
 			},
@@ -498,6 +529,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Instance memory",
+			},
+
+			"numa_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.",
 			},
 
 			isInstanceStatus: {
@@ -713,7 +750,22 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	}
 	if instance.MetadataService != nil {
 		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+
+		metadataService := []map[string]interface{}{}
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+		if instance.MetadataService.Protocol != nil {
+			metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+		}
+		if instance.MetadataService.ResponseHopLimit != nil {
+			metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+		}
+
+		metadataService = append(metadataService, metadataServiceMap)
+		d.Set(isInstanceMetadataService, metadataService)
 	}
+
 	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
 		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
 	}
@@ -722,6 +774,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		currentCPU := map[string]interface{}{}
 		currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
 		currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
+		currentCPU[isInstanceCPUManufacturer] = *instance.Vcpu.Manufacturer // Added for AMD support, manufacturer details.
 		cpuList = append(cpuList, currentCPU)
 	}
 	d.Set(isInstanceCPU, cpuList)
@@ -732,7 +785,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	}
 
 	d.Set(isInstanceMemory, *instance.Memory)
-
+	if instance.NumaCount != nil {
+		d.Set("numa_count", *instance.NumaCount)
+	}
 	gpuList := make([]map[string]interface{}, 0)
 	if instance.Gpu != nil {
 		currentGpu := map[string]interface{}{}
@@ -879,20 +934,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				if keyFlag != "" {
 					block, err := pem.Decode(keybytes)
 					if block == nil {
-						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format")
+						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
 					}
 					isEncrypted := false
-					switch block.Type {
-					case "RSA PRIVATE KEY":
-						isEncrypted = x509.IsEncryptedPEMBlock(block)
-					case "OPENSSH PRIVATE KEY":
+					if block.Type == "OPENSSH PRIVATE KEY" {
 						var err error
 						isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
 						if err != nil {
 							return fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err)
 						}
-					default:
-						return fmt.Errorf("PEM and OpenSSH private key formats with RSA key type are supported, can not support this key file type: %s", err)
+					} else {
+						isEncrypted = x509.IsEncryptedPEMBlock(block)
 					}
 					passphrase := ""
 					var privateKey interface{}

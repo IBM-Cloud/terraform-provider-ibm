@@ -72,3 +72,35 @@ data "ibm_container_vpc_cluster" "testacc_cluster_dedicatedhost" {
 }
 `
 }
+
+func testAccCheckIBMContainerVPCClusterDatasourceEnvvar(name string) string {
+	return testAccCheckIBMContainerVpcClusterEnvvar(name) + `
+data "ibm_container_vpc_cluster" "testacc_ds_cluster" {
+     cluster_name_id = ibm_container_vpc_cluster.cluster.id
+}
+`
+}
+
+func TestAccIBMContainerVPCClusterDataSourceEnvvar(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	testChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttrSet(
+			"data.ibm_container_vpc_cluster.testacc_ds_cluster", "id"),
+		resource.TestCheckResourceAttr(
+			"data.ibm_container_vpc_cluster.testacc_ds_cluster", "worker_pools.#", "1"),
+	}
+	if acc.WorkerPoolSecondaryStorage != "" {
+		testChecks = append(testChecks, resource.TestCheckResourceAttr(
+			"data.ibm_container_vpc_cluster.testacc_ds_cluster", "worker_pools.0.secondary_storage.0.name", acc.WorkerPoolSecondaryStorage))
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVPCClusterDatasourceEnvvar(name),
+				Check:  resource.ComposeTestCheckFunc(testChecks...),
+			},
+		},
+	})
+}

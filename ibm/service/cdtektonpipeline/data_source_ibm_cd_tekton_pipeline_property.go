@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -39,6 +39,11 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Property value. Any string value is valid.",
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the property.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -87,6 +92,10 @@ func dataSourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schem
 
 	if err = d.Set("value", property.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+	}
+
+	if err = d.Set("href", property.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("type", property.Type); err != nil {

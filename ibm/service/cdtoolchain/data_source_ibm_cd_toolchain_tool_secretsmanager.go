@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -73,7 +73,7 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool name.",
+				Description: "Name of the tool.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -91,20 +91,30 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 							Computed:    true,
 							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
 						},
+						"instance_id_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of service instance identifier. When absent defaults to `instance-name`.",
+						},
 						"instance_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the Secrets Manager service instance.",
+							Description: "The name of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.",
+						},
+						"instance_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Secrets Manager service instance CRN (Cloud Resource Name), only relevant when using `instance-crn` as the `instance_id_type`.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The IBM Cloud location where the Secrets Manager service instance is located.",
+							Description: "The IBM Cloud location of the Secrets Manager service instance, only relevant when using `instance-name` as the `instance_id_type`.",
 						},
 						"resource_group_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the resource group where the Secrets Manager service instance is located.",
+							Description: "The name of the resource group where the Secrets Manager service instance is located, only relevant when using `instance-name` as the `instance_id_type`.",
 						},
 					},
 				},
@@ -180,9 +190,11 @@ func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
 		remapFields := map[string]string{
+			"instance_id_type":    "instance-id-type",
 			"location":            "region",
 			"resource_group_name": "resource-group",
 			"instance_name":       "instance-name",
+			"instance_crn":        "instance-crn",
 		}
 		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolSecretsmanager(), remapFields)
 		parameters = append(parameters, modelMap)
@@ -201,10 +213,10 @@ func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 func dataSourceIBMCdToolchainToolSecretsmanagerToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
-		modelMap["ui_href"] = *model.UIHref
+		modelMap["ui_href"] = model.UIHref
 	}
 	if model.APIHref != nil {
-		modelMap["api_href"] = *model.APIHref
+		modelMap["api_href"] = model.APIHref
 	}
 	return modelMap, nil
 }

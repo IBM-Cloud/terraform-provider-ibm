@@ -116,10 +116,41 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance memory",
 						},
+						"numa_count": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.",
+						},
 						isInstanceMetadataServiceEnabled: {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+						},
+						isInstanceMetadataService: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The metadata service configuration",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceMetadataServiceEnabled1: {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether the metadata service endpoint will be available to the virtual server instance",
+									},
+
+									isInstanceMetadataServiceProtocol: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+									},
+
+									isInstanceMetadataServiceRespHopLimit: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The hop limit (IP time to live) for IP response packets from the metadata service",
+									},
+								},
+							},
 						},
 						"status": {
 							Type:        schema.TypeString,
@@ -532,6 +563,11 @@ func DataSourceIBMISInstances() *schema.Resource {
 										Computed:    true,
 										Description: "Instance vcpu count",
 									},
+									"manufacturer": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Instance vcpu manufacturer",
+									},
 								},
 							},
 						},
@@ -804,8 +840,23 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		l["crn"] = *instance.CRN
 		l["name"] = *instance.Name
 		l["memory"] = *instance.Memory
+		if instance.NumaCount != nil {
+			l["numa_count"] = *instance.NumaCount
+		}
 		if instance.MetadataService != nil {
 			l[isInstanceMetadataServiceEnabled] = *instance.MetadataService.Enabled
+			metadataService := []map[string]interface{}{}
+			metadataServiceMap := map[string]interface{}{}
+
+			metadataServiceMap[isInstanceMetadataServiceEnabled1] = instance.MetadataService.Enabled
+			if instance.MetadataService.Protocol != nil {
+				metadataServiceMap[isInstanceMetadataServiceProtocol] = instance.MetadataService.Protocol
+			}
+			if instance.MetadataService.ResponseHopLimit != nil {
+				metadataServiceMap[isInstanceMetadataServiceRespHopLimit] = instance.MetadataService.ResponseHopLimit
+			}
+			metadataService = append(metadataService, metadataServiceMap)
+			l[isInstanceMetadataService] = metadataService
 		}
 		l["status"] = *instance.Status
 		l["resource_group"] = *instance.ResourceGroup.ID
@@ -1011,6 +1062,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			currentCPU := map[string]interface{}{}
 			currentCPU["architecture"] = *instance.Vcpu.Architecture
 			currentCPU["count"] = *instance.Vcpu.Count
+			currentCPU["manufacturer"] = *instance.Vcpu.Manufacturer
 			cpuList = append(cpuList, currentCPU)
 		}
 		l["vcpu"] = cpuList

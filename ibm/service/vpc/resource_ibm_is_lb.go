@@ -114,6 +114,27 @@ func ResourceIBMISLB() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether this load balancer supports source IP session persistence.",
 			},
+			"dns": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "The DNS configuration for this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instance_crn": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The CRN for this DNS instance",
+						},
+						"zone_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The unique identifier of the DNS zone.",
+						},
+					},
+				},
+			},
 			isLBStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -187,13 +208,12 @@ func ResourceIBMISLB() *schema.Resource {
 			},
 
 			isLBSecurityGroups: {
-				Type:          schema.TypeSet,
-				Computed:      true,
-				Optional:      true,
-				Elem:          &schema.Schema{Type: schema.TypeString},
-				Set:           schema.HashString,
-				Description:   "Load Balancer securitygroups list",
-				ConflictsWith: []string{isLBProfile},
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Load Balancer securitygroups list",
 			},
 
 			isLBSecurityGroupsSupported: {
@@ -398,6 +418,21 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		Name:          &name,
 	}
 
+	if dnsIntf, ok := d.GetOk("dns"); ok {
+		dnsMap := dnsIntf.([]interface{})[0].(map[string]interface{})
+		dnsInstance, _ := dnsMap["instance_crn"].(string)
+		zone, _ := dnsMap["zone_id"].(string)
+		dns := &vpcv1.LoadBalancerDnsPrototype{
+			Instance: &vpcv1.DnsInstanceIdentity{
+				CRN: &dnsInstance,
+			},
+			Zone: &vpcv1.DnsZoneIdentity{
+				ID: &zone,
+			},
+		}
+		options.Dns = dns
+	}
+
 	if routeModeBool, ok := d.GetOk(isLBRouteMode); ok {
 		routeMode := routeModeBool.(bool)
 		options.RouteMode = &routeMode
@@ -516,6 +551,16 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isLBSourceIPPersistenceSupported, *lb.SourceIPSessionPersistenceSupported)
 	}
 
+	dnsList := make([]map[string]interface{}, 0)
+	if lb.Dns != nil {
+		dns := map[string]interface{}{}
+		dns["instance_crn"] = lb.Dns.Instance.CRN
+		dns["zone_id"] = lb.Dns.Zone.ID
+		dnsList = append(dnsList, dns)
+		d.Set("dns", dnsList)
+	} else {
+		d.Set("dns", nil)
+	}
 	d.Set(isLBName, *lb.Name)
 	if *lb.IsPublic {
 		d.Set(isLBType, "public")
@@ -702,6 +747,50 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 				log.Printf(
 					"Error on update of resource load balancer (%s) access tags: %s", d.Id(), err)
 			}
+		}
+	}
+
+	if d.HasChange("dns") {
+		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
+			ID: &id,
+		}
+		dnsRemoved := false
+		if _, ok := d.GetOk("dns"); !ok {
+			dnsRemoved = true
+		}
+		dnsPatchModel := &vpcv1.LoadBalancerDnsPatch{}
+		if d.HasChange("dns.0.instance_crn") {
+			dnsInstanceCrn := d.Get("dns.0.instance_crn").(string)
+			dnsPatchModel.Instance = &vpcv1.DnsInstanceIdentity{
+				CRN: &dnsInstanceCrn,
+			}
+		}
+		if d.HasChange("dns.0.zone_id") {
+			dnsZoneId := d.Get("dns.0.zone_id").(string)
+			dnsPatchModel.Zone = &vpcv1.DnsZoneIdentity{
+				ID: &dnsZoneId,
+			}
+		}
+
+		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{
+			Dns: dnsPatchModel,
+		}
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		if dnsRemoved {
+			loadBalancerPatch["dns"] = nil
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
+
+		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error Updating subents in vpc Load Balancer : %s\n%s", err, response)
+		}
+		_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return err
 		}
 	}
 

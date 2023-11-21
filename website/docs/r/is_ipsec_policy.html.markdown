@@ -27,8 +27,8 @@ In the following example, you can create a IPsec policy:
 ```terraform
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "example-ipsec-policy"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
   pfs                      = "disabled"
 }
 
@@ -37,18 +37,12 @@ resource "ibm_is_ipsec_policy" "example" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `authentication_algorithm` - (Required, String) Enter the algorithm that you want to use to authenticate `IPSec` peers. Available options are `md5`, `sha1`,  `sha256`, `sha512`, `sha384`, `disabled`.
-
-  ~> **Note**
-  The `md5` and `sha1` algorithms have been deprecated and support will be removed from November 2022
+- `authentication_algorithm` - (Required, String) Enter the algorithm that you want to use to authenticate `IPSec` peers. Available options are `sha256`, `sha512`, `sha384`, `disabled`.
 
   ~> **Note**
   `authentication_algorithm` must be set to `disabled` if and only if the `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`
 
-- `encryption_algorithm` - (Required, String) Enter the algorithm that you want to use to encrypt data. Available options are: `triple_des`, `aes128`, `aes192`, `aes256`, `aes128gcm16`, `aes192gcm16`, `aes256gcm16`
-
-  ~> **Note**
-  The `triple_des` algorithm has been deprecated and support will be removed from November 2022
+- `encryption_algorithm` - (Required, String) Enter the algorithm that you want to use to encrypt data. Available options are: `aes128`, `aes192`, `aes256`, `aes128gcm16`, `aes192gcm16`, `aes256gcm16`
 
 - `key_lifetime`  - (Optional, Integer) Enter the time in seconds that your encryption key can be used before it expires. You must enter a number between 300 and 86400. If you do not specify this option, 3600 seconds is used.
 - `name` - (Required, String) Enter the name for your IPSec policy.

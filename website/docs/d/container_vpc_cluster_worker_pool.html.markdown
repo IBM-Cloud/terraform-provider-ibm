@@ -35,6 +35,15 @@ In addition to all argument reference list, you can access the following attribu
 - `isolation` - (String) Isolation for the worker node.
 - `labels` - (String) Labels on all the workers in the worker pool. 
 - `operating_system` (String) The operating system of the workers in the worker pool.
+- `secondary_storage` - List of objects - The optional secondary storage configuration of the workers in the worker pool.
+
+  Nested scheme for `secondary_storage`:
+  - `name` - (String) The name of the secondary storage.
+  - `count` - (Integer) The device count of the secondary storage.
+  - `size` - (Integer) The size of the secondary storage.
+  - `device_type` - (String) The device type of the secondary storage.
+  - `raid_configuration` - (String) The raid configuration of the secondary storage.
+  - `profile` - (String) The profile of the secondary storage.
 - `provider` - (String) Provider Details of the worker Pool.
 - `resource_group_id` - (String) The ID of the resource group.
 - `vpc_id` - (String) The ID of the VPC.
@@ -44,3 +53,4 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `zones`:
 	- `subnet-id` - (String) The worker pool subnet to assign the cluster.
 	- `subnet-name` - (String) Name of the zone.
+- `autoscale_enabled` - (Bool) Autoscaling is enabled on the workerpool

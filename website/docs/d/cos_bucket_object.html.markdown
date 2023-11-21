@@ -54,3 +54,7 @@ In addition to all argument reference list, you can access the following attribu
 - `etag` - (String) Computed MD5 hexdigest of an object content.
 - `last_modified` - (Timestamp) Last modified date of an object in a GMT formatted date.
 - `object_sql_url` - (String) Access the object using an SQL Query instance. The SQL URL is a reference URL used inside an SQL statement. The reference URL is used to perform queries against objects storing structured data.
+- `object_lock_mode` - (String) This is the retention mode for an object.
+- `object_lock_retain_until_date` - (String) A date after which the object can be deleted from the COS bucket.
+- `object_lock_legal_hold_status` - (String) If the value of this attribute is **ON**, then the object cannot be deleted from the COS bucket.
+- - `website_redirect` - (String) If this value is set then incoming request will be redirected to the set value..

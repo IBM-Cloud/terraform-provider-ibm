@@ -41,9 +41,9 @@ In addition to all argument references listed, you can access the following attr
 
 - `topic_id` - (String) Topic ID.
 
-- `add_notification_payload` - (Boolean) Whether to add the notification payload to the email.
+- `attributes` - (Required, List)
 
-- `additional_properties` - (Required, List)
+  - `add_notification_payload` - (Boolean) Whether to add the notification payload to the email.
 
   - `reply_to_name` - (String) The Email User Name to reply to.
 
@@ -51,9 +51,9 @@ In addition to all argument references listed, you can access the following attr
 
   - `signing_enabled`- (Boolean) Signing webhook attributes.
 
-  - `to`- (Map) The Email address to send the email to.
+  - `susbscribed`- (Map) The Email address who have subscribed for topic.
 
-  - `unsubscribed`- (List) The Email address which are unsusbscribed.
+  - `unsubscribed`- (List) The Email address which has opted for unsusbscribtion from that topic.
 
   - `invited`- (List) The Email address for invitation.
 

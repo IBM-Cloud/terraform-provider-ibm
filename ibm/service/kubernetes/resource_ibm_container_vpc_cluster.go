@@ -201,8 +201,17 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"operating_system": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Computed:    true,
 				Description: "The operating system of the workers in the default worker pool.",
+			},
+
+			"secondary_storage": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The secondary storage option for the default worker pool.",
 			},
 
 			"taints": {
@@ -529,6 +538,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		workerpool.OperatingSystem = os.(string)
 	}
 
+	if secondarystorage, ok := d.GetOk("secondary_storage"); ok {
+		workerpool.SecondaryStorageOption = secondarystorage.(string)
+	}
+
 	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
 		crk := d.Get("crk").(string)
 		wve := v2.WorkerVolumeEncryption{
@@ -591,7 +604,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	switch timeoutStage {
 
 	case strings.ToLower(clusterNormal):
-		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical}
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
 		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
 		if err != nil {
 			return err
@@ -820,20 +833,14 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				"[ERROR] Error updating the labels: %s", err)
 		}
 	}
-	if d.HasChange("taints") {
-		taintParam := expandWorkerPoolTaints(d, meta, clusterID, "default")
 
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
-		if err != nil {
-			return err
+	if d.HasChange("taints") {
+		var taints []interface{}
+		if taintRes, ok := d.GetOk("taints"); ok {
+			taints = taintRes.(*schema.Set).List()
 		}
-		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-		if err != nil {
+		if err := updateWorkerpoolTaints(d, meta, clusterID, "default", taints); err != nil {
 			return err
-		}
-		err = ClusterClient.WorkerPools().UpdateWorkerPoolTaints(taintParam, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the taints: %s", err)
 		}
 	}
 
@@ -851,6 +858,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 				"[ERROR] Error updating the worker_count %d: %s", count, err)
 		}
 	}
+
 	if d.HasChange("zones") && !d.IsNewResource() {
 		oldList, newList := d.GetChange("zones")
 		if oldList == nil {
@@ -1042,6 +1050,9 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set("host_pool_id", workerPool.HostPoolID)
 	d.Set("operating_system", workerPool.OperatingSystem)
+	if workerPool.SecondaryStorageOption != nil {
+		d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
+	}
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
@@ -1257,6 +1268,13 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 			clusterInfo, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
 			if err != nil {
 				return nil, "", err
+			}
+
+			if clusterInfo.State == clusterWarning {
+				log.Println("[WARN] Cluster is in Warning State, this may be temporary")
+			}
+			if clusterInfo.State == clusterCritical {
+				log.Println("[WARN] Cluster is in Critical State, this may be temporary")
 			}
 
 			return clusterInfo, clusterInfo.State, nil

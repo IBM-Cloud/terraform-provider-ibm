@@ -66,7 +66,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
-- `name` - (Required, String) The name of the network ACL.
+- `name` - (Optional, String) The name of the network ACL. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the network ACL.
 - `rules`- (Optional, Array of Strings) A list of rules for a network ACL. The order in which the rules are added to the list determines the priority of the rules. For example, the first rule that you want to enforce must be specified as the first rule in this list.
 

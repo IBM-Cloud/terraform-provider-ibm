@@ -149,14 +149,14 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the network ACL rule. The ID is composed of `\<network_acl\>/\<rule_id\>.`
+- `id` - (String) The ID of the network ACL rule. The ID is composed of `\network_acl\rule_id`.
 - `href` - (String) The URL for this network ACL rule.
 - `protocol` - (String) The protocol to enforce.
 - `rule_id` - (String) The unique identifier of the rule.
 
 
 ## Import
-The `ibm_is_network_acl_rule` can be imported using ID `\<network_acl\>/\<rule_id\>`
+The `ibm_is_network_acl_rule` can be imported using ID `\network_acl\rule_id`
 
 **Example**
 

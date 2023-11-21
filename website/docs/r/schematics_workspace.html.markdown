@@ -64,6 +64,29 @@ Nested scheme for **shared_data**:
 * `template_uninstall_script_name` - (Optional, String) Uninstall script name.
 * `template_values` - (Optional, String) A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `"autoscaling: enabled: true minReplicas: 2"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.
 * `template_values_metadata` - (Optional, List) List of values metadata.
+Nested scheme for **template_values_metadata**:
+	* `aliases` - (Optional, List) The list of aliases for the variable name.
+	* `cloud_data_type` - (Optional, String) Cloud data type of the variable. eg. resource_group_id, region, vpc_id.
+	* `default` - (Optional, String) Default value for the variable only if the override value is not specified.
+	* `description` - (Optional, String) The description of the meta data.
+	* `group_by` - (Optional, String) The display name of the group this variable belongs to.
+	* `hidden` - (Optional, Boolean) If **true**, the variable is not displayed on UI or Command line.
+	* `immutable` - (Optional, Boolean) Is the variable readonly ?.
+	* `link_status` - (Optional, String) The status of the link.
+		* Constraints: Allowable values are: `normal`, `broken`.
+	* `matches` - (Optional, String) The regex for the variable value.
+	* `max_length` - (Optional, Integer) The maximum length of the variable value. Applicable for the string type.
+	* `max_value` - (Optional, Integer) The maximum value of the variable. Applicable for the integer type.
+	* `min_length` - (Optional, Integer) The minimum length of the variable value. Applicable for the string type.
+	* `min_value` - (Optional, Integer) The minimum value of the variable. Applicable for the integer type.
+	* `name` - (String) Name of the variable.
+	* `options` - (Optional, List) The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.
+	* `position` - (Optional, Integer) The relative position of this variable in a list.
+	* `required` - (Optional, Boolean) If the variable required?.
+	* `secure` - (Optional, Boolean) Is the variable secure or sensitive ?.
+	* `source` - (Optional, String) The source of this meta-data.
+	* `type` - (Optional, String) Type of the variable.
+		* Constraints: Allowable values are: `boolean`, `string`, `integer`, `date`, `array`, `list`, `map`, `complex`, `link`.
 * `template_inputs` - (Optional, List) VariablesRequest -.
 Nested scheme for **variablestore**:
 	* `description` - (Optional, String) The description of your input variable.

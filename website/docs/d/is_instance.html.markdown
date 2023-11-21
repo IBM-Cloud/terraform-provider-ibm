@@ -51,7 +51,7 @@ resource "ibm_is_image" "example" {
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "bc1-2x8"
+  profile = "bx2-2x8"
   metadata_service_enabled  = false
   
   primary_network_interface {
@@ -134,8 +134,28 @@ In addition to all argument reference list, you can access the following attribu
     - `code` - (String) A snake case string succinctly identifying the reason for this lifecycle state.
     - `message` - (String) An explanation of the reason for this lifecycle state.
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
-- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
+- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. 
+ 
+  ->**lifecycle states** 
+    </br>&#x2022; deleting
+    </br>&#x2022; failed
+    </br>&#x2022; pending
+    </br>&#x2022; stable
+    </br>&#x2022; suspended
+    </br>&#x2022; updating
+    </br>&#x2022; waiting
+
 - `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
+
+	~> **NOTE**
+	`metadata_service_enabled` is deprecated and will be removed in the future. Refer `metadata_service` instead
+- `metadata_service` - (List) The metadata service configuration. 
+
+     Nested scheme for `metadata_service`:
+     - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.
+     - `protocol` - (String) The communication protocol to use for the metadata service endpoint.
+     - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
+    
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
   Nested scheme for `network_interfaces`:
@@ -152,6 +172,7 @@ In addition to all argument reference list, you can access the following attribu
   - `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
   - `subnet` - (String) The ID of the subnet that is used in the more network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
+- `numa_count` - (Integer) The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.
 - `password` - (String) The password that you can use to access your instance.
 - `placement_target`- (List) The placement restrictions for the virtual server instance.
 
@@ -195,6 +216,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `vcpu`:
   - `architecture` - (String) The architecture of the virtual CPU.
+  - `manufacturer` - (String) The manufacturer of the virtual CPU.
   - `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
 - `volume_attachments`- (List) A list of volume attachments that were created for the instance. 
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -73,7 +73,7 @@ func DataSourceIBMCdToolchainToolHostedgit() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool name.",
+				Description: "Name of the tool.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -129,7 +129,7 @@ func DataSourceIBMCdToolchainToolHostedgit() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.",
+							Description: "The operation that should be performed to initialize the new tool integration. Use 'new' or 'new_if_not_exists' to create a new git repository, 'clone' or 'clone_if_not_exists' to clone an existing repository into a new git repository, 'fork' or 'fork_if_not_exists' to fork an existing git repository, or 'link' to link to an existing git repository. If you attempt to apply a resource with type 'new', 'clone', or 'fork' when the target repo already exists, the attempt will fail. If you apply a resource with type 'new_if_not_exists`, 'clone_if_not_exists', or 'fork_if_not_exists' when the target repo already exists, the existing repo will be used as-is.",
 						},
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -150,6 +150,17 @@ func DataSourceIBMCdToolchainToolHostedgit() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the Git Repos and Issue Tracking project.",
+						},
+						"auth_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Select the method of authentication that will be used to access the git provider. The default value is 'oauth'.",
+						},
+						"api_token": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "Personal Access Token. Required if 'auth_type' is set to 'pat', ignored otherwise.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -249,10 +260,10 @@ func dataSourceIBMCdToolchainToolHostedgitRead(context context.Context, d *schem
 func dataSourceIBMCdToolchainToolHostedgitToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
-		modelMap["ui_href"] = *model.UIHref
+		modelMap["ui_href"] = model.UIHref
 	}
 	if model.APIHref != nil {
-		modelMap["api_href"] = *model.APIHref
+		modelMap["api_href"] = model.APIHref
 	}
 	return modelMap, nil
 }

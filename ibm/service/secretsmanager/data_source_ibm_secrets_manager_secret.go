@@ -13,15 +13,15 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
+	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMSecretsManagerSecret() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSecretsManagerSecretRead,
-
+		ReadContext:        dataSourceIBMSecretsManagerSecretRead,
+		DeprecationMessage: "Data Source Removal: Data Source ibm_secrets_manager_secret is deprecated and will be removed. Use ibm_sm_<secret_type>_secret for managing secret of a specific type.",
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
 				Type:        schema.TypeString,
@@ -309,9 +309,9 @@ func dataSourceIBMSecretsManagerSecretRead(context context.Context, d *schema.Re
 	if getSecret.Resources != nil {
 		for _, resourcesItem := range getSecret.Resources {
 			if ritem, ok := resourcesItem.(*secretsmanagerv1.SecretResource); ok {
-				if ritem.Type != nil {
-					d.Set("type", *ritem.Type)
-				}
+				//if ritem.Type != nil {
+				//	d.Set("type", *ritem.Type)
+				//}
 				if ritem.Name != nil {
 					d.Set("name", *ritem.Name)
 				}
@@ -350,7 +350,7 @@ func dataSourceIBMSecretsManagerSecretRead(context context.Context, d *schema.Re
 					d.Set("versions", versionsList)
 				}
 				if ritem.SecretData != nil {
-					secretData := ritem.SecretData.(map[string]interface{})
+					secretData := ritem.SecretData
 					d.Set("secret_data", secretData)
 					if *ritem.SecretType == "username_password" {
 						d.Set("username", secretData["username"].(string))
@@ -410,20 +410,20 @@ func dataSourceGetSecretMetadataToMap(metadataItem secretsmanagerv1.CollectionMe
 	return metadataMap
 }
 
-func dataSourceGetSecretResourcesVersionsToMap(versionsItem secretsmanagerv1.SecretVersion) (versionsMap map[string]interface{}) {
+func dataSourceGetSecretResourcesVersionsToMap(versionsItem map[string]interface{}) (versionsMap map[string]interface{}) {
 	versionsMap = map[string]interface{}{}
 
-	if versionsItem.ID != nil {
-		versionsMap["id"] = *versionsItem.ID
+	if id, ok := versionsItem["id"]; ok {
+		versionsMap["id"] = id
 	}
-	if versionsItem.CreationDate != nil {
-		versionsMap["creation_date"] = (*versionsItem.CreationDate).String()
+	if creation_date, ok := versionsItem["creation_date"]; ok {
+		versionsMap["creation_date"] = creation_date
 	}
-	if versionsItem.CreatedBy != nil {
-		versionsMap["created_by"] = *versionsItem.CreatedBy
+	if created_by, ok := versionsItem["created_by"]; ok {
+		versionsMap["created_by"] = created_by
 	}
-	if versionsItem.AutoRotated != nil {
-		versionsMap["auto_rotated"] = *versionsItem.AutoRotated
+	if rotated, ok := versionsItem["auto_rotated"]; ok {
+		versionsMap["auto_rotated"] = rotated
 	}
 
 	return versionsMap

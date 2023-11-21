@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -70,7 +70,7 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 									"tool": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.",
+										Description: "Reference to the repository tool in the parent toolchain.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
@@ -86,6 +86,11 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 						},
 					},
 				},
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the definition.",
 			},
 		},
 	}
@@ -122,40 +127,36 @@ func dataSourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *sch
 		return diag.FromErr(fmt.Errorf("Error setting source %s", err))
 	}
 
+	if err = d.Set("href", definition.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+
 	return nil
 }
 
 func dataSourceIBMCdTektonPipelineDefinitionDefinitionSourceToMap(model *cdtektonpipelinev2.DefinitionSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Type != nil {
-		modelMap["type"] = *model.Type
+	modelMap["type"] = model.Type
+	propertiesMap, err := dataSourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToMap(model.Properties)
+	if err != nil {
+		return modelMap, err
 	}
-	if model.Properties != nil {
-		propertiesMap, err := dataSourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToMap(model.Properties)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["properties"] = []map[string]interface{}{propertiesMap}
-	}
+	modelMap["properties"] = []map[string]interface{}{propertiesMap}
 	return modelMap, nil
 }
 
 func dataSourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToMap(model *cdtektonpipelinev2.DefinitionSourceProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.URL != nil {
-		modelMap["url"] = *model.URL
-	}
+	modelMap["url"] = model.URL
 	if model.Branch != nil {
-		modelMap["branch"] = *model.Branch
+		modelMap["branch"] = model.Branch
 	}
 	if model.Tag != nil {
-		modelMap["tag"] = *model.Tag
+		modelMap["tag"] = model.Tag
 	}
-	if model.Path != nil {
-		modelMap["path"] = *model.Path
-	}
+	modelMap["path"] = model.Path
 	if model.Tool != nil {
-		toolMap, err := dataSourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToolToMap(model.Tool)
+		toolMap, err := dataSourceIBMCdTektonPipelineDefinitionToolToMap(model.Tool)
 		if err != nil {
 			return modelMap, err
 		}
@@ -164,10 +165,8 @@ func dataSourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToMap(mode
 	return modelMap, nil
 }
 
-func dataSourceIBMCdTektonPipelineDefinitionDefinitionSourcePropertiesToolToMap(model *cdtektonpipelinev2.DefinitionSourcePropertiesTool) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineDefinitionToolToMap(model *cdtektonpipelinev2.Tool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
+	modelMap["id"] = model.ID
 	return modelMap, nil
 }

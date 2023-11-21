@@ -54,6 +54,68 @@ resource "ibm_cos_bucket_object" "file" {
   etag            = filemd5("${path.module}/object.json")
 }
 ```
+# Object Lock
+
+Object Lock preserves electronic records and maintains data integrity by ensuring that individual object versions are stored in a WORM (Write-Once-Read-Many), non-erasable and non-rewritable manner. This policy is enforced until a specified date or the removal of any legal holds.
+
+**Note:**
+Object Lock must be enabled on the bucket to configure `object_lock_mode` , `object_lock_retain_until_date` , `object_lock_legal_hold_status` on the object.
+
+## Example usage
+
+```terraform
+data "ibm_resource_group" "cos_group" {
+  name = "cos-resource-group"
+}
+
+resource "ibm_resource_instance" "cos_instance" {
+  name              = "cos-instance"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = "my-bucket"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = "us-east"
+  storage_class         = "standard"
+  object_versioning {
+    enable  = true
+  }
+  object_lock = true
+}
+
+resource "ibm_cos_bucket_object" "cos_object_objectlock" {
+  bucket_crn      = data.ibm_cos_bucket.cos_bucket.crn
+  bucket_location = data.ibm_cos_bucket.cos_bucket.bucket_region
+  key             = "object.json"
+  object_lock_mode              = "COMPLIANCE"
+  object_lock_retain_until_date = "2023-02-15T18:00:00Z"
+  object_lock_legal_hold_status = "ON"
+}
+```
+
+# Website redirect 
+
+Requests can be redirected for an object to another object or URL by setting the website redirect location in the metadata of the object.
+
+**Note:**
+COS bucket with website configuration and public access enabled is a pre-requisite.For adding website configuration to a bucket please follow [static_web_hosting]()
+
+## Example usage
+
+```terraform
+
+resource "ibm_cos_bucket_object" "cos_object_objectlock" {
+  bucket_crn      = "bucket-crn"
+  bucket_location = "us-south"
+  key             = "page1.html"
+  website_redirect = "/page2.html"
+}
+```
+
 
 ## Argument reference
 Review the argument references that you can specify for your resource.
@@ -66,6 +128,7 @@ Review the argument references that you can specify for your resource.
 - `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Supported values are `public`, `private`, or `direct`. Default value is `public`.
 - `etag` - (Optional, String) MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`.
 - `key` - (Required, Forces new resource, String) The name of an object in the COS bucket.
+- `website_redirect` - (Optional, String) Target URL for website redirect.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

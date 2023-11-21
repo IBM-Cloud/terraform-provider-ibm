@@ -11,8 +11,8 @@ description: |-
 Create, update, or delete for a Power Systems Virtual Server image. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
-The following example enables you to create a image:
-
+The following example enables you to create a image in your project:
+- stock-images import
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "7200-03-02"
@@ -20,7 +20,7 @@ resource "ibm_pi_image" "testacc_image  "{
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
-
+- COS image import
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "test_image"

@@ -10,17 +10,21 @@ subcategory: "Context Based Restrictions"
 
 Provides a resource for cbr_rule. This allows cbr_rule to be created, updated and deleted.
 
-## Example Usage
+## Example Usage to create a rule with one context and two zones
 
 ```hcl
 resource "ibm_cbr_rule" "cbr_rule" {
   contexts {
 		attributes {
-			name = "name"
-			value = "value"
+			name = "networkZoneId"
+			value = "559052eb8f43302824e7ae490c0281eb, bf823d4f45b64ceaa4671bee0479346e"
 		}
+		attributes {
+       		name = "endpointType"
+       		value = "private"
+    }
   }
-  description = "this is an example of rule"
+  description = "this is an example of rule with one context two zones"
   enforcement_mode = "enabled"
   operations {
 		api_types {
@@ -29,14 +33,64 @@ resource "ibm_cbr_rule" "cbr_rule" {
   }
   resources {
 		attributes {
-			name = "name"
-			value = "value"
-			operator = "operator"
+			name = "accountId"
+			value = "12ab34cd56ef78ab90cd12ef34ab56cd"
 		}
+		attributes {
+      		name = "serviceName"
+      		value = "network-policy-enabled"
+    	}
 		tags {
-			name = "name"
-			value = "value"
-			operator = "operator"
+      		name     = "tag_name"
+      		value    = "tag_value"
+		}
+  }
+}
+```
+
+## Example Usage to create a rule with two contexts
+
+```hcl
+resource "ibm_cbr_rule" "cbr_rule" {
+  contexts {
+		attributes {
+			name = "networkZoneId"
+			value = "559052eb8f43302824e7ae490c0281eb"
+		}
+		attributes {
+       		name = "endpointType"
+       		value = "private"
+    	}
+  }
+  contexts {
+		attributes {
+			name = "networkZoneId"
+			value = "bf823d4f45b64ceaa4671bee0479346e"
+		}
+		attributes {
+       		name = "endpointType"
+       		value = "public"
+    	}
+  }
+  description = "this is an example of rule with two contexts"
+  enforcement_mode = "enabled"
+  operations {
+		api_types {
+			api_type_id = "api_type_id"
+		}
+  }
+  resources {
+		attributes {
+			name = "accountId"
+			value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+		}
+		attributes {
+      		name = "serviceName"
+      		value = "network-policy-enabled"
+    	}
+		tags {
+      		name     = "tag_name"
+      		value    = "tag_value"
 		}
   }
 }

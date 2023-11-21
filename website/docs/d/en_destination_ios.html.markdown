@@ -66,4 +66,6 @@ In addition to all argument references listed, you can access the following attr
 
   - `bundle_id` - (String) The team_id value in case P8 certificate.
 
+  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
+
 - `updated_at` - (String) Last updated time.

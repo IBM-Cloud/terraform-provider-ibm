@@ -5,6 +5,7 @@ package eventstreams_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -12,46 +13,72 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-var (
-	MZREnterpriseInstanceName = "mh-preprod-customer-us-south-wp"
-	SZREnterpriseInstanceName = "mh-preprod-customer-us-south-szr"
-	standardInstanceName      = "hyperion-preprod-spp-a-service"
-	topicName                 = "kafka-java-console-sample-topic"
+const (
+	mzrKey                    = "MZR_INSTANCE_NAME"
+	szrKey                    = "SZR_INSTANCE_NAME"
+	stdKey                    = "STD_INSTANCE_NAME"
+	MZREnterpriseInstanceName = "ES Preprod Pipeline MZR"
+	SZREnterpriseInstanceName = "ES Integration Pipeline SZR"
+	standardInstanceName      = "hyperion-preprod-spp09-us-south-a-service"
+	testTopicName             = "kafka-java-console-sample-topic"
 )
+
+func getTestInstanceName(envKey string) string {
+	instance := os.Getenv(envKey)
+	if len(instance) == 0 {
+		switch envKey {
+		case mzrKey:
+			instance = MZREnterpriseInstanceName
+		case szrKey:
+			instance = SZREnterpriseInstanceName
+		case stdKey:
+			instance = standardInstanceName
+		}
+	}
+	return instance
+}
+
+func getTestTopicName() string {
+	topic := os.Getenv("TEST_TOPIC")
+	if len(topic) == 0 {
+		topic = testTopicName
+	}
+	return topic
+}
 
 func TestAccIBMEventStreamsTopicDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(MZREnterpriseInstanceName, topicName),
+				Config: testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(getTestInstanceName(mzrKey), getTestTopicName()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "id"),
-					resource.TestCheckResourceAttr("data.ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("data.ibm_event_streams_topic.es_topic", "name", getTestTopicName()),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "kafka_brokers_sasl.0"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "kafka_http_url"),
 				),
 			},
 			{
-				Config: testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(SZREnterpriseInstanceName, topicName),
+				Config: testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(getTestInstanceName(szrKey), getTestTopicName()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "id"),
-					resource.TestCheckResourceAttr("data.ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("data.ibm_event_streams_topic.es_topic", "name", getTestTopicName()),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "kafka_brokers_sasl.0"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "kafka_http_url"),
 				),
 			},
 			{
-				Config: testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(standardInstanceName, topicName),
+				Config: testAccCheckIBMEventStreamsTopicDataSourceConfigBasic(getTestInstanceName(stdKey), getTestTopicName()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_brokers_sasl.0"),
 					resource.TestCheckResourceAttrSet("data.ibm_resource_instance.es_instance", "extensions.kafka_http_url"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "id"),
-					resource.TestCheckResourceAttr("data.ibm_event_streams_topic.es_topic", "name", topicName),
+					resource.TestCheckResourceAttr("data.ibm_event_streams_topic.es_topic", "name", getTestTopicName()),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "kafka_brokers_sasl.0"),
 					resource.TestCheckResourceAttrSet("data.ibm_event_streams_topic.es_topic", "kafka_http_url"),
 				),

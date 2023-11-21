@@ -10,17 +10,33 @@ description: |-
 
 Create, update, or delete a SMS subscription by using IBM Cloud™ Event Notifications.
 
-## Example usage
+## Example usage for SMS Subscription Creation
 
 ```terraform
 resource "ibm_en_subscription_sms" "sms_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
   name             = "News Subscription"
   description      = "SMS subscription for news alert"
-  destination_id   = "sms_destination_id"
+  destination_id   = [for s in toset(data.ibm_en_destinations.destinations.destinations): s.id if s.type == "sms_ibm"].0
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
-    to = ["+15678923404", "+19643567389"]
+    invited = ["+15678923404", "+19643567389"]
+  }
+}
+```
+
+## Example usage for SMS Subscription Updation
+
+```terraform
+resource "ibm_en_subscription_email" "email_subscription" {
+  instance_guid    = "my_instance_guid"
+  name             = "Email Certificate Subscription"
+  description      = "Subscription for Certificate expiration alert"
+  destination_id   = "email_destination_id"
+  topic_id         = "topicId"
+  attributes {
+     add = ["+19643744902"]
+     remove = ["+19807485102"]
   }
 }
 ```
@@ -42,7 +58,11 @@ Review the argument reference that you can specify for your resource.
 - `attributes` - (Optional, List) Subscription attributes.
   Nested scheme for **attributes**:
 
-  - `to` - (Optional, List) The phone number to send the SMS to.
+  - `invited` - (Optional, List) The phone number to send the SMS to.
+
+  - `add`- (List) The phone number to add in case of updating the list of email addressses
+
+  - `reomve`- (List) The phone number list to be provided in case of removing the email addresses from subscription
 
 ## Attribute reference
 

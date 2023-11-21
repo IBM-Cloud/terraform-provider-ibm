@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtoolchain
@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Toolchain description.",
+				Description: "Describes the toolchain.",
 			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -81,6 +81,12 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 				Computed:    true,
 				Description: "Identity that created the toolchain.",
 			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Toolchain tags.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 		},
 	}
 }
@@ -102,6 +108,13 @@ func dataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getToolchainByIDOptions.ToolchainID))
+
+	tags, err := flex.GetTagsUsingCRN(meta, *toolchain.CRN)
+	if err != nil {
+		log.Printf(
+			"Error on get of toolchain (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
 
 	if err = d.Set("name", toolchain.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))

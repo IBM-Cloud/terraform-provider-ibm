@@ -105,7 +105,6 @@ resource "ibm_is_instance_template" "example1" {
   name    = "example-template"
   image   = ibm_is_image.example.id
   profile = "bx2-8x32"
-  metadata_service_enabled = false
   
   primary_network_interface {
     subnet            = ibm_is_subnet.example.id
@@ -171,6 +170,34 @@ resource "ibm_is_instance_template" "example4" {
 
 ```
 
+```
+resource "ibm_is_instance_template" "example4" {
+  name    = "example-template"
+  image   = ibm_is_image.example.id
+  profile = "bx2-8x32"
+
+  metadata_service {
+    enabled = true
+    protocol = "https"
+    response_hop_limit = 5
+  }
+  
+  primary_network_interface {
+    subnet            = ibm_is_subnet.example.id
+    allow_ip_spoofing = true
+  }
+
+  dedicated_host = ibm_is_dedicated_host.example.id
+  vpc            = ibm_is_vpc.vpc2.id
+  zone           = "us-south-2"
+  keys           = [ibm_is_ssh_key.example.id]
+
+  boot_volume {
+    name                             = "example-boot-volume"
+    delete_volume_on_instance_delete = true
+  }
+}
+```
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 - `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
@@ -211,6 +238,15 @@ Review the argument references that you can specify for your resource.
 
 - `keys` - (Required, List) List of SSH key IDs used to allow log in user to the instances.
 - `metadata_service_enabled` - (Optional, Forces new resource, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.  Default value : **false**
+
+  ~> **NOTE**
+  `metadata_service_enabled` is deprecated and will be removed in the future. Use `metadata_service` instead
+- `metadata_service` - (Optional, List) The metadata service configuration. 
+
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Optional, Forces new resource, Boolean) Indicates whether the metadata service endpoint will be available to the virtual server instance.  Default is **false**
+  - `protocol` - (Optional, Forces new resource, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
+  - `response_hop_limit` - (Optional, Forces new resource, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The name of the instance template.
 - `placement_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the placement group where the instance is placed.
 

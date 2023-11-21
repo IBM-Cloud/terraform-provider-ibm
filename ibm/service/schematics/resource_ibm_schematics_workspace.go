@@ -224,7 +224,116 @@ func ResourceIBMSchematicsWorkspace() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "List of values metadata.",
-				Elem:        &schema.Schema{Type: schema.TypeMap},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the variable.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of the variable.",
+						},
+						"aliases": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The list of aliases for the variable name.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The description of the meta data.",
+						},
+						"cloud_data_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
+						},
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Default value for the variable only if the override value is not specified.",
+						},
+						"link_status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of the link.",
+						},
+						"secure": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Is the variable secure or sensitive ?.",
+						},
+						"immutable": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Is the variable readonly ?.",
+						},
+						"hidden": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If **true**, the variable is not displayed on UI or Command line.",
+						},
+						"required": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If the variable required?.",
+						},
+						"options": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"min_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum value of the variable. Applicable for the integer type.",
+						},
+						"max_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum value of the variable. Applicable for the integer type.",
+						},
+						"min_length": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum length of the variable value. Applicable for the string type.",
+						},
+						"max_length": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum length of the variable value. Applicable for the string type.",
+						},
+						"matches": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The regex for the variable value.",
+						},
+						"position": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The relative position of this variable in a list.",
+						},
+						"group_by": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The display name of the group this variable belongs to.",
+						},
+						"source": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The source of this meta-data.",
+						},
+					},
+				},
 			},
 			"template_inputs": {
 				Type:        schema.TypeList,
@@ -472,7 +581,7 @@ func ResourceIBMSchematicsWorkspaceValidator() *validate.ResourceValidator {
 			Identifier:                 schematicsWorkspaceTemplateType,
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
-			Regexp:                     `^terraform_v(?:0\.11|0\.12|0\.13|0\.14|0\.15|1\.0|1\.1|1\.2)(?:\.\d+)?$`,
+			Regexp:                     `^terraform_v(?:0\.11|0\.12|0\.13|0\.14|0\.15|1\.0|1\.1|1\.2|1\.3|1\.4|1\.5)(?:\.\d+)?$`,
 			Default:                    "[]",
 			Optional:                   true})
 
@@ -703,9 +812,9 @@ func resourceIBMSchematicsWorkspaceMapToSharedTargetData(sharedTargetDataMap map
 		sharedTargetData.ClusterType = core.StringPtr(sharedTargetDataMap["cluster_type"].(string))
 	}
 	if sharedTargetDataMap["entitlement_keys"] != nil {
-		entitlementKeys := []interface{}{}
+		entitlementKeys := []map[string]interface{}{}
 		for _, entitlementKeysItem := range sharedTargetDataMap["entitlement_keys"].([]interface{}) {
-			entitlementKeys = append(entitlementKeys, entitlementKeysItem.(interface{}))
+			entitlementKeys = append(entitlementKeys, entitlementKeysItem.(map[string]interface{}))
 		}
 		sharedTargetData.EntitlementKeys = entitlementKeys
 	}
@@ -732,9 +841,9 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 	templateSourceDataRequest := schematicsv1.TemplateSourceDataRequest{}
 
 	if templateSourceDataRequestMap["env_values"] != nil {
-		envValues := []interface{}{}
+		envValues := []map[string]interface{}{}
 		for _, envValuesItem := range templateSourceDataRequestMap["env_values"].([]interface{}) {
-			envValues = append(envValues, envValuesItem.(interface{}))
+			envValues = append(envValues, envValuesItem.(map[string]interface{}))
 		}
 		templateSourceDataRequest.EnvValues = envValues
 	}
@@ -757,9 +866,9 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 		templateSourceDataRequest.Values = core.StringPtr(templateSourceDataRequestMap["values"].(string))
 	}
 	if templateSourceDataRequestMap["values_metadata"] != nil {
-		valuesMetadata := make([]schematicsv1.VariableMetadata, 0)
+		valuesMetadata := []map[string]interface{}{}
 		for _, valuesMetadataItem := range templateSourceDataRequestMap["values_metadata"].([]interface{}) {
-			valuesMetadata = append(valuesMetadata, valuesMetadataItem.(schematicsv1.VariableMetadata))
+			valuesMetadata = append(valuesMetadata, valuesMetadataItem.(map[string]interface{}))
 		}
 		templateSourceDataRequest.ValuesMetadata = valuesMetadata
 	}
@@ -775,6 +884,69 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 	return templateSourceDataRequest
 }
 
+func resourceIBMSchematicsWorkspaceMapToWorkspaceValuesMetadataRequest(workspaceValuesMetadataRequestMap map[string]interface{}) schematicsv1.VariableMetadata {
+	workspaceValuesMetadataRequest := schematicsv1.VariableMetadata{}
+
+	if workspaceValuesMetadataRequestMap["cloud_data_type"] != nil {
+		workspaceValuesMetadataRequest.CloudDataType = core.StringPtr(workspaceValuesMetadataRequestMap["cloud_data_type"].(string))
+	}
+	if workspaceValuesMetadataRequestMap["default_value"] != nil {
+		workspaceValuesMetadataRequest.DefaultValue = core.StringPtr(workspaceValuesMetadataRequestMap["default_value"].(string))
+	}
+	if workspaceValuesMetadataRequestMap["link_status"] != nil {
+		workspaceValuesMetadataRequest.LinkStatus = core.StringPtr(workspaceValuesMetadataRequestMap["link_status"].(string))
+	}
+	if workspaceValuesMetadataRequestMap["required"] != nil {
+		workspaceValuesMetadataRequest.Required = core.BoolPtr(workspaceValuesMetadataRequestMap["required"].(bool))
+	}
+	if workspaceValuesMetadataRequestMap["hidden"] != nil {
+		workspaceValuesMetadataRequest.Hidden = core.BoolPtr(workspaceValuesMetadataRequestMap["hidden"].(bool))
+	}
+	if workspaceValuesMetadataRequestMap["immutable"] != nil {
+		workspaceValuesMetadataRequest.Immutable = core.BoolPtr(workspaceValuesMetadataRequestMap["immutable"].(bool))
+	}
+	if workspaceValuesMetadataRequestMap["options"] != nil {
+		workspaceValuesMetadataRequest.Options = workspaceValuesMetadataRequestMap["options"].([]string)
+	}
+	if workspaceValuesMetadataRequestMap["aliases"] != nil {
+		workspaceValuesMetadataRequest.Aliases = workspaceValuesMetadataRequestMap["aliases"].([]string)
+	}
+	if workspaceValuesMetadataRequestMap["matches"] != nil {
+		workspaceValuesMetadataRequest.Matches = core.StringPtr(workspaceValuesMetadataRequestMap["matches"].(string))
+	}
+	if workspaceValuesMetadataRequestMap["source"] != nil {
+		workspaceValuesMetadataRequest.Source = core.StringPtr(workspaceValuesMetadataRequestMap["source"].(string))
+	}
+	if workspaceValuesMetadataRequestMap["group_by"] != nil {
+		workspaceValuesMetadataRequest.GroupBy = core.StringPtr(workspaceValuesMetadataRequestMap["group_by"].(string))
+	}
+	if workspaceValuesMetadataRequestMap["max_length"] != nil {
+		workspaceValuesMetadataRequest.MaxLength = core.Int64Ptr(workspaceValuesMetadataRequestMap["max_length"].(int64))
+	}
+	if workspaceValuesMetadataRequestMap["min_length"] != nil {
+		workspaceValuesMetadataRequest.MinLength = core.Int64Ptr(workspaceValuesMetadataRequestMap["min_length"].(int64))
+	}
+	if workspaceValuesMetadataRequestMap["max_value"] != nil {
+		workspaceValuesMetadataRequest.MaxValue = core.Int64Ptr(workspaceValuesMetadataRequestMap["max_value"].(int64))
+	}
+	if workspaceValuesMetadataRequestMap["min_value"] != nil {
+		workspaceValuesMetadataRequest.MinValue = core.Int64Ptr(workspaceValuesMetadataRequestMap["min_value"].(int64))
+	}
+	if workspaceValuesMetadataRequestMap["position"] != nil {
+		workspaceValuesMetadataRequest.Position = core.Int64Ptr(workspaceValuesMetadataRequestMap["position"].(int64))
+	}
+	if workspaceValuesMetadataRequestMap["description"] != nil {
+		workspaceValuesMetadataRequest.Description = core.StringPtr(workspaceValuesMetadataRequestMap["description"].(string))
+	}
+	if workspaceValuesMetadataRequestMap["secure"] != nil {
+		workspaceValuesMetadataRequest.Secure = core.BoolPtr(workspaceValuesMetadataRequestMap["secure"].(bool))
+	}
+	if workspaceValuesMetadataRequestMap["type"] != nil {
+		workspaceValuesMetadataRequest.Type = core.StringPtr(workspaceValuesMetadataRequestMap["type"].(string))
+	}
+
+	return workspaceValuesMetadataRequest
+}
 func resourceIBMSchematicsWorkspaceMapToWorkspaceVariableRequest(workspaceVariableRequestMap map[string]interface{}) schematicsv1.WorkspaceVariableRequest {
 	workspaceVariableRequest := schematicsv1.WorkspaceVariableRequest{}
 
@@ -1257,8 +1429,15 @@ func resourceIBMSchematicsWorkspaceTemplateSourceDataResponseToMap(templateSourc
 	templateSourceDataResponseMap["folder"] = templateSourceDataResponse.Folder
 	templateSourceDataResponseMap["uninstall_script_name"] = templateSourceDataResponse.UninstallScriptName
 	templateSourceDataResponseMap["values"] = templateSourceDataResponse.Values
+	// if templateSourceDataResponse.ValuesMetadata != nil {
+	// 	valuesMetadata := []interface{}{}
+	// 	for _, valuesMetadataItem := range templateSourceDataResponse.ValuesMetadata {
+	// 		valuesMetadata = append(valuesMetadata, valuesMetadataItem)
+	// 	}
+	// 	templateSourceDataResponseMap["values_metadata"] = valuesMetadata
+	// }
 	if templateSourceDataResponse.ValuesMetadata != nil {
-		valuesMetadata := []interface{}{}
+		valuesMetadata := []map[string]interface{}{}
 		for _, valuesMetadataItem := range templateSourceDataResponse.ValuesMetadata {
 			valuesMetadata = append(valuesMetadata, valuesMetadataItem)
 		}

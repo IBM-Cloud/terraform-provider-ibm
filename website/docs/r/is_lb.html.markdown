@@ -44,8 +44,21 @@ resource "ibm_is_lb" "example" {
 
 ```
 
-An example to create a private path load balancer.
+An example to create a load balancer with private DNS.
 
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.example.id]
+  profile = "network-fixed"
+  dns   {
+    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
+    zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  }
+}
+
+```
+## An example to create a load balancer with private DNS.
 ```terraform
 resource "ibm_is_lb" "example" {
   name    = "example-load-balancer"
@@ -53,7 +66,6 @@ resource "ibm_is_lb" "example" {
   profile = "network-private-path"
   type = "private_path"
 }
-
 ```
 
 ## Timeouts
@@ -66,6 +78,7 @@ The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+  
 - `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the load balancer.
 
   ~> **Note:** 
@@ -73,6 +86,12 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+- `dns` - (Optional, List) The DNS configuration for this load balancer.
+
+  Nested scheme for `dns`:
+  - `instance_crn` - (Required, String) The CRN of the DNS instance associated with the DNS zone
+  - `zone_id` - (Required, String) The unique identifier of the DNS zone.
+  
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
 - `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required for network and private path load balancers. Should be set to  `network-private-path` for private path load balancers and `network-fixed` for a network load balancer. For Application Load Balancer, profile is not a required attribute.
@@ -80,7 +99,7 @@ Review the argument references that you can specify for your resource.
 - `route_mode` - (Optional, Forces new resource, Bool) Indicates whether route mode is enabled for this load balancer.
 
   ~> **NOTE:** Currently, `route_mode` enabled is supported only by private network load balancers.
-- `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported only for application load balancers.
+- `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported for both application and network load balancers.
 - `subnets` - (Required, List) List of the subnets IDs to connect to the load balancer.
 
   ~> **NOTE:** 

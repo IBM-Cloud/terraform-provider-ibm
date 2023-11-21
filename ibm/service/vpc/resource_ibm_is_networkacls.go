@@ -77,8 +77,8 @@ func ResourceIBMISNetworkACL() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			isNetworkACLName: {
 				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     false,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_network_acl", isNetworkACLName),
 				Description:  "Network ACL name",
 			},
@@ -311,7 +311,7 @@ func ResourceIBMISNetworkACLValidator() *validate.ResourceValidator {
 			Identifier:                 isNetworkACLName,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Required:                   true,
+			Required:                   false,
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
@@ -425,10 +425,12 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 
 	nwaclTemplate := &vpcv1.NetworkACLPrototype{
-		Name: &name,
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpc,
 		},
+	}
+	if name != "" {
+		nwaclTemplate.Name = &name
 	}
 
 	if grp, ok := d.GetOk(isNetworkACLResourceGroup); ok {

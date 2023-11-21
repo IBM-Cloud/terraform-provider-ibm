@@ -23,6 +23,7 @@ resource "ibm_resource_instance" "kms_instance" {
 resource "ibm_kms_key_rings" "key_ring" {
   instance_id = ibm_resource_instance.kms_instance.guid
   key_ring_id = "key-ring-id"
+  force_delete = true
 }
 resource "ibm_kms_key" "key" {
   instance_id = ibm_resource_instance.kp_instance.guid
@@ -33,12 +34,23 @@ resource "ibm_kms_key" "key" {
 }
 ```
 
+Sample example of deleting a key ring where all keys inside have key state equals to 5 (destroyed). Keys are moved to the default key ring.
+
+```terraform
+resource "ibm_kms_key_rings" "key_ring" {
+  instance_id = ibm_resource_instance.kms_instance.guid
+  key_ring_id = "key-ring-id"
+  force_delete = true
+}
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
 - `endpoint_type` - (Optional, Forces new resource, String) The type of the public endpoint, or private endpoint to be used for creating keys.
 - `instance_id` - (Required, Forces new resource, String) The hs-crypto or key protect instance GUID.
 - `key_ring_id` - (Required, Forces new resource, String) The ID that identifies the key ring. Each ID is unique within the given instance and is not reserved across the key protect service. **Constraints** `2 ≤ length ≤ 100`. Value must match regular expression of `^[a-zA-Z0-9-]*$`.
+- `force_delete` - (Optional, Bool) If set to **true**, allows force deletion of a key ring. Terraform users are recommended to have this set to **true**. All keys in the key ring are required to be deleted (in state **5**) before this action can be performed. If the key ring to be deleted contains keys, they will be moved to the **default** key ring which requires the **kms.secrets.patch** IAM action.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

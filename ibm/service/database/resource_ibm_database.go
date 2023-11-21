@@ -73,25 +73,6 @@ func retry(f func() error) (err error) {
 		log.Println("retrying after error:", err)
 	}
 }
-func retryTask(f func() (icdv4.Task, error)) (task icdv4.Task, err error) {
-	attempts := 3
-
-	for i := 0; ; i++ {
-		sleep := time.Duration(5*i) * time.Second
-		time.Sleep(sleep)
-
-		task, err = f()
-		if err == nil {
-			return task, nil
-		}
-
-		if i == attempts {
-			return task, nil
-		}
-
-		log.Println("retrying after error:", err)
-	}
-}
 
 func ResourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
@@ -206,74 +187,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 				ForceNew:    true,
 			},
-			"members_memory_allocation_mb": {
-				Description:   "Memory allocation required for cluster",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
-				Deprecated:    "use group instead",
-			},
-			"members_disk_allocation_mb": {
-				Description:   "Disk allocation required for cluster",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
-				Deprecated:    "use group instead",
-			},
-			"members_cpu_allocation_count": {
-				Description:   "CPU allocation required for cluster",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
-				Deprecated:    "use group instead",
-			},
-			"node_count": {
-				Description:   "Total number of nodes in the cluster",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "use group instead",
-			},
-			"node_memory_allocation_mb": {
-				Description:   "Memory allocation per node",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "use group instead",
-			},
-			"node_disk_allocation_mb": {
-				Description:   "Disk allocation per node",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "use group instead",
-			},
-			"node_cpu_allocation_count": {
-				Description:   "CPU allocation per node",
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "use group instead",
-			},
-			"plan_validation": {
-				Description: "For elasticsearch and postgres perform database parameter validation during the plan phase. Otherwise, database parameter validation happens in apply phase.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if o == "" {
-						return true
-					}
-					return false
-				},
-			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
 				Type:         schema.TypeString,
@@ -326,6 +239,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"point_in_time_recovery_time": {
 				Description:      "The point in time recovery time stamp of the deployed instance",
 				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
+			"offline_restore": {
+				Description:      "Set offline restore mode for MongoDB Enterprise Edition",
+				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
@@ -447,28 +366,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
 			},
-			"whitelist": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"address": {
-							Description:  "Whitelist IP address in CIDR notation",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validate.ValidateCIDR,
-						},
-						"description": {
-							Description:  "Unique white list description",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringLenBetween(1, 32),
-						},
-					},
-				},
-				Deprecated:    "Whitelist is deprecated please use allowlist",
-				ConflictsWith: []string{"allowlist"},
-			},
 			"allowlist": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -488,7 +385,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				ConflictsWith: []string{"whitelist"},
 			},
 			"logical_replication_slot": {
 				Type:     schema.TypeSet,
@@ -514,9 +410,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"group": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "node_count"},
+				Type:     schema.TypeSet,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"group_id": {
@@ -842,6 +737,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						"cpu": {
 							Type:        schema.TypeList,
 							Description: "CPU Auto Scaling",
+							Deprecated:  "This field is deprecated, auto scaling cpu is unsupported by IBM Cloud Databases",
 							Optional:    true,
 							Computed:    true,
 							MaxItems:    1,
@@ -948,7 +844,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, enterprise",
+			AllowedValues:              "standard, enterprise, enterprise-sharding, platinum",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -970,18 +866,19 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 }
 
 type Params struct {
-	Version             string `json:"version,omitempty"`
-	KeyProtectKey       string `json:"disk_encryption_key_crn,omitempty"`
-	BackUpEncryptionCRN string `json:"backup_encryption_key_crn,omitempty"`
-	Memory              int    `json:"members_memory_allocation_mb,omitempty"`
-	Disk                int    `json:"members_disk_allocation_mb,omitempty"`
-	CPU                 int    `json:"members_cpu_allocation_count,omitempty"`
-	KeyProtectInstance  string `json:"disk_encryption_instance_crn,omitempty"`
-	ServiceEndpoints    string `json:"service-endpoints,omitempty"`
-	BackupID            string `json:"backup-id,omitempty"`
-	RemoteLeaderID      string `json:"remote_leader_id,omitempty"`
-	PITRDeploymentID    string `json:"point_in_time_recovery_deployment_id,omitempty"`
-	PITRTimeStamp       string `json:"point_in_time_recovery_time,omitempty"`
+	Version             string  `json:"version,omitempty"`
+	KeyProtectKey       string  `json:"disk_encryption_key_crn,omitempty"`
+	BackUpEncryptionCRN string  `json:"backup_encryption_key_crn,omitempty"`
+	Memory              int     `json:"members_memory_allocation_mb,omitempty"`
+	Disk                int     `json:"members_disk_allocation_mb,omitempty"`
+	CPU                 int     `json:"members_cpu_allocation_count,omitempty"`
+	KeyProtectInstance  string  `json:"disk_encryption_instance_crn,omitempty"`
+	ServiceEndpoints    string  `json:"service-endpoints,omitempty"`
+	BackupID            string  `json:"backup-id,omitempty"`
+	RemoteLeaderID      string  `json:"remote_leader_id,omitempty"`
+	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
+	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
+	OfflineRestore      bool    `json:"offline_restore,omitempty"`
 }
 
 type Group struct {
@@ -1026,6 +923,14 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 		service = "mongodbee"
 	}
 
+	if service == "elasticsearch" && _plan == "platinum" {
+		service = "elasticsearchpl"
+	}
+
+	if service == "mongodb" && _plan == "enterprise-sharding" {
+		service = "mongodbees"
+	}
+
 	getDefaultScalingGroupsOptions := cloudDatabasesClient.NewGetDefaultScalingGroupsOptions(service)
 
 	getDefaultScalingGroupsResponse, _, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
@@ -1034,28 +939,6 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 	}
 
 	return getDefaultScalingGroupsResponse.Groups, nil
-}
-
-func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group, error) {
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
-	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
-	}
-
-	var dbType string
-	if service == "databases-for-cassandra" {
-		dbType = "datastax_enterprise_full"
-	} else if strings.HasPrefix(service, "messages-for-") {
-		dbType = service[len("messages-for-"):]
-	} else {
-		dbType = service[len("databases-for-"):]
-	}
-
-	groupDefaults, err := icdClient.Groups().GetDefaultGroups(dbType)
-	if err != nil {
-		return nil, fmt.Errorf("ICD API is down for plan validation, set plan_validation=false %s", err)
-	}
-	return &groupDefaults.Groups[0], nil
 }
 
 func getInitialNodeCount(service string, plan string, meta interface{}) (int, error) {
@@ -1147,45 +1030,6 @@ type CountLimit struct {
 	CanScaleDown    bool
 }
 
-func checkCountValue(name string, limits CountLimit, divider int, diff *schema.ResourceDiff) error {
-	groupLimit := GroupResource{
-		Units:        limits.Units,
-		Allocation:   limits.AllocationCount,
-		Minimum:      limits.MinimumCount,
-		Maximum:      limits.MaximumCount,
-		StepSize:     limits.StepSizeCount,
-		IsAdjustable: limits.IsAdjustable,
-		IsOptional:   limits.IsOptional,
-		CanScaleDown: limits.CanScaleDown,
-	}
-	return checkGroupValue(name, groupLimit, divider, diff)
-}
-
-type MbLimit struct {
-	Units        string
-	AllocationMb int
-	MinimumMb    int
-	MaximumMb    int
-	StepSizeMb   int
-	IsAdjustable bool
-	IsOptional   bool
-	CanScaleDown bool
-}
-
-func checkMbValue(name string, limits MbLimit, divider int, diff *schema.ResourceDiff) error {
-	groupLimit := GroupResource{
-		Units:        limits.Units,
-		Allocation:   limits.AllocationMb,
-		Minimum:      limits.MinimumMb,
-		Maximum:      limits.MaximumMb,
-		StepSize:     limits.StepSizeMb,
-		IsAdjustable: limits.IsAdjustable,
-		IsOptional:   limits.IsOptional,
-		CanScaleDown: limits.CanScaleDown,
-	}
-	return checkGroupValue(name, groupLimit, divider, diff)
-}
-
 func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	err = flex.ResourceTagsCustomizeDiff(diff)
 	if err != nil {
@@ -1193,67 +1037,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	}
 
 	service := diff.Get("service").(string)
-	planPhase := diff.Get("plan_validation").(bool)
-
-	if service == "databases-for-postgresql" ||
-		service == "databases-for-elasticsearch" ||
-		service == "databases-for-cassandra" ||
-		service == "databases-for-enterprisedb" {
-		if planPhase {
-			groupDefaults, err := getDatabaseServiceDefaults(service, meta)
-			if err != nil {
-				return err
-			}
-
-			err = checkMbValue("members_memory_allocation_mb", MbLimit(groupDefaults.Memory), 1, diff)
-			if err != nil {
-				return err
-			}
-
-			err = checkMbValue("members_disk_allocation_mb", MbLimit(groupDefaults.Disk), 1, diff)
-			if err != nil {
-				return err
-			}
-
-			err = checkCountValue("members_cpu_allocation_count", CountLimit(groupDefaults.Cpu), 1, diff)
-			if err != nil {
-				return err
-			}
-
-			err = checkCountValue("node_count", CountLimit(groupDefaults.Members), 1, diff)
-			if err != nil {
-				return err
-			}
-
-			var divider = groupDefaults.Members.MinimumCount
-			err = checkMbValue("node_memory_allocation_mb", MbLimit(groupDefaults.Memory), divider, diff)
-			if err != nil {
-				return err
-			}
-
-			err = checkMbValue("node_disk_allocation_mb", MbLimit(groupDefaults.Disk), divider, diff)
-			if err != nil {
-				return err
-			}
-
-			if diff.HasChange("node_cpu_allocation_count") {
-				err = checkCountValue("node_cpu_allocation_count", CountLimit(groupDefaults.Cpu), divider, diff)
-				if err != nil {
-					return err
-				}
-			} else if diff.HasChange("node_count") {
-				if _, ok := diff.GetOk("node_cpu_allocation_count"); !ok {
-					_, newSetting := diff.GetChange("node_count")
-					min := groupDefaults.Cpu.MinimumCount / divider
-					if newSetting != min {
-						return fmt.Errorf("node_cpu_allocation_count must be set when node_count is greater then the minimum %d", min)
-					}
-				}
-			}
-		}
-	} else if diff.HasChange("node_count") || diff.HasChange("node_memory_allocation_mb") || diff.HasChange("node_disk_allocation_mb") || diff.HasChange("node_cpu_allocation_count") {
-		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql, elasticsearch and cassandra")
-	}
+	plan := diff.Get("plan").(string)
 
 	_, logicalReplicationSet := diff.GetOk("logical_replication_slot")
 
@@ -1261,10 +1045,58 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
 	}
 
-	_, configurationSet := diff.GetOk("configuration")
+	configJSON, configOk := diff.GetOk("configuration")
 
-	if (service != "databases-for-postgresql" && service != "databases-for-redis" && service != "databases-for-enterprisedb") && configurationSet {
-		return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+	if configOk {
+		var rawConfig map[string]json.RawMessage
+		err = json.Unmarshal([]byte(configJSON.(string)), &rawConfig)
+		if err != nil {
+			return fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err)
+		}
+
+		var unmarshalFn func(m map[string]json.RawMessage, result interface{}) (err error)
+
+		var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+
+		switch service {
+		case "databases-for-postgresql":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
+		case "databases-for-enterprisedb":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
+		case "databases-for-redis":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
+		case "databases-for-mysql":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationMySQLConfiguration
+		case "messages-for-rabbitmq":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRabbitMqConfiguration
+		default:
+			return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+		}
+
+		err = core.UnmarshalModel(rawConfig, "", &configuration, unmarshalFn)
+		if err != nil {
+			return fmt.Errorf("[ERROR] configuration is invalid\n%s", err)
+		}
+
+		b, _ := json.Marshal(configuration)
+		var result map[string]json.RawMessage
+		json.Unmarshal(b, &result)
+
+		invalidFields := []string{}
+		for k, _ := range rawConfig {
+			if _, ok := result[k]; !ok {
+				invalidFields = append(invalidFields, k)
+			}
+		}
+
+		if len(invalidFields) != 0 {
+			return fmt.Errorf("[ERROR] configuration contained invalid field(s): %s", invalidFields)
+		}
+	}
+
+	_, offlineRestoreOk := diff.GetOk("offline_restore")
+	if offlineRestoreOk && service != "databases-for-mongodb" && plan != "enterprise" {
+		return fmt.Errorf("[ERROR] offline_restore is only supported for databases-for-mongodb enterprise")
 	}
 
 	return nil
@@ -1305,7 +1137,11 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		if serviceName == "databases-for-mongodb" && plan == "enterprise-sharding" {
+			return diag.FromErr(fmt.Errorf("%s %s is not available yet in this region", serviceName, plan))
+		} else {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+		}
 	}
 	if len(deployments) == 0 {
 		return diag.FromErr(fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan))
@@ -1363,24 +1199,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			}
 		}
 	}
-	if memory, ok := d.GetOk("members_memory_allocation_mb"); ok {
-		params.Memory = memory.(int)
-	}
-	if memory, ok := d.GetOk("node_memory_allocation_mb"); ok {
-		params.Memory = memory.(int) * initialNodeCount
-	}
-	if disk, ok := d.GetOk("members_disk_allocation_mb"); ok {
-		params.Disk = disk.(int)
-	}
-	if disk, ok := d.GetOk("node_disk_allocation_mb"); ok {
-		params.Disk = disk.(int) * initialNodeCount
-	}
-	if cpu, ok := d.GetOk("members_cpu_allocation_count"); ok {
-		params.CPU = cpu.(int)
-	}
-	if cpu, ok := d.GetOk("node_cpu_allocation_count"); ok {
-		params.CPU = cpu.(int) * initialNodeCount
-	}
 	if version, ok := d.GetOk("version"); ok {
 		params.Version = version.(string)
 	}
@@ -1399,12 +1217,25 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
 		params.RemoteLeaderID = remoteLeader.(string)
 	}
+
 	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
 		params.PITRDeploymentID = pitrID.(string)
 	}
-	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); ok {
-		params.PITRTimeStamp = pitrTime.(string)
+
+	pitrOk := !d.GetRawConfig().AsValueMap()["point_in_time_recovery_time"].IsNull()
+	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); pitrOk {
+		if !ok {
+			pitrTime = ""
+		}
+
+		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
+		params.PITRTimeStamp = &pitrTimeTrimmed
 	}
+
+	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
+		params.OfflineRestore = offlineRestore.(bool)
+	}
+
 	serviceEndpoint := d.Get("service_endpoints").(string)
 	params.ServiceEndpoints = serviceEndpoint
 	parameters, _ := json.Marshal(params)
@@ -1430,20 +1261,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	if node_count, ok := d.GetOk("node_count"); ok {
-		if initialNodeCount != node_count {
-			icdClient, err := meta.(conns.ClientSession).ICDAPI()
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-			}
-
-			err = horizontalScale(d, meta, icdClient)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
 	}
 
 	if group, ok := d.GetOk("group"); ok {
@@ -1518,11 +1335,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	instanceID := *instance.ID
 	icdId := flex.EscapeUrlParm(instanceID)
 
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-	}
-
 	if pw, ok := d.GetOk("adminpassword"); ok {
 		adminPassword := pw.(string)
 
@@ -1565,16 +1377,12 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	_, hasWhitelist := d.GetOk("whitelist")
 	_, hasAllowlist := d.GetOk("allowlist")
 
-	if hasWhitelist || hasAllowlist {
+	if hasAllowlist {
 		var ipAddresses *schema.Set
-		if hasWhitelist {
-			ipAddresses = d.Get("whitelist").(*schema.Set)
-		} else {
-			ipAddresses = d.Get("allowlist").(*schema.Set)
-		}
+
+		ipAddresses = d.Get("allowlist").(*schema.Set)
 
 		entries := flex.ExpandAllowlist(ipAddresses)
 
@@ -1597,57 +1405,44 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if cpuRecord, ok := d.GetOk("auto_scaling.0.cpu"); ok {
-		params := icdv4.AutoscalingSetGroup{}
-		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting cpuBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.CPU = &cpuBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database cpu auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err))
-		}
-	}
+	if _, ok := d.GetOk("auto_scaling.0"); ok {
+		autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
 
-	if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
-		params := icdv4.AutoscalingSetGroup{}
-		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.Disk = &diskBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database disk auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) disk auto_scaling group update task to complete: %s", icdId, err))
+		if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
+			diskGroup, err := expandAutoscalingDiskGroup(d, diskRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskGroup from expandAutoscalingDiskGroup %s", err))
+			}
+			autoscalingSetGroupAutoscaling.Disk = diskGroup
 		}
 
-	}
-	if memoryRecord, ok := d.GetOk("auto_scaling.0.memory"); ok {
-		params := icdv4.AutoscalingSetGroup{}
-		memoryBody, err := expandICDAutoScalingGroup(d, memoryRecord, "memory")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandICDAutoScalingGroup %s", err))
+		if memoryRecord, ok := d.GetOk("auto_scaling.0.memory"); ok {
+			memoryGroup, err := expandAutoscalingMemoryGroup(d, memoryRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandAutoscalingMemoryGroup %s", err))
+			}
+
+			autoscalingSetGroupAutoscaling.Memory = memoryGroup
 		}
-		params.Autoscaling.Memory = &memoryBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database memory auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) memory auto_scaling group update task to complete: %s", icdId, err))
+
+		if autoscalingSetGroupAutoscaling.Disk != nil || autoscalingSetGroupAutoscaling.Memory != nil {
+			setAutoscalingConditionsOptions := &clouddatabasesv5.SetAutoscalingConditionsOptions{
+				ID:          &instanceID,
+				GroupID:     core.StringPtr("member"),
+				Autoscaling: autoscalingSetGroupAutoscaling,
+			}
+
+			setAutoscalingConditionsResponse, _, err := cloudDatabasesClient.SetAutoscalingConditions(setAutoscalingConditionsOptions)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database auto_scaling: %s", err))
+			}
+
+			taskId := *setAutoscalingConditionsResponse.Task.ID
+
+			_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for database (%s) memory auto_scaling group update task to complete: %s", instanceID, err))
+			}
 		}
 	}
 
@@ -1666,22 +1461,36 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	}
 
 	if config, ok := d.GetOk("configuration"); ok {
-		service := d.Get("service").(string)
-		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
-			var configuration interface{}
-			json.Unmarshal([]byte(config.(string)), &configuration)
-			configPayload := icdv4.ConfigurationReq{Configuration: configuration}
-			task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err))
-			}
-			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
-			}
-		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
+		var rawConfig map[string]json.RawMessage
+		err = json.Unmarshal([]byte(config.(string)), &rawConfig)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err))
+		}
+
+		var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+		err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] database configuration is invalid"))
+		}
+
+		updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
+			ID:            &instanceID,
+			Configuration: configuration,
+		}
+
+		updateDatabaseConfigurationResponse, response, err := cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
+
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error updating database configuration failed %s\n%s", err, response))
+		}
+
+		taskID := *updateDatabaseConfigurationResponse.Task.ID
+
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
 		}
 	}
 
@@ -1852,24 +1661,17 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
-	d.Set("node_count", groupList.Groups[0].Members.AllocationCount)
 
-	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
-	d.Set("node_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb/groupList.Groups[0].Members.AllocationCount)
+	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
+		ID:      instance.ID,
+		GroupID: core.StringPtr("member"),
+	}
 
-	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
-	d.Set("node_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb/groupList.Groups[0].Members.AllocationCount)
-
-	d.Set("members_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount)
-	d.Set("node_cpu_allocation_count", groupList.Groups[0].Cpu.AllocationCount/groupList.Groups[0].Members.AllocationCount)
-
-	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
+	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err))
 	}
-	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
-
-	_, hasWhitelist := d.GetOk("whitelist")
+	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
 		ID: &instanceID,
@@ -1881,11 +1683,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
 	}
 
-	if hasWhitelist {
-		d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	} else {
-		d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-	}
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
@@ -1975,87 +1773,44 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 	}
 
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 	}
 	icdId := flex.EscapeUrlParm(instanceID)
 
-	if d.HasChange("node_count") {
-		err = horizontalScale(d, meta, icdClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
 	if d.HasChange("configuration") {
-		service := d.Get("service").(string)
-		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
-			if s, ok := d.GetOk("configuration"); ok {
-				var configuration interface{}
-				json.Unmarshal([]byte(s.(string)), &configuration)
-				configPayload := icdv4.ConfigurationReq{Configuration: configuration}
-				task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err))
-				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
-				}
+		if config, ok := d.GetOk("configuration"); ok {
+			var rawConfig map[string]json.RawMessage
+			err = json.Unmarshal([]byte(config.(string)), &rawConfig)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err))
 			}
 
-		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
-		}
+			var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+			err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-	}
+			updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
+				ID:            &instanceID,
+				Configuration: configuration,
+			}
 
-	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") || d.HasChange("node_memory_allocation_mb") || d.HasChange("node_disk_allocation_mb") || d.HasChange("node_cpu_allocation_count") {
-		params := icdv4.GroupReq{}
-		if d.HasChange("members_memory_allocation_mb") {
-			memory := d.Get("members_memory_allocation_mb").(int)
-			memoryReq := icdv4.MemoryReq{AllocationMb: memory}
-			params.GroupBdy.Memory = &memoryReq
-		}
-		if d.HasChange("node_memory_allocation_mb") || d.HasChange("node_count") {
-			memory := d.Get("node_memory_allocation_mb").(int)
-			count := d.Get("node_count").(int)
-			memoryReq := icdv4.MemoryReq{AllocationMb: memory * count}
-			params.GroupBdy.Memory = &memoryReq
-		}
-		if d.HasChange("members_disk_allocation_mb") {
-			disk := d.Get("members_disk_allocation_mb").(int)
-			diskReq := icdv4.DiskReq{AllocationMb: disk}
-			params.GroupBdy.Disk = &diskReq
-		}
-		if d.HasChange("node_disk_allocation_mb") || d.HasChange("node_count") {
-			disk := d.Get("node_disk_allocation_mb").(int)
-			count := d.Get("node_count").(int)
-			diskReq := icdv4.DiskReq{AllocationMb: disk * count}
-			params.GroupBdy.Disk = &diskReq
-		}
-		if d.HasChange("members_cpu_allocation_count") {
-			cpu := d.Get("members_cpu_allocation_count").(int)
-			cpuReq := icdv4.CpuReq{AllocationCount: cpu}
-			params.GroupBdy.Cpu = &cpuReq
-		}
-		if d.HasChange("node_cpu_allocation_mb") || d.HasChange("node_count") {
-			cpu := d.Get("node_cpu_allocation_count").(int)
-			count := d.Get("node_count").(int)
-			CpuReq := icdv4.CpuReq{AllocationCount: cpu * count}
-			params.GroupBdy.Cpu = &CpuReq
-		}
+			updateDatabaseConfigurationResponse, response, err := cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
 
-		task, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database scaling group: %s", err))
-		}
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error updating database configuration failed %s\n%s", err, response))
+			}
 
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) scaling group update task to complete: %s", icdId, err))
+			taskID := *updateDatabaseConfigurationResponse.Task.ID
+
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
+			}
 		}
 	}
 
@@ -2138,60 +1893,47 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChange("auto_scaling.0.cpu") {
-		cpuRecord := d.Get("auto_scaling.0.cpu")
-		params := icdv4.AutoscalingSetGroup{}
-		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting cpuBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.CPU = &cpuBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database cpu auto_scaling group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err))
+	if d.HasChange("auto_scaling.0") {
+		autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
+
+		if d.HasChange("auto_scaling.0.disk") {
+			diskRecord := d.Get("auto_scaling.0.disk")
+
+			diskBody, err := expandAutoscalingDiskGroup(d, diskRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskBody from expandAutoscalingDiskGroup %s", err))
+			}
+
+			autoscalingSetGroupAutoscaling.Disk = diskBody
 		}
 
-	}
-	if d.HasChange("auto_scaling.0.disk") {
-		diskRecord := d.Get("auto_scaling.0.disk")
-		params := icdv4.AutoscalingSetGroup{}
-		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskBody from expandICDAutoScalingGroup %s", err))
-		}
-		params.Autoscaling.Disk = &diskBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database disk auto_scaling  group: %s", err))
-		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) disk auto_scaling group update task to complete: %s", icdId, err))
+		if d.HasChange("auto_scaling.0.memory") {
+			memoryRecord := d.Get("auto_scaling.0.memory")
+			memoryBody, err := expandAutoscalingMemoryGroup(d, memoryRecord)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandAutoscalingMemoryGroup %s", err))
+			}
+
+			autoscalingSetGroupAutoscaling.Memory = memoryBody
 		}
 
-	}
-	if d.HasChange("auto_scaling.0.memory") {
-		memoryRecord := d.Get("auto_scaling.0.memory")
-		params := icdv4.AutoscalingSetGroup{}
-		memoryBody, err := expandICDAutoScalingGroup(d, memoryRecord, "memory")
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandICDAutoScalingGroup %s", err))
+		setAutoscalingConditionsOptions := &clouddatabasesv5.SetAutoscalingConditionsOptions{
+			ID:          &instanceID,
+			GroupID:     core.StringPtr("member"),
+			Autoscaling: autoscalingSetGroupAutoscaling,
 		}
-		params.Autoscaling.Memory = &memoryBody
-		task, err := icdClient.AutoScaling().SetAutoScaling(icdId, "member", params)
+
+		setAutoscalingConditionsResponse, _, err := cloudDatabasesClient.SetAutoscalingConditions(setAutoscalingConditionsOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database memory auto_scaling  group: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database memory auto_scaling group: %s", err))
 		}
-		_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+		taskId := *setAutoscalingConditionsResponse.Task.ID
+
+		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) memory auto_scaling group update task to complete: %s", icdId, err))
+				"[ERROR] Error waiting for database (%s) auto scaling group update task to complete: %s", instanceID, err))
 		}
 	}
 
@@ -2222,15 +1964,12 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChange("whitelist") || d.HasChange("allowlist") {
+	if d.HasChange("allowlist") {
 		_, hasAllowlist := d.GetOk("allowlist")
-		_, hasWhitelist := d.GetOk("whitelist")
 
 		var entries interface{}
 
-		if hasWhitelist {
-			_, entries = d.GetChange("whitelist")
-		} else if hasAllowlist {
+		if hasAllowlist {
 			_, entries = d.GetChange("allowlist")
 		}
 
@@ -2255,7 +1994,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", instanceID, err))
+				"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
 		}
 	}
 
@@ -2409,31 +2148,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
-}
-
-func horizontalScale(d *schema.ResourceData, meta interface{}, icdClient icdv4.ICDServiceAPI) error {
-	params := icdv4.GroupReq{}
-
-	icdId := flex.EscapeUrlParm(d.Id())
-
-	members := d.Get("node_count").(int)
-	membersReq := icdv4.MembersReq{AllocationCount: members}
-	params.GroupBdy.Members = &membersReq
-
-	_, err := icdClient.Groups().UpdateGroup(icdId, "member", params)
-
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error updating database scaling group: %s", err)
-	}
-
-	// ScaleOut is handled with an ICD API call, however, the check is is on the instance status
-	_, err = waitForDatabaseInstanceUpdate(d, meta)
-	if err != nil {
-		return fmt.Errorf(
-			"[ERROR] Error waiting for database (%s) horizontal scale to complete: %s", d.Id(), err)
-	}
-
-	return nil
 }
 
 func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint string, meta interface{}) (flex.CsEntry, error) {
@@ -2633,7 +2347,6 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 	waitErr := waitForICDReady(meta, instanceID)
 	if waitErr != nil {
 		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
-
 	}
 
 	return stateConf.WaitForState()
@@ -2680,32 +2393,41 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta interface{}, t time.Duration) (bool, error) {
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return false, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
+
 	delayDuration := 5 * time.Second
 
 	timeout := time.After(t)
 	delay := time.Tick(delayDuration)
-	innerTask := icdv4.Task{}
+	getTaskOptions := &clouddatabasesv5.GetTaskOptions{
+		ID: &taskId,
+	}
 
 	for {
 		select {
 		case <-timeout:
 			return false, fmt.Errorf("[Error] Time out waiting for database task to complete")
 		case <-delay:
-			innerTask, err = icdClient.Tasks().GetTask(flex.EscapeUrlParm(taskId))
+			getTaskResponse, _, err := cloudDatabasesClient.GetTask(getTaskOptions)
+
 			if err != nil {
-				return false, fmt.Errorf("[ERROR] The ICD Get task on database update errored: %v", err)
+				return false, fmt.Errorf("[ERROR] Database Task errored: %v", err)
 			}
-			if innerTask.Status == "failed" {
-				return false, fmt.Errorf("[Error] Database task failed")
-			}
-			// Completed status could be returned as "" due to interaction between bluemix-go and icd task response
-			// Otherwise Running an queued
-			if innerTask.Status == "completed" || innerTask.Status == "" {
+
+			if getTaskResponse.Task == nil {
 				return true, nil
+			}
+
+			switch *getTaskResponse.Task.Status {
+			case "failed":
+				return false, fmt.Errorf("[Error] Database Task failed")
+			case "complete", "":
+				return true, nil
+			case "queued", "running":
+				break
 			}
 		}
 	}
@@ -2759,78 +2481,108 @@ func filterDatabaseDeployments(deployments []models.ServiceDeployment, location 
 	return supportedDeployments, supportedLocations
 }
 
-func expandICDAutoScalingGroup(d *schema.ResourceData, asRecord interface{}, asType string) (asgBody icdv4.ASGBody, err error) {
+func expandAutoscalingDiskGroup(d *schema.ResourceData, asRecord interface{}) (autoscalingDiskGroup *clouddatabasesv5.AutoscalingDiskGroupDisk, err error) {
+	autoscalingRecord := asRecord.([]interface{})[0].(map[string]interface{})
 
-	asgRecord := asRecord.([]interface{})[0].(map[string]interface{})
-	asgCapacity := icdv4.CapacityBody{}
-	if _, ok := asgRecord["capacity_enabled"]; ok {
-		asgCapacity.Enabled = asgRecord["capacity_enabled"].(bool)
-		asgBody.Scalers.Capacity = &asgCapacity
+	autoscalingDiskGroup = &clouddatabasesv5.AutoscalingDiskGroupDisk{
+		Scalers: &clouddatabasesv5.AutoscalingDiskGroupDiskScalers{
+			Capacity:      &clouddatabasesv5.AutoscalingDiskGroupDiskScalersCapacity{},
+			IoUtilization: &clouddatabasesv5.AutoscalingDiskGroupDiskScalersIoUtilization{},
+		},
+		Rate: &clouddatabasesv5.AutoscalingDiskGroupDiskRate{},
 	}
-	if _, ok := asgRecord["free_space_less_than_percent"]; ok {
-		asgCapacity.FreeSpaceLessThanPercent = asgRecord["free_space_less_than_percent"].(int)
-		asgBody.Scalers.Capacity = &asgCapacity
+
+	if _, ok := autoscalingRecord["capacity_enabled"]; ok {
+		autoscalingDiskGroup.Scalers.Capacity.Enabled = core.BoolPtr(autoscalingRecord["capacity_enabled"].(bool))
+	}
+	if _, ok := autoscalingRecord["free_space_less_than_percent"]; ok {
+		autoscalingDiskGroup.Scalers.Capacity.FreeSpaceLessThanPercent = core.Int64Ptr(int64(autoscalingRecord["free_space_less_than_percent"].(int)))
 	}
 
 	// IO Payload
-	asgIO := icdv4.IOBody{}
-	if _, ok := asgRecord["io_enabled"]; ok {
-		asgIO.Enabled = asgRecord["io_enabled"].(bool)
-		asgBody.Scalers.IO = &asgIO
+	if _, ok := autoscalingRecord["io_enabled"]; ok {
+		autoscalingDiskGroup.Scalers.IoUtilization.Enabled = core.BoolPtr(autoscalingRecord["io_enabled"].(bool))
 	}
-	if _, ok := asgRecord["io_over_period"]; ok {
-		asgIO.OverPeriod = asgRecord["io_over_period"].(string)
-		asgBody.Scalers.IO = &asgIO
+	if _, ok := autoscalingRecord["io_over_period"]; ok {
+		autoscalingDiskGroup.Scalers.IoUtilization.OverPeriod = core.StringPtr(autoscalingRecord["io_over_period"].(string))
 	}
-	if _, ok := asgRecord["io_above_percent"]; ok {
-		asgIO.AbovePercent = asgRecord["io_above_percent"].(int)
-		asgBody.Scalers.IO = &asgIO
+	if _, ok := autoscalingRecord["io_above_percent"]; ok {
+		autoscalingDiskGroup.Scalers.IoUtilization.AbovePercent = core.Int64Ptr(int64(autoscalingRecord["io_above_percent"].(int)))
 	}
 
 	// Rate Payload
-	asgRate := icdv4.RateBody{}
-	if _, ok := asgRecord["rate_increase_percent"]; ok {
-		asgRate.IncreasePercent = asgRecord["rate_increase_percent"].(int)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_increase_percent"]; ok {
+		autoscalingDiskGroup.Rate.IncreasePercent = core.Float64Ptr(float64(autoscalingRecord["rate_increase_percent"].(int)))
 	}
-	if _, ok := asgRecord["rate_period_seconds"]; ok {
-		asgRate.PeriodSeconds = asgRecord["rate_period_seconds"].(int)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_period_seconds"]; ok {
+		autoscalingDiskGroup.Rate.PeriodSeconds = core.Int64Ptr(int64(autoscalingRecord["rate_period_seconds"].(int)))
 	}
-	if _, ok := asgRecord["rate_limit_mb_per_member"]; ok {
-		asgRate.LimitMBPerMember = asgRecord["rate_limit_mb_per_member"].(int)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_limit_mb_per_member"]; ok {
+		autoscalingDiskGroup.Rate.LimitMbPerMember = core.Float64Ptr(float64(autoscalingRecord["rate_limit_mb_per_member"].(int)))
 	}
-	if _, ok := asgRecord["rate_limit_count_per_member"]; ok {
-		asgRate.LimitCountPerMember = asgRecord["rate_limit_count_per_member"].(int)
-		asgBody.Rate = asgRate
-	}
-	if _, ok := asgRecord["rate_units"]; ok {
-		asgRate.Units = asgRecord["rate_units"].(string)
-		asgBody.Rate = asgRate
+	if _, ok := autoscalingRecord["rate_units"]; ok {
+		autoscalingDiskGroup.Rate.Units = core.StringPtr(autoscalingRecord["rate_units"].(string))
 	}
 
-	return asgBody, nil
+	return
 }
 
-func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0)
+func expandAutoscalingMemoryGroup(d *schema.ResourceData, asRecord interface{}) (autoscalingMemoryGroup *clouddatabasesv5.AutoscalingMemoryGroupMemory, err error) {
+	autoscalingRecord := asRecord.([]interface{})[0].(map[string]interface{})
+	autoscalingMemoryGroup = &clouddatabasesv5.AutoscalingMemoryGroupMemory{
+		Scalers: &clouddatabasesv5.AutoscalingMemoryGroupMemoryScalers{
+			IoUtilization: &clouddatabasesv5.AutoscalingMemoryGroupMemoryScalersIoUtilization{},
+		},
+		Rate: &clouddatabasesv5.AutoscalingMemoryGroupMemoryRate{},
+	}
 
+	// IO Payload
+	if _, ok := autoscalingRecord["io_enabled"]; ok {
+		autoscalingMemoryGroup.Scalers.IoUtilization.Enabled = core.BoolPtr(autoscalingRecord["io_enabled"].(bool))
+	}
+	if _, ok := autoscalingRecord["io_over_period"]; ok {
+		autoscalingMemoryGroup.Scalers.IoUtilization.OverPeriod = core.StringPtr(autoscalingRecord["io_over_period"].(string))
+	}
+	if _, ok := autoscalingRecord["io_above_percent"]; ok {
+		autoscalingMemoryGroup.Scalers.IoUtilization.AbovePercent = core.Int64Ptr(int64(autoscalingRecord["io_above_percent"].(int)))
+	}
+
+	// Rate Payload
+	if _, ok := autoscalingRecord["rate_increase_percent"]; ok {
+		autoscalingMemoryGroup.Rate.IncreasePercent = core.Float64Ptr(float64(autoscalingRecord["rate_increase_percent"].(int)))
+	}
+	if _, ok := autoscalingRecord["rate_period_seconds"]; ok {
+		autoscalingMemoryGroup.Rate.PeriodSeconds = core.Int64Ptr(int64(autoscalingRecord["rate_period_seconds"].(int)))
+	}
+	if _, ok := autoscalingRecord["rate_limit_mb_per_member"]; ok {
+		autoscalingMemoryGroup.Rate.LimitMbPerMember = core.Float64Ptr(float64(autoscalingRecord["rate_limit_mb_per_member"].(int)))
+	}
+	if _, ok := autoscalingRecord["rate_units"]; ok {
+		autoscalingMemoryGroup.Rate.Units = core.StringPtr(autoscalingRecord["rate_units"].(string))
+	}
+
+	return
+}
+
+func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
 	memorys := make([]map[string]interface{}, 0)
 	memory := make(map[string]interface{})
 
-	if autoScalingGroup.Autoscaling.Memory.Scalers.IO != nil {
-		memoryIO := *autoScalingGroup.Autoscaling.Memory.Scalers.IO
+	if autoScalingGroup.Autoscaling.Memory.Scalers.IoUtilization != nil {
+		memoryIO := *autoScalingGroup.Autoscaling.Memory.Scalers.IoUtilization
 		memory["io_enabled"] = memoryIO.Enabled
 		memory["io_over_period"] = memoryIO.OverPeriod
 		memory["io_above_percent"] = memoryIO.AbovePercent
 	}
+
 	if &autoScalingGroup.Autoscaling.Memory.Rate != nil {
-		ip, _ := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent.Float64()
-		memory["rate_increase_percent"] = int(ip)
+		ip := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent
+		memory["rate_increase_percent"] = *ip
 		memory["rate_period_seconds"] = autoScalingGroup.Autoscaling.Memory.Rate.PeriodSeconds
-		lmp, _ := autoScalingGroup.Autoscaling.Memory.Rate.LimitMBPerMember.Float64()
-		memory["rate_limit_mb_per_member"] = int(lmp)
+
+		lmp := autoScalingGroup.Autoscaling.Memory.Rate.LimitMbPerMember
+		memory["rate_limit_mb_per_member"] = *lmp
 		memory["rate_units"] = autoScalingGroup.Autoscaling.Memory.Rate.Units
 	}
 	memorys = append(memorys, memory)
@@ -2839,9 +2591,8 @@ func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []ma
 	cpu := make(map[string]interface{})
 
 	if &autoScalingGroup.Autoscaling.CPU.Rate != nil {
-
-		ip, _ := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent.Float64()
-		cpu["rate_increase_percent"] = int(ip)
+		ip := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent
+		cpu["rate_increase_percent"] = *ip
 		cpu["rate_period_seconds"] = autoScalingGroup.Autoscaling.CPU.Rate.PeriodSeconds
 		cpu["rate_limit_count_per_member"] = autoScalingGroup.Autoscaling.CPU.Rate.LimitCountPerMember
 		cpu["rate_units"] = autoScalingGroup.Autoscaling.CPU.Rate.Units
@@ -2850,24 +2601,27 @@ func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []ma
 
 	disks := make([]map[string]interface{}, 0)
 	disk := make(map[string]interface{})
+
 	if autoScalingGroup.Autoscaling.Disk.Scalers.Capacity != nil {
 		diskCapacity := *autoScalingGroup.Autoscaling.Disk.Scalers.Capacity
 		disk["capacity_enabled"] = diskCapacity.Enabled
 		disk["free_space_less_than_percent"] = diskCapacity.FreeSpaceLessThanPercent
 	}
-	if autoScalingGroup.Autoscaling.Disk.Scalers.IO != nil {
-		diskIO := *autoScalingGroup.Autoscaling.Disk.Scalers.IO
+
+	if autoScalingGroup.Autoscaling.Disk.Scalers.IoUtilization != nil {
+		diskIO := *autoScalingGroup.Autoscaling.Disk.Scalers.IoUtilization
 		disk["io_enabled"] = diskIO.Enabled
 		disk["io_over_period"] = diskIO.OverPeriod
 		disk["io_above_percent"] = diskIO.AbovePercent
 	}
-	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
 
-		ip, _ := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent.Float64()
-		disk["rate_increase_percent"] = int(ip)
+	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
+		ip := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent
+		disk["rate_increase_percent"] = ip
 		disk["rate_period_seconds"] = autoScalingGroup.Autoscaling.Disk.Rate.PeriodSeconds
-		lpm, _ := autoScalingGroup.Autoscaling.Disk.Rate.LimitMBPerMember.Float64()
-		disk["rate_limit_mb_per_member"] = int(lpm)
+
+		lpm := autoScalingGroup.Autoscaling.Disk.Rate.LimitMbPerMember
+		disk["rate_limit_mb_per_member"] = lpm
 		disk["rate_units"] = autoScalingGroup.Autoscaling.Disk.Rate.Units
 	}
 
@@ -2877,6 +2631,7 @@ func flattenICDAutoScalingGroup(autoScalingGroup icdv4.AutoscalingGetGroup) []ma
 		"cpu":    cpus,
 		"disk":   disks,
 	}
+
 	result = append(result, as)
 	return result
 }
@@ -3103,11 +2858,18 @@ func userUpdateCreate(userData map[string]interface{}, instanceID string, meta i
 		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
 	}
 
-	taskID := *changeUserPasswordResponse.Task.ID
-	updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+	updatePass := true // Assume that update password passed
 
-	if err != nil {
-		log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+	if userData["type"].(string) == "ops_manager" && response.StatusCode == 404 {
+		updatePass = false // when user_password api can't find an ops_manager user, it returns a 404 and does not get to the point of creating a task
+	} else {
+		// when user_password api can't find a database user, its task fails
+		taskID := *changeUserPasswordResponse.Task.ID
+		updatePass, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+		if err != nil {
+			log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
+		}
 	}
 
 	// Updating the password has failed

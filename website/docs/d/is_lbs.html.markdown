@@ -33,40 +33,45 @@ Review the attribute references that you can access after you retrieve your data
 
 - `load_balancers` - (List) The Collection of load balancers.
 
-  Nested scheme for `load_balancers`:
-    - `access_tags`  - (String) Access management tags associated for the load balancer.
+	Nested scheme for `load_balancers`:
+	- `access_tags`  - (String) Access management tags associated for the load balancer.
 	- `availability` - (String) The availability of this load balancer
 	- `id` - (String) The unique identifier of the load balancer.
 	- `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.
 	- `created_at` - (String) The date and time this load balancer was created.
 	- `crn` - (String) The load balancer's CRN.
+	- `dns` - (List) The DNS configuration for this load balancer.
+
+		Nested scheme for `dns`:
+		- `instance_crn` - (String) The CRN of the DNS instance associated with the DNS zone
+		- `zone_id` - (String) The unique identifier of the DNS zone.
 	- `name` - (String) Name of the load balancer.
 	- `subnets` - (List) The subnets this load balancer is part of.
 
-      Nested scheme for `subnets`:
-	  - `crn` - (String) The CRN for the subnet.
-	  - `id` - (String) The unique identifier for this subnet.
-	  - `href` - (String) The URL for this subnet.
-	  - `name` - (String) The user-defined name for this subnet.
+		Nested scheme for `subnets`:
+		- `crn` - (String) The CRN for the subnet.
+		- `id` - (String) The unique identifier for this subnet.
+		- `href` - (String) The URL for this subnet.
+		- `name` - (String) The user-defined name for this subnet.
 	- `hostname` - (String) The Fully qualified domain name assigned to this load balancer.
 	- `listeners` - (List) The listeners of this load balancer.
 
-	  Nested scheme for `listeners`:
-	  - `id` - (String) The unique identifier for this load balancer listener.
-	  - `href` - (String) The listener's canonical URL.
+		Nested scheme for `listeners`:
+		- `id` - (String) The unique identifier for this load balancer listener.
+		- `href` - (String) The listener's canonical URL.
 	- `operating_status` - (String) The operating status of this load balancer.
 	- `pools` - (List) The pools of this load balancer.
 
-	  Nested scheme for `pools`:
-	  - `href` - (String) The pool's canonical URL.
-	  - `id` - (String) The unique identifier for this load balancer pool.
-	  - `name` - (String) The user-defined name for this load balancer pool.
+		Nested scheme for `pools`:
+		- `href` - (String) The pool's canonical URL.
+		- `id` - (String) The unique identifier for this load balancer pool.
+		- `name` - (String) The user-defined name for this load balancer pool.
 	- `profile` - (List) The profile to use for this load balancer.
 
-	  Nested scheme for `profile`:
-	  - `family` - (String) The product family this load balancer profile belongs to.
-	  - `href` - (String) The URL for this load balancer profile.
-	  - `name` - (String) The name for this load balancer profile.
+		Nested scheme for `profile`:
+		- `family` - (String) The product family this load balancer profile belongs to.
+		- `href` - (String) The URL for this load balancer profile.
+		- `name` - (String) The name for this load balancer profile.
 	- `private_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
 		Nested scheme for `private_ip`:

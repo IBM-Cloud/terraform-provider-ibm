@@ -52,7 +52,11 @@ In addition to all argument reference list, you can access the following attribu
 	- `cron_spec` - (String) The cron specification for the backup schedule.
 
 		->**Note** The backup policy jobs (which create and delete backups for this plan) will not start until this time, and may start for up to 90 minutes after this time.All backup schedules for plans in the same policy must be at least an hour apart.
-		
+	- `clone_policy` - (List)
+
+		Nested scheme for `clone_policy`:
+		- `max_snapshots` - (Integer) The maximum number of recent snapshots (per source) that will keep clones.
+		- `zones` - (List) The zone list this backup policy plan will create snapshot clones in.		
 	- `deletion_trigger` (List) `deletion_trigger` block has the following structure:
 		
 		Nested scheme for `deletion_trigger`:
@@ -62,4 +66,10 @@ In addition to all argument reference list, you can access the following attribu
 	- `id` - (String) The unique identifier for this backup policy plan.
 	- `lifecycle_state` - (String) The lifecycle state of this backup policy plan.
 	- `name` - (String) The unique user-defined name for this backup policy plan.
+	- `remote_region_policy` - (List) Policies for creating remote copies of this backup.
+
+		Nested scheme for `remote_region_policy`:
+		- `delete_over_count` - (Integer) The maximum number of recent remote copies to keep in this region.
+		- `encryption_key` - (String) The root key to use to rewrap the data encryption key for the snapshot. The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+		- `region` - (String) The globally unique name for this region.
 	- `resource_type` - (String) The type of resource referenced.

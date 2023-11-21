@@ -195,9 +195,9 @@ data "ibm_cos_bucket" "standard-ams03" {
 
 <!-- COS SATELLITE PROJECT -->
 
-## COS SATELLITE
+## COS Satellite
 
-The following example creates a bucket and add object versioning and expiration features on COS satellite location. As of now we are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. We don't have any resource group in satellite.We can not use storage_class with Satellite location id.
+The following example creates a bucket and adds object versioning and expiration features on COS Satellite location. As of now we are using existing COS instance to create bucket, so no need to create any COS instance via terraform. We do not have any resource group in Satellite. We can not use storage_class with Satellite location id.
 
 * [IBM Satellite](https://cloud.ibm.com/docs/satellite?topic=satellite-getting-started)
 * [IBM COS Satellite](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite)
@@ -232,17 +232,18 @@ resource "ibm_cos_bucket" "cos_bucket" {
 }
 ```
 
-## COS REPLICATION
+## COS Replication
 
 Replication allows users to define rules for automatic, asynchronous copying of objects from a source bucket to a destination bucket in the same or different location.
 
 **Note:**
 
- you must have `writer` or `manager` platform roles on source bucket and sufficient platform roles to create new [IAM policies](https://cloud.ibm.com/docs/account?topic=account-iamoverview#iamoverview) that allow the source bucket to write to the destination bucket.
- Add depends_on on ibm_iam_authorization_policy.policy in template to make sure replication only enabled once iam  authorization policy set.
+You must have writer or manager platform roles on source bucket and sufficient platform roles to create new [IAM policies](https://cloud.ibm.com/docs/account?topic=account-iamoverview#iamoverview) that allow the source bucket to write to the destination bucket.
+
+Add depends_on on ibm_iam_authorization_policy.policy in template to make sure replication is only enabled once iam authorization policy is set.
 
 ## Example usage
-The following example creates an instance of IBM Cloud Object Storage. Then, multiple buckets are created and configured replication policy.
+The following example creates an instance of IBM Cloud Object Storage. Then, multiple buckets are created and configured with replication policy.
 
 ```terraform
 data "ibm_resource_group" "cos_group" {
@@ -353,7 +354,158 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
 }
 
 ```
+## COS Object Lock
 
+Object Lock preserves electronic records and maintains data integrity by ensuring that individual object versions are stored in a WORM (Write-Once-Read-Many), non-erasable and non-rewritable manner. This policy is enforced until a specified date or the removal of any legal holds.
+
+## Example usage
+The following example creates an instance of IBM Cloud Object Storage, creates a bucket with Object Lock enabled, and then sets Object Lock configuration on the bucket.
+
+```terraform
+data "ibm_resource_group" "cos_group" {
+  name = "cos-resource-group"
+}
+
+resource "ibm_resource_instance" "cos_instance" {
+  name              = "cos-instance"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = "a-bucket"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class         = "standard"
+  object_versioning {
+    enable  = true
+  }
+  object_lock = true
+}
+
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
+ bucket_crn      = ibm_cos_bucket.cos_bucket.crn
+ bucket_location = ibm_cos_bucket.cos_bucket.region_location
+ object_lock_configuration{
+   object_lock_enabled = "Enabled"
+   object_lock_rule{
+     default_retention{
+        mode = "COMPLIANCE"
+        days = 4
+      }
+    }
+  }
+}
+```
+
+
+## COS Static Webhosting
+
+Provides an  Static web hosting configuration resource. This resource is used to  configure the website to use your documents as an index for the site and to potentially display errors.It can also be used to configure more advanced options including routing rules and request redirect for your domain.
+
+## Example usage
+The following example creates an instance of IBM Cloud Object Storage, creates a bucket and adds a website configuration on the bucket.Along with the basic bucket configuration , example of redirect all requests and adding routing rules have been given below.
+
+```terraform
+
+# Create a bucket
+resource "ibm_cos_bucket" "cos_bucket_website_configuration" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+# Give public access to above mentioned bucket
+resource "ibm_iam_access_group_policy" "policy" { 
+  depends_on = [ibm_cos_bucket.cos_bucket_website_configuration] 
+  access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id 
+  roles = ["Object Reader"] 
+
+  resources { 
+    service = "cloud-object-storage" 
+    resource_type = "bucket" 
+    resource_instance_id = "COS instance guid" 
+    resource = data.ibm_cos_bucket.cos_bucket_website_configuration.bucket_name 
+  } 
+} 
+
+# Add basic website configuration on a COS bucket
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index.html"
+    }
+  }
+}
+
+# Add a request redirect website configuration on a COS bucket
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    redirect_all_requests_to{
+			host_name = "exampleBucketName"
+			protocol = "https"
+		}
+  }
+}
+
+
+# Add a website configuration on a COS bucket with routing rule
+
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index.html"
+    }
+    routing_rule {
+      condition {
+        key_prefix_equals = "pages/"
+      }
+      redirect {
+        replace_key_prefix_with = "web_pages/"
+      }
+    }
+  }
+}
+
+# Add a website configuration on a COS bucket with JSON routing rule
+resource ibm_cos_bucket_website_configuration "website_configuration" {
+  bucket_crn = "bucket_crn"
+  bucket_location = data.ibm_cos_bucket.cos_bucket_website_configuration.regional_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+      }
+    index_document{
+      suffix = "index.html"
+    }
+    routing_rules = <<EOF
+			[{
+			    "Condition": {
+			        "KeyPrefixEquals": "pages/"
+			     },
+			     "Redirect": {
+			        "ReplaceKeyPrefixWith": "webpages/"
+			     }
+			 }]
+			 EOF
+  }
+}
+```
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Requirements
@@ -398,6 +550,7 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
 | permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
 | enable | Specifies Versioning status either **enable or suspended** for an objects in the bucket. | `bool` | no
 | hard_quota | sets a maximum amount of storage (in bytes) available for a bucket. | `int` | no
+| object_lock | enables Object Lock on a bucket. | `bool` | no
 | bucket\_crn | The CRN of the source COS bucket. | `string` | yes |
 | bucket\_location | The location of the source COS bucket. | `string` | yes |
 | destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `String` | yes
@@ -406,4 +559,22 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
 | rule_id | The rule id. | `String` | no
 | priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `String` | no
 | prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `String` | no
+| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `String` | yes
+| bucket_location | Location of the COS bucket. | `String` | yes
+| endpoint_type | Endpoint types of the COS bucket. | `String` | no
+| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `String` | yes
+| mode | Retention mode for the Object Lock configuration. | `String` | yes
+| years | Retention period in terms of years after which the object can be deleted. | `int` | no
+| days | Retention period in terms of days after which the object can be deleted. | `int` | no
+| key | Object key name to use when a 4XX class error occurs given as error document. | `String` | no
+| suffix | The home or default page of the website when static web hosting configuration is added. | `String` | Yes
+| hostname | Name of the host where requests are redirected. | `String` | Yes
+| protocol | Protocol to use when redirecting requests. The default is the protocol that is used in the original request. | `String` | No
+| http_error_code_returned_equals | HTTP error code when the redirect is applied. | `String` | No
+| key_prefix_equals | Object key name prefix when the redirect is applied. | `String` | No
+| host_name | Host name to use in the redirect request. | `String` | Yes
+| protocol | Protocol to use when redirecting requests. | `String` | No
+| http_redirect_code | HTTP redirect code to use on the response. | `String` | No
+| replace_key_with | Specific object key to use in the redirect request. | `String` | No
+| replace_key_prefix_with | Object key prefix to use in the redirect request. | `String` | No
 {: caption="inputs"}

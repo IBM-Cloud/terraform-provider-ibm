@@ -50,7 +50,25 @@ func DataSourceIBMISLB() *schema.Resource {
 				Required:    true,
 				Description: "Load Balancer name",
 			},
-
+			"dns": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The DNS configuration for this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instance_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this DNS instance",
+						},
+						"zone_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier of the DNS zone.",
+						},
+					},
+				},
+			},
 			isLBType: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -358,6 +376,14 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			if lb.SourceIPSessionPersistenceSupported != nil {
 				d.Set(isLBSourceIPPersistenceSupported, *lb.SourceIPSessionPersistenceSupported)
+			}
+			dnsList := make([]map[string]interface{}, 0)
+			if lb.Dns != nil {
+				dns := map[string]interface{}{}
+				dns["instance_crn"] = lb.Dns.Instance.CRN
+				dns["zone_id"] = lb.Dns.Zone.ID
+				dnsList = append(dnsList, dns)
+				d.Set("dns", dnsList)
 			}
 			d.Set(isLBName, *lb.Name)
 			if lb.Logging != nil && lb.Logging.Datapath != nil {

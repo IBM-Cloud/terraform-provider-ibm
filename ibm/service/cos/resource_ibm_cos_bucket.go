@@ -95,10 +95,18 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Description: "CRN of resource instance",
 			},
 			"key_protect": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "CRN of the key you want to use data at rest encryption",
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"kms_key_crn"},
+				Description:   "CRN of the key you want to use data at rest encryption",
+			},
+			"kms_key_crn": {
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"key_protect"},
+				Description:   "CRN of the key you want to use data at rest encryption",
 			},
 			"satellite_location_id": {
 				Type:          schema.TypeString,
@@ -434,6 +442,12 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 				Description: "COS buckets need to be empty before they can be deleted. force_delete option empty the bucket and delete it.",
+			},
+			"object_lock": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				RequiredWith: []string{"object_versioning"},
+				Description:  "Enable objectlock for the bucket. When enabled, buckets within the container vault can have Object Lock Configuration applied to the bucket.",
 			},
 		},
 	}
@@ -910,6 +924,9 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	}
 
 	if apiType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
@@ -1010,6 +1027,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
+	var keyProtectFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -1019,6 +1037,10 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	endpointType := parseBucketId(d.Id(), "endpointType")
 	apiType := parseBucketId(d.Id(), "apiType")
 	bLocation := parseBucketId(d.Id(), "bLocation")
+
+	if _, ok := d.GetOk("key_protect"); ok {
+		keyProtectFlag = true
+	}
 
 	//split satellite resource instance id to get the 1st value
 	if apiType == "sl" {
@@ -1134,6 +1156,9 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	}
 
 	if apiType == "sl" {
 
@@ -1145,6 +1170,19 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
+	}
+	head, err := s3Client.HeadBucket(headInput)
+	if err != nil {
+		return err
+	}
+	if head.IBMSSEKPEnabled != nil {
+		if *head.IBMSSEKPEnabled == true {
+			if keyProtectFlag == true {
+				d.Set("key_protect", head.IBMSSEKPCrkId)
+			} else {
+				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
+			}
+		}
 	}
 
 	if bucketPtr != nil {
@@ -1240,6 +1278,17 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("object_versioning", nil)
 		}
 	}
+	// reading objectlock
+	getObjectLockConfigurationInput := &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
+	if output.ObjectLockConfiguration != nil {
+		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
+		if objectLockEnabled == "Enabled" {
+			d.Set("object_lock", true)
+		}
+	}
 	return nil
 }
 
@@ -1251,6 +1300,7 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketName := d.Get("bucket_name").(string)
 	storageClass := d.Get("storage_class").(string)
+	objectLockEnabled := d.Get("object_lock").(bool)
 	var bLocation string
 	var apiType string
 	var satlc_id string
@@ -1316,6 +1366,11 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		create = &s3.CreateBucketInput{
 			Bucket: aws.String(bucketName),
 		}
+	} else if objectLockEnabled == true {
+		create = &s3.CreateBucketInput{
+			Bucket:                     aws.String(bucketName),
+			ObjectLockEnabledForBucket: aws.Bool(true),
+		}
 	} else {
 		create = &s3.CreateBucketInput{
 			Bucket: aws.String(bucketName),
@@ -1327,6 +1382,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 
 	if keyprotect, ok := d.GetOk("key_protect"); ok {
 		create.IBMSSEKPCustomerRootKeyCrn = aws.String(keyprotect.(string))
+		create.IBMSSEKPEncryptionAlgorithm = aws.String(keyAlgorithm)
+	} else if kmsKeyCrn, ok := d.GetOk("kms_key_crn"); ok {
+		create.IBMSSEKPCustomerRootKeyCrn = aws.String(kmsKeyCrn.(string))
 		create.IBMSSEKPEncryptionAlgorithm = aws.String(keyAlgorithm)
 	}
 

@@ -5,6 +5,7 @@ package kubernetes_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -76,6 +77,8 @@ func TestAccIBMContainer_ClusterConfigCalicoDataSourceBasic(t *testing.T) {
 						"data.ibm_container_cluster_config.testacc_ds_cluster", "config_file_path"),
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_container_cluster_config.testacc_ds_cluster", "calico_config_file_path"),
+					resource.TestMatchResourceAttr(
+						"data.ibm_container_cluster_config.testacc_ds_cluster", "host", regexp.MustCompile("^https://.*private.*")),
 				),
 			},
 		},
@@ -129,10 +132,12 @@ resource "ibm_container_cluster" "testacc_cluster" {
   wait_till       = "Normal"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
+  private_service_endpoint = true
 }
 
 data "ibm_container_cluster_config" "testacc_ds_cluster" {
   cluster_name_id = ibm_container_cluster.testacc_cluster.id
   network         = true
+  endpoint_type   = "private"
 }`, clustername, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID)
 }

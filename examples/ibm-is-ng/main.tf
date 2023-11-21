@@ -10,15 +10,6 @@ resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
 	is_default  = true
 }
 
-resource "ibm_is_vpc_route" "route1" {
-  name        = "route1"
-  vpc         = ibm_is_vpc.vpc1.id
-  zone        = var.zone1
-  destination = "192.168.4.0/24"
-  next_hop    = "10.240.0.4"
-  depends_on  = [ibm_is_subnet.subnet1]
-}
-
 resource "ibm_is_subnet" "subnet1" {
   name            = "subnet1"
   vpc             = ibm_is_vpc.vpc1.id
@@ -83,6 +74,17 @@ resource "ibm_is_instance_template" "instancetemplate2" {
 // datasource for instance template
 data "ibm_is_instance_template" "instancetemplates" {
 	identifier = ibm_is_instance_template.instancetemplate2.id
+}
+
+// Load balancer with private DNS
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.subnet1.id]
+  profile = "network-fixed"
+  dns   {
+    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
+    zone_id = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  }
 }
 
 resource "ibm_is_lb" "lb2" {
@@ -304,16 +306,16 @@ resource "ibm_is_subnet" "subnet2" {
 
 resource "ibm_is_ipsec_policy" "example" {
   name                     = "test-ipsec"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
   pfs                      = "disabled"
 }
 
 resource "ibm_is_ike_policy" "example" {
   name                     = "test-ike"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
-  dh_group                 = 2
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
+  dh_group                 = 14
   ike_version              = 1
 }
 
@@ -580,10 +582,11 @@ resource "ibm_is_instance" "instance4" {
   keys      = [ibm_is_ssh_key.sshkey.id]
 }
 
-// creating a snapshot from boot volume
+// creating a snapshot from boot volume with clone
 resource "ibm_is_snapshot" "b_snapshot" {
   name          = "my-snapshot-boot"
   source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
+  clones        = [var.zone1]
   tags          = ["tags1"]
 }
 
@@ -601,6 +604,17 @@ data "ibm_is_snapshot" "ds_snapshot" {
 
 // data source for snapshots
 data "ibm_is_snapshots" "ds_snapshots" {
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clones" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+}
+
+// data source for snapshot clones
+data "ibm_is_snapshot_clones" "ds_snapshot_clone" {
+  snapshot = ibm_is_snapshot.b_snapshot.id
+  zone     = var.zone1
 }
 
 // restoring a boot volume from snapshot in a new instance
@@ -1096,6 +1110,22 @@ resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   }
   name = "my-backup-policy-plan-1"
 }
+resource "ibm_is_backup_policy_plan" "is_backup_policy_plan_clone" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  cron_spec        = "30 09 * * *"
+  active           = false
+  attach_user_tags = ["tag2"]
+  copy_user_tags = true
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = "20"
+  }
+  name = "my-backup-policy-plan-1"
+  clone_policy {
+    zones 			= ["us-south-1", "us-south-2"]
+    max_snapshots 	= 3
+  }
+}
 
 data "ibm_is_backup_policies" "is_backup_policies" {
 }
@@ -1111,6 +1141,20 @@ data "ibm_is_backup_policy_plans" "is_backup_policy_plans" {
 data "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
   name             = "my-backup-policy-plan"
+}
+
+//backup policies for enterprise
+
+resource "ibm_is_backup_policy" "ent-baas-example" {
+  match_user_tags = ["tag1"]
+  name            = "example-enterprise-backup-policy"
+  scope {
+    crn = "crn:v1:bluemix:public:is:us-south:a/123456::reservation:7187-ba49df72-37b8-43ac-98da-f8e029de0e63"
+  }
+}
+
+data "ibm_is_backup_policy" "enterprise_backup" {
+  name = ibm_is_backup_policy.ent-baas-example.name
 }
 
 // Vpn Server
@@ -1137,6 +1181,16 @@ resource "ibm_is_vpn_server_route" "is_vpn_server_route" {
   name          = "example-vpn-server-route"
 }
 
+data "ibm_is_backup_policy_job" "is_backup_policy_job" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  identifier       = ""
+}
+
+data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
+  backup_policy_plan_id = ibm_is_backup_policy.is_backup_policy.backup_policy_plan_id
+  backup_policy_id      = ibm_is_backup_policy.is_backup_policy.id
+}
+
 data "ibm_is_vpn_server" "is_vpn_server" {
 	identifier = ibm_is_vpn_server.is_vpn_server.vpn_server
 }
@@ -1157,4 +1211,191 @@ data "ibm_is_vpn_server_clients" "is_vpn_server_clients" {
 data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
+}
+resource "ibm_is_image_export_job" "example" {
+  image = ibm_is_image.image1.id
+  name = "my-image-export"
+  storage_bucket {
+    name = "bucket-27200-lwx4cfvcue"
+  }
+}
+
+data "ibm_is_image_export_jobs" "example" {
+  image = ibm_is_image_export_job.example.image
+}
+
+data "ibm_is_image_export_job" "example" {
+  image = ibm_is_image_export_job.example.image
+  image_export_job = ibm_is_image_export_job.example.image_export_job
+}
+resource "ibm_is_vpc" "vpc" {
+  name = "my-vpc"
+}
+resource "ibm_is_share" "share" {
+  zone = "us-south-1"
+  size = 30000
+  name = "my-share"
+  profile = "dp2"
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share" "sharereplica" {
+  zone = "us-south-2"
+  name = "my-share-replica"
+  profile = "dp2"
+  replication_cron_spec = "0 */5 * * *"
+  source_share = ibm_is_share.share.id
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+resource "ibm_is_share_mount_target" "is_share_mount_target" {
+  share = ibm_is_share.is_share.id
+  vpc   = ibm_is_vpc.vpc1.id
+  name  = "my-share-target-1"
+}
+
+data "ibm_is_share_mount_target" "is_share_mount_target" {
+  share        = ibm_is_share.is_share.id
+  mount_target = ibm_is_share_mount_target.is_share_target.mount_target
+}
+
+data "ibm_is_share_mount_targets" "is_share_mount_targets" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_share" "is_share" {
+  share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_shares" "is_shares" {
+}
+
+// vpc dns resolution bindings
+
+  // list all dns resolution bindings on a vpc
+data "ibm_is_vpc_dns_resolution_bindings" "is_vpc_dns_resolution_bindings" {
+	vpc_id = ibm_is_vpc.vpc1.id
+}
+  // get a dns resolution bindings on a vpc
+data "ibm_is_vpc_dns_resolution_binding" "is_vpc_dns_resolution_binding" {
+	vpc_id  = ibm_is_vpc.vpc1.id
+  id      = ibm_is_vpc.vpc2.id
+}
+data "ibm_resource_group" "rg" {
+	is_default	   =  true
+}
+  // creating a hub enabled vpc, hub disabled vpc, creating custom resolvers for both then
+  // delegating the vpc by uncommenting the configuration in hub_false_delegated vpc
+resource ibm_is_vpc hub_true {
+  name = "${var.name}-vpc-hub-true"
+  dns {
+    enable_hub = true
+  }
+}
+
+resource ibm_is_vpc hub_false_delegated {
+  name = "${var.name}-vpc-hub-false-del"
+  dns {
+    enable_hub = false
+    # resolver {
+    # 	type = "delegated"
+    # 	vpc_id = ibm_is_vpc.hub_true.id
+    # }
+  }
+}
+
+resource "ibm_is_subnet" "hub_true_sub1" {
+  name		   				        =  "hub-true-subnet1"
+  vpc      	   				      =  ibm_is_vpc.hub_true.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_is_subnet" "hub_true_sub2" {
+  name		   				        =  "hub-true-subnet2"
+  vpc      	   				      =  ibm_is_vpc.hub_true.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_is_subnet" "hub_false_delegated_sub1" {
+  name		   				        =  "hub-false-delegated-subnet1"
+  vpc      	   				      =  ibm_is_vpc.hub_false_delegated.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_is_subnet" "hub_false_delegated_sub2" {
+  name		   				        =  "hub-false-delegated-subnet2"
+  vpc      	   				      =  ibm_is_vpc.hub_false_delegated.id
+  zone		   				        =  "${var.region}-2"
+  total_ipv4_address_count 	= 16
+}
+resource "ibm_resource_instance" "dns-cr-instance" {
+  name		   		      =  "dns-cr-instance"
+  resource_group_id  	=  data.ibm_resource_group.rg.id
+  location           	=  "global"
+  service		   		    =  "dns-svcs"
+  plan		   		      =  "standard-dns"
+}
+resource "ibm_dns_custom_resolver" "test_hub_true" {
+  name		   		    =  "test-hub-true-customresolver"
+  instance_id 	   	=  ibm_resource_instance.dns-cr-instance.guid
+  description	   		=  "new test CR - TF"
+  high_availability =  true
+  enabled 	   		  =  true
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_true_sub1.crn
+    enabled	    = true
+  }
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_true_sub2.crn
+    enabled	    = true
+  }
+}
+resource "ibm_dns_custom_resolver" "test_hub_false_delegated" {
+  name		   		    =  "test-hub-false-customresolver"
+  instance_id 	   	=  ibm_resource_instance.dns-cr-instance.guid
+  description	   		=  "new test CR - TF"
+  high_availability =  true
+  enabled 	   		  =  true
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_false_delegated_sub1.crn
+    enabled	    = true
+  }
+  locations {
+    subnet_crn  = ibm_is_subnet.hub_false_delegated_sub2.crn
+    enabled	    = true
+  }
+}
+
+resource ibm_is_vpc_dns_resolution_binding dnstrue {
+  name    = "hub-spoke-binding"
+  vpc_id  =  ibm_is_vpc.hub_false_delegated.id
+  vpc {
+    id = ibm_is_vpc.hub_true.id
+  }
+}
+
+
+// snapshot cross region
+
+provider "ibm" {
+  alias				       = "eu-de"
+  region             = "eu-de"
+}
+
+resource "ibm_is_snapshot" "b_snapshot_copy" {
+  provider            = ibm.eu-de
+  name                = "my-snapshot-boot-copy"
+  source_snapshot_crn = ibm_is_snapshot.b_snapshot.crn
+}
+
+// image deprecate and obsolete
+
+resource "ibm_is_image_deprecate" "example" {
+  image     = ibm_is_image.image1.id
+}
+
+resource "ibm_is_image_obsolete" "example" {
+  image     = ibm_is_image.image1.id
 }

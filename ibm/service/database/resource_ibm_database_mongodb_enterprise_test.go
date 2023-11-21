@@ -34,11 +34,11 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "43008"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
@@ -55,10 +55,10 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "86016"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "86016"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.1.type", "ops_manager"),
@@ -79,10 +79,10 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "43008"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
@@ -93,7 +93,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation", "adminpassword", "connectionstrings.0.queryoptions"},
+					"wait_time_minutes", "adminpassword", "connectionstrings.0.queryoptions"},
 			},
 		},
 	})
@@ -119,11 +119,11 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceGroupBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "43008"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
@@ -132,6 +132,62 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceGroupBasic(t *testing.T) {
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMMongoDBEnterpriseDatabaseInstancePITR(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "Default"
+	var databaseInstanceOne string
+	var databaseInstanceTwo string
+	serviceName := fmt.Sprintf("tf-mongodbee-%d", acctest.RandIntRange(10, 100))
+	pitrServiceName := serviceName + "-pitr"
+	resourceName := "ibm_database." + serviceName
+	pitrResourceName := "ibm_database." + pitrServiceName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acc.TestAccPreCheck(t) },
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"time": {
+				Source:            "hashicorp/time",
+				VersionConstraint: ">=0.9.1",
+			},
+		},
+		ProviderFactories: acc.TestAccProviderFactories(),
+		CheckDestroy:      testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
+
+					resource.TestCheckResourceAttr(resourceName, "groups.0.count", "3"),
+					resource.TestCheckResourceAttr(resourceName, "groups.1.count", "0"),
+					resource.TestCheckResourceAttr(resourceName, "groups.2.count", "0"),
+				),
+			},
+			{
+				Config: acc.ConfigCompose(acc.ConfigAlternateRegionProvider(),
+					testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGroup, serviceName),
+					testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal_PITR(databaseResourceGroup, serviceName)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
+					testAccCheckIBMDatabaseInstanceExists(pitrResourceName, &databaseInstanceTwo),
+					resource.TestCheckResourceAttr(pitrResourceName, "name", pitrServiceName),
+					resource.TestCheckResourceAttr(pitrResourceName, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(pitrResourceName, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(pitrResourceName, "location", acc.RegionAlternate()),
+					resource.TestCheckResourceAttr(pitrResourceName, "adminuser", "admin"),
+					resource.TestCheckResourceAttr(pitrResourceName, "groups.0.count", "3"),
+					resource.TestCheckResourceAttr(pitrResourceName, "groups.1.count", "0"),
+					resource.TestCheckResourceAttr(pitrResourceName, "groups.2.count", "0"),
 				),
 			},
 		},
@@ -151,9 +207,16 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_disk_allocation_mb   = 61440
-    	members_memory_allocation_mb = 43008
 		tags                         = ["one:two"]
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 14336
+			}
+			 disk {
+				allocation_mb = 20480
+			}
+		}
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -169,7 +232,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseResourceGroup string, name string) string {
@@ -185,10 +248,19 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 86016
-		members_disk_allocation_mb   = 122880
-		members_cpu_allocation_count = 27
 		tags                         = ["one:two"]
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 28672
+			}
+			 disk {
+				allocation_mb = 40960
+			}
+			cpu {
+				allocation_count = 9
+			}
+		}
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -213,7 +285,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseReduced(databaseResourceGroup string, name string) string {
@@ -229,17 +301,24 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseReduced(databaseResourceGro
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 		adminpassword                = "password12"
-		members_disk_allocation_mb   = 122880
-    	members_memory_allocation_mb = 43008
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 14336
+			}
+			 disk {
+				allocation_mb = 40960
+			}
+		}
 		timeouts {
 			create = "480m"
 			update = "480m"
 			delete = "15m"
 		}
 	  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResourceGroup string, name string) string {
@@ -290,5 +369,57 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "enterprise"
+		location                     = "%[3]s"
+
+		timeouts {
+			create = "4h"
+			update = "4h"
+			delete = "15m"
+		}
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal_PITR(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	resource "time_sleep" "wait_time" {
+		create_duration = "1h"
+		depends_on      = [ibm_database.%[2]s]
+	}
+
+	resource "ibm_database" "%[2]s-pitr" {
+		provider                              = "%[1]s"
+		depends_on                            = [time_sleep.wait_time, ibm_database.%[2]s]
+
+		resource_group_id                     = data.ibm_resource_group.test_acc.id
+		name                                  = "%[2]s-pitr"
+		service                               = "databases-for-mongodb"
+		plan                                  = "enterprise"
+		location                              = "%[3]s"
+		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
+		point_in_time_recovery_time           = ""
+    offline_restore                       = true
+
+		timeouts {
+			create = "4h"
+			update = "4h"
+			delete = "15m"
+		}
+	}
+
+				`, acc.ProviderNameAlternate, name, acc.RegionAlternate())
 }

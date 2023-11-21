@@ -42,78 +42,81 @@ You can access the following attribute references after your data source is crea
   - `family` - (String) The family of the virtual server instance profile.
   - `bandwidth`  - (List) The collection of bandwidth information.
 
-    Nested scheme for `bandwidth`:
-    - `default` - (String) The default value for this profile field.
-    - `max` - (String) The maximum value for this profile field.
-    - `min` - (String) The minimum value for this profile field.
-    - `step` - (String) The increment step value for this profile field.
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+      Nested scheme for `bandwidth`:
+      - `default` - (String) The default value for this profile field.
+      - `max` - (String) The maximum value for this profile field.
+      - `min` - (String) The minimum value for this profile field.
+      - `step` - (String) The increment step value for this profile field.
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
+      - `values` - (String) The permitted values for this profile field.
   - `disks` - (List) Collection of the instance profile's disks. Nested `disks` blocks has the following structure.
 
-    Nested scheme for `disks`:
-    - `quantity` (List) Nested `quantity` blocks has the following structure:
-  
-      Nested scheme for `quantity`:
-      - `default` - (String) The default value for this profile field.
-      - `max` - (String) The maximum value for this profile field.
-      - `min` - (String) The minimum value for this profile field.
-      - `step` - (String) The increment step value for this profile field.
-      - `type` - (String) The type for this profile field.
-      - `value` - (String) The value for this profile field.
-      - `values` - (String) The permitted values for this profile field.
-    - `size`  - (List) Nested `size` blocks has the following structure:
-  	 
-      Nested scheme for `size`:
-      - `default` - (String) The default value for this profile field.
-      - `max` - (String) The maximum value for this profile field.
-      - `min` - (String) The minimum value for this profile field.
-      - `step` - (String) The increment step value for this profile field.
-      - `type` - (String) The type for this profile field.
-      - `value` - (String) The value for this profile field.
-      - `values` - (String) The permitted values for this profile field.
+      Nested scheme for `disks`:
+      - `quantity` (List) Nested `quantity` blocks has the following structure:
+    
+          Nested scheme for `quantity`:
+          - `default` - (String) The default value for this profile field.
+          - `max` - (String) The maximum value for this profile field.
+          - `min` - (String) The minimum value for this profile field.
+          - `step` - (String) The increment step value for this profile field.
+          - `type` - (String) The type for this profile field.
+          - `value` - (String) The value for this profile field.
+          - `values` - (String) The permitted values for this profile field.
+
+      - `size`  - (List) Nested `size` blocks has the following structure:
+      
+        Nested scheme for `size`:
+        - `default` - (String) The default value for this profile field.
+        - `max` - (String) The maximum value for this profile field.
+        - `min` - (String) The minimum value for this profile field.
+        - `step` - (String) The increment step value for this profile field.
+        - `type` - (String) The type for this profile field.
+        - `value` - (String) The value for this profile field.
+        - `values` - (String) The permitted values for this profile field.
     - `supported_interface_types` - (List) Nested `supported_interface_types` blocks has the following structure:
   
-      Nested scheme for `supported_interface_type`:
-      - `default` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally, halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
-      - `type` - (String) The type for this profile field.
-      - `values` - (String) The supported disk interfaces used for attaching the disk.
+        Nested scheme for `supported_interface_type`:
+        - `default` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally, halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+        - `type` - (String) The type for this profile field.
+        - `values` - (String) The supported disk interfaces used for attaching the disk.
+    - `status` - (String) The status of the instance profile. Values coule be, `previous`: This instance profile is an older revision, but remains provisionable and usable. `current`: This profile is the latest revision.
   - `gpu_count` - (List) Nested `gpu_count` blocks have the following structure:
-    Nested scheme for `gpu_count`:
-    - `default` - (String) The default value for this profile field.
-    - `max` - (String) The maximum value for this profile field.
-    - `min` - (String) The minimum value for this profile field.
-    - `step` - (String) The increment step value for this profile field.
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+    
+      Nested scheme for `gpu_count`:
+      - `default` - (String) The default value for this profile field.
+      - `max` - (String) The maximum value for this profile field.
+      - `min` - (String) The minimum value for this profile field.
+      - `step` - (String) The increment step value for this profile field.
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
+      - `values` - (String) The permitted values for this profile field.
   - `gpu_manufacturer` - (List) Nested `gpu_manufacturer` blocks have the following structure:
-    Nested scheme for `gpu_manufacturer`:
-    - `type` - (String) The type for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+      Nested scheme for `gpu_manufacturer`:
+      - `type` - (String) The type for this profile field.
+      - `values` - (String) The permitted values for this profile field.
   - `gpu_memory` - (List) Nested `gpu_memory` blocks have the following structure:
-    Nested scheme for `gpu_memory`:
-    - `default` - (String) The default value for this profile field.
-    - `max` - (String) The maximum value for this profile field.
-    - `min` - (String) The minimum value for this profile field.
-    - `step` - (String) The increment step value for this profile field.
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+      Nested scheme for `gpu_memory`:
+      - `default` - (String) The default value for this profile field.
+      - `max` - (String) The maximum value for this profile field.
+      - `min` - (String) The minimum value for this profile field.
+      - `step` - (String) The increment step value for this profile field.
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
+      - `values` - (String) The permitted values for this profile field.
   - `gpu_model` - (List) Nested `gpu_model` blocks have the following structure:
-    Nested scheme for `gpu_model`:
-    - `type` - (String) The type for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+      Nested scheme for `gpu_model`:
+      - `type` - (String) The type for this profile field.
+      - `values` - (String) The permitted values for this profile field.
   - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
-    Nested scheme for `total_volume_bandwidth`:
-    - `type` - The type for this profile field.
-    - `value` - The value for this profile field.
-    - `default` - The default value for this profile field.
-    - `max` - The maximum value for this profile field.
-    - `min` - The minimum value for this profile field.
-    - `step` - The increment step value for this profile field.
-    - `values` - The permitted values for this profile field.
+      Nested scheme for `total_volume_bandwidth`:
+      - `type` - The type for this profile field.
+      - `value` - The value for this profile field.
+      - `default` - The default value for this profile field.
+      - `max` - The maximum value for this profile field.
+      - `min` - The minimum value for this profile field.
+      - `step` - The increment step value for this profile field.
+      - `values` - The permitted values for this profile field.
   - `href` - (String) The URL for this virtual server instance profile.
   - `memory` - (List) Nested `memory` blocks have the following structure:
     
@@ -125,24 +128,38 @@ You can access the following attribute references after your data source is crea
     - `type` - (String) The type for this profile field.
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
+
+  - `network_interface_count` - (List)
+  
+      Nested scheme for `network_interface_count`:
+      - `max` - (Integer) The maximum number of vNICs supported by an instance using this profile.
+      - `min` - (Integer) The minimum number of vNICs supported by an instance using this profile.
+      - `type` - (String) The type for this profile field, Ex: range or dependent.
+  - `numa_count` - (Integer) The number of NUMA nodes for the Instance Profile.
   - `port_speed` - (List) Nested `port_speed` blocks have the following structure:
 
-    Nested scheme for `port_speed`:
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
+      Nested scheme for `port_speed`:
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
   - `vcpu_architecture` - (List) Nested `vcpu_architecture` blocks have the following structure:
 
-    Nested scheme for `vcpu_architecture`:
-    - `default` - (String) The default VCPU architecture for an instance with this profile.
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The VCPU architecture for an instance with this profile.
+      Nested scheme for `vcpu_architecture`:
+      - `default` - (String) The default VCPU architecture for an instance with this profile.
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The VCPU architecture for an instance with this profile.
   - `vcpu_count` - (List) Nested `vcpu_count` blocks have the following structure:
 
-    Nested scheme for `vcpu_count`:
-    - `default` - (String) The default value for this profile field.
-    - `max` - (String) The maximum value for this profile field.
-    - `min` - (String) The minimum value for this profile field.
-    - `step` - (String) The increment step value for this profile field.
+      Nested scheme for `vcpu_count`:
+      - `default` - (String) The default value for this profile field.
+      - `max` - (String) The maximum value for this profile field.
+      - `min` - (String) The minimum value for this profile field.
+      - `step` - (String) The increment step value for this profile field.
+      - `type` - (String) The type for this profile field.
+      - `value` - (String) The value for this profile field.
+      - `values` - (String) The permitted values for this profile field.
+  - `vcpu_manufacturer` - (List) Nested `vcpu_manufacturer` blocks have the following structure:
+
+    Nested scheme for `vcpu_manufacturer`:
+    - `default` - (String) The default VCPU manufacturer for an instance with this profile.
     - `type` - (String) The type for this profile field.
-    - `value` - (String) The value for this profile field.
-    - `values` - (String) The permitted values for this profile field.
+    - `value` - (String) The VCPU manufacturer for an instance with this profile.

@@ -50,6 +50,7 @@ Review the argument references that you can specify for your resource.
 - `location` - (Required, String) The name or ID of the Satellite location.
 - `kube_version` - (Optional, String) The Red Hart OpenShift Container Platform version.
 - `operating_system` - (Optional, String) Operating system of the default worker pool. Options are REDHAT_7_64, REDHAT_8_64, or RHCOS.
+- `entitlement` - (Optional, String) Entitlement reduces additional OCP Licence cost in OpenShift clusters. Use Cloud Pak with OCP Licence entitlement to create the OpenShift cluster. **Note** <ul><li> It is set only when the first time creation of the cluster, further modifications are not impacted. </li></ul> <ul><li> Set this argument to `cloud_pak` only if you use the cluster with a Cloud Pak that has an OpenShift entitlement.</li></ul>.
 - `zones` - (Optional, Array of Strings)  The name of the zones to create the default worker pool.
 - `worker_count` - (Optional, String) The number of worker nodes to create per zone in the default worker pool.
 - `enable_config_admin` - (Optional, Bool) User provided value to indicate opt-in agreement to SatCon admin agent.
@@ -57,6 +58,7 @@ Review the argument references that you can specify for your resource.
 - `default_worker_pool_labels` - (Optional, String) The labels on all the workers in the default worker pool.
 - `pull_secret` - (Optional, String) The Red Hat pull secret to create the OpenShift cluster.
 - `zone` - (Optional, List) The zone for the worker pool in a multi-zone cluster. 
+- `infrastructure_topology` - (Optional, String) Specify whether the cluster should run a single worker node or the default number of worker nodes. Only works with kube version 4.11 and newer. To create a single-node cluster, specify 'single-replica'. To create a default cluster with multiple worker nodes, specify 'highly-available'. The 'highly-available' option is applied by default. Available options: single-replica, highly-available (default: "highly-available")
 
    Nested scheme for `zone`:
     - `id` - The name of the zone.

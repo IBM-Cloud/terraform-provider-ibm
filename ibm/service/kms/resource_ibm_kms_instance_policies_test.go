@@ -100,6 +100,34 @@ func TestAccIBMKMSInstancePolicy_kcia_check(t *testing.T) {
 				Config: testAccCheckIBMKmsInstancePolicyKciaCheck(instanceName, enable),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.enabled", "true"),
+					// defaults below
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.create_root_key", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.create_standard_key", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.import_root_key", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.import_standard_key", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.enforce_token", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMKMSInstancePolicy_kcia_attributes_check(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	enable := true
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKmsInstancePolicyKciaWithAtttributesCheck(instanceName, enable),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.create_root_key", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.create_standard_key", "false"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.import_root_key", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.import_standard_key", "false"),
+					resource.TestCheckResourceAttr("ibm_kms_instance_policies.test", "key_create_import_access.0.enforce_token", "false"),
 				),
 			},
 		},
@@ -137,7 +165,7 @@ func TestAccIBMKMSInstancePolicy_invalid_interval_check(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMKmsInstancePolicyStandardConfigCheck(instanceName, rotation_interval, dual_auth_delete),
-				ExpectError: regexp.MustCompile("must contain a valid int value should be in range(1, 12)"),
+				ExpectError: regexp.MustCompile(`.*must contain a valid int value should be in range\(1, 12\).*`),
 			},
 		},
 	})
@@ -223,6 +251,7 @@ func testAccCheckIBMKmsInstancePolicyRotationCheck(instanceName string, rotation
 	  resource "ibm_kms_instance_policies" "test" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		  rotation {
+			enabled = true
 			interval_month = %d
 		  }
 	  }
@@ -259,6 +288,28 @@ func testAccCheckIBMKmsInstancePolicyKciaCheck(instanceName string, kcia bool) s
 		instance_id = ibm_resource_instance.kp_instance.guid
 		  key_create_import_access {
 			enabled = %t
+		  }
+	  }
+`, instanceName, kcia)
+}
+
+func testAccCheckIBMKmsInstancePolicyKciaWithAtttributesCheck(instanceName string, kcia bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "kp_instance" {
+		name     = "%s"
+		service  = "kms"
+		plan     = "tiered-pricing"
+		location = "us-south"
+	  }
+	  resource "ibm_kms_instance_policies" "test" {
+		instance_id = ibm_resource_instance.kp_instance.guid
+		  key_create_import_access {
+			enabled = %t
+			create_root_key     = true
+			create_standard_key = false
+			import_root_key     = true
+			import_standard_key = false
+			enforce_token       = false
 		  }
 	  }
 `, instanceName, kcia)

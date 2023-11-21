@@ -40,9 +40,12 @@ resource "ibm_cos_bucket" "smart-us-south" {
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
   storage_class        = "smart"
-  key_protect          = ibm_kms_key_with_policy_overrides.test.id
+  kms_key_crn          = ibm_kms_key_with_policy_overrides.test.id
 }
 ```
+  **Note:**
+  
+ `key_protect` attribute to associate a kms_key with a COS bucket has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
 
 ## Example usage to provision HPCS service and KMS key with policy details
 
@@ -99,7 +102,7 @@ Review the argument references that you can specify for your resource.
 
 - `endpoint_type` - (Optional, Forces new resource, String) The type of the public or private endpoint to be used for creating keys.
 - `encrypted_nonce` - (Optional, Forces new resource, String) The encrypted nonce value that verifies your request to import a key to Key Protect. This value must be encrypted by using the key that you want to import to the service. To retrieve a nonce, use the `ibmcloud kp import-token get` command. Then, encrypt the value by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
-- `expiration_date` - (Optional, Forces new resource, String)  Expiry date of the key material. The date format follows with RFC 3339. You can set an expiration date on any key on its creation. A key moves into the deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire. For example, `2018-12-01T23:20:50.52Z`.
+- `expiration_date` - (Optional, Forces new resource, String)  Expiry date of the key material. The date format follows with RFC 3339. You can set an expiration date on any key on its creation. A key moves into the deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire. For example, `2018-12-01T23:20:50Z`.
 - `force_delete` - (Optional, Bool) If set to **true**, Key Protect forces the deletion of a root or standard key, even if this key is still in use, such as to protect an IBM Cloud Object Storage bucket. Note that the key cannot be deleted if the protected cloud resource is set up with a retention policy. Successful deletion includes the removal of any registrations that are associated with the key. Default value is **false**. **Note** Before Terraform destroy if `force_delete` flag is introduced after provisioning keys, a Terraform apply must be done before Terraform destroy for `force_delete` flag to take effect.
 - `instance_id` - (Required, Forces new resource, String) The HPCS or key-protect instance ID.
 - `iv_value` - (Optional, Forces new resource, String)  Used with import tokens. The initialization vector (IV) that is generated when you encrypt a nonce. The IV value is required to decrypt the encrypted nonce value that you provide when you make a key import request to the service. To generate an IV, encrypt the nonce by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.

@@ -54,7 +54,12 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 							Computed:    true,
 							Description: "The VCPU architecture.",
 						},
-						"count": {
+						"manufacturer": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer.",
+						},
+						"count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The number of VCPUs assigned.",
@@ -245,6 +250,39 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 				Computed:    true,
 				Description: "The total amount of memory in gibibytes for this host.",
 			},
+			"numa": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The dedicated host NUMA configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"count": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The total number of NUMA nodes for this dedicated host",
+						},
+						"nodes": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The NUMA nodes for this dedicated host.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"available_vcpu": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The available VCPU for this NUMA node.",
+									},
+									"vcpu": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The total VCPU capacity for this NUMA node.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"profile": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -314,7 +352,12 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 							Computed:    true,
 							Description: "The VCPU architecture.",
 						},
-						"count": {
+						"manufacturer": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer.",
+						},
+						"count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The number of VCPUs assigned.",
@@ -420,7 +463,11 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 		if err = d.Set("name", dedicatedHost.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
 		}
-
+		if dedicatedHost.Numa != nil {
+			if err = d.Set("numa", dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHost.Numa)); err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error setting numa nodes: %s", err))
+			}
+		}
 		if dedicatedHost.Profile != nil {
 			err = d.Set("profile", dataSourceDedicatedHostFlattenProfile(*dedicatedHost.Profile))
 			if err != nil {
@@ -492,6 +539,10 @@ func dataSourceDedicatedHostAvailableVcpuToMap(availableVcpuItem vpcv1.Vcpu) (av
 
 	if availableVcpuItem.Architecture != nil {
 		availableVcpuMap["architecture"] = availableVcpuItem.Architecture
+	}
+	// Added AMD Support for the manufacturer.
+	if availableVcpuItem.Manufacturer != nil {
+		availableVcpuMap["manufacturer"] = availableVcpuItem.Manufacturer
 	}
 	if availableVcpuItem.Count != nil {
 		availableVcpuMap["count"] = availableVcpuItem.Count
@@ -589,6 +640,35 @@ func dataSourceDedicatedHostInstancesDeletedToMap(deletedItem vpcv1.InstanceRefe
 	return deletedMap
 }
 
+func dataSourceDedicatedHostFlattenNumaNodes(nodeItem vpcv1.DedicatedHostNuma) (numaNodes []map[string]interface{}) {
+	numaNodeMap := map[string]interface{}{}
+
+	if nodeItem.Count != nil {
+		numaNodeMap["count"] = *nodeItem.Count
+	}
+	if nodeItem.Nodes != nil {
+		nodesList := []map[string]interface{}{}
+		for _, nodeItem := range nodeItem.Nodes {
+			nodesList = append(nodesList, dataSourceDedicatedHostNodesToMap(nodeItem))
+		}
+		numaNodeMap["nodes"] = nodesList
+	}
+	numaNodes = append(numaNodes, numaNodeMap)
+	return numaNodes
+}
+
+func dataSourceDedicatedHostNodesToMap(nodes vpcv1.DedicatedHostNumaNode) (node map[string]interface{}) {
+	node = map[string]interface{}{}
+
+	if nodes.AvailableVcpu != nil {
+		node["available_vcpu"] = nodes.AvailableVcpu
+	}
+	if nodes.Vcpu != nil {
+		node["vcpu"] = nodes.Vcpu
+	}
+	return node
+}
+
 func dataSourceDedicatedHostFlattenProfile(result vpcv1.DedicatedHostProfileReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceDedicatedHostProfileToMap(result)
@@ -644,6 +724,10 @@ func dataSourceDedicatedHostVcpuToMap(vcpuItem vpcv1.Vcpu) (vcpuMap map[string]i
 
 	if vcpuItem.Architecture != nil {
 		vcpuMap["architecture"] = vcpuItem.Architecture
+	}
+	// Added AMD Support for the manufacturer.
+	if vcpuItem.Manufacturer != nil {
+		vcpuMap["manufacturer"] = vcpuItem.Manufacturer
 	}
 	if vcpuItem.Count != nil {
 		vcpuMap["count"] = vcpuItem.Count

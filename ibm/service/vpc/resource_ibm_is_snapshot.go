@@ -20,32 +20,35 @@ import (
 )
 
 const (
-	isSnapshotName             = "name"
-	isSnapshotResourceGroup    = "resource_group"
-	isSnapshotSourceVolume     = "source_volume"
-	isSnapshotSourceImage      = "source_image"
-	isSnapshotUserTags         = "tags"
-	isSnapshotAccessTags       = "access_tags"
-	isSnapshotCRN              = "crn"
-	isSnapshotHref             = "href"
-	isSnapshotEncryption       = "encryption"
-	isSnapshotEncryptionKey    = "encryption_key"
-	isSnapshotOperatingSystem  = "operating_system"
-	isSnapshotLCState          = "lifecycle_state"
-	isSnapshotMinCapacity      = "minimum_capacity"
-	isSnapshotResourceType     = "resource_type"
-	isSnapshotSize             = "size"
-	isSnapshotBootable         = "bootable"
-	isSnapshotDeleting         = "deleting"
-	isSnapshotDeleted          = "deleted"
-	isSnapshotAvailable        = "stable"
-	isSnapshotFailed           = "failed"
-	isSnapshotPending          = "pending"
-	isSnapshotSuspended        = "suspended"
-	isSnapshotUpdating         = "updating"
-	isSnapshotWaiting          = "waiting"
-	isSnapshotCapturedAt       = "captured_at"
-	isSnapshotBackupPolicyPlan = "backup_policy_plan"
+	isSnapshotName              = "name"
+	isSnapshotResourceGroup     = "resource_group"
+	isSnapshotSourceVolume      = "source_volume"
+	isSnapshotSourceImage       = "source_image"
+	isSnapshotSourceSnapshot    = "source_snapshot"
+	isSnapshotSourceSnapshotCRN = "source_snapshot_crn"
+	isSnapshotCopies            = "copies"
+	isSnapshotUserTags          = "tags"
+	isSnapshotAccessTags        = "access_tags"
+	isSnapshotCRN               = "crn"
+	isSnapshotHref              = "href"
+	isSnapshotEncryption        = "encryption"
+	isSnapshotEncryptionKey     = "encryption_key"
+	isSnapshotOperatingSystem   = "operating_system"
+	isSnapshotLCState           = "lifecycle_state"
+	isSnapshotMinCapacity       = "minimum_capacity"
+	isSnapshotResourceType      = "resource_type"
+	isSnapshotSize              = "size"
+	isSnapshotBootable          = "bootable"
+	isSnapshotDeleting          = "deleting"
+	isSnapshotDeleted           = "deleted"
+	isSnapshotAvailable         = "stable"
+	isSnapshotFailed            = "failed"
+	isSnapshotPending           = "pending"
+	isSnapshotSuspended         = "suspended"
+	isSnapshotUpdating          = "updating"
+	isSnapshotWaiting           = "waiting"
+	isSnapshotCapturedAt        = "captured_at"
+	isSnapshotBackupPolicyPlan  = "backup_policy_plan"
 )
 
 func ResourceIBMSnapshot() *schema.Resource {
@@ -83,6 +86,82 @@ func ResourceIBMSnapshot() *schema.Resource {
 				Description:  "Snapshot name",
 			},
 
+			isSnapshotSourceSnapshotCRN: {
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Optional:     true,
+				Description:  "Source Snapshot CRN",
+				ExactlyOneOf: []string{isSnapshotSourceSnapshotCRN, isSnapshotSourceVolume},
+			},
+
+			isSnapshotCopies: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The copies of this snapshot in other regions.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for the copied snapshot.",
+						},
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for the copied snapshot.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for the copied snapshot.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for the copied snapshot. The name is unique across all snapshots in the copied snapshot's native region.",
+						},
+						"remote": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource is remote to this region,and identifies the native region.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this region.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this region.",
+									},
+								},
+							},
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
+
 			isSnapshotResourceGroup: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -91,11 +170,81 @@ func ResourceIBMSnapshot() *schema.Resource {
 				Description: "Resource group info",
 			},
 
+			isSnapshotSourceSnapshot: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "If present, the source snapshot this snapshot was created from.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN of the source snapshot.",
+						},
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for the source snapshot.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for the source snapshot.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for the source snapshot. The name is unique across all snapshots in the source snapshot's native region.",
+						},
+						"remote": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource is remote to this region,and identifies the native region.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this region.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this region.",
+									},
+								},
+							},
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
+
 			isSnapshotSourceVolume: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Snapshot source volume",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				Description:  "Snapshot source volume",
+				ExactlyOneOf: []string{isSnapshotSourceSnapshotCRN, isSnapshotSourceVolume},
 			},
 
 			isSnapshotSourceImage: {
@@ -133,6 +282,7 @@ func ResourceIBMSnapshot() *schema.Resource {
 			},
 			isSnapshotEncryptionKey: {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "A reference to the root key used to wrap the data encryption key for the source volume.",
 			},
@@ -167,6 +317,14 @@ func ResourceIBMSnapshot() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The size of the snapshot",
+			},
+
+			isSnapshotClones: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Zones for creating the snapshot clone",
 			},
 
 			isSnapshotUserTags: {
@@ -264,22 +422,74 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
+	snapbyVolFlag := false
 	options := &vpcv1.CreateSnapshotOptions{}
+
 	snapshotprototypeoptions := &vpcv1.SnapshotPrototypeSnapshotBySourceVolume{}
-	if snapshotName, ok := d.GetOk(isSnapshotName); ok {
-		name := snapshotName.(string)
-		snapshotprototypeoptions.Name = &name
-	}
-	if sourceVolume, ok := d.GetOk(isSnapshotSourceVolume); ok {
+	snapshotprototypeoptionsbysourcesnapshot := &vpcv1.SnapshotPrototypeSnapshotBySourceSnapshot{}
+
+	// snapshot by source volume
+	if sourceVolume, oksv := d.GetOk(isSnapshotSourceVolume); oksv {
 		sv := sourceVolume.(string)
 		snapshotprototypeoptions.SourceVolume = &vpcv1.VolumeIdentity{
 			ID: &sv,
 		}
+		snapbyVolFlag = true
+
+		if snapshotName, ok := d.GetOk(isSnapshotName); ok {
+			name := snapshotName.(string)
+			snapshotprototypeoptions.Name = &name
+		}
+
+		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+			rg := grp.(string)
+			snapshotprototypeoptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+				ID: &rg,
+			}
+		}
+	} else if sourceSnapshot, okss := d.GetOk(isSnapshotSourceSnapshotCRN); okss {
+		ss := sourceSnapshot.(string)
+		snapshotprototypeoptionsbysourcesnapshot.SourceSnapshot = &vpcv1.SnapshotIdentityByCRN{
+			CRN: &ss,
+		}
+		snapbyVolFlag = false
+		if snapshotName, ok := d.GetOk(isSnapshotName); ok {
+			name := snapshotName.(string)
+			snapshotprototypeoptionsbysourcesnapshot.Name = &name
+		}
+
+		if encryptionKey, ok := d.GetOk(isSnapshotEncryptionKey); ok {
+			encryptionKeyString := encryptionKey.(string)
+			snapshotprototypeoptionsbysourcesnapshot.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+				CRN: &encryptionKeyString,
+			}
+		}
+
+		if grp, ok := d.GetOk(isVPCResourceGroup); ok {
+			rg := grp.(string)
+			snapshotprototypeoptionsbysourcesnapshot.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+				ID: &rg,
+			}
+		}
+
 	}
-	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
-		rg := grp.(string)
-		snapshotprototypeoptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
-			ID: &rg,
+	if clones, ok := d.GetOk(isSnapshotClones); ok {
+		cloneSet := clones.(*schema.Set)
+		if cloneSet.Len() != 0 {
+			cloneobjs := make([]vpcv1.SnapshotClonePrototype, cloneSet.Len())
+			for i, clone := range cloneSet.List() {
+				clonestr := clone.(string)
+				cloneobjs[i] = vpcv1.SnapshotClonePrototype{
+					Zone: &vpcv1.ZoneIdentity{
+						Name: &clonestr,
+					},
+				}
+			}
+			if snapbyVolFlag {
+				snapshotprototypeoptions.Clones = cloneobjs
+			} else {
+				snapshotprototypeoptionsbysourcesnapshot.Clones = cloneobjs
+			}
 		}
 	}
 
@@ -298,12 +508,21 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 				envTags = strings.Split(schematicTags, ",")
 				userTagsArray = append(userTagsArray, envTags...)
 			}
-			snapshotprototypeoptions.UserTags = userTagsArray
+			if snapbyVolFlag {
+				snapshotprototypeoptions.UserTags = userTagsArray
+			} else {
+				snapshotprototypeoptionsbysourcesnapshot.UserTags = userTagsArray
+			}
 		}
 	}
 
+	if snapbyVolFlag {
+		options.SnapshotPrototype = snapshotprototypeoptions
+	} else {
+		options.SnapshotPrototype = snapshotprototypeoptionsbysourcesnapshot
+	}
 	log.Printf("[DEBUG] Snapshot create")
-	options.SnapshotPrototype = snapshotprototypeoptions
+
 	snapshot, response, err := sess.CreateSnapshot(options)
 	if err != nil || snapshot == nil {
 		return fmt.Errorf("[ERROR] Error creating Snapshot %s\n%s", err, response)
@@ -323,7 +542,7 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *snapshot.CRN, "", isAccessTagType)
 		if err != nil {
 			log.Printf(
-				"Error on create of resource snapshot (%s) access tags: %s", d.Id(), err)
+				"[ERROR] Error on create of resource snapshot (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return resourceIBMISSnapshotRead(d, meta)
@@ -397,14 +616,45 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
 	d.Set(isSnapshotSize, *snapshot.Size)
 	d.Set(isSnapshotEncryption, *snapshot.Encryption)
+	if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
+		d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN)
+	}
 	d.Set(isSnapshotLCState, *snapshot.LifecycleState)
 	d.Set(isSnapshotResourceType, *snapshot.ResourceType)
 	d.Set(isSnapshotBootable, *snapshot.Bootable)
 	if snapshot.UserTags != nil {
 		if err = d.Set(isSnapshotUserTags, snapshot.UserTags); err != nil {
-			return fmt.Errorf("Error setting user tags: %s", err)
+			return fmt.Errorf("[ERROR] Error setting user tags: %s", err)
 		}
 	}
+	sourceSnapshotList := []map[string]interface{}{}
+	if snapshot.SourceSnapshot != nil {
+		sourceSnapshot := map[string]interface{}{}
+		sourceSnapshot["crn"] = snapshot.SourceSnapshot.CRN
+		sourceSnapshot["href"] = *snapshot.SourceSnapshot.Href
+		if snapshot.SourceSnapshot.Deleted != nil {
+			snapshotSourceSnapshotDeletedMap := map[string]interface{}{}
+			snapshotSourceSnapshotDeletedMap["more_info"] = *snapshot.SourceSnapshot.Deleted.MoreInfo
+			sourceSnapshot["deleted"] = []map[string]interface{}{snapshotSourceSnapshotDeletedMap}
+		}
+		sourceSnapshot["id"] = *snapshot.SourceSnapshot.ID
+		sourceSnapshot["name"] = *snapshot.SourceSnapshot.Name
+		sourceSnapshot["resource_type"] = *snapshot.SourceSnapshot.ResourceType
+		sourceSnapshotList = append(sourceSnapshotList, sourceSnapshot)
+	}
+	d.Set(isSnapshotSourceSnapshot, sourceSnapshotList)
+	snapshotCopies := []map[string]interface{}{}
+	if snapshot.Copies != nil {
+		for _, copiesItem := range snapshot.Copies {
+			copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error fetching snapshot copies: %s", err)
+			}
+			snapshotCopies = append(snapshotCopies, copiesMap)
+		}
+		d.Set(isSnapshotCopies, snapshotCopies)
+	}
+
 	if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 		d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
 	}
@@ -419,6 +669,17 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 		d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
 	}
+	var clones []string
+	clones = make([]string, 0)
+	if snapshot.Clones != nil {
+		for _, clone := range snapshot.Clones {
+			if clone.Zone != nil {
+				clones = append(clones, *clone.Zone.Name)
+			}
+		}
+	}
+	d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
+
 	backupPolicyPlanList := []map[string]interface{}{}
 	if snapshot.BackupPolicyPlan != nil {
 		backupPolicyPlan := map[string]interface{}{}
@@ -437,7 +698,7 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshot.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(
-			"Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
+			"[ERROR] Error on get of resource snapshot (%s) access tags: %s", d.Id(), err)
 	}
 	d.Set(isSnapshotAccessTags, accesstags)
 	return nil
@@ -475,7 +736,7 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error getting Snapshot : %s\n%s", err, response)
+		return fmt.Errorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
 	}
 	eTag := response.Headers.Get("ETag")
 
@@ -506,12 +767,12 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 				snapshotPatchModel.UserTags = userTagsArray
 				snapshotPatch, err := snapshotPatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("Error calling asPatch for SnapshotPatch: %s", err)
+					return fmt.Errorf("[ERROR] Error calling asPatch for SnapshotPatch: %s", err)
 				}
 				updateSnapshotOptions.SnapshotPatch = snapshotPatch
 				_, response, err := sess.UpdateSnapshot(updateSnapshotOptions)
 				if err != nil {
-					return fmt.Errorf("Error updating Snapshot : %s\n%s", err, response)
+					return fmt.Errorf("[ERROR] Error updating Snapshot : %s\n%s", err, response)
 				}
 				_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 				if err != nil {
@@ -541,6 +802,49 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 		if err != nil {
 			return err
 		}
+
+	}
+	if d.HasChange(isSnapshotClones) {
+		ovs, nvs := d.GetChange(isSnapshotClones)
+		ov := ovs.(*schema.Set)
+		nv := nvs.(*schema.Set)
+
+		remove := flex.ExpandStringList(ov.Difference(nv).List())
+		add := flex.ExpandStringList(nv.Difference(ov).List())
+
+		if len(add) > 0 {
+			for i := range add {
+				createCloneOptions := &vpcv1.CreateSnapshotCloneOptions{
+					ID:       &id,
+					ZoneName: &add[i],
+				}
+				_, _, err := sess.CreateSnapshotClone(createCloneOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while creating snapshot (%s) clone(%s) : %q", d.Id(), add[i], err)
+				}
+				_, err = isWaitForCloneAvailable(sess, d, id, add[i])
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+		if len(remove) > 0 {
+			for i := range remove {
+				delCloneOptions := &vpcv1.DeleteSnapshotCloneOptions{
+					ID:       &id,
+					ZoneName: &remove[i],
+				}
+				_, err := sess.DeleteSnapshotClone(delCloneOptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while removing Snapshot (%s) clone (%s) : %q", d.Id(), remove[i], err)
+				}
+				_, err = isWaitForCloneDeleted(sess, d, d.Id(), remove[i])
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	if d.HasChange(isSnapshotAccessTags) {
@@ -548,7 +852,7 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, d.Get(isSnapshotCRN).(string), "", isAccessTagType)
 		if err != nil {
 			log.Printf(
-				"Error on update of resource snapshot (%s) access tags: %s", d.Id(), err)
+				"[ERROR] Error on update of resource snapshot (%s) access tags: %s", d.Id(), err)
 		}
 	}
 	return nil
@@ -586,6 +890,73 @@ func isSnapshotUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRef
 
 		return snapshot, isSnapshotUpdating, nil
 	}
+}
+func isWaitForCloneAvailable(sess *vpcv1.VpcV1, d *schema.ResourceData, id, zoneName string) (interface{}, error) {
+	log.Printf("Waiting for Snapshot (%s) clone (%s) to be available.", id, zoneName)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"false"},
+		Target:     []string{"true", "deleted"},
+		Refresh:    isSnapshotCloneRefreshFunc(sess, id, zoneName),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+
+func isSnapshotCloneRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getSnapshotCloneOptions := &vpcv1.GetSnapshotCloneOptions{
+			ID:       &id,
+			ZoneName: &zoneName,
+		}
+		clone, response, err := sess.GetSnapshotClone(getSnapshotCloneOptions)
+		if err != nil {
+			if response.StatusCode == 404 {
+				return nil, "deleted", nil
+			}
+			return nil, "deleted", fmt.Errorf("[ERROR] Error getting Snapshot clone : %s\n%s", err, response)
+		}
+
+		if *clone.Available == true {
+			return clone, "true", nil
+		}
+
+		return clone, "false", nil
+	}
+}
+
+func isSnapshotCloneDeleteRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getSnapshotCloneOptions := &vpcv1.GetSnapshotCloneOptions{
+			ID:       &id,
+			ZoneName: &zoneName,
+		}
+		clone, response, err := sess.GetSnapshotClone(getSnapshotCloneOptions)
+		if err != nil {
+			if response.StatusCode == 404 {
+				return clone, "deleted", nil
+			}
+			return clone, "false", fmt.Errorf("[ERROR] Error getting Snapshot clone : %s\n%s", err, response)
+		}
+
+		return clone, "true", nil
+	}
+}
+
+func isWaitForCloneDeleted(sess *vpcv1.VpcV1, d *schema.ResourceData, id, zoneName string) (interface{}, error) {
+	log.Printf("Waiting for Snapshot (%s) clone (%s) to be deleted.", id, zoneName)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"true"},
+		Target:     []string{"false", "deleted"},
+		Refresh:    isSnapshotCloneDeleteRefreshFunc(sess, id, zoneName),
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
 }
 
 func resourceIBMISSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
