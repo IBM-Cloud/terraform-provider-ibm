@@ -46,13 +46,13 @@ func testDSCheckIBMISReservationConfig() string {
 				term = "one_year"
 			  }
 			  profile {
-				name = "ba2-2x8"
+				name = "cx2-2x4"
 				resource_type = "instance_profile"
 			  }
-			  zone = "us-east-3"
+			  zone = "us-south-1"
 			  name = "reservation-name"
 		}
 		data "ibm_is_reservation" "ds_res" {
-		    name = ibm_is_reservation.res.id
+		    identifier = ibm_is_reservation.res.id
 		}`)
 }

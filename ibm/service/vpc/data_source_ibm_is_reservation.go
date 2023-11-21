@@ -236,7 +236,8 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 		}
 		reservation = reservationInfo
 
-	} else if v, ok := d.GetOk("name"); ok {
+	}
+	if v, ok := d.GetOk("name"); ok {
 
 		name := v.(string)
 		start := ""

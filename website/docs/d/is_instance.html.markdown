@@ -238,18 +238,18 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `reservation_affinity`:
   - `policy` - (String) The reservation affinity policy to use for this virtual server instance.
-   - `pool` - (List) The pool of reservations available for use by this virtual server instance.
+  - `pool` - (List) The pool of reservations available for use by this virtual server instance.
         
-        Nested `pool` blocks have the following structure: 
-        - `crn` - (String) The CRN for this reservation.
-        - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    Nested `pool` blocks have the following structure: 
+    - `crn` - (String) The CRN for this reservation.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
 
-            Nested `deleted` blocks have the following structure:
-            - `more_info` - (String) Link to documentation about deleted resources. 
-        - `href` - (String) The URL for this reservation.
-        - `id` - (String) The unique identifier for this reservation.
-        - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
-        - `resource_type` - (string) The resource type.
+      Nested `deleted` blocks have the following structure:
+      - `more_info` - (String) Link to documentation about deleted resources. 
+    - `href` - (String) The URL for this reservation.
+    - `id` - (String) The unique identifier for this reservation.
+    - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+    - `resource_type` - (string) The resource type.
 - `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that you can use to see details for your instance.  
 - `resource_group` - (String) The resource group id, where the instance was created.
 - `status` - (String) The status of the instance.

@@ -130,22 +130,6 @@ resource "ibm_is_instance" "example1" {
 ### Sample for creating an instance in a VPC with reservation
 
 ```terraform
-resource "ibm_is_vpc" "example" {
-  name = "example-vpc"
-}
-
-resource "ibm_is_subnet" "example" {
-  name            = "example-subnet"
-  vpc             = ibm_is_vpc.example.id
-  zone            = "us-south-1"
-  ipv4_cidr_block = "10.240.0.0/24"
-}
-
-resource "ibm_is_ssh_key" "example" {
-  name       = "example-ssh"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
-}
-
 resource "ibm_is_reservation" "example" {
   capacity {
     total = 5
@@ -199,11 +183,6 @@ resource "ibm_is_instance" "example" {
     update = "15m"
     delete = "15m"
   }
-}
-// primary_ipv4_address deprecation 
-output "primary_ipv4_address" {
-  # value = ibm_is_instance.example.primary_network_interface.0.primary_ipv4_address // will be deprecated in future
-  value = ibm_is_instance.example.primary_network_interface.0.primary_ip.0.address // use this instead 
 }
 
 ```
@@ -606,8 +585,9 @@ Review the argument references that you can specify for your resource.
 - `reservation_affinity` - (Optional, List) The reservation affinity for the instance
   Nested scheme for `reservation_affinity`:
   - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
-   ->**policy** 
-      </br>&#x2022; disabled: Reservations will not be used
+
+    ->**policy** 
+			&#x2022; disabled: Reservations will not be used
       </br>&#x2022; manual: Reservations in pool will be available for use
   - `pool` - (Optional, String) The pool of reservations available for use by this virtual server instance. Specified reservations must have a status of active, and have the same profile and zone as this virtual server instance. The pool must be empty if policy is disabled, and must not be empty if policy is manual.
     Nested scheme for `pool`:

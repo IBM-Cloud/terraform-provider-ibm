@@ -17,7 +17,7 @@ VPC infrastructure services are a regional specific based endpoint, by default t
 
 ```terraform
 provider "ibm" {
-  region = "eu-gb"
+  region = "us-south"
 }
 ```
 

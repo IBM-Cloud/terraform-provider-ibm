@@ -107,9 +107,10 @@ You can access the following attribute references after your data source is crea
 - `reservation_affinity` - (Optional, List) The reservation affinity for the instance
   Nested scheme for `reservation_affinity`:
   - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
+
     ->**policy** 
-      </br>&#x2022; disabled: Reservations will not be used
-      </br>&#x2022; manual: Reservations in pool will be available for use
+	&#x2022; disabled: Reservations will not be used
+    </br>&#x2022; manual: Reservations in pool will be available for use
   - `pool` - (string) The unique identifier for this reservation
 - `resource_group` - (String) The resource group ID.	
 - `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes

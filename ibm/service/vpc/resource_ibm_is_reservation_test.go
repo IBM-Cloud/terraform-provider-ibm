@@ -20,7 +20,7 @@ import (
 func TestAccIBMISReservation_basic(t *testing.T) {
 	var reservation string
 	name := fmt.Sprintf("tfres-name-%d", acctest.RandIntRange(10, 100))
-	zone := "us-east-3"
+	zone := "us-south-1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -102,7 +102,7 @@ func testAccCheckIBMISReservationConfig(name, zone string) string {
 			term = "one_year"
 		  }
 		profile {
-			name = "ba2-2x8"
+			name = "cx2-2x4"
 			resource_type = "instance_profile"
 		  }
 		name = "%s"

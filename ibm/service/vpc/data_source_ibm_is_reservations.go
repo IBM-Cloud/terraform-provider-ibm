@@ -242,7 +242,7 @@ func dataSourceIBMIsReservationsRead(context context.Context, d *schema.Resource
 	resourceGroupId := d.Get("resource_group").(string)
 
 	start := ""
-	matchReservations := []vpcv1.Reservation{}
+	reservations := []vpcv1.Reservation{}
 
 	var name string
 	if v, ok := d.GetOk("name"); ok {
@@ -272,7 +272,7 @@ func dataSourceIBMIsReservationsRead(context context.Context, d *schema.Resource
 			break
 		}
 		start = flex.GetNext(reservationCollection.Next)
-		matchReservations = append(matchReservations, reservationCollection.Reservations...)
+		reservations = append(reservations, reservationCollection.Reservations...)
 		if start == "" {
 			break
 		}
@@ -280,8 +280,8 @@ func dataSourceIBMIsReservationsRead(context context.Context, d *schema.Resource
 
 	d.SetId(dataSourceIBMIsReservationsID(d))
 
-	if matchReservations != nil {
-		err = d.Set("reservations", dataSourceReservationCollectionFlattenReservations(matchReservations))
+	if reservations != nil {
+		err = d.Set("reservations", dataSourceReservationCollectionFlattenReservations(reservations))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting reservations %s", err))
 		}

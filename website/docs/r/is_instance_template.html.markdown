@@ -272,8 +272,9 @@ Review the argument references that you can specify for your resource.
 - `reservation_affinity` - (Optional, List) The reservation affinity for the instance
   Nested scheme for `reservation_affinity`:
   - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
-   ->**policy** 
-      </br>&#x2022; disabled: Reservations will not be used
+
+     ->**policy** 
+			&#x2022; disabled: Reservations will not be used
       </br>&#x2022; manual: Reservations in pool will be available for use
   - `pool` - (Optional, String) The pool of reservations available for use by this virtual server instance. Specified reservations must have a status of active, and have the same profile and zone as this virtual server instance. The pool must be empty if policy is disabled, and must not be empty if policy is manual.
     Nested scheme for `pool`:

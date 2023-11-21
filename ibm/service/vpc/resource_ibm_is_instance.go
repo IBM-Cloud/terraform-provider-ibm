@@ -3779,22 +3779,26 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			var resAffinityPatch = &vpcv1.InstanceReservationAffinityPatch{}
 			policy, ok := resAff["policy"]
 			policyStr := policy.(string)
+			idStr := ""
 			if policyStr != "" && ok {
 				resAffinityPatch.Policy = &policyStr
 			}
-			poolIntf, okPool := resAff[isReservationAffinityPool]
-			if okPool {
-				pool := poolIntf.([]interface{})[0].(map[string]interface{})
-				id, okId := pool["id"]
-				if okId {
-					idStr, ok := id.(string)
-					if idStr != "" && ok {
-						var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
-						resAffPool[0] = &vpcv1.ReservationIdentity{
-							ID: &idStr,
+			if d.HasChange(resPool) {
+				poolIntf, okPool := resAff[isReservationAffinityPool]
+				if okPool {
+					pool := poolIntf.([]interface{})[0].(map[string]interface{})
+					id, okId := pool["id"]
+					if okId {
+						idStr, ok = id.(string)
+						if idStr != "" && ok {
+							var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+							resAffPool[0] = &vpcv1.ReservationIdentity{
+								ID: &idStr,
+							}
+							resAffinityPatch.Pool = resAffPool
 						}
-						resAffinityPatch.Pool = resAffPool
 					}
+
 				}
 			}
 
@@ -3806,7 +3810,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				return fmt.Errorf("[ERROR] Error calling asPatch with reservation affinity: %s", err)
 			}
 			//Detaching the reservation from the reserved instance
-			if policyStr == "disabled" {
+			if policyStr == "disabled" && idStr == "" {
 				resAffMap := mpatch["reservation_affinity"].(map[string]interface{})
 				resAffMap["pool"] = nil
 				mpatch["reservation_affinity"] = resAffMap
