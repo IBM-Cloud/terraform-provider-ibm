@@ -49,7 +49,7 @@ func testAccCheckIBMDatabaseDataSourceConfig3(name string) string {
 		tags              = ["one:two"]
 	}
 
-				`, name, acc.IcdDbRegion)
+				`, name, acc.Region())
 }
 
 func testAccCheckIBMDatabasePitrDataSourceConfigBasic(name string) string {

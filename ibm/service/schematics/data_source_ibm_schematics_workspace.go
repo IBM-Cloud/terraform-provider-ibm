@@ -300,6 +300,11 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Description: "A list of input variables that are associated with the workspace.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the variable.",
+						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -323,7 +328,7 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 							Computed:    true,
 							Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 						},
-						"default_value": &schema.Schema{
+						"default": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Default value for the variable only if the override value is not specified.",
@@ -915,11 +920,7 @@ func dataSourceWorkspaceResponseTemplateDataToMap(templateDataItem schematicsv1.
 		templateDataMap["values"] = templateDataItem.Values
 	}
 	if templateDataItem.ValuesMetadata != nil {
-		valuesMetadata := []map[string]interface{}{}
-		for _, valuesMetadataItem := range templateDataItem.ValuesMetadata {
-			valuesMetadata = append(valuesMetadata, valuesMetadataItem)
-		}
-		templateDataMap["values_metadata"] = valuesMetadata
+		templateDataMap["values_metadata"] = templateDataItem.ValuesMetadata
 	}
 	if templateDataItem.ValuesURL != nil {
 		templateDataMap["values_url"] = templateDataItem.ValuesURL
