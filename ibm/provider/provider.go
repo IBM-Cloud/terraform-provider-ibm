@@ -38,6 +38,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iampolicy"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
@@ -743,6 +744,9 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
+			// Logs Router
+			"ibm_logs_router_tenant": logsrouter.DataSourceIbmLogsRouterTenant(),
+
 			// Security and Complaince Center(soon to be deprecated)
 			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
 			"ibm_scc_account_locations":             scc.DataSourceIBMSccAccountLocations(),
@@ -1276,6 +1280,9 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
 			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
 
+			// Logs Router
+			"ibm_logs_router_tenant": logsrouter.ResourceIbmLogsRouterTenant(),
+
 			// Security and Compliance Center(soon to be deprecated)
 			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
 			"ibm_scc_rule_attachment":     scc.ResourceIBMSccRuleAttachment(),
@@ -1540,6 +1547,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_metrics_router_target":               metricsrouter.ResourceIBMMetricsRouterTargetValidator(),
 				"ibm_metrics_router_route":                metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
 				"ibm_metrics_router_settings":             metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
+				"ibm_logs_router_tenant":                  logsrouter.ResourceIbmLogsRouterTenantValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
 				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
