@@ -1427,7 +1427,13 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		users := expandUsers(userList.(*schema.Set).List())
 		for _, user := range users {
-			err := userUpdateOrCreate(user, instanceID, meta, d)
+			// Update User, Create if Not Found
+			err := user.Update(instanceID, d, meta)
+
+			if err != nil {
+				err = user.Create(instanceID, d, meta)
+			}
+
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -1472,11 +1478,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		service := d.Get("service").(string)
 		if service != "databases-for-postgresql" {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
-		}
-
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 		}
 
 		_, logicalReplicationList := d.GetChange("logical_replication_slot")
@@ -1977,40 +1978,29 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		userChanges := expandUserChanges(oldUsers.(*schema.Set).List(), newUsers.(*schema.Set).List())
 
 		for _, change := range userChanges {
-			// Delete Old User
+
+			// Delete User
 			if change.isDelete() {
-				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteDatabaseUserOptions{
-					ID:       &instanceID,
-					UserType: core.StringPtr(change.Old.Type),
-					Username: core.StringPtr(change.Old.Username),
-				}
-
-				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteDatabaseUser(deleteDatabaseUserOptions)
+				// Delete Old User
+				err = change.Old.Delete(instanceID, d, meta)
 
 				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Username, err, response))
-
+					return diag.FromErr(err)
 				}
 
-				taskID := *deleteDatabaseUserResponse.Task.ID
-				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+				// Create User
+			} else if change.isCreate() || change.isUpdate() {
+				// Update User, Create if Not Found
+				err = change.New.Update(instanceID, d, meta)
+
+				// User does not exist, create user
+				if err != nil {
+					err = change.New.Create(instanceID, d, meta)
+				}
 
 				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) user (%s) delete task to complete: %s", icdId, *deleteDatabaseUserOptions.Username, err))
+					return diag.FromErr(err)
 				}
-
-				continue
-			}
-
-			if !change.isUpdate() {
-				continue
-			}
-
-			err := userUpdateOrCreate(change.New, instanceID, meta, d)
-			if err != nil {
-				return diag.FromErr(err)
 			}
 		}
 	}
@@ -2073,24 +2063,24 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		if len(remove) > 0 {
 			for _, entry := range remove {
 				newEntry := entry.(map[string]interface{})
-				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteLogicalReplicationSlotOptions{
+				deleteLogicalReplicationSlotOptions := &clouddatabasesv5.DeleteLogicalReplicationSlotOptions{
 					ID:   &instanceID,
 					Name: core.StringPtr(newEntry["name"].(string)),
 				}
 
-				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteLogicalReplicationSlot(deleteDatabaseUserOptions)
+				deleteLogicalReplicationSlotResponse, response, err := cloudDatabasesClient.DeleteLogicalReplicationSlot(deleteLogicalReplicationSlotOptions)
 
 				if err != nil {
 					return diag.FromErr(fmt.Errorf(
-						"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Name, err, response))
+						"[ERROR] DeleteLogicalReplicationSlot (%s) failed %s\n%s", *deleteLogicalReplicationSlotOptions.Name, err, response))
 				}
 
-				taskID := *deleteDatabaseUserResponse.Task.ID
+				taskID := *deleteLogicalReplicationSlotResponse.Task.ID
 				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
 				if err != nil {
 					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteDatabaseUserOptions.Name, err))
+						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteLogicalReplicationSlotOptions.Name, err))
 				}
 			}
 		}
@@ -2350,7 +2340,10 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 	delayDuration := 5 * time.Second
 
 	timeout := time.After(t)
-	delay := time.Tick(delayDuration)
+	ticker := time.NewTicker(delayDuration)
+	delay := ticker.C
+	defer ticker.Stop()
+
 	getTaskOptions := &clouddatabasesv5.GetTaskOptions{
 		ID: &taskId,
 	}
@@ -2697,81 +2690,6 @@ func expandGroups(_groups []interface{}) []*Group {
 	return groups
 }
 
-// Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
-func userUpdateOrCreate(user *DatabaseUser, instanceID string, meta interface{}, d *schema.ResourceData) (err error) {
-	cloudDatabasesClient, _ := meta.(conns.ClientSession).CloudDatabasesV5()
-
-	var createUser = false
-
-	// Check if updating user is supported
-	if user.isUpdatable() {
-		// Attempt to update user password
-		passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
-			Password: core.StringPtr(user.Password),
-		}
-
-		changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
-			ID:       &instanceID,
-			UserType: core.StringPtr(user.Type),
-			Username: core.StringPtr(user.Username),
-			User:     passwordSettingUser,
-		}
-
-		changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
-
-		// user was found but an error occurs while triggering task
-		if response.StatusCode != 404 && err != nil {
-			return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
-		}
-
-		if response.StatusCode == 404 {
-			// User was not found, and must be recreated
-			createUser = true
-		} else {
-			// when user_password api can't find a database user, its task fails
-			taskID := *changeUserPasswordResponse.Task.ID
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-			if err != nil {
-				log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
-			}
-		}
-
-		// No user found, or Update not supported
-		if createUser {
-			//Attempt to create user
-			userEntry := &clouddatabasesv5.User{
-				Username: core.StringPtr(user.Username),
-				Password: core.StringPtr(user.Password),
-			}
-
-			// User Role only for ops_manager user type
-			if user.Type == "ops_manager" && user.Role != "" {
-				userEntry.Role = core.StringPtr(user.Role)
-			}
-
-			createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-				ID:       &instanceID,
-				UserType: core.StringPtr(user.Type),
-				User:     userEntry,
-			}
-
-			createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response)
-			}
-
-			taskID := *createDatabaseUserResponse.Task.ID
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return fmt.Errorf(
-					"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err)
-			}
-		}
-	}
-	return nil
-}
-
 func validateGroupScaling(groupId string, resourceName string, value int, resource *GroupResource, nodeCount int) error {
 	if nodeCount == 0 {
 		nodeCount = 1
@@ -2965,6 +2883,114 @@ func (c *userChange) isUpdate() bool {
 
 func (u *DatabaseUser) ID() (id string) {
 	return fmt.Sprintf("%s-%s", u.Type, u.Username)
+}
+
+func (u *DatabaseUser) Create(instanceID string, d *schema.ResourceData, meta interface{}) (err error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %w", err)
+	}
+
+	//Attempt to create user
+	userEntry := &clouddatabasesv5.User{
+		Username: core.StringPtr(u.Username),
+		Password: core.StringPtr(u.Password),
+	}
+
+	// User Role only for ops_manager user type
+	if u.Type == "ops_manager" && u.Role != "" {
+		userEntry.Role = core.StringPtr(u.Role)
+	}
+
+	createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
+		ID:       &instanceID,
+		UserType: core.StringPtr(u.Type),
+		User:     userEntry,
+	}
+
+	createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %w\n%s", *userEntry.Username, err, response)
+	}
+
+	taskID := *createDatabaseUserResponse.Task.ID
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	log.Printf("[WARN] Task Complete (%s) error: %s", taskID, err)
+
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %w", instanceID, *userEntry.Username, err)
+	}
+
+	return nil
+}
+
+func (u *DatabaseUser) Update(instanceID string, d *schema.ResourceData, meta interface{}) (err error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
+	// Attempt to update user password
+	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
+		Password: core.StringPtr(u.Password),
+	}
+
+	changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
+		ID:       &instanceID,
+		UserType: core.StringPtr(u.Type),
+		Username: core.StringPtr(u.Username),
+		User:     passwordSettingUser,
+	}
+
+	changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
+
+	// user was found but an error occurs while triggering task
+	if err != nil || (response.StatusCode < 200 || response.StatusCode >= 300) {
+		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %w\n%s", *changeUserPasswordOptions.Username, err, response)
+	}
+
+	taskID := *changeUserPasswordResponse.Task.ID
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %w", instanceID, *changeUserPasswordOptions.Username, err)
+	}
+
+	return nil
+}
+
+func (u *DatabaseUser) Delete(instanceID string, d *schema.ResourceData, meta interface{}) (err error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
+	deleteDatabaseUserOptions := &clouddatabasesv5.DeleteDatabaseUserOptions{
+		ID:       &instanceID,
+		UserType: core.StringPtr(u.Type),
+		Username: core.StringPtr(u.Username),
+	}
+
+	deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteDatabaseUser(deleteDatabaseUserOptions)
+
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Username, err, response)
+
+	}
+
+	taskID := *deleteDatabaseUserResponse.Task.ID
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] Error waiting for database (%s) user (%s) delete task to complete: %s", instanceID, *deleteDatabaseUserOptions.Username, err)
+	}
+
+	return nil
 }
 
 func (u *DatabaseUser) isUpdatable() bool {
