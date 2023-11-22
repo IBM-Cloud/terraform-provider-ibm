@@ -49,7 +49,7 @@ resource "ibm_is_vpc_routing_table" "is_vpc_routing_table_instance" {
   route_direct_link_ingress     = true
   route_transit_gateway_ingress = false
   route_vpc_zone_ingress        = false
-  advertise_routes_to           = transit_gateway
+  advertise_routes_to           = ["direct_link", "transit_gateway"]
 
 }
 ```
