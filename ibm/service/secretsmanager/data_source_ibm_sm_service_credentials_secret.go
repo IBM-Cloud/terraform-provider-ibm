@@ -592,6 +592,9 @@ func dataSourceIbmSmServiceCredentialsSecretSourceServiceToMap(sourceService *se
 			parametersMap[k] = fmt.Sprint(v)
 		}
 		if sourceService.Parameters.ServiceidCrn != nil {
+			if len(parametersMap) == 0 {
+				parametersMap = make(map[string]interface{})
+			}
 			parametersMap["serviceid_crn"] = sourceService.Parameters.ServiceidCrn
 		}
 		mainModelMap["parameters"] = parametersMap
