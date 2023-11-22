@@ -2916,8 +2916,6 @@ func (u *DatabaseUser) Create(instanceID string, d *schema.ResourceData, meta in
 	taskID := *createDatabaseUserResponse.Task.ID
 	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
-	log.Printf("[WARN] Task Complete (%s) error: %s", taskID, err)
-
 	if err != nil {
 		return fmt.Errorf(
 			"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %w", instanceID, *userEntry.Username, err)
@@ -3020,7 +3018,6 @@ func (u *DatabaseUser) Validate() error {
 
 	specialCharPattern = bs.String()
 
-	log.Printf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern)
 	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern))
 	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^(?:%s)", specialCharPattern))
 	var containsLetter = regexp.MustCompile("[a-zA-Z]")
