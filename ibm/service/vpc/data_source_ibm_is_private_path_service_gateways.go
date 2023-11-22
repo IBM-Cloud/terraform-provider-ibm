@@ -327,8 +327,8 @@ func dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayToMap(mod
 	if model.Published != nil {
 		modelMap["published"] = *model.Published
 	}
-	if model.Region != nil {
-		regionMap, err := dataSourceIBMIsPrivatePathServiceGatewaysRegionReferenceToMap(model.Region)
+	if model.Remote != nil && model.Remote.Region != nil {
+		regionMap, err := dataSourceIBMIsPrivatePathServiceGatewaysRegionReferenceToMap(model.Remote.Region)
 		if err != nil {
 			return modelMap, err
 		}

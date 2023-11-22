@@ -46,7 +46,7 @@ func resourceIBMIsPrivatePathServiceGatewayRevokeAccountCreate(context context.C
 		return diag.FromErr(err)
 	}
 
-	revokePrivatePathServiceGatewayOptions := &vpcv1.RevokePrivatePathServiceGatewayOptions{}
+	revokePrivatePathServiceGatewayOptions := &vpcv1.RevokeAccountForPrivatePathServiceGatewayOptions{}
 
 	revokePrivatePathServiceGatewayOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway").(string))
 
@@ -56,10 +56,10 @@ func resourceIBMIsPrivatePathServiceGatewayRevokeAccountCreate(context context.C
 	}
 	revokePrivatePathServiceGatewayOptions.SetAccount(account)
 
-	response, err := vpcClient.RevokePrivatePathServiceGatewayWithContext(context, revokePrivatePathServiceGatewayOptions)
+	response, err := vpcClient.RevokeAccountForPrivatePathServiceGatewayWithContext(context, revokePrivatePathServiceGatewayOptions)
 	if err != nil {
-		log.Printf("[DEBUG] RevokePrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("RevokePrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] RevokeAccountForPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("RevokeAccountForPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*revokePrivatePathServiceGatewayOptions.PrivatePathServiceGatewayID)

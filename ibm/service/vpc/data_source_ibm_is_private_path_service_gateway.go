@@ -318,8 +318,8 @@ func dataSourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sc
 	}
 
 	region := []map[string]interface{}{}
-	if privatePathServiceGateway.Region != nil {
-		modelMap, err := dataSourceIBMIsPrivatePathServiceGatewayRegionReferenceToMap(privatePathServiceGateway.Region)
+	if privatePathServiceGateway.Remote != nil && privatePathServiceGateway.Remote.Region != nil {
+		modelMap, err := dataSourceIBMIsPrivatePathServiceGatewayRegionReferenceToMap(privatePathServiceGateway.Remote.Region)
 		if err != nil {
 			return diag.FromErr(err)
 		}
