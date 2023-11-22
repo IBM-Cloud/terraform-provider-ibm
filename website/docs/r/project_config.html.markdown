@@ -38,7 +38,7 @@ resource "ibm_project_config" "project_config_instance" {
 
 You can specify the following arguments for this resource.
 
-* `definition` - (Required, List) The type and output of a project configuration.
+* `definition` - (Required, List) The name and description of a project configuration.
 Nested schema for **definition**:
 	* `authorizations` - (Optional, List) The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.
 	Nested schema for **authorizations**:
@@ -66,14 +66,12 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `inputs` - (Optional, List) The input variables for configuration definition and environment.
 	Nested schema for **inputs**:
-	* `locator_id` - (Required, Forces new resource, String) A unique concanctenation of catalogID.versionID that identifies the DA in catalog.
+	* `locator_id` - (Required, Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (Required, String) The configuration name. It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `settings` - (Optional, List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
 	Nested schema for **settings**:
-	* `type` - (Computed, String) The type of a project configuration manual property.
-	  * Constraints: Allowable values are: `terraform_template`, `schematics_blueprint`.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `schematics` - (Optional, List) A schematics workspace associated to a project configuration, with scripts.

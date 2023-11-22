@@ -35,7 +35,7 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the project_config.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 
-* `definition` - (List) The type and output of a project configuration.
+* `definition` - (List) The name and description of a project configuration.
 Nested schema for **definition**:
 	* `authorizations` - (List) The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.
 	Nested schema for **authorizations**:
@@ -63,14 +63,12 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `inputs` - (List) The input variables for configuration definition and environment.
 	Nested schema for **inputs**:
-	* `locator_id` - (Forces new resource, String) A unique concanctenation of catalogID.versionID that identifies the DA in catalog.
+	* `locator_id` - (Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (String) The configuration name. It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `settings` - (List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
 	Nested schema for **settings**:
-	* `type` - (String) The type of a project configuration manual property.
-	  * Constraints: Allowable values are: `terraform_template`, `schematics_blueprint`.
 
 * `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
 

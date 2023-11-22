@@ -119,6 +119,7 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "The IBM Cloud API Key.",
 									},
 								},

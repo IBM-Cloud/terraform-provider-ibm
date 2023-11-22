@@ -297,7 +297,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The type and output of a project configuration.",
+				Description: "The name and description of a project configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -334,6 +334,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "The IBM Cloud API Key.",
 									},
 								},
@@ -376,7 +377,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 						"locator_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A unique concanctenation of catalogID.versionID that identifies the DA in catalog.",
+							Description: "A unique concatenation of catalogID.versionID that identifies the DA in the catalog.",
 						},
 						"inputs": &schema.Schema{
 							Type:        schema.TypeList,
@@ -393,11 +394,6 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{},
 							},
-						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The type of a project configuration manual property.",
 						},
 					},
 				},
@@ -642,9 +638,6 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *proje
 			return modelMap, err
 		}
 		modelMap["settings"] = []map[string]interface{}{settingsMap}
-	}
-	if model.Type != nil {
-		modelMap["type"] = model.Type
 	}
 	return modelMap, nil
 }

@@ -102,7 +102,7 @@ data "ibm_project_environment" "project_environment_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | project_id | The unique project ID. | `string` | true |
 | schematics | A schematics workspace associated to a project configuration, with scripts. | `` | false |
-| definition | The type and output of a project configuration. | `` | true |
+| definition | The name and description of a project configuration. | `` | true |
 | location | The IBM Cloud location where a resource is deployed. | `string` | true |
 | resource_group | The resource group name where the project's data and tools are created. | `string` | true |
 | definition | The definition of the project. | `` | true |
