@@ -105,7 +105,7 @@ Nested scheme for **env_values**:
 	Nested scheme for **values_metadata**:
 		* `aliases` - (List) The list of aliases for the variable name.
 		* `cloud_data_type` - (String) Cloud data type of the variable. eg. resource_group_id, region, vpc_id.
-		* `default_value` - (String) Default value for the variable only if the override value is not specified.
+		* `default` - (String) Default value for the variable only if the override value is not specified.
 		* `description` - (String) The description of the meta data.
 		* `group_by` - (String) The display name of the group this variable belongs to.
 		* `hidden` - (Boolean) If **true**, the variable is not displayed on UI or Command line.
@@ -117,6 +117,7 @@ Nested scheme for **env_values**:
 		* `max_value` - (Integer) The maximum value of the variable. Applicable for the integer type.
 		* `min_length` - (Integer) The minimum length of the variable value. Applicable for the string type.
 		* `min_value` - (Integer) The minimum value of the variable. Applicable for the integer type.
+		* `name` - (String) Name of the variable.
 		* `options` - (List) The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.
 		* `position` - (Integer) The relative position of this variable in a list.
 		* `required` - (Boolean) If the variable required?.
