@@ -40,10 +40,10 @@ variable "app_config_entity_id" {
 }
 variable "app_config_entity_attributes" {
   description = "Entity attributes for evaluation."
-  type        = map()
+  type        = map(any)
   default = {
-    "city" : "Bangalore",
-    "radius" : 60,
+    city = "Bangalore",
+    radius = 60,
   }
 }
 variable "app_config_feature_flag_ids" {
