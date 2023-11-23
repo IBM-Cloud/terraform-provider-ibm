@@ -1171,6 +1171,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
 			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
 			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
+			"ibm_pi_workspace":                       power.ResourceIBMPIWorkspace(),
 
 			// Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),
