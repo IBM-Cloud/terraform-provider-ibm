@@ -6,6 +6,7 @@ The following types of resources are supported:
 
 * project_config
 * project
+* project_environment
 
 ## Usage
 
@@ -39,6 +40,14 @@ resource "project" "project_instance" {
   definition = var.project_definition
 }
 ```
+project_environment resource:
+
+```hcl
+resource "project_environment" "project_environment_instance" {
+  project_id = ibm_project.project_instance.project_id
+  definition = var.project_environment_definition
+}
+```
 
 ## ProjectV1 data sources
 
@@ -55,6 +64,14 @@ project data source:
 ```hcl
 data "project" "project_instance" {
   project_id = ibm_project.project_instance.id
+}
+```
+project_environment data source:
+
+```hcl
+data "ibm_project_environment" "project_environment_instance" {
+  project_id = ibm_project_environment.project_environment_instance.project_id
+  project_environment_id = ibm_project_environment.project_environment_instance.project_environment_id
 }
 ```
 
@@ -84,14 +101,15 @@ data "project" "project_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | project_id | The unique project ID. | `string` | true |
-| schematics | A schematics workspace associated to a project configuration. | `` | false |
-| definition | The type and output of a project configuration. | `` | true |
+| schematics | A schematics workspace associated to a project configuration, with scripts. | `` | false |
+| definition | The name and description of a project configuration. | `` | true |
 | location | The IBM Cloud location where a resource is deployed. | `string` | true |
-| resource_group | The resource group where the project's data and tools are created. | `string` | true |
+| resource_group | The resource group name where the project's data and tools are created. | `string` | true |
 | definition | The definition of the project. | `` | true |
+| definition | The environment definition. | `` | true |
 | project_id | The unique project ID. | `string` | true |
 | project_config_id | The unique config ID. | `string` | true |
-| project_id | The unique project ID. | `string` | true |
+| project_environment_id | The environment ID. | `string` | true |
 
 ## Outputs
 
@@ -99,3 +117,4 @@ data "project" "project_instance" {
 |------|-------------|
 | project_config | project_config object |
 | project | project object |
+| project_environment | project_environment object |
