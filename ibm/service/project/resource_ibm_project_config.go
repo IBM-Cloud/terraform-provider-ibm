@@ -38,13 +38,157 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "A schematics workspace associated to a project configuration.",
+				Description: "A schematics workspace associated to a project configuration, with scripts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"workspace_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "An existing schematics workspace CRN.",
+						},
+						"validate_pre_script": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A script to be run as part of a Project configuration, for a given stage (pre, post) and action (validate, deploy, undeploy).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the script.",
+									},
+									"path": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The path to this script within the current version source.",
+									},
+									"short_description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The short description for this script.",
+									},
+								},
+							},
+						},
+						"validate_post_script": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A script to be run as part of a Project configuration, for a given stage (pre, post) and action (validate, deploy, undeploy).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the script.",
+									},
+									"path": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The path to this script within the current version source.",
+									},
+									"short_description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The short description for this script.",
+									},
+								},
+							},
+						},
+						"deploy_pre_script": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A script to be run as part of a Project configuration, for a given stage (pre, post) and action (validate, deploy, undeploy).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the script.",
+									},
+									"path": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The path to this script within the current version source.",
+									},
+									"short_description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The short description for this script.",
+									},
+								},
+							},
+						},
+						"deploy_post_script": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A script to be run as part of a Project configuration, for a given stage (pre, post) and action (validate, deploy, undeploy).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the script.",
+									},
+									"path": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The path to this script within the current version source.",
+									},
+									"short_description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The short description for this script.",
+									},
+								},
+							},
+						},
+						"undeploy_pre_script": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A script to be run as part of a Project configuration, for a given stage (pre, post) and action (validate, deploy, undeploy).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the script.",
+									},
+									"path": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The path to this script within the current version source.",
+									},
+									"short_description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The short description for this script.",
+									},
+								},
+							},
+						},
+						"undeploy_post_script": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A script to be run as part of a Project configuration, for a given stage (pre, post) and action (validate, deploy, undeploy).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the script.",
+									},
+									"path": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The path to this script within the current version source.",
+									},
+									"short_description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The short description for this script.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -54,20 +198,20 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				MinItems:    1,
 				MaxItems:    1,
 				Required:    true,
-				Description: "The type and output of a project configuration.",
+				Description: "The name and description of a project configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The configuration name.",
+							Description: "The configuration name. It is unique within the account across projects and regions.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A project configuration description.",
 						},
-						"environment": &schema.Schema{
+						"environment_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The ID of the project environment.",
@@ -92,6 +236,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Sensitive:   true,
 										Description: "The IBM Cloud API Key.",
 									},
 								},
@@ -107,12 +252,12 @@ func ResourceIbmProjectConfig() *schema.Resource {
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The unique ID.",
+										Description: "The unique ID for that compliance profile.",
 									},
 									"instance_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The unique ID.",
+										Description: "A unique ID for an instance of a compliance profile.",
 									},
 									"instance_location": &schema.Schema{
 										Type:        schema.TypeString,
@@ -122,7 +267,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 									"attachment_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The unique ID.",
+										Description: "A unique ID for the attachment to a compliance profile.",
 									},
 									"profile_name": &schema.Schema{
 										Type:        schema.TypeString,
@@ -136,7 +281,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
-							Description: "A dotted value of catalogID.versionID.",
+							Description: "A unique concatenation of catalogID.versionID that identifies the DA in the catalog.",
 						},
 						"inputs": &schema.Schema{
 							Type:        schema.TypeList,
@@ -155,11 +300,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{},
 							},
-						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The type of a project configuration manual property.",
 						},
 					},
 				},
@@ -203,17 +343,17 @@ func ResourceIbmProjectConfig() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The variable name.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "A short explanation of the output value.",
 						},
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Can be any value - a string, number, boolean, array, or object.",
 						},
 					},
@@ -227,20 +367,18 @@ func ResourceIbmProjectConfig() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The unique ID.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
-							MinItems:    1,
-							MaxItems:    1,
-							Required:    true,
+							Computed:    true,
 							Description: "The definition of the project reference.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "The name of the project.",
 									},
 								},
@@ -248,12 +386,12 @@ func ResourceIbmProjectConfig() *schema.Resource {
 						},
 						"crn": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "A URL.",
 						},
 					},
@@ -439,7 +577,7 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 	hasChange := false
 
 	if d.HasChange("definition") {
-		definition, err := resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
+		definition, err := resourceIbmProjectConfigMapToProjectConfigPatchDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -491,8 +629,8 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypeDefinitionBlock(modelMap
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
-		model.Environment = core.StringPtr(modelMap["environment"].(string))
+	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
+		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
 	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectConfigMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
@@ -580,16 +718,16 @@ func resourceIbmProjectConfigMapToSchematicsWorkspace(modelMap map[string]interf
 	return model, nil
 }
 
-func resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototypePatchDefinitionBlock, error) {
-	model := &projectv1.ProjectConfigPrototypePatchDefinitionBlock{}
+func resourceIbmProjectConfigMapToProjectConfigPatchDefinitionBlock(modelMap map[string]interface{}) (*projectv1.ProjectConfigPatchDefinitionBlock, error) {
+	model := &projectv1.ProjectConfigPatchDefinitionBlock{}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
-		model.Environment = core.StringPtr(modelMap["environment"].(string))
+	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
+		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
 	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectConfigMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
@@ -625,10 +763,66 @@ func resourceIbmProjectConfigMapToProjectConfigPrototypePatchDefinitionBlock(mod
 	return model, nil
 }
 
-func resourceIbmProjectConfigSchematicsWorkspaceToMap(model *projectv1.SchematicsWorkspace) (map[string]interface{}, error) {
+func resourceIbmProjectConfigSchematicsMetadataToMap(model *projectv1.SchematicsMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.WorkspaceCrn != nil {
 		modelMap["workspace_crn"] = model.WorkspaceCrn
+	}
+	if model.ValidatePreScript != nil {
+		validatePreScriptMap, err := resourceIbmProjectConfigScriptToMap(model.ValidatePreScript)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["validate_pre_script"] = []map[string]interface{}{validatePreScriptMap}
+	}
+	if model.ValidatePostScript != nil {
+		validatePostScriptMap, err := resourceIbmProjectConfigScriptToMap(model.ValidatePostScript)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["validate_post_script"] = []map[string]interface{}{validatePostScriptMap}
+	}
+	if model.DeployPreScript != nil {
+		deployPreScriptMap, err := resourceIbmProjectConfigScriptToMap(model.DeployPreScript)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deploy_pre_script"] = []map[string]interface{}{deployPreScriptMap}
+	}
+	if model.DeployPostScript != nil {
+		deployPostScriptMap, err := resourceIbmProjectConfigScriptToMap(model.DeployPostScript)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deploy_post_script"] = []map[string]interface{}{deployPostScriptMap}
+	}
+	if model.UndeployPreScript != nil {
+		undeployPreScriptMap, err := resourceIbmProjectConfigScriptToMap(model.UndeployPreScript)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["undeploy_pre_script"] = []map[string]interface{}{undeployPreScriptMap}
+	}
+	if model.UndeployPostScript != nil {
+		undeployPostScriptMap, err := resourceIbmProjectConfigScriptToMap(model.UndeployPostScript)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["undeploy_post_script"] = []map[string]interface{}{undeployPostScriptMap}
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectConfigScriptToMap(model *projectv1.Script) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Type != nil {
+		modelMap["type"] = model.Type
+	}
+	if model.Path != nil {
+		modelMap["path"] = model.Path
+	}
+	if model.ShortDescription != nil {
+		modelMap["short_description"] = model.ShortDescription
 	}
 	return modelMap, nil
 }
@@ -639,8 +833,8 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
-	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+	if model.EnvironmentID != nil {
+		modelMap["environment_id"] = model.EnvironmentID
 	}
 	if model.Authorizations != nil {
 		authorizationsMap, err := resourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
@@ -674,9 +868,6 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *project
 			return modelMap, err
 		}
 		modelMap["settings"] = []map[string]interface{}{settingsMap}
-	}
-	if model.Type != nil {
-		modelMap["type"] = model.Type
 	}
 	return modelMap, nil
 }

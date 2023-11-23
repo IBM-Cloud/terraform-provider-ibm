@@ -3,9 +3,9 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20231017073329-75ebe90c98ba
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20231123082353-50e8cc9c6959
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231106114255-c50117860a3c
-	github.com/IBM-Cloud/power-go-client v1.5.2
+	github.com/IBM-Cloud/power-go-client v1.5.4
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appconfiguration-go-sdk v0.5.1
@@ -18,15 +18,15 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.7
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.14.1
+	github.com/IBM/go-sdk-core/v5 v5.15.0
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
 	github.com/IBM/networking-go-sdk v0.42.2
-	github.com/IBM/platform-services-go-sdk v0.53.1
-	github.com/IBM/project-go-sdk v0.0.99
+	github.com/IBM/platform-services-go-sdk v0.54.0
+	github.com/IBM/project-go-sdk v0.1.1
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.3
 	github.com/IBM/schematics-go-sdk v0.2.2
@@ -97,7 +97,7 @@ require (
 	github.com/frankban/quicktest v1.14.3 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
