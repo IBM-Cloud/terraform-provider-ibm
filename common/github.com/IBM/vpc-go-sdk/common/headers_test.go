@@ -23,8 +23,6 @@ func TestGetSdkHeaders(t *testing.T) {
 
 	_, foundIt = headers[HEADER_NAME_USER_AGENT]
 	assert.True(t, foundIt)
-	_, foundIt = headers[X_CORRELATION_ID]
-	assert.True(t, foundIt)
 	_, foundIt = headers[X_REQUEST_ID]
 	assert.True(t, foundIt)
 }
