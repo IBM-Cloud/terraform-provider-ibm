@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -23,6 +25,11 @@ func ResourceIBMIsVPCDnsResolutionBinding() *schema.Resource {
 		UpdateContext: resourceIBMIsVPCDnsResolutionBindingUpdate,
 		DeleteContext: resourceIBMIsVPCDnsResolutionBindingDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"vpc_id": &schema.Schema{
@@ -404,12 +411,16 @@ func resourceIBMIsVPCDnsResolutionBindingDelete(context context.Context, d *sche
 	deleteVPCDnsResolutionBindingOptions.SetVPCID(vpcId)
 	deleteVPCDnsResolutionBindingOptions.SetID(id)
 
-	response, err := sess.DeleteVPCDnsResolutionBindingWithContext(context, deleteVPCDnsResolutionBindingOptions)
+	dns, response, err := sess.DeleteVPCDnsResolutionBindingWithContext(context, deleteVPCDnsResolutionBindingOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
 		if response.StatusCode != 404 {
 			return diag.FromErr(fmt.Errorf("DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
 		}
+	}
+	_, err = isWaitForVpcDnsDeleted(sess, vpcId, id, d.Timeout(schema.TimeoutDelete), dns)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil
@@ -429,4 +440,40 @@ func ParseVPCDNSTerraformID(s string) (string, string, error) {
 		return "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], nil
+}
+
+func isWaitForVpcDnsDeleted(sess *vpcv1.VpcV1, vpcid, id string, timeout time.Duration, dns *vpcv1.VpcdnsResolutionBinding) (interface{}, error) {
+	log.Printf("Waiting for vpc dns (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", isVolumeDeleting},
+		Target:     []string{"done", ""},
+		Refresh:    isVpcDnsDeleteRefreshFunc(sess, vpcid, id, dns),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isVpcDnsDeleteRefreshFunc(sess *vpcv1.VpcV1, vpcid, id string, dns *vpcv1.VpcdnsResolutionBinding) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getVPCDnsResolutionBindingOptions := &vpcv1.GetVPCDnsResolutionBindingOptions{}
+
+		getVPCDnsResolutionBindingOptions.SetVPCID(vpcid)
+		getVPCDnsResolutionBindingOptions.SetID(id)
+
+		vpcdnsResolutionBinding, response, err := sess.GetVPCDnsResolutionBinding(getVPCDnsResolutionBindingOptions)
+		if vpcdnsResolutionBinding == nil {
+			vpcdnsResolutionBinding = dns
+		}
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return vpcdnsResolutionBinding, isVolumeDeleted, nil
+			}
+			return vpcdnsResolutionBinding, "", fmt.Errorf("[ERROR] Error getting vpcdnsResolutionBinding: %s\n%s", err, response)
+		}
+		return vpcdnsResolutionBinding, isVolumeDeleting, err
+	}
 }
