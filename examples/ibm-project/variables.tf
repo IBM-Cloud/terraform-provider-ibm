@@ -17,9 +17,16 @@ variable "project_location" {
   default     = "us-south"
 }
 variable "project_resource_group" {
-  description = "The resource group where the project's data and tools are created."
+  description = "The resource group name where the project's data and tools are created."
   type        = string
   default     = "Default"
+}
+
+// Resource arguments for project_environment
+variable "project_environment_project_id" {
+  description = "The unique project ID."
+  type        = string
+  default     = "project_id"
 }
 
 // Data source arguments for project_config
@@ -39,4 +46,16 @@ variable "project_id" {
   description = "The unique project ID."
   type        = string
   default     = "project_id"
+}
+
+// Data source arguments for project_environment
+variable "project_environment_project_id" {
+  description = "The unique project ID."
+  type        = string
+  default     = "project_id"
+}
+variable "project_environment_id" {
+  description = "The environment ID."
+  type        = string
+  default     = "project_environment_id"
 }
