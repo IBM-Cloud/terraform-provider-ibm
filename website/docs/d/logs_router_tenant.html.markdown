@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_logs_router_tenant"
 description: |-
   Get information about logs_router_tenant
-subcategory: "IBM Logs Router"
+subcategory: "Logs Router"
 ---
 
 # ibm_logs_router_tenant

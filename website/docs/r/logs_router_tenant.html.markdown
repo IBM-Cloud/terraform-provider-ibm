@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_logs_router_tenant"
 description: |-
   Manages logs_router_tenant.
-subcategory: "IBM Logs Router"
+subcategory: "Logs Router"
 ---
 
 # ibm_logs_router_tenant
@@ -44,47 +44,6 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/[0-9,:,.,-,T,Z]/`.
 * `updated_at` - (String) time stamp the tenant was last updated.
   * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/[0-9,:,.,-,T,Z]/`.
-
-## Provider Configuration
-
-The IBM Cloud provider offers a flexible means of providing credentials for authentication. The following methods are supported, in this order, and explained below:
-
-- Static credentials
-- Environment variables
-
-To find which credentials are required for this resource, see the service table [here](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-
-### Static credentials
-
-You can provide your static credential by adding the `ibmcloud_api_key` argument in the IBM Cloud provider block.
-
-Usage:
-```
-provider "ibm" {
-  ibmcloud_api_key = ""
-}
-```
-
-### Environment variables
-
-You can provide your credentials by exporting the `IC_API_KEY` environment variable, representing your IBM Cloud platform API key.
-
-```
-provider "ibm" {}
-```
-
-Usage:
-```
-export IC_API_KEY="ibmcloud_api_key"
-terraform plan
-```
-
-Note:
-
-1. Create or find your `ibmcloud_api_key` [here](https://cloud.ibm.com/iam/apikeys).
-  - Select `My IBM Cloud API Keys` option from view dropdown for `ibmcloud_api_key`
-
-For more informaton, see [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#authentication).
 
 ## Import
 
