@@ -260,9 +260,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description:   "Memory size",
 			},
 			PIInstanceDeploymentType: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Custom Deployment Type Information",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"EPIC", "VMNoStorage"}),
+				Description:  "Custom Deployment Type Information",
 			},
 			PISAPInstanceProfileID: {
 				Type:          schema.TypeString,
@@ -274,6 +275,12 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Custom SAP Deployment Type Information",
+			},
+			PIVirtualOpticalDevice: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"attach"}),
+				Description:  "Virtual Machine's Cloud Initialization Virtual Optical Device",
 			},
 			helpers.PIInstanceSystemType: {
 				Type:        schema.TypeString,
@@ -385,10 +392,18 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *(*pvmList)[0].PvmInstanceID))
 
 	for _, s := range *pvmList {
-		_, err = isWaitForPIInstanceAvailable(ctx, client, *s.PvmInstanceID, instanceReadyStatus)
-		if err != nil {
-			return diag.FromErr(err)
+		if dt, ok := d.GetOk(PIInstanceDeploymentType); ok && dt.(string) == "VMNoStorage" {
+			_, err = isWaitForPIInstanceShutoff(ctx, client, *s.PvmInstanceID, instanceReadyStatus)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			_, err = isWaitForPIInstanceAvailable(ctx, client, *s.PvmInstanceID, instanceReadyStatus)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
+
 	}
 
 	// If Storage Pool Affinity is given as false we need to update the vm instance.
@@ -401,6 +416,20 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 				StoragePoolAffinity: &storagePoolAffinity,
 			}
 			// This is a synchronous process hence no need to check for health status
+			_, err = client.Update(*s.PvmInstanceID, body)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+	// If virtual optical device provided then update cloud initialization
+	if vod, ok := d.GetOk(PIVirtualOpticalDevice); ok {
+		for _, s := range *pvmList {
+			body := &models.PVMInstanceUpdate{
+				CloudInitialization: &models.CloudInitialization{
+					VirtualOpticalDevice: vod.(string),
+				},
+			}
 			_, err = client.Update(*s.PvmInstanceID, body)
 			if err != nil {
 				return diag.FromErr(err)
@@ -440,7 +469,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	d.Set("min_processors", powervmdata.Minproc)
 	d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
-	if powervmdata.StorageType != nil {
+	if powervmdata.StorageType != nil && *powervmdata.StorageType != "" {
 		d.Set(helpers.PIInstanceStorageType, powervmdata.StorageType)
 	}
 	d.Set(PIInstanceStoragePool, powervmdata.StoragePool)
@@ -482,9 +511,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("max_memory", powervmdata.Maxmem)
 	d.Set("pin_policy", powervmdata.PinPolicy)
 	d.Set("operating_system", powervmdata.OperatingSystem)
-	if powervmdata.OsType != nil {
-		d.Set("os_type", powervmdata.OsType)
-	}
+	d.Set("os_type", powervmdata.OsType)
 
 	if powervmdata.Health != nil {
 		d.Set("health_status", powervmdata.Health.Status)
@@ -495,7 +522,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	}
 	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
-	d.Set(PIInstanceDeploymentType, powervmdata.DeploymentType)
+
 	return nil
 }
 
@@ -531,13 +558,17 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 	cores_enabled := checkCloudInstanceCapability(cloudInstance, CUSTOM_VIRTUAL_CORES)
 
-	if d.HasChange(helpers.PIInstanceName) {
-		body := &models.PVMInstanceUpdate{
-			ServerName: name,
+	if d.HasChanges(helpers.PIInstanceName, PIVirtualOpticalDevice) {
+		body := &models.PVMInstanceUpdate{}
+		if d.HasChange(helpers.PIInstanceName) {
+			body.ServerName = name
+		}
+		if d.HasChange(PIVirtualOpticalDevice) {
+			body.CloudInitialization.VirtualOpticalDevice = d.Get(PIVirtualOpticalDevice).(string)
 		}
 		_, err = client.Update(instanceID, body)
 		if err != nil {
-			return diag.Errorf("failed to update the lpar with the change for name: %v", err)
+			return diag.Errorf("failed to update the lpar: %v", err)
 		}
 		_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
 		if err != nil {
@@ -754,7 +785,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
-
 	return resourceIBMPIInstanceRead(ctx, d, meta)
 
 }
@@ -822,7 +852,7 @@ func isWaitForPIInstanceAvailable(ctx context.Context, client *st.IBMPIInstanceC
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"PENDING", helpers.PIInstanceBuilding, helpers.PIInstanceHealthWarning},
-		Target:     []string{helpers.PIInstanceAvailable, helpers.PIInstanceHealthOk, "ERROR", ""},
+		Target:     []string{helpers.PIInstanceAvailable, helpers.PIInstanceHealthOk, "ERROR", "", "SHUTOFF"},
 		Refresh:    isPIInstanceRefreshFunc(client, id, instanceReadyStatus),
 		Delay:      30 * time.Second,
 		MinTimeout: queryTimeOut,
@@ -844,6 +874,48 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 			return pvm, helpers.PIInstanceAvailable, nil
 		}
 		if *pvm.Status == "ERROR" {
+			if pvm.Fault != nil {
+				err = fmt.Errorf("failed to create the lpar: %s", pvm.Fault.Message)
+			} else {
+				err = fmt.Errorf("failed to create the lpar")
+			}
+			return pvm, *pvm.Status, err
+		}
+
+		return pvm, helpers.PIInstanceBuilding, nil
+	}
+}
+
+func isWaitForPIInstanceShutoff(ctx context.Context, client *st.IBMPIInstanceClient, id string, instanceReadyStatus string) (interface{}, error) {
+	log.Printf("Waiting for PIInstance (%s) to be shutoff and health active ", id)
+
+	queryTimeOut := activeTimeOut
+	if instanceReadyStatus == helpers.PIInstanceHealthWarning {
+		queryTimeOut = warningTimeOut
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{StatusPending, helpers.PIInstanceBuilding, helpers.PIInstanceHealthWarning},
+		Target:     []string{helpers.PIInstanceHealthOk, StatusError, "", StatusShutoff},
+		Refresh:    isPIInstanceShutoffRefreshFunc(client, id, instanceReadyStatus),
+		Delay:      30 * time.Second,
+		MinTimeout: queryTimeOut,
+		Timeout:    120 * time.Minute,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+func isPIInstanceShutoffRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadyStatus string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if *pvm.Status == StatusShutoff && (pvm.Health.Status == instanceReadyStatus || pvm.Health.Status == helpers.PIInstanceHealthOk) {
+			return pvm, StatusShutoff, nil
+		}
+		if *pvm.Status == StatusError {
 			if pvm.Fault != nil {
 				err = fmt.Errorf("failed to create the lpar: %s", pvm.Fault.Message)
 			} else {
