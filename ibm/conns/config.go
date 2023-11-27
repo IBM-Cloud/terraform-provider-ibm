@@ -1307,6 +1307,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
 		session.projectClientErr = errEmptyBluemixCredentials
+		session.ibmLogsRouterOpenApi30ClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
