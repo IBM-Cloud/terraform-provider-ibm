@@ -109,7 +109,7 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 			},
 			"notifications": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The request payload of the attachment notifications.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
