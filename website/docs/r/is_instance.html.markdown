@@ -150,15 +150,8 @@ resource "ibm_is_instance" "example" {
   image   = ibm_is_image.example.id
   profile = "bx2-2x8"
   metadata_service_enabled  = false
-
-  boot_volume {
-    encryption = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
-  }
-
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
-    primary_ipv4_address = "10.240.0.6"  // will be deprecated. Use primary_ip.[0].address
-    allow_ip_spoofing = true
   }
   reservation_affinity {
     policy = "manual"
@@ -166,13 +159,6 @@ resource "ibm_is_instance" "example" {
       id = ibm_is_reservation.example.id
     }
   }
-
-  network_interfaces {
-    name   = "eth1"
-    subnet = ibm_is_subnet.example.id
-    allow_ip_spoofing = false
-  }
-
   vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
   keys = [ibm_is_ssh_key.example.id]
