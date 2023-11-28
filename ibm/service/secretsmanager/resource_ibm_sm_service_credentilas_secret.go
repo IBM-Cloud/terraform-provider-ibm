@@ -5,6 +5,7 @@ package secretsmanager
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -80,68 +81,10 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Description: "The date when a resource was created. The date format follows RFC 3339.",
 			},
 			"credentials": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeMap,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The properties of the service credentials secret payload.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"apikey": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "The API key that is generated for this secret.",
-						},
-						"cos_hmac_keys": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The Cloud Object Storage HMAC keys that are returned after you create a service credentials secret.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"access_key_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The access key ID for Cloud Object Storage HMAC credentials.",
-									},
-									"secret_access_key": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The secret access key ID for Cloud Object Storage HMAC credentials.",
-									},
-								},
-							},
-						},
-						"endpoints": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The endpoints that are returned after you create a service credentials secret.",
-						},
-						"iam_apikey_description": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The description of the generated IAM API key.",
-						},
-						"iam_apikey_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the generated IAM API key.",
-						},
-						"iam_role_crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IAM role CRN that is returned after you create a service credentials secret.",
-						},
-						"iam_serviceid_crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
-						},
-						"resource_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The resource instance CRN that is returned after you create a service credentials secret.",
-						},
-					},
-				},
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -206,12 +149,14 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 							Type:        schema.TypeList,
 							Required:    true,
 							MaxItems:    1,
+							ForceNew:    true,
 							Description: "The source service instance identifier.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
+										ForceNew:    true,
 										Description: "A CRN that uniquely identifies a service credentials target.",
 									},
 								},
@@ -221,6 +166,7 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Computed:    true,
+							ForceNew:    true,
 							MaxItems:    1,
 							Description: "The service-specific custom role object, CRN role is accepted. Refer to the service’s documentation for supported roles.",
 							Elem: &schema.Resource{
@@ -229,6 +175,7 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+										ForceNew:    true,
 										Description: "The CRN role identifier for creating a service-id.",
 									},
 								},
@@ -312,6 +259,7 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 						"parameters": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
+							ForceNew:    true,
 							Description: "The collection of parameters for the service credentials target.",
 						},
 					},
@@ -328,10 +276,9 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Description: "A text representation of the secret state.",
 			},
 			"ttl": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: StringIsIntBetween(86400, 7776000),
-				Description:  "The time-to-live (TTL) or lease duration to assign to generated credentials.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -489,14 +436,11 @@ func resourceIbmSmServiceCredentialsSecretRead(context context.Context, d *schem
 		}
 	}
 	if secret.Credentials != nil {
-		credentialsMap, err := resourceIbmSmServiceCredentialsSecretCredentialsToMap(secret.Credentials)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if len(credentialsMap) > 0 {
-			if err = d.Set("credentials", []map[string]interface{}{credentialsMap}); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting credentialsMap: %s", err))
-			}
+		var credInterface map[string]interface{}
+		cred, _ := json.Marshal(secret.Credentials)
+		json.Unmarshal(cred, &credInterface)
+		if err = d.Set("credentials", flex.Flatten(credInterface)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting credentials: %s", err))
 		}
 	}
 	if err = d.Set("next_rotation_date", DateTimeToRFC3339(secret.NextRotationDate)); err != nil {
@@ -843,42 +787,4 @@ func resourceIbmSmServiceCredentialsSecretSourceServiceToMap(sourceService *secr
 	}
 
 	return mainModelMap, nil
-}
-
-func resourceIbmSmServiceCredentialsSecretCredentialsToMap(credentials *secretsmanagerv2.ServiceCredentialsSecretCredentials) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if credentials.IamApikeyDescription != nil {
-		modelMap["iam_apikey_description"] = credentials.IamApikeyDescription
-	}
-	if credentials.Apikey != nil {
-		modelMap["apikey"] = credentials.Apikey
-	}
-	if credentials.Endpoints != nil {
-		modelMap["endpoints"] = credentials.Endpoints
-	}
-	if credentials.IamApikeyName != nil {
-		modelMap["iam_apikey_name"] = credentials.IamApikeyName
-	}
-	if credentials.IamRoleCrn != nil {
-		modelMap["iam_role_crn"] = credentials.IamRoleCrn
-	}
-	if credentials.IamServiceidCrn != nil {
-		modelMap["iam_serviceid_crn"] = credentials.IamServiceidCrn
-	}
-	if credentials.ResourceInstanceID != nil {
-		modelMap["resource_instance_id"] = credentials.ResourceInstanceID
-	}
-	if credentials.CosHmacKeys != nil {
-		cosHmacKeys := [1]map[string]interface{}{}
-		m := map[string]interface{}{}
-		if credentials.CosHmacKeys.AccessKeyID != nil {
-			m["access_key_id"] = credentials.CosHmacKeys.AccessKeyID
-		}
-		if credentials.CosHmacKeys.SecretAccessKey != nil {
-			m["secret_access_key"] = credentials.CosHmacKeys.SecretAccessKey
-		}
-		cosHmacKeys[0] = m
-		modelMap["cos_hmac_keys"] = cosHmacKeys
-	}
-	return modelMap, nil
 }

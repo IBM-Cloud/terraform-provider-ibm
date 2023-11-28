@@ -5,6 +5,7 @@ package secretsmanager
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
@@ -147,68 +148,10 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Description: "The date that the secret is scheduled for automatic rotation. The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.",
 			},
 			"credentials": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeMap,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The properties of the service credentials secret payload.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"apikey": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "The API key that is generated for this secret.",
-						},
-						"cos_hmac_keys": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The Cloud Object Storage HMAC keys that are returned after you create a service credentials secret.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"access_key_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The access key ID for Cloud Object Storage HMAC credentials.",
-									},
-									"secret_access_key": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The secret access key ID for Cloud Object Storage HMAC credentials.",
-									},
-								},
-							},
-						},
-						"endpoints": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The endpoints that are returned after you create a service credentials secret.",
-						},
-						"iam_apikey_description": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The description of the generated IAM API key.",
-						},
-						"iam_apikey_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the generated IAM API key.",
-						},
-						"iam_role_crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IAM role CRN that is returned after you create a service credentials secret.",
-						},
-						"iam_serviceid_crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IAM serviceId CRN that is returned after you create a service credentials secret.",
-						},
-						"resource_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The resource instance CRN that is returned after you create a service credentials secret.",
-						},
-					},
-				},
 			},
 			"source_service": &schema.Schema{
 				Type:        schema.TypeList,
@@ -437,14 +380,11 @@ func dataSourceIbmSmServiceCredentialsSecretRead(context context.Context, d *sch
 	}
 
 	if ServiceCredentialsSecret.Credentials != nil {
-		credentialsMap, err := dataSourceIbmSmServiceCredentialsSecretCredentialsToMap(ServiceCredentialsSecret.Credentials)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if len(credentialsMap) > 0 {
-			if err = d.Set("credentials", []map[string]interface{}{credentialsMap}); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting credentialsMap: %s", err))
-			}
+		var credInterface map[string]interface{}
+		cred, _ := json.Marshal(ServiceCredentialsSecret.Credentials)
+		json.Unmarshal(cred, &credInterface)
+		if err = d.Set("credentials", flex.Flatten(credInterface)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting credentials: %s", err))
 		}
 	}
 
@@ -471,44 +411,6 @@ func dataSourceIbmSmServiceCredentialsSecretRotationPolicyToMap(model *secretsma
 	}
 	if model.Unit != nil {
 		modelMap["unit"] = *model.Unit
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSmServiceCredentialsSecretCredentialsToMap(credentials *secretsmanagerv2.ServiceCredentialsSecretCredentials) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if credentials.IamApikeyDescription != nil {
-		modelMap["iam_apikey_description"] = credentials.IamApikeyDescription
-	}
-	if credentials.Apikey != nil {
-		modelMap["apikey"] = credentials.Apikey
-	}
-	if credentials.Endpoints != nil {
-		modelMap["endpoints"] = credentials.Endpoints
-	}
-	if credentials.IamApikeyName != nil {
-		modelMap["iam_apikey_name"] = credentials.IamApikeyName
-	}
-	if credentials.IamRoleCrn != nil {
-		modelMap["iam_role_crn"] = credentials.IamRoleCrn
-	}
-	if credentials.IamServiceidCrn != nil {
-		modelMap["iam_serviceid_crn"] = credentials.IamServiceidCrn
-	}
-	if credentials.ResourceInstanceID != nil {
-		modelMap["resource_instance_id"] = credentials.ResourceInstanceID
-	}
-	if credentials.CosHmacKeys != nil {
-		cosHmacKeys := [1]map[string]interface{}{}
-		m := map[string]interface{}{}
-		if credentials.CosHmacKeys.AccessKeyID != nil {
-			m["access_key_id"] = credentials.CosHmacKeys.AccessKeyID
-		}
-		if credentials.CosHmacKeys.SecretAccessKey != nil {
-			m["secret_access_key"] = credentials.CosHmacKeys.SecretAccessKey
-		}
-		cosHmacKeys[0] = m
-		modelMap["cos_hmac_keys"] = cosHmacKeys
 	}
 	return modelMap, nil
 }

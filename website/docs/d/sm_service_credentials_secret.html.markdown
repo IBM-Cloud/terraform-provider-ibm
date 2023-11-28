@@ -32,6 +32,22 @@ data "ibm_sm_service_credentials_secret" "service_credentials_secret" {
 }
 ```
 
+### Example to access resource credentials using credentials attribute:
+
+```terraform
+data "ibm_sm_service_credentials_secret" "service_credentials_secret" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
+  region        = "us-south"
+  secret_id = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+output "access_key_id" {
+  value = data.ibm_sm_service_credentials_secret.service_credentials_secret.credentials["cos_hmac_keys.access_key_id"]
+}
+output "secret_access_key" {
+  value = data.ibm_sm_service_credentials_secret.service_credentials_secret.credentials["cos_hmac_keys.secret_access_key"]
+}
+```
+
 ## Argument Reference
 
 Review the argument reference that you can specify for your data source.
