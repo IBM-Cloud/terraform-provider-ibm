@@ -720,6 +720,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	}
 
 	if bucketType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, satlc_id)
@@ -851,16 +854,14 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	getBucketWebsiteConfigurationInput := &s3.GetBucketWebsiteInput{
 		Bucket: aws.String(bucketName),
 	}
-
-	outputBucketWebsite, err := s3Client.GetBucketWebsite(getBucketWebsiteConfigurationInput)
-	var outputBucketWebsiteptr *s3.WebsiteConfiguration
-	outputBucketWebsiteptr = (*s3.WebsiteConfiguration)(outputBucketWebsite)
-	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+	outputwebsite, err := s3Client.GetBucketWebsite(getBucketWebsiteConfigurationInput)
+	var outputptr *s3.WebsiteConfiguration
+	outputptr = (*s3.WebsiteConfiguration)(outputwebsite)
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") && !strings.Contains(err.Error(), "The specified bucket does not have a website configuration") {
 		return err
 	}
-
-	if outputBucketWebsite != nil {
-		websiteConfiguration := flex.WebsiteConfigurationGet(outputBucketWebsiteptr)
+	if outputwebsite.IndexDocument != nil || outputwebsite.RedirectAllRequestsTo != nil {
+		websiteConfiguration := flex.WebsiteConfigurationGet(outputptr)
 		if len(websiteConfiguration) > 0 {
 			d.Set("website_configuration", websiteConfiguration)
 		}
@@ -868,7 +869,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		if websiteEndpoint != "" {
 			d.Set("website_endpoint", websiteEndpoint)
 		}
-
 	}
 
 	return nil

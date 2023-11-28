@@ -87,3 +87,147 @@ data "ibm_schematics_action" "schematics_action_instance" {
 data "ibm_schematics_job" "schematics_job_instance" {
   job_id = var.schematics_job_job_id
 }
+
+// Provision schematics_policy resource instance
+resource "ibm_schematics_policy" "schematics_policy_instance" {
+  name = var.schematics_policy_name
+  description = var.schematics_policy_description
+  resource_group = var.schematics_policy_resource_group
+  tags = var.schematics_policy_tags
+  location = var.schematics_policy_location
+  kind = var.schematics_policy_kind
+  target {
+    selector_kind = "ids"
+    selector_ids = [ "selector_ids" ]
+    selector_scope {
+      kind = "workspace"
+      tags = [ "tags" ]
+      resource_groups = [ "resource_groups" ]
+      locations = [ "us-south" ]
+    }
+  }
+  parameter {
+    agent_assignment_policy_parameter {
+      selector_kind = "ids"
+      selector_ids = [ "selector_ids" ]
+      selector_scope {
+        kind = "workspace"
+        tags = [ "tags" ]
+        resource_groups = [ "resource_groups" ]
+        locations = [ "us-south" ]
+      }
+    }
+  }
+  scoped_resources {
+    kind = "workspace"
+    id = "id"
+  }
+}
+
+// Provision schematics_agent resource instance
+resource "ibm_schematics_agent" "schematics_agent_instance" {
+  name = var.schematics_agent_name
+  resource_group = var.schematics_agent_resource_group
+  version = var.schematics_agent_version
+  schematics_location = var.schematics_agent_schematics_location
+  agent_location = var.schematics_agent_agent_location
+  agent_infrastructure {
+    infra_type = "ibm_kubernetes"
+    cluster_id = "cluster_id"
+    cluster_resource_group = "cluster_resource_group"
+    cos_instance_name = "cos_instance_name"
+    cos_bucket_name = "cos_bucket_name"
+    cos_bucket_region = "cos_bucket_region"
+  }
+  description = var.schematics_agent_description
+  tags = var.schematics_agent_tags
+  agent_metadata {
+    name = "purpose"
+    value = ["git", "terraform", "ansible"]
+  }
+  agent_inputs {
+    name = "name"
+    value = "value"
+    use_default = true
+    metadata {
+      type = "boolean"
+      aliases = [ "aliases" ]
+      description = "description"
+      cloud_data_type = "cloud_data_type"
+      default_value = "default_value"
+      link_status = "normal"
+      secure = true
+      immutable = true
+      hidden = true
+      required = true
+      options = [ "options" ]
+      min_value = 1
+      max_value = 1
+      min_length = 1
+      max_length = 1
+      matches = "matches"
+      position = 1
+      group_by = "group_by"
+      source = "source"
+    }
+  }
+  user_state {
+    state = "enable"
+  }
+  agent_kpi {
+    availability_indicator = "available"
+    lifecycle_indicator = "consistent"
+    percent_usage_indicator = "percent_usage_indicator"
+    application_indicators = [ null ]
+    infra_indicators = [ null ]
+  }
+}
+
+// Provision schematics_agent_prs resource instance
+resource "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
+  agent_id = var.schematics_agent_prs_agent_id
+  force = var.schematics_agent_prs_force
+}
+
+// Provision schematics_agent_deploy resource instance
+resource "ibm_schematics_agent_deploy" "schematics_agent_deploy_instance" {
+  agent_id = var.schematics_agent_deploy_agent_id
+  force = var.schematics_agent_deploy_force
+}
+
+// Provision schematics_agent_health resource instance
+resource "ibm_schematics_agent_health" "schematics_agent_health_instance" {
+  agent_id = var.schematics_agent_health_agent_id
+  force = var.schematics_agent_health_force
+}
+
+// Create schematics_policies data source
+data "ibm_schematics_policies" "schematics_policies_instance" {
+  policy_kind = var.schematics_policies_policy_kind
+}
+
+
+// Create schematics_policy data source
+data "ibm_schematics_policy" "schematics_policy_instance" {
+  policy_id = ibm_schematics_policy.schematics_policy_instance.id
+}
+
+// Create schematics_agents data source
+data "ibm_schematics_agents" "schematics_agents_instance" {
+}
+// Create schematics_agent data source
+data "ibm_schematics_agent" "schematics_agent_instance" {
+  agent_id = ibm_schematics_agent.schematics_agent_instance.id
+}
+// Create schematics_agent_prs data source
+data "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
+  agent_id = ibm_schematics_agent.schematics_agent_instance.id
+}
+// Create schematics_agent_deploy data source
+data "ibm_schematics_agent_deploy" "schematics_agent_deploy_instance" {
+  agent_id = ibm_schematics_agent.schematics_agent_instance.id
+}
+// Create schematics_agent_health data source
+data "ibm_schematics_agent_health" "schematics_agent_health_instance" {
+  agent_id = ibm_schematics_agent.schematics_agent_instance.id
+}

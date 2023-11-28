@@ -89,18 +89,6 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"members_memory_allocation_mb": {
-				Description: "Memory allocation required for cluster",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Deprecated:  "This field is deprecated please use groups",
-			},
-			"members_disk_allocation_mb": {
-				Description: "Disk allocation required for cluster",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Deprecated:  "This field is deprecated please use groups",
-			},
 			"platform_options": {
 				Description: "Platform-specific options for this deployment.r",
 				Type:        schema.TypeSet,
@@ -688,10 +676,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
-
 	d.Set("groups", flex.FlattenIcdGroupsV5(groupList))
-	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
-	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
 	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
 		ID:      &instance.ID,

@@ -5,6 +5,7 @@ package kubernetes_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -64,7 +65,112 @@ func TestAccIBMContainerIngressSecretTLS_Basic(t *testing.T) {
 				ResourceName:            "ibm_container_ingress_secret_tls.secret",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"region", "issuer_name"},
+				ImportStateVerifyIgnore: []string{"region", "issuer_name", "update_secret"},
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerIngressSecretTLS_InvalidName(t *testing.T) {
+	secretName := fmt.Sprintf("-)tf-container-ingress-secret-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerIngressSecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMContainerIngressSecretTLSBasic(secretName),
+				ExpectError: regexp.MustCompile(".*should match regexp"),
+			},
+		},
+	})
+}
+
+// test ability to flip update_secret field to get upstream secret update from secrets manager instance via ingress API
+func TestAccIBMContainerIngressSecretTLS_BasicForceUpdate(t *testing.T) {
+	secretName := fmt.Sprintf("tf-container-ingress-secret-name-%d", acctest.RandIntRange(10, 100))
+
+	var originalTS string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerIngressSecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerIngressSecretTLSBasic(secretName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "cluster", acc.ClusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_name", secretName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_namespace", "ibm-cert-store"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "cert_crn", acc.CertCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "persistence", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "type", "TLS"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "user_managed", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "status", "created"),
+
+					resource.TestCheckResourceAttrWith("ibm_container_ingress_secret_tls.secret", "last_updated_timestamp", func(value string) error {
+						originalTS = value
+						return nil
+					}),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerIngressSecretTLSForceUpdate(secretName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_name", secretName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_namespace", "ibm-cert-store"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "cert_crn", acc.CertCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "user_managed", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "status", "created"),
+					resource.TestCheckResourceAttrWith("ibm_container_ingress_secret_tls.secret", "last_updated_timestamp", func(value string) error {
+						if originalTS == value {
+							return fmt.Errorf("error timestamp not changed, indicates update didnt go through. original: %s, actual: %s", originalTS, value)
+						}
+						originalTS = value // check if another update will execute without a change to `update_secret`
+						return nil
+					}),
+				),
+			},
+			{
+				Config:             testAccCheckIBMContainerIngressSecretTLSForceUpdate(secretName),
+				ExpectNonEmptyPlan: false,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_name", secretName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "secret_namespace", "ibm-cert-store"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "cert_crn", acc.CertCRN),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "user_managed", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_ingress_secret_tls.secret", "status", "created"),
+					resource.TestCheckResourceAttrWith("ibm_container_ingress_secret_tls.secret", "last_updated_timestamp", func(value string) error {
+						if originalTS != value {
+							return fmt.Errorf("error timestamp has changed, indicates update was called again even though no modification of fields. exptected: %s, actual: %s", originalTS, value)
+						}
+						return nil
+					}),
+				),
+			},
+			{
+				ResourceName:            "ibm_container_ingress_secret_tls.secret",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"region", "issuer_name", "update_secret"},
 			},
 		},
 	})
@@ -120,4 +226,16 @@ resource "ibm_container_ingress_secret_tls" "secret" {
   cert_crn    = "%s"
   persistence = "%t"
 }`, acc.ClusterName, secretName, "ibm-cert-store", acc.UpdatedCertCRN, true)
+}
+
+func testAccCheckIBMContainerIngressSecretTLSForceUpdate(secretName string) string {
+	return fmt.Sprintf(`
+resource "ibm_container_ingress_secret_tls" "secret" {
+  cluster  = "%s"
+  secret_name = "%s"
+  secret_namespace = "%s"
+  cert_crn    = "%s"
+  persistence = "%t"
+  update_secret = "%d"
+}`, acc.ClusterName, secretName, "ibm-cert-store", acc.CertCRN, true, 1)
 }

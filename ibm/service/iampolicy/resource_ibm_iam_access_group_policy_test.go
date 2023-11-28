@@ -513,6 +513,37 @@ func TestAccIBMIAMAccessGroupPolicy_With_ServiceGroupID(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicy_With_Attribute_Based_Condition(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Attribute Based Condition Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "description", "IAM Access Group Policy Attribute Based Condition Update for test scenario"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	iamPolicyManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -1123,6 +1154,140 @@ func testAccCheckIBMIAMAccessGroupPolicyUpdateWithServiceGroupId(name string) st
          		operator = "stringEquals"
          		value    = "IAM"
 			}
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Access Group Policy Attribute Based Condition Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyUpdateAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp"  {
+			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles  = ["Reader", "Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Access Group Policy Attribute Based Condition Update for test scenario"
 		}
 	`, name)
 }

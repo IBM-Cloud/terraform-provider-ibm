@@ -10,11 +10,14 @@ subcategory: "Security and Compliance Center"
 
 Retrieve information about a report violation drift from a read-only data source. Then, yo can reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
+
 ## Example Usage
 
 ```hcl
 data "ibm_scc_report_violation_drift" "scc_report_violation_drift" {
-	report_id = "report_id"
+    instance_id = "00000000-1111-2222-3333-444444444444"
+    report_id = "report_id"
 }
 ```
 
@@ -22,6 +25,7 @@ data "ibm_scc_report_violation_drift" "scc_report_violation_drift" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 * `report_id` - (Required, Forces new resource, String) The ID of the scan that is associated with a report.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-]+$/`.
 * `scan_time_duration` - (Optional, Integer) The duration of the `scan_time` timestamp in number of days.
