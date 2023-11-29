@@ -161,8 +161,8 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	}
 
 	//If the user supplied link agent endpoint, use reduced firewall attach script
-	if _, ok := d.GetOk("host_link_agent_endpoint"); ok {
-		host_link_agent_endpoint := d.Get("host_link_agent_endpoint").(string)
+	if hlae, ok := d.GetOk("host_link_agent_endpoint"); ok {
+		host_link_agent_endpoint := hlae.(string)
 		createRegOptions.HostLinkAgentEndpoint = &host_link_agent_endpoint
 	}
 
