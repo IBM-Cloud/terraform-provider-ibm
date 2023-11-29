@@ -1427,7 +1427,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		users := expandUsers(userList.(*schema.Set).List())
 		for _, user := range users {
-			// Update User, Create if Not Found
+			// Note: Some db users exist after provisioning (i.e. admin, repl)
+			// so we must attempt both methods
 			err := user.Update(instanceID, d, meta)
 
 			if err != nil {
@@ -1978,7 +1979,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		userChanges := expandUserChanges(oldUsers.(*schema.Set).List(), newUsers.(*schema.Set).List())
 
 		for _, change := range userChanges {
-
 			// Delete User
 			if change.isDelete() {
 				// Delete Old User
@@ -1987,15 +1987,25 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 				if err != nil {
 					return diag.FromErr(err)
 				}
+			}
 
-				// Create User
-			} else if change.isCreate() || change.isUpdate() {
-				// Update User, Create if Not Found
-				err = change.New.Update(instanceID, d, meta)
+			if change.isCreate() || change.isUpdate() {
 
-				// User does not exist, create user
-				if err != nil {
+				// Note: User Update is not supported for ops_manager user type
+				// Delete (ignoring errors), then re-create
+				if change.isUpdate() && !change.New.isUpdatable() {
+					change.Old.Delete(instanceID, d, meta)
+
 					err = change.New.Create(instanceID, d, meta)
+				} else {
+					// Note: Some db users exist exist after provisioning (i.e. admin, repl)
+					// so we must attempt both methods
+					err = change.New.Update(instanceID, d, meta)
+
+					// Create User if Update failed
+					if err != nil {
+						err = change.New.Create(instanceID, d, meta)
+					}
 				}
 
 				if err != nil {
@@ -2878,7 +2888,10 @@ func (c *userChange) isCreate() bool {
 }
 
 func (c *userChange) isUpdate() bool {
-	return c.New != nil && c.Old != nil && c.Old.Password != c.New.Password
+	return c.New != nil &&
+		c.Old != nil &&
+		((c.Old.Password != c.New.Password) ||
+			(c.Old.Role != c.New.Role))
 }
 
 func (u *DatabaseUser) ID() (id string) {
