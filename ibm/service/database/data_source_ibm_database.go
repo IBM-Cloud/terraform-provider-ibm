@@ -676,7 +676,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
-	d.Set("groups", flex.FlattenIcdGroupsV5(groupList))
+	d.Set("groups", flex.FlattenIcdGroups(groupList))
 
 	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
 		ID:      &instance.ID,

@@ -539,52 +539,7 @@ func FlattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 	return vlans
 }
 
-func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
-	groups := make([]map[string]interface{}, len(grouplist.Groups))
-	for i, group := range grouplist.Groups {
-		memorys := make([]map[string]interface{}, 1)
-		memory := make(map[string]interface{})
-		memory["units"] = group.Memory.Units
-		memory["allocation_mb"] = group.Memory.AllocationMb
-		memory["minimum_mb"] = group.Memory.MinimumMb
-		memory["step_size_mb"] = group.Memory.StepSizeMb
-		memory["is_adjustable"] = group.Memory.IsAdjustable
-		memory["can_scale_down"] = group.Memory.CanScaleDown
-		memorys[0] = memory
-
-		cpus := make([]map[string]interface{}, 1)
-		cpu := make(map[string]interface{})
-		cpu["units"] = group.Cpu.Units
-		cpu["allocation_count"] = group.Cpu.AllocationCount
-		cpu["minimum_count"] = group.Cpu.MinimumCount
-		cpu["step_size_count"] = group.Cpu.StepSizeCount
-		cpu["is_adjustable"] = group.Cpu.IsAdjustable
-		cpu["can_scale_down"] = group.Cpu.CanScaleDown
-		cpus[0] = cpu
-
-		disks := make([]map[string]interface{}, 1)
-		disk := make(map[string]interface{})
-		disk["units"] = group.Disk.Units
-		disk["allocation_mb"] = group.Disk.AllocationMb
-		disk["minimum_mb"] = group.Disk.MinimumMb
-		disk["step_size_mb"] = group.Disk.StepSizeMb
-		disk["is_adjustable"] = group.Disk.IsAdjustable
-		disk["can_scale_down"] = group.Disk.CanScaleDown
-		disks[0] = disk
-
-		l := map[string]interface{}{
-			"group_id": group.Id,
-			"count":    group.Count,
-			"memory":   memorys,
-			"cpu":      cpus,
-			"disk":     disks,
-		}
-		groups[i] = l
-	}
-	return groups
-}
-
-func FlattenIcdGroupsV5(groupResponse *clouddatabasesv5.ListDeploymentScalingGroupsResponse) []map[string]interface{} {
+func FlattenIcdGroups(groupResponse *clouddatabasesv5.ListDeploymentScalingGroupsResponse) []map[string]interface{} {
 	groups := make([]map[string]interface{}, len(groupResponse.Groups))
 	for i, group := range groupResponse.Groups {
 		memorys := make([]map[string]interface{}, 1)
