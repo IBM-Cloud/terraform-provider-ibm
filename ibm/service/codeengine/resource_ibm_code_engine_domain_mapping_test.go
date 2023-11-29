@@ -214,7 +214,7 @@ func testAccCheckIbmCodeEngineDomainMappingDestroy(s *terraform.State) error {
 func decodeBase64EnvVar(base64Text string, envVar string) string {
 	decodedText, err := base64.StdEncoding.DecodeString(base64Text)
 	if err != nil {
-		fmt.Printf("Error decoding environment variable %s: %s", envVar, err)
+		// fmt.Errorf("Error decoding environment variable %s: %s", envVar, err)
 		return ""
 	}
 	return string(decodedText)
