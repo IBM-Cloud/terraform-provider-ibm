@@ -65,7 +65,6 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
 }
 
 // Provision code_engine_secret resource instance for format service_access
-
 resource "ibm_code_engine_secret" "code_engine_secret_service_access" {
   project_id = ibm_code_engine_project.code_engine_project_instance.project_id
   name       = var.code_engine_secret_service_access_name
@@ -85,7 +84,6 @@ resource "ibm_code_engine_secret" "code_engine_secret_service_access" {
 }
 
 // Provision code_engine_binding resource instance
-
 resource "ibm_code_engine_binding" "code_engine_binding_instance" {
   project_id = ibm_code_engine_project.code_engine_project_instance.project_id
   component {
@@ -94,6 +92,17 @@ resource "ibm_code_engine_binding" "code_engine_binding_instance" {
   }
   prefix      = var.code_engine_binding_prefix
   secret_name = ibm_code_engine_secret.code_engine_secret_instance.name
+}
+
+// Provision code_engine_domain_mapping resource instance
+resource "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_instance" {
+  project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+  name       = var.code_engine_domain_mapping_name
+  component {
+    name          = ibm_code_engine_app.code_engine_app_instance.name
+    resource_type = ibm_code_engine_app.code_engine_app_instance.resource_type
+  }
+  tls_secret = ibm_code_engine_secret.code_engine_secret_instance.name
 }
 
 //////////////////
@@ -138,4 +147,10 @@ data "ibm_code_engine_job" "code_engine_job_data" {
 data "ibm_code_engine_binding" "code_engine_binding_data" {
   project_id = data.ibm_code_engine_project.code_engine_project_data.project_id
   binding_id = ibm_code_engine_binding.code_engine_binding_instance.binding_id
+}
+
+// Create code_engine_domain_mapping data source
+data "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_data" {
+  project_id = data.ibm_code_engine_project.code_engine_project_data.project_id
+  name       = var.code_engine_domain_mapping_name
 }

@@ -226,6 +226,11 @@ func ResourceIBMSchematicsWorkspace() *schema.Resource {
 				Description: "List of values metadata.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the variable.",
+						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -249,7 +254,7 @@ func ResourceIBMSchematicsWorkspace() *schema.Resource {
 							Computed:    true,
 							Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 						},
-						"default_value": &schema.Schema{
+						"default": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Default value for the variable only if the override value is not specified.",
@@ -808,8 +813,8 @@ func resourceIBMSchematicsWorkspaceMapToSharedTargetData(sharedTargetDataMap map
 	}
 	if sharedTargetDataMap["entitlement_keys"] != nil {
 		entitlementKeys := []map[string]interface{}{}
-		for _, entitlementKeysItem := range sharedTargetDataMap["entitlement_keys"].([]map[string]interface{}) {
-			entitlementKeys = append(entitlementKeys, entitlementKeysItem)
+		for _, entitlementKeysItem := range sharedTargetDataMap["entitlement_keys"].([]interface{}) {
+			entitlementKeys = append(entitlementKeys, entitlementKeysItem.(map[string]interface{}))
 		}
 		sharedTargetData.EntitlementKeys = entitlementKeys
 	}
@@ -837,8 +842,8 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 
 	if templateSourceDataRequestMap["env_values"] != nil {
 		envValues := []map[string]interface{}{}
-		for _, envValuesItem := range templateSourceDataRequestMap["env_values"].([]map[string]interface{}) {
-			envValues = append(envValues, envValuesItem)
+		for _, envValuesItem := range templateSourceDataRequestMap["env_values"].([]interface{}) {
+			envValues = append(envValues, envValuesItem.(map[string]interface{}))
 		}
 		templateSourceDataRequest.EnvValues = envValues
 	}
@@ -862,8 +867,8 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 	}
 	if templateSourceDataRequestMap["values_metadata"] != nil {
 		valuesMetadata := []map[string]interface{}{}
-		for _, valuesMetadataItem := range templateSourceDataRequestMap["values_metadata"].([]map[string]interface{}) {
-			valuesMetadata = append(valuesMetadata, valuesMetadataItem)
+		for _, valuesMetadataItem := range templateSourceDataRequestMap["values_metadata"].([]interface{}) {
+			valuesMetadata = append(valuesMetadata, valuesMetadataItem.(map[string]interface{}))
 		}
 		templateSourceDataRequest.ValuesMetadata = valuesMetadata
 	}
