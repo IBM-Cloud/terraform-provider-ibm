@@ -172,11 +172,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description:  "The admin user password for the instance",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringLenBetween(15, 32),
-				Sensitive:    true,
+				Description: "The admin user password for the instance",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ValidateFunc: validation.All(
+					validation.StringLenBetween(15, 32),
+					DatabaseUserPasswordValidator("database"),
+				),
+				Sensitive: true,
 				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 				//  return true
 				// },
@@ -1998,7 +2001,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 					err = change.New.Create(instanceID, d, meta)
 				} else {
-					// Note: Some db users exist exist after provisioning (i.e. admin, repl)
+					// Note: Some db users exist after provisioning (i.e. admin, repl)
 					// so we must attempt both methods
 					err = change.New.Update(instanceID, d, meta)
 
@@ -3072,4 +3075,15 @@ func (u *DatabaseUser) Validate() error {
 	}
 
 	return fmt.Errorf("database user (%s) validation error:\n%w", u.Username, errors.New(string(b)))
+}
+
+func DatabaseUserPasswordValidator(userType string) schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (warnings []string, errors []error) {
+		user := &DatabaseUser{Username: "admin", Type: userType, Password: i.(string)}
+		err := user.Validate()
+		if err != nil {
+			errors = append(errors, err)
+		}
+		return
+	}
 }
