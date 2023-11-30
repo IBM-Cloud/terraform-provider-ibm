@@ -4334,15 +4334,16 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	//primary_network_attachment
 	if d.HasChange("primary_network_attachment") && !d.IsNewResource() {
 		networkID := d.Get("primary_network_attachment.0.id").(string)
-		networkName := d.Get("primary_network_attachment.0.name").(string)
-		nacVniName := d.Get("primary_network_attachment.0.virtual_network_interface").(string)
+		networkName := "primary_network_attachment.0.name"
+		nacVniName := "primary_network_attachment.0.virtual_network_interface"
 		if d.HasChange(networkName) {
+			networkNameString := d.Get(networkName).(string)
 			updateInstanceNetworkAttachmentOptions := &vpcv1.UpdateInstanceNetworkAttachmentOptions{
 				InstanceID: &id,
 				ID:         &networkID,
 			}
 			instanceNetworkAttachmentPatch := &vpcv1.InstanceNetworkAttachmentPatch{
-				Name: &networkName,
+				Name: &networkNameString,
 			}
 			instanceNetworkAttachmentPatchAsPatch, err := instanceNetworkAttachmentPatch.AsPatch()
 			if err != nil {
