@@ -150,17 +150,67 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				MaxItems:    1,
 				Optional:    true,
 				Description: "",
+				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"edgerc": &schema.Schema{
-							Type:        schema.TypeString,
+							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Path to Akamai's configuration file.",
+							Description: "Akamai credentials",
+							MaxItems:    1,
+							ForceNew:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"path_to_edgerc": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Path to Akamai's configuration file.",
+										ForceNew:    true,
+									},
+									"config_section": &schema.Schema{
+										Description: "The section of the edgerc file to use for configuration.",
+										Optional:    true,
+										Type:        schema.TypeString,
+										Default:     "default",
+										ForceNew:    true,
+									},
+								},
+							},
 						},
-						"config_section": &schema.Schema{
-							Description: "The section of the edgerc file to use for configuration.",
+						"config": &schema.Schema{
+							Type:        schema.TypeList,
 							Optional:    true,
-							Type:        schema.TypeString,
+							Description: "Akamai credentials",
+							MaxItems:    1,
+							ForceNew:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+									"client_secret": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+									"access_token": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+									"client_token": &schema.Schema{
+										Type:      schema.TypeString,
+										Optional:  true,
+										ForceNew:  true,
+										Sensitive: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -731,8 +781,9 @@ func resourceIbmSmPublicCertificateMapToSecretPrototype(d *schema.ResourceData) 
 			model.Dns = core.StringPtr(d.Get("dns").(string))
 		}
 	}
-	if _, ok := d.GetOk("bundle_certs"); ok {
-		model.BundleCerts = core.BoolPtr(d.Get("bundle_certs").(bool))
+	bundleCerts, ok := d.GetOkExists("bundle_certs")
+	if ok {
+		model.BundleCerts = core.BoolPtr(bundleCerts.(bool))
 	}
 	if _, ok := d.GetOk("rotation"); ok {
 		RotationModel, err := resourceIbmSmPublicCertificateMapToPublicCertificateRotationPolicy(d.Get("rotation").([]interface{})[0].(map[string]interface{}))
@@ -932,13 +983,12 @@ func ConcreteListToStringSlice(elements []interface{}, commonName string) ([]str
 }
 
 func setChallengesWithAkamaiAndValidateManualDns(context context.Context, d *schema.ResourceData, meta interface{}, secret *secretsmanagerv2.PublicCertificate, secretsManagerClient *secretsmanagerv2.SecretsManagerV2) diag.Diagnostics {
-	edgerc := d.Get("akamai").([]interface{})[0].(map[string]interface{})["edgerc"].(string)
-	configSection := d.Get("akamai").([]interface{})[0].(map[string]interface{})["config_section"].(string)
-	config, err := edgegrid.InitEdgeRc(edgerc, configSection)
+	config, err := configureAkamai(d)
 	if err != nil {
 		resourceIbmSmPublicCertificateDelete(context, d, meta)
-		return diag.FromErr(fmt.Errorf("error initiating edgerc: %s", err))
+		return err
 	}
+
 	successfullySetChallengeDomains := make(map[string]string)
 	ttl := 120
 
@@ -1009,6 +1059,48 @@ func setChallengesWithAkamaiAndValidateManualDns(context context.Context, d *sch
 	}
 
 	return validateManualDns(context, d, secretsManagerClient)
+}
+
+func configureAkamai(d *schema.ResourceData) (edgegrid.Config, diag.Diagnostics) {
+	var config edgegrid.Config
+	var err error
+	defaultErrMsg := "error configuring Akamai: One or more arguments are missing. Please verify that you provided either a path to your 'edgerc' file or all the config parameters ('host', 'client_secret', 'access_token' and 'client_token')"
+
+	if len(d.Get("akamai").([]interface{})) == 0 || d.Get("akamai").([]interface{})[0] == nil {
+		return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+	}
+	akamaiData := d.Get("akamai").([]interface{})[0].(map[string]interface{})
+
+	if len(akamaiData["edgerc"].([]interface{})) > 0 {
+		edgercData := akamaiData["edgerc"].([]interface{})[0].(map[string]interface{})
+		edgerc := edgercData["path_to_edgerc"].(string)
+		if edgerc == "" {
+			return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+		}
+		configSection := edgercData["config_section"].(string)
+		config, err = edgegrid.InitEdgeRc(edgerc, configSection)
+		if err != nil {
+			return config, diag.FromErr(fmt.Errorf("error initiating edgerc: %s", err))
+		}
+	} else if len(akamaiData["config"].([]interface{})) > 0 && akamaiData["config"].([]interface{})[0] != nil {
+		akamaiDataConfig := akamaiData["config"].([]interface{})[0].(map[string]interface{})
+		if akamaiDataConfig["host"] != "" && akamaiDataConfig["client_secret"] != "" && akamaiDataConfig["access_token"] != "" && akamaiDataConfig["client_token"] != "" {
+			config.ClientSecret = akamaiDataConfig["client_secret"].(string)
+			config.Host = akamaiDataConfig["host"].(string)
+			config.AccessToken = akamaiDataConfig["access_token"].(string)
+			config.ClientToken = akamaiDataConfig["client_token"].(string)
+			if config.MaxBody == 0 {
+				config.MaxBody = 131072
+			}
+		} else {
+			return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+		}
+	} else {
+		return config, diag.FromErr(fmt.Errorf(defaultErrMsg))
+	}
+
+	return config, nil
+
 }
 
 func checkIfRecordExistsInAkamai(config edgegrid.Config, zone string, txtRecordName string) ([]string, diag.Diagnostics) {

@@ -57,6 +57,7 @@ In addition to all argument reference list, you can access the following attribu
       Nested scheme for `size`:
       - `type` - (String) The type for this profile field.
       - `value` - (String) The size of the disk in GB (gigabytes).
+  - `status` - (String) The status of the dedicated host profile. Values coule be,  `previous`: This dedicated host profile is an older revision, but remains provisionable and usable. `current`: This profile is the latest revision.
  - `supported_instance_interface_types` - (List) Nested `supported_instance_interface_types` blocks have the following structure:
 
       Nested scheme for `supported_instance_interface_types`:

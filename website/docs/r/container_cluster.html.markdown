@@ -204,12 +204,13 @@ Review the argument references that you can specify for your resource.
 - `hardware` - (Optional, String) The level of hardware isolation for worker nodes in the default worker pool. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. This option is available for virtual machine worker node flavors only. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
 - `image_security_enforcement` - (Optional, Bool) Set to **true** to enable image security enforcement policies in a cluster.
 - `gateway_enabled` - (Optional, Bool) Set to **true** if you want to automatically create a gateway-enabled cluster. If `gateway_enabled` is set to **true**, then `private_service_endpoint` must be set to **true** at the same time.
-- `kms_config` - (Optional, List) Used to attach a Key Protect instance to a cluster. Nested `kms_config` block have `instance_id`, `crk_id`, `private_endpoint` structure.
+- `kms_config` - (Optional, List) Used to attach a Key Protect instance to a cluster. Nested `kms_config` block has an `instance_id`, `crk_id`, `private_endpoint` and `account_id`.
 
   Nested scheme for `kms_config`:
   - `crk_id` - (Optional, String) The ID of the customer root key (CRK).
   - `instance_id` - (Optional, String) The GUID of the Key Protect instance.
   - `private_endpoint` - (Optional, Bool) Set to **true** to configure the KMS private service endpoint. Default value is **false**.
+  - `account_id` - (Optional, String) Account ID of KMS instance holder - if not provided, defaults to the account in use.
 - `kube_version` - (Optional, String) The Kubernetes or OpenShift version that you want to set up in your cluster. If the version is not specified, the default version in [IBM Cloud Kubernetes Service](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions) or [Red Hat OpenShift on IBM Cloud](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions#version_types) is used. For example, to specify Kubernetes version 1.16, enter `1.16`. For OpenShift clusters, you can specify version `3.11_openshift` or `4.3.1_openshift`.
 - `labels`- (Optional, Map) Labels on all the workers in the default worker pool.
 - `machine_type` - (Optional, String) The machine type for the worker nodes in the default worker pool. The machine type determines the amount of memory, CPU, and disk space that is available to the worker node. For an overview of supported machine types, see [Planning your worker node setup](https://cloud.ibm.com/docs/containers?topic=containers-planning_worker_nodes). You can retrieve the value by executing the `ibmcloud ks flavor ls --zone <zone>` command in the IBM Cloud CLI. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.

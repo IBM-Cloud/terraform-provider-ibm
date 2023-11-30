@@ -96,6 +96,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 							Default:     false,
 							Description: "Specify this option to use the KMS public service endpoint.",
 						},
+						"account_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Account ID of KMS instance holder - if not provided, defaults to the account in use",
+						},
 					},
 				},
 			},
@@ -689,7 +694,34 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	if d.HasChange("kms_config") {
 
-		err := enableKMS(d, clusterID, csClient)
+			kmsConfiglist := kms.([]interface{})
+
+			for _, l := range kmsConfiglist {
+				kmsMap, _ := l.(map[string]interface{})
+
+				//instance_id - Required field
+				instanceID := kmsMap["instance_id"].(string)
+				kmsConfig.Kms = instanceID
+
+				//crk_id - Required field
+				crk := kmsMap["crk_id"].(string)
+				kmsConfig.Crk = crk
+
+				//Read event - as its optional check for existence
+				if privateEndpoint := kmsMap["private_endpoint"]; privateEndpoint != nil {
+					endpoint := privateEndpoint.(bool)
+					kmsConfig.PrivateEndpoint = endpoint
+				}
+
+				//Read optional account id
+				if accountid := kmsMap["account_id"]; accountid != nil {
+					accountid_string := accountid.(string)
+					kmsConfig.AccountID = accountid_string
+				}
+			}
+		}
+
+		err := csClient.Kms().EnableKms(kmsConfig, targetEnv)
 		if err != nil {
 			log.Printf(
 				"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)

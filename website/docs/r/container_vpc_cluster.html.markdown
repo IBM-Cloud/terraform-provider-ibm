@@ -177,14 +177,16 @@ Review the argument references that you can specify for your resource.
 - `force_delete_storage` - (Optional, Bool) If set to **true**,force the removal of persistent storage associated with the cluster during cluster deletion. Default value is **false**. **Note** If `force_delete_storage` parameter is used after provisioning the cluster, then, you need to execute `terraform apply` before `terraform destroy` for `force_delete_storage` parameter to take effect.
 - `flavor` - (Required, String) The flavor of the VPC worker nodes in the default worker pool. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
 - `image_security_enforcement` - (Optional, Bool) Set to **true** to enable image security enforcement policies in a cluster.
-- `name` - (Required, String) The name of the cluster. 
-- `kms_config` - (Optional, String) Use to attach a Key Protect instance to a cluster. Nested `kms_config` block has an `instance_id`, `crk_id`, `private_endpoint`.
+- `name` - (Required, Forces new resource, String) The name of the cluster.
+- `kms_config` - (Optional, String) Use to attach a Key Protect instance to a cluster. Nested `kms_config` block has an `instance_id`, `crk_id`, `private_endpoint` and `account_id`.
 - `host_pool_id` - (Optional, String) If provided, the default worker pool will be associated with a dedicated host pool identified by this ID. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
 
   Nested scheme for `kms_config`:
   - `crk_id` - (Optional, String) The ID of the customer root key (CRK).
   - `instance_id` - (Optional, String) The GUID of the Key Protect instance.
   - `private_endpoint` - (Optional, Bool) Set **true** to configure the KMS private service endpoint. Default value is **false**.
+  - `account_id` - (Optional, String) Account ID of KMS instance holder - if not provided, defaults to the account in use.
+- `host_pool_id` - (Optional, String) If provided, the cluster will be associated with a dedicated host pool identified by this ID.
 - `kube_version` - (Optional, String)  Specify the Kubernetes version, including the major.minor version. If you do not include this flag, the default version is used. To see available versions, run `ibmcloud ks versions`.
 - `operating_system` - (Optional, String) The operating system of the workers in the default worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
 - `secondary_storage` - (Optional, String) The secondary storage option for the workers in the default worker pool. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
@@ -213,9 +215,9 @@ Review the argument references that you can specify for your resource.
   - `name` - (Required, Forces new resource, String) The zone name for the default worker pool in a multizone cluster.
   - `subnet_id` - (Required, Forces new resource, String) The VPC subnet to assign the cluster's default worker pool.
 
-- `crk` - Root Key ID for boot volume encryption.
-- `kms_instance_id` - Instance ID for boot volume encryption.
-- `kms_account_id` - Account ID for boot volume encryption, if other account is providing the kms.
+- `crk` - (Optional, String) Root Key ID for boot volume encryption.
+- `kms_instance_id` - (Optional, String) Instance ID for boot volume encryption.
+- `kms_account_id` - (Optional, String) Account ID for boot volume encryption, if other account is providing the kms.
 
 **Note**
 

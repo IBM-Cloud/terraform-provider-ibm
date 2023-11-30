@@ -330,6 +330,50 @@ func TestAccIBMISLB_basic_network(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLB_basic_network_security_group(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
+	securityGroup := fmt.Sprintf("tflbsecuritygroup%d", acctest.RandIntRange(10, 100))
+	securityGroup2 := fmt.Sprintf("tflbsecuritygroup2%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBNetworkSgConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, nlbName, securityGroup),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "name", nlbName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_NLB", "hostname"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_NLB", "security_groups.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "security_groups.#", "1"),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBNetworkSgUpdateConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, nlbName1, securityGroup, securityGroup2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "name", nlbName1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_NLB", "security_groups.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "security_groups.#", "2"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISLB_basic_network_vnf(t *testing.T) {
 	var lb string
@@ -581,6 +625,56 @@ func testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, zone, cidr, nlbName s
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 		profile = "network-fixed"
     }`, vpcname, subnetname, zone, cidr, nlbName)
+
+}
+func testAccCheckIBMISLBNetworkSgConfig(vpcname, subnetname, zone, cidr, nlbName, securityGroup string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_security_group" "testacc_security_group" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+	}
+	resource "ibm_is_lb" "testacc_NLB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		security_groups = [ibm_is_security_group.testacc_security_group.id]
+		profile = "network-fixed"
+    }`, vpcname, subnetname, zone, cidr, securityGroup, nlbName)
+
+}
+func testAccCheckIBMISLBNetworkSgUpdateConfig(vpcname, subnetname, zone, cidr, nlbName, securityGroup, securityGroup2 string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_security_group" "testacc_security_group" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+	}
+	resource "ibm_is_security_group" "testacc_security_group2" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+	}
+	resource "ibm_is_lb" "testacc_NLB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		security_groups = [ibm_is_security_group.testacc_security_group.id, ibm_is_security_group.testacc_security_group2.id]
+		profile = "network-fixed"
+    }`, vpcname, subnetname, zone, cidr, securityGroup, securityGroup2, nlbName)
 
 }
 

@@ -464,7 +464,7 @@ func TestAccIBMContainerVpcClusterBaseEnvvar(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update", "albs"},
 			},
 		},
 	})
@@ -544,7 +544,22 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 // export IBM_CLUSTER_VPC_ID
 // export IBM_CLUSTER_VPC_SUBNET_ID
 // export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+// optionally for kms and cross account kms:
+// export IBM_KMS_INSTANCE_ID
+// export IBM_CRK_ID
+// for cross account kms:
+// export IBM_KMS_ACCOUNT_ID
 func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
+	var kmsConfig string
+	if acc.KmsInstanceID != "" {
+		kmsConfig = fmt.Sprintf(`
+		kms_config {
+			instance_id = "%[1]s"
+			crk_id = "%[2]s"
+			account_id = "%[3]s"
+		}
+	`, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
+	}
 	config := fmt.Sprintf(`
 	resource "ibm_container_vpc_cluster" "cluster" {
 		name              = "%[1]s"
@@ -557,8 +572,10 @@ func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
 			name      = "us-south-1"
 		}
 		wait_till = "normal"
+		%[5]s
 	}
-	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, kmsConfig)
+
 	fmt.Println(config)
 	return config
 }

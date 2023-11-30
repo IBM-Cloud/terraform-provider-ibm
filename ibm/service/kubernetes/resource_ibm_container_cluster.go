@@ -122,6 +122,11 @@ func ResourceIBMContainerCluster() *schema.Resource {
 							Default:     false,
 							Description: "Specify this option to use the KMS public service endpoint.",
 						},
+						"account_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Account ID of KMS instance holder - if not provided, defaults to the account in use",
+						},
 					},
 				},
 			},
@@ -823,7 +828,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			d.Set("private_vlan_id", workersByPool[0].PrivateVlan)
 		}
 		d.Set("machine_type", strings.Split(workersByPool[0].MachineType, ".encrypted")[0])
-		d.Set("datacenter", cls.DataCenter)
 		if workersByPool[0].MachineType != "free" {
 			if strings.HasSuffix(workersByPool[0].MachineType, ".encrypted") {
 				d.Set("disk_encryption", true)
@@ -872,6 +876,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("ingress_hostname", cls.IngressHostname)
 	d.Set("ingress_secret", cls.IngressSecretName)
 	d.Set("region", cls.Region)
+	d.Set("datacenter", cls.DataCenter)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("subnet_id", d.Get("subnet_id").(*schema.Set))
@@ -1017,6 +1022,12 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				if privateEndpoint := kmsMap["private_endpoint"]; privateEndpoint != nil {
 					endpoint := privateEndpoint.(bool)
 					kmsConfig.PrivateEndpoint = endpoint
+				}
+
+				//Read optional account id
+				if accountid := kmsMap["account_id"]; accountid != nil {
+					accountid_string := accountid.(string)
+					kmsConfig.AccountID = accountid_string
 				}
 			}
 		}
