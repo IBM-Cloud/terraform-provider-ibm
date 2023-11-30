@@ -27,39 +27,39 @@ resource "ibm_is_share" "example" {
 }
 
 resource "ibm_is_share_mount_target" "example" {
-  share = ibm_is_share.is_share.id
-  vpc = ibm_is_vpc.vpc.id
+  share = ibm_is_share.example.id
+  vpc = ibm_is_vpc.example.id
   name = "my-share-target"
 }`
 ```
 ```
 //Create mount target with virtual network interface that has primary ip name and subnet id
-resource "ibm_is_vpc" "example" {
+resource "ibm_is_vpc" "example1" {
   name = "my-vpc"
 }
 
-resource "ibm_is_share" "example" {
+resource "ibm_is_share" "example1" {
   access_control_mode = "security_group"
   zone    = "br-sao-2"
   size    = 9600
   name    = "my-example-share1"
   profile = "dp2"
 }
-resource "ibm_is_subnet" "example" {
+resource "ibm_is_subnet" "example1" {
   # provider = ibm.sao
   name                     = "my-subnet"
-  vpc                      = ibm_is_vpc.vpc2.id
+  vpc                      = ibm_is_vpc.example1.id
   zone                     = "br-sao-2"
   total_ipv4_address_count = 16
 }
 
 resource "ibm_is_share_mount_target" "example1" {
-  share = ibm_is_share.example.id
+  share = ibm_is_share.example1.id
   virtual_network_interface {
     primary_ip {
       name = "my-example-pip"
     }
-    subnet = ibm_is_subnet.example.id
+    subnet = ibm_is_subnet.example1.id
     name = "my-example-vni"
   }
   name  = "my-example-mount-target"
@@ -80,8 +80,8 @@ resource "ibm_is_subnet_reserved_ip" "example" {
   subnet = ibm_is_subnet.example.id
   name = "my-example-resip"
 }
-resource "ibm_is_share_mount_target" "mtarget1" {
-  share = ibm_is_share.share.id
+resource "ibm_is_share_mount_target" "example" {
+  share = ibm_is_share.example.id
   virtual_network_interface {
     primary_ip {
       reserved_ip = ibm_is_subnet_reserved_ip.example.reserved_ip
