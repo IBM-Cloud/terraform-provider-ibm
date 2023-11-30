@@ -295,10 +295,10 @@ func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string,
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -327,14 +327,14 @@ func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGrou
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -367,7 +367,7 @@ func testAccCheckIBMDatabaseInstanceCassandraReduced(databaseResourceGroup strin
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		timeouts {
 			create = "480m"
@@ -391,7 +391,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup str
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -411,7 +411,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup str
 
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -441,7 +441,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 		version                      = "5.1"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -462,11 +462,11 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -500,7 +500,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup s
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 		version                      = "5.1"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -540,7 +540,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup 
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -581,7 +581,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupBasic(databaseResourceGroup st
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -600,7 +600,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupBasic(databaseResourceGroup st
 		}
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -630,7 +630,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupFullyspecified(databaseResourc
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -649,11 +649,11 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupFullyspecified(databaseResourc
 		}
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -688,7 +688,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupReduced(databaseResourceGroup 
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 		group_id = "member"
 			members {
@@ -728,7 +728,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupScaleOut(databaseResourceGroup
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		group_id = "member"
