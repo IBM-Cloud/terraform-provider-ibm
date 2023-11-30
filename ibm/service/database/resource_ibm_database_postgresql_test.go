@@ -421,6 +421,9 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 			memory {
 			  allocation_mb = 2048
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 			disk {
 			  allocation_mb = 10240
 			}
@@ -473,6 +476,9 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 			}
 			cpu {
 			  allocation_count = 6
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		service_endpoints            = "public-and-private"
@@ -540,11 +546,14 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			disk {
 				allocation_mb = 5120
 			}
 			cpu {
 				allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		users {
@@ -582,11 +591,14 @@ func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResource
 			memory {
 				allocation_mb = 1152
 			}
-			 disk {
+			disk {
 				allocation_mb = 7168
 			}
 			cpu {
 				allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		users {
@@ -632,11 +644,14 @@ func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup s
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			disk {
 				allocation_mb = 7168
 			}
 			cpu {
 				allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 	}
@@ -664,11 +679,14 @@ func testAccCheckIBMDatabaseInstancePostgresGroupScaleOut(databaseResourceGroup 
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			disk {
 				allocation_mb = 7168
 			}
 			cpu {
 				allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		service_endpoints            = "public"

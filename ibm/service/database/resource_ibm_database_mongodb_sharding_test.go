@@ -97,10 +97,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 20480
 			}
 		}
@@ -137,14 +137,11 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 28672
+			host_flavor {
+				id = "b3c.8x32.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 40960
-			}
-			cpu {
-				allocation_count = 9
 			}
 		}
 		users {
@@ -189,10 +186,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 40960
 			}
 		}

@@ -113,8 +113,8 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 20480
@@ -153,14 +153,11 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-			  allocation_mb = 2048
+			host_flavor {
+				id = "b3c.8x32.encrypted"
 			}
 			disk {
 			  allocation_mb = 30720
-			}
-			cpu {
-				allocation_count = 4
 			}
 		}
 		service_endpoints            = "public-and-private"
@@ -205,8 +202,8 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 30720

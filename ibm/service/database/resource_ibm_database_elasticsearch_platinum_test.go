@@ -355,8 +355,8 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		group {
 			group_id = "member"
 
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
@@ -394,6 +394,13 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(database
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 		users {
 		  name     = "user123"
 		  password = "password12345678"
@@ -435,6 +442,13 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourc
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 
 		timeouts {
 			create = "120m"
@@ -463,8 +477,8 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(database
 		group {
 		  group_id = "member"
 
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
@@ -499,14 +513,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 			members {
 			  allocation_count = 3
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 5120
-			}
-			cpu {
-			  allocation_count = 3
 			}
 		}
 
@@ -547,14 +558,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 			members {
 			  allocation_count = 3
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
-			}
-			cpu {
-			  allocation_count = 3
 			}
 		}
 		users {
@@ -602,14 +610,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseRes
 			members {
 			  allocation_count = 3
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
-			}
-			cpu {
-			  allocation_count = 3
 			}
 		}
 
@@ -641,14 +646,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseRe
 			members {
 			  allocation_count = 4
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
-			}
-			cpu {
-			  allocation_count = 3
 			}
 		}
 
@@ -681,14 +683,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 			members {
 				allocation_count = 3
 			}
-			memory {
-				allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 				allocation_mb = 5120
-			}
-			cpu {
-				allocation_count = 3
 			}
 		}
 
@@ -730,14 +729,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		  members {
 		    allocation_count = 3
 		  }
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
-		  }
-		  cpu {
-		    allocation_count = 3
 		  }
 		}
 		users {
@@ -787,14 +783,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseRe
 		  members {
 		    allocation_count = 3
 		  }
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
-		  }
-		  cpu {
-		    allocation_count = 3
 		  }
 		}
 
@@ -827,14 +820,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseR
 		  members {
 		    allocation_count = 4
 		  }
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
-		  }
-		  cpu {
-		    allocation_count = 3
 		  }
 		}
 		timeouts {

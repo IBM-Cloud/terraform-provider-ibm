@@ -137,6 +137,9 @@ func testAccCheckIBMDatabaseInstanceEtcdBasic(databaseResourceGroup string, name
 			memory {
 			  allocation_mb = 3072
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 			disk {
 			  allocation_mb = 61440
 			}
@@ -171,6 +174,9 @@ func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup str
 			group_id = "member"
 			memory {
 			  allocation_mb = 6144
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 			disk {
 			  allocation_mb = 64512
@@ -215,6 +221,9 @@ func testAccCheckIBMDatabaseInstanceEtcdReduced(databaseResourceGroup string, na
 			group_id = "member"
 			memory {
 			  allocation_mb = 3072
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 			disk {
 			  allocation_mb = 64512

@@ -210,10 +210,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 20480
 			}
 		}
@@ -251,14 +251,11 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 28672
+			host_flavor {
+				id = "b3c.8x32.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 40960
-			}
-			cpu {
-				allocation_count = 9
 			}
 		}
 		users {
@@ -305,10 +302,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseReduced(databaseResourceGro
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 40960
 			}
 		}
@@ -339,10 +336,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 		group {
 			group_id = "member"
 
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 20480
 			}
 		}
@@ -353,6 +350,9 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 			members {
 				allocation_count = 1
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 
 		group {
@@ -360,6 +360,9 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 
 			members {
 				allocation_count = 1
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 

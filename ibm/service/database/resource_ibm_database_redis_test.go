@@ -174,7 +174,10 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 1024
 			}
 		}
@@ -214,7 +217,10 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 			memory {
 				allocation_mb = 1152
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 2048
 			}
 		}
@@ -249,7 +255,10 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 2048
 			}
 		}
@@ -277,7 +286,10 @@ func testAccCheckIBMDatabaseInstanceRedisGroupMigration(databaseResourceGroup st
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 2048
 			}
 	  }

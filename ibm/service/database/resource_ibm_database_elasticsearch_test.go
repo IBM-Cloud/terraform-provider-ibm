@@ -421,6 +421,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResource
 		  memory {
 		    allocation_mb = 1024
 		  }
+		  host_flavor {
+			  id = "multitenant"
+		  }
 		  disk {
 		    allocation_mb = 6144
 		  }
@@ -463,6 +466,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 			}
 			cpu {
 			  allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		users {
@@ -510,6 +516,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 			}
 			cpu {
 			  allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		users {
@@ -566,6 +575,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 			cpu {
 			  allocation_count = 3
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 
 		timeouts {
@@ -604,6 +616,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 			}
 			cpu {
 			  allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 
@@ -644,6 +659,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 			}
 			cpu {
 				allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 
@@ -693,6 +711,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		  }
 		  cpu {
 		    allocation_count = 3
+		  }
+		  host_flavor {
+			  id = "multitenant"
 		  }
 		}
 		users {
@@ -751,6 +772,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGr
 		  cpu {
 		    allocation_count = 3
 		  }
+		  host_flavor {
+			  id = "multitenant"
+		  }
 		}
 
 		timeouts {
@@ -790,6 +814,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceG
 		  }
 		  cpu {
 		    allocation_count = 3
+		  }
+		  host_flavor {
+			  id = "multitenant"
 		  }
 		}
 		timeouts {
