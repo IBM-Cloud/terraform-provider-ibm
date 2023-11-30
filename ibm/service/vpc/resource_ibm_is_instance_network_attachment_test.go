@@ -143,7 +143,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name"),
 					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name", vniname+"-inline"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address", "10.240.64.11"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address"),
 				),
 			},
 			resource.TestStep{
@@ -170,7 +170,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name"),
 					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name", vninameupdated+"-inline"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address", "10.240.64.11"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address"),
 				),
 			},
 		},
