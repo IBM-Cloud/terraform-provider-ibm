@@ -9,19 +9,18 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func ResourceIBMEnCustomEmailDestination() *schema.Resource {
+func ResourceIBMEnCustomSMSDestination() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnCustomEmailDestinationCreate,
-		ReadContext:   resourceIBMEnCustomEmailDestinationRead,
-		UpdateContext: resourceIBMEnCustomEmailDestinationUpdate,
-		DeleteContext: resourceIBMEnCustomEmailDestinationDelete,
+		CreateContext: resourceIBMEnCustomSMSDestinationCreate,
+		ReadContext:   resourceIBMEnCustomSMSDestinationRead,
+		UpdateContext: resourceIBMEnCustomSMSDestinationUpdate,
+		DeleteContext: resourceIBMEnCustomSMSDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -39,7 +38,7 @@ func ResourceIBMEnCustomEmailDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The type of Destination type smtp_custom.",
+				Description: "The type of Destination sms_custom.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -51,30 +50,30 @@ func ResourceIBMEnCustomEmailDestination() *schema.Resource {
 				Optional:    true,
 				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
 			},
-			"config": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Description: "Payload describing a destination configuration.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"params": {
-							Type:     schema.TypeList,
-							MaxItems: 1,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"domain": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Domain for the Custom Domain Email Destination",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			// "config": {
+			// 	Type:        schema.TypeList,
+			// 	MaxItems:    1,
+			// 	Optional:    true,
+			// 	Description: "Payload describing a destination configuration.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"params": {
+			// 				Type:     schema.TypeList,
+			// 				MaxItems: 1,
+			// 				Optional: true,
+			// 				Elem: &schema.Resource{
+			// 					Schema: map[string]*schema.Schema{
+			// 						"url": {
+			// 							Type:        schema.TypeString,
+			// 							Required:    true,
+			// 							Description: "Slack webhook url.",
+			// 						},
+			// 					},
+			// 				},
+			// 			},
+			// 		},
+			// 	},
+			// },
 			"destination_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -100,7 +99,7 @@ func ResourceIBMEnCustomEmailDestination() *schema.Resource {
 	}
 }
 
-func resourceIBMEnCustomEmailDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCustomSMSDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -110,17 +109,16 @@ func resourceIBMEnCustomEmailDestinationCreate(context context.Context, d *schem
 
 	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetName(d.Get("name").(string))
-
 	options.SetType(d.Get("type").(string))
 	options.SetCollectFailedEvents(d.Get("collect_failed_events").(bool))
-	destinationtype := d.Get("type").(string)
+
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("config"); ok {
-		config := CustomEmaildestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
-		options.SetConfig(&config)
-	}
+	// if _, ok := d.GetOk("config"); ok {
+	// 	config := SlackdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+	// 	options.SetConfig(&config)
+	// }
 
 	result, response, err := enClient.CreateDestinationWithContext(context, options)
 	if err != nil {
@@ -129,10 +127,10 @@ func resourceIBMEnCustomEmailDestinationCreate(context context.Context, d *schem
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnServiceNowDestinationRead(context, d, meta)
+	return resourceIBMEnSlackDestinationRead(context, d, meta)
 }
 
-func resourceIBMEnCustomEmailDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCustomSMSDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -173,20 +171,20 @@ func resourceIBMEnCustomEmailDestinationRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 
-	if err = d.Set("collect_failed_events", result.CollectFailedEvents); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting CollectFailedEvents: %s", err))
-	}
-
 	if err = d.Set("description", result.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
 	}
 
-	if result.Config != nil {
-		err = d.Set("config", enCustomEmailDestinationFlattenConfig(*result.Config))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
-		}
+	if err = d.Set("collect_failed_events", result.CollectFailedEvents); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting CollectFailedEvents: %s", err))
 	}
+
+	// if result.Config != nil {
+	// 	err = d.Set("config", enWebhookDestinationFlattenConfig(*result.Config))
+	// 	if err != nil {
+	// 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
+	// 	}
+	// }
 
 	if err = d.Set("updated_at", flex.DateTimeToString(result.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
@@ -198,12 +196,13 @@ func resourceIBMEnCustomEmailDestinationRead(context context.Context, d *schema.
 
 	if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
+
 	}
 
 	return nil
 }
 
-func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCustomSMSDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -219,34 +218,27 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	if ok := d.HasChanges("name", "description", "collect_failed_events", "config"); ok {
+	if ok := d.HasChanges("name", "description", "collect_failed_events"); ok {
 		options.SetName(d.Get("name").(string))
 
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
-
 		if _, ok := d.GetOk("collect_failed_events"); ok {
 			options.SetCollectFailedEvents(d.Get("collect_failed_events").(bool))
-		}
-
-		destinationtype := d.Get("type").(string)
-		if _, ok := d.GetOk("config"); ok {
-			config := CustomEmaildestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
-			options.SetConfig(&config)
 		}
 		_, response, err := enClient.UpdateDestinationWithContext(context, options)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("UpdateDestinationWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnCustomEmailDestinationRead(context, d, meta)
+		return resourceIBMEnSlackDestinationRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnCustomEmailDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnCustomSMSDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -276,13 +268,17 @@ func resourceIBMEnCustomEmailDestinationDelete(context context.Context, d *schem
 	return nil
 }
 
-func CustomEmaildestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
-	params := new(en.DestinationConfigOneOfCustomDomainEmailDestinationConfig)
-	if configParams["domain"] != nil {
-		params.Domain = core.StringPtr(configParams["domain"].(string))
-	}
+// func SlackdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
+// 	params := new(en.DestinationConfigOneOf)
+// 	if configParams["url"] != nil {
+// 		params.URL = core.StringPtr(configParams["url"].(string))
+// 	}
 
-	destinationConfig := new(en.DestinationConfig)
-	destinationConfig.Params = params
-	return *destinationConfig
-}
+// 	if configParams["collect_failed_events"] != nil {
+// 		params.CollectFailedEvents = core.BoolPtr(configParams["collect_failed_events"].(bool))
+// 	}
+
+// 	destinationConfig := new(en.DestinationConfig)
+// 	destinationConfig.Params = params
+// 	return *destinationConfig
+// }

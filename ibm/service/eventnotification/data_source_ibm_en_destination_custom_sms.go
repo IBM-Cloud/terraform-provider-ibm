@@ -15,9 +15,9 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnCOSDestination() *schema.Resource {
+func DataSourceIBMEnCustomSMSDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnCOSDestinationRead,
+		ReadContext: dataSourceIBMEnCustomSMSDestinationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -43,45 +43,35 @@ func DataSourceIBMEnCOSDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type ibmcf.",
+				Description: "Destination type slack.",
 			},
 			"collect_failed_events": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
 			},
-			"config": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Payload describing a destination configuration.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"params": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"bucket_name": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The COS bucket name",
-									},
-									"instance_id": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The instance id for COS instance",
-									},
-									"endpoint": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The endpoint for the COS bucket endpoint",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			// "config": {
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Description: "Payload describing a destination configuration.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"params": {
+			// 				Type:     schema.TypeList,
+			// 				Computed: true,
+			// 				Elem: &schema.Resource{
+			// 					Schema: map[string]*schema.Schema{
+			// 						"domain": {
+			// 							Type:        schema.TypeString,
+			// 							Computed:    true,
+			// 							Description: "The custom doamin",
+			// 						},
+			// 					},
+			// 				},
+			// 			},
+			// 		},
+			// 	},
+			// },
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -104,7 +94,7 @@ func DataSourceIBMEnCOSDestination() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnCOSDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnCustomSMSDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,7 +131,7 @@ func dataSourceIBMEnCOSDestinationRead(context context.Context, d *schema.Resour
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enCOSDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enSlackDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -165,20 +155,20 @@ func dataSourceIBMEnCOSDestinationRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-func enCOSDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enCustomSMSDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enCOSDestinationConfigToMap(result)
+	finalMap := enCustomEmailDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enCOSDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enCustomSMSDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enCOSDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enCustomSMSDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -186,21 +176,13 @@ func enCOSDestinationConfigToMap(configItem en.DestinationConfig) (configMap map
 	return configMap
 }
 
-func enCOSDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
+func enCustomSMSDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
 	params := paramsItem.(*en.DestinationConfigOneOf)
 
-	if params.BucketName != nil {
-		paramsMap["bucket_name"] = params.BucketName
-	}
-
-	if params.InstanceID != nil {
-		paramsMap["instance_id"] = params.InstanceID
-	}
-
-	if params.Endpoint != nil {
-		paramsMap["endpoint"] = params.Endpoint
+	if params.URL != nil {
+		paramsMap["domain"] = params.Domain
 	}
 
 	// if params.CollectFailedEvents != nil {

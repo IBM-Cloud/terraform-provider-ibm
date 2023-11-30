@@ -45,6 +45,11 @@ func DataSourceIBMEnCFDestination() *schema.Resource {
 				Computed:    true,
 				Description: "Destination type ibmcf.",
 			},
+			"collect_failed_events": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
+			},
 			"config": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -126,6 +131,10 @@ func dataSourceIBMEnCFDestinationRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 
+	if err = d.Set("collect_failed_events", result.CollectFailedEvents); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting CollectFailedEvents: %s", err))
+	}
+
 	if result.Config != nil {
 		err = d.Set("config", enCFDestinationFlattenConfig(*result.Config))
 		if err != nil {
@@ -184,5 +193,9 @@ func enCFDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) 
 	if params.APIKey != nil {
 		paramsMap["api_key"] = params.APIKey
 	}
+
+	// if params.CollectFailedEvents != nil {
+	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
+	// }
 	return paramsMap
 }

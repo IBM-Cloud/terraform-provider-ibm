@@ -45,6 +45,11 @@ func DataSourceIBMEnChromeDestination() *schema.Resource {
 				Computed:    true,
 				Description: "Destination type push_chrome.",
 			},
+			"collect_failed_events": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
+			},
 			"config": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -132,6 +137,10 @@ func dataSourceIBMEnChromeDestinationRead(context context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 
+	if err = d.Set("collect_failed_events", result.CollectFailedEvents); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting CollectFailedEvents: %s", err))
+	}
+
 	if result.Config != nil {
 		err = d.Set("config", enChromeDestinationFlattenConfig(*result.Config))
 		if err != nil {
@@ -192,6 +201,9 @@ func enChromeDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIn
 	if params.PreProd != nil {
 		paramsMap["pre_prod"] = params.PreProd
 	}
+	// if params.CollectFailedEvents != nil {
+	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
+	// }
 
 	return paramsMap
 }

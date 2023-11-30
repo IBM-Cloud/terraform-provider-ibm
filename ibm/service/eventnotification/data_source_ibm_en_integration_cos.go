@@ -15,7 +15,7 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnIntegration() *schema.Resource {
+func DataSourceIBMEnCOSIntegration() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMEnIntegrationRead,
 
@@ -39,7 +39,7 @@ func DataSourceIBMEnIntegration() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnIntegrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnCOSIntegrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
