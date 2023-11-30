@@ -143,7 +143,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name"),
 					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name", vniname+"-inline"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address", "10.240.64.12"),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address", "10.240.64.11"),
 				),
 			},
 			resource.TestStep{
@@ -170,7 +170,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name"),
 					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.name", vninameupdated+"-inline"),
 					resource.TestCheckResourceAttrSet("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.#"),
-					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address", "10.240.64.12"),
+					resource.TestCheckResourceAttr("ibm_is_instance_network_attachment.is_instance_network_attachment", "virtual_network_interface.0.primary_ip.0.address", "10.240.64.11"),
 				),
 			},
 		},
@@ -320,10 +320,10 @@ func testAccCheckIBMIsInstanceNetworkAttachmentUpdateConfig(vpcname, subnetname,
 		zone 				= "%s"
 		keys 				= [ibm_is_ssh_key.testacc_sshkey.id]
 		primary_network_attachment {
-		         name = "vni-2"
-		         virtual_network_interface {
-					id = ibm_is_virtual_network_interface.testacc_vni.id
-				 }
+			name = "vni-2"
+			virtual_network_interface {
+				id = ibm_is_virtual_network_interface.testacc_vni.id
+			}
 		}
 		vpc 				= ibm_is_vpc.testacc_vpc.id
 	}
@@ -332,12 +332,13 @@ func testAccCheckIBMIsInstanceNetworkAttachmentUpdateConfig(vpcname, subnetname,
 		instance = ibm_is_instance.testacc_vsi.id
 		name = "%s"
 		virtual_network_interface {
-			name = "%s-inline"
+			auto_delete = true
+			name 		= "%s-inline"
 			allow_ip_spoofing = %t
 			enable_infrastructure_nat = true
 			primary_ip {
 				auto_delete = true
-				address = cidrhost(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, 23)
+				address = cidrhost(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, 11)
 			}
 			subnet = ibm_is_subnet.testacc_subnet.id
 		}
