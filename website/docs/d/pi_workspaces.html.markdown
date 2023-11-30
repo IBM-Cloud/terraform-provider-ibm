@@ -47,14 +47,10 @@ In addition to all argument reference listed, you can access the following attri
 
 - `workspaces` - List of all Workspaces.
   Nested schema for `workspaces`
-  - `pi_workspace_capabilities` - (Map) Workspace Capabilities.
+  - `pi_workspace_capabilities` - (Map) Workspace Capabilities. Capabilities are `true` or `false`.
 
-    Nested schema for `pi_workspace_capabilities`; are (Bool) `true` or `false`:
-    - `cloud-connections` - (Bool) Cloud-connections capability.
-    - `custom-virtual-cores`- (Bool) Custom virtual cores capability.
-    - `power-edge-router` - (Bool) Power edge router capability.
-    - `transit-gateway-connection` - (Bool) Transit gateway connection capability.
-    - `vpn-connections`- (Bool) VPN-connections capability.
+    Some of `pi_workspace_capabilities` are:
+    - `cloud-connections` ,`power-edge-router`, `power-vpn-connections`, `transit-gateway-connection`
 
   - `pi_workspace_details` - (Map) Workspace information.
 
@@ -69,5 +65,5 @@ In addition to all argument reference listed, you can access the following attri
     - `type` - (String) The Workspace location region type.
     - `url`- (String) The Workspace location region url.
   - `pi_workspace_name` - (String) The Workspace name.
-  - `pi_workspace_status` - (String) The Workspace status, `ACTIVE` or `FAILED`.
-  - `pi_workspace_type` - (String) The Workspace type, `Public Cloud` or `Private Cloud`.
+  - `pi_workspace_status` - (String) The Workspace status,  `active`, `critical`, `failed`, `provisioning`.
+  - `pi_workspace_type` - (String) The Workspace type, `off-premises` or `on-premises`.
