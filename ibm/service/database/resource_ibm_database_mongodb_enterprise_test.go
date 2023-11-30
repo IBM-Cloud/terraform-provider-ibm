@@ -388,6 +388,13 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGro
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 		timeouts {
 			create = "4h"
 			update = "4h"
@@ -415,7 +422,15 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal_PITR(databaseResour
 		location                              = "%[3]s"
 		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
 		point_in_time_recovery_time           = ""
-    offline_restore                       = true
+    	offline_restore                       = true
+
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 
 		timeouts {
 			create = "4h"

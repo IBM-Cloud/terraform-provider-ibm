@@ -850,6 +850,13 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResource
 		plan              = "platinum"
 		location          = "%[3]s"
 
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 		timeouts {
 			create = "120m"
 			update = "120m"
