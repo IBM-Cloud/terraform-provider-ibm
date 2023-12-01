@@ -531,15 +531,17 @@ Review the argument references that you can specify for your resource.
   - `protocol` - (Optional, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
   - `response_hop_limit` - (Optional, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The instance name.
-- `network_attachments` - (Optional, List) The network attachments for this virtual server instance, including the primary network attachment.
+- `network_attachments` - (Optional, List) The network attachments for this virtual server instance, including the primary network attachment. Adding and removing of network attachments must be done from the rear end to avoid unwanted differences and changes in terraform.
   Nested schema for **network_attachments**:
 	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
 	Nested schema for **deleted**:
 		- `more_info` - (Required, String) Link to documentation about deleted resources.
 	- `href` - (String) The URL for this network attachment.
-    ~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
 	- `id` - (String) The unique identifier for this network attachment.
-	- `name` - (Required, String)
+	- `ips` - (Optional, Array of strings) Array of reserved ip identifier for this network attachment.
+
+      ~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
+	- `name` - (Required, String) Name of the attachment. Name is a required field.
 	- `primary_ip` - (Required, List) The primary IP address of the virtual network interface for the network attachment.
 	  Nested schema for **primary_ip**:
 		- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
@@ -590,7 +592,9 @@ Review the argument references that you can specify for your resource.
 		- `more_info` - (Required, String) Link to documentation about deleted resources.
 	- `href` - (String) The URL for this network attachment.
 	- `id` - (String) The unique identifier for this network attachment.
-	- `name` - (Required, String)
+	- `name` - (Required, String) The name of this network attachment
+	- `virtual_network_interface` - (Required, List(1)) The name of this network attachment
+
 	- `primary_ip` - (Required, List) The primary IP address of the virtual network interface for the network attachment.
 	  Nested schema for **primary_ip**:
 		- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.

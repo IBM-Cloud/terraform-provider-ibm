@@ -846,9 +846,9 @@ func ResourceIBMISInstance() *schema.Resource {
 
 						// pna can accept either vni id or prototype
 						"name": &schema.Schema{
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
+							Type:     schema.TypeString,
+							Required: true,
+							// DiffSuppressFunc: flex.ApplyOnce,
 							ValidateFunc: validate.InvokeValidator("ibm_is_instance_network_attachment", "name"),
 							Description:  "The name for this instance network attachment. The name is unique across all network attachments for the instance.",
 						},
@@ -4138,197 +4138,268 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("network_attachments") && !d.IsNewResource() {
 		nacs := d.Get("network_attachments").([]interface{})
-		for i := range nacs {
-			nacIdKey := fmt.Sprintf("network_attachments.%d.id", i)
-			nacId := d.Get(nacIdKey).(string)
-			nacName := fmt.Sprintf("network_attachments.%d.name", i)
-			nacVniName := fmt.Sprintf("network_attachments.%d.virtual_network_interface", i)
-			primaryipName := fmt.Sprintf("%s.%s", nacVniName, "0.primary_ip")
-			sgName := fmt.Sprintf("%s.%s", nacVniName, "0.security_groups")
-			if d.HasChange(nacName) {
-				networkName := d.Get(nacName).(string)
-				updateInstanceNetworkAttachmentOptions := &vpcv1.UpdateInstanceNetworkAttachmentOptions{
-					InstanceID: &id,
-					ID:         &nacId,
-				}
-				instanceNetworkAttachmentPatch := &vpcv1.InstanceNetworkAttachmentPatch{
-					Name: &networkName,
-				}
-				instanceNetworkAttachmentPatchAsPatch, err := instanceNetworkAttachmentPatch.AsPatch()
-				if err != nil {
-					return (fmt.Errorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of network attachment(%s) of instance(%s) %s", nacId, id, err))
-				}
-				updateInstanceNetworkAttachmentOptions.InstanceNetworkAttachmentPatch = instanceNetworkAttachmentPatchAsPatch
-				_, res, err := instanceC.UpdateInstanceNetworkAttachment(updateInstanceNetworkAttachmentOptions)
-				if err != nil {
-					return (fmt.Errorf("[ERROR] Error encountered while updating network attachment(%s) name of instance(%s) %s/n%s", nacId, id, err, res))
+		ots, nts := d.GetChange("network_attachments")
+		otsIntf := ots.([]interface{})
+		ntsIntf := nts.([]interface{})
+		out := make([]string, len(otsIntf))
+		j := 0
+		for _, currOtsG := range otsIntf {
+			currOts := currOtsG.(map[string]interface{})
+			flag := false
+			for _, currNtsG := range ntsIntf {
+				currNts := currNtsG.(map[string]interface{})
+				if currOts["name"].(string) == currNts["name"].(string) {
+					flag = true
 				}
 			}
-			if d.HasChange(nacVniName) {
-				vniId := d.Get(fmt.Sprintf("%s.%s", nacVniName, "0.id")).(string)
-				updateVirtualNetworkInterfaceOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
-					ID: &vniId,
-				}
-				virtualNetworkInterfacePatch := &vpcv1.VirtualNetworkInterfacePatch{}
-				autoDeleteName := fmt.Sprintf("%s.%s", nacVniName, "0.auto_delete")
-				nameName := fmt.Sprintf("%s.%s", nacVniName, "0.name")
-				ipsName := fmt.Sprintf("%s.%s", nacVniName, "0.ips")
-				enableNatName := fmt.Sprintf("%s.%s", nacVniName, "0.enable_infrastructure_nat")
-				allowIpSpoofingName := fmt.Sprintf("%s.%s", nacVniName, "0.allow_ip_spoofing")
-				if d.HasChange(autoDeleteName) {
-					autodelete := d.Get(autoDeleteName).(bool)
-					virtualNetworkInterfacePatch.AutoDelete = &autodelete
-				}
-				if d.HasChange(nameName) {
-					name := d.Get(nameName).(string)
-					virtualNetworkInterfacePatch.Name = &name
-				}
-				if d.HasChange(enableNatName) {
-					enableNat := d.Get(enableNatName).(bool)
-					virtualNetworkInterfacePatch.EnableInfrastructureNat = &enableNat
-				}
-				if d.HasChange(allowIpSpoofingName) {
-					allIpSpoofing := d.Get(allowIpSpoofingName).(bool)
-					virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
-				}
-				virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
-				}
-				updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
-				_, response, err := instanceC.UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions)
-				if err != nil {
-					log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-					return fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
-				}
 
-				if d.HasChange(ipsName) {
-					oldips, newips := d.GetChange(ipsName)
-					os := oldips.(*schema.Set)
-					ns := newips.(*schema.Set)
-					var oldset, newset *schema.Set
+			if !flag {
 
-					var out = make([]interface{}, ns.Len(), ns.Len())
-					for i, nA := range ns.List() {
-						newPack := nA.(map[string]interface{})
-						out[i] = newPack["reserved_ip"].(string)
-					}
-					newset = schema.NewSet(schema.HashString, out)
-
-					out = make([]interface{}, os.Len(), os.Len())
-					for i, oA := range os.List() {
-						oldPack := oA.(map[string]interface{})
-						out[i] = oldPack["reserved_ip"].(string)
-					}
-					oldset = schema.NewSet(schema.HashString, out)
-
-					remove := flex.ExpandStringList(oldset.Difference(newset).List())
-					add := flex.ExpandStringList(newset.Difference(oldset).List())
-
-					if add != nil && len(add) > 0 {
-						for _, ipItem := range add {
-							if ipItem != "" {
-								addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
-								addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
-								addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-								_, response, err := instanceC.AddVirtualNetworkInterfaceIP(addVirtualNetworkInterfaceIPOptions)
-								if err != nil {
-									log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-									return fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-								}
-							}
+				log.Printf("[INFO] Nac with name (%s) will be deleted", currOts["name"].(string))
+				nacId := currOts["id"]
+				if nacId != nil && nacId.(string) != "" {
+					nacIdStr := nacId.(string)
+					if !containsNacId(out, nacIdStr) {
+						out[j] = nacIdStr
+						j = j + 1
+						deleteInstanceNetworkAttachmentOptions := &vpcv1.DeleteInstanceNetworkAttachmentOptions{
+							InstanceID: &id,
+							ID:         &nacIdStr,
 						}
-					}
-					if remove != nil && len(remove) > 0 {
-						for _, ipItem := range remove {
-							if ipItem != "" {
-								removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
-								removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
-								removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-								response, err := instanceC.RemoveVirtualNetworkInterfaceIP(removeVirtualNetworkInterfaceIPOptions)
-								if err != nil {
-									log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-									return fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-								}
-							}
+						res, err := instanceC.DeleteInstanceNetworkAttachment(deleteInstanceNetworkAttachmentOptions)
+						if err != nil {
+							return fmt.Errorf("[ERROR] Error while deleting network attachment(%s) of instance(%s) \n%s: %q", nacIdStr, d.Id(), err, res)
 						}
 					}
 				}
-
-				if d.HasChange(primaryipName) {
-					subnetIdName := fmt.Sprintf("%s.%s", nacVniName, "0.subnet")
-					ripIdName := fmt.Sprintf("%s.%s", primaryipName, "0.reserved_ip")
-					subnetId := d.Get(subnetIdName).(string)
-					primaryipNameName := fmt.Sprintf("%s.%s", primaryipName, "0.name")
-					primaryipAutoDeleteName := fmt.Sprintf("%s.%s", primaryipName, "0.name")
-					ripId := d.Get(ripIdName).(string)
-					updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
-						SubnetID: &subnetId,
-						ID:       &ripId,
-					}
-					reservedIpPath := &vpcv1.ReservedIPPatch{}
-					if d.HasChange(primaryipNameName) {
-						name := d.Get(primaryipNameName).(string)
-						reservedIpPath.Name = &name
-					}
-					if d.HasChange(primaryipAutoDeleteName) {
-						auto := d.Get(primaryipAutoDeleteName).(bool)
-						reservedIpPath.AutoDelete = &auto
-					}
-					reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
-					if err != nil {
-						return fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
-					}
-					updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-					_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
-					if err != nil {
-						return fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
-					}
-				}
-				if d.HasChange(sgName) {
-					ovs, nvs := d.GetChange(sgName)
-					ov := ovs.(*schema.Set)
-					nv := nvs.(*schema.Set)
-					remove := flex.ExpandStringList(ov.Difference(nv).List())
-					add := flex.ExpandStringList(nv.Difference(ov).List())
-					if len(add) > 0 {
-						for i := range add {
-							createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
-								SecurityGroupID: &add[i],
-								ID:              &vniId,
-							}
-							_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
-							if err != nil {
-								return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
-							}
-							_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
-							if err != nil {
-								return err
-							}
-						}
-
-					}
-					if len(remove) > 0 {
-						for i := range remove {
-							deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
-								SecurityGroupID: &remove[i],
-								ID:              &vniId,
-							}
-							response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
-							if err != nil {
-								return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
-							}
-							_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
-							if err != nil {
-								return err
-							}
-						}
-					}
-				}
-
 			}
 
 		}
+
+		for i, nac := range nacs {
+			nacIdKey := fmt.Sprintf("network_attachments.%d.id", i)
+			nacId := d.Get(nacIdKey).(string)
+			// if nacId is empty, then create
+			if nacId == "" || containsNacId(out, nacId) {
+				if nacId == "" {
+					log.Printf("[DEBUG] nacId is empty")
+					allowipspoofing := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.allow_ip_spoofing", i)
+					autodelete := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.auto_delete", i)
+					enablenat := fmt.Sprintf("network_attachments.%d.virtual_network_interface.0.enable_infrastructure_nat", i)
+					nacMap := nac.(map[string]interface{})
+					VirtualNetworkInterfaceModel, err := resourceIBMIsInstanceMapToVirtualNetworkInterfacePrototypeAttachmentContext(allowipspoofing, autodelete, enablenat, d, nacMap["virtual_network_interface"].([]interface{})[0].(map[string]interface{}))
+					if err != nil {
+						return err
+					}
+					nacNameStr := nacMap["name"].(string)
+					createInstanceNetworkAttachmentOptions := &vpcv1.CreateInstanceNetworkAttachmentOptions{
+						InstanceID:              &id,
+						Name:                    &nacNameStr,
+						VirtualNetworkInterface: VirtualNetworkInterfaceModel,
+					}
+					_, res, err := instanceC.CreateInstanceNetworkAttachment(createInstanceNetworkAttachmentOptions)
+					if err != nil {
+						return fmt.Errorf("[ERROR] Error while creating network attachment(%s) of instance(%s) \n%s: %q", nacNameStr, d.Id(), err, res)
+					}
+				} else {
+					log.Printf("[DEBUG] nacId is not empty")
+					nacName := fmt.Sprintf("network_attachments.%d.name", i)
+					nacVniName := fmt.Sprintf("network_attachments.%d.virtual_network_interface", i)
+					primaryipName := fmt.Sprintf("%s.%s", nacVniName, "0.primary_ip")
+					sgName := fmt.Sprintf("%s.%s", nacVniName, "0.security_groups")
+					if d.HasChange(nacName) {
+						networkName := d.Get(nacName).(string)
+						updateInstanceNetworkAttachmentOptions := &vpcv1.UpdateInstanceNetworkAttachmentOptions{
+							InstanceID: &id,
+							ID:         &nacId,
+						}
+						instanceNetworkAttachmentPatch := &vpcv1.InstanceNetworkAttachmentPatch{
+							Name: &networkName,
+						}
+						instanceNetworkAttachmentPatchAsPatch, err := instanceNetworkAttachmentPatch.AsPatch()
+						if err != nil {
+							return (fmt.Errorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of network attachment(%s) of instance(%s) %s", nacId, id, err))
+						}
+						updateInstanceNetworkAttachmentOptions.InstanceNetworkAttachmentPatch = instanceNetworkAttachmentPatchAsPatch
+						_, res, err := instanceC.UpdateInstanceNetworkAttachment(updateInstanceNetworkAttachmentOptions)
+						if err != nil {
+							return (fmt.Errorf("[ERROR] Error encountered while updating network attachment(%s) name of instance(%s) %s/n%s", nacId, id, err, res))
+						}
+						// output, err := json.MarshalIndent(updateInstanceNetworkAttachmentOptions, "", "    ")
+						// if err == nil {
+						// 	log.Printf("%+v\n", string(output))
+						// } else {
+						// 	log.Printf("Error : %#v", updateInstanceNetworkAttachmentOptions)
+						// }
+					}
+					if d.HasChange(nacVniName) {
+						vniId := d.Get(fmt.Sprintf("%s.%s", nacVniName, "0.id")).(string)
+						updateVirtualNetworkInterfaceOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
+							ID: &vniId,
+						}
+						virtualNetworkInterfacePatch := &vpcv1.VirtualNetworkInterfacePatch{}
+						autoDeleteName := fmt.Sprintf("%s.%s", nacVniName, "0.auto_delete")
+						nameName := fmt.Sprintf("%s.%s", nacVniName, "0.name")
+						ipsName := fmt.Sprintf("%s.%s", nacVniName, "0.ips")
+						enableNatName := fmt.Sprintf("%s.%s", nacVniName, "0.enable_infrastructure_nat")
+						allowIpSpoofingName := fmt.Sprintf("%s.%s", nacVniName, "0.allow_ip_spoofing")
+						if d.HasChange(autoDeleteName) {
+							autodelete := d.Get(autoDeleteName).(bool)
+							virtualNetworkInterfacePatch.AutoDelete = &autodelete
+						}
+						if d.HasChange(nameName) {
+							name := d.Get(nameName).(string)
+							virtualNetworkInterfacePatch.Name = &name
+						}
+						if d.HasChange(enableNatName) {
+							enableNat := d.Get(enableNatName).(bool)
+							virtualNetworkInterfacePatch.EnableInfrastructureNat = &enableNat
+						}
+						if d.HasChange(allowIpSpoofingName) {
+							allIpSpoofing := d.Get(allowIpSpoofingName).(bool)
+							virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+						}
+						virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
+						if err != nil {
+							return fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
+						}
+						updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
+						_, response, err := instanceC.UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions)
+						if err != nil {
+							log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
+							return fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
+						}
+
+						if d.HasChange(ipsName) {
+							oldips, newips := d.GetChange(ipsName)
+							os := oldips.(*schema.Set)
+							ns := newips.(*schema.Set)
+							var oldset, newset *schema.Set
+
+							var out = make([]interface{}, ns.Len(), ns.Len())
+							for i, nA := range ns.List() {
+								newPack := nA.(map[string]interface{})
+								out[i] = newPack["reserved_ip"].(string)
+							}
+							newset = schema.NewSet(schema.HashString, out)
+
+							out = make([]interface{}, os.Len(), os.Len())
+							for i, oA := range os.List() {
+								oldPack := oA.(map[string]interface{})
+								out[i] = oldPack["reserved_ip"].(string)
+							}
+							oldset = schema.NewSet(schema.HashString, out)
+
+							remove := flex.ExpandStringList(oldset.Difference(newset).List())
+							add := flex.ExpandStringList(newset.Difference(oldset).List())
+
+							if add != nil && len(add) > 0 {
+								for _, ipItem := range add {
+									if ipItem != "" {
+										addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
+										addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
+										addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
+										_, response, err := instanceC.AddVirtualNetworkInterfaceIP(addVirtualNetworkInterfaceIPOptions)
+										if err != nil {
+											log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+											return fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+										}
+									}
+								}
+							}
+							if remove != nil && len(remove) > 0 {
+								for _, ipItem := range remove {
+									if ipItem != "" {
+										removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
+										removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
+										removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
+										response, err := instanceC.RemoveVirtualNetworkInterfaceIP(removeVirtualNetworkInterfaceIPOptions)
+										if err != nil {
+											log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+											return fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+										}
+									}
+								}
+							}
+						}
+
+						if d.HasChange(primaryipName) {
+							subnetIdName := fmt.Sprintf("%s.%s", nacVniName, "0.subnet")
+							ripIdName := fmt.Sprintf("%s.%s", primaryipName, "0.reserved_ip")
+							subnetId := d.Get(subnetIdName).(string)
+							primaryipNameName := fmt.Sprintf("%s.%s", primaryipName, "0.name")
+							primaryipAutoDeleteName := fmt.Sprintf("%s.%s", primaryipName, "0.name")
+							ripId := d.Get(ripIdName).(string)
+							updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+								SubnetID: &subnetId,
+								ID:       &ripId,
+							}
+							reservedIpPath := &vpcv1.ReservedIPPatch{}
+							if d.HasChange(primaryipNameName) {
+								name := d.Get(primaryipNameName).(string)
+								reservedIpPath.Name = &name
+							}
+							if d.HasChange(primaryipAutoDeleteName) {
+								auto := d.Get(primaryipAutoDeleteName).(bool)
+								reservedIpPath.AutoDelete = &auto
+							}
+							reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+							if err != nil {
+								return fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
+							}
+							updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
+							_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
+							if err != nil {
+								return fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
+							}
+						}
+						if d.HasChange(sgName) {
+							ovs, nvs := d.GetChange(sgName)
+							ov := ovs.(*schema.Set)
+							nv := nvs.(*schema.Set)
+							remove := flex.ExpandStringList(ov.Difference(nv).List())
+							add := flex.ExpandStringList(nv.Difference(ov).List())
+							if len(add) > 0 {
+								for i := range add {
+									createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+										SecurityGroupID: &add[i],
+										ID:              &vniId,
+									}
+									_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
+									if err != nil {
+										return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
+									}
+									_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
+									if err != nil {
+										return err
+									}
+								}
+
+							}
+							if len(remove) > 0 {
+								for i := range remove {
+									deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+										SecurityGroupID: &remove[i],
+										ID:              &vniId,
+									}
+									response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+									if err != nil {
+										return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
+									}
+									_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
+									if err != nil {
+										return err
+									}
+								}
+							}
+						}
+
+					}
+
+				}
+			}
+		}
+
 	}
 
 	//primary_network_attachment
@@ -5890,4 +5961,13 @@ func resourceIBMIsInstanceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototy
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	return model, nil
+}
+
+func containsNacId(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
