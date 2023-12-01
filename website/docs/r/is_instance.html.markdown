@@ -538,7 +538,7 @@ Review the argument references that you can specify for your resource.
 		- `more_info` - (Required, String) Link to documentation about deleted resources.
 	- `href` - (String) The URL for this network attachment.
 	- `id` - (String) The unique identifier for this network attachment.
-	- `name` - (Required, String) Name of the attachment. Name is a required field.
+	- `name` - (Optional, String) Name of the attachment.
 	- `virtual_network_interface` - (Required, List(1)) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`
       Nested schema for **virtual_network_interface**:
       - `id` - (Optional, String) The `id` of the virtual network interface, id conflicts with other properties of virtual network interface
