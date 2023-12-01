@@ -80,7 +80,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
@@ -216,9 +216,9 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
+					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -234,9 +234,9 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
+					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -251,9 +251,9 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "4"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "65536"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "24576"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
+					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "16"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -818,13 +818,6 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResource
 		plan              = "platinum"
 		location          = "%[3]s"
 
-		group {
-			group_id = "member"
-
-			host_flavor {
-				id = "b3c.4x16.encrypted"
-			}
-		}
 		timeouts {
 			create = "120m"
 			update = "120m"
