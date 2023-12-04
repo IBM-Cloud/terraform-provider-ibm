@@ -14,8 +14,8 @@ Provides a read-only data source to retrieve information about a project_environ
 
 ```hcl
 data "ibm_project_environment" "project_environment" {
-	project_environment_id = ibm_project_environment.project_environment.project_environment_id
-	project_id = ibm_project_environment.project_environment.project_id
+	project_environment_id = ibm_project_environment.project_environment_instance.project_environment_id
+	project_id = ibm_project_environment.project_environment_instance.project_id
 }
 ```
 

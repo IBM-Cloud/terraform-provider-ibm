@@ -135,7 +135,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 						"workspace_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "An existing schematics workspace CRN.",
+							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
 						},
 						"validate_pre_script": &schema.Schema{
 							Type:        schema.TypeList,
@@ -377,7 +377,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 						"locator_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A unique concatenation of catalogID.versionID that identifies the DA in the catalog.",
+							Description: "A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.",
 						},
 						"inputs": &schema.Schema{
 							Type:        schema.TypeList,

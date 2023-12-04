@@ -69,8 +69,8 @@ data "project" "project_instance" {
 project_environment data source:
 
 ```hcl
-data "ibm_project_environment" "project_environment_instance" {
-  project_id = ibm_project_environment.project_environment_instance.project_id
+data "project_environment" "project_environment_instance" {
+  project_id = ibm_project.project_instance.id
   project_environment_id = ibm_project_environment.project_environment_instance.project_environment_id
 }
 ```
