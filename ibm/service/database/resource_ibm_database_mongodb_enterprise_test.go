@@ -350,9 +350,6 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 			members {
 				allocation_count = 1
 			}
-			host_flavor {
-				id = "multitenant"
-			}
 		}
 
 		group {
@@ -360,9 +357,6 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 
 			members {
 				allocation_count = 1
-			}
-			host_flavor {
-				id = "multitenant"
 			}
 		}
 
