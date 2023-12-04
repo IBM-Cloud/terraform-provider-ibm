@@ -74,7 +74,13 @@ In addition to all argument reference list, you can access the following attribu
       Nested schema for `rule_conditions`:
         - `key` - (String) The key of a rule condition.
         - `operator` - (String) The operator of a rule condition.
-        - `value` - (List of Strings) The valjue of a rule condition.
+        - `value` - (List of Strings) The value of a rule condition.
+        - `conditions` - (List of Objects) A nested block describing additional rule conditions of this policy.
+
+          Nested schema for `conditions`:
+            - `key` - (String) The key of a condition.
+            - `operator` - (String) The operator of a condition.
+            - `value` - (List of Strings) The value of a condition.
 
   - `rule_operator` - (String) The operator used to evaluate multiple rule conditions, e.g., all must be satisfied with `and`.
   - `pattern` - (String) The pattern that the rule follows, e.g., `time-based-conditions:weekly:all-day`.

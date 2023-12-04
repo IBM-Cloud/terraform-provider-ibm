@@ -2,13 +2,15 @@
 
 This example illustrates how to use the ProjectV1
 
-These types of resources are supported:
+The following types of resources are supported:
 
-* Project definition
+* project_config
+* project
+* project_environment
 
 ## Usage
 
-To run this example you need to execute:
+To run this example, execute the following commands:
 
 ```bash
 $ terraform init
@@ -21,25 +23,55 @@ Run `terraform destroy` when you don't need these resources.
 
 ## ProjectV1 resources
 
-project_instance resource:
+project_config resource:
 
 ```hcl
-resource "project_instance" "project_instance" {
-  name = var.project_instance_name
-  description = var.project_instance_description
-  configs = var.project_instance_configs
-  resource_group = var.project_instance_resource_group
-  location = var.project_instance_location
+resource "project_config" "project_config_instance" {
+  project_id = ibm_project.project_instance.project_id
+  definition = var.project_config_definition
+}
+```
+project resource:
+
+```hcl
+resource "project" "project_instance" {
+  location = var.project_location
+  resource_group = var.project_resource_group
+  definition = var.project_definition
+}
+```
+project_environment resource:
+
+```hcl
+resource "project_environment" "project_environment_instance" {
+  project_id = ibm_project.project_instance.project_id
+  definition = var.project_environment_definition
 }
 ```
 
-## ProjectV1 Data sources
+## ProjectV1 data sources
 
-project_event_notification data source:
+project_config data source:
 
 ```hcl
-data "project_event_notification" "project_event_notification_instance" {
-  id = var.project_event_notification_id
+data "project_config" "project_config_instance" {
+  project_id = ibm_project.project_instance.id
+  project_config_id = ibm_project_config.project_config_instance.project_config_id
+}
+```
+project data source:
+
+```hcl
+data "project" "project_instance" {
+  project_id = ibm_project.project_instance.id
+}
+```
+project_environment data source:
+
+```hcl
+data "ibm_project_environment" "project_environment_instance" {
+  project_id = ibm_project_environment.project_environment_instance.project_id
+  project_environment_id = ibm_project_environment.project_environment_instance.project_environment_id
 }
 ```
 
@@ -68,16 +100,21 @@ data "project_event_notification" "project_event_notification_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| name | The project name. | `string` | true |
-| description | A project's descriptive text. | `string` | false |
-| configs | The project configurations. | `list()` | false |
-| resource_group | The resource group where the project's data and tools are created. | `string` | true |
-| location | The location where the project's data and tools are created. | `string` | true |
 | project_id | The unique project ID. | `string` | true |
+| schematics | A schematics workspace associated to a project configuration, with scripts. | `` | false |
+| definition | The name and description of a project configuration. | `` | true |
+| location | The IBM Cloud location where a resource is deployed. | `string` | true |
+| resource_group | The resource group name where the project's data and tools are created. | `string` | true |
+| definition | The definition of the project. | `` | true |
+| definition | The environment definition. | `` | true |
+| project_id | The unique project ID. | `string` | true |
+| project_config_id | The unique config ID. | `string` | true |
+| project_environment_id | The environment ID. | `string` | true |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| project_instance | project_instance object |
-| project_event_notification | project_event_notification object |
+| project_config | project_config object |
+| project | project object |
+| project_environment | project_environment object |
