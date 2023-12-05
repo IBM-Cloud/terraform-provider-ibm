@@ -2860,7 +2860,14 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				}
 			}
 
-			if (group.HostFlavor == nil || group.HostFlavor.ID == "" || group.HostFlavor.ID == "multitenant") && group.Memory != nil {
+			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
+				err = validateGroupHostFlavor(groupId, "host_flavor", group)
+				if err != nil {
+					return err
+				}
+			}
+
+			if group.Memory != nil {
 				err = validateGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
 					return err
@@ -2874,15 +2881,8 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				}
 			}
 
-			if (group.HostFlavor == nil || group.HostFlavor.ID == "" || group.HostFlavor.ID == "multitenant") && group.CPU != nil {
+			if group.CPU != nil {
 				err = validateGroupScaling(groupId, "cpu", group.CPU.Allocation, groupDefaults.CPU, nodeCount)
-				if err != nil {
-					return err
-				}
-			}
-
-			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
-				err = validateGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
 					return err
 				}
