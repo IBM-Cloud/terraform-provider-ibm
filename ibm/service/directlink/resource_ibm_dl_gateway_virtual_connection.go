@@ -10,8 +10,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	ibmdl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 func ResourceIBMDLGatewayVC() *schema.Resource {
@@ -113,12 +113,12 @@ func ResourceIBMDLGatewayVCValidator() *validate.ResourceValidator {
 	return &ibmDLGatewayVCResourceValidator
 }
 func resourceIBMdlGatewayVCCreate(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
 
-	createGatewayVCOptions := &directlinkv1.CreateGatewayVirtualConnectionOptions{}
+	createGatewayVCOptions := &ibmdl.CreateGatewayVirtualConnectionOptions{}
 
 	gatewayId := d.Get(dlGatewayId).(string)
 	createGatewayVCOptions.SetGatewayID(gatewayId)
@@ -145,7 +145,7 @@ func resourceIBMdlGatewayVCCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -157,7 +157,7 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	getGatewayVirtualConnectionOptions := &directlinkv1.GetGatewayVirtualConnectionOptions{}
+	getGatewayVirtualConnectionOptions := &ibmdl.GetGatewayVirtualConnectionOptions{}
 	getGatewayVirtualConnectionOptions.SetGatewayID(gatewayId)
 	getGatewayVirtualConnectionOptions.SetID(ID)
 	instance, response, err := directLink.GetGatewayVirtualConnection(getGatewayVirtualConnectionOptions)
@@ -189,10 +189,11 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.Set(dlVirtualConnectionId, *instance.ID)
 	d.Set(dlGatewayId, gatewayId)
-	getGatewayOptions := &directlinkv1.GetGatewayOptions{
+	getGatewayOptions := &ibmdl.GetGatewayOptions{
 		ID: &gatewayId,
 	}
-	dlgw, response, err := directLink.GetGateway(getGatewayOptions)
+	instanceIntf, response, err := directLink.GetGateway(getGatewayOptions)
+	dlgw := instanceIntf.(*ibmdl.GetGatewayResponse)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
 	}
@@ -202,7 +203,7 @@ func resourceIBMdlGatewayVCRead(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMdlGatewayVCUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -214,7 +215,7 @@ func resourceIBMdlGatewayVCUpdate(d *schema.ResourceData, meta interface{}) erro
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	getVCOptions := &directlinkv1.GetGatewayVirtualConnectionOptions{
+	getVCOptions := &ibmdl.GetGatewayVirtualConnectionOptions{
 		ID: &ID,
 	}
 	getVCOptions.SetGatewayID(gatewayId)
@@ -225,7 +226,7 @@ func resourceIBMdlGatewayVCUpdate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	updateGatewayVCOptions := &directlinkv1.UpdateGatewayVirtualConnectionOptions{}
+	updateGatewayVCOptions := &ibmdl.UpdateGatewayVirtualConnectionOptions{}
 	updateGatewayVCOptions.ID = &ID
 	updateGatewayVCOptions.SetGatewayID(gatewayId)
 	if d.HasChange(dlName) {
@@ -246,7 +247,7 @@ func resourceIBMdlGatewayVCUpdate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceIBMdlGatewayVCDelete(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -257,7 +258,7 @@ func resourceIBMdlGatewayVCDelete(d *schema.ResourceData, meta interface{}) erro
 
 	gatewayId := parts[0]
 	ID := parts[1]
-	delVCOptions := &directlinkv1.DeleteGatewayVirtualConnectionOptions{
+	delVCOptions := &ibmdl.DeleteGatewayVirtualConnectionOptions{
 		ID: &ID,
 	}
 	delVCOptions.SetGatewayID(gatewayId)
@@ -273,7 +274,7 @@ func resourceIBMdlGatewayVCDelete(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMdlGatewayVCExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return false, err
 	}
@@ -287,7 +288,7 @@ func resourceIBMdlGatewayVCExists(d *schema.ResourceData, meta interface{}) (boo
 	gatewayId := parts[0]
 	ID := parts[1]
 
-	getVCOptions := &directlinkv1.GetGatewayVirtualConnectionOptions{
+	getVCOptions := &ibmdl.GetGatewayVirtualConnectionOptions{
 		ID: &ID,
 	}
 	getVCOptions.SetGatewayID(gatewayId)

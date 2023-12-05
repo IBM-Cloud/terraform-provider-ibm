@@ -1000,13 +1000,13 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMdlGatewayExportRouteFiltersRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
 
 	gatewayId := d.Id()
-	listGatewayExportRouteFiltersOptionsModel := &directlinkv1.ListGatewayExportRouteFiltersOptions{GatewayID: &gatewayId}
+	listGatewayExportRouteFiltersOptionsModel := &ibmdl.ListGatewayExportRouteFiltersOptions{GatewayID: &gatewayId}
 	exportRouteFilterList, response, err := directLink.ListGatewayExportRouteFilters(listGatewayExportRouteFiltersOptionsModel)
 	if err != nil {
 		log.Println("[WARN] Error listing Direct Link Export Route Filters", response, err)
@@ -1046,13 +1046,13 @@ func resourceIBMdlGatewayExportRouteFiltersRead(d *schema.ResourceData, meta int
 }
 
 func resourceIBMdlGatewayImportRouteFiltersRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
 
 	gatewayId := d.Id()
-	listGatewayImportRouteFiltersOptionsModel := &directlinkv1.ListGatewayImportRouteFiltersOptions{GatewayID: &gatewayId}
+	listGatewayImportRouteFiltersOptionsModel := &ibmdl.ListGatewayImportRouteFiltersOptions{GatewayID: &gatewayId}
 	importRouteFilterList, response, err := directLink.ListGatewayImportRouteFilters(listGatewayImportRouteFiltersOptionsModel)
 	if err != nil {
 		log.Println("[WARN] Error  while listing Direct Link Import Route Filters", response, err)
@@ -1095,19 +1095,20 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	dtype := d.Get(dlType).(string)
 	log.Printf("[INFO] Inside resourceIBMdlGatewayRead: %s", dtype)
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
 
 	ID := d.Id()
 
-	getOptions := &directlinkv1.GetGatewayOptions{
+	getOptions := &ibmdl.GetGatewayOptions{
 		ID: &ID,
 	}
 	log.Printf("[INFO] Calling getgateway api: %s", dtype)
 
-	instance, response, err := directLink.GetGateway(getOptions)
+	instanceIntf, response, err := directLink.GetGateway(getOptions)
+	instance := instanceIntf.(*ibmdl.GetGatewayResponse)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -1272,7 +1273,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if instance.ChangeRequest != nil {
 		gatewayChangeRequestIntf := instance.ChangeRequest
-		gatewayChangeRequest := gatewayChangeRequestIntf.(*directlinkv1.GatewayChangeRequest)
+		gatewayChangeRequest := gatewayChangeRequestIntf.(*ibmdl.GatewayChangeRequest)
 		d.Set(dlChangeRequest, *gatewayChangeRequest.Type)
 	}
 	tags, err := flex.GetTagsUsingCRN(meta, *instance.Crn)
@@ -1334,10 +1335,11 @@ func isDirectLinkRefreshFunc(client *ibmdl.DirectLinkV1, id string) resource.Sta
 		getOptions := &ibmdl.GetGatewayOptions{
 			ID: &id,
 		}
-		instance, response, err := client.GetGateway(getOptions)
+		instanceIntf, response, err := client.GetGateway(getOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
+		instance := instanceIntf.(*ibmdl.GetGatewayResponse)
 		if *instance.OperationalStatus == "provisioned" || *instance.OperationalStatus == "failed" || *instance.OperationalStatus == "create_rejected" {
 			return instance, dlGatewayProvisioningDone, nil
 		}
@@ -1356,12 +1358,13 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	getOptions := &ibmdl.GetGatewayOptions{
 		ID: &ID,
 	}
-	instance, detail, err := directLink.GetGateway(getOptions)
+	instanceIntf, detail, err := directLink.GetGateway(getOptions)
 
 	if err != nil {
 		log.Printf("Error fetching Direct Link Gateway :%s", detail)
 		return err
 	}
+	instance := instanceIntf.(*ibmdl.GetGatewayResponse)
 	gatewayPatchTemplateModel := map[string]interface{}{}
 	dtype := *instance.Type
 
@@ -1666,13 +1669,13 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMdlGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return err
 	}
 
 	ID := d.Id()
-	delOptions := &directlinkv1.DeleteGatewayOptions{
+	delOptions := &ibmdl.DeleteGatewayOptions{
 		ID: &ID,
 	}
 	response, err := directLink.DeleteGateway(delOptions)
@@ -1687,17 +1690,18 @@ func resourceIBMdlGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydirectlinkClient(meta)
 	if err != nil {
 		return false, err
 	}
 
 	ID := d.Id()
 
-	getOptions := &directlinkv1.GetGatewayOptions{
+	getOptions := &ibmdl.GetGatewayOptions{
 		ID: &ID,
 	}
-	_, response, err := directLink.GetGateway(getOptions)
+	instanceIntf, response, err := directLink.GetGateway(getOptions)
+	_ = instanceIntf.(*ibmdl.GetGatewayResponse)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
