@@ -147,10 +147,6 @@ Review the argument reference that you can specify for your resource.
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
-
-
-
-
   
 - `as_prepends` - (List) List of AS Prepend configuration informationNested scheme for
   - `created_at`- (String) The date and time AS Prepend was created.
@@ -176,7 +172,7 @@ The `Operational_status(Gateway operational status)` and `loa_reject_reason(LOA 
 
 
 ## Import
-The `ibm_dl_gateway` resource can be imported by using gateway ID. 
+The `ibm_dl_gateway` resource can be imported by using gateway ID.
 
 **Syntax**
 
