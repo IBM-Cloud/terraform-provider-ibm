@@ -22,7 +22,7 @@ resource "ibm_project_config" "project_config_instance" {
       api_key = "<your_apikey_here>"
     }
     locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
-    inputs {
+    inputs = {
       name = "app_repo_name"
     }
   }
@@ -60,14 +60,12 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `environment_id` - (Optional, String) The ID of the project environment.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `inputs` - (Optional, List) The input variables for configuration definition and environment.
-	Nested schema for **inputs**:
+	* `inputs` - (Optional, Map) The input variables for configuration definition and environment.
 	* `locator_id` - (Required, Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (Required, String) The configuration name. It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
-	* `settings` - (Optional, List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
-	Nested schema for **settings**:
+	* `settings` - (Optional, Map) Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `schematics` - (Optional, List) A schematics workspace associated to a project configuration, with scripts.

@@ -13,7 +13,7 @@ resource "ibm_project_config" "project_config_instance" {
       api_key = "<your_apikey_here>"
     }
     locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
-    inputs {
+    inputs = {
       name = "app_repo_name"
     }
   }

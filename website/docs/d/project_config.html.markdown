@@ -61,14 +61,12 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `environment_id` - (String) The ID of the project environment.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `inputs` - (List) The input variables for configuration definition and environment.
-	Nested schema for **inputs**:
+	* `inputs` - (Map) The input variables for configuration definition and environment.
 	* `locator_id` - (Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (String) The configuration name. It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
-	* `settings` - (List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
-	Nested schema for **settings**:
+	* `settings` - (Map) Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.
 
 * `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
 
