@@ -47,6 +47,8 @@ resource ibm_dl_gateway test_dl_gateway {
   location_name = data.ibm_dl_routers.test_dl_routers.location_name
   customer_name = "Customer1" 
   carrier_name = "Carrier1"
+  vlan=3965
+  #remove_vlan=false
 
 } 
 ```
