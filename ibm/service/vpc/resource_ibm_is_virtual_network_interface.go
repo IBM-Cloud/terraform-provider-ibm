@@ -515,7 +515,7 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range virtualNetworkInterface.Ips {
 			if *virtualNetworkInterface.PrimaryIP.ID != *ipsItem.ID {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, false)
 				if err != nil {
 					return diag.FromErr(err)
 				}
