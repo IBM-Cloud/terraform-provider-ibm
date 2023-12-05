@@ -169,7 +169,7 @@ In addition to all argument references list, you can access the following attrib
 - `link_status_updated_at` - (String) Date and time link status was updated.
 - `operational_status` - (String) The gateway operational status. For gateways pending LOA approval, patch operational_status to the appropriate value to approve or reject its LOA. For example, `loa_accepted`.
 - `provider_api_managed` - (String) Indicates whether gateway changes need to be made via a provider portal.
-- `vlan` - (String) The VLAN allocated for the gateway. This attribute value is shown only for gateway owners, if the vlan is set by user.
+- `vlan` - (String) The VLAN allocated for the gateway. If the vlan is set by user, then this attribute value is shown only for gateway owners. Otherwise, this attribute value is shown as 0.
 
 **Note**
 The `Operational_status(Gateway operational status)` and `loa_reject_reason(LOA reject reason)` cannot be updated by using Terraform as the status and reason keeps changing with the different workflow actions.
