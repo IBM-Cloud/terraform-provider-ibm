@@ -150,3 +150,8 @@ $ terraform import ibm_is_reservation_activate.example_activation <reservation_I
 ```
 $ terraform import ibm_is_reservation_activate.example_activation d7bec597-4726-451f-8a63-e62e6f121c32c
 ```
+
+## References 
+
+* [IBM Cloud Terraform Docs](https://cloud.ibm.com/docs/vpc?topic=vpc-provisioning-reserved-capacity-vpc&interface=ui
+https://cloud.ibm.com/docs/vpc?topic=vpc-about-reserved-virtual-servers-vpc)

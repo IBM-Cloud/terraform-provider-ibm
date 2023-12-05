@@ -4929,8 +4929,8 @@ func (vpc *VpcV1) ListInstanceProfilesWithContext(ctx context.Context, listInsta
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instance/profiles`, nil)
 	if err != nil {
@@ -4994,8 +4994,8 @@ func (vpc *VpcV1) GetInstanceProfileWithContext(ctx context.Context, getInstance
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instance/profiles/{name}`, pathParamsMap)
 	if err != nil {
@@ -5051,8 +5051,8 @@ func (vpc *VpcV1) ListInstanceTemplatesWithContext(ctx context.Context, listInst
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instance/templates`, nil)
 	if err != nil {
@@ -5116,8 +5116,8 @@ func (vpc *VpcV1) CreateInstanceTemplateWithContext(ctx context.Context, createI
 
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instance/templates`, nil)
 	if err != nil {
@@ -5238,8 +5238,8 @@ func (vpc *VpcV1) GetInstanceTemplateWithContext(ctx context.Context, getInstanc
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instance/templates/{id}`, pathParamsMap)
 	if err != nil {
@@ -5366,8 +5366,8 @@ func (vpc *VpcV1) ListInstancesWithContext(ctx context.Context, listInstancesOpt
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances`, nil)
 	if err != nil {
@@ -5477,8 +5477,8 @@ func (vpc *VpcV1) CreateInstanceWithContext(ctx context.Context, createInstanceO
 
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances`, nil)
 	if err != nil {
@@ -5604,8 +5604,8 @@ func (vpc *VpcV1) GetInstanceWithContext(ctx context.Context, getInstanceOptions
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances/{id}`, pathParamsMap)
 	if err != nil {
@@ -5670,8 +5670,8 @@ func (vpc *VpcV1) UpdateInstanceWithContext(ctx context.Context, updateInstanceO
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances/{id}`, pathParamsMap)
 	if err != nil {
@@ -8902,8 +8902,8 @@ func (vpc *VpcV1) ListReservationsWithContext(ctx context.Context, listReservati
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations`, nil)
 	if err != nil {
@@ -8979,8 +8979,8 @@ func (vpc *VpcV1) CreateReservationWithContext(ctx context.Context, createReserv
 
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations`, nil)
 	if err != nil {
@@ -9073,8 +9073,8 @@ func (vpc *VpcV1) DeleteReservationWithContext(ctx context.Context, deleteReserv
 
 	builder := core.NewRequestBuilder(core.DELETE)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}`, pathParamsMap)
 	if err != nil {
@@ -9138,8 +9138,8 @@ func (vpc *VpcV1) GetReservationWithContext(ctx context.Context, getReservationO
 
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}`, pathParamsMap)
 	if err != nil {
@@ -9204,8 +9204,8 @@ func (vpc *VpcV1) UpdateReservationWithContext(ctx context.Context, updateReserv
 
 	builder := core.NewRequestBuilder(core.PATCH)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}`, pathParamsMap)
 	if err != nil {
@@ -9275,8 +9275,8 @@ func (vpc *VpcV1) ActivateReservationWithContext(ctx context.Context, activateRe
 
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
-	builder.AddQuery("maturity", "development")
-	builder.AddQuery("version", "2023-11-21")
+	builder.AddQuery("maturity", "beta")
+	builder.AddQuery("version", "2023-11-29")
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
 	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/reservations/{id}/activate`, pathParamsMap)
 	if err != nil {

@@ -149,3 +149,8 @@ Nested scheme for `reservations`:
     - `message` - (String) An explanation of the status reason.
     - `more_info` - (string) Link to documentation about this status reason
   - `zone` - (String) The globally unique name for this zone.
+
+## References 
+
+* [IBM Cloud Terraform Docs](https://cloud.ibm.com/docs/vpc?topic=vpc-provisioning-reserved-capacity-vpc&interface=ui
+https://cloud.ibm.com/docs/vpc?topic=vpc-about-reserved-virtual-servers-vpc)
