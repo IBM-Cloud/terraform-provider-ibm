@@ -693,7 +693,10 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 	}
 
 	if d.HasChange("kms_config") {
-
+		kmsConfig := v2.KmsEnableReq{}
+		kmsConfig.Cluster = clusterID
+		targetEnv := v2.ClusterHeader{}
+		if kms, ok := d.GetOk("kms_config"); ok {
 			kmsConfiglist := kms.([]interface{})
 
 			for _, l := range kmsConfiglist {
