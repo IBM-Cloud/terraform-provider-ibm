@@ -31,8 +31,8 @@ import (
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	common "github.com/IBM/vpc-go-sdk/common"
 	"github.com/go-openapi/strfmt"
-	common "github.ibm.com/ibmcloud/vpc-go-sdk/common"
 )
 
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
