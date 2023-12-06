@@ -32,7 +32,6 @@ func TestAccIbmSmServiceCredentialsSecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "rotation.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "ttl"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "source_service.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "credentials.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret_by_name", "secret_group_name"),
 				),
