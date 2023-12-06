@@ -274,11 +274,6 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 										Computed:    true,
 										Description: "The unique user-defined name for this volume.",
 									},
-									"resource_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The resource type.",
-									},
 								},
 							},
 						},
@@ -640,9 +635,6 @@ func dataSourceBackupPolicyJobCollectionJobsSourceInstanceToMap(sourceVolumeItem
 	}
 	if sourceVolumeItem.Name != nil {
 		sourceVolumeMap["name"] = sourceVolumeItem.Name
-	}
-	if sourceVolumeItem.ResourceType != nil {
-		sourceVolumeMap["resource_type"] = sourceVolumeItem.ResourceType
 	}
 	return sourceVolumeMap
 }
