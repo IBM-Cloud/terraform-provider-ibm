@@ -20,8 +20,8 @@ var serviceCredentialsSecretName = "terraform-test-sc-secret"
 var modifiedServiceCredentialsSecretName = "modified-terraform-test-sc-secret"
 var serviceCredentialsParameters = `{"HMAC":"true"}`
 var serviceCredentialsParametersWithServiceId = `{"serviceid_crn": ibm_iam_service_id.ibm_iam_service_id_instance.crn}`
-var serviceCredentialsTtl = "86400"
-var modifiedServiceCredentialsTtl = "96400"
+var serviceCredentialsTtl = "172800"
+var modifiedServiceCredentialsTtl = "6048000"
 var serviceCredentialsRoleCrn = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
 
 func TestAccIbmSmServiceCredentialsSecretBasic(t *testing.T) {
@@ -147,7 +147,7 @@ var serviceCredentialsSecretFullConfigFormat = `
 		resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret" {
 			instance_id   = "%s"
   			region        = "%s"
-			name = "%s-serviceid"
+			name = "%s"
   			description = "%s"
   			labels = ["%s"]
 			source_service {
@@ -201,7 +201,7 @@ func serviceCredentialsSecretConfigBasic() string {
 
 func serviceCredentialsSecretConfigAllArgs() string {
 	return fmt.Sprintf(serviceCredentialsSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
-		serviceCredentialsSecretName, description, label, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParametersWithServiceId, serviceCredentialsRoleCrn, serviceCredentialsTtl, customMetadata, rotationPolicy)
+		serviceCredentialsSecretName, description, label, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParameters, serviceCredentialsRoleCrn, serviceCredentialsTtl, customMetadata, rotationPolicy)
 }
 
 func serviceCredentialsSecretConfigAllArgsWithExistingServiceId() string {
