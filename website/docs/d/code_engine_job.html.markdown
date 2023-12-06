@@ -77,7 +77,7 @@ Nested scheme for **run_env_variables**:
 	* `value` - (String) The literal value of the environment variable.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
 
-* `run_mode` - (String) The mode for runs of the job. Valid values are `task` and `daemon`. In `task` mode, the `max_execution_time` and `retry_limit` properties apply. In `daemon` mode, since there is no timeout and failed instances are restarted indefinitely, the `max_execution_time` and `retry_limit` properties are not allowed.
+* `run_mode` - (String) The mode for runs of the job. Valid values are `task` and `daemon`. In `task` mode, the `scale_max_execution_time` and `scale_retry_limit` properties apply. In `daemon` mode, since there is no timeout and failed instances are restarted indefinitely, the `scale_max_execution_time` and `scale_retry_limit` properties are not allowed.
   * Constraints: The default value is `task`. Allowable values are: `task`, `daemon`. The minimum length is `0` characters. The value must match regular expression `/^(task|daemon)$/`.
 
 * `run_service_account` - (String) The name of the service account. For built-in service accounts, you can use the shortened names `manager`, `none`, `reader`, and `writer`. This property must not be set on a job run, which references a job template.
