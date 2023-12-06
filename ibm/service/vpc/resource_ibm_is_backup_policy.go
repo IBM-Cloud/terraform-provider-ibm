@@ -253,10 +253,10 @@ func resourceIBMIsBackupPolicyCreate(context context.Context, d *schema.Resource
 				bkpPolicyScopePrototype.CRN = core.StringPtr(crnStr)
 			}
 		}
-		backupPolicyPrototype.scope = &bkpPolicyScopePrototype
+		backupPolicyPrototype.Scope = &bkpPolicyScopePrototype
 	}
 	createBackupPolicyOptions.SetBackupPolicyPrototype(backupPolicyPrototype)
-	backupPolicy, response, err := vpcClient.CreateBackupPolicyWithContext(context, createBackupPolicyOptions)
+	backupPolicyIntf, response, err := vpcClient.CreateBackupPolicyWithContext(context, createBackupPolicyOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateBackupPolicyWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("[ERROR] CreateBackupPolicyWithContext failed %s\n%s", err, response))
@@ -304,13 +304,7 @@ func resourceIBMIsBackupPolicyRead(context context.Context, d *schema.ResourceDa
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting included_content: %s", err))
 		}
 	}
-	if backupPolicy.MatchResourceTypes != nil {
-		for _, matchResourceTypes := range backupPolicy.MatchResourceTypes {
-			if err = d.Set("match_resource_type", matchResourceTypes); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
-			}
-		}
-	}
+
 	if backupPolicy.MatchUserTags != nil {
 		if err = d.Set("match_user_tags", backupPolicy.MatchUserTags); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_user_tags: %s", err))

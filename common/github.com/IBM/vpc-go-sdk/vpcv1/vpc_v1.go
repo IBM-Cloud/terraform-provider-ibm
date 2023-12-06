@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.78.0-67aec9b7-20230818-174940
+ * IBM OpenAPI SDK Code Generator Version: 3.81.0-c73a091c-20231026-215706
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
@@ -32,13 +32,19 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	common "github.com/IBM/vpc-go-sdk/common"
+
 	"github.com/go-openapi/strfmt"
 )
 
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2022-09-20
+// API Version: 2023-10-10
+
+const (
+	YYYYMMDD = "2006-01-02"
+)
+
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,8 +52,8 @@ type VpcV1 struct {
 	// `2`.
 	generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-09-20`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
+	// and `2023-11-20`.
 	Version *string
 }
 
@@ -63,8 +69,8 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
-	// and `2023-09-20`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
+	// and `2023-11-20`.
 	Version *string
 }
 
@@ -121,8 +127,9 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 		}
 	}
 
+	now := time.Now().UTC()
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-09-01")
+		options.Version = core.StringPtr(now.Format(YYYYMMDD))
 	}
 
 	service = &VpcV1{
@@ -1170,8 +1177,7 @@ func (vpc *VpcV1) ListVPCDnsResolutionBindingsWithContext(ctx context.Context, l
 // For this request to succeed, `dns.enable_hub` must be `false` for the VPC specified by the identifier in the URL, and
 // the VPC must not already have a DNS resolution binding.
 //
-// # TODO: finalize topic name with docs team See [Configuring endpoint gateway DNS
-// sharing](/docs/vpc?topic=vpc-hub-spoke-model) for more information.
+// See [About DNS sharing for VPE gateways](/docs/vpc?topic=vpc-hub-spoke-model) for more information.
 func (vpc *VpcV1) CreateVPCDnsResolutionBinding(createVPCDnsResolutionBindingOptions *CreateVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
 	return vpc.CreateVPCDnsResolutionBindingWithContext(context.Background(), createVPCDnsResolutionBindingOptions)
 }
@@ -1249,13 +1255,14 @@ func (vpc *VpcV1) CreateVPCDnsResolutionBindingWithContext(ctx context.Context, 
 // DeleteVPCDnsResolutionBinding : Delete a DNS resolution binding
 // This request deletes a DNS resolution binding. This operation cannot be reversed.
 //
-// A DNS resolution binding for a VPC with `dns.enable_hub` set to `true` cannot be deleted.
-func (vpc *VpcV1) DeleteVPCDnsResolutionBinding(deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (response *core.DetailedResponse, err error) {
+// For this request to succeed, the VPC specified by the identifier in the URL must not have
+// `dns.resolver.type` set to `delegated`.
+func (vpc *VpcV1) DeleteVPCDnsResolutionBinding(deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
 	return vpc.DeleteVPCDnsResolutionBindingWithContext(context.Background(), deleteVPCDnsResolutionBindingOptions)
 }
 
 // DeleteVPCDnsResolutionBindingWithContext is an alternate form of the DeleteVPCDnsResolutionBinding method which supports a Context parameter
-func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteVPCDnsResolutionBindingOptions, "deleteVPCDnsResolutionBindingOptions cannot be nil")
 	if err != nil {
 		return
@@ -1286,6 +1293,7 @@ func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, 
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
+	builder.AddHeader("Accept", "application/json")
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
@@ -1295,7 +1303,18 @@ func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, 
 		return
 	}
 
-	response, err = vpc.Service.Request(request, nil)
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVpcdnsResolutionBinding)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
 
 	return
 }
@@ -1518,13 +1537,13 @@ func (vpc *VpcV1) ListVPCRoutesWithContext(ctx context.Context, listVPCRoutesOpt
 // same way as a retrieved route, and contains the information necessary to create the new route. The request will fail
 // if the new route will cause a loop.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *CreateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	return vpc.CreateVPCRouteWithContext(context.Background(), createVPCRouteOptions)
 }
 
 // CreateVPCRouteWithContext is an alternate form of the CreateVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteOptions *CreateVPCRouteOptions) (result *CreateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: CreateVPCRoute")
 	err = core.ValidateNotNil(createVPCRouteOptions, "createVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1596,7 +1615,7 @@ func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteO
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalCreateVPCRouteResponse)
 		if err != nil {
 			return
 		}
@@ -1664,13 +1683,13 @@ func (vpc *VpcV1) DeleteVPCRouteWithContext(ctx context.Context, deleteVPCRouteO
 // GetVPCRoute : Retrieve a VPC route
 // This request retrieves a single route specified by the identifier in the URL.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *GetVPCRouteResponse, response *core.DetailedResponse, err error) {
 	return vpc.GetVPCRouteWithContext(context.Background(), getVPCRouteOptions)
 }
 
 // GetVPCRouteWithContext is an alternate form of the GetVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions *GetVPCRouteOptions) (result *GetVPCRouteResponse, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: GetVPCRoute")
 	err = core.ValidateNotNil(getVPCRouteOptions, "getVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1718,7 +1737,7 @@ func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalGetVPCRouteResponse)
 		if err != nil {
 			return
 		}
@@ -1732,13 +1751,13 @@ func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions
 // This request updates a route with the information in a provided route patch. The route patch object is structured in
 // the same way as a retrieved route and contains only the information to be updated.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *UpdateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	return vpc.UpdateVPCRouteWithContext(context.Background(), updateVPCRouteOptions)
 }
 
 // UpdateVPCRouteWithContext is an alternate form of the UpdateVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteOptions *UpdateVPCRouteOptions) (result *UpdateVPCRouteResponse, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: UpdateVPCRoute")
 	err = core.ValidateNotNil(updateVPCRouteOptions, "updateVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1792,7 +1811,7 @@ func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteO
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalUpdateVPCRouteResponse)
 		if err != nil {
 			return
 		}
@@ -6691,8 +6710,8 @@ func (vpc *VpcV1) AddInstanceNetworkInterfaceFloatingIPWithContext(ctx context.C
 	return
 }
 
-// ListInstanceNetworkInterfaceIps : List all reserved IPs bound to an instance network interface
-// This request lists all reserved IPs bound to an instance network interface.
+// ListInstanceNetworkInterfaceIps : List the primary reserved IP for an instance network interface
+// This request lists the primary reserved IP for an instance network interface.
 func (vpc *VpcV1) ListInstanceNetworkInterfaceIps(listInstanceNetworkInterfaceIpsOptions *ListInstanceNetworkInterfaceIpsOptions) (result *ReservedIPCollectionInstanceNetworkInterfaceContext, response *core.DetailedResponse, err error) {
 	return vpc.ListInstanceNetworkInterfaceIpsWithContext(context.Background(), listInstanceNetworkInterfaceIpsOptions)
 }
@@ -6761,9 +6780,8 @@ func (vpc *VpcV1) ListInstanceNetworkInterfaceIpsWithContext(ctx context.Context
 	return
 }
 
-// GetInstanceNetworkInterfaceIP : Retrieve bound reserved IP
-// This request retrieves the specified reserved IP address if it is bound to the network interface and instance
-// specified in the URL.
+// GetInstanceNetworkInterfaceIP : Retrieve the primary reserved IP
+// This request retrieves the primary reserved IP for an instance network interface.
 func (vpc *VpcV1) GetInstanceNetworkInterfaceIP(getInstanceNetworkInterfaceIPOptions *GetInstanceNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
 	return vpc.GetInstanceNetworkInterfaceIPWithContext(context.Background(), getInstanceNetworkInterfaceIPOptions)
 }
@@ -9856,10 +9874,11 @@ func (vpc *VpcV1) ListBackupPoliciesWithContext(ctx context.Context, listBackupP
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
+	builder.AddQuery("version", "2024-01-01")
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("future_version", fmt.Sprint("true"))
-	// builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
 	if listBackupPoliciesOptions.Start != nil {
 		builder.AddQuery("start", fmt.Sprint(*listBackupPoliciesOptions.Start))
 	}
@@ -9934,8 +9953,9 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
+	builder.AddQuery("version", "2024-01-01")
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("future_version", fmt.Sprint("true"))
 
 	_, err = builder.SetBodyContentJSON(createBackupPolicyOptions.BackupPolicyPrototype)
@@ -10004,8 +10024,11 @@ func (vpc *VpcV1) ListBackupPolicyJobsWithContext(ctx context.Context, listBacku
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", "2024-01-01")
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "development")
+	builder.AddQuery("future_version", fmt.Sprint("true"))
+
 	if listBackupPolicyJobsOptions.Status != nil {
 		builder.AddQuery("status", fmt.Sprint(*listBackupPolicyJobsOptions.Status))
 	}
@@ -10092,8 +10115,10 @@ func (vpc *VpcV1) GetBackupPolicyJobWithContext(ctx context.Context, getBackupPo
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("version", "2024-01-01")
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "development")
+	builder.AddQuery("future_version", fmt.Sprint("true"))
 
 	request, err := builder.Build()
 	if err != nil {
@@ -10498,12 +10523,12 @@ func (vpc *VpcV1) UpdateBackupPolicyPlanWithContext(ctx context.Context, updateB
 //
 // If the request is accepted, the backup policy `status` will be set to `deleting`. Once deletion processing completes,
 // the backup policy will no longer be retrievable.
-func (vpc *VpcV1) DeleteBackupPolicy(deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteBackupPolicy(deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.DeleteBackupPolicyWithContext(context.Background(), deleteBackupPolicyOptions)
 }
 
 // DeleteBackupPolicyWithContext is an alternate form of the DeleteBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteBackupPolicyOptions, "deleteBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -10538,9 +10563,8 @@ func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBacku
 		builder.AddHeader("If-Match", fmt.Sprint(*deleteBackupPolicyOptions.IfMatch))
 	}
 
-	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
-	builder.AddQuery("future_version", fmt.Sprint("true"))
 
 	request, err := builder.Build()
 	if err != nil {
@@ -10602,9 +10626,11 @@ func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolic
 	}
 	builder.AddHeader("Accept", "application/json")
 
-	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
+	builder.AddQuery("version", "2024-01-01")
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("future_version", fmt.Sprint("true"))
+
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -10670,8 +10696,9 @@ func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBacku
 		builder.AddHeader("If-Match", fmt.Sprint(*updateBackupPolicyOptions.IfMatch))
 	}
 
-	builder.AddQuery("version", fmt.Sprint("2024-01-01"))
+	builder.AddQuery("version", "2024-01-01")
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("future_version", fmt.Sprint("true"))
 
 	_, err = builder.SetBodyContentJSON(updateBackupPolicyOptions.BackupPolicyPatch)
@@ -11200,15 +11227,6 @@ func (vpc *VpcV1) ListBareMetalServersWithContext(ctx context.Context, listBareM
 	}
 	if listBareMetalServersOptions.VPCName != nil {
 		builder.AddQuery("vpc.name", fmt.Sprint(*listBareMetalServersOptions.VPCName))
-	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetID != nil {
-		builder.AddQuery("network_interfaces.subnet.id", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetID))
-	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetCRN != nil {
-		builder.AddQuery("network_interfaces.subnet.crn", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetCRN))
-	}
-	if listBareMetalServersOptions.NetworkInterfacesSubnetName != nil {
-		builder.AddQuery("network_interfaces.subnet.name", fmt.Sprint(*listBareMetalServersOptions.NetworkInterfacesSubnetName))
 	}
 
 	request, err := builder.Build()
@@ -12194,8 +12212,8 @@ func (vpc *VpcV1) AddBareMetalServerNetworkInterfaceFloatingIPWithContext(ctx co
 	return
 }
 
-// ListBareMetalServerNetworkInterfaceIps : List all reserved IPs bound to a bare metal server network interface
-// This request lists all reserved IPs bound to a bare metal server network interface.
+// ListBareMetalServerNetworkInterfaceIps : List the primary reserved IP for a bare metal server network interface
+// This request lists the primary reserved IP for a bare metal server network interface.
 func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIps(listBareMetalServerNetworkInterfaceIpsOptions *ListBareMetalServerNetworkInterfaceIpsOptions) (result *ReservedIPCollectionBareMetalServerNetworkInterfaceContext, response *core.DetailedResponse, err error) {
 	return vpc.ListBareMetalServerNetworkInterfaceIpsWithContext(context.Background(), listBareMetalServerNetworkInterfaceIpsOptions)
 }
@@ -12258,9 +12276,8 @@ func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIpsWithContext(ctx context.
 	return
 }
 
-// GetBareMetalServerNetworkInterfaceIP : Retrieve bound reserved IP
-// This request retrieves the specified reserved IP address if it is bound to the network interface for the bare metal
-// server specified in the URL.
+// GetBareMetalServerNetworkInterfaceIP : Retrieve the primary reserved IP
+// This request retrieves the primary reserved IP for a bare metal server network interface.
 func (vpc *VpcV1) GetBareMetalServerNetworkInterfaceIP(getBareMetalServerNetworkInterfaceIPOptions *GetBareMetalServerNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
 	return vpc.GetBareMetalServerNetworkInterfaceIPWithContext(context.Background(), getBareMetalServerNetworkInterfaceIPOptions)
 }
@@ -15170,12 +15187,12 @@ func (vpc *VpcV1) DeleteShareSourceWithContext(ctx context.Context, deleteShareS
 // GetShareSource : Retrieve the source file share for a replica file share
 // This request retrieves the source file share associated with the replica file share specified by the identifier in
 // the URL.
-func (vpc *VpcV1) GetShareSource(getShareSourceOptions *GetShareSourceOptions) (result *Share, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetShareSource(getShareSourceOptions *GetShareSourceOptions) (result *ShareReference, response *core.DetailedResponse, err error) {
 	return vpc.GetShareSourceWithContext(context.Background(), getShareSourceOptions)
 }
 
 // GetShareSourceWithContext is an alternate form of the GetShareSource method which supports a Context parameter
-func (vpc *VpcV1) GetShareSourceWithContext(ctx context.Context, getShareSourceOptions *GetShareSourceOptions) (result *Share, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetShareSourceWithContext(ctx context.Context, getShareSourceOptions *GetShareSourceOptions) (result *ShareReference, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getShareSourceOptions, "getShareSourceOptions cannot be nil")
 	if err != nil {
 		return
@@ -15221,7 +15238,7 @@ func (vpc *VpcV1) GetShareSourceWithContext(ctx context.Context, getShareSourceO
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShare)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalShareReference)
 		if err != nil {
 			return
 		}
@@ -17733,7 +17750,7 @@ func (vpc *VpcV1) ListSecurityGroupTargetsWithContext(ctx context.Context, listS
 // - A bare metal server network interface identifier
 // - A virtual network interface identifier
 // - A VPN server identifier
-// - An application load balancer identifier
+// - A load balancer identifier
 // - An endpoint gateway identifier
 // - An instance network interface identifier
 //
@@ -17860,7 +17877,7 @@ func (vpc *VpcV1) GetSecurityGroupTargetWithContext(ctx context.Context, getSecu
 // - A bare metal server network interface identifier
 // - A virtual network interface identifier
 // - A VPN server identifier
-// - An application load balancer identifier
+// - A load balancer identifier
 // - An endpoint gateway identifier
 // - An instance network interface identifier
 //
@@ -24605,6 +24622,22 @@ type BackupPolicy struct {
 	// The CRN for this backup policy.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this backup policy.
 	Href *string `json:"href" validate:"required"`
 
@@ -24625,15 +24658,7 @@ type BackupPolicy struct {
 	// The enumerated values for this property may expand in the future. When processing this property, check for and log
 	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
 	// unexpected property value was encountered.
-	MatchResourceType *string `json:"match_resource_type,omitempty"`
-
-	// The resource types this backup policy applies to. Resources that have both a matching type and a matching user tag
-	// will be subject to the backup policy.
-	//
-	// The enumerated values for this property will expand in the future. When processing this property, check for and log
-	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
-	// unexpected property value was encountered.
-	MatchResourceTypes []string `json:"match_resource_types" validate:"required"`
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
 
 	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
 	// be subject to the backup policy.
@@ -24651,6 +24676,9 @@ type BackupPolicy struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
+	// The scope for this backup policy.
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
 	// The included content for backups created using this policy:
 	// - `boot_volume`: Include the instance's boot volume.
 	// - `data_volumes`: Include the instance's data volumes.
@@ -24660,6 +24688,21 @@ type BackupPolicy struct {
 	// unexpected property value was encountered.
 	IncludedContent []string `json:"included_content,omitempty"`
 }
+
+// Constants associated with the BackupPolicy.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyHealthStateDegradedConst     = "degraded"
+	BackupPolicyHealthStateFaultedConst      = "faulted"
+	BackupPolicyHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyHealthStateOkConst           = "ok"
+)
 
 // Constants associated with the BackupPolicy.LifecycleState property.
 // The lifecycle state of the backup policy.
@@ -24673,11 +24716,16 @@ const (
 	BackupPolicyLifecycleStateWaitingConst   = "waiting"
 )
 
-// Constants associated with the BackupPolicy.MatchResourceTypes property.
-// The resource type.
+// Constants associated with the BackupPolicy.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
 const (
-	BackupPolicyMatchResourceTypesInstanceConst = "instance"
-	BackupPolicyMatchResourceTypesVolumeConst   = "volume"
+	BackupPolicyMatchResourceTypeInstanceConst = "instance"
+	BackupPolicyMatchResourceTypeVolumeConst   = "volume"
 )
 
 // Constants associated with the BackupPolicy.ResourceType property.
@@ -24712,6 +24760,14 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -24732,10 +24788,6 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "match_resource_types", &obj.MatchResourceTypes)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
 	if err != nil {
 		return
@@ -24753,6 +24805,10 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
 	if err != nil {
 		return
 	}
@@ -24849,6 +24905,43 @@ type BackupPolicyCollectionNext struct {
 func UnmarshalBackupPolicyCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyHealthReason : BackupPolicyHealthReason struct
+type BackupPolicyHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the BackupPolicyHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	BackupPolicyHealthReasonCodeMissingServiceAuthorizationPoliciesConst = "missing_service_authorization_policies"
+)
+
+// UnmarshalBackupPolicyHealthReason unmarshals an instance of BackupPolicyHealthReason from the specified map of raw messages.
+func UnmarshalBackupPolicyHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -25900,17 +25993,9 @@ func UnmarshalBackupPolicyPlanRemoteRegionPolicyPrototype(m map[string]json.RawM
 // - BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype
 // - BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype
 type BackupPolicyPrototype struct {
-	// The resource types this backup policy will apply to. Resources that have both a matching type and a matching user
-	// tag will be subject to the backup policy.
-	MatchResourceTypes []string `json:"match_resource_types,omitempty"`
-
-	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
 	// will be subject to the backup policy.
-	//
-	// The enumerated values for this property may expand in the future. When processing this property, check for and log
-	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
-	// unexpected property value was encountered.
-	MatchResourceType *string `json:"match_resource_type,omitempty"`
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
 
 	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
 	// will be subject to the backup policy.
@@ -25924,8 +26009,13 @@ type BackupPolicyPrototype struct {
 	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The scope to use for this backup policy.
+	//
+	// If unspecified, the policy will be scoped to the account.
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
 
 	// The included content for backups created using this policy:
 	// - `boot_volume`: Include the instance's boot volume.
@@ -25933,11 +26023,12 @@ type BackupPolicyPrototype struct {
 	IncludedContent []string `json:"included_content,omitempty"`
 }
 
-// Constants associated with the BackupPolicyPrototype.MatchResourceTypes property.
-// The resource type.
+// Constants associated with the BackupPolicyPrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
 const (
-	BackupPolicyPrototypeMatchResourceTypesInstanceConst = "instance"
-	BackupPolicyPrototypeMatchResourceTypesVolumeConst   = "volume"
+	BackupPolicyPrototypeMatchResourceTypeInstanceConst = "instance"
+	BackupPolicyPrototypeMatchResourceTypeVolumeConst   = "volume"
 )
 
 // Constants associated with the BackupPolicyPrototype.IncludedContent property.
@@ -25958,10 +26049,6 @@ type BackupPolicyPrototypeIntf interface {
 // UnmarshalBackupPolicyPrototype unmarshals an instance of BackupPolicyPrototype from the specified map of raw messages.
 func UnmarshalBackupPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyPrototype)
-	err = core.UnmarshalPrimitive(m, "match_resource_types", &obj.MatchResourceTypes)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
 	if err != nil {
 		return
@@ -25982,7 +26069,88 @@ func UnmarshalBackupPolicyPrototype(m map[string]json.RawMessage, result interfa
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScope : The scope for this backup policy.
+// Models which "extend" this model:
+// - BackupPolicyScopeEnterpriseReference
+// - BackupPolicyScopeAccountReference
+type BackupPolicyScope struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+
+	// The unique identifier for this enterprise.
+	ID *string `json:"id,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type,omitempty"`
+}
+
+// Constants associated with the BackupPolicyScope.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeResourceTypeEnterpriseConst = "enterprise"
+)
+
+func (*BackupPolicyScope) isaBackupPolicyScope() bool {
+	return true
+}
+
+type BackupPolicyScopeIntf interface {
+	isaBackupPolicyScope() bool
+}
+
+// UnmarshalBackupPolicyScope unmarshals an instance of BackupPolicyScope from the specified map of raw messages.
+func UnmarshalBackupPolicyScope(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScope)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototype : The scope to use for this backup policy.
+//
+// If unspecified, the policy will be scoped to the account.
+// Models which "extend" this model:
+// - BackupPolicyScopePrototypeEnterpriseIdentity
+type BackupPolicyScopePrototype struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*BackupPolicyScopePrototype) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+type BackupPolicyScopePrototypeIntf interface {
+	isaBackupPolicyScopePrototype() bool
+}
+
+// UnmarshalBackupPolicyScopePrototype unmarshals an instance of BackupPolicyScopePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototype)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
@@ -26815,10 +26983,10 @@ type BareMetalServerNetworkInterface struct {
 	//   server is stopped
 	//   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 	//     to use the PCI interface
-	//   - Cannot directly use an IEEE 802.1q VLAN tag.
+	//   - Cannot directly use an IEEE 802.1Q tag.
 	// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
 	//   array of `allowed_vlans`.
-	//   - Must use an IEEE 802.1q tag.
+	//   - Must use an IEEE 802.1Q tag.
 	//   - Has its own security groups and does not inherit those of the PCI device through
 	//     which traffic flows.
 	//
@@ -26854,15 +27022,22 @@ type BareMetalServerNetworkInterface struct {
 	// The bare metal server network interface type.
 	Type *string `json:"type" validate:"required"`
 
-	// Indicates what VLAN IDs (for VLAN type only) can use this physical (PCI type) interface.
+	// The VLAN IDs allowed for `vlan` interfaces using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans,omitempty"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float,omitempty"`
 
-	// Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface.
+	// The VLAN ID used in the IEEE 802.1Q tag present in all traffic on this interface.
 	Vlan *int64 `json:"vlan,omitempty"`
 }
 
@@ -26874,10 +27049,10 @@ type BareMetalServerNetworkInterface struct {
 //     server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
-//   - Cannot directly use an IEEE 802.1q VLAN tag.
+//   - Cannot directly use an IEEE 802.1Q tag.
 //   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
 //     array of `allowed_vlans`.
-//   - Must use an IEEE 802.1q tag.
+//   - Must use an IEEE 802.1Q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.
 //
@@ -27042,7 +27217,8 @@ type BareMetalServerNetworkInterfacePatch struct {
 	// Indicates whether source IP spoofing is allowed on this bare metal server network interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
-	// Indicates what VLAN IDs (for VLAN type only) can use this physical (PCI type) interface.
+	// The VLAN IDs to allow for `vlan` interfaces using this PCI interface, replacing any existing VLAN IDs. The specified
+	// values must include IDs for all `vlan` interfaces currently using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans,omitempty"`
 
 	// If `true`:
@@ -27122,11 +27298,11 @@ type BareMetalServerNetworkInterfacePrototype struct {
 	//   server is stopped
 	//   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 	//     to use the PCI interface
-	//   - Cannot directly use an IEEE 802.1q VLAN tag.
+	//   - Cannot directly use an IEEE 802.1Q tag.
 	//   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`
 	// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
 	//   array of `allowed_vlans`.
-	//   - Must use an IEEE 802.1q tag.
+	//   - Must use an IEEE 802.1Q tag.
 	//   - Has its own security groups and does not inherit those of the PCI device through
 	//     which traffic flows.
 	//   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
@@ -27151,15 +27327,22 @@ type BareMetalServerNetworkInterfacePrototype struct {
 	// The associated subnet.
 	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
 
-	// Indicates what VLAN IDs (for VLAN type only) can use this physical (PCI type) interface.
+	// The VLAN IDs to allow for `vlan` interfaces using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans,omitempty"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float,omitempty"`
 
-	// Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface.
+	// The VLAN ID used in the IEEE 802.1Q tag present in all traffic on this interface.
 	Vlan *int64 `json:"vlan,omitempty"`
 }
 
@@ -27172,11 +27355,11 @@ type BareMetalServerNetworkInterfacePrototype struct {
 //     server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
-//   - Cannot directly use an IEEE 802.1q VLAN tag.
+//   - Cannot directly use an IEEE 802.1Q tag.
 //   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`
 //   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its
 //     array of `allowed_vlans`.
-//   - Must use an IEEE 802.1q tag.
+//   - Must use an IEEE 802.1Q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.
 //   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
@@ -27305,7 +27488,7 @@ type BareMetalServerPrimaryNetworkInterfacePrototype struct {
 	// Indicates whether source IP spoofing is allowed on this bare metal server network interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
-	// Indicates what VLAN IDs (for VLAN type only) can use this physical (PCI type) interface.
+	// The VLAN IDs allowed for `vlan` interfaces using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans,omitempty"`
 
 	// If `true`:
@@ -27327,7 +27510,7 @@ type BareMetalServerPrimaryNetworkInterfacePrototype struct {
 	//   server is stopped
 	//   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 	//     to use the PCI interface
-	//   - Cannot directly use an IEEE 802.1q VLAN tag.
+	//   - Cannot directly use an IEEE 802.1Q tag.
 	//   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
 	InterfaceType *string `json:"interface_type,omitempty"`
 
@@ -27360,7 +27543,7 @@ type BareMetalServerPrimaryNetworkInterfacePrototype struct {
 //     server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
-//   - Cannot directly use an IEEE 802.1q VLAN tag.
+//   - Cannot directly use an IEEE 802.1Q tag.
 //   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
 const (
 	BareMetalServerPrimaryNetworkInterfacePrototypeInterfaceTypeHipersocketConst = "hipersocket"
@@ -29200,7 +29383,7 @@ type CreateBareMetalServerOptions struct {
 	NetworkInterfaces []BareMetalServerNetworkInterfacePrototypeIntf `json:"network_interfaces,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	TrustedPlatformModule *BareMetalServerTrustedPlatformModulePrototype `json:"trusted_platform_module,omitempty"`
@@ -29307,7 +29490,7 @@ type CreateDedicatedHostGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29419,7 +29602,7 @@ type CreateEndpointGatewayOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this endpoint gateway. If unspecified, the VPC's default security group is used.
@@ -29518,7 +29701,8 @@ type CreateFlowLogCollectorOptions struct {
 	// The Cloud Object Storage bucket where the collected flows will be logged.
 	// The bucket must exist and an IAM service authorization must grant
 	// `IBM Cloud Flow Logs` resources of `VPC Infrastructure Services` writer
-	// access to the bucket.
+	// access to the bucket. For more information, see [Creating a flow log
+	// collector](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-flow-log-collector).
 	StorageBucket LegacyCloudObjectStorageBucketIdentityIntf `json:"storage_bucket" validate:"required"`
 
 	// The target this collector will collect flow logs for. If the target is an instance,
@@ -29534,7 +29718,7 @@ type CreateFlowLogCollectorOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29607,7 +29791,7 @@ type CreateIkePolicyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -30071,7 +30255,7 @@ type CreateInstanceGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -30148,7 +30332,7 @@ type CreateInstanceNetworkInterfaceOptions struct {
 	// The associated subnet.
 	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
 
-	// Indicates whether source IP spoofing is allowed on this instance interface.
+	// Indicates whether source IP spoofing is allowed on this instance network interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
 	// The name for the instance network interface. The name must not be used by another network interface on the virtual
@@ -30360,7 +30544,7 @@ type CreateIpsecPolicyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -30478,7 +30662,7 @@ type CreateKeyOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The crypto-system used by this key.
@@ -30991,7 +31175,7 @@ type CreateLoadBalancerOptions struct {
 	Profile LoadBalancerProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Indicates whether route mode is enabled for this load balancer.
@@ -31389,7 +31573,7 @@ type CreatePlacementGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -31455,7 +31639,7 @@ type CreatePublicGatewayOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -31516,7 +31700,7 @@ type CreateSecurityGroupOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The prototype objects for rules to be created for this security group. If unspecified, no rules will be created,
@@ -31902,6 +32086,156 @@ func (options *CreateSubnetReservedIPOptions) SetHeaders(param map[string]string
 	return options
 }
 
+// CreateVPCRouteResponse : CreateVPCRouteResponse struct
+type CreateVPCRouteResponse struct {
+	// The action to perform with a packet matching the route:
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+	// - `deliver`: deliver the packet to the specified `next_hop`
+	// - `drop`: drop the packet.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that the route was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// If present, the resource that created the route. Routes with this property present cannot
+	// be directly deleted. All routes with an `origin` of `service` will have this property set,
+	// and future `origin` values may also have this property set.
+	Creator RouteCreatorIntf `json:"creator,omitempty"`
+
+	// The destination CIDR of the route.
+	Destination *string `json:"destination" validate:"required"`
+
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the route.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this route. The name is unique across all routes in the routing table.
+	Name *string `json:"name" validate:"required"`
+
+	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
+	// other `action` values, its `address` will be `0.0.0.0`.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
+
+	// The origin of this route:
+	// - `service`: route was directly created by a service
+	// - `user`: route was directly created by a user
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+	// unexpected property value was encountered.
+	Origin *string `json:"origin,omitempty"`
+
+	// The priority of this route. Smaller values have higher priority.
+	//
+	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
+	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
+	// distributed between them.
+	Priority *int64 `json:"priority" validate:"required"`
+
+	// The zone the route applies to. (Traffic from subnets in this zone will be
+	// subject to this route.).
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the CreateVPCRouteResponse.Action property.
+// The action to perform with a packet matching the route:
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+// - `deliver`: deliver the packet to the specified `next_hop`
+// - `drop`: drop the packet.
+const (
+	CreateVPCRouteResponseActionDelegateConst    = "delegate"
+	CreateVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
+	CreateVPCRouteResponseActionDeliverConst     = "deliver"
+	CreateVPCRouteResponseActionDropConst        = "drop"
+)
+
+// Constants associated with the CreateVPCRouteResponse.LifecycleState property.
+// The lifecycle state of the route.
+const (
+	CreateVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
+	CreateVPCRouteResponseLifecycleStateFailedConst    = "failed"
+	CreateVPCRouteResponseLifecycleStatePendingConst   = "pending"
+	CreateVPCRouteResponseLifecycleStateStableConst    = "stable"
+	CreateVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
+	CreateVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
+	CreateVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the CreateVPCRouteResponse.Origin property.
+// The origin of this route:
+// - `service`: route was directly created by a service
+// - `user`: route was directly created by a user
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+// unexpected property value was encountered.
+const (
+	CreateVPCRouteResponseOriginServiceConst = "service"
+	CreateVPCRouteResponseOriginUserConst    = "user"
+)
+
+// UnmarshalCreateVPCRouteResponse unmarshals an instance of CreateVPCRouteResponse from the specified map of raw messages.
+func UnmarshalCreateVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(CreateVPCRouteResponse)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // CreateVolumeOptions : The CreateVolume options.
 type CreateVolumeOptions struct {
 	// The volume prototype object.
@@ -32086,7 +32420,7 @@ type CreateVPCOptions struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -32627,7 +32961,7 @@ type CreateVPNServerOptions struct {
 	Protocol *string `json:"protocol,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this VPN server. If unspecified, the VPC's default security group is used.
@@ -33006,6 +33340,9 @@ type DedicatedHost struct {
 	// The name for this dedicated host. The name is unique across all dedicated hosts in the region.
 	Name *string `json:"name" validate:"required"`
 
+	// The dedicated host NUMA configuration.
+	Numa *DedicatedHostNuma `json:"numa" validate:"required"`
+
 	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-dh-profiles) for this
 	// dedicated host.
 	Profile *DedicatedHostProfileReference `json:"profile" validate:"required"`
@@ -33122,6 +33459,10 @@ func UnmarshalDedicatedHost(m map[string]json.RawMessage, result interface{}) (e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "numa", &obj.Numa, UnmarshalDedicatedHostNuma)
 	if err != nil {
 		return
 	}
@@ -33810,6 +34151,54 @@ func UnmarshalDedicatedHostGroupReferenceDeleted(m map[string]json.RawMessage, r
 	return
 }
 
+// DedicatedHostNuma : The dedicated host NUMA configuration.
+type DedicatedHostNuma struct {
+	// The total number of NUMA nodes for this dedicated host.
+	Count *int64 `json:"count" validate:"required"`
+
+	// The NUMA nodes for this dedicated host.
+	Nodes []DedicatedHostNumaNode `json:"nodes" validate:"required"`
+}
+
+// UnmarshalDedicatedHostNuma unmarshals an instance of DedicatedHostNuma from the specified map of raw messages.
+func UnmarshalDedicatedHostNuma(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostNuma)
+	err = core.UnmarshalPrimitive(m, "count", &obj.Count)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "nodes", &obj.Nodes, UnmarshalDedicatedHostNumaNode)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DedicatedHostNumaNode : The dedicated host NUMA node configuration.
+type DedicatedHostNumaNode struct {
+	// The available VCPU for this NUMA node.
+	AvailableVcpu *int64 `json:"available_vcpu" validate:"required"`
+
+	// The total VCPU capacity for this NUMA node.
+	Vcpu *int64 `json:"vcpu" validate:"required"`
+}
+
+// UnmarshalDedicatedHostNumaNode unmarshals an instance of DedicatedHostNumaNode from the specified map of raw messages.
+func UnmarshalDedicatedHostNumaNode(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DedicatedHostNumaNode)
+	err = core.UnmarshalPrimitive(m, "available_vcpu", &obj.AvailableVcpu)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "vcpu", &obj.Vcpu)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // DedicatedHostPatch : DedicatedHostPatch struct
 type DedicatedHostPatch struct {
 	// If set to true, instances can be placed on this dedicated host.
@@ -33869,6 +34258,21 @@ type DedicatedHostProfile struct {
 
 	SocketCount DedicatedHostProfileSocketIntf `json:"socket_count" validate:"required"`
 
+	// The status of the dedicated host profile:
+	//   - `previous`:  This dedicated host profile is an older revision, but remains provisionable
+	//   and usable.
+	//   - `current`:  This profile is the latest revision.
+	//
+	// Note that revisions are indicated by the generation of a dedicated host profile.  Refer to the [profile naming
+	// conventions]
+	// (https://cloud.ibm.com/docs/vpc?topic=vpc-dh-profiles&interface=ui#profiles-naming-rule) for information on how
+	// generations are defined within a dedicated host profile.
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the profile on which the
+	// unexpected property value was encountered.
+	Status *string `json:"status" validate:"required"`
+
 	// The instance profiles usable by instances placed on dedicated hosts with this profile.
 	SupportedInstanceProfiles []InstanceProfileReference `json:"supported_instance_profiles" validate:"required"`
 
@@ -33889,6 +34293,25 @@ const (
 	DedicatedHostProfileFamilyBalancedConst = "balanced"
 	DedicatedHostProfileFamilyComputeConst  = "compute"
 	DedicatedHostProfileFamilyMemoryConst   = "memory"
+)
+
+// Constants associated with the DedicatedHostProfile.Status property.
+// The status of the dedicated host profile:
+//   - `previous`:  This dedicated host profile is an older revision, but remains provisionable
+//     and usable.
+//   - `current`:  This profile is the latest revision.
+//
+// Note that revisions are indicated by the generation of a dedicated host profile.  Refer to the [profile naming
+// conventions]
+// (https://cloud.ibm.com/docs/vpc?topic=vpc-dh-profiles&interface=ui#profiles-naming-rule) for information on how
+// generations are defined within a dedicated host profile.
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the profile on which the
+// unexpected property value was encountered.
+const (
+	DedicatedHostProfileStatusCurrentConst  = "current"
+	DedicatedHostProfileStatusPreviousConst = "previous"
 )
 
 // UnmarshalDedicatedHostProfile unmarshals an instance of DedicatedHostProfile from the specified map of raw messages.
@@ -33919,6 +34342,10 @@ func UnmarshalDedicatedHostProfile(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalModel(m, "socket_count", &obj.SocketCount, UnmarshalDedicatedHostProfileSocket)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -34585,7 +35012,7 @@ type DedicatedHostPrototype struct {
 	Profile DedicatedHostProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The dedicated host group for this dedicated host.
@@ -37247,6 +37674,10 @@ type EndpointGateway struct {
 	// The reserved IPs bound to this endpoint gateway.
 	Ips []ReservedIPReference `json:"ips" validate:"required"`
 
+	// The reasons for the current `lifecycle_state` (if any):
+	// - `dns_resolution_binding_pending`: the DNS resolution binding is being set up.
+	LifecycleReasons []EndpointGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
 	// The lifecycle state of the endpoint gateway.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
@@ -37337,6 +37768,10 @@ func UnmarshalEndpointGateway(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "ips", &obj.Ips, UnmarshalReservedIPReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalEndpointGatewayLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -37465,6 +37900,44 @@ type EndpointGatewayCollectionNext struct {
 func UnmarshalEndpointGatewayCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(EndpointGatewayCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// EndpointGatewayLifecycleReason : EndpointGatewayLifecycleReason struct
+type EndpointGatewayLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the EndpointGatewayLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	EndpointGatewayLifecycleReasonCodeDnsResolutionBindingPendingConst = "dns_resolution_binding_pending"
+	EndpointGatewayLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalEndpointGatewayLifecycleReason unmarshals an instance of EndpointGatewayLifecycleReason from the specified map of raw messages.
+func UnmarshalEndpointGatewayLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(EndpointGatewayLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -37796,8 +38269,8 @@ type FailoverShareOptions struct {
 	// - `fail`: Fail the operation, resulting in the replication relationship being unchanged.
 	// - `split`: Split the replica from its source, resulting in two individual read-write
 	//     file shares. Because the final sync was not completed, the replica may be
-	//     out-of-date. This is useful in disaster recovery scenarios where the source is known
-	//     to be unreachable.
+	//     out-of-date. This occurs in disaster recovery scenarios where the source is known to
+	//     be unreachable.
 	FallbackPolicy *string `json:"fallback_policy,omitempty"`
 
 	// The failover timeout in seconds.
@@ -37814,8 +38287,8 @@ type FailoverShareOptions struct {
 //   - `fail`: Fail the operation, resulting in the replication relationship being unchanged.
 //   - `split`: Split the replica from its source, resulting in two individual read-write
 //     file shares. Because the final sync was not completed, the replica may be
-//     out-of-date. This is useful in disaster recovery scenarios where the source is known
-//     to be unreachable.
+//     out-of-date. This occurs in disaster recovery scenarios where the source is known to
+//     be unreachable.
 const (
 	FailoverShareOptionsFallbackPolicyFailConst  = "fail"
 	FailoverShareOptionsFallbackPolicySplitConst = "split"
@@ -38084,7 +38557,7 @@ type FloatingIPPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The zone this floating IP will reside in.
@@ -38407,7 +38880,9 @@ type FlowLogCollector struct {
 	// The resource group for this flow log collector.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
 
-	// The Cloud Object Storage bucket where the collected flows are logged.
+	// The Cloud Object Storage bucket where the collected flows are logged. For more
+	// information, see [Viewing flow log
+	// objects](https://cloud.ibm.com/docs/vpc?topic=vpc-fl-analyze).
 	StorageBucket *LegacyCloudObjectStorageBucketReference `json:"storage_bucket" validate:"required"`
 
 	// The target this collector is collecting flow logs for.
@@ -41045,6 +41520,156 @@ func (options *GetSubnetRoutingTableOptions) SetHeaders(param map[string]string)
 	return options
 }
 
+// GetVPCRouteResponse : GetVPCRouteResponse struct
+type GetVPCRouteResponse struct {
+	// The action to perform with a packet matching the route:
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+	// - `deliver`: deliver the packet to the specified `next_hop`
+	// - `drop`: drop the packet.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that the route was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// If present, the resource that created the route. Routes with this property present cannot
+	// be directly deleted. All routes with an `origin` of `service` will have this property set,
+	// and future `origin` values may also have this property set.
+	Creator RouteCreatorIntf `json:"creator,omitempty"`
+
+	// The destination CIDR of the route.
+	Destination *string `json:"destination" validate:"required"`
+
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the route.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this route. The name is unique across all routes in the routing table.
+	Name *string `json:"name" validate:"required"`
+
+	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
+	// other `action` values, its `address` will be `0.0.0.0`.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
+
+	// The origin of this route:
+	// - `service`: route was directly created by a service
+	// - `user`: route was directly created by a user
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+	// unexpected property value was encountered.
+	Origin *string `json:"origin,omitempty"`
+
+	// The priority of this route. Smaller values have higher priority.
+	//
+	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
+	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
+	// distributed between them.
+	Priority *int64 `json:"priority" validate:"required"`
+
+	// The zone the route applies to. (Traffic from subnets in this zone will be
+	// subject to this route.).
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the GetVPCRouteResponse.Action property.
+// The action to perform with a packet matching the route:
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+// - `deliver`: deliver the packet to the specified `next_hop`
+// - `drop`: drop the packet.
+const (
+	GetVPCRouteResponseActionDelegateConst    = "delegate"
+	GetVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
+	GetVPCRouteResponseActionDeliverConst     = "deliver"
+	GetVPCRouteResponseActionDropConst        = "drop"
+)
+
+// Constants associated with the GetVPCRouteResponse.LifecycleState property.
+// The lifecycle state of the route.
+const (
+	GetVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
+	GetVPCRouteResponseLifecycleStateFailedConst    = "failed"
+	GetVPCRouteResponseLifecycleStatePendingConst   = "pending"
+	GetVPCRouteResponseLifecycleStateStableConst    = "stable"
+	GetVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
+	GetVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
+	GetVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the GetVPCRouteResponse.Origin property.
+// The origin of this route:
+// - `service`: route was directly created by a service
+// - `user`: route was directly created by a user
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+// unexpected property value was encountered.
+const (
+	GetVPCRouteResponseOriginServiceConst = "service"
+	GetVPCRouteResponseOriginUserConst    = "user"
+)
+
+// UnmarshalGetVPCRouteResponse unmarshals an instance of GetVPCRouteResponse from the specified map of raw messages.
+func UnmarshalGetVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(GetVPCRouteResponse)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // GetVirtualNetworkInterfaceOptions : The GetVirtualNetworkInterface options.
 type GetVirtualNetworkInterfaceOptions struct {
 	// The virtual network interface identifier.
@@ -43329,7 +43954,7 @@ type ImagePrototype struct {
 	ObsolescenceAt *strfmt.DateTime `json:"obsolescence_at,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
@@ -43634,6 +44259,11 @@ type Instance struct {
 	// The network interfaces for this instance, including the primary network interface.
 	NetworkInterfaces []NetworkInterfaceInstanceContextReference `json:"network_interfaces" validate:"required"`
 
+	// The number of NUMA nodes this virtual server instance is provisioned on.
+	//
+	// This property will be absent if the instance's `status` is not `running`.
+	NumaCount *int64 `json:"numa_count,omitempty"`
+
 	// The placement restrictions for the virtual server instance.
 	PlacementTarget InstancePlacementTargetIntf `json:"placement_target,omitempty"`
 
@@ -43795,6 +44425,10 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfaceInstanceContextReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "numa_count", &obj.NumaCount)
 	if err != nil {
 		return
 	}
@@ -46563,6 +47197,7 @@ func UnmarshalInstanceInitializationDefaultTrustedProfile(m map[string]json.RawM
 	return
 }
 
+// InstanceInitializationPassword : InstanceInitializationPassword struct
 type InstanceInitializationPassword struct {
 	// The administrator password at initialization, encrypted using `encryption_key`, and returned base64-encoded.
 	EncryptedPassword *[]byte `json:"encrypted_password" validate:"required"`
@@ -47063,9 +47698,26 @@ type InstanceProfile struct {
 
 	NetworkInterfaceCount InstanceProfileNetworkInterfaceCountIntf `json:"network_interface_count" validate:"required"`
 
+	NumaCount InstanceProfileNumaCountIntf `json:"numa_count,omitempty"`
+
 	OsArchitecture *InstanceProfileOsArchitecture `json:"os_architecture" validate:"required"`
 
 	PortSpeed InstanceProfilePortSpeedIntf `json:"port_speed" validate:"required"`
+
+	// The status of the instance profile:
+	//   - `previous`:  This instance profile is an older revision, but remains provisionable and
+	//   usable.
+	//   - `current`:  This profile is the latest revision.
+	//
+	// Note that revisions are indicated by the generation of an instance profile.  Refer to the
+	// [profile naming conventions]
+	// (https://cloud.ibm.com/docs/vpc?topic=vpc-profiles&interface=ui#profiles-naming-rule) for information on how
+	// generations are defined within an instance profile.
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the profile on which the
+	// unexpected property value was encountered.
+	Status *string `json:"status" validate:"required"`
 
 	TotalVolumeBandwidth InstanceProfileVolumeBandwidthIntf `json:"total_volume_bandwidth" validate:"required"`
 
@@ -47075,6 +47727,25 @@ type InstanceProfile struct {
 
 	VcpuManufacturer *InstanceProfileVcpuManufacturer `json:"vcpu_manufacturer" validate:"required"`
 }
+
+// Constants associated with the InstanceProfile.Status property.
+// The status of the instance profile:
+//   - `previous`:  This instance profile is an older revision, but remains provisionable and
+//     usable.
+//   - `current`:  This profile is the latest revision.
+//
+// Note that revisions are indicated by the generation of an instance profile.  Refer to the
+// [profile naming conventions]
+// (https://cloud.ibm.com/docs/vpc?topic=vpc-profiles&interface=ui#profiles-naming-rule) for information on how
+// generations are defined within an instance profile.
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the profile on which the
+// unexpected property value was encountered.
+const (
+	InstanceProfileStatusCurrentConst  = "current"
+	InstanceProfileStatusPreviousConst = "previous"
+)
 
 // UnmarshalInstanceProfile unmarshals an instance of InstanceProfile from the specified map of raw messages.
 func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -47123,11 +47794,19 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "numa_count", &obj.NumaCount, UnmarshalInstanceProfileNumaCount)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "os_architecture", &obj.OsArchitecture, UnmarshalInstanceProfileOsArchitecture)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalModel(m, "port_speed", &obj.PortSpeed, UnmarshalInstanceProfilePortSpeed)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -47822,6 +48501,47 @@ func UnmarshalInstanceProfileMemory(m map[string]json.RawMessage, result interfa
 	return
 }
 
+// InstanceProfileNumaCount : InstanceProfileNumaCount struct
+// Models which "extend" this model:
+// - InstanceProfileNumaCountFixed
+// - InstanceProfileNumaCountDependent
+type InstanceProfileNumaCount struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value,omitempty"`
+}
+
+// Constants associated with the InstanceProfileNumaCount.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileNumaCountTypeFixedConst = "fixed"
+)
+
+func (*InstanceProfileNumaCount) isaInstanceProfileNumaCount() bool {
+	return true
+}
+
+type InstanceProfileNumaCountIntf interface {
+	isaInstanceProfileNumaCount() bool
+}
+
+// UnmarshalInstanceProfileNumaCount unmarshals an instance of InstanceProfileNumaCount from the specified map of raw messages.
+func UnmarshalInstanceProfileNumaCount(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileNumaCount)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceProfileNetworkInterfaceCount : InstanceProfileNetworkInterfaceCount struct
 // Models which "extend" this model:
 // - InstanceProfileNetworkInterfaceCountRange
@@ -48255,7 +48975,7 @@ type InstancePrototype struct {
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -48413,7 +49133,16 @@ type InstanceReference struct {
 
 	// The name for this virtual server instance. The name is unique across all virtual server instances in the region.
 	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
 }
+
+// Constants associated with the InstanceReference.ResourceType property.
+// The resource type.
+const (
+	InstanceReferenceResourceTypeInstanceConst = "instance"
+)
 
 // UnmarshalInstanceReference unmarshals an instance of InstanceReference from the specified map of raw messages.
 func UnmarshalInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -48435,6 +49164,10 @@ func UnmarshalInstanceReference(m map[string]json.RawMessage, result interface{}
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -48915,7 +49648,7 @@ type InstanceTemplatePrototype struct {
 	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -49957,18 +50690,6 @@ type ListBareMetalServersOptions struct {
 	// Filters the collection to resources with a `vpc.name` property matching the exact specified name.
 	VPCName *string `json:"vpc.name,omitempty"`
 
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.id`
-	// property matching the specified identifier.
-	NetworkInterfacesSubnetID *string `json:"network_interfaces.subnet.id,omitempty"`
-
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.crn`
-	// property matching the specified CRN.
-	NetworkInterfacesSubnetCRN *string `json:"network_interfaces.subnet.crn,omitempty"`
-
-	// Filters the collection to bare metal servers with an item in the `network_interfaces` property with a `subnet.name`
-	// property matching the exact specified name.
-	NetworkInterfacesSubnetName *string `json:"network_interfaces.subnet.name,omitempty"`
-
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -50017,24 +50738,6 @@ func (_options *ListBareMetalServersOptions) SetVPCCRN(vpcCRN string) *ListBareM
 // SetVPCName : Allow user to set VPCName
 func (_options *ListBareMetalServersOptions) SetVPCName(vpcName string) *ListBareMetalServersOptions {
 	_options.VPCName = core.StringPtr(vpcName)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetID : Allow user to set NetworkInterfacesSubnetID
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetID(networkInterfacesSubnetID string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetID = core.StringPtr(networkInterfacesSubnetID)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetCRN : Allow user to set NetworkInterfacesSubnetCRN
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetCRN(networkInterfacesSubnetCRN string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetCRN = core.StringPtr(networkInterfacesSubnetCRN)
-	return _options
-}
-
-// SetNetworkInterfacesSubnetName : Allow user to set NetworkInterfacesSubnetName
-func (_options *ListBareMetalServersOptions) SetNetworkInterfacesSubnetName(networkInterfacesSubnetName string) *ListBareMetalServersOptions {
-	_options.NetworkInterfacesSubnetName = core.StringPtr(networkInterfacesSubnetName)
 	return _options
 }
 
@@ -53865,6 +54568,8 @@ type LoadBalancer struct {
 
 	// The security groups targeting this load balancer.
 	//
+	// If empty, all inbound and outbound traffic is allowed.
+	//
 	// Applicable only for load balancers that support security groups.
 	SecurityGroups []SecurityGroupReference `json:"security_groups" validate:"required"`
 
@@ -56714,6 +57419,9 @@ type LoadBalancerPoolMemberTarget struct {
 	// The name for this virtual server instance. The name is unique across all virtual server instances in the region.
 	Name *string `json:"name,omitempty"`
 
+	// The resource type.
+	ResourceType *string `json:"resource_type,omitempty"`
+
 	// The IP address.
 	//
 	// This property may add support for IPv6 addresses in the future. When processing a value in this property, verify
@@ -56721,6 +57429,12 @@ type LoadBalancerPoolMemberTarget struct {
 	// error, or bypass the resource on which the unexpected IP address format was encountered.
 	Address *string `json:"address,omitempty"`
 }
+
+// Constants associated with the LoadBalancerPoolMemberTarget.ResourceType property.
+// The resource type.
+const (
+	LoadBalancerPoolMemberTargetResourceTypeInstanceConst = "instance"
+)
 
 func (*LoadBalancerPoolMemberTarget) isaLoadBalancerPoolMemberTarget() bool {
 	return true
@@ -56750,6 +57464,10 @@ func UnmarshalLoadBalancerPoolMemberTarget(m map[string]json.RawMessage, result 
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -57989,7 +58707,7 @@ type NetworkACLPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The VPC this network ACL will reside in.
@@ -58955,7 +59673,7 @@ func UnmarshalNetworkACLRuleReferenceDeleted(m map[string]json.RawMessage, resul
 
 // NetworkInterface : NetworkInterface struct
 type NetworkInterface struct {
-	// Indicates whether source IP spoofing is allowed on this instance interface.
+	// Indicates whether source IP spoofing is allowed on this instance network interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing" validate:"required"`
 
 	// The date and time that the instance network interface was created.
@@ -59304,7 +60022,7 @@ func UnmarshalNetworkInterfaceInstanceContextReferenceDeleted(m map[string]json.
 
 // NetworkInterfacePatch : NetworkInterfacePatch struct
 type NetworkInterfacePatch struct {
-	// Indicates whether source IP spoofing is allowed on this instance interface.
+	// Indicates whether source IP spoofing is allowed on this instance network interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
 	// The name for the instance network interface. The name must not be used by another network interface on the virtual
@@ -59339,7 +60057,7 @@ func (networkInterfacePatch *NetworkInterfacePatch) AsPatch() (_patch map[string
 
 // NetworkInterfacePrototype : NetworkInterfacePrototype struct
 type NetworkInterfacePrototype struct {
-	// Indicates whether source IP spoofing is allowed on this instance interface.
+	// Indicates whether source IP spoofing is allowed on this instance network interface.
 	AllowIPSpoofing *bool `json:"allow_ip_spoofing,omitempty"`
 
 	// The name for the instance network interface. The name must not be used by another network interface on the virtual
@@ -60188,7 +60906,7 @@ type PublicGatewayFloatingIPPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 }
 
@@ -61604,7 +62322,7 @@ func UnmarshalResourceFilter(m map[string]json.RawMessage, result interface{}) (
 }
 
 // ResourceGroupIdentity : The resource group to use. If unspecified, the account's [default resource
-// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 // Models which "extend" this model:
 // - ResourceGroupIdentityByID
 type ResourceGroupIdentity struct {
@@ -65159,16 +65877,16 @@ type ShareMountTargetVirtualNetworkInterfacePrototype struct {
 	// an available address on the subnet will be automatically selected and reserved.
 	PrimaryIP VirtualNetworkInterfacePrimaryIPPrototypeIntf `json:"primary_ip,omitempty"`
 
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// The resource group to use for this virtual network interface. If unspecified, the
+	// share's resource group will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC
 	// for the subnet is used.
 	SecurityGroups []SecurityGroupIdentityIntf `json:"security_groups,omitempty"`
 
-	// The associated subnet. Required if `primary_ip` does not specify a reserved IP and
-	// `primary_ip.address` is not specified.
+	// The associated subnet. Required if `primary_ip` does not specify a reserved IP
+	// identity.
 	Subnet SubnetIdentityIntf `json:"subnet,omitempty"`
 }
 
@@ -65724,7 +66442,9 @@ type SharePrototype struct {
 	UserTags []string `json:"user_tags,omitempty"`
 
 	// The zone this file share will reside in.
-	// For a replica share, this must be a different zone in the same region as the source share.
+	//
+	// For a replica share, this must be a different zone in the same region as the
+	// source share.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
 	// The access control mode for the share:
@@ -65748,7 +66468,7 @@ type SharePrototype struct {
 	InitialOwner *ShareInitialOwner `json:"initial_owner,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The size of the file share rounded up to the next gigabyte.
@@ -66702,7 +67422,7 @@ type SnapshotConsistencyGroupPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The data-consistent member snapshots to create.  All snapshots must specify a
@@ -67125,7 +67845,7 @@ type SnapshotPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
@@ -67800,7 +68520,7 @@ type SubnetPrototype struct {
 	PublicGateway PublicGatewayIdentityIntf `json:"public_gateway,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The routing table to use for this subnet. If unspecified, the default routing table
@@ -70110,6 +70830,156 @@ func (options *UpdateSubnetReservedIPOptions) SetHeaders(param map[string]string
 	return options
 }
 
+// UpdateVPCRouteResponse : UpdateVPCRouteResponse struct
+type UpdateVPCRouteResponse struct {
+	// The action to perform with a packet matching the route:
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+	// - `deliver`: deliver the packet to the specified `next_hop`
+	// - `drop`: drop the packet.
+	Action *string `json:"action" validate:"required"`
+
+	// The date and time that the route was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// If present, the resource that created the route. Routes with this property present cannot
+	// be directly deleted. All routes with an `origin` of `service` will have this property set,
+	// and future `origin` values may also have this property set.
+	Creator RouteCreatorIntf `json:"creator,omitempty"`
+
+	// The destination CIDR of the route.
+	Destination *string `json:"destination" validate:"required"`
+
+	// The URL for this route.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this route.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of the route.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this route. The name is unique across all routes in the routing table.
+	Name *string `json:"name" validate:"required"`
+
+	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
+	// other `action` values, its `address` will be `0.0.0.0`.
+	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
+
+	// The origin of this route:
+	// - `service`: route was directly created by a service
+	// - `user`: route was directly created by a user
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+	// unexpected property value was encountered.
+	Origin *string `json:"origin,omitempty"`
+
+	// The priority of this route. Smaller values have higher priority.
+	//
+	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
+	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
+	// distributed between them.
+	Priority *int64 `json:"priority" validate:"required"`
+
+	// The zone the route applies to. (Traffic from subnets in this zone will be
+	// subject to this route.).
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// Constants associated with the UpdateVPCRouteResponse.Action property.
+// The action to perform with a packet matching the route:
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
+// - `deliver`: deliver the packet to the specified `next_hop`
+// - `drop`: drop the packet.
+const (
+	UpdateVPCRouteResponseActionDelegateConst    = "delegate"
+	UpdateVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
+	UpdateVPCRouteResponseActionDeliverConst     = "deliver"
+	UpdateVPCRouteResponseActionDropConst        = "drop"
+)
+
+// Constants associated with the UpdateVPCRouteResponse.LifecycleState property.
+// The lifecycle state of the route.
+const (
+	UpdateVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
+	UpdateVPCRouteResponseLifecycleStateFailedConst    = "failed"
+	UpdateVPCRouteResponseLifecycleStatePendingConst   = "pending"
+	UpdateVPCRouteResponseLifecycleStateStableConst    = "stable"
+	UpdateVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
+	UpdateVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
+	UpdateVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the UpdateVPCRouteResponse.Origin property.
+// The origin of this route:
+// - `service`: route was directly created by a service
+// - `user`: route was directly created by a user
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
+// unexpected property value was encountered.
+const (
+	UpdateVPCRouteResponseOriginServiceConst = "service"
+	UpdateVPCRouteResponseOriginUserConst    = "user"
+)
+
+// UnmarshalUpdateVPCRouteResponse unmarshals an instance of UpdateVPCRouteResponse from the specified map of raw messages.
+func UnmarshalUpdateVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(UpdateVPCRouteResponse)
+	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // UpdateVirtualNetworkInterfaceOptions : The UpdateVirtualNetworkInterface options.
 type UpdateVirtualNetworkInterfaceOptions struct {
 	// The virtual network interface identifier.
@@ -70301,6 +71171,7 @@ type UpdateVPCOptions struct {
 	VPCPatch map[string]interface{} `json:"VPC_patch" validate:"required"`
 
 	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	// Required if the request body includes an array.
 	IfMatch *string `json:"If-Match,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -71285,6 +72156,14 @@ type VpcdnsResolver struct {
 	VPC *VPCReferenceDnsResolverContext `json:"vpc,omitempty"`
 
 	// The manually specified DNS servers for this VPC.
+	//
+	// If the DNS servers have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list the DNS server with the
+	// affinity for that zone first, followed by the unique DNS servers from other zones.
+	//
+	// If the DNS servers do not have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServer `json:"manual_servers,omitempty"`
 
 	// The configuration of the system DNS resolver for this VPC.
@@ -71387,6 +72266,14 @@ type VpcdnsResolverPatch struct {
 	// - have a unique `zone_affinity`, or
 	// - not have a `zone_affinity`.
 	//
+	// If `zone_affinity` is specified, exactly one DNS server must be specified for each zone in the region. The DHCP
+	// [Domain Name Server Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list this DNS
+	// server first, followed by unique DNS servers from other zones if available.
+	//
+	// If `zone_affinity` is not specified, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
+	//
 	// `dns.resolver.manual_servers` must be set if and only if `dns.resolver.type` is `manual`.
 	ManualServers []DnsServerPrototype `json:"manual_servers,omitempty"`
 
@@ -71474,6 +72361,14 @@ type VpcdnsResolverPrototype struct {
 	//
 	// - have a unique `zone_affinity`, or
 	// - not have a `zone_affinity`.
+	//
+	// If `zone_affinity` is specified, exactly one DNS server must be specified for each zone in the region. The DHCP
+	// [Domain Name Server Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list this DNS
+	// server first, followed by unique DNS servers from other zones if available.
+	//
+	// If `zone_affinity` is not specified, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServerPrototype `json:"manual_servers,omitempty"`
 }
 
@@ -71576,6 +72471,7 @@ type VPCHealthReason struct {
 // A snake case string succinctly identifying the reason for this health state.
 const (
 	VPCHealthReasonCodeDnsResolutionBindingFailedConst = "dns_resolution_binding_failed"
+	VPCHealthReasonCodeInternalErrorConst              = "internal_error"
 )
 
 // UnmarshalVPCHealthReason unmarshals an instance of VPCHealthReason from the specified map of raw messages.
@@ -71938,11 +72834,43 @@ type VPNGateway struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -71956,9 +72884,6 @@ type VPNGateway struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -71968,19 +72893,37 @@ type VPNGateway struct {
 	Mode *string `json:"mode,omitempty"`
 }
 
+// Constants associated with the VPNGateway.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayHealthStateDegradedConst     = "degraded"
+	VPNGatewayHealthStateFaultedConst      = "faulted"
+	VPNGatewayHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGateway.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayLifecycleStateFailedConst    = "failed"
+	VPNGatewayLifecycleStatePendingConst   = "pending"
+	VPNGatewayLifecycleStateStableConst    = "stable"
+	VPNGatewayLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGateway.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGateway.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayStatusAvailableConst = "available"
-	VPNGatewayStatusDeletingConst  = "deleting"
-	VPNGatewayStatusFailedConst    = "failed"
-	VPNGatewayStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGateway.Mode property.
@@ -72012,11 +72955,27 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -72033,10 +72992,6 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -72197,6 +73152,27 @@ type VPNGatewayConnection struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// Routing protocols are disabled for this VPN gateway connection.
 	RoutingProtocol *string `json:"routing_protocol,omitempty"`
 
@@ -72306,6 +73282,10 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
 	if err != nil {
 		return
 	}
@@ -72915,6 +73895,27 @@ type VPNGatewayConnectionStaticRouteModeTunnel struct {
 
 	// The status of the VPN Tunnel.
 	Status *string `json:"status" validate:"required"`
+
+	// The reasons for the current VPN gateway connection tunnels status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionTunnelStatusReason `json:"status_reasons" validate:"required"`
 }
 
 // Constants associated with the VPNGatewayConnectionStaticRouteModeTunnel.Status property.
@@ -72935,12 +73936,209 @@ func UnmarshalVPNGatewayConnectionStaticRouteModeTunnel(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionTunnelStatusReason)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayConnectionStatusReason : VPNGatewayConnectionStatusReason struct
+type VPNGatewayConnectionStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this VPN gateway connection's status.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayConnectionStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	VPNGatewayConnectionStatusReasonCodeCannotAuthenticateConnectionConst   = "cannot_authenticate_connection"
+	VPNGatewayConnectionStatusReasonCodeIkePolicyMismatchConst              = "ike_policy_mismatch"
+	VPNGatewayConnectionStatusReasonCodeIkeV1IDLocalRemoteCIDRMismatchConst = "ike_v1_id_local_remote_cidr_mismatch"
+	VPNGatewayConnectionStatusReasonCodeIkeV2LocalRemoteCIDRMismatchConst   = "ike_v2_local_remote_cidr_mismatch"
+	VPNGatewayConnectionStatusReasonCodeInternalErrorConst                  = "internal_error"
+	VPNGatewayConnectionStatusReasonCodeIpsecPolicyMismatchConst            = "ipsec_policy_mismatch"
+	VPNGatewayConnectionStatusReasonCodePeerNotRespondingConst              = "peer_not_responding"
+)
+
+// UnmarshalVPNGatewayConnectionStatusReason unmarshals an instance of VPNGatewayConnectionStatusReason from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayConnectionTunnelStatusReason : VPNGatewayConnectionTunnelStatusReason struct
+type VPNGatewayConnectionTunnelStatusReason struct {
+	// A snake case string succinctly identifying the status reason.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this VPN gateway connection tunnel's status.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayConnectionTunnelStatusReason.Code property.
+// A snake case string succinctly identifying the status reason.
+const (
+	VPNGatewayConnectionTunnelStatusReasonCodeCannotAuthenticateConnectionConst   = "cannot_authenticate_connection"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkePolicyMismatchConst              = "ike_policy_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkeV1IDLocalRemoteCIDRMismatchConst = "ike_v1_id_local_remote_cidr_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeIkeV2LocalRemoteCIDRMismatchConst   = "ike_v2_local_remote_cidr_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodeInternalErrorConst                  = "internal_error"
+	VPNGatewayConnectionTunnelStatusReasonCodeIpsecPolicyMismatchConst            = "ipsec_policy_mismatch"
+	VPNGatewayConnectionTunnelStatusReasonCodePeerNotRespondingConst              = "peer_not_responding"
+)
+
+// UnmarshalVPNGatewayConnectionTunnelStatusReason unmarshals an instance of VPNGatewayConnectionTunnelStatusReason from the specified map of raw messages.
+func UnmarshalVPNGatewayConnectionTunnelStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayConnectionTunnelStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayHealthReason : VPNGatewayHealthReason struct
+type VPNGatewayHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNGatewayHealthReasonCodeCannotCreateVPCRouteConst   = "cannot_create_vpc_route"
+	VPNGatewayHealthReasonCodeCannotReserveIPAddressConst = "cannot_reserve_ip_address"
+	VPNGatewayHealthReasonCodeInternalErrorConst          = "internal_error"
+)
+
+// UnmarshalVPNGatewayHealthReason unmarshals an instance of VPNGatewayHealthReason from the specified map of raw messages.
+func UnmarshalVPNGatewayHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayLifecycleReason : VPNGatewayLifecycleReason struct
+type VPNGatewayLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNGatewayLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNGatewayLifecycleReason unmarshals an instance of VPNGatewayLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNGatewayLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
 
 // VPNGatewayMember : VPNGatewayMember struct
 type VPNGatewayMember struct {
+	// The reasons for the current VPN gateway member health_state (if any):
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayMemberHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The reasons for the current VPN gateway member lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayMemberLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway member.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
 	// The reserved IP address assigned to the VPN gateway member.
 	//
 	// This property will be present only when the VPN gateway status is `available`.
@@ -72951,10 +74149,34 @@ type VPNGatewayMember struct {
 
 	// The high availability role assigned to the VPN gateway member.
 	Role *string `json:"role" validate:"required"`
-
-	// The status of the VPN gateway member.
-	Status *string `json:"status" validate:"required"`
 }
+
+// Constants associated with the VPNGatewayMember.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayMemberHealthStateDegradedConst     = "degraded"
+	VPNGatewayMemberHealthStateFaultedConst      = "faulted"
+	VPNGatewayMemberHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayMemberHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayMember.LifecycleState property.
+// The lifecycle state of the VPN gateway member.
+const (
+	VPNGatewayMemberLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayMemberLifecycleStateFailedConst    = "failed"
+	VPNGatewayMemberLifecycleStatePendingConst   = "pending"
+	VPNGatewayMemberLifecycleStateStableConst    = "stable"
+	VPNGatewayMemberLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayMemberLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayMemberLifecycleStateWaitingConst   = "waiting"
+)
 
 // Constants associated with the VPNGatewayMember.Role property.
 // The high availability role assigned to the VPN gateway member.
@@ -72963,18 +74185,25 @@ const (
 	VPNGatewayMemberRoleStandbyConst = "standby"
 )
 
-// Constants associated with the VPNGatewayMember.Status property.
-// The status of the VPN gateway member.
-const (
-	VPNGatewayMemberStatusAvailableConst = "available"
-	VPNGatewayMemberStatusDeletingConst  = "deleting"
-	VPNGatewayMemberStatusFailedConst    = "failed"
-	VPNGatewayMemberStatusPendingConst   = "pending"
-)
-
 // UnmarshalVPNGatewayMember unmarshals an instance of VPNGatewayMember from the specified map of raw messages.
 func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNGatewayMember)
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayMemberHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayMemberLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalModel(m, "private_ip", &obj.PrivateIP, UnmarshalReservedIPReference)
 	if err != nil {
 		return
@@ -72987,7 +74216,78 @@ func UnmarshalVPNGatewayMember(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayMemberHealthReason : VPNGatewayMemberHealthReason struct
+type VPNGatewayMemberHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayMemberHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNGatewayMemberHealthReasonCodeCannotReserveIPAddressConst = "cannot_reserve_ip_address"
+	VPNGatewayMemberHealthReasonCodeInternalErrorConst          = "internal_error"
+)
+
+// UnmarshalVPNGatewayMemberHealthReason unmarshals an instance of VPNGatewayMemberHealthReason from the specified map of raw messages.
+func UnmarshalVPNGatewayMemberHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayMemberHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNGatewayMemberLifecycleReason : VPNGatewayMemberLifecycleReason struct
+type VPNGatewayMemberLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNGatewayMemberLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNGatewayMemberLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNGatewayMemberLifecycleReason unmarshals an instance of VPNGatewayMemberLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNGatewayMemberLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNGatewayMemberLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -73032,7 +74332,7 @@ type VPNGatewayPrototype struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// Identifies a subnet by a unique property.
@@ -73134,6 +74434,23 @@ type VPNServer struct {
 	// Indicates whether the split tunneling is enabled on this VPN server.
 	EnableSplitTunneling *bool `json:"enable_split_tunneling" validate:"required"`
 
+	// The reasons for the current VPN server health_state (if any):
+	// - `cannot_access_client_certificate`: VPN server's client certificate is inaccessible
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
+	//   `Secrets Manager`)
+	// - `cannot_access_server_certificate`: VPN server's server certificate is inaccessible
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
+	//   `Secrets Manager`)
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNServerHealthReason `json:"health_reasons" validate:"required"`
+
 	// The health of this resource.
 	// - `ok`: No abnormal behavior detected
 	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
@@ -73151,6 +74468,15 @@ type VPNServer struct {
 
 	// The unique identifier for this VPN server.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN server lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNServerLifecycleReason `json:"lifecycle_reasons" validate:"required"`
 
 	// The lifecycle state of the VPN server.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
@@ -73266,6 +74592,10 @@ func UnmarshalVPNServer(m map[string]json.RawMessage, result interface{}) (err e
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNServerHealthReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
@@ -73279,6 +74609,10 @@ func UnmarshalVPNServer(m map[string]json.RawMessage, result interface{}) (err e
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNServerLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -73783,6 +75117,84 @@ func UnmarshalVPNServerCollectionNext(m map[string]json.RawMessage, result inter
 	return
 }
 
+// VPNServerHealthReason : VPNServerHealthReason struct
+type VPNServerHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNServerHealthReasonCodeCannotAccessClientCertificateConst = "cannot_access_client_certificate"
+	VPNServerHealthReasonCodeCannotAccessServerCertificateConst = "cannot_access_server_certificate"
+	VPNServerHealthReasonCodeCannotCreateVPCRouteConst          = "cannot_create_vpc_route"
+	VPNServerHealthReasonCodeCannotReserveIPAddressConst        = "cannot_reserve_ip_address"
+	VPNServerHealthReasonCodeInternalErrorConst                 = "internal_error"
+)
+
+// UnmarshalVPNServerHealthReason unmarshals an instance of VPNServerHealthReason from the specified map of raw messages.
+func UnmarshalVPNServerHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerLifecycleReason : VPNServerLifecycleReason struct
+type VPNServerLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNServerLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNServerLifecycleReason unmarshals an instance of VPNServerLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNServerLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VPNServerPatch : VPNServerPatch struct
 type VPNServerPatch struct {
 	// The certificate instance for this VPN server.
@@ -73930,11 +75342,37 @@ type VPNServerRoute struct {
 	// be dropped.
 	Destination *string `json:"destination" validate:"required"`
 
+	// The reasons for the current VPN server route health_state (if any):
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNServerRouteHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The URL for this VPN route.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN route.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN server route lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNServerRouteLifecycleReason `json:"lifecycle_reasons" validate:"required"`
 
 	// The lifecycle state of the VPN route.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
@@ -73959,6 +75397,21 @@ const (
 	VPNServerRouteActionDeliverConst   = "deliver"
 	VPNServerRouteActionDropConst      = "drop"
 	VPNServerRouteActionTranslateConst = "translate"
+)
+
+// Constants associated with the VPNServerRoute.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNServerRouteHealthStateDegradedConst     = "degraded"
+	VPNServerRouteHealthStateFaultedConst      = "faulted"
+	VPNServerRouteHealthStateInapplicableConst = "inapplicable"
+	VPNServerRouteHealthStateOkConst           = "ok"
 )
 
 // Constants associated with the VPNServerRoute.LifecycleState property.
@@ -73994,11 +75447,23 @@ func UnmarshalVPNServerRoute(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNServerRouteHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNServerRouteLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -74103,6 +75568,80 @@ type VPNServerRouteCollectionNext struct {
 func UnmarshalVPNServerRouteCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VPNServerRouteCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerRouteHealthReason : VPNServerRouteHealthReason struct
+type VPNServerRouteHealthReason struct {
+	// A snake case string succinctly identifying the reason for this health state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this health state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this health state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerRouteHealthReason.Code property.
+// A snake case string succinctly identifying the reason for this health state.
+const (
+	VPNServerRouteHealthReasonCodeInternalErrorConst = "internal_error"
+)
+
+// UnmarshalVPNServerRouteHealthReason unmarshals an instance of VPNServerRouteHealthReason from the specified map of raw messages.
+func UnmarshalVPNServerRouteHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerRouteHealthReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VPNServerRouteLifecycleReason : VPNServerRouteLifecycleReason struct
+type VPNServerRouteLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VPNServerRouteLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	VPNServerRouteLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalVPNServerRouteLifecycleReason unmarshals an instance of VPNServerRouteLifecycleReason from the specified map of raw messages.
+func UnmarshalVPNServerRouteLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VPNServerRouteLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -74458,10 +75997,6 @@ type VirtualNetworkInterfaceReferenceAttachmentContext struct {
 	// The CRN for this virtual network interface.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted, and provides
-	// some supplementary information.
-	Deleted *VirtualNetworkInterfaceReferenceAttachmentContextDeleted `json:"deleted,omitempty"`
-
 	// The URL for this virtual network interface.
 	Href *string `json:"href" validate:"required"`
 
@@ -74488,10 +76023,6 @@ func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContext(m map[string]jso
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
@@ -74512,24 +76043,6 @@ func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContext(m map[string]jso
 	return
 }
 
-// VirtualNetworkInterfaceReferenceAttachmentContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
-// information.
-type VirtualNetworkInterfaceReferenceAttachmentContextDeleted struct {
-	// Link to documentation about deleted resources.
-	MoreInfo *string `json:"more_info" validate:"required"`
-}
-
-// UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceAttachmentContextDeleted from the specified map of raw messages.
-func UnmarshalVirtualNetworkInterfaceReferenceAttachmentContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VirtualNetworkInterfaceReferenceAttachmentContextDeleted)
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VirtualNetworkInterfaceReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VirtualNetworkInterfaceReferenceDeleted struct {
@@ -74540,24 +76053,6 @@ type VirtualNetworkInterfaceReferenceDeleted struct {
 // UnmarshalVirtualNetworkInterfaceReferenceDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceDeleted from the specified map of raw messages.
 func UnmarshalVirtualNetworkInterfaceReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VirtualNetworkInterfaceReferenceDeleted)
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
-// information.
-type VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted struct {
-	// Link to documentation about deleted resources.
-	MoreInfo *string `json:"more_info" validate:"required"`
-}
-
-// UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted unmarshals an instance of VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted from the specified map of raw messages.
-func UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
@@ -75965,7 +77460,7 @@ type VolumePrototype struct {
 	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
@@ -76710,6 +78205,664 @@ func UnmarshalBackupPolicyJobSourceVolumeReference(m map[string]json.RawMessage,
 	return
 }
 
+// BackupPolicyMatchResourceTypeInstance : BackupPolicyMatchResourceTypeInstance struct
+// This model "extends" BackupPolicy
+type BackupPolicyMatchResourceTypeInstance struct {
+	// The date and time that the backup policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this backup policy.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The URL for this backup policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The date and time that the most recent job for this backup policy completed.
+	//
+	// If absent, no job has yet completed for this backup policy.
+	LastJobCompletedAt *strfmt.DateTime `json:"last_job_completed_at,omitempty"`
+
+	// The lifecycle state of the backup policy.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
+	// be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name is unique across all backup policies in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The plans for the backup policy.
+	Plans []BackupPolicyPlanReference `json:"plans" validate:"required"`
+
+	// The resource group for this backup policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	IncludedContent []string `json:"included_content" validate:"required"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyMatchResourceTypeInstanceHealthStateDegradedConst     = "degraded"
+	BackupPolicyMatchResourceTypeInstanceHealthStateFaultedConst      = "faulted"
+	BackupPolicyMatchResourceTypeInstanceHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyMatchResourceTypeInstanceHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.LifecycleState property.
+// The lifecycle state of the backup policy.
+const (
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateDeletingConst  = "deleting"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateFailedConst    = "failed"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStatePendingConst   = "pending"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateStableConst    = "stable"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateSuspendedConst = "suspended"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateUpdatingConst  = "updating"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyMatchResourceTypeInstanceResourceTypeBackupPolicyConst = "backup_policy"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyMatchResourceTypeInstanceIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyMatchResourceTypeInstanceIncludedContentDataVolumesConst = "data_volumes"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
+const (
+	BackupPolicyMatchResourceTypeInstanceMatchResourceTypeInstanceConst = "instance"
+)
+
+func (*BackupPolicyMatchResourceTypeInstance) isaBackupPolicy() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyMatchResourceTypeInstance unmarshals an instance of BackupPolicyMatchResourceTypeInstance from the specified map of raw messages.
+func UnmarshalBackupPolicyMatchResourceTypeInstance(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyMatchResourceTypeInstance)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "last_job_completed_at", &obj.LastJobCompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyMatchResourceTypeVolume : BackupPolicyMatchResourceTypeVolume struct
+// This model "extends" BackupPolicy
+type BackupPolicyMatchResourceTypeVolume struct {
+	// The date and time that the backup policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this backup policy.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The URL for this backup policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The date and time that the most recent job for this backup policy completed.
+	//
+	// If absent, no job has yet completed for this backup policy.
+	LastJobCompletedAt *strfmt.DateTime `json:"last_job_completed_at,omitempty"`
+
+	// The lifecycle state of the backup policy.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
+	// be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name is unique across all backup policies in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The plans for the backup policy.
+	Plans []BackupPolicyPlanReference `json:"plans" validate:"required"`
+
+	// The resource group for this backup policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyMatchResourceTypeVolumeHealthStateDegradedConst     = "degraded"
+	BackupPolicyMatchResourceTypeVolumeHealthStateFaultedConst      = "faulted"
+	BackupPolicyMatchResourceTypeVolumeHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyMatchResourceTypeVolumeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.LifecycleState property.
+// The lifecycle state of the backup policy.
+const (
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateDeletingConst  = "deleting"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateFailedConst    = "failed"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStatePendingConst   = "pending"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateStableConst    = "stable"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateSuspendedConst = "suspended"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateUpdatingConst  = "updating"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyMatchResourceTypeVolumeResourceTypeBackupPolicyConst = "backup_policy"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
+const (
+	BackupPolicyMatchResourceTypeVolumeMatchResourceTypeVolumeConst = "volume"
+)
+
+func (*BackupPolicyMatchResourceTypeVolume) isaBackupPolicy() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyMatchResourceTypeVolume unmarshals an instance of BackupPolicyMatchResourceTypeVolume from the specified map of raw messages.
+func UnmarshalBackupPolicyMatchResourceTypeVolume(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyMatchResourceTypeVolume)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "last_job_completed_at", &obj.LastJobCompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype : BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype struct
+// This model "extends" BackupPolicyPrototype
+type BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype struct {
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeIncludedContentDataVolumesConst = "data_volumes"
+)
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeMatchResourceTypeInstanceConst = "instance"
+)
+
+// NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype : Instantiate BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype(matchUserTags []string, matchResourceType string) (_model *BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype, err error) {
+	_model = &BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype{
+		MatchUserTags:     matchUserTags,
+		MatchResourceType: core.StringPtr(matchResourceType),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype unmarshals an instance of BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype)
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype : BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype struct
+// This model "extends" BackupPolicyPrototype
+type BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype struct {
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototypeMatchResourceTypeVolumeConst = "volume"
+)
+
+// NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype : Instantiate BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype(matchUserTags []string, matchResourceType string) (_model *BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype, err error) {
+	_model = &BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype{
+		MatchUserTags:     matchUserTags,
+		MatchResourceType: core.StringPtr(matchResourceType),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype unmarshals an instance of BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype)
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototypeEnterpriseIdentity : Identifies an enterprise by a unique property.
+// Models which "extend" this model:
+// - BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN
+// This model "extends" BackupPolicyScopePrototype
+type BackupPolicyScopePrototypeEnterpriseIdentity struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentity) isaBackupPolicyScopePrototypeEnterpriseIdentity() bool {
+	return true
+}
+
+type BackupPolicyScopePrototypeEnterpriseIdentityIntf interface {
+	BackupPolicyScopePrototypeIntf
+	isaBackupPolicyScopePrototypeEnterpriseIdentity() bool
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentity) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopePrototypeEnterpriseIdentity unmarshals an instance of BackupPolicyScopePrototypeEnterpriseIdentity from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototypeEnterpriseIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototypeEnterpriseIdentity)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopeAccountReference : BackupPolicyScopeAccountReference struct
+// This model "extends" BackupPolicyScope
+type BackupPolicyScopeAccountReference struct {
+	// The unique identifier for this account.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyScopeAccountReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeAccountReferenceResourceTypeAccountConst = "account"
+)
+
+func (*BackupPolicyScopeAccountReference) isaBackupPolicyScope() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopeAccountReference unmarshals an instance of BackupPolicyScopeAccountReference from the specified map of raw messages.
+func UnmarshalBackupPolicyScopeAccountReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopeAccountReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopeEnterpriseReference : BackupPolicyScopeEnterpriseReference struct
+// This model "extends" BackupPolicyScope
+type BackupPolicyScopeEnterpriseReference struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The unique identifier for this enterprise.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyScopeEnterpriseReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyScopeEnterpriseReferenceResourceTypeEnterpriseConst = "enterprise"
+)
+
+func (*BackupPolicyScopeEnterpriseReference) isaBackupPolicyScope() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopeEnterpriseReference unmarshals an instance of BackupPolicyScopeEnterpriseReference from the specified map of raw messages.
+func UnmarshalBackupPolicyScopeEnterpriseReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopeEnterpriseReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // BareMetalServerBootTargetBareMetalServerDiskReference : BareMetalServerBootTargetBareMetalServerDiskReference struct
 // This model "extends" BareMetalServerBootTarget
 type BareMetalServerBootTargetBareMetalServerDiskReference struct {
@@ -77037,14 +79190,14 @@ type BareMetalServerNetworkInterfaceByPci struct {
 	// The bare metal server network interface type.
 	Type *string `json:"type" validate:"required"`
 
-	// Indicates what VLAN IDs (for VLAN type only) can use this physical (PCI type) interface.
+	// The VLAN IDs allowed for `vlan` interfaces using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans" validate:"required"`
 
 	// - `pci`: a physical PCI device which can only be created or deleted when the bare metal
 	//   server is stopped
 	//   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 	//     to use the PCI interface
-	//   - Cannot directly use an IEEE 802.1q VLAN tag.
+	//   - Cannot directly use an IEEE 802.1Q tag.
 	InterfaceType *string `json:"interface_type" validate:"required"`
 }
 
@@ -77075,7 +79228,7 @@ const (
 //     server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
-//   - Cannot directly use an IEEE 802.1q VLAN tag.
+//   - Cannot directly use an IEEE 802.1Q tag.
 const (
 	BareMetalServerNetworkInterfaceByPciInterfaceTypePciConst = "pci"
 )
@@ -77215,19 +79368,26 @@ type BareMetalServerNetworkInterfaceByVlan struct {
 	// The bare metal server network interface type.
 	Type *string `json:"type" validate:"required"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float" validate:"required"`
 
 	// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
 	//    of `allowed_vlans`.
-	//   - Must use an IEEE 802.1q tag.
+	//   - Must use an IEEE 802.1Q tag.
 	//   - Has its own security groups and does not inherit those of the PCI device through
 	//     which traffic flows.
 	InterfaceType *string `json:"interface_type" validate:"required"`
 
-	// Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface.
+	// The VLAN ID used in the IEEE 802.1Q tag present in all traffic on this interface.
 	Vlan *int64 `json:"vlan" validate:"required"`
 }
 
@@ -77256,7 +79416,7 @@ const (
 // Constants associated with the BareMetalServerNetworkInterfaceByVlan.InterfaceType property.
 //   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
 //     of `allowed_vlans`.
-//   - Must use an IEEE 802.1q tag.
+//   - Must use an IEEE 802.1Q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.
 const (
@@ -77481,14 +79641,14 @@ type BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPc
 	// The associated subnet.
 	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
 
-	// Indicates what VLAN IDs (for VLAN type only) can use this physical (PCI type) interface.
+	// The VLAN IDs to allow for `vlan` interfaces using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans,omitempty"`
 
 	// - `pci`: a physical PCI device which can only be created or deleted when the bare metal
 	//   server is stopped
 	//   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 	//     to use the PCI interface
-	//   - Cannot directly use an IEEE 802.1q VLAN tag.
+	//   - Cannot directly use an IEEE 802.1Q tag.
 	//   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
 	InterfaceType *string `json:"interface_type" validate:"required"`
 }
@@ -77498,7 +79658,7 @@ type BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPc
 //     server is stopped
 //   - Has an `allowed_vlans` property which controls the VLANs that will be permitted
 //     to use the PCI interface
-//   - Cannot directly use an IEEE 802.1q VLAN tag.
+//   - Cannot directly use an IEEE 802.1Q tag.
 //   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
 const (
 	BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototypeInterfaceTypePciConst = "pci"
@@ -77593,27 +79753,34 @@ type BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVl
 	// The associated subnet.
 	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float,omitempty"`
 
 	// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
 	//    of `allowed_vlans`.
-	//   - Must use an IEEE 802.1q tag.
+	//   - Must use an IEEE 802.1Q tag.
 	//   - Has its own security groups and does not inherit those of the PCI device through
 	//     which traffic flows.
 	//   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
 	InterfaceType *string `json:"interface_type" validate:"required"`
 
-	// Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface.
+	// The VLAN ID used in the IEEE 802.1Q tag present in all traffic on this interface.
 	Vlan *int64 `json:"vlan" validate:"required"`
 }
 
 // Constants associated with the BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype.InterfaceType property.
 //   - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
 //     of `allowed_vlans`.
-//   - Must use an IEEE 802.1q tag.
+//   - Must use an IEEE 802.1Q tag.
 //   - Has its own security groups and does not inherit those of the PCI device through
 //     which traffic flows.
 //   - Not supported on bare metal servers with a `cpu.architecture` of `s390x`.
@@ -80720,7 +82887,16 @@ type FlowLogCollectorTargetInstanceReference struct {
 
 	// The name for this virtual server instance. The name is unique across all virtual server instances in the region.
 	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
 }
+
+// Constants associated with the FlowLogCollectorTargetInstanceReference.ResourceType property.
+// The resource type.
+const (
+	FlowLogCollectorTargetInstanceReferenceResourceTypeInstanceConst = "instance"
+)
 
 func (*FlowLogCollectorTargetInstanceReference) isaFlowLogCollectorTarget() bool {
 	return true
@@ -80746,6 +82922,10 @@ func UnmarshalFlowLogCollectorTargetInstanceReference(m map[string]json.RawMessa
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -83642,6 +85822,70 @@ func UnmarshalInstanceProfileMemoryRange(m map[string]json.RawMessage, result in
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceProfileNumaCountDependent : The total number of NUMA nodes for an instance with this profile depends on its configuration and the capacity
+// constraints within the zone.
+// This model "extends" InstanceProfileNumaCount
+type InstanceProfileNumaCountDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the InstanceProfileNumaCountDependent.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileNumaCountDependentTypeDependentConst = "dependent"
+)
+
+func (*InstanceProfileNumaCountDependent) isaInstanceProfileNumaCount() bool {
+	return true
+}
+
+// UnmarshalInstanceProfileNumaCountDependent unmarshals an instance of InstanceProfileNumaCountDependent from the specified map of raw messages.
+func UnmarshalInstanceProfileNumaCountDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileNumaCountDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceProfileNumaCountFixed : The total number of NUMA nodes for an instance with this profile.
+// This model "extends" InstanceProfileNumaCount
+type InstanceProfileNumaCountFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *int64 `json:"value" validate:"required"`
+}
+
+// Constants associated with the InstanceProfileNumaCountFixed.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileNumaCountFixedTypeFixedConst = "fixed"
+)
+
+func (*InstanceProfileNumaCountFixed) isaInstanceProfileNumaCount() bool {
+	return true
+}
+
+// UnmarshalInstanceProfileNumaCountFixed unmarshals an instance of InstanceProfileNumaCountFixed from the specified map of raw messages.
+func UnmarshalInstanceProfileNumaCountFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileNumaCountFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
 	if err != nil {
 		return
 	}
@@ -87130,7 +89374,16 @@ type LoadBalancerPoolMemberTargetInstanceReference struct {
 
 	// The name for this virtual server instance. The name is unique across all virtual server instances in the region.
 	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
 }
+
+// Constants associated with the LoadBalancerPoolMemberTargetInstanceReference.ResourceType property.
+// The resource type.
+const (
+	LoadBalancerPoolMemberTargetInstanceReferenceResourceTypeInstanceConst = "instance"
+)
 
 func (*LoadBalancerPoolMemberTargetInstanceReference) isaLoadBalancerPoolMemberTarget() bool {
 	return true
@@ -87156,6 +89409,10 @@ func UnmarshalLoadBalancerPoolMemberTargetInstanceReference(m map[string]json.Ra
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -89550,7 +91807,7 @@ type PublicGatewayFloatingIPPrototypeFloatingIPPrototypeTargetContext struct {
 	Name *string `json:"name,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 }
 
@@ -90196,10 +92453,6 @@ type ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext str
 	// The CRN for this virtual network interface.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted, and provides
-	// some supplementary information.
-	Deleted *VirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted `json:"deleted,omitempty"`
-
 	// The URL for this virtual network interface.
 	Href *string `json:"href" validate:"required"`
 
@@ -90227,10 +92480,6 @@ func (*ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext) 
 func UnmarshalReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ReservedIPTargetVirtualNetworkInterfaceReferenceReservedIPTargetContext)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalVirtualNetworkInterfaceReferenceReservedIPTargetContextDeleted)
 	if err != nil {
 		return
 	}
@@ -92315,16 +94564,16 @@ type ShareMountTargetVirtualNetworkInterfacePrototypeVirtualNetworkInterfaceProt
 	// an available address on the subnet will be automatically selected and reserved.
 	PrimaryIP VirtualNetworkInterfacePrimaryIPPrototypeIntf `json:"primary_ip,omitempty"`
 
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// The resource group to use for this virtual network interface. If unspecified, the
+	// share's resource group will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC
 	// for the subnet is used.
 	SecurityGroups []SecurityGroupIdentityIntf `json:"security_groups,omitempty"`
 
-	// The associated subnet. Required if `primary_ip` does not specify a reserved IP and
-	// `primary_ip.address` is not specified.
+	// The associated subnet. Required if `primary_ip` does not specify a reserved IP
+	// identity.
 	Subnet SubnetIdentityIntf `json:"subnet,omitempty"`
 }
 
@@ -92812,8 +95061,9 @@ type SharePrototypeShareBySize struct {
 	// Tags for this resource.
 	UserTags []string `json:"user_tags,omitempty"`
 
-	// The zone this file share will reside in. For a replica share, this must be a different zone in the same region as
-	// the source share.
+	// The zone this file share will reside in.
+	//
+	// For a replica share, this must be a different zone in the same region as the source share.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
 	// The access control mode for the share:
@@ -92837,7 +95087,7 @@ type SharePrototypeShareBySize struct {
 	InitialOwner *ShareInitialOwner `json:"initial_owner,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The size of the file share rounded up to the next gigabyte.
@@ -92955,8 +95205,9 @@ type SharePrototypeShareBySourceShare struct {
 	// Tags for this resource.
 	UserTags []string `json:"user_tags,omitempty"`
 
-	// The zone this file share will reside in. For a replica share, this must be a different zone in the same region as
-	// the source share.
+	// The zone this file share will reside in.
+	//
+	// For a replica share, this must be a different zone in the same region as the source share.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
 	// The cron specification for the file share replication schedule.
@@ -93775,6 +96026,14 @@ type VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype struct {
 	//
 	// - have a unique `zone_affinity`, or
 	// - not have a `zone_affinity`.
+	//
+	// If `zone_affinity` is specified, exactly one DNS server must be specified for each zone in the region. The DHCP
+	// [Domain Name Server Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list this DNS
+	// server first, followed by unique DNS servers from other zones if available.
+	//
+	// If `zone_affinity` is not specified, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServerPrototype `json:"manual_servers" validate:"required"`
 
 	// The type of the DNS resolver to use.
@@ -93905,6 +96164,14 @@ type VpcdnsResolverTypeManual struct {
 	Servers []DnsServer `json:"servers" validate:"required"`
 
 	// The manually specified DNS servers for this VPC.
+	//
+	// If the DNS servers have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list the DNS server with the
+	// affinity for that zone first, followed by the unique DNS servers from other zones.
+	//
+	// If the DNS servers do not have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServer `json:"manual_servers" validate:"required"`
 
 	// The type of the DNS resolver used for the VPC.
@@ -94591,6 +96858,27 @@ type VPNGatewayConnectionPolicyMode struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// The local CIDRs for this resource.
 	LocalCIDRs []string `json:"local_cidrs" validate:"required"`
 
@@ -94687,6 +96975,10 @@ func UnmarshalVPNGatewayConnectionPolicyMode(m map[string]json.RawMessage, resul
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "local_cidrs", &obj.LocalCIDRs)
 	if err != nil {
 		return
@@ -94729,12 +97021,12 @@ type VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype struct
 }
 
 // NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype : Instantiate VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype (Generic Model Constructor)
-func (*VpcV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(peerAddress string, psk string, localCIDRs []string, peerCIDRs []string) (_model *VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype, err error) {
+func (*VpcV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype(peerAddress string, psk string, LocalCIDRs []string, PeerCIDRs []string) (_model *VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype, err error) {
 	_model = &VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype{
 		PeerAddress: core.StringPtr(peerAddress),
 		Psk:         core.StringPtr(psk),
-		LocalCIDRs:  localCIDRs,
-		PeerCIDRs:   peerCIDRs,
+		LocalCIDRs:  LocalCIDRs,
+		PeerCIDRs:   PeerCIDRs,
 	}
 	err = core.ValidateStruct(_model, "required parameters")
 	return
@@ -94918,6 +97210,27 @@ type VPNGatewayConnectionStaticRouteMode struct {
 	// The status of a VPN gateway connection.
 	Status *string `json:"status" validate:"required"`
 
+	// The reasons for the current VPN gateway connection status (if any):
+	// - `cannot_authenticate_connection`: Failed to authenticate a connection because of
+	//   mismatched IKE ID and PSK (check IKE ID and PSK in peer VPN configuration)
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `ike_policy_mismatch`: None of the proposed IKE crypto suites was acceptable (check
+	//    the IKE policies on both sides of the VPN)
+	// - `ike_v1_id_local_remote_cidr_mismatch`: Invalid IKE ID or mismatched local CIDRs and
+	//   remote CIDRs in IKE V1 (check the IKE ID or the local CIDRs and remote CIDRs in IKE
+	//   V1 configuration)
+	// - `ike_v2_local_remote_cidr_mismatch`: Mismatched local CIDRs and remote CIDRs in IKE
+	//   V2 (check the local CIDRs and remote CIDRs in IKE V2 configuration)
+	// - `ipsec_policy_mismatch`: None of the proposed IPsec crypto suites was acceptable
+	//   (check the IPsec policies on both sides of the VPN)
+	// - `peer_not_responding`: No response from peer (check network ACL configuration, peer
+	//   availability, and on-premise firewall configuration)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	StatusReasons []VPNGatewayConnectionStatusReason `json:"status_reasons" validate:"required"`
+
 	// Routing protocols are disabled for this VPN gateway connection.
 	RoutingProtocol *string `json:"routing_protocol" validate:"required"`
 
@@ -95020,6 +97333,10 @@ func UnmarshalVPNGatewayConnectionStaticRouteMode(m map[string]json.RawMessage, 
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVPNGatewayConnectionStatusReason)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "routing_protocol", &obj.RoutingProtocol)
 	if err != nil {
 		return
@@ -95044,11 +97361,43 @@ type VPNGatewayPolicyMode struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -95062,9 +97411,6 @@ type VPNGatewayPolicyMode struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -95074,19 +97420,37 @@ type VPNGatewayPolicyMode struct {
 	Mode *string `json:"mode" validate:"required"`
 }
 
+// Constants associated with the VPNGatewayPolicyMode.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayPolicyModeHealthStateDegradedConst     = "degraded"
+	VPNGatewayPolicyModeHealthStateFaultedConst      = "faulted"
+	VPNGatewayPolicyModeHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayPolicyModeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayPolicyMode.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayPolicyModeLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayPolicyModeLifecycleStateFailedConst    = "failed"
+	VPNGatewayPolicyModeLifecycleStatePendingConst   = "pending"
+	VPNGatewayPolicyModeLifecycleStateStableConst    = "stable"
+	VPNGatewayPolicyModeLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayPolicyModeLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayPolicyModeLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGatewayPolicyMode.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayPolicyModeResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGatewayPolicyMode.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayPolicyModeStatusAvailableConst = "available"
-	VPNGatewayPolicyModeStatusDeletingConst  = "deleting"
-	VPNGatewayPolicyModeStatusFailedConst    = "failed"
-	VPNGatewayPolicyModeStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGatewayPolicyMode.Mode property.
@@ -95114,11 +97478,27 @@ func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -95135,10 +97515,6 @@ func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -95284,11 +97660,43 @@ type VPNGatewayRouteMode struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
+	// The reasons for the current VPN gateway health_state (if any):
+	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
+	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
+	//   subnet)
+	// - `internal_error`: Internal error (contact IBM support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []VPNGatewayHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
 	// The VPN gateway's canonical URL.
 	Href *string `json:"href" validate:"required"`
 
 	// The unique identifier for this VPN gateway.
 	ID *string `json:"id" validate:"required"`
+
+	// The reasons for the current VPN gateway lifecycle_state (if any):
+	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
+	//   support)
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []VPNGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the VPN gateway.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
 	// Collection of VPN gateway members.
 	Members []VPNGatewayMember `json:"members" validate:"required"`
@@ -95302,9 +97710,6 @@ type VPNGatewayRouteMode struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the VPN gateway.
-	Status *string `json:"status" validate:"required"`
-
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
 	// The VPC this VPN gateway resides in.
@@ -95314,19 +97719,37 @@ type VPNGatewayRouteMode struct {
 	Mode *string `json:"mode" validate:"required"`
 }
 
+// Constants associated with the VPNGatewayRouteMode.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	VPNGatewayRouteModeHealthStateDegradedConst     = "degraded"
+	VPNGatewayRouteModeHealthStateFaultedConst      = "faulted"
+	VPNGatewayRouteModeHealthStateInapplicableConst = "inapplicable"
+	VPNGatewayRouteModeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the VPNGatewayRouteMode.LifecycleState property.
+// The lifecycle state of the VPN gateway.
+const (
+	VPNGatewayRouteModeLifecycleStateDeletingConst  = "deleting"
+	VPNGatewayRouteModeLifecycleStateFailedConst    = "failed"
+	VPNGatewayRouteModeLifecycleStatePendingConst   = "pending"
+	VPNGatewayRouteModeLifecycleStateStableConst    = "stable"
+	VPNGatewayRouteModeLifecycleStateSuspendedConst = "suspended"
+	VPNGatewayRouteModeLifecycleStateUpdatingConst  = "updating"
+	VPNGatewayRouteModeLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the VPNGatewayRouteMode.ResourceType property.
 // The resource type.
 const (
 	VPNGatewayRouteModeResourceTypeVPNGatewayConst = "vpn_gateway"
-)
-
-// Constants associated with the VPNGatewayRouteMode.Status property.
-// The status of the VPN gateway.
-const (
-	VPNGatewayRouteModeStatusAvailableConst = "available"
-	VPNGatewayRouteModeStatusDeletingConst  = "deleting"
-	VPNGatewayRouteModeStatusFailedConst    = "failed"
-	VPNGatewayRouteModeStatusPendingConst   = "pending"
 )
 
 // Constants associated with the VPNGatewayRouteMode.Mode property.
@@ -95354,11 +97777,27 @@ func UnmarshalVPNGatewayRouteMode(m map[string]json.RawMessage, result interface
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVPNGatewayHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
 	if err != nil {
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalVPNGatewayLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -95375,10 +97814,6 @@ func UnmarshalVPNGatewayRouteMode(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
 	if err != nil {
 		return
 	}
@@ -96293,6 +98728,41 @@ func (*ZoneIdentityByName) isaZoneIdentity() bool {
 func UnmarshalZoneIdentityByName(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ZoneIdentityByName)
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN : BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN struct
+// This model "extends" BackupPolicyScopePrototypeEnterpriseIdentity
+type BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN struct {
+	// The CRN for this enterprise.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN : Instantiate BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN(crn string) (_model *BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN, err error) {
+	_model = &BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN) isaBackupPolicyScopePrototypeEnterpriseIdentity() bool {
+	return true
+}
+
+func (*BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN) isaBackupPolicyScopePrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN unmarshals an instance of BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN from the specified map of raw messages.
+func UnmarshalBackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyScopePrototypeEnterpriseIdentityEnterpriseIdentityByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
 	if err != nil {
 		return
 	}
