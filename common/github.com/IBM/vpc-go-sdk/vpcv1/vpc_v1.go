@@ -31,14 +31,14 @@ import (
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	common "github.com/IBM/vpc-go-sdk/common"
 	"github.com/go-openapi/strfmt"
+	common "github.ibm.com/ibmcloud/vpc-go-sdk/common"
 )
 
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2023-11-22
+// API Version: 2023-12-06
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,8 +46,8 @@ type VpcV1 struct {
 	// `2`.
 	generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
-	// and `2023-11-22`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
+	// and `2023-12-06`.
 	Version *string
 }
 
@@ -63,8 +63,8 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
-	// and `2023-11-22`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
+	// and `2023-12-06`.
 	Version *string
 }
 
@@ -122,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-10-24")
+		options.Version = core.StringPtr("2023-12-05")
 	}
 
 	service = &VpcV1{
@@ -6638,8 +6638,13 @@ func (vpc *VpcV1) GetInstanceNetworkInterfaceFloatingIPWithContext(ctx context.C
 
 // AddInstanceNetworkInterfaceFloatingIP : Associate a floating IP with an instance network interface
 // This request associates the specified floating IP with the specified instance network interface, replacing any
-// existing association. For this request to succeed, the existing floating IP must not be required by another resource,
-// such as a public gateway. A request body is not required, and if provided, is ignored.
+// existing association.
+//
+// The existing floating IP must:
+// - not be required by another resource, such as a public gateway
+// - be in the same `zone` as the instance
+//
+// A request body is not required, and if provided, is ignored.
 func (vpc *VpcV1) AddInstanceNetworkInterfaceFloatingIP(addInstanceNetworkInterfaceFloatingIPOptions *AddInstanceNetworkInterfaceFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
 	return vpc.AddInstanceNetworkInterfaceFloatingIPWithContext(context.Background(), addInstanceNetworkInterfaceFloatingIPOptions)
 }
@@ -9909,12 +9914,12 @@ func (vpc *VpcV1) ListBackupPoliciesWithContext(ctx context.Context, listBackupP
 // CreateBackupPolicy : Create a backup policy
 // This request creates a new backup policy from a backup policy prototype object. The prototype object is structured in
 // the same way as a retrieved backup policy, and contains the information necessary to create the new backup policy.
-func (vpc *VpcV1) CreateBackupPolicy(createBackupPolicyOptions *CreateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateBackupPolicy(createBackupPolicyOptions *CreateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.CreateBackupPolicyWithContext(context.Background(), createBackupPolicyOptions)
 }
 
 // CreateBackupPolicyWithContext is an alternate form of the CreateBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBackupPolicyOptions *CreateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBackupPolicyOptions *CreateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createBackupPolicyOptions, "createBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -9946,26 +9951,7 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	body := make(map[string]interface{})
-	if createBackupPolicyOptions.MatchUserTags != nil {
-		body["match_user_tags"] = createBackupPolicyOptions.MatchUserTags
-	}
-	if createBackupPolicyOptions.MatchResourceTypes != nil {
-		body["match_resource_types"] = createBackupPolicyOptions.MatchResourceTypes
-	}
-	if createBackupPolicyOptions.Name != nil {
-		body["name"] = createBackupPolicyOptions.Name
-	}
-	if createBackupPolicyOptions.Plans != nil {
-		body["plans"] = createBackupPolicyOptions.Plans
-	}
-	if createBackupPolicyOptions.ResourceGroup != nil {
-		body["resource_group"] = createBackupPolicyOptions.ResourceGroup
-	}
-	if createBackupPolicyOptions.Scope != nil {
-		body["scope"] = createBackupPolicyOptions.Scope
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createBackupPolicyOptions.BackupPolicyPrototype)
 	if err != nil {
 		return
 	}
@@ -10525,12 +10511,12 @@ func (vpc *VpcV1) UpdateBackupPolicyPlanWithContext(ctx context.Context, updateB
 //
 // If the request is accepted, the backup policy `status` will be set to `deleting`. Once deletion processing completes,
 // the backup policy will no longer be retrievable.
-func (vpc *VpcV1) DeleteBackupPolicy(deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteBackupPolicy(deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.DeleteBackupPolicyWithContext(context.Background(), deleteBackupPolicyOptions)
 }
 
 // DeleteBackupPolicyWithContext is an alternate form of the DeleteBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteBackupPolicyOptions, "deleteBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -10591,12 +10577,12 @@ func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBacku
 
 // GetBackupPolicy : Retrieve a backup policy
 // This request retrieves a single backup policy specified by the identifier in the URL.
-func (vpc *VpcV1) GetBackupPolicy(getBackupPolicyOptions *GetBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetBackupPolicy(getBackupPolicyOptions *GetBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.GetBackupPolicyWithContext(context.Background(), getBackupPolicyOptions)
 }
 
 // GetBackupPolicyWithContext is an alternate form of the GetBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolicyOptions *GetBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolicyOptions *GetBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getBackupPolicyOptions, "getBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -10655,12 +10641,12 @@ func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolic
 // UpdateBackupPolicy : Update a backup policy
 // This request updates a backup policy with the information in a provided backup policy patch. The backup policy patch
 // object is structured in the same way as a retrieved backup policy and contains only the information to be updated.
-func (vpc *VpcV1) UpdateBackupPolicy(updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateBackupPolicy(updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.UpdateBackupPolicyWithContext(context.Background(), updateBackupPolicyOptions)
 }
 
 // UpdateBackupPolicyWithContext is an alternate form of the UpdateBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateBackupPolicyOptions, "updateBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -12145,8 +12131,13 @@ func (vpc *VpcV1) GetBareMetalServerNetworkInterfaceFloatingIPWithContext(ctx co
 // AddBareMetalServerNetworkInterfaceFloatingIP : Associate a floating IP with a bare metal server network interface
 // This request associates the specified floating IP with the specified bare metal server network interface. If
 // `enable_infrastructure_nat` is `false`, this adds the IP to any existing associations. If `enable_infrastructure_nat`
-// is `true`, this replaces any existing association.  For this request to succeed, the existing floating IP must not be
-// required by another resource, such as a public gateway. A request body is not required, and if provided, is ignored.
+// is `true`, this replaces any existing association.
+//
+// The existing floating IP must:
+// - not be required by another resource, such as a public gateway
+// - be in the same `zone` as the bare metal server
+//
+// A request body is not required, and if provided, is ignored.
 func (vpc *VpcV1) AddBareMetalServerNetworkInterfaceFloatingIP(addBareMetalServerNetworkInterfaceFloatingIPOptions *AddBareMetalServerNetworkInterfaceFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
 	return vpc.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context.Background(), addBareMetalServerNetworkInterfaceFloatingIPOptions)
 }
@@ -13215,6 +13206,348 @@ func (vpc *VpcV1) UpdateVolumeWithContext(ctx context.Context, updateVolumeOptio
 	return
 }
 
+// ListSnapshotConsistencyGroups : List all snapshot consistency groups
+// This request lists all snapshot consistency groups in the region. A snapshot consistency group is a collection of
+// individual snapshots taken at the same time.
+func (vpc *VpcV1) ListSnapshotConsistencyGroups(listSnapshotConsistencyGroupsOptions *ListSnapshotConsistencyGroupsOptions) (result *SnapshotConsistencyGroupCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListSnapshotConsistencyGroupsWithContext(context.Background(), listSnapshotConsistencyGroupsOptions)
+}
+
+// ListSnapshotConsistencyGroupsWithContext is an alternate form of the ListSnapshotConsistencyGroups method which supports a Context parameter
+func (vpc *VpcV1) ListSnapshotConsistencyGroupsWithContext(ctx context.Context, listSnapshotConsistencyGroupsOptions *ListSnapshotConsistencyGroupsOptions) (result *SnapshotConsistencyGroupCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listSnapshotConsistencyGroupsOptions, "listSnapshotConsistencyGroupsOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listSnapshotConsistencyGroupsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListSnapshotConsistencyGroups")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listSnapshotConsistencyGroupsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Start))
+	}
+	if listSnapshotConsistencyGroupsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Limit))
+	}
+	if listSnapshotConsistencyGroupsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.ResourceGroupID))
+	}
+	if listSnapshotConsistencyGroupsOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Name))
+	}
+	if listSnapshotConsistencyGroupsOptions.Sort != nil {
+		builder.AddQuery("sort", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Sort))
+	}
+	if listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID != nil {
+		builder.AddQuery("backup_policy_plan.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroupCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateSnapshotConsistencyGroup : Create a snapshot consistency group
+// This request creates a new snapshot consistency group from a snapshot consistency group object.  The prototype object
+// is structured in the same way as a retrieved consistency group, and contains the information necessary to provision
+// the new snapshot consistency group.
+func (vpc *VpcV1) CreateSnapshotConsistencyGroup(createSnapshotConsistencyGroupOptions *CreateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.CreateSnapshotConsistencyGroupWithContext(context.Background(), createSnapshotConsistencyGroupOptions)
+}
+
+// CreateSnapshotConsistencyGroupWithContext is an alternate form of the CreateSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) CreateSnapshotConsistencyGroupWithContext(ctx context.Context, createSnapshotConsistencyGroupOptions *CreateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createSnapshotConsistencyGroupOptions, "createSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createSnapshotConsistencyGroupOptions, "createSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(createSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPrototype)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteSnapshotConsistencyGroup : Delete a snapshot consistency group
+// This request deletes snapshot consistency group. This operation cannot be reversed. If the
+// `delete_snapshots_on_delete` property is `true`, all snapshots in the consistency group will also be deleted.
+func (vpc *VpcV1) DeleteSnapshotConsistencyGroup(deleteSnapshotConsistencyGroupOptions *DeleteSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.DeleteSnapshotConsistencyGroupWithContext(context.Background(), deleteSnapshotConsistencyGroupOptions)
+}
+
+// DeleteSnapshotConsistencyGroupWithContext is an alternate form of the DeleteSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) DeleteSnapshotConsistencyGroupWithContext(ctx context.Context, deleteSnapshotConsistencyGroupOptions *DeleteSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteSnapshotConsistencyGroupOptions, "deleteSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteSnapshotConsistencyGroupOptions, "deleteSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deleteSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetSnapshotConsistencyGroup : Retrieve a snapshot consistency group
+// This request retrieves a single snapshot consistency group specified by the identifier in the URL.
+func (vpc *VpcV1) GetSnapshotConsistencyGroup(getSnapshotConsistencyGroupOptions *GetSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.GetSnapshotConsistencyGroupWithContext(context.Background(), getSnapshotConsistencyGroupOptions)
+}
+
+// GetSnapshotConsistencyGroupWithContext is an alternate form of the GetSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) GetSnapshotConsistencyGroupWithContext(ctx context.Context, getSnapshotConsistencyGroupOptions *GetSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSnapshotConsistencyGroupOptions, "getSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getSnapshotConsistencyGroupOptions, "getSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateSnapshotConsistencyGroup : Update a snapshot consistency group
+// This request updates a snapshot consistency group with the information in a provided snapshot consistency group
+// patch. The snapshot consistency group patch object is structured in the same way as a retrieved snapshot consistency
+// group and contains only the information to be updated.
+func (vpc *VpcV1) UpdateSnapshotConsistencyGroup(updateSnapshotConsistencyGroupOptions *UpdateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.UpdateSnapshotConsistencyGroupWithContext(context.Background(), updateSnapshotConsistencyGroupOptions)
+}
+
+// UpdateSnapshotConsistencyGroupWithContext is an alternate form of the UpdateSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) UpdateSnapshotConsistencyGroupWithContext(ctx context.Context, updateSnapshotConsistencyGroupOptions *UpdateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateSnapshotConsistencyGroupOptions, "updateSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateSnapshotConsistencyGroupOptions, "updateSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updateSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+	if updateSnapshotConsistencyGroupOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*updateSnapshotConsistencyGroupOptions.IfMatch))
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
 // DeleteSnapshots : Delete a filtered collection of snapshots
 // This request deletes all snapshots created from a specific source volume.
 func (vpc *VpcV1) DeleteSnapshots(deleteSnapshotsOptions *DeleteSnapshotsOptions) (response *core.DetailedResponse, err error) {
@@ -13356,6 +13689,12 @@ func (vpc *VpcV1) ListSnapshotsWithContext(ctx context.Context, listSnapshotsOpt
 	}
 	if listSnapshotsOptions.ClonesZoneName != nil {
 		builder.AddQuery("clones[].zone.name", fmt.Sprint(*listSnapshotsOptions.ClonesZoneName))
+	}
+	if listSnapshotsOptions.SnapshotConsistencyGroupID != nil {
+		builder.AddQuery("snapshot_consistency_group.id", fmt.Sprint(*listSnapshotsOptions.SnapshotConsistencyGroupID))
+	}
+	if listSnapshotsOptions.SnapshotConsistencyGroupCRN != nil {
+		builder.AddQuery("snapshot_consistency_group.crn", fmt.Sprint(*listSnapshotsOptions.SnapshotConsistencyGroupCRN))
 	}
 
 	request, err := builder.Build()
@@ -24262,6 +24601,9 @@ func (addressPrefixPatch *AddressPrefixPatch) AsPatch() (_patch map[string]inter
 }
 
 // BackupPolicy : BackupPolicy struct
+// Models which "extend" this model:
+// - BackupPolicyMatchResourceTypeInstance
+// - BackupPolicyMatchResourceTypeVolume
 type BackupPolicy struct {
 	// The date and time that the backup policy was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -24299,13 +24641,13 @@ type BackupPolicy struct {
 	// The lifecycle state of the backup policy.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
-	// The resource types this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
 	// will be subject to the backup policy.
 	//
-	// The enumerated values for this property will expand in the future. When processing this property, check for and log
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
 	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
 	// unexpected property value was encountered.
-	MatchResourceTypes []string `json:"match_resource_types" validate:"required"`
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
 
 	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
 	// be subject to the backup policy.
@@ -24325,6 +24667,15 @@ type BackupPolicy struct {
 
 	// The scope for this backup policy.
 	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	IncludedContent []string `json:"included_content,omitempty"`
 }
 
 // Constants associated with the BackupPolicy.HealthState property.
@@ -24354,10 +24705,16 @@ const (
 	BackupPolicyLifecycleStateWaitingConst   = "waiting"
 )
 
-// Constants associated with the BackupPolicy.MatchResourceTypes property.
-// The resource type.
+// Constants associated with the BackupPolicy.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
 const (
-	BackupPolicyMatchResourceTypesVolumeConst = "volume"
+	BackupPolicyMatchResourceTypeInstanceConst = "instance"
+	BackupPolicyMatchResourceTypeVolumeConst   = "volume"
 )
 
 // Constants associated with the BackupPolicy.ResourceType property.
@@ -24365,6 +24722,21 @@ const (
 const (
 	BackupPolicyResourceTypeBackupPolicyConst = "backup_policy"
 )
+
+// Constants associated with the BackupPolicy.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyIncludedContentDataVolumesConst = "data_volumes"
+)
+
+func (*BackupPolicy) isaBackupPolicy() bool {
+	return true
+}
+
+type BackupPolicyIntf interface {
+	isaBackupPolicy() bool
+}
 
 // UnmarshalBackupPolicy unmarshals an instance of BackupPolicy from the specified map of raw messages.
 func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -24401,7 +24773,7 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "match_resource_types", &obj.MatchResourceTypes)
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
 	if err != nil {
 		return
 	}
@@ -24429,6 +24801,10 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -24436,7 +24812,7 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 // BackupPolicyCollection : BackupPolicyCollection struct
 type BackupPolicyCollection struct {
 	// Collection of backup policies.
-	BackupPolicies []BackupPolicy `json:"backup_policies" validate:"required"`
+	BackupPolicies []BackupPolicyIntf `json:"backup_policies" validate:"required"`
 
 	// A link to the first page of resources.
 	First *BackupPolicyCollectionFirst `json:"first" validate:"required"`
@@ -24807,6 +25183,7 @@ func UnmarshalBackupPolicyJobCollectionNext(m map[string]json.RawMessage, result
 // [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
 // Models which "extend" this model:
 // - BackupPolicyJobSourceVolumeReference
+// - BackupPolicyJobSourceInstanceReference
 type BackupPolicyJobSource struct {
 	// The CRN for this volume.
 	CRN *string `json:"crn,omitempty"`
@@ -24931,6 +25308,11 @@ func UnmarshalBackupPolicyJobStatusReason(m map[string]json.RawMessage, result i
 
 // BackupPolicyPatch : BackupPolicyPatch struct
 type BackupPolicyPatch struct {
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+
 	// The user tags this backup policy will apply to (replacing any existing tags). Resources that have both a matching
 	// user tag and a matching type will be subject to the backup policy.
 	MatchUserTags []string `json:"match_user_tags,omitempty"`
@@ -24939,9 +25321,20 @@ type BackupPolicyPatch struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// Constants associated with the BackupPolicyPatch.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPatchIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPatchIncludedContentDataVolumesConst = "data_volumes"
+)
+
 // UnmarshalBackupPolicyPatch unmarshals an instance of BackupPolicyPatch from the specified map of raw messages.
 func UnmarshalBackupPolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyPatch)
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
 	if err != nil {
 		return
@@ -25577,6 +25970,99 @@ func UnmarshalBackupPolicyPlanRemoteRegionPolicyPrototype(m map[string]json.RawM
 		return
 	}
 	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototype : BackupPolicyPrototype struct
+// Models which "extend" this model:
+// - BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype
+// - BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype
+type BackupPolicyPrototype struct {
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The scope to use for this backup policy.
+	//
+	// If unspecified, the policy will be scoped to the account.
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+}
+
+// Constants associated with the BackupPolicyPrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeMatchResourceTypeInstanceConst = "instance"
+	BackupPolicyPrototypeMatchResourceTypeVolumeConst   = "volume"
+)
+
+// Constants associated with the BackupPolicyPrototype.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPrototypeIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPrototypeIncludedContentDataVolumesConst = "data_volumes"
+)
+
+func (*BackupPolicyPrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+type BackupPolicyPrototypeIntf interface {
+	isaBackupPolicyPrototype() bool
+}
+
+// UnmarshalBackupPolicyPrototype unmarshals an instance of BackupPolicyPrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototype)
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
 	if err != nil {
 		return
 	}
@@ -28631,80 +29117,23 @@ func UnmarshalCloudObjectStorageObjectReference(m map[string]json.RawMessage, re
 
 // CreateBackupPolicyOptions : The CreateBackupPolicy options.
 type CreateBackupPolicyOptions struct {
-	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
-	// will be subject to the backup policy.
-	MatchUserTags []string `json:"match_user_tags" validate:"required"`
-
-	// The resource types this backup policy will apply to. Resources that have both a matching type and a matching user
-	// tag will be subject to the backup policy.
-	MatchResourceTypes []string `json:"match_resource_types,omitempty"`
-
-	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
-	// the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// The prototype objects for backup plans to be created for this backup policy.
-	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
-
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
-
-	// The scope to use for this backup policy.
-	//
-	// If unspecified, the policy will be scoped to the account.
-	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+	// The backup policy prototype object.
+	BackupPolicyPrototype BackupPolicyPrototypeIntf `json:"BackupPolicyPrototype" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
-// Constants associated with the CreateBackupPolicyOptions.MatchResourceTypes property.
-// The resource type.
-const (
-	CreateBackupPolicyOptionsMatchResourceTypesVolumeConst = "volume"
-)
-
 // NewCreateBackupPolicyOptions : Instantiate CreateBackupPolicyOptions
-func (*VpcV1) NewCreateBackupPolicyOptions(matchUserTags []string) *CreateBackupPolicyOptions {
+func (*VpcV1) NewCreateBackupPolicyOptions(backupPolicyPrototype BackupPolicyPrototypeIntf) *CreateBackupPolicyOptions {
 	return &CreateBackupPolicyOptions{
-		MatchUserTags: matchUserTags,
+		BackupPolicyPrototype: backupPolicyPrototype,
 	}
 }
 
-// SetMatchUserTags : Allow user to set MatchUserTags
-func (_options *CreateBackupPolicyOptions) SetMatchUserTags(matchUserTags []string) *CreateBackupPolicyOptions {
-	_options.MatchUserTags = matchUserTags
-	return _options
-}
-
-// SetMatchResourceTypes : Allow user to set MatchResourceTypes
-func (_options *CreateBackupPolicyOptions) SetMatchResourceTypes(matchResourceTypes []string) *CreateBackupPolicyOptions {
-	_options.MatchResourceTypes = matchResourceTypes
-	return _options
-}
-
-// SetName : Allow user to set Name
-func (_options *CreateBackupPolicyOptions) SetName(name string) *CreateBackupPolicyOptions {
-	_options.Name = core.StringPtr(name)
-	return _options
-}
-
-// SetPlans : Allow user to set Plans
-func (_options *CreateBackupPolicyOptions) SetPlans(plans []BackupPolicyPlanPrototype) *CreateBackupPolicyOptions {
-	_options.Plans = plans
-	return _options
-}
-
-// SetResourceGroup : Allow user to set ResourceGroup
-func (_options *CreateBackupPolicyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateBackupPolicyOptions {
-	_options.ResourceGroup = resourceGroup
-	return _options
-}
-
-// SetScope : Allow user to set Scope
-func (_options *CreateBackupPolicyOptions) SetScope(scope BackupPolicyScopePrototypeIntf) *CreateBackupPolicyOptions {
-	_options.Scope = scope
+// SetBackupPolicyPrototype : Allow user to set BackupPolicyPrototype
+func (_options *CreateBackupPolicyOptions) SetBackupPolicyPrototype(backupPolicyPrototype BackupPolicyPrototypeIntf) *CreateBackupPolicyOptions {
+	_options.BackupPolicyPrototype = backupPolicyPrototype
 	return _options
 }
 
@@ -31484,6 +31913,34 @@ func (_options *CreateSnapshotCloneOptions) SetZoneName(zoneName string) *Create
 
 // SetHeaders : Allow user to set Headers
 func (options *CreateSnapshotCloneOptions) SetHeaders(param map[string]string) *CreateSnapshotCloneOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateSnapshotConsistencyGroupOptions : The CreateSnapshotConsistencyGroup options.
+type CreateSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group prototype object.
+	SnapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf `json:"SnapshotConsistencyGroupPrototype" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateSnapshotConsistencyGroupOptions : Instantiate CreateSnapshotConsistencyGroupOptions
+func (*VpcV1) NewCreateSnapshotConsistencyGroupOptions(snapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf) *CreateSnapshotConsistencyGroupOptions {
+	return &CreateSnapshotConsistencyGroupOptions{
+		SnapshotConsistencyGroupPrototype: snapshotConsistencyGroupPrototype,
+	}
+}
+
+// SetSnapshotConsistencyGroupPrototype : Allow user to set SnapshotConsistencyGroupPrototype
+func (_options *CreateSnapshotConsistencyGroupOptions) SetSnapshotConsistencyGroupPrototype(snapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf) *CreateSnapshotConsistencyGroupOptions {
+	_options.SnapshotConsistencyGroupPrototype = snapshotConsistencyGroupPrototype
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *CreateSnapshotConsistencyGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -36291,6 +36748,34 @@ func (options *DeleteSnapshotCloneOptions) SetHeaders(param map[string]string) *
 	return options
 }
 
+// DeleteSnapshotConsistencyGroupOptions : The DeleteSnapshotConsistencyGroup options.
+type DeleteSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteSnapshotConsistencyGroupOptions : Instantiate DeleteSnapshotConsistencyGroupOptions
+func (*VpcV1) NewDeleteSnapshotConsistencyGroupOptions(id string) *DeleteSnapshotConsistencyGroupOptions {
+	return &DeleteSnapshotConsistencyGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *DeleteSnapshotConsistencyGroupOptions) SetID(id string) *DeleteSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *DeleteSnapshotConsistencyGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // DeleteSnapshotOptions : The DeleteSnapshot options.
 type DeleteSnapshotOptions struct {
 	// The snapshot identifier.
@@ -37872,7 +38357,9 @@ type FloatingIPPatch struct {
 	// resource is:
 	//
 	// - an instance network interface
-	// - a bare metal server network interface with `enable_infrastructure_nat` set to `true`.
+	// - a bare metal server network interface with `enable_infrastructure_nat` set to `true`
+	//
+	// Specify `null` to remove an existing binding.
 	Target FloatingIPTargetPatchIntf `json:"target,omitempty"`
 }
 
@@ -38112,7 +38599,9 @@ func UnmarshalFloatingIPTarget(m map[string]json.RawMessage, result interface{})
 // The target resource must not already have a floating IP bound to it if the target resource is:
 //
 // - an instance network interface
-// - a bare metal server network interface with `enable_infrastructure_nat` set to `true`.
+// - a bare metal server network interface with `enable_infrastructure_nat` set to `true`
+//
+// Specify `null` to remove an existing binding.
 // Models which "extend" this model:
 // - FloatingIPTargetPatchBareMetalServerNetworkInterfaceIdentity
 // - FloatingIPTargetPatchNetworkInterfaceIdentity
@@ -40664,6 +41153,34 @@ func (_options *GetSnapshotCloneOptions) SetZoneName(zoneName string) *GetSnapsh
 
 // SetHeaders : Allow user to set Headers
 func (options *GetSnapshotCloneOptions) SetHeaders(param map[string]string) *GetSnapshotCloneOptions {
+	options.Headers = param
+	return options
+}
+
+// GetSnapshotConsistencyGroupOptions : The GetSnapshotConsistencyGroup options.
+type GetSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetSnapshotConsistencyGroupOptions : Instantiate GetSnapshotConsistencyGroupOptions
+func (*VpcV1) NewGetSnapshotConsistencyGroupOptions(id string) *GetSnapshotConsistencyGroupOptions {
+	return &GetSnapshotConsistencyGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *GetSnapshotConsistencyGroupOptions) SetID(id string) *GetSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *GetSnapshotConsistencyGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -52191,6 +52708,89 @@ func (options *ListSnapshotClonesOptions) SetHeaders(param map[string]string) *L
 	return options
 }
 
+// ListSnapshotConsistencyGroupsOptions : The ListSnapshotConsistencyGroups options.
+type ListSnapshotConsistencyGroupsOptions struct {
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
+	ResourceGroupID *string `json:"resource_group.id,omitempty"`
+
+	// Filters the collection to resources with a `name` property matching the exact specified name.
+	Name *string `json:"name,omitempty"`
+
+	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+	// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+	Sort *string `json:"sort,omitempty"`
+
+	// Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified
+	// identifier.
+	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the ListSnapshotConsistencyGroupsOptions.Sort property.
+// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+const (
+	ListSnapshotConsistencyGroupsOptionsSortCreatedAtConst = "created_at"
+	ListSnapshotConsistencyGroupsOptionsSortNameConst      = "name"
+)
+
+// NewListSnapshotConsistencyGroupsOptions : Instantiate ListSnapshotConsistencyGroupsOptions
+func (*VpcV1) NewListSnapshotConsistencyGroupsOptions() *ListSnapshotConsistencyGroupsOptions {
+	return &ListSnapshotConsistencyGroupsOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListSnapshotConsistencyGroupsOptions) SetStart(start string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListSnapshotConsistencyGroupsOptions) SetLimit(limit int64) *ListSnapshotConsistencyGroupsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetResourceGroupID : Allow user to set ResourceGroupID
+func (_options *ListSnapshotConsistencyGroupsOptions) SetResourceGroupID(resourceGroupID string) *ListSnapshotConsistencyGroupsOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *ListSnapshotConsistencyGroupsOptions) SetName(name string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetSort : Allow user to set Sort
+func (_options *ListSnapshotConsistencyGroupsOptions) SetSort(sort string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Sort = core.StringPtr(sort)
+	return _options
+}
+
+// SetBackupPolicyPlanID : Allow user to set BackupPolicyPlanID
+func (_options *ListSnapshotConsistencyGroupsOptions) SetBackupPolicyPlanID(backupPolicyPlanID string) *ListSnapshotConsistencyGroupsOptions {
+	_options.BackupPolicyPlanID = core.StringPtr(backupPolicyPlanID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListSnapshotConsistencyGroupsOptions) SetHeaders(param map[string]string) *ListSnapshotConsistencyGroupsOptions {
+	options.Headers = param
+	return options
+}
+
 // ListSnapshotsOptions : The ListSnapshots options.
 type ListSnapshotsOptions struct {
 	// A server-provided token determining what resource to start the page on.
@@ -52269,6 +52869,14 @@ type ListSnapshotsOptions struct {
 	// Filters the collection to snapshots with an item in the `clones` property with a `zone.name` property matching the
 	// exact specified name.
 	ClonesZoneName *string `json:"clones[].zone.name,omitempty"`
+
+	// Filters the collection to resources with a `snapshot_consistency_group.id` property matching the specified
+	// identifier.
+	SnapshotConsistencyGroupID *string `json:"snapshot_consistency_group.id,omitempty"`
+
+	// Filters the collection to resources with a `snapshot_consistency_group.crn` property matching the specified
+	// identifier.
+	SnapshotConsistencyGroupCRN *string `json:"snapshot_consistency_group.crn,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -52405,6 +53013,18 @@ func (_options *ListSnapshotsOptions) SetSourceImageRemoteRegionName(sourceImage
 // SetClonesZoneName : Allow user to set ClonesZoneName
 func (_options *ListSnapshotsOptions) SetClonesZoneName(clonesZoneName string) *ListSnapshotsOptions {
 	_options.ClonesZoneName = core.StringPtr(clonesZoneName)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupID : Allow user to set SnapshotConsistencyGroupID
+func (_options *ListSnapshotsOptions) SetSnapshotConsistencyGroupID(snapshotConsistencyGroupID string) *ListSnapshotsOptions {
+	_options.SnapshotConsistencyGroupID = core.StringPtr(snapshotConsistencyGroupID)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupCRN : Allow user to set SnapshotConsistencyGroupCRN
+func (_options *ListSnapshotsOptions) SetSnapshotConsistencyGroupCRN(snapshotConsistencyGroupCRN string) *ListSnapshotsOptions {
+	_options.SnapshotConsistencyGroupCRN = core.StringPtr(snapshotConsistencyGroupCRN)
 	return _options
 }
 
@@ -65895,6 +66515,9 @@ type Snapshot struct {
 	// The size of this snapshot rounded up to the next gigabyte.
 	Size *int64 `json:"size" validate:"required"`
 
+	// If present, the snapshot consistency group which created this snapshot.
+	SnapshotConsistencyGroup *SnapshotConsistencyGroupReference `json:"snapshot_consistency_group,omitempty"`
+
 	// If present, the image from which the data on this snapshot was most directly
 	// provisioned.
 	SourceImage *ImageReference `json:"source_image,omitempty"`
@@ -66015,6 +66638,10 @@ func UnmarshalSnapshot(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "size", &obj.Size)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshot_consistency_group", &obj.SnapshotConsistencyGroup, UnmarshalSnapshotConsistencyGroupReference)
 	if err != nil {
 		return
 	}
@@ -66198,6 +66825,529 @@ type SnapshotCollectionNext struct {
 func UnmarshalSnapshotCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SnapshotCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroup : SnapshotConsistencyGroup struct
+type SnapshotConsistencyGroup struct {
+	// If present, the backup policy plan which created this snapshot consistency group.
+	BackupPolicyPlan *BackupPolicyPlanReference `json:"backup_policy_plan,omitempty"`
+
+	// The date and time that this snapshot consistency group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN of this snapshot consistency group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete" validate:"required"`
+
+	// The URL for this snapshot consistency group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot consistency group.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of this snapshot consistency group.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this snapshot consistency group. The name is unique across all snapshot consistency groups in the
+	// region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this snapshot consistency group.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot consistency
+	// group. Each tag is prefixed with
+	// [is.instance:](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-faqs).
+	ServiceTags []string `json:"service_tags" validate:"required"`
+
+	// The member snapshots that are data-consistent with respect to captured time. (may be
+	// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+	Snapshots []SnapshotConsistencyGroupSnapshotsItem `json:"snapshots" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroup.LifecycleState property.
+// The lifecycle state of this snapshot consistency group.
+const (
+	SnapshotConsistencyGroupLifecycleStateDeletingConst  = "deleting"
+	SnapshotConsistencyGroupLifecycleStateFailedConst    = "failed"
+	SnapshotConsistencyGroupLifecycleStatePendingConst   = "pending"
+	SnapshotConsistencyGroupLifecycleStateStableConst    = "stable"
+	SnapshotConsistencyGroupLifecycleStateSuspendedConst = "suspended"
+	SnapshotConsistencyGroupLifecycleStateUpdatingConst  = "updating"
+	SnapshotConsistencyGroupLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the SnapshotConsistencyGroup.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupResourceTypeSnapshotConsistencyGroupConst = "snapshot_consistency_group"
+)
+
+// UnmarshalSnapshotConsistencyGroup unmarshals an instance of SnapshotConsistencyGroup from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroup(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroup)
+	err = core.UnmarshalModel(m, "backup_policy_plan", &obj.BackupPolicyPlan, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "service_tags", &obj.ServiceTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupSnapshotsItem)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupCollection : SnapshotConsistencyGroupCollection struct
+type SnapshotConsistencyGroupCollection struct {
+	// A link to the first page of resources.
+	First *SnapshotConsistencyGroupCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *SnapshotConsistencyGroupCollectionNext `json:"next,omitempty"`
+
+	// Collection of snapshot consistency groups.
+	SnapshotConsistencyGroups []SnapshotConsistencyGroup `json:"snapshot_consistency_groups" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollection unmarshals an instance of SnapshotConsistencyGroupCollection from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalSnapshotConsistencyGroupCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalSnapshotConsistencyGroupCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshot_consistency_groups", &obj.SnapshotConsistencyGroups, UnmarshalSnapshotConsistencyGroup)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *SnapshotConsistencyGroupCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// SnapshotConsistencyGroupCollectionFirst : A link to the first page of resources.
+type SnapshotConsistencyGroupCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollectionFirst unmarshals an instance of SnapshotConsistencyGroupCollectionFirst from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type SnapshotConsistencyGroupCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollectionNext unmarshals an instance of SnapshotConsistencyGroupCollectionNext from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPatch : SnapshotConsistencyGroupPatch struct
+type SnapshotConsistencyGroupPatch struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must not be used by another snapshot consistency groups in
+	// the region.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalSnapshotConsistencyGroupPatch unmarshals an instance of SnapshotConsistencyGroupPatch from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPatch)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the SnapshotConsistencyGroupPatch
+func (snapshotConsistencyGroupPatch *SnapshotConsistencyGroupPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(snapshotConsistencyGroupPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
+}
+
+// SnapshotConsistencyGroupPrototype : SnapshotConsistencyGroupPrototype struct
+// Models which "extend" this model:
+// - SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots
+type SnapshotConsistencyGroupPrototype struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must be unique across all snapshot consistency groups in the
+	// region.
+	//
+	// If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The data-consistent member snapshots to create.  All snapshots must specify a
+	// `source_volume` attached to the same virtual server instance.
+	Snapshots []SnapshotConsistencyGroupPrototypeSnapshotsItem `json:"snapshots,omitempty"`
+}
+
+func (*SnapshotConsistencyGroupPrototype) isaSnapshotConsistencyGroupPrototype() bool {
+	return true
+}
+
+type SnapshotConsistencyGroupPrototypeIntf interface {
+	isaSnapshotConsistencyGroupPrototype() bool
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototype unmarshals an instance of SnapshotConsistencyGroupPrototype from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototype)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem : SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem struct
+type SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem struct {
+	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The volume to create this snapshot from.
+	SourceVolume VolumeIdentityIntf `json:"source_volume" validate:"required"`
+
+	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
+	UserTags []string `json:"user_tags,omitempty"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem : Instantiate SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem(sourceVolume VolumeIdentityIntf) (_model *SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem{
+		SourceVolume: sourceVolume,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_volume", &obj.SourceVolume, UnmarshalVolumeIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotsItem : SnapshotConsistencyGroupPrototypeSnapshotsItem struct
+type SnapshotConsistencyGroupPrototypeSnapshotsItem struct {
+	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The volume to create this snapshot from.
+	SourceVolume VolumeIdentityIntf `json:"source_volume" validate:"required"`
+
+	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
+	UserTags []string `json:"user_tags,omitempty"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotsItem : Instantiate SnapshotConsistencyGroupPrototypeSnapshotsItem (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotsItem(sourceVolume VolumeIdentityIntf) (_model *SnapshotConsistencyGroupPrototypeSnapshotsItem, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotsItem{
+		SourceVolume: sourceVolume,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_volume", &obj.SourceVolume, UnmarshalVolumeIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupReference : SnapshotConsistencyGroupReference struct
+type SnapshotConsistencyGroupReference struct {
+	// The CRN of this snapshot consistency group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *SnapshotConsistencyGroupReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this snapshot consistency group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot consistency group.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot consistency group. The name is unique across all snapshot consistency groups in the
+	// region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroupReference.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupReferenceResourceTypeSnapshotConsistencyGroupConst = "snapshot_consistency_group"
+)
+
+// UnmarshalSnapshotConsistencyGroupReference unmarshals an instance of SnapshotConsistencyGroupReference from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalSnapshotConsistencyGroupReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
+// information.
+type SnapshotConsistencyGroupReferenceDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupReferenceDeleted unmarshals an instance of SnapshotConsistencyGroupReferenceDeleted from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupReferenceDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupSnapshotsItem : SnapshotConsistencyGroupSnapshotsItem struct
+type SnapshotConsistencyGroupSnapshotsItem struct {
+	// The CRN of this snapshot.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *SnapshotReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this snapshot.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot. The name is unique across all snapshots in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// If present, this property indicates that the resource associated with this reference
+	// is remote and therefore may not be directly retrievable.
+	Remote *SnapshotRemote `json:"remote,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroupSnapshotsItem.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupSnapshotsItemResourceTypeSnapshotConst = "snapshot"
+)
+
+// UnmarshalSnapshotConsistencyGroupSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalSnapshotReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSnapshotRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -69161,6 +70311,54 @@ func (_options *UpdateShareOptions) SetIfMatch(ifMatch string) *UpdateShareOptio
 
 // SetHeaders : Allow user to set Headers
 func (options *UpdateShareOptions) SetHeaders(param map[string]string) *UpdateShareOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateSnapshotConsistencyGroupOptions : The UpdateSnapshotConsistencyGroup options.
+type UpdateSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The snapshot consistency group patch.
+	SnapshotConsistencyGroupPatch map[string]interface{} `json:"SnapshotConsistencyGroup_patch" validate:"required"`
+
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	// Required if the request body includes an array.
+	IfMatch *string `json:"If-Match,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateSnapshotConsistencyGroupOptions : Instantiate UpdateSnapshotConsistencyGroupOptions
+func (*VpcV1) NewUpdateSnapshotConsistencyGroupOptions(id string, snapshotConsistencyGroupPatch map[string]interface{}) *UpdateSnapshotConsistencyGroupOptions {
+	return &UpdateSnapshotConsistencyGroupOptions{
+		ID:                            core.StringPtr(id),
+		SnapshotConsistencyGroupPatch: snapshotConsistencyGroupPatch,
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetID(id string) *UpdateSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupPatch : Allow user to set SnapshotConsistencyGroupPatch
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetSnapshotConsistencyGroupPatch(snapshotConsistencyGroupPatch map[string]interface{}) *UpdateSnapshotConsistencyGroupOptions {
+	_options.SnapshotConsistencyGroupPatch = snapshotConsistencyGroupPatch
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetIfMatch(ifMatch string) *UpdateSnapshotConsistencyGroupOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *UpdateSnapshotConsistencyGroupOptions {
 	options.Headers = param
 	return options
 }
@@ -72755,11 +73953,11 @@ type VPNServer struct {
 
 	// The reasons for the current VPN server health_state (if any):
 	// - `cannot_access_client_certificate`: VPN server's client certificate is inaccessible
-	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
-	//   `Secrets Manager`)
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access
+	//   to `Secrets Manager`)
 	// - `cannot_access_server_certificate`: VPN server's server certificate is inaccessible
-	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
-	//   `Secrets Manager`)
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access
+	//   to `Secrets Manager`)
 	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
 	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
 	//   subnet)
@@ -76388,6 +77586,57 @@ func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (e
 	return
 }
 
+// BackupPolicyJobSourceInstanceReference : BackupPolicyJobSourceInstanceReference struct
+// This model "extends" BackupPolicyJobSource
+type BackupPolicyJobSourceInstanceReference struct {
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *InstanceReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this virtual server instance. The name is unique across all virtual server instances in the region.
+	Name *string `json:"name" validate:"required"`
+}
+
+func (*BackupPolicyJobSourceInstanceReference) isaBackupPolicyJobSource() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyJobSourceInstanceReference unmarshals an instance of BackupPolicyJobSourceInstanceReference from the specified map of raw messages.
+func UnmarshalBackupPolicyJobSourceInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobSourceInstanceReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalInstanceReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // BackupPolicyJobSourceVolumeReference : BackupPolicyJobSourceVolumeReference struct
 // This model "extends" BackupPolicyJobSource
 type BackupPolicyJobSourceVolumeReference struct {
@@ -76453,6 +77702,554 @@ func UnmarshalBackupPolicyJobSourceVolumeReference(m map[string]json.RawMessage,
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyMatchResourceTypeInstance : BackupPolicyMatchResourceTypeInstance struct
+// This model "extends" BackupPolicy
+type BackupPolicyMatchResourceTypeInstance struct {
+	// The date and time that the backup policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this backup policy.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The URL for this backup policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The date and time that the most recent job for this backup policy completed.
+	//
+	// If absent, no job has yet completed for this backup policy.
+	LastJobCompletedAt *strfmt.DateTime `json:"last_job_completed_at,omitempty"`
+
+	// The lifecycle state of the backup policy.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
+	// be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name is unique across all backup policies in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The plans for the backup policy.
+	Plans []BackupPolicyPlanReference `json:"plans" validate:"required"`
+
+	// The resource group for this backup policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	IncludedContent []string `json:"included_content" validate:"required"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyMatchResourceTypeInstanceHealthStateDegradedConst     = "degraded"
+	BackupPolicyMatchResourceTypeInstanceHealthStateFaultedConst      = "faulted"
+	BackupPolicyMatchResourceTypeInstanceHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyMatchResourceTypeInstanceHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.LifecycleState property.
+// The lifecycle state of the backup policy.
+const (
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateDeletingConst  = "deleting"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateFailedConst    = "failed"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStatePendingConst   = "pending"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateStableConst    = "stable"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateSuspendedConst = "suspended"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateUpdatingConst  = "updating"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyMatchResourceTypeInstanceResourceTypeBackupPolicyConst = "backup_policy"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyMatchResourceTypeInstanceIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyMatchResourceTypeInstanceIncludedContentDataVolumesConst = "data_volumes"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
+const (
+	BackupPolicyMatchResourceTypeInstanceMatchResourceTypeInstanceConst = "instance"
+)
+
+func (*BackupPolicyMatchResourceTypeInstance) isaBackupPolicy() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyMatchResourceTypeInstance unmarshals an instance of BackupPolicyMatchResourceTypeInstance from the specified map of raw messages.
+func UnmarshalBackupPolicyMatchResourceTypeInstance(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyMatchResourceTypeInstance)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "last_job_completed_at", &obj.LastJobCompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyMatchResourceTypeVolume : BackupPolicyMatchResourceTypeVolume struct
+// This model "extends" BackupPolicy
+type BackupPolicyMatchResourceTypeVolume struct {
+	// The date and time that the backup policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this backup policy.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The URL for this backup policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The date and time that the most recent job for this backup policy completed.
+	//
+	// If absent, no job has yet completed for this backup policy.
+	LastJobCompletedAt *strfmt.DateTime `json:"last_job_completed_at,omitempty"`
+
+	// The lifecycle state of the backup policy.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
+	// be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name is unique across all backup policies in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The plans for the backup policy.
+	Plans []BackupPolicyPlanReference `json:"plans" validate:"required"`
+
+	// The resource group for this backup policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyMatchResourceTypeVolumeHealthStateDegradedConst     = "degraded"
+	BackupPolicyMatchResourceTypeVolumeHealthStateFaultedConst      = "faulted"
+	BackupPolicyMatchResourceTypeVolumeHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyMatchResourceTypeVolumeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.LifecycleState property.
+// The lifecycle state of the backup policy.
+const (
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateDeletingConst  = "deleting"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateFailedConst    = "failed"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStatePendingConst   = "pending"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateStableConst    = "stable"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateSuspendedConst = "suspended"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateUpdatingConst  = "updating"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyMatchResourceTypeVolumeResourceTypeBackupPolicyConst = "backup_policy"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
+const (
+	BackupPolicyMatchResourceTypeVolumeMatchResourceTypeVolumeConst = "volume"
+)
+
+func (*BackupPolicyMatchResourceTypeVolume) isaBackupPolicy() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyMatchResourceTypeVolume unmarshals an instance of BackupPolicyMatchResourceTypeVolume from the specified map of raw messages.
+func UnmarshalBackupPolicyMatchResourceTypeVolume(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyMatchResourceTypeVolume)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "last_job_completed_at", &obj.LastJobCompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype : BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype struct
+// This model "extends" BackupPolicyPrototype
+type BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype struct {
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeIncludedContentDataVolumesConst = "data_volumes"
+)
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeMatchResourceTypeInstanceConst = "instance"
+)
+
+// NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype : Instantiate BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype(matchUserTags []string, matchResourceType string) (_model *BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype, err error) {
+	_model = &BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype{
+		MatchUserTags:     matchUserTags,
+		MatchResourceType: core.StringPtr(matchResourceType),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype unmarshals an instance of BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype)
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype : BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype struct
+// This model "extends" BackupPolicyPrototype
+type BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype struct {
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototypeMatchResourceTypeVolumeConst = "volume"
+)
+
+// NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype : Instantiate BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype(matchUserTags []string, matchResourceType string) (_model *BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype, err error) {
+	_model = &BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype{
+		MatchUserTags:     matchUserTags,
+		MatchResourceType: core.StringPtr(matchResourceType),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype unmarshals an instance of BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype)
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
 	if err != nil {
 		return
 	}
@@ -92968,6 +94765,61 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 	return
 }
 
+// SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots : SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots struct
+// This model "extends" SnapshotConsistencyGroupPrototype
+type SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must be unique across all snapshot consistency groups in the
+	// region.
+	//
+	// If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The data-consistent member snapshots to create.  All snapshots must specify a
+	// `source_volume` attached to the same virtual server instance.
+	Snapshots []SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem `json:"snapshots" validate:"required"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots : Instantiate SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots(snapshots []SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem) (_model *SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots{
+		Snapshots: snapshots,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots) isaSnapshotConsistencyGroupPrototype() bool {
+	return true
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // SnapshotIdentityByCRN : SnapshotIdentityByCRN struct
 // This model "extends" SnapshotIdentity
 type SnapshotIdentityByCRN struct {
@@ -101737,7 +103589,7 @@ func (pager *BackupPoliciesPager) HasNext() bool {
 }
 
 // GetNextWithContext returns the next page of results using the specified Context.
-func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page []BackupPolicyIntf, err error) {
 	if !pager.HasNext() {
 		return nil, fmt.Errorf("no more results available")
 	}
@@ -101768,9 +103620,9 @@ func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page 
 
 // GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
 // until all pages of results have been retrieved.
-func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicyIntf, err error) {
 	for pager.HasNext() {
-		var nextPage []BackupPolicy
+		var nextPage []BackupPolicyIntf
 		nextPage, err = pager.GetNextWithContext(ctx)
 		if err != nil {
 			return
@@ -101781,12 +103633,12 @@ func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allIte
 }
 
 // GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
-func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicyIntf, err error) {
 	return pager.GetNextWithContext(context.Background())
 }
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
-func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicyIntf, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
@@ -102382,6 +104234,91 @@ func (pager *VolumesPager) GetNext() (page []Volume, err error) {
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *VolumesPager) GetAll() (allItems []Volume, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// SnapshotConsistencyGroupsPager can be used to simplify the use of the "ListSnapshotConsistencyGroups" method.
+type SnapshotConsistencyGroupsPager struct {
+	hasNext     bool
+	options     *ListSnapshotConsistencyGroupsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSnapshotConsistencyGroupsPager returns a new SnapshotConsistencyGroupsPager instance.
+func (vpc *VpcV1) NewSnapshotConsistencyGroupsPager(options *ListSnapshotConsistencyGroupsOptions) (pager *SnapshotConsistencyGroupsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSnapshotConsistencyGroupsOptions = *options
+	pager = &SnapshotConsistencyGroupsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SnapshotConsistencyGroupsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SnapshotConsistencyGroupsPager) GetNextWithContext(ctx context.Context) (page []SnapshotConsistencyGroup, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSnapshotConsistencyGroupsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.SnapshotConsistencyGroups
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SnapshotConsistencyGroupsPager) GetAllWithContext(ctx context.Context) (allItems []SnapshotConsistencyGroup, err error) {
+	for pager.HasNext() {
+		var nextPage []SnapshotConsistencyGroup
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotConsistencyGroupsPager) GetNext() (page []SnapshotConsistencyGroup, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotConsistencyGroupsPager) GetAll() (allItems []SnapshotConsistencyGroup, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
