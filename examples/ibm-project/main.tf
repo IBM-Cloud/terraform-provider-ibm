@@ -34,6 +34,19 @@ resource "ibm_project" "project_instance" {
   }
 }
 
+// Provision project_environment resource instance
+resource "ibm_project_environment" "project_environment_instance" {
+  project_id = ibm_project.project_instance.project_id
+  definition {
+    name = "environment-stage"
+    description = "environment for stage project"
+    authorizations {
+      method = "api_key"
+      api_key = "<your_apikey_here>"
+    }
+  }
+}
+
 // Create project_config data source
 data "ibm_project_config" "project_config_instance" {
   project_id = ibm_project_config.project_config_instance.project_id
@@ -43,4 +56,10 @@ data "ibm_project_config" "project_config_instance" {
 // Create project data source
 data "ibm_project" "project_instance" {
   project_id = ibm_project.project_instance.id
+}
+
+// Create project_environment data source
+data "ibm_project_environment" "project_environment_instance" {
+  project_id = ibm_project.project_instance.id
+  project_environment_id = var.project_environment_project_environment_id
 }
