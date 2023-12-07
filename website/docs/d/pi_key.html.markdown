@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_pi_key
-Retrieve information about the SSH key that is used for your Power Systems Virtual Server instance. The SSH key is used to access the instance after it is created. For more information, about [configuring your IBM virtual machine (VM)](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-ibmi).
+Retrieve information about the SSH key that is used for your Power Systems Virtual Server instance. The SSH key is used to access the instance after it is created. For more information, about [configuring your IBM virtual machine (VM)](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-creating-ssh-key).
 
 ## Example usage
 
