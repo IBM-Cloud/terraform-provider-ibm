@@ -6,7 +6,6 @@ package power
 import (
 	"context"
 	"encoding/base64"
-	b64 "encoding/base64"
 	"fmt"
 	"log"
 	"strings"
@@ -861,7 +860,7 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 func encodeBase64(userData string) string {
 	_, err := base64.StdEncoding.DecodeString(userData)
 	if err != nil {
-		return b64.StdEncoding.EncodeToString([]byte(userData))
+		return base64.StdEncoding.EncodeToString([]byte(userData))
 	}
 	return userData
 }
