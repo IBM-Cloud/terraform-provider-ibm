@@ -5,6 +5,7 @@ package project
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -126,11 +127,11 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 							},
 						},
 						"inputs": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "The input variables for configuration definition and environment.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{},
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
 							},
 						},
 						"compliance_profile": &schema.Schema{
@@ -265,11 +266,15 @@ func dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap
 		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
 	}
 	if model.Inputs != nil {
-		inputsMap, err := dataSourceIbmProjectEnvironmentInputVariableToMap(model.Inputs)
-		if err != nil {
-			return modelMap, err
+		inputs := make(map[string]interface{})
+		for k, v := range model.Inputs {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			inputs[k] = string(bytes)
 		}
-		modelMap["inputs"] = []map[string]interface{}{inputsMap}
+		modelMap["inputs"] = inputs
 	}
 	if model.ComplianceProfile != nil {
 		complianceProfileMap, err := dataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model.ComplianceProfile)
@@ -292,11 +297,6 @@ func dataSourceIbmProjectEnvironmentProjectConfigAuthToMap(model *projectv1.Proj
 	if model.ApiKey != nil {
 		modelMap["api_key"] = model.ApiKey
 	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProjectEnvironmentInputVariableToMap(model *projectv1.InputVariable) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
 
