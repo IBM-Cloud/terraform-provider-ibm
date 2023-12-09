@@ -1,3 +1,9 @@
+# 1.60.1 (Nov 09, 2023)
+
+BugFixes
+* Regenerate Projects TF to fix generated doc and samples
+ ([4961](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4961))
+
 # 1.60.0 (Nov 29, 2023)
 Features
 * Support for Projects
