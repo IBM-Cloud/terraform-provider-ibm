@@ -8,6 +8,8 @@ subcategory: "Logs Router"
 
 # ibm_logs_router_tenant
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Create, update, and delete logs_router_tenants with this resource.
 
 ## Example Usage

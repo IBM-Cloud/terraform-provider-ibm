@@ -8,6 +8,8 @@ subcategory: "Logs Router"
 
 # ibm_logs_router_tenant
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a read-only data source to retrieve information about a logs_router_tenant. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
