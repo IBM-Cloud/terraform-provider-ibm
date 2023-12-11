@@ -93,7 +93,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "adminpassword", "connectionstrings.0.queryoptions"},
+					"wait_time_minutes", "adminpassword", "connectionstrings.0.queryoptions", "group"},
 			},
 		},
 	})
@@ -206,7 +206,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
@@ -219,7 +219,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		  type     = "database"
 		}
 		allowlist {
@@ -247,7 +247,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
@@ -263,12 +263,12 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		  type     = "database"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12$password"
+		  password = "password12345678$password"
 		  type     = "ops_manager"
 		}
 		allowlist {
@@ -300,7 +300,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseReduced(databaseResourceGro
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 		group {
@@ -333,7 +333,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
 
 		group {
