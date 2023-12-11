@@ -29,7 +29,6 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/IBM/logs-router-go-sdk/ibmlogsrouteropenapi30v0"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
@@ -229,7 +228,6 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
-	IbmLogsRouterOpenApi30V0() (*ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -543,10 +541,6 @@ type clientSession struct {
 	secretsManagerClientV1  *secretsmanagerv1.SecretsManagerV1
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
-
-	// Logs Routing
-	ibmLogsRouterOpenApi30Client    *ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0
-	ibmLogsRouterOpenApi30ClientErr error
 
 	// Schematics service options
 	schematicsClient    *schematicsv1.SchematicsV1
@@ -1175,11 +1169,6 @@ func (session clientSession) MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3
 	return session.metricsRouterClient, session.metricsRouterClientErr
 }
 
-// Logs Router API
-func (session clientSession) IbmLogsRouterOpenApi30V0() (*ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0, error) {
-	return session.ibmLogsRouterOpenApi30Client, session.ibmLogsRouterOpenApi30ClientErr
-}
-
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
@@ -1307,7 +1296,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
 		session.projectClientErr = errEmptyBluemixCredentials
-		session.ibmLogsRouterOpenApi30ClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1688,22 +1676,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.catalogManagementClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	}
-
-	// LOGS ROUTER service
-	ibmLogsRouterOpenApi30ClientOptions := &ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0Options{
-		Authenticator: authenticator,
-	}
-	session.ibmLogsRouterOpenApi30Client, err = ibmlogsrouteropenapi30v0.NewIbmLogsRouterOpenApi30V0(ibmLogsRouterOpenApi30ClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.ibmLogsRouterOpenApi30Client.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.ibmLogsRouterOpenApi30Client.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.ibmLogsRouterOpenApi30ClientErr = fmt.Errorf("Error occurred while configuring IBM logs-router service: %q", err)
 	}
 
 	// ATRACKER Version 2
