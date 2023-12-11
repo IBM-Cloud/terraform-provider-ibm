@@ -68,7 +68,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			"name": {
 				Type:       schema.TypeString,
 				Computed:   true,
-				Deprecated: "This value is deprecated in favor of" + helpers.PINetworkName,
+				Deprecated: "This field is deprecated, use pi_network_name instead",
 			},
 			"dns": {
 				Type:     schema.TypeSet,

@@ -56,9 +56,10 @@ func ResourceIBMPIKey() *schema.Resource {
 				Description: "Date of SSH Key creation",
 			},
 			Attr_KeyID: {
-				Type:       schema.TypeString,
-				Computed:   true,
-				Deprecated: "User defined name for the SSH key (deprecated - replaced by name)",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "User defined name for the SSH key",
+				Deprecated:  "This field is deprecated, use pi_key_name instead",
 			},
 			Attr_KeyName: {
 				Type:        schema.TypeString,

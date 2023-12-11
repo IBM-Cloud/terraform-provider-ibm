@@ -74,7 +74,7 @@ Review the argument references that you can specify for your resource.
   - **Note**: Provisioning VTL instances is temporarily disabled.
 - `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in gigabytes.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
-- `pi_migratable`- (Optional, Bool) Indicates the VM is migrated or not.
+- `pi_migratable`- (Deprecated, Optional, Bool) Indicates the VM is migrated or not.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 
   The `pi_network` block supports:

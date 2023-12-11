@@ -72,7 +72,7 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 			"port_id": {
 				Type:       schema.TypeString,
 				Computed:   true,
-				Deprecated: "port_id attribute is deprecated, use network_port_id instead.",
+				Deprecated: "This field is deprecated, use network_port_id instead",
 			},
 			"network_port_id": {
 				Type:     schema.TypeString,

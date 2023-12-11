@@ -61,6 +61,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "set to true to enable migration of the PI instance",
+				Deprecated:  "This field is deprecated, use pin_policy instead",
 			},
 			"min_processors": {
 				Type:        schema.TypeFloat,
@@ -313,12 +314,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Default:      "none",
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"none", "soft", "hard"}),
 			},
-
-			// "reboot_for_resource_change": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "Flag to be passed for CPU/Memory changes that require a reboot to take effect",
-			// },
 			"operating_system": {
 				Type:        schema.TypeString,
 				Computed:    true,
