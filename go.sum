@@ -167,8 +167,8 @@ github.com/IBM/scc-go-sdk/v5 v5.1.3 h1:8zqJx/HgChTlMaC21HzthIR4HbFkuJ3dR/D68254j
 github.com/IBM/scc-go-sdk/v5 v5.1.3/go.mod h1:YtAVlzq10bwR82QX4ZavhDIwa1s85RuVO9N/KmXVcuk=
 github.com/IBM/schematics-go-sdk v0.2.2 h1:8S3hoVLzF/ZRgWDaLqwHnLmZvlEBHCKgHszmMh7yD2E=
 github.com/IBM/schematics-go-sdk v0.2.2/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
-github.com/IBM/secrets-manager-go-sdk/v2 v2.0.1 h1:0Ouu31RsuOLdH26oNsnPErEjctWTplLEIXxwExnTZT0=
-github.com/IBM/secrets-manager-go-sdk/v2 v2.0.1/go.mod h1:jagqWmjZ0zUEqh5jdGB42ApSQS40fu2LWw6pdg8JJko=
+github.com/IBM/secrets-manager-go-sdk/v2 v2.0.2 h1:+Svh1OmoFxMBnZQSOUtp2UUzrOGFsSQlE5TFL/ptJco=
+github.com/IBM/secrets-manager-go-sdk/v2 v2.0.2/go.mod h1:WII+LS4VkQYykmq65NWSuPb5xGNvsqkcK1aCWZoU2x4=
 github.com/IBM/vpc-beta-go-sdk v0.6.0 h1:wfM3AcW3zOM3xsRtZ+EA6+sESlGUjQ6Yf4n5QQyz4uc=
 github.com/IBM/vpc-beta-go-sdk v0.6.0/go.mod h1:fzHDAQIqH/5yJmYsKodKHLcqxMDT+yfH6vZjdiw8CQA=
 github.com/IBM/vpc-go-sdk v0.43.0 h1:uy/qWIqETCXraUG2cq5sjScr6pZ79ZteY1v5iLUVQ3Q=
