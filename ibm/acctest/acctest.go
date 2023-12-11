@@ -200,6 +200,7 @@ var (
 	PiStoragePool                   string
 	PiStorageType                   string
 	Pi_shared_processor_pool_id     string
+	Pi_resource_group_id            string
 )
 
 var (
@@ -1063,6 +1064,12 @@ func init() {
 	if Pi_shared_processor_pool_id == "" {
 		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
+	}
+
+	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
+	if Pi_resource_group_id == "" {
+		Pi_resource_group_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
 	}
 
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
