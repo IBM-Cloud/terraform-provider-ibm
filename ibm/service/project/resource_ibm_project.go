@@ -5,6 +5,7 @@ package project
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -566,19 +567,17 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
-	if modelMap["inputs"] != nil && len(modelMap["inputs"].([]interface{})) > 0 {
-		InputsModel, err := resourceIbmProjectMapToInputVariable(modelMap["inputs"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Inputs = InputsModel
+	if modelMap["inputs"] != nil {
+		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
+		newMap := make(map[string]interface{})
+		json.Unmarshal(bytes, &newMap)
+		model.Inputs = newMap
 	}
-	if modelMap["settings"] != nil && len(modelMap["settings"].([]interface{})) > 0 {
-		SettingsModel, err := resourceIbmProjectMapToProjectConfigSetting(modelMap["settings"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Settings = SettingsModel
+	if modelMap["settings"] != nil {
+		bytes, _ := json.Marshal(modelMap["settings"].(map[string]interface{}))
+		newMap := make(map[string]interface{})
+		json.Unmarshal(bytes, &newMap)
+		model.Settings = newMap
 	}
 	return model, nil
 }
@@ -614,16 +613,6 @@ func resourceIbmProjectMapToProjectComplianceProfile(modelMap map[string]interfa
 	if modelMap["profile_name"] != nil && modelMap["profile_name"].(string) != "" {
 		model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
 	}
-	return model, nil
-}
-
-func resourceIbmProjectMapToInputVariable(modelMap map[string]interface{}) (*projectv1.InputVariable, error) {
-	model := &projectv1.InputVariable{}
-	return model, nil
-}
-
-func resourceIbmProjectMapToProjectConfigSetting(modelMap map[string]interface{}) (*projectv1.ProjectConfigSetting, error) {
-	model := &projectv1.ProjectConfigSetting{}
 	return model, nil
 }
 

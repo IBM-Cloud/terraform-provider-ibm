@@ -100,8 +100,8 @@ github.com/DataDog/datadog-go v2.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/DataDog/datadog-go v3.2.0+incompatible h1:qSG2N4FghB1He/r2mFrWKCaL7dXCilEuNEeAn20fdD4=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DataDog/zstd v1.4.4/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20231123082353-50e8cc9c6959 h1:dvvI4ybsYx6M7fFGrg3HjlNnYxEBi9jJdSU0JhjJbG8=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20231123082353-50e8cc9c6959/go.mod h1:jIGLnIfj+uBv2ALz3rVHzNbNwt0V/bEWNeJKECa8Q+k=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20231204080125-462fa9e436bc h1:AeooCa6UMWycgKJ9n0do9PEZaNlYZZHqspfwUzPvopc=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20231204080125-462fa9e436bc/go.mod h1:jIGLnIfj+uBv2ALz3rVHzNbNwt0V/bEWNeJKECa8Q+k=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231106114255-c50117860a3c h1:tRS4VuOG3lHNG+yrsh3vZZQDVNLuFJB0oZbTJp9YXds=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231106114255-c50117860a3c/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
@@ -153,14 +153,12 @@ github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYt
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
 github.com/IBM/keyprotect-go-client v0.12.2 h1:Cjxcqin9Pl0xz3MnxdiVd4v/eIa79xL3hQpSbwOr/DQ=
 github.com/IBM/keyprotect-go-client v0.12.2/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
-github.com/IBM/logs-router-go-sdk v1.0.0 h1:cGBjf7wJye/WuzFljqN7yB8ToIxLIiffWaQGW9rSTcI=
-github.com/IBM/logs-router-go-sdk v1.0.0/go.mod h1:FJpyZctp5DmRms/MtvRUuWBF/CAk76WJzAsJc4EIM/Y=
 github.com/IBM/networking-go-sdk v0.42.2 h1:caqjx4jyFHi10Vlf3skHvlL6K3YJRVstsmCBmvdyqkA=
 github.com/IBM/networking-go-sdk v0.42.2/go.mod h1:lTUZwtUkMANMnrLHFIgRhHrkBfwASY/Iho1fabaPHxo=
 github.com/IBM/platform-services-go-sdk v0.54.0 h1:WjHWm9ZAJvlq07E1WXXtEe+d/B0sazWD6cEWVT7EMLU=
 github.com/IBM/platform-services-go-sdk v0.54.0/go.mod h1:CWSprvsCsXWvujmBzbtoJSmbRZS9FVV3O594b0t/GiM=
-github.com/IBM/project-go-sdk v0.1.1 h1:x1PkGUTkKpgxoXs/6IG4U1mk5BgaPEaRMVpXTs52rE4=
-github.com/IBM/project-go-sdk v0.1.1/go.mod h1:lqe0M4cKvABI1iHR1b+KfasVcxQL6nl2VJ8eOyQs8Ig=
+github.com/IBM/project-go-sdk v0.1.4 h1:QGehJxpp/QqfrBYSmN2FRYwuGejlHlVscB/9QGQfdLk=
+github.com/IBM/project-go-sdk v0.1.4/go.mod h1:lqe0M4cKvABI1iHR1b+KfasVcxQL6nl2VJ8eOyQs8Ig=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
 github.com/IBM/sarama v1.41.2 h1:ZDBZfGPHAD4uuAtSv4U22fRZBgst0eEwGFzLj0fb85c=

@@ -851,12 +851,13 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 	}
 }
 
-func checkBase64(input string) error {
-	_, err := base64.StdEncoding.DecodeString(input)
+// This function takes the input string and encodes into base64 if isn't already encoded
+func encodeBase64(userData string) string {
+	_, err := base64.StdEncoding.DecodeString(userData)
 	if err != nil {
-		return fmt.Errorf("failed to check if input is base64 %s", err)
+		return base64.StdEncoding.EncodeToString([]byte(userData))
 	}
-	return err
+	return userData
 }
 
 func isWaitForPIInstanceStopped(ctx context.Context, client *st.IBMPIInstanceClient, id string) (interface{}, error) {
@@ -1076,12 +1077,7 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 	}
 	if u, ok := d.GetOk(helpers.PIInstanceUserData); ok {
 		userData := u.(string)
-		err := checkBase64(userData)
-		if err != nil {
-			log.Printf("Data is not base64 encoded")
-			return nil, err
-		}
-		body.UserData = userData
+		body.UserData = encodeBase64(userData)
 	}
 	if sys, ok := d.GetOk(helpers.PIInstanceSystemType); ok {
 		body.SysType = sys.(string)
@@ -1200,11 +1196,6 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 	if u, ok := d.GetOk(helpers.PIInstanceUserData); ok {
 		userData = u.(string)
 	}
-	err := checkBase64(userData)
-	if err != nil {
-		log.Printf("Data is not base64 encoded")
-		return nil, err
-	}
 
 	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
 	body := &models.PVMInstanceCreate{
@@ -1216,7 +1207,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		ImageID:                 flex.PtrToString(imageid),
 		ProcType:                flex.PtrToString(processortype),
 		Replicants:              replicants,
-		UserData:                userData,
+		UserData:                encodeBase64(userData),
 		ReplicantNamingScheme:   flex.PtrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: flex.PtrToString(replicationpolicy),
 		Networks:                pvmNetworks,

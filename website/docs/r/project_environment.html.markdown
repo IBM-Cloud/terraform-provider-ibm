@@ -54,8 +54,7 @@ Nested schema for **definition**:
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
 	* `description` - (Optional, String) The description of the environment.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
-	* `inputs` - (Optional, List) The input variables for configuration definition and environment.
-	Nested schema for **inputs**:
+	* `inputs` - (Optional, Map) The input variables for configuration definition and environment.
 	* `name` - (Required, String) The name of the environment.  It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
