@@ -99,7 +99,7 @@ func DataSourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						"use_profile_attachment": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Set to `enabled` to enable use profile with attachment, so that the scripts in the pipeline can interact with the Security and Compliance Center service. When enabled, other parameters become relevant; `scc_api_key`, `instance_crn`, `profile_name`, `profile_version`, `attachment_id`.",
+							Description: "Set to `enabled` to enable use profile with attachment, so that the scripts in the pipeline can interact with the Security and Compliance Center service to perform pre-deploy validation against compliance rules for Continuous Deployment (CD) and compliance monitoring for Continuous Compliance (CC). When enabled, other parameters become relevant; `scc_api_key`, `instance_crn`, `profile_name`, `profile_version`, `attachment_id`.",
 						},
 						"scc_api_key": &schema.Schema{
 							Type:        schema.TypeString,
