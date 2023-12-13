@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2023.
+ * (C) Copyright IBM Corp. 2021, 2022, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2023-10-10
+// API Version: 2023-12-13
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,13 +46,13 @@ type VpcV1 struct {
 	// `2`.
 	generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
-	// and `2023-11-14`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
+	// and `2023-12-13`.
 	Version *string
 }
 
 // DefaultServiceURL is the default URL to make service requests to.
-const DefaultServiceURL = "https://au-syd.iaas.cloud.ibm.com/v1"
+const DefaultServiceURL = "https://us-south.iaas.cloud.ibm.com/v1"
 
 // DefaultServiceName is the default key used to find external configuration information.
 const DefaultServiceName = "vpc"
@@ -63,8 +63,8 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-10-10`
-	// and `2023-11-14`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
+	// and `2023-12-13`.
 	Version *string
 }
 
@@ -122,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-08-08")
+		options.Version = core.StringPtr("2023-12-12")
 	}
 
 	service = &VpcV1{
@@ -1248,13 +1248,14 @@ func (vpc *VpcV1) CreateVPCDnsResolutionBindingWithContext(ctx context.Context, 
 // DeleteVPCDnsResolutionBinding : Delete a DNS resolution binding
 // This request deletes a DNS resolution binding. This operation cannot be reversed.
 //
-// A DNS resolution binding for a VPC with `dns.enable_hub` set to `true` cannot be deleted.
-func (vpc *VpcV1) DeleteVPCDnsResolutionBinding(deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (response *core.DetailedResponse, err error) {
+// For this request to succeed, the VPC specified by the identifier in the URL must not have
+// `dns.resolver.type` set to `delegated`.
+func (vpc *VpcV1) DeleteVPCDnsResolutionBinding(deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
 	return vpc.DeleteVPCDnsResolutionBindingWithContext(context.Background(), deleteVPCDnsResolutionBindingOptions)
 }
 
 // DeleteVPCDnsResolutionBindingWithContext is an alternate form of the DeleteVPCDnsResolutionBinding method which supports a Context parameter
-func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, deleteVPCDnsResolutionBindingOptions *DeleteVPCDnsResolutionBindingOptions) (result *VpcdnsResolutionBinding, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteVPCDnsResolutionBindingOptions, "deleteVPCDnsResolutionBindingOptions cannot be nil")
 	if err != nil {
 		return
@@ -1285,6 +1286,7 @@ func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, 
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
+	builder.AddHeader("Accept", "application/json")
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
@@ -1294,7 +1296,18 @@ func (vpc *VpcV1) DeleteVPCDnsResolutionBindingWithContext(ctx context.Context, 
 		return
 	}
 
-	response, err = vpc.Service.Request(request, nil)
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVpcdnsResolutionBinding)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
 
 	return
 }
@@ -1517,13 +1530,13 @@ func (vpc *VpcV1) ListVPCRoutesWithContext(ctx context.Context, listVPCRoutesOpt
 // same way as a retrieved route, and contains the information necessary to create the new route. The request will fail
 // if the new route will cause a loop.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *CreateVPCRouteResponse, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	return vpc.CreateVPCRouteWithContext(context.Background(), createVPCRouteOptions)
 }
 
 // CreateVPCRouteWithContext is an alternate form of the CreateVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteOptions *CreateVPCRouteOptions) (result *CreateVPCRouteResponse, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: CreateVPCRoute")
 	err = core.ValidateNotNil(createVPCRouteOptions, "createVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1570,9 +1583,6 @@ func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteO
 	if createVPCRouteOptions.Action != nil {
 		body["action"] = createVPCRouteOptions.Action
 	}
-	if createVPCRouteOptions.Advertise != nil {
-		body["advertise"] = createVPCRouteOptions.Advertise
-	}
 	if createVPCRouteOptions.Name != nil {
 		body["name"] = createVPCRouteOptions.Name
 	}
@@ -1598,7 +1608,7 @@ func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteO
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalCreateVPCRouteResponse)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
 		if err != nil {
 			return
 		}
@@ -1666,13 +1676,13 @@ func (vpc *VpcV1) DeleteVPCRouteWithContext(ctx context.Context, deleteVPCRouteO
 // GetVPCRoute : Retrieve a VPC route
 // This request retrieves a single route specified by the identifier in the URL.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *GetVPCRouteResponse, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	return vpc.GetVPCRouteWithContext(context.Background(), getVPCRouteOptions)
 }
 
 // GetVPCRouteWithContext is an alternate form of the GetVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions *GetVPCRouteOptions) (result *GetVPCRouteResponse, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: GetVPCRoute")
 	err = core.ValidateNotNil(getVPCRouteOptions, "getVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1720,7 +1730,7 @@ func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalGetVPCRouteResponse)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
 		if err != nil {
 			return
 		}
@@ -1734,13 +1744,13 @@ func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions
 // This request updates a route with the information in a provided route patch. The route patch object is structured in
 // the same way as a retrieved route and contains only the information to be updated.
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *UpdateVPCRouteResponse, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	return vpc.UpdateVPCRouteWithContext(context.Background(), updateVPCRouteOptions)
 }
 
 // UpdateVPCRouteWithContext is an alternate form of the UpdateVPCRoute method which supports a Context parameter
 // Deprecated: this method is deprecated and may be removed in a future release.
-func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteOptions *UpdateVPCRouteOptions) (result *UpdateVPCRouteResponse, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	core.GetLogger().Warn("A deprecated operation has been invoked: UpdateVPCRoute")
 	err = core.ValidateNotNil(updateVPCRouteOptions, "updateVPCRouteOptions cannot be nil")
 	if err != nil {
@@ -1794,7 +1804,7 @@ func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteO
 		return
 	}
 	if rawResponse != nil {
-		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalUpdateVPCRouteResponse)
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalRoute)
 		if err != nil {
 			return
 		}
@@ -1926,9 +1936,6 @@ func (vpc *VpcV1) CreateVPCRoutingTableWithContext(ctx context.Context, createVP
 	body := make(map[string]interface{})
 	if createVPCRoutingTableOptions.AcceptRoutesFrom != nil {
 		body["accept_routes_from"] = createVPCRoutingTableOptions.AcceptRoutesFrom
-	}
-	if createVPCRoutingTableOptions.AdvertiseRoutesTo != nil {
-		body["advertise_routes_to"] = createVPCRoutingTableOptions.AdvertiseRoutesTo
 	}
 	if createVPCRoutingTableOptions.Name != nil {
 		body["name"] = createVPCRoutingTableOptions.Name
@@ -2296,9 +2303,6 @@ func (vpc *VpcV1) CreateVPCRoutingTableRouteWithContext(ctx context.Context, cre
 	}
 	if createVPCRoutingTableRouteOptions.Action != nil {
 		body["action"] = createVPCRoutingTableRouteOptions.Action
-	}
-	if createVPCRoutingTableRouteOptions.Advertise != nil {
-		body["advertise"] = createVPCRoutingTableRouteOptions.Advertise
 	}
 	if createVPCRoutingTableRouteOptions.Name != nil {
 		body["name"] = createVPCRoutingTableRouteOptions.Name
@@ -6634,8 +6638,13 @@ func (vpc *VpcV1) GetInstanceNetworkInterfaceFloatingIPWithContext(ctx context.C
 
 // AddInstanceNetworkInterfaceFloatingIP : Associate a floating IP with an instance network interface
 // This request associates the specified floating IP with the specified instance network interface, replacing any
-// existing association. For this request to succeed, the existing floating IP must not be required by another resource,
-// such as a public gateway. A request body is not required, and if provided, is ignored.
+// existing association.
+//
+// The existing floating IP must:
+// - not be required by another resource, such as a public gateway
+// - be in the same `zone` as the instance
+//
+// A request body is not required, and if provided, is ignored.
 func (vpc *VpcV1) AddInstanceNetworkInterfaceFloatingIP(addInstanceNetworkInterfaceFloatingIPOptions *AddInstanceNetworkInterfaceFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
 	return vpc.AddInstanceNetworkInterfaceFloatingIPWithContext(context.Background(), addInstanceNetworkInterfaceFloatingIPOptions)
 }
@@ -9905,12 +9914,12 @@ func (vpc *VpcV1) ListBackupPoliciesWithContext(ctx context.Context, listBackupP
 // CreateBackupPolicy : Create a backup policy
 // This request creates a new backup policy from a backup policy prototype object. The prototype object is structured in
 // the same way as a retrieved backup policy, and contains the information necessary to create the new backup policy.
-func (vpc *VpcV1) CreateBackupPolicy(createBackupPolicyOptions *CreateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateBackupPolicy(createBackupPolicyOptions *CreateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.CreateBackupPolicyWithContext(context.Background(), createBackupPolicyOptions)
 }
 
 // CreateBackupPolicyWithContext is an alternate form of the CreateBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBackupPolicyOptions *CreateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBackupPolicyOptions *CreateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(createBackupPolicyOptions, "createBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -9942,26 +9951,7 @@ func (vpc *VpcV1) CreateBackupPolicyWithContext(ctx context.Context, createBacku
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
-	body := make(map[string]interface{})
-	if createBackupPolicyOptions.MatchUserTags != nil {
-		body["match_user_tags"] = createBackupPolicyOptions.MatchUserTags
-	}
-	if createBackupPolicyOptions.MatchResourceTypes != nil {
-		body["match_resource_types"] = createBackupPolicyOptions.MatchResourceTypes
-	}
-	if createBackupPolicyOptions.Name != nil {
-		body["name"] = createBackupPolicyOptions.Name
-	}
-	if createBackupPolicyOptions.Plans != nil {
-		body["plans"] = createBackupPolicyOptions.Plans
-	}
-	if createBackupPolicyOptions.ResourceGroup != nil {
-		body["resource_group"] = createBackupPolicyOptions.ResourceGroup
-	}
-	if createBackupPolicyOptions.Scope != nil {
-		body["scope"] = createBackupPolicyOptions.Scope
-	}
-	_, err = builder.SetBodyContentJSON(body)
+	_, err = builder.SetBodyContentJSON(createBackupPolicyOptions.BackupPolicyPrototype)
 	if err != nil {
 		return
 	}
@@ -10521,12 +10511,12 @@ func (vpc *VpcV1) UpdateBackupPolicyPlanWithContext(ctx context.Context, updateB
 //
 // If the request is accepted, the backup policy `status` will be set to `deleting`. Once deletion processing completes,
 // the backup policy will no longer be retrievable.
-func (vpc *VpcV1) DeleteBackupPolicy(deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteBackupPolicy(deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.DeleteBackupPolicyWithContext(context.Background(), deleteBackupPolicyOptions)
 }
 
 // DeleteBackupPolicyWithContext is an alternate form of the DeleteBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBackupPolicyOptions *DeleteBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(deleteBackupPolicyOptions, "deleteBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -10587,12 +10577,12 @@ func (vpc *VpcV1) DeleteBackupPolicyWithContext(ctx context.Context, deleteBacku
 
 // GetBackupPolicy : Retrieve a backup policy
 // This request retrieves a single backup policy specified by the identifier in the URL.
-func (vpc *VpcV1) GetBackupPolicy(getBackupPolicyOptions *GetBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetBackupPolicy(getBackupPolicyOptions *GetBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.GetBackupPolicyWithContext(context.Background(), getBackupPolicyOptions)
 }
 
 // GetBackupPolicyWithContext is an alternate form of the GetBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolicyOptions *GetBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolicyOptions *GetBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(getBackupPolicyOptions, "getBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -10651,12 +10641,12 @@ func (vpc *VpcV1) GetBackupPolicyWithContext(ctx context.Context, getBackupPolic
 // UpdateBackupPolicy : Update a backup policy
 // This request updates a backup policy with the information in a provided backup policy patch. The backup policy patch
 // object is structured in the same way as a retrieved backup policy and contains only the information to be updated.
-func (vpc *VpcV1) UpdateBackupPolicy(updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateBackupPolicy(updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	return vpc.UpdateBackupPolicyWithContext(context.Background(), updateBackupPolicyOptions)
 }
 
 // UpdateBackupPolicyWithContext is an alternate form of the UpdateBackupPolicy method which supports a Context parameter
-func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result *BackupPolicy, response *core.DetailedResponse, err error) {
+func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBackupPolicyOptions *UpdateBackupPolicyOptions) (result BackupPolicyIntf, response *core.DetailedResponse, err error) {
 	err = core.ValidateNotNil(updateBackupPolicyOptions, "updateBackupPolicyOptions cannot be nil")
 	if err != nil {
 		return
@@ -12141,8 +12131,13 @@ func (vpc *VpcV1) GetBareMetalServerNetworkInterfaceFloatingIPWithContext(ctx co
 // AddBareMetalServerNetworkInterfaceFloatingIP : Associate a floating IP with a bare metal server network interface
 // This request associates the specified floating IP with the specified bare metal server network interface. If
 // `enable_infrastructure_nat` is `false`, this adds the IP to any existing associations. If `enable_infrastructure_nat`
-// is `true`, this replaces any existing association.  For this request to succeed, the existing floating IP must not be
-// required by another resource, such as a public gateway. A request body is not required, and if provided, is ignored.
+// is `true`, this replaces any existing association.
+//
+// The existing floating IP must:
+// - not be required by another resource, such as a public gateway
+// - be in the same `zone` as the bare metal server
+//
+// A request body is not required, and if provided, is ignored.
 func (vpc *VpcV1) AddBareMetalServerNetworkInterfaceFloatingIP(addBareMetalServerNetworkInterfaceFloatingIPOptions *AddBareMetalServerNetworkInterfaceFloatingIPOptions) (result *FloatingIP, response *core.DetailedResponse, err error) {
 	return vpc.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context.Background(), addBareMetalServerNetworkInterfaceFloatingIPOptions)
 }
@@ -13211,6 +13206,348 @@ func (vpc *VpcV1) UpdateVolumeWithContext(ctx context.Context, updateVolumeOptio
 	return
 }
 
+// ListSnapshotConsistencyGroups : List all snapshot consistency groups
+// This request lists all snapshot consistency groups in the region. A snapshot consistency group is a collection of
+// individual snapshots taken at the same time.
+func (vpc *VpcV1) ListSnapshotConsistencyGroups(listSnapshotConsistencyGroupsOptions *ListSnapshotConsistencyGroupsOptions) (result *SnapshotConsistencyGroupCollection, response *core.DetailedResponse, err error) {
+	return vpc.ListSnapshotConsistencyGroupsWithContext(context.Background(), listSnapshotConsistencyGroupsOptions)
+}
+
+// ListSnapshotConsistencyGroupsWithContext is an alternate form of the ListSnapshotConsistencyGroups method which supports a Context parameter
+func (vpc *VpcV1) ListSnapshotConsistencyGroupsWithContext(ctx context.Context, listSnapshotConsistencyGroupsOptions *ListSnapshotConsistencyGroupsOptions) (result *SnapshotConsistencyGroupCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listSnapshotConsistencyGroupsOptions, "listSnapshotConsistencyGroupsOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listSnapshotConsistencyGroupsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListSnapshotConsistencyGroups")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+	if listSnapshotConsistencyGroupsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Start))
+	}
+	if listSnapshotConsistencyGroupsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Limit))
+	}
+	if listSnapshotConsistencyGroupsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.ResourceGroupID))
+	}
+	if listSnapshotConsistencyGroupsOptions.Name != nil {
+		builder.AddQuery("name", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Name))
+	}
+	if listSnapshotConsistencyGroupsOptions.Sort != nil {
+		builder.AddQuery("sort", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.Sort))
+	}
+	if listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID != nil {
+		builder.AddQuery("backup_policy_plan.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroupCollection)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateSnapshotConsistencyGroup : Create a snapshot consistency group
+// This request creates a new snapshot consistency group from a snapshot consistency group object.  The prototype object
+// is structured in the same way as a retrieved consistency group, and contains the information necessary to provision
+// the new snapshot consistency group.
+func (vpc *VpcV1) CreateSnapshotConsistencyGroup(createSnapshotConsistencyGroupOptions *CreateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.CreateSnapshotConsistencyGroupWithContext(context.Background(), createSnapshotConsistencyGroupOptions)
+}
+
+// CreateSnapshotConsistencyGroupWithContext is an alternate form of the CreateSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) CreateSnapshotConsistencyGroupWithContext(ctx context.Context, createSnapshotConsistencyGroupOptions *CreateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createSnapshotConsistencyGroupOptions, "createSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(createSnapshotConsistencyGroupOptions, "createSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups`, nil)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range createSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(createSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPrototype)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteSnapshotConsistencyGroup : Delete a snapshot consistency group
+// This request deletes snapshot consistency group. This operation cannot be reversed. If the
+// `delete_snapshots_on_delete` property is `true`, all snapshots in the consistency group will also be deleted.
+func (vpc *VpcV1) DeleteSnapshotConsistencyGroup(deleteSnapshotConsistencyGroupOptions *DeleteSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.DeleteSnapshotConsistencyGroupWithContext(context.Background(), deleteSnapshotConsistencyGroupOptions)
+}
+
+// DeleteSnapshotConsistencyGroupWithContext is an alternate form of the DeleteSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) DeleteSnapshotConsistencyGroupWithContext(ctx context.Context, deleteSnapshotConsistencyGroupOptions *DeleteSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteSnapshotConsistencyGroupOptions, "deleteSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(deleteSnapshotConsistencyGroupOptions, "deleteSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *deleteSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range deleteSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetSnapshotConsistencyGroup : Retrieve a snapshot consistency group
+// This request retrieves a single snapshot consistency group specified by the identifier in the URL.
+func (vpc *VpcV1) GetSnapshotConsistencyGroup(getSnapshotConsistencyGroupOptions *GetSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.GetSnapshotConsistencyGroupWithContext(context.Background(), getSnapshotConsistencyGroupOptions)
+}
+
+// GetSnapshotConsistencyGroupWithContext is an alternate form of the GetSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) GetSnapshotConsistencyGroupWithContext(ctx context.Context, getSnapshotConsistencyGroupOptions *GetSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSnapshotConsistencyGroupOptions, "getSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getSnapshotConsistencyGroupOptions, "getSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *getSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateSnapshotConsistencyGroup : Update a snapshot consistency group
+// This request updates a snapshot consistency group with the information in a provided snapshot consistency group
+// patch. The snapshot consistency group patch object is structured in the same way as a retrieved snapshot consistency
+// group and contains only the information to be updated.
+func (vpc *VpcV1) UpdateSnapshotConsistencyGroup(updateSnapshotConsistencyGroupOptions *UpdateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	return vpc.UpdateSnapshotConsistencyGroupWithContext(context.Background(), updateSnapshotConsistencyGroupOptions)
+}
+
+// UpdateSnapshotConsistencyGroupWithContext is an alternate form of the UpdateSnapshotConsistencyGroup method which supports a Context parameter
+func (vpc *VpcV1) UpdateSnapshotConsistencyGroupWithContext(ctx context.Context, updateSnapshotConsistencyGroupOptions *UpdateSnapshotConsistencyGroupOptions) (result *SnapshotConsistencyGroup, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateSnapshotConsistencyGroupOptions, "updateSnapshotConsistencyGroupOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(updateSnapshotConsistencyGroupOptions, "updateSnapshotConsistencyGroupOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *updateSnapshotConsistencyGroupOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshot_consistency_groups/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range updateSnapshotConsistencyGroupOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateSnapshotConsistencyGroup")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+	if updateSnapshotConsistencyGroupOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*updateSnapshotConsistencyGroupOptions.IfMatch))
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	_, err = builder.SetBodyContentJSON(updateSnapshotConsistencyGroupOptions.SnapshotConsistencyGroupPatch)
+	if err != nil {
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotConsistencyGroup)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
 // DeleteSnapshots : Delete a filtered collection of snapshots
 // This request deletes all snapshots created from a specific source volume.
 func (vpc *VpcV1) DeleteSnapshots(deleteSnapshotsOptions *DeleteSnapshotsOptions) (response *core.DetailedResponse, err error) {
@@ -13352,6 +13689,12 @@ func (vpc *VpcV1) ListSnapshotsWithContext(ctx context.Context, listSnapshotsOpt
 	}
 	if listSnapshotsOptions.ClonesZoneName != nil {
 		builder.AddQuery("clones[].zone.name", fmt.Sprint(*listSnapshotsOptions.ClonesZoneName))
+	}
+	if listSnapshotsOptions.SnapshotConsistencyGroupID != nil {
+		builder.AddQuery("snapshot_consistency_group.id", fmt.Sprint(*listSnapshotsOptions.SnapshotConsistencyGroupID))
+	}
+	if listSnapshotsOptions.SnapshotConsistencyGroupCRN != nil {
+		builder.AddQuery("snapshot_consistency_group.crn", fmt.Sprint(*listSnapshotsOptions.SnapshotConsistencyGroupCRN))
 	}
 
 	request, err := builder.Build()
@@ -24258,6 +24601,9 @@ func (addressPrefixPatch *AddressPrefixPatch) AsPatch() (_patch map[string]inter
 }
 
 // BackupPolicy : BackupPolicy struct
+// Models which "extend" this model:
+// - BackupPolicyMatchResourceTypeInstance
+// - BackupPolicyMatchResourceTypeVolume
 type BackupPolicy struct {
 	// The date and time that the backup policy was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -24295,13 +24641,13 @@ type BackupPolicy struct {
 	// The lifecycle state of the backup policy.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
-	// The resource types this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
 	// will be subject to the backup policy.
 	//
-	// The enumerated values for this property will expand in the future. When processing this property, check for and log
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
 	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
 	// unexpected property value was encountered.
-	MatchResourceTypes []string `json:"match_resource_types" validate:"required"`
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
 
 	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
 	// be subject to the backup policy.
@@ -24321,6 +24667,15 @@ type BackupPolicy struct {
 
 	// The scope for this backup policy.
 	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	IncludedContent []string `json:"included_content,omitempty"`
 }
 
 // Constants associated with the BackupPolicy.HealthState property.
@@ -24350,10 +24705,16 @@ const (
 	BackupPolicyLifecycleStateWaitingConst   = "waiting"
 )
 
-// Constants associated with the BackupPolicy.MatchResourceTypes property.
-// The resource type.
+// Constants associated with the BackupPolicy.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
 const (
-	BackupPolicyMatchResourceTypesVolumeConst = "volume"
+	BackupPolicyMatchResourceTypeInstanceConst = "instance"
+	BackupPolicyMatchResourceTypeVolumeConst   = "volume"
 )
 
 // Constants associated with the BackupPolicy.ResourceType property.
@@ -24361,6 +24722,21 @@ const (
 const (
 	BackupPolicyResourceTypeBackupPolicyConst = "backup_policy"
 )
+
+// Constants associated with the BackupPolicy.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyIncludedContentDataVolumesConst = "data_volumes"
+)
+
+func (*BackupPolicy) isaBackupPolicy() bool {
+	return true
+}
+
+type BackupPolicyIntf interface {
+	isaBackupPolicy() bool
+}
 
 // UnmarshalBackupPolicy unmarshals an instance of BackupPolicy from the specified map of raw messages.
 func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -24397,7 +24773,7 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "match_resource_types", &obj.MatchResourceTypes)
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
 	if err != nil {
 		return
 	}
@@ -24425,6 +24801,10 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -24432,7 +24812,7 @@ func UnmarshalBackupPolicy(m map[string]json.RawMessage, result interface{}) (er
 // BackupPolicyCollection : BackupPolicyCollection struct
 type BackupPolicyCollection struct {
 	// Collection of backup policies.
-	BackupPolicies []BackupPolicy `json:"backup_policies" validate:"required"`
+	BackupPolicies []BackupPolicyIntf `json:"backup_policies" validate:"required"`
 
 	// A link to the first page of resources.
 	First *BackupPolicyCollectionFirst `json:"first" validate:"required"`
@@ -24803,6 +25183,7 @@ func UnmarshalBackupPolicyJobCollectionNext(m map[string]json.RawMessage, result
 // [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
 // Models which "extend" this model:
 // - BackupPolicyJobSourceVolumeReference
+// - BackupPolicyJobSourceInstanceReference
 type BackupPolicyJobSource struct {
 	// The CRN for this volume.
 	CRN *string `json:"crn,omitempty"`
@@ -24927,6 +25308,11 @@ func UnmarshalBackupPolicyJobStatusReason(m map[string]json.RawMessage, result i
 
 // BackupPolicyPatch : BackupPolicyPatch struct
 type BackupPolicyPatch struct {
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+
 	// The user tags this backup policy will apply to (replacing any existing tags). Resources that have both a matching
 	// user tag and a matching type will be subject to the backup policy.
 	MatchUserTags []string `json:"match_user_tags,omitempty"`
@@ -24935,9 +25321,20 @@ type BackupPolicyPatch struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// Constants associated with the BackupPolicyPatch.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPatchIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPatchIncludedContentDataVolumesConst = "data_volumes"
+)
+
 // UnmarshalBackupPolicyPatch unmarshals an instance of BackupPolicyPatch from the specified map of raw messages.
 func UnmarshalBackupPolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(BackupPolicyPatch)
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
 	if err != nil {
 		return
@@ -25573,6 +25970,99 @@ func UnmarshalBackupPolicyPlanRemoteRegionPolicyPrototype(m map[string]json.RawM
 		return
 	}
 	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototype : BackupPolicyPrototype struct
+// Models which "extend" this model:
+// - BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype
+// - BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype
+type BackupPolicyPrototype struct {
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The scope to use for this backup policy.
+	//
+	// If unspecified, the policy will be scoped to the account.
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+}
+
+// Constants associated with the BackupPolicyPrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeMatchResourceTypeInstanceConst = "instance"
+	BackupPolicyPrototypeMatchResourceTypeVolumeConst   = "volume"
+)
+
+// Constants associated with the BackupPolicyPrototype.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPrototypeIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPrototypeIncludedContentDataVolumesConst = "data_volumes"
+)
+
+func (*BackupPolicyPrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+type BackupPolicyPrototypeIntf interface {
+	isaBackupPolicyPrototype() bool
+}
+
+// UnmarshalBackupPolicyPrototype unmarshals an instance of BackupPolicyPrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototype)
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
 	if err != nil {
 		return
 	}
@@ -26524,9 +27014,16 @@ type BareMetalServerNetworkInterface struct {
 	// The VLAN IDs allowed for `vlan` interfaces using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans,omitempty"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float,omitempty"`
 
 	// The VLAN ID used in the IEEE 802.1Q tag present in all traffic on this interface.
@@ -26822,9 +27319,16 @@ type BareMetalServerNetworkInterfacePrototype struct {
 	// The VLAN IDs to allow for `vlan` interfaces using this PCI interface.
 	AllowedVlans []int64 `json:"allowed_vlans,omitempty"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float,omitempty"`
 
 	// The VLAN ID used in the IEEE 802.1Q tag present in all traffic on this interface.
@@ -28613,80 +29117,23 @@ func UnmarshalCloudObjectStorageObjectReference(m map[string]json.RawMessage, re
 
 // CreateBackupPolicyOptions : The CreateBackupPolicy options.
 type CreateBackupPolicyOptions struct {
-	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
-	// will be subject to the backup policy.
-	MatchUserTags []string `json:"match_user_tags" validate:"required"`
-
-	// The resource types this backup policy will apply to. Resources that have both a matching type and a matching user
-	// tag will be subject to the backup policy.
-	MatchResourceTypes []string `json:"match_resource_types,omitempty"`
-
-	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
-	// the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// The prototype objects for backup plans to be created for this backup policy.
-	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
-
-	// The resource group to use. If unspecified, the account's [default resource
-	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
-	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
-
-	// The scope to use for this backup policy.
-	//
-	// If unspecified, the policy will be scoped to the account.
-	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+	// The backup policy prototype object.
+	BackupPolicyPrototype BackupPolicyPrototypeIntf `json:"BackupPolicyPrototype" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
 
-// Constants associated with the CreateBackupPolicyOptions.MatchResourceTypes property.
-// The resource type.
-const (
-	CreateBackupPolicyOptionsMatchResourceTypesVolumeConst = "volume"
-)
-
 // NewCreateBackupPolicyOptions : Instantiate CreateBackupPolicyOptions
-func (*VpcV1) NewCreateBackupPolicyOptions(matchUserTags []string) *CreateBackupPolicyOptions {
+func (*VpcV1) NewCreateBackupPolicyOptions(backupPolicyPrototype BackupPolicyPrototypeIntf) *CreateBackupPolicyOptions {
 	return &CreateBackupPolicyOptions{
-		MatchUserTags: matchUserTags,
+		BackupPolicyPrototype: backupPolicyPrototype,
 	}
 }
 
-// SetMatchUserTags : Allow user to set MatchUserTags
-func (_options *CreateBackupPolicyOptions) SetMatchUserTags(matchUserTags []string) *CreateBackupPolicyOptions {
-	_options.MatchUserTags = matchUserTags
-	return _options
-}
-
-// SetMatchResourceTypes : Allow user to set MatchResourceTypes
-func (_options *CreateBackupPolicyOptions) SetMatchResourceTypes(matchResourceTypes []string) *CreateBackupPolicyOptions {
-	_options.MatchResourceTypes = matchResourceTypes
-	return _options
-}
-
-// SetName : Allow user to set Name
-func (_options *CreateBackupPolicyOptions) SetName(name string) *CreateBackupPolicyOptions {
-	_options.Name = core.StringPtr(name)
-	return _options
-}
-
-// SetPlans : Allow user to set Plans
-func (_options *CreateBackupPolicyOptions) SetPlans(plans []BackupPolicyPlanPrototype) *CreateBackupPolicyOptions {
-	_options.Plans = plans
-	return _options
-}
-
-// SetResourceGroup : Allow user to set ResourceGroup
-func (_options *CreateBackupPolicyOptions) SetResourceGroup(resourceGroup ResourceGroupIdentityIntf) *CreateBackupPolicyOptions {
-	_options.ResourceGroup = resourceGroup
-	return _options
-}
-
-// SetScope : Allow user to set Scope
-func (_options *CreateBackupPolicyOptions) SetScope(scope BackupPolicyScopePrototypeIntf) *CreateBackupPolicyOptions {
-	_options.Scope = scope
+// SetBackupPolicyPrototype : Allow user to set BackupPolicyPrototype
+func (_options *CreateBackupPolicyOptions) SetBackupPolicyPrototype(backupPolicyPrototype BackupPolicyPrototypeIntf) *CreateBackupPolicyOptions {
+	_options.BackupPolicyPrototype = backupPolicyPrototype
 	return _options
 }
 
@@ -31470,6 +31917,34 @@ func (options *CreateSnapshotCloneOptions) SetHeaders(param map[string]string) *
 	return options
 }
 
+// CreateSnapshotConsistencyGroupOptions : The CreateSnapshotConsistencyGroup options.
+type CreateSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group prototype object.
+	SnapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf `json:"SnapshotConsistencyGroupPrototype" validate:"required"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCreateSnapshotConsistencyGroupOptions : Instantiate CreateSnapshotConsistencyGroupOptions
+func (*VpcV1) NewCreateSnapshotConsistencyGroupOptions(snapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf) *CreateSnapshotConsistencyGroupOptions {
+	return &CreateSnapshotConsistencyGroupOptions{
+		SnapshotConsistencyGroupPrototype: snapshotConsistencyGroupPrototype,
+	}
+}
+
+// SetSnapshotConsistencyGroupPrototype : Allow user to set SnapshotConsistencyGroupPrototype
+func (_options *CreateSnapshotConsistencyGroupOptions) SetSnapshotConsistencyGroupPrototype(snapshotConsistencyGroupPrototype SnapshotConsistencyGroupPrototypeIntf) *CreateSnapshotConsistencyGroupOptions {
+	_options.SnapshotConsistencyGroupPrototype = snapshotConsistencyGroupPrototype
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *CreateSnapshotConsistencyGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateSnapshotOptions : The CreateSnapshot options.
 type CreateSnapshotOptions struct {
 	// The snapshot prototype object.
@@ -31598,164 +32073,6 @@ func (_options *CreateSubnetReservedIPOptions) SetTarget(target ReservedIPTarget
 func (options *CreateSubnetReservedIPOptions) SetHeaders(param map[string]string) *CreateSubnetReservedIPOptions {
 	options.Headers = param
 	return options
-}
-
-// CreateVPCRouteResponse : CreateVPCRouteResponse struct
-type CreateVPCRouteResponse struct {
-	// The action to perform with a packet matching the route:
-	// - `delegate`: delegate to system-provided routes
-	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
-	// - `deliver`: deliver the packet to the specified `next_hop`
-	// - `drop`: drop the packet.
-	Action *string `json:"action" validate:"required"`
-
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	Advertise *bool `json:"advertise" validate:"required"`
-
-	// The date and time that the route was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// If present, the resource that created the route. Routes with this property present cannot
-	// be directly deleted. All routes with an `origin` of `service` will have this property set,
-	// and future `origin` values may also have this property set.
-	Creator RouteCreatorIntf `json:"creator,omitempty"`
-
-	// The destination CIDR of the route.
-	Destination *string `json:"destination" validate:"required"`
-
-	// The URL for this route.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this route.
-	ID *string `json:"id" validate:"required"`
-
-	// The lifecycle state of the route.
-	LifecycleState *string `json:"lifecycle_state" validate:"required"`
-
-	// The name for this route. The name is unique across all routes in the routing table.
-	Name *string `json:"name" validate:"required"`
-
-	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
-	// other `action` values, its `address` will be `0.0.0.0`.
-	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
-
-	// The origin of this route:
-	// - `service`: route was directly created by a service
-	// - `user`: route was directly created by a user
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
-	// unexpected property value was encountered.
-	Origin *string `json:"origin,omitempty"`
-
-	// The priority of this route. Smaller values have higher priority.
-	//
-	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
-	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
-	// distributed between them.
-	Priority *int64 `json:"priority" validate:"required"`
-
-	// The zone the route applies to. (Traffic from subnets in this zone will be
-	// subject to this route.).
-	Zone *ZoneReference `json:"zone" validate:"required"`
-}
-
-// Constants associated with the CreateVPCRouteResponse.Action property.
-// The action to perform with a packet matching the route:
-// - `delegate`: delegate to system-provided routes
-// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
-// - `deliver`: deliver the packet to the specified `next_hop`
-// - `drop`: drop the packet.
-const (
-	CreateVPCRouteResponseActionDelegateConst    = "delegate"
-	CreateVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
-	CreateVPCRouteResponseActionDeliverConst     = "deliver"
-	CreateVPCRouteResponseActionDropConst        = "drop"
-)
-
-// Constants associated with the CreateVPCRouteResponse.LifecycleState property.
-// The lifecycle state of the route.
-const (
-	CreateVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
-	CreateVPCRouteResponseLifecycleStateFailedConst    = "failed"
-	CreateVPCRouteResponseLifecycleStatePendingConst   = "pending"
-	CreateVPCRouteResponseLifecycleStateStableConst    = "stable"
-	CreateVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
-	CreateVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
-	CreateVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
-)
-
-// Constants associated with the CreateVPCRouteResponse.Origin property.
-// The origin of this route:
-// - `service`: route was directly created by a service
-// - `user`: route was directly created by a user
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
-// unexpected property value was encountered.
-const (
-	CreateVPCRouteResponseOriginServiceConst = "service"
-	CreateVPCRouteResponseOriginUserConst    = "user"
-)
-
-// UnmarshalCreateVPCRouteResponse unmarshals an instance of CreateVPCRouteResponse from the specified map of raw messages.
-func UnmarshalCreateVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(CreateVPCRouteResponse)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise", &obj.Advertise)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
 }
 
 // CreateVolumeOptions : The CreateVolume options.
@@ -32024,13 +32341,6 @@ type CreateVPCRouteOptions struct {
 	// - `drop`: drop the packet.
 	Action *string `json:"action,omitempty"`
 
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	//
-	// All routes in a routing table with the same `destination` must have the same
-	// `advertise` value.
-	Advertise *bool `json:"advertise,omitempty"`
-
 	// The name for this route. The name must not be used by another route in the routing table. Names starting with `ibm-`
 	// are reserved for system-provided routes, and are not allowed. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
@@ -32040,8 +32350,7 @@ type CreateVPCRouteOptions struct {
 	// `action` values, it must be omitted or specified as `0.0.0.0`.
 	//
 	// At most two routes per `zone` in a table can have the same `destination` and `priority`,
-	// and only when each route has an `action` of `deliver` and a unique `next_hop` IP
-	// address.
+	// and only when each route has an `action` of `deliver` and `next_hop` is an IP address.
 	NextHop RoutePrototypeNextHopIntf `json:"next_hop,omitempty"`
 
 	// The priority of this route. Smaller values have higher priority.
@@ -32101,12 +32410,6 @@ func (_options *CreateVPCRouteOptions) SetAction(action string) *CreateVPCRouteO
 	return _options
 }
 
-// SetAdvertise : Allow user to set Advertise
-func (_options *CreateVPCRouteOptions) SetAdvertise(advertise bool) *CreateVPCRouteOptions {
-	_options.Advertise = core.BoolPtr(advertise)
-	return _options
-}
-
 // SetName : Allow user to set Name
 func (_options *CreateVPCRouteOptions) SetName(name string) *CreateVPCRouteOptions {
 	_options.Name = core.StringPtr(name)
@@ -32141,10 +32444,6 @@ type CreateVPCRoutingTableOptions struct {
 	// At present, only the `resource_type` filter is permitted, and only the `vpn_server` value is supported, but filter
 	// support is expected to expand in the future.
 	AcceptRoutesFrom []ResourceFilter `json:"accept_routes_from,omitempty"`
-
-	// The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these
-	// sources.
-	AdvertiseRoutesTo []string `json:"advertise_routes_to,omitempty"`
 
 	// The name for this routing table. The name must not be used by another routing table in the VPC. If unspecified, the
 	// name will be a hyphenated list of randomly-selected words.
@@ -32203,16 +32502,6 @@ type CreateVPCRoutingTableOptions struct {
 	Headers map[string]string
 }
 
-// Constants associated with the CreateVPCRoutingTableOptions.AdvertiseRoutesTo property.
-// An ingress source that routes can be advertised to:
-//
-// - `direct_link` (requires `route_direct_link_ingress` be set to `true`)
-// - `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`).
-const (
-	CreateVPCRoutingTableOptionsAdvertiseRoutesToDirectLinkConst     = "direct_link"
-	CreateVPCRoutingTableOptionsAdvertiseRoutesToTransitGatewayConst = "transit_gateway"
-)
-
 // NewCreateVPCRoutingTableOptions : Instantiate CreateVPCRoutingTableOptions
 func (*VpcV1) NewCreateVPCRoutingTableOptions(vpcID string) *CreateVPCRoutingTableOptions {
 	return &CreateVPCRoutingTableOptions{
@@ -32229,12 +32518,6 @@ func (_options *CreateVPCRoutingTableOptions) SetVPCID(vpcID string) *CreateVPCR
 // SetAcceptRoutesFrom : Allow user to set AcceptRoutesFrom
 func (_options *CreateVPCRoutingTableOptions) SetAcceptRoutesFrom(acceptRoutesFrom []ResourceFilter) *CreateVPCRoutingTableOptions {
 	_options.AcceptRoutesFrom = acceptRoutesFrom
-	return _options
-}
-
-// SetAdvertiseRoutesTo : Allow user to set AdvertiseRoutesTo
-func (_options *CreateVPCRoutingTableOptions) SetAdvertiseRoutesTo(advertiseRoutesTo []string) *CreateVPCRoutingTableOptions {
-	_options.AdvertiseRoutesTo = advertiseRoutesTo
 	return _options
 }
 
@@ -32305,13 +32588,6 @@ type CreateVPCRoutingTableRouteOptions struct {
 	// - `drop`: drop the packet.
 	Action *string `json:"action,omitempty"`
 
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	//
-	// All routes in a routing table with the same `destination` must have the same
-	// `advertise` value.
-	Advertise *bool `json:"advertise,omitempty"`
-
 	// The name for this route. The name must not be used by another route in the routing table. Names starting with `ibm-`
 	// are reserved for system-provided routes, and are not allowed. If unspecified, the name will be a hyphenated list of
 	// randomly-selected words.
@@ -32321,8 +32597,7 @@ type CreateVPCRoutingTableRouteOptions struct {
 	// `action` values, it must be omitted or specified as `0.0.0.0`.
 	//
 	// At most two routes per `zone` in a table can have the same `destination` and `priority`,
-	// and only when each route has an `action` of `deliver` and a unique `next_hop` IP
-	// address.
+	// and only when each route has an `action` of `deliver` and `next_hop` is an IP address.
 	NextHop RoutePrototypeNextHopIntf `json:"next_hop,omitempty"`
 
 	// The priority of this route. Smaller values have higher priority.
@@ -32386,12 +32661,6 @@ func (_options *CreateVPCRoutingTableRouteOptions) SetZone(zone ZoneIdentityIntf
 // SetAction : Allow user to set Action
 func (_options *CreateVPCRoutingTableRouteOptions) SetAction(action string) *CreateVPCRoutingTableRouteOptions {
 	_options.Action = core.StringPtr(action)
-	return _options
-}
-
-// SetAdvertise : Allow user to set Advertise
-func (_options *CreateVPCRoutingTableRouteOptions) SetAdvertise(advertise bool) *CreateVPCRoutingTableRouteOptions {
-	_options.Advertise = core.BoolPtr(advertise)
 	return _options
 }
 
@@ -34792,14 +35061,6 @@ type DefaultRoutingTable struct {
 	// support is expected to expand in the future.
 	AcceptRoutesFrom []ResourceFilter `json:"accept_routes_from" validate:"required"`
 
-	// The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these
-	// sources.
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
-	// unexpected property value was encountered.
-	AdvertiseRoutesTo []string `json:"advertise_routes_to" validate:"required"`
-
 	// The date and time that this routing table was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
@@ -34868,16 +35129,6 @@ type DefaultRoutingTable struct {
 	Subnets []SubnetReference `json:"subnets" validate:"required"`
 }
 
-// Constants associated with the DefaultRoutingTable.AdvertiseRoutesTo property.
-// An ingress source that routes can be advertised to:
-//
-// - `direct_link` (requires `route_direct_link_ingress` be set to `true`)
-// - `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`).
-const (
-	DefaultRoutingTableAdvertiseRoutesToDirectLinkConst     = "direct_link"
-	DefaultRoutingTableAdvertiseRoutesToTransitGatewayConst = "transit_gateway"
-)
-
 // Constants associated with the DefaultRoutingTable.LifecycleState property.
 // The lifecycle state of the routing table.
 const (
@@ -34900,10 +35151,6 @@ const (
 func UnmarshalDefaultRoutingTable(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DefaultRoutingTable)
 	err = core.UnmarshalModel(m, "accept_routes_from", &obj.AcceptRoutesFrom, UnmarshalResourceFilter)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise_routes_to", &obj.AdvertiseRoutesTo)
 	if err != nil {
 		return
 	}
@@ -36501,6 +36748,34 @@ func (options *DeleteSnapshotCloneOptions) SetHeaders(param map[string]string) *
 	return options
 }
 
+// DeleteSnapshotConsistencyGroupOptions : The DeleteSnapshotConsistencyGroup options.
+type DeleteSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewDeleteSnapshotConsistencyGroupOptions : Instantiate DeleteSnapshotConsistencyGroupOptions
+func (*VpcV1) NewDeleteSnapshotConsistencyGroupOptions(id string) *DeleteSnapshotConsistencyGroupOptions {
+	return &DeleteSnapshotConsistencyGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *DeleteSnapshotConsistencyGroupOptions) SetID(id string) *DeleteSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *DeleteSnapshotConsistencyGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // DeleteSnapshotOptions : The DeleteSnapshot options.
 type DeleteSnapshotOptions struct {
 	// The snapshot identifier.
@@ -37238,6 +37513,10 @@ type EndpointGateway struct {
 	// The reserved IPs bound to this endpoint gateway.
 	Ips []ReservedIPReference `json:"ips" validate:"required"`
 
+	// The reasons for the current `lifecycle_state` (if any):
+	// - `dns_resolution_binding_pending`: the DNS resolution binding is being set up.
+	LifecycleReasons []EndpointGatewayLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
 	// The lifecycle state of the endpoint gateway.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
@@ -37328,6 +37607,10 @@ func UnmarshalEndpointGateway(m map[string]json.RawMessage, result interface{}) 
 		return
 	}
 	err = core.UnmarshalModel(m, "ips", &obj.Ips, UnmarshalReservedIPReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalEndpointGatewayLifecycleReason)
 	if err != nil {
 		return
 	}
@@ -37456,6 +37739,44 @@ type EndpointGatewayCollectionNext struct {
 func UnmarshalEndpointGatewayCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(EndpointGatewayCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// EndpointGatewayLifecycleReason : EndpointGatewayLifecycleReason struct
+type EndpointGatewayLifecycleReason struct {
+	// A snake case string succinctly identifying the reason for this lifecycle state.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// Link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the EndpointGatewayLifecycleReason.Code property.
+// A snake case string succinctly identifying the reason for this lifecycle state.
+const (
+	EndpointGatewayLifecycleReasonCodeDnsResolutionBindingPendingConst = "dns_resolution_binding_pending"
+	EndpointGatewayLifecycleReasonCodeResourceSuspendedByProviderConst = "resource_suspended_by_provider"
+)
+
+// UnmarshalEndpointGatewayLifecycleReason unmarshals an instance of EndpointGatewayLifecycleReason from the specified map of raw messages.
+func UnmarshalEndpointGatewayLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(EndpointGatewayLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
 	if err != nil {
 		return
 	}
@@ -40836,6 +41157,34 @@ func (options *GetSnapshotCloneOptions) SetHeaders(param map[string]string) *Get
 	return options
 }
 
+// GetSnapshotConsistencyGroupOptions : The GetSnapshotConsistencyGroup options.
+type GetSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetSnapshotConsistencyGroupOptions : Instantiate GetSnapshotConsistencyGroupOptions
+func (*VpcV1) NewGetSnapshotConsistencyGroupOptions(id string) *GetSnapshotConsistencyGroupOptions {
+	return &GetSnapshotConsistencyGroupOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *GetSnapshotConsistencyGroupOptions) SetID(id string) *GetSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *GetSnapshotConsistencyGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // GetSnapshotOptions : The GetSnapshot options.
 type GetSnapshotOptions struct {
 	// The snapshot identifier.
@@ -41012,164 +41361,6 @@ func (_options *GetSubnetRoutingTableOptions) SetID(id string) *GetSubnetRouting
 func (options *GetSubnetRoutingTableOptions) SetHeaders(param map[string]string) *GetSubnetRoutingTableOptions {
 	options.Headers = param
 	return options
-}
-
-// GetVPCRouteResponse : GetVPCRouteResponse struct
-type GetVPCRouteResponse struct {
-	// The action to perform with a packet matching the route:
-	// - `delegate`: delegate to system-provided routes
-	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
-	// - `deliver`: deliver the packet to the specified `next_hop`
-	// - `drop`: drop the packet.
-	Action *string `json:"action" validate:"required"`
-
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	Advertise *bool `json:"advertise" validate:"required"`
-
-	// The date and time that the route was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// If present, the resource that created the route. Routes with this property present cannot
-	// be directly deleted. All routes with an `origin` of `service` will have this property set,
-	// and future `origin` values may also have this property set.
-	Creator RouteCreatorIntf `json:"creator,omitempty"`
-
-	// The destination CIDR of the route.
-	Destination *string `json:"destination" validate:"required"`
-
-	// The URL for this route.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this route.
-	ID *string `json:"id" validate:"required"`
-
-	// The lifecycle state of the route.
-	LifecycleState *string `json:"lifecycle_state" validate:"required"`
-
-	// The name for this route. The name is unique across all routes in the routing table.
-	Name *string `json:"name" validate:"required"`
-
-	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
-	// other `action` values, its `address` will be `0.0.0.0`.
-	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
-
-	// The origin of this route:
-	// - `service`: route was directly created by a service
-	// - `user`: route was directly created by a user
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
-	// unexpected property value was encountered.
-	Origin *string `json:"origin,omitempty"`
-
-	// The priority of this route. Smaller values have higher priority.
-	//
-	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
-	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
-	// distributed between them.
-	Priority *int64 `json:"priority" validate:"required"`
-
-	// The zone the route applies to. (Traffic from subnets in this zone will be
-	// subject to this route.).
-	Zone *ZoneReference `json:"zone" validate:"required"`
-}
-
-// Constants associated with the GetVPCRouteResponse.Action property.
-// The action to perform with a packet matching the route:
-// - `delegate`: delegate to system-provided routes
-// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
-// - `deliver`: deliver the packet to the specified `next_hop`
-// - `drop`: drop the packet.
-const (
-	GetVPCRouteResponseActionDelegateConst    = "delegate"
-	GetVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
-	GetVPCRouteResponseActionDeliverConst     = "deliver"
-	GetVPCRouteResponseActionDropConst        = "drop"
-)
-
-// Constants associated with the GetVPCRouteResponse.LifecycleState property.
-// The lifecycle state of the route.
-const (
-	GetVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
-	GetVPCRouteResponseLifecycleStateFailedConst    = "failed"
-	GetVPCRouteResponseLifecycleStatePendingConst   = "pending"
-	GetVPCRouteResponseLifecycleStateStableConst    = "stable"
-	GetVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
-	GetVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
-	GetVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
-)
-
-// Constants associated with the GetVPCRouteResponse.Origin property.
-// The origin of this route:
-// - `service`: route was directly created by a service
-// - `user`: route was directly created by a user
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
-// unexpected property value was encountered.
-const (
-	GetVPCRouteResponseOriginServiceConst = "service"
-	GetVPCRouteResponseOriginUserConst    = "user"
-)
-
-// UnmarshalGetVPCRouteResponse unmarshals an instance of GetVPCRouteResponse from the specified map of raw messages.
-func UnmarshalGetVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(GetVPCRouteResponse)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise", &obj.Advertise)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
 }
 
 // GetVirtualNetworkInterfaceOptions : The GetVirtualNetworkInterface options.
@@ -52517,6 +52708,89 @@ func (options *ListSnapshotClonesOptions) SetHeaders(param map[string]string) *L
 	return options
 }
 
+// ListSnapshotConsistencyGroupsOptions : The ListSnapshotConsistencyGroups options.
+type ListSnapshotConsistencyGroupsOptions struct {
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
+	ResourceGroupID *string `json:"resource_group.id,omitempty"`
+
+	// Filters the collection to resources with a `name` property matching the exact specified name.
+	Name *string `json:"name,omitempty"`
+
+	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+	// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+	Sort *string `json:"sort,omitempty"`
+
+	// Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified
+	// identifier.
+	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// Constants associated with the ListSnapshotConsistencyGroupsOptions.Sort property.
+// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+const (
+	ListSnapshotConsistencyGroupsOptionsSortCreatedAtConst = "created_at"
+	ListSnapshotConsistencyGroupsOptionsSortNameConst      = "name"
+)
+
+// NewListSnapshotConsistencyGroupsOptions : Instantiate ListSnapshotConsistencyGroupsOptions
+func (*VpcV1) NewListSnapshotConsistencyGroupsOptions() *ListSnapshotConsistencyGroupsOptions {
+	return &ListSnapshotConsistencyGroupsOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListSnapshotConsistencyGroupsOptions) SetStart(start string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListSnapshotConsistencyGroupsOptions) SetLimit(limit int64) *ListSnapshotConsistencyGroupsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetResourceGroupID : Allow user to set ResourceGroupID
+func (_options *ListSnapshotConsistencyGroupsOptions) SetResourceGroupID(resourceGroupID string) *ListSnapshotConsistencyGroupsOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
+}
+
+// SetName : Allow user to set Name
+func (_options *ListSnapshotConsistencyGroupsOptions) SetName(name string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetSort : Allow user to set Sort
+func (_options *ListSnapshotConsistencyGroupsOptions) SetSort(sort string) *ListSnapshotConsistencyGroupsOptions {
+	_options.Sort = core.StringPtr(sort)
+	return _options
+}
+
+// SetBackupPolicyPlanID : Allow user to set BackupPolicyPlanID
+func (_options *ListSnapshotConsistencyGroupsOptions) SetBackupPolicyPlanID(backupPolicyPlanID string) *ListSnapshotConsistencyGroupsOptions {
+	_options.BackupPolicyPlanID = core.StringPtr(backupPolicyPlanID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListSnapshotConsistencyGroupsOptions) SetHeaders(param map[string]string) *ListSnapshotConsistencyGroupsOptions {
+	options.Headers = param
+	return options
+}
+
 // ListSnapshotsOptions : The ListSnapshots options.
 type ListSnapshotsOptions struct {
 	// A server-provided token determining what resource to start the page on.
@@ -52595,6 +52869,14 @@ type ListSnapshotsOptions struct {
 	// Filters the collection to snapshots with an item in the `clones` property with a `zone.name` property matching the
 	// exact specified name.
 	ClonesZoneName *string `json:"clones[].zone.name,omitempty"`
+
+	// Filters the collection to resources with a `snapshot_consistency_group.id` property matching the specified
+	// identifier.
+	SnapshotConsistencyGroupID *string `json:"snapshot_consistency_group.id,omitempty"`
+
+	// Filters the collection to resources with a `snapshot_consistency_group.crn` property matching the specified
+	// identifier.
+	SnapshotConsistencyGroupCRN *string `json:"snapshot_consistency_group.crn,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -52731,6 +53013,18 @@ func (_options *ListSnapshotsOptions) SetSourceImageRemoteRegionName(sourceImage
 // SetClonesZoneName : Allow user to set ClonesZoneName
 func (_options *ListSnapshotsOptions) SetClonesZoneName(clonesZoneName string) *ListSnapshotsOptions {
 	_options.ClonesZoneName = core.StringPtr(clonesZoneName)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupID : Allow user to set SnapshotConsistencyGroupID
+func (_options *ListSnapshotsOptions) SetSnapshotConsistencyGroupID(snapshotConsistencyGroupID string) *ListSnapshotsOptions {
+	_options.SnapshotConsistencyGroupID = core.StringPtr(snapshotConsistencyGroupID)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupCRN : Allow user to set SnapshotConsistencyGroupCRN
+func (_options *ListSnapshotsOptions) SetSnapshotConsistencyGroupCRN(snapshotConsistencyGroupCRN string) *ListSnapshotsOptions {
+	_options.SnapshotConsistencyGroupCRN = core.StringPtr(snapshotConsistencyGroupCRN)
 	return _options
 }
 
@@ -61790,10 +62084,6 @@ type Route struct {
 	// - `drop`: drop the packet.
 	Action *string `json:"action" validate:"required"`
 
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	Advertise *bool `json:"advertise" validate:"required"`
-
 	// The date and time that the route was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
@@ -61884,10 +62174,6 @@ const (
 func UnmarshalRoute(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Route)
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise", &obj.Advertise)
 	if err != nil {
 		return
 	}
@@ -62132,10 +62418,6 @@ type RouteCollectionVPCContextRoutesItem struct {
 	// - `drop`: drop the packet.
 	Action *string `json:"action" validate:"required"`
 
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	Advertise *bool `json:"advertise" validate:"required"`
-
 	// The date and time that the route was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
@@ -62226,10 +62508,6 @@ const (
 func UnmarshalRouteCollectionVPCContextRoutesItem(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RouteCollectionVPCContextRoutesItem)
 	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise", &obj.Advertise)
 	if err != nil {
 		return
 	}
@@ -62431,7 +62709,7 @@ func UnmarshalRouteNextHop(m map[string]json.RawMessage, result interface{}) (er
 // `action` values, specify `0.0.0.0` or remove it by specifying `null`.
 //
 // At most two routes per `zone` in a table can have the same `destination` and `priority`, and only when each route has
-// an `action` of `deliver` and a unique `next_hop` IP address.
+// an `action` of `deliver` and `next_hop` is an IP address.
 // Models which "extend" this model:
 // - RouteNextHopPatchRouteNextHopIP
 // - RouteNextHopPatchVPNGatewayConnectionIdentity
@@ -62479,14 +62757,6 @@ func UnmarshalRouteNextHopPatch(m map[string]json.RawMessage, result interface{}
 
 // RoutePatch : RoutePatch struct
 type RoutePatch struct {
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	//
-	// Since all routes in a routing table with the same `destination` must have the same
-	// `advertise` value, this property can only be changed for routes with a unique
-	// `destination` in the routing table.
-	Advertise *bool `json:"advertise,omitempty"`
-
 	// The name for this route. The name must not be used by another route in the routing table. Names starting with `ibm-`
 	// are reserved for system-provided routes, and are not allowed.
 	Name *string `json:"name,omitempty"`
@@ -62495,8 +62765,7 @@ type RoutePatch struct {
 	// `action` values, specify `0.0.0.0` or remove it by specifying `null`.
 	//
 	// At most two routes per `zone` in a table can have the same `destination` and `priority`,
-	// and only when each route has an `action` of `deliver` and a unique `next_hop` IP
-	// address.
+	// and only when each route has an `action` of `deliver` and `next_hop` is an IP address.
 	NextHop RouteNextHopPatchIntf `json:"next_hop,omitempty"`
 
 	// The priority of this route. Smaller values have higher priority.
@@ -62510,10 +62779,6 @@ type RoutePatch struct {
 // UnmarshalRoutePatch unmarshals an instance of RoutePatch from the specified map of raw messages.
 func UnmarshalRoutePatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RoutePatch)
-	err = core.UnmarshalPrimitive(m, "advertise", &obj.Advertise)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		return
@@ -62549,13 +62814,6 @@ type RoutePrototype struct {
 	// - `drop`: drop the packet.
 	Action *string `json:"action,omitempty"`
 
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	//
-	// All routes in a routing table with the same `destination` must have the same
-	// `advertise` value.
-	Advertise *bool `json:"advertise,omitempty"`
-
 	// The destination CIDR of the route. The host identifier in the CIDR must be zero.
 	//
 	// At most two routes per `zone` in a table can have the same `destination` and
@@ -62571,8 +62829,7 @@ type RoutePrototype struct {
 	// `action` values, it must be omitted or specified as `0.0.0.0`.
 	//
 	// At most two routes per `zone` in a table can have the same `destination` and `priority`,
-	// and only when each route has an `action` of `deliver` and a unique `next_hop` IP
-	// address.
+	// and only when each route has an `action` of `deliver` and `next_hop` is an IP address.
 	NextHop RoutePrototypeNextHopIntf `json:"next_hop,omitempty"`
 
 	// The priority of this route. Smaller values have higher priority.
@@ -62617,10 +62874,6 @@ func UnmarshalRoutePrototype(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "advertise", &obj.Advertise)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
 	if err != nil {
 		return
@@ -62649,7 +62902,7 @@ func UnmarshalRoutePrototype(m map[string]json.RawMessage, result interface{}) (
 // `action` values, it must be omitted or specified as `0.0.0.0`.
 //
 // At most two routes per `zone` in a table can have the same `destination` and `priority`, and only when each route has
-// an `action` of `deliver` and a unique `next_hop` IP address.
+// an `action` of `deliver` and `next_hop` is an IP address.
 // Models which "extend" this model:
 // - RoutePrototypeNextHopRouteNextHopPrototypeRouteNextHopIP
 // - RoutePrototypeNextHopRouteNextHopPrototypeVPNGatewayConnectionIdentity
@@ -62760,14 +63013,6 @@ type RoutingTable struct {
 	// support is expected to expand in the future.
 	AcceptRoutesFrom []ResourceFilter `json:"accept_routes_from" validate:"required"`
 
-	// The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these
-	// sources.
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
-	// unexpected property value was encountered.
-	AdvertiseRoutesTo []string `json:"advertise_routes_to" validate:"required"`
-
 	// The date and time that this routing table was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
@@ -62834,16 +63079,6 @@ type RoutingTable struct {
 	Subnets []SubnetReference `json:"subnets" validate:"required"`
 }
 
-// Constants associated with the RoutingTable.AdvertiseRoutesTo property.
-// An ingress source that routes can be advertised to:
-//
-// - `direct_link` (requires `route_direct_link_ingress` be set to `true`)
-// - `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`).
-const (
-	RoutingTableAdvertiseRoutesToDirectLinkConst     = "direct_link"
-	RoutingTableAdvertiseRoutesToTransitGatewayConst = "transit_gateway"
-)
-
 // Constants associated with the RoutingTable.LifecycleState property.
 // The lifecycle state of the routing table.
 const (
@@ -62866,10 +63101,6 @@ const (
 func UnmarshalRoutingTable(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RoutingTable)
 	err = core.UnmarshalModel(m, "accept_routes_from", &obj.AcceptRoutesFrom, UnmarshalResourceFilter)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise_routes_to", &obj.AdvertiseRoutesTo)
 	if err != nil {
 		return
 	}
@@ -63067,10 +63298,6 @@ type RoutingTablePatch struct {
 	// support is expected to expand in the future.
 	AcceptRoutesFrom []ResourceFilter `json:"accept_routes_from,omitempty"`
 
-	// The ingress sources to advertise routes to, replacing any existing sources to advertise to. Routes in the table with
-	// `advertise` enabled will be advertised to these sources.
-	AdvertiseRoutesTo []string `json:"advertise_routes_to,omitempty"`
-
 	// The name for this routing table. The name must not be used by another routing table in the VPC.
 	Name *string `json:"name,omitempty"`
 
@@ -63078,13 +63305,12 @@ type RoutingTablePatch struct {
 	// [Direct Link](https://cloud.ibm.com/docs/dl/) to this VPC. Updating to `true` selects this routing table, provided
 	// no other routing table in the VPC already has this property set to `true`, and no subnets are attached to this
 	// routing table. Updating to
-	// `false` deselects this routing table, provided `direct_link` is absent from
-	// `advertise_routes_to`.
+	// `false` deselects this routing table.
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address in a subnet in the route's `zone` that is
 	// able to accept traffic. Therefore, if an incoming packet matches a route with a `next_hop` of a VPN gateway
-	//  connection, the packet will be dropped.
+	// connection, the packet will be dropped.
 	RouteDirectLinkIngress *bool `json:"route_direct_link_ingress,omitempty"`
 
 	// Indicates whether this routing table is used to route traffic that originates from the internet.  Updating to `true`
@@ -63103,8 +63329,7 @@ type RoutingTablePatch struct {
 	// Indicates whether this routing table is used to route traffic that originates from
 	// [Transit Gateway](https://cloud.ibm.com/docs/transit-gateway) to this VPC. Updating to
 	// `true` selects this routing table, provided no other routing table in the VPC already has this property set to
-	// `true`, and no subnets are attached to this routing table. Updating to `false` deselects this routing table,
-	// provided `transit_gateway` is absent from `advertise_routes_to`.
+	// `true`, and no subnets are attached to this routing table. Updating to `false` deselects this routing table.
 	//
 	// Incoming traffic will be routed according to the routing table with one exception: routes with an `action` of
 	// `deliver` are treated as `drop` unless the `next_hop` is an IP address in a subnet in the route's `zone` that is
@@ -63128,24 +63353,10 @@ type RoutingTablePatch struct {
 	RouteVPCZoneIngress *bool `json:"route_vpc_zone_ingress,omitempty"`
 }
 
-// Constants associated with the RoutingTablePatch.AdvertiseRoutesTo property.
-// An ingress source that routes can be advertised to:
-//
-// - `direct_link` (requires `route_direct_link_ingress` be set to `true`)
-// - `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`).
-const (
-	RoutingTablePatchAdvertiseRoutesToDirectLinkConst     = "direct_link"
-	RoutingTablePatchAdvertiseRoutesToTransitGatewayConst = "transit_gateway"
-)
-
 // UnmarshalRoutingTablePatch unmarshals an instance of RoutingTablePatch from the specified map of raw messages.
 func UnmarshalRoutingTablePatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RoutingTablePatch)
 	err = core.UnmarshalModel(m, "accept_routes_from", &obj.AcceptRoutesFrom, UnmarshalResourceFilter)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise_routes_to", &obj.AdvertiseRoutesTo)
 	if err != nil {
 		return
 	}
@@ -64354,7 +64565,7 @@ type Share struct {
 	// Information about the latest synchronization for this file share.
 	//
 	// This property will be present when the `replication_role` is `replica` and at least
-	// one `replication_sync` job has been completed.
+	// one replication sync has been completed.
 	LatestSync *ShareLatestSync `json:"latest_sync,omitempty"`
 
 	// The lifecycle state of the file share.
@@ -64798,7 +65009,6 @@ type ShareJob struct {
 	// * `replication_failover`: This is a share replication failover job.
 	// * `replication_init`: This is a share replication is initialization job.
 	// * `replication_split`: This is a share replication split job.
-	// * `replication_sync`: This is a share replication synchronization job.
 	Type *string `json:"type" validate:"required"`
 }
 
@@ -64832,7 +65042,6 @@ const (
 // * `replication_failover`: This is a share replication failover job.
 // * `replication_init`: This is a share replication is initialization job.
 // * `replication_split`: This is a share replication split job.
-// * `replication_sync`: This is a share replication synchronization job.
 const (
 	ShareJobTypeReplicationFailoverConst = "replication_failover"
 	ShareJobTypeReplicationInitConst     = "replication_init"
@@ -64899,8 +65108,8 @@ func UnmarshalShareJobStatusReason(m map[string]json.RawMessage, result interfac
 
 // ShareLatestSync : Information about the latest synchronization for this file share.
 //
-// This property will be present when the `replication_role` is `replica` and at least one `replication_sync` job has
-// been completed.
+// This property will be present when the `replication_role` is `replica` and at least one replication sync has been
+// completed.
 type ShareLatestSync struct {
 	// The completed date and time of last synchronization between the replica share and its source.
 	CompletedAt *strfmt.DateTime `json:"completed_at" validate:"required"`
@@ -65447,8 +65656,7 @@ type SharePatch struct {
 	// The maximum input/output operations per second (IOPS) for the file share. The value must be in the range supported
 	// by the share's size.
 	//
-	// For this property to be changed, the share `lifecycle_state` must be `stable` and the share must be in the `custom`
-	// or `defined_performance` profile family.
+	// For this property to be changed, the share `lifecycle_state` must be `stable`.
 	Iops *int64 `json:"iops,omitempty"`
 
 	// The name for this share. The name must not be used by another share in the region.
@@ -65456,17 +65664,7 @@ type SharePatch struct {
 
 	// The profile to use for this file share.
 	//
-	// The requested profile must be in the same `family`, with the following exceptions:
-	// - If the current profile family is `tiered`, the requested profile family may be
-	//   `custom` or `defined_performance`.
-	// - If the current profile family is `custom`, the requested profile family may be
-	//   `tiered` or `defined_performance`. Additionally, if requested profile family is
-	//   `tiered`, then `iops` will be reset to a value based on the specified profile and
-	//   current share size, and will become immutable.
-	// - If the current profile family is `defined_performance`, the requested profile
-	//   family may be `tiered` or `custom`. Additionally, if requested profile family is
-	//   `tiered`, then `iops` will be reset to a value based on the specified profile and
-	//   current share size, and will become immutable.
+	// The requested profile must be in the same `family`.
 	Profile ShareProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The cron specification for the file share replication schedule.
@@ -65569,9 +65767,7 @@ type ShareProfile struct {
 // Constants associated with the ShareProfile.Family property.
 // The product family this share profile belongs to.
 const (
-	ShareProfileFamilyCustomConst             = "custom"
 	ShareProfileFamilyDefinedPerformanceConst = "defined_performance"
-	ShareProfileFamilyTieredConst             = "tiered"
 )
 
 // Constants associated with the ShareProfile.ResourceType property.
@@ -65936,7 +66132,7 @@ func UnmarshalShareProfileReference(m map[string]json.RawMessage, result interfa
 // - SharePrototypeShareBySize
 // - SharePrototypeShareBySourceShare
 type SharePrototype struct {
-	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the `custom` or
+	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the
 	// `defined_performance` profile family, and the value must be in the range supported by the share's specified size.
 	//
 	// In addition, each client accessing the share will be restricted to 48,000 IOPS.
@@ -66002,8 +66198,9 @@ type SharePrototype struct {
 	ReplicationCronSpec *string `json:"replication_cron_spec,omitempty"`
 
 	// The source file share for this replica file share. The specified file share must not
-	// already have a replica, and must not be a replica. A source file share in another
-	// region must be specified using its CRN.
+	// already have a replica, and must not be a replica. If source file share is specified
+	// by CRN, it may be in an [associated partner
+	// region](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-replication).
 	SourceShare ShareIdentityIntf `json:"source_share,omitempty"`
 }
 
@@ -66095,7 +66292,7 @@ func UnmarshalSharePrototype(m map[string]json.RawMessage, result interface{}) (
 // subsequently added by creating a new file share with a
 // `source_share` referencing this file share.
 type SharePrototypeShareContext struct {
-	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the `custom` or
+	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the
 	// `defined_performance` profile family, and the value must be in the range supported by the share's specified size.
 	//
 	// In addition, each client accessing the share will be restricted to 48,000 IOPS.
@@ -66396,6 +66593,9 @@ type Snapshot struct {
 	// The size of this snapshot rounded up to the next gigabyte.
 	Size *int64 `json:"size" validate:"required"`
 
+	// If present, the snapshot consistency group which created this snapshot.
+	SnapshotConsistencyGroup *SnapshotConsistencyGroupReference `json:"snapshot_consistency_group,omitempty"`
+
 	// If present, the image from which the data on this snapshot was most directly
 	// provisioned.
 	SourceImage *ImageReference `json:"source_image,omitempty"`
@@ -66516,6 +66716,10 @@ func UnmarshalSnapshot(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "size", &obj.Size)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshot_consistency_group", &obj.SnapshotConsistencyGroup, UnmarshalSnapshotConsistencyGroupReference)
 	if err != nil {
 		return
 	}
@@ -66699,6 +66903,529 @@ type SnapshotCollectionNext struct {
 func UnmarshalSnapshotCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SnapshotCollectionNext)
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroup : SnapshotConsistencyGroup struct
+type SnapshotConsistencyGroup struct {
+	// If present, the backup policy plan which created this snapshot consistency group.
+	BackupPolicyPlan *BackupPolicyPlanReference `json:"backup_policy_plan,omitempty"`
+
+	// The date and time that this snapshot consistency group was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN of this snapshot consistency group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete" validate:"required"`
+
+	// The URL for this snapshot consistency group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot consistency group.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle state of this snapshot consistency group.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this snapshot consistency group. The name is unique across all snapshot consistency groups in the
+	// region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource group for this snapshot consistency group.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot consistency
+	// group. Each tag is prefixed with
+	// [is.instance:](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-faqs).
+	ServiceTags []string `json:"service_tags" validate:"required"`
+
+	// The member snapshots that are data-consistent with respect to captured time. (may be
+	// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+	Snapshots []SnapshotConsistencyGroupSnapshotsItem `json:"snapshots" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroup.LifecycleState property.
+// The lifecycle state of this snapshot consistency group.
+const (
+	SnapshotConsistencyGroupLifecycleStateDeletingConst  = "deleting"
+	SnapshotConsistencyGroupLifecycleStateFailedConst    = "failed"
+	SnapshotConsistencyGroupLifecycleStatePendingConst   = "pending"
+	SnapshotConsistencyGroupLifecycleStateStableConst    = "stable"
+	SnapshotConsistencyGroupLifecycleStateSuspendedConst = "suspended"
+	SnapshotConsistencyGroupLifecycleStateUpdatingConst  = "updating"
+	SnapshotConsistencyGroupLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the SnapshotConsistencyGroup.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupResourceTypeSnapshotConsistencyGroupConst = "snapshot_consistency_group"
+)
+
+// UnmarshalSnapshotConsistencyGroup unmarshals an instance of SnapshotConsistencyGroup from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroup(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroup)
+	err = core.UnmarshalModel(m, "backup_policy_plan", &obj.BackupPolicyPlan, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "service_tags", &obj.ServiceTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupSnapshotsItem)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupCollection : SnapshotConsistencyGroupCollection struct
+type SnapshotConsistencyGroupCollection struct {
+	// A link to the first page of resources.
+	First *SnapshotConsistencyGroupCollectionFirst `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *SnapshotConsistencyGroupCollectionNext `json:"next,omitempty"`
+
+	// Collection of snapshot consistency groups.
+	SnapshotConsistencyGroups []SnapshotConsistencyGroup `json:"snapshot_consistency_groups" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollection unmarshals an instance of SnapshotConsistencyGroupCollection from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalSnapshotConsistencyGroupCollectionFirst)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalSnapshotConsistencyGroupCollectionNext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshot_consistency_groups", &obj.SnapshotConsistencyGroups, UnmarshalSnapshotConsistencyGroup)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *SnapshotConsistencyGroupCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
+// SnapshotConsistencyGroupCollectionFirst : A link to the first page of resources.
+type SnapshotConsistencyGroupCollectionFirst struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollectionFirst unmarshals an instance of SnapshotConsistencyGroupCollectionFirst from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollectionFirst(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollectionFirst)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupCollectionNext : A link to the next page of resources. This property is present for all pages except the last page.
+type SnapshotConsistencyGroupCollectionNext struct {
+	// The URL for a page of resources.
+	Href *string `json:"href" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupCollectionNext unmarshals an instance of SnapshotConsistencyGroupCollectionNext from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupCollectionNext(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupCollectionNext)
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPatch : SnapshotConsistencyGroupPatch struct
+type SnapshotConsistencyGroupPatch struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must not be used by another snapshot consistency groups in
+	// the region.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalSnapshotConsistencyGroupPatch unmarshals an instance of SnapshotConsistencyGroupPatch from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPatch)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the SnapshotConsistencyGroupPatch
+func (snapshotConsistencyGroupPatch *SnapshotConsistencyGroupPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	var jsonData []byte
+	jsonData, err = json.Marshal(snapshotConsistencyGroupPatch)
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
+}
+
+// SnapshotConsistencyGroupPrototype : SnapshotConsistencyGroupPrototype struct
+// Models which "extend" this model:
+// - SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots
+type SnapshotConsistencyGroupPrototype struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must be unique across all snapshot consistency groups in the
+	// region.
+	//
+	// If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The resource group to use. If unspecified, the account's [default resource
+	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The data-consistent member snapshots to create.  All snapshots must specify a
+	// `source_volume` attached to the same virtual server instance.
+	Snapshots []SnapshotConsistencyGroupPrototypeSnapshotsItem `json:"snapshots,omitempty"`
+}
+
+func (*SnapshotConsistencyGroupPrototype) isaSnapshotConsistencyGroupPrototype() bool {
+	return true
+}
+
+type SnapshotConsistencyGroupPrototypeIntf interface {
+	isaSnapshotConsistencyGroupPrototype() bool
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototype unmarshals an instance of SnapshotConsistencyGroupPrototype from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototype)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem : SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem struct
+type SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem struct {
+	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The volume to create this snapshot from.
+	SourceVolume VolumeIdentityIntf `json:"source_volume" validate:"required"`
+
+	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
+	UserTags []string `json:"user_tags,omitempty"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem : Instantiate SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem(sourceVolume VolumeIdentityIntf) (_model *SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem{
+		SourceVolume: sourceVolume,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_volume", &obj.SourceVolume, UnmarshalVolumeIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotsItem : SnapshotConsistencyGroupPrototypeSnapshotsItem struct
+type SnapshotConsistencyGroupPrototypeSnapshotsItem struct {
+	// The name for this snapshot. The name must not be used by another snapshot in the region. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The volume to create this snapshot from.
+	SourceVolume VolumeIdentityIntf `json:"source_volume" validate:"required"`
+
+	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this snapshot.
+	UserTags []string `json:"user_tags,omitempty"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotsItem : Instantiate SnapshotConsistencyGroupPrototypeSnapshotsItem (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotsItem(sourceVolume VolumeIdentityIntf) (_model *SnapshotConsistencyGroupPrototypeSnapshotsItem, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotsItem{
+		SourceVolume: sourceVolume,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "source_volume", &obj.SourceVolume, UnmarshalVolumeIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupReference : SnapshotConsistencyGroupReference struct
+type SnapshotConsistencyGroupReference struct {
+	// The CRN of this snapshot consistency group.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *SnapshotConsistencyGroupReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this snapshot consistency group.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot consistency group.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot consistency group. The name is unique across all snapshot consistency groups in the
+	// region.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroupReference.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupReferenceResourceTypeSnapshotConsistencyGroupConst = "snapshot_consistency_group"
+)
+
+// UnmarshalSnapshotConsistencyGroupReference unmarshals an instance of SnapshotConsistencyGroupReference from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalSnapshotConsistencyGroupReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
+// information.
+type SnapshotConsistencyGroupReferenceDeleted struct {
+	// Link to documentation about deleted resources.
+	MoreInfo *string `json:"more_info" validate:"required"`
+}
+
+// UnmarshalSnapshotConsistencyGroupReferenceDeleted unmarshals an instance of SnapshotConsistencyGroupReferenceDeleted from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupReferenceDeleted)
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupSnapshotsItem : SnapshotConsistencyGroupSnapshotsItem struct
+type SnapshotConsistencyGroupSnapshotsItem struct {
+	// The CRN of this snapshot.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *SnapshotReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this snapshot.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot. The name is unique across all snapshots in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// If present, this property indicates that the resource associated with this reference
+	// is remote and therefore may not be directly retrievable.
+	Remote *SnapshotRemote `json:"remote,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotConsistencyGroupSnapshotsItem.ResourceType property.
+// The resource type.
+const (
+	SnapshotConsistencyGroupSnapshotsItemResourceTypeSnapshotConst = "snapshot"
+)
+
+// UnmarshalSnapshotConsistencyGroupSnapshotsItem unmarshals an instance of SnapshotConsistencyGroupSnapshotsItem from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupSnapshotsItem(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupSnapshotsItem)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalSnapshotReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSnapshotRemote)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
 	}
@@ -67476,8 +68203,7 @@ type SubnetPatch struct {
 	// The network ACL to use for this subnet.
 	NetworkACL NetworkACLIdentityIntf `json:"network_acl,omitempty"`
 
-	// The public gateway to use for internet-bound traffic for this subnet. Specify `null` to
-	// remove an existing public gateway.
+	// The public gateway to use for internet-bound traffic for this subnet.
 	PublicGateway SubnetPublicGatewayPatchIntf `json:"public_gateway,omitempty"`
 
 	// The routing table to use for this subnet.  The routing table properties
@@ -67627,8 +68353,7 @@ func UnmarshalSubnetPrototype(m map[string]json.RawMessage, result interface{}) 
 	return
 }
 
-// SubnetPublicGatewayPatch : The public gateway to use for internet-bound traffic for this subnet. Specify `null` to remove an existing public
-// gateway.
+// SubnetPublicGatewayPatch : The public gateway to use for internet-bound traffic for this subnet.
 // Models which "extend" this model:
 // - SubnetPublicGatewayPatchPublicGatewayIdentityByID
 // - SubnetPublicGatewayPatchPublicGatewayIdentityByCRN
@@ -69668,6 +70393,54 @@ func (options *UpdateShareOptions) SetHeaders(param map[string]string) *UpdateSh
 	return options
 }
 
+// UpdateSnapshotConsistencyGroupOptions : The UpdateSnapshotConsistencyGroup options.
+type UpdateSnapshotConsistencyGroupOptions struct {
+	// The snapshot consistency group identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The snapshot consistency group patch.
+	SnapshotConsistencyGroupPatch map[string]interface{} `json:"SnapshotConsistencyGroup_patch" validate:"required"`
+
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	// Required if the request body includes an array.
+	IfMatch *string `json:"If-Match,omitempty"`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewUpdateSnapshotConsistencyGroupOptions : Instantiate UpdateSnapshotConsistencyGroupOptions
+func (*VpcV1) NewUpdateSnapshotConsistencyGroupOptions(id string, snapshotConsistencyGroupPatch map[string]interface{}) *UpdateSnapshotConsistencyGroupOptions {
+	return &UpdateSnapshotConsistencyGroupOptions{
+		ID:                            core.StringPtr(id),
+		SnapshotConsistencyGroupPatch: snapshotConsistencyGroupPatch,
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetID(id string) *UpdateSnapshotConsistencyGroupOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetSnapshotConsistencyGroupPatch : Allow user to set SnapshotConsistencyGroupPatch
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetSnapshotConsistencyGroupPatch(snapshotConsistencyGroupPatch map[string]interface{}) *UpdateSnapshotConsistencyGroupOptions {
+	_options.SnapshotConsistencyGroupPatch = snapshotConsistencyGroupPatch
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *UpdateSnapshotConsistencyGroupOptions) SetIfMatch(ifMatch string) *UpdateSnapshotConsistencyGroupOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateSnapshotConsistencyGroupOptions) SetHeaders(param map[string]string) *UpdateSnapshotConsistencyGroupOptions {
+	options.Headers = param
+	return options
+}
+
 // UpdateSnapshotOptions : The UpdateSnapshot options.
 type UpdateSnapshotOptions struct {
 	// The snapshot identifier.
@@ -69800,164 +70573,6 @@ func (_options *UpdateSubnetReservedIPOptions) SetReservedIPPatch(reservedIPPatc
 func (options *UpdateSubnetReservedIPOptions) SetHeaders(param map[string]string) *UpdateSubnetReservedIPOptions {
 	options.Headers = param
 	return options
-}
-
-// UpdateVPCRouteResponse : UpdateVPCRouteResponse struct
-type UpdateVPCRouteResponse struct {
-	// The action to perform with a packet matching the route:
-	// - `delegate`: delegate to system-provided routes
-	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
-	// - `deliver`: deliver the packet to the specified `next_hop`
-	// - `drop`: drop the packet.
-	Action *string `json:"action" validate:"required"`
-
-	// Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to`
-	// routing table property.
-	Advertise *bool `json:"advertise" validate:"required"`
-
-	// The date and time that the route was created.
-	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
-
-	// If present, the resource that created the route. Routes with this property present cannot
-	// be directly deleted. All routes with an `origin` of `service` will have this property set,
-	// and future `origin` values may also have this property set.
-	Creator RouteCreatorIntf `json:"creator,omitempty"`
-
-	// The destination CIDR of the route.
-	Destination *string `json:"destination" validate:"required"`
-
-	// The URL for this route.
-	Href *string `json:"href" validate:"required"`
-
-	// The unique identifier for this route.
-	ID *string `json:"id" validate:"required"`
-
-	// The lifecycle state of the route.
-	LifecycleState *string `json:"lifecycle_state" validate:"required"`
-
-	// The name for this route. The name is unique across all routes in the routing table.
-	Name *string `json:"name" validate:"required"`
-
-	// If `action` is `deliver`, the next hop that packets will be delivered to.  For
-	// other `action` values, its `address` will be `0.0.0.0`.
-	NextHop RouteNextHopIntf `json:"next_hop" validate:"required"`
-
-	// The origin of this route:
-	// - `service`: route was directly created by a service
-	// - `user`: route was directly created by a user
-	//
-	// The enumerated values for this property are expected to expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
-	// unexpected property value was encountered.
-	Origin *string `json:"origin,omitempty"`
-
-	// The priority of this route. Smaller values have higher priority.
-	//
-	// If a routing table contains multiple routes with the same `zone` and `destination`, the route with the highest
-	// priority (smallest value) is selected. If two routes have the same `destination` and `priority`, traffic is
-	// distributed between them.
-	Priority *int64 `json:"priority" validate:"required"`
-
-	// The zone the route applies to. (Traffic from subnets in this zone will be
-	// subject to this route.).
-	Zone *ZoneReference `json:"zone" validate:"required"`
-}
-
-// Constants associated with the UpdateVPCRouteResponse.Action property.
-// The action to perform with a packet matching the route:
-// - `delegate`: delegate to system-provided routes
-// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
-// - `deliver`: deliver the packet to the specified `next_hop`
-// - `drop`: drop the packet.
-const (
-	UpdateVPCRouteResponseActionDelegateConst    = "delegate"
-	UpdateVPCRouteResponseActionDelegateVPCConst = "delegate_vpc"
-	UpdateVPCRouteResponseActionDeliverConst     = "deliver"
-	UpdateVPCRouteResponseActionDropConst        = "drop"
-)
-
-// Constants associated with the UpdateVPCRouteResponse.LifecycleState property.
-// The lifecycle state of the route.
-const (
-	UpdateVPCRouteResponseLifecycleStateDeletingConst  = "deleting"
-	UpdateVPCRouteResponseLifecycleStateFailedConst    = "failed"
-	UpdateVPCRouteResponseLifecycleStatePendingConst   = "pending"
-	UpdateVPCRouteResponseLifecycleStateStableConst    = "stable"
-	UpdateVPCRouteResponseLifecycleStateSuspendedConst = "suspended"
-	UpdateVPCRouteResponseLifecycleStateUpdatingConst  = "updating"
-	UpdateVPCRouteResponseLifecycleStateWaitingConst   = "waiting"
-)
-
-// Constants associated with the UpdateVPCRouteResponse.Origin property.
-// The origin of this route:
-// - `service`: route was directly created by a service
-// - `user`: route was directly created by a user
-//
-// The enumerated values for this property are expected to expand in the future. When processing this property, check
-// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
-// unexpected property value was encountered.
-const (
-	UpdateVPCRouteResponseOriginServiceConst = "service"
-	UpdateVPCRouteResponseOriginUserConst    = "user"
-)
-
-// UnmarshalUpdateVPCRouteResponse unmarshals an instance of UpdateVPCRouteResponse from the specified map of raw messages.
-func UnmarshalUpdateVPCRouteResponse(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(UpdateVPCRouteResponse)
-	err = core.UnmarshalPrimitive(m, "action", &obj.Action)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "advertise", &obj.Advertise)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "creator", &obj.Creator, UnmarshalRouteCreator)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "destination", &obj.Destination)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "next_hop", &obj.NextHop, UnmarshalRouteNextHop)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "origin", &obj.Origin)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "priority", &obj.Priority)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
 }
 
 // UpdateVirtualNetworkInterfaceOptions : The UpdateVirtualNetworkInterface options.
@@ -70946,22 +71561,6 @@ type VpcdnsResolutionBinding struct {
 	// The endpoint gateways may be remote and therefore may not be directly retrievable.
 	EndpointGateways []EndpointGatewayReferenceRemote `json:"endpoint_gateways" validate:"required"`
 
-	// The reasons for the current `health_state` (if any).
-	//
-	// The enumerated reason code values for this property will expand in the future. When processing this property, check
-	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
-	// unexpected reason code was encountered.
-	HealthReasons []VpcdnsResolutionBindingHealthReason `json:"health_reasons" validate:"required"`
-
-	// The health of this resource.
-	// - `ok`: No abnormal behavior detected
-	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
-	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
-	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
-	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
-	// have this state.
-	HealthState *string `json:"health_state" validate:"required"`
-
 	// The URL for this DNS resolution binding.
 	Href *string `json:"href" validate:"required"`
 
@@ -70982,21 +71581,6 @@ type VpcdnsResolutionBinding struct {
 	// The VPC may be remote and therefore may not be directly retrievable.
 	VPC *VPCReferenceRemote `json:"vpc" validate:"required"`
 }
-
-// Constants associated with the VpcdnsResolutionBinding.HealthState property.
-// The health of this resource.
-// - `ok`: No abnormal behavior detected
-// - `degraded`: Experiencing compromised performance, capacity, or connectivity
-// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
-// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
-// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
-// state.
-const (
-	VpcdnsResolutionBindingHealthStateDegradedConst     = "degraded"
-	VpcdnsResolutionBindingHealthStateFaultedConst      = "faulted"
-	VpcdnsResolutionBindingHealthStateInapplicableConst = "inapplicable"
-	VpcdnsResolutionBindingHealthStateOkConst           = "ok"
-)
 
 // Constants associated with the VpcdnsResolutionBinding.LifecycleState property.
 // The lifecycle state of the DNS resolution binding.
@@ -71024,14 +71608,6 @@ func UnmarshalVpcdnsResolutionBinding(m map[string]json.RawMessage, result inter
 		return
 	}
 	err = core.UnmarshalModel(m, "endpoint_gateways", &obj.EndpointGateways, UnmarshalEndpointGatewayReferenceRemote)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalVpcdnsResolutionBindingHealthReason)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
 	if err != nil {
 		return
 	}
@@ -71121,43 +71697,6 @@ func (resp *VpcdnsResolutionBindingCollection) GetNextStart() (*string, error) {
 	return start, nil
 }
 
-// VpcdnsResolutionBindingHealthReason : VpcdnsResolutionBindingHealthReason struct
-type VpcdnsResolutionBindingHealthReason struct {
-	// A snake case string succinctly identifying the reason for this health state.
-	Code *string `json:"code" validate:"required"`
-
-	// An explanation of the reason for this health state.
-	Message *string `json:"message" validate:"required"`
-
-	// Link to documentation about the reason for this health state.
-	MoreInfo *string `json:"more_info,omitempty"`
-}
-
-// Constants associated with the VpcdnsResolutionBindingHealthReason.Code property.
-// A snake case string succinctly identifying the reason for this health state.
-const (
-	VpcdnsResolutionBindingHealthReasonCodeInternalErrorConst = "internal_error"
-)
-
-// UnmarshalVpcdnsResolutionBindingHealthReason unmarshals an instance of VpcdnsResolutionBindingHealthReason from the specified map of raw messages.
-func UnmarshalVpcdnsResolutionBindingHealthReason(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VpcdnsResolutionBindingHealthReason)
-	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VpcdnsResolutionBindingPatch : VpcdnsResolutionBindingPatch struct
 type VpcdnsResolutionBindingPatch struct {
 	// The name for this DNS resolution binding. The name must not be used by another DNS resolution binding for the VPC.
@@ -71212,6 +71751,14 @@ type VpcdnsResolver struct {
 	VPC *VPCReferenceDnsResolverContext `json:"vpc,omitempty"`
 
 	// The manually specified DNS servers for this VPC.
+	//
+	// If the DNS servers have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list the DNS server with the
+	// affinity for that zone first, followed by the unique DNS servers from other zones.
+	//
+	// If the DNS servers do not have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServer `json:"manual_servers,omitempty"`
 
 	// The configuration of the system DNS resolver for this VPC.
@@ -71314,6 +71861,14 @@ type VpcdnsResolverPatch struct {
 	// - have a unique `zone_affinity`, or
 	// - not have a `zone_affinity`.
 	//
+	// If `zone_affinity` is specified, exactly one DNS server must be specified for each zone in the region. The DHCP
+	// [Domain Name Server Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list this DNS
+	// server first, followed by unique DNS servers from other zones if available.
+	//
+	// If `zone_affinity` is not specified, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
+	//
 	// `dns.resolver.manual_servers` must be set if and only if `dns.resolver.type` is `manual`.
 	ManualServers []DnsServerPrototype `json:"manual_servers,omitempty"`
 
@@ -71401,6 +71956,14 @@ type VpcdnsResolverPrototype struct {
 	//
 	// - have a unique `zone_affinity`, or
 	// - not have a `zone_affinity`.
+	//
+	// If `zone_affinity` is specified, exactly one DNS server must be specified for each zone in the region. The DHCP
+	// [Domain Name Server Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list this DNS
+	// server first, followed by unique DNS servers from other zones if available.
+	//
+	// If `zone_affinity` is not specified, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServerPrototype `json:"manual_servers,omitempty"`
 }
 
@@ -71502,7 +72065,8 @@ type VPCHealthReason struct {
 // Constants associated with the VPCHealthReason.Code property.
 // A snake case string succinctly identifying the reason for this health state.
 const (
-	VPCHealthReasonCodeInternalErrorConst = "internal_error"
+	VPCHealthReasonCodeDnsResolutionBindingFailedConst = "dns_resolution_binding_failed"
+	VPCHealthReasonCodeInternalErrorConst              = "internal_error"
 )
 
 // UnmarshalVPCHealthReason unmarshals an instance of VPCHealthReason from the specified map of raw messages.
@@ -73467,11 +74031,11 @@ type VPNServer struct {
 
 	// The reasons for the current VPN server health_state (if any):
 	// - `cannot_access_client_certificate`: VPN server's client certificate is inaccessible
-	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
-	//   `Secrets Manager`)
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access
+	//   to `Secrets Manager`)
 	// - `cannot_access_server_certificate`: VPN server's server certificate is inaccessible
-	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access to
-	//   `Secrets Manager`)
+	//   (verify certificate exists and that IAM policies grant `VPN server for VPC` access
+	//   to `Secrets Manager`)
 	// - `cannot_create_vpc_route`: VPN cannot create route (check for conflict)
 	// - `cannot_reserve_ip_address`: IP address exhaustion (release addresses on the VPN's
 	//   subnet)
@@ -75176,7 +75740,8 @@ type Volume struct {
 	// operation that is specified to require serialization.
 	Busy *bool `json:"busy" validate:"required"`
 
-	// The capacity of the volume (in gigabytes).
+	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
+	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity" validate:"required"`
 
 	// The date and time that the volume was created.
@@ -75257,12 +75822,6 @@ type Volume struct {
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
 	// unexpected reason code was encountered.
 	StatusReasons []VolumeStatusReason `json:"status_reasons" validate:"required"`
-
-	// Indicates whether the capacity for the volume can be changed when not attached to a running virtual server instance.
-	UnattachedCapacityUpdateSupported *bool `json:"unattached_capacity_update_supported" validate:"required"`
-
-	// Indicates whether the IOPS for the volume can be changed when not attached to a running virtual server instance.
-	UnattachedIopsUpdateSupported *bool `json:"unattached_iops_update_supported" validate:"required"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
 	UserTags []string `json:"user_tags" validate:"required"`
@@ -75420,14 +75979,6 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 		return
 	}
 	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVolumeStatusReason)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "unattached_capacity_update_supported", &obj.UnattachedCapacityUpdateSupported)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "unattached_iops_update_supported", &obj.UnattachedIopsUpdateSupported)
 	if err != nil {
 		return
 	}
@@ -75813,8 +76364,8 @@ type VolumeAttachmentPrototypeVolume struct {
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
 	UserTags []string `json:"user_tags,omitempty"`
 
-	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
+	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -76161,8 +76712,7 @@ type VolumeHealthReason struct {
 // Constants associated with the VolumeHealthReason.Code property.
 // A snake case string succinctly identifying the reason for this health state.
 const (
-	VolumeHealthReasonCodeInitializingFromSnapshotConst                 = "initializing_from_snapshot"
-	VolumeHealthReasonCodeThrottledByInsufficientInstanceBandwidthConst = "throttled_by_insufficient_instance_bandwidth"
+	VolumeHealthReasonCodeInitializingFromSnapshotConst = "initializing_from_snapshot"
 )
 
 // UnmarshalVolumeHealthReason unmarshals an instance of VolumeHealthReason from the specified map of raw messages.
@@ -76229,14 +76779,11 @@ func UnmarshalVolumeIdentity(m map[string]json.RawMessage, result interface{}) (
 
 // VolumePatch : VolumePatch struct
 type VolumePatch struct {
-	// The capacity to use for the volume (in gigabytes). For the value to be changed, the volume must be attached to a
-	// running virtual server instance, or the
-	// `unattached_capacity_update_supported` property must be `true`.  Additionally:
-	// - The specified value must not be less than the current capacity.
-	// - If the volume is attached as a boot volume, the specified value must not exceed
-	//   the `boot_capacity.max` of the volume profile.
-	// - If the volume is attached as a data volume, the specified value must not exceed
-	//   the `capacity.max` of the volume profile.
+	// The capacity to use for the volume (in gigabytes). The volume must be attached to a running virtual server instance,
+	// and the specified value must not be less than the current capacity. Additionally, if the volume is attached as a
+	// boot volume, the maximum value is 250 gigabytes.
+	//
+	// The minimum and maximum capacity limits for creating or updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The maximum I/O operations per second (IOPS) to use for this volume. Applicable only to volumes using a profile
@@ -76247,16 +76794,9 @@ type VolumePatch struct {
 	Name *string `json:"name,omitempty"`
 
 	// The profile to use for this volume. The requested profile must be in the same
-	// `family` as the current profile.  Additionally:
-	// - For the value to be changed on an existing volume, the volume must be attached
-	// to a running virtual server instance, or the volume's
-	// `unattached_capacity_update_supported` property must be `true`.
-	// - If the volume is a boot volume then the value specified for `capacity` property
-	// must not be less than the `boot_capacity.min` and must not exceed the
-	// `boot_capacity.max` of the specified volume profile.
-	// - If the volume is a data volume then the value specified for `capacity` property
-	// must not be less than the `capacity.min` and must not exceed the `capacity.max`
-	// of the specified volume profile.
+	// `family` as the current profile. The volume must be attached as a data volume to
+	// a running virtual server instance, and must have a `capacity` within the range
+	// supported by the specified profile.
 	Profile VolumeProfileIdentityIntf `json:"profile,omitempty"`
 
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
@@ -76302,10 +76842,6 @@ func (volumePatch *VolumePatch) AsPatch() (_patch map[string]interface{}, err er
 
 // VolumeProfile : VolumeProfile struct
 type VolumeProfile struct {
-	BootCapacity VolumeProfileBootCapacityIntf `json:"boot_capacity" validate:"required"`
-
-	Capacity VolumeProfileCapacityIntf `json:"capacity" validate:"required"`
-
 	// The product family this volume profile belongs to.
 	//
 	// The enumerated values for this property will expand in the future. When processing this property, check for and log
@@ -76316,14 +76852,8 @@ type VolumeProfile struct {
 	// The URL for this volume profile.
 	Href *string `json:"href" validate:"required"`
 
-	Iops VolumeProfileIopsIntf `json:"iops" validate:"required"`
-
 	// The globally unique name for this volume profile.
 	Name *string `json:"name" validate:"required"`
-
-	UnattachedCapacityUpdateSupported VolumeProfileUnattachedCapacityUpdateSupportedIntf `json:"unattached_capacity_update_supported" validate:"required"`
-
-	UnattachedIopsUpdateSupported VolumeProfileUnattachedIopsUpdateSupportedIntf `json:"unattached_iops_update_supported" validate:"required"`
 }
 
 // Constants associated with the VolumeProfile.Family property.
@@ -76333,22 +76863,13 @@ type VolumeProfile struct {
 // unknown values. Optionally halt processing and surface the error, or bypass the volume profile on which the
 // unexpected property value was encountered.
 const (
-	VolumeProfileFamilyCustomConst             = "custom"
-	VolumeProfileFamilyDefinedPerformanceConst = "defined_performance"
-	VolumeProfileFamilyTieredConst             = "tiered"
+	VolumeProfileFamilyCustomConst = "custom"
+	VolumeProfileFamilyTieredConst = "tiered"
 )
 
 // UnmarshalVolumeProfile unmarshals an instance of VolumeProfile from the specified map of raw messages.
 func UnmarshalVolumeProfile(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeProfile)
-	err = core.UnmarshalModel(m, "boot_capacity", &obj.BootCapacity, UnmarshalVolumeProfileBootCapacity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "capacity", &obj.Capacity, UnmarshalVolumeProfileCapacity)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
 	if err != nil {
 		return
@@ -76357,175 +76878,7 @@ func UnmarshalVolumeProfile(m map[string]json.RawMessage, result interface{}) (e
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "iops", &obj.Iops, UnmarshalVolumeProfileIops)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "unattached_capacity_update_supported", &obj.UnattachedCapacityUpdateSupported, UnmarshalVolumeProfileUnattachedCapacityUpdateSupported)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "unattached_iops_update_supported", &obj.UnattachedIopsUpdateSupported, UnmarshalVolumeProfileUnattachedIopsUpdateSupported)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileBootCapacity : VolumeProfileBootCapacity struct
-// Models which "extend" this model:
-// - VolumeProfileBootCapacityFixed
-// - VolumeProfileBootCapacityRange
-// - VolumeProfileBootCapacityEnum
-// - VolumeProfileBootCapacityDependentRange
-type VolumeProfileBootCapacity struct {
-	// The type for this profile field.
-	Type *string `json:"type,omitempty"`
-
-	// The value for this profile field.
-	Value *int64 `json:"value,omitempty"`
-
-	// The default value for this profile field.
-	Default *int64 `json:"default,omitempty"`
-
-	// The maximum value for this profile field.
-	Max *int64 `json:"max,omitempty"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min,omitempty"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step,omitempty"`
-
-	// The permitted values for this profile field.
-	Values []int64 `json:"values,omitempty"`
-}
-
-// Constants associated with the VolumeProfileBootCapacity.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileBootCapacityTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileBootCapacity) isaVolumeProfileBootCapacity() bool {
-	return true
-}
-
-type VolumeProfileBootCapacityIntf interface {
-	isaVolumeProfileBootCapacity() bool
-}
-
-// UnmarshalVolumeProfileBootCapacity unmarshals an instance of VolumeProfileBootCapacity from the specified map of raw messages.
-func UnmarshalVolumeProfileBootCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileBootCapacity)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileCapacity : VolumeProfileCapacity struct
-// Models which "extend" this model:
-// - VolumeProfileCapacityFixed
-// - VolumeProfileCapacityRange
-// - VolumeProfileCapacityEnum
-// - VolumeProfileCapacityDependentRange
-type VolumeProfileCapacity struct {
-	// The type for this profile field.
-	Type *string `json:"type,omitempty"`
-
-	// The value for this profile field.
-	Value *int64 `json:"value,omitempty"`
-
-	// The default value for this profile field.
-	Default *int64 `json:"default,omitempty"`
-
-	// The maximum value for this profile field.
-	Max *int64 `json:"max,omitempty"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min,omitempty"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step,omitempty"`
-
-	// The permitted values for this profile field.
-	Values []int64 `json:"values,omitempty"`
-}
-
-// Constants associated with the VolumeProfileCapacity.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileCapacityTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileCapacity) isaVolumeProfileCapacity() bool {
-	return true
-}
-
-type VolumeProfileCapacityIntf interface {
-	isaVolumeProfileCapacity() bool
-}
-
-// UnmarshalVolumeProfileCapacity unmarshals an instance of VolumeProfileCapacity from the specified map of raw messages.
-func UnmarshalVolumeProfileCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileCapacity)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
 	if err != nil {
 		return
 	}
@@ -76625,84 +76978,6 @@ func UnmarshalVolumeProfileCollectionNext(m map[string]json.RawMessage, result i
 	return
 }
 
-// VolumeProfileIops : VolumeProfileIops struct
-// Models which "extend" this model:
-// - VolumeProfileIopsFixed
-// - VolumeProfileIopsRange
-// - VolumeProfileIopsEnum
-// - VolumeProfileIopsDependentRange
-type VolumeProfileIops struct {
-	// The type for this profile field.
-	Type *string `json:"type,omitempty"`
-
-	// The value for this profile field.
-	Value *int64 `json:"value,omitempty"`
-
-	// The default value for this profile field.
-	Default *int64 `json:"default,omitempty"`
-
-	// The maximum value for this profile field.
-	Max *int64 `json:"max,omitempty"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min,omitempty"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step,omitempty"`
-
-	// The permitted values for this profile field.
-	Values []int64 `json:"values,omitempty"`
-}
-
-// Constants associated with the VolumeProfileIops.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileIopsTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileIops) isaVolumeProfileIops() bool {
-	return true
-}
-
-type VolumeProfileIopsIntf interface {
-	isaVolumeProfileIops() bool
-}
-
-// UnmarshalVolumeProfileIops unmarshals an instance of VolumeProfileIops from the specified map of raw messages.
-func UnmarshalVolumeProfileIops(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileIops)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VolumeProfileIdentity : Identifies a volume profile by a unique property.
 // Models which "extend" this model:
 // - VolumeProfileIdentityByName
@@ -76762,88 +77037,6 @@ func UnmarshalVolumeProfileReference(m map[string]json.RawMessage, result interf
 	return
 }
 
-// VolumeProfileUnattachedCapacityUpdateSupported : VolumeProfileUnattachedCapacityUpdateSupported struct
-// Models which "extend" this model:
-// - VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed
-// - VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent
-type VolumeProfileUnattachedCapacityUpdateSupported struct {
-	// The type for this profile field.
-	Type *string `json:"type,omitempty"`
-
-	// The value for this profile field.
-	Value *bool `json:"value,omitempty"`
-}
-
-// Constants associated with the VolumeProfileUnattachedCapacityUpdateSupported.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileUnattachedCapacityUpdateSupportedTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileUnattachedCapacityUpdateSupported) isaVolumeProfileUnattachedCapacityUpdateSupported() bool {
-	return true
-}
-
-type VolumeProfileUnattachedCapacityUpdateSupportedIntf interface {
-	isaVolumeProfileUnattachedCapacityUpdateSupported() bool
-}
-
-// UnmarshalVolumeProfileUnattachedCapacityUpdateSupported unmarshals an instance of VolumeProfileUnattachedCapacityUpdateSupported from the specified map of raw messages.
-func UnmarshalVolumeProfileUnattachedCapacityUpdateSupported(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileUnattachedCapacityUpdateSupported)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileUnattachedIopsUpdateSupported : VolumeProfileUnattachedIopsUpdateSupported struct
-// Models which "extend" this model:
-// - VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed
-// - VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent
-type VolumeProfileUnattachedIopsUpdateSupported struct {
-	// The type for this profile field.
-	Type *string `json:"type,omitempty"`
-
-	// The value for this profile field.
-	Value *bool `json:"value,omitempty"`
-}
-
-// Constants associated with the VolumeProfileUnattachedIopsUpdateSupported.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileUnattachedIopsUpdateSupportedTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileUnattachedIopsUpdateSupported) isaVolumeProfileUnattachedIopsUpdateSupported() bool {
-	return true
-}
-
-type VolumeProfileUnattachedIopsUpdateSupportedIntf interface {
-	isaVolumeProfileUnattachedIopsUpdateSupported() bool
-}
-
-// UnmarshalVolumeProfileUnattachedIopsUpdateSupported unmarshals an instance of VolumeProfileUnattachedIopsUpdateSupported from the specified map of raw messages.
-func UnmarshalVolumeProfileUnattachedIopsUpdateSupported(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileUnattachedIopsUpdateSupported)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VolumePrototype : VolumePrototype struct
 // Models which "extend" this model:
 // - VolumePrototypeVolumeByCapacity
@@ -76871,8 +77064,8 @@ type VolumePrototype struct {
 	// The zone this volume will reside in.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
+	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -76937,9 +77130,8 @@ func UnmarshalVolumePrototype(m map[string]json.RawMessage, result interface{}) 
 
 // VolumePrototypeInstanceByImageContext : VolumePrototypeInstanceByImageContext struct
 type VolumePrototypeInstanceByImageContext struct {
-	// The capacity to use for the volume (in gigabytes). The specified value must be at least the image's
-	// `minimum_provisioned_size`, and must be within the
-	// `boot_capacity` range of the volume's profile.
+	// The capacity to use for the volume (in gigabytes). Must be at least the image's
+	// `minimum_provisioned_size`. The maximum value may increase in the future.
 	//
 	// If unspecified, the capacity will be the image's `minimum_provisioned_size`.
 	Capacity *int64 `json:"capacity,omitempty"`
@@ -77015,8 +77207,10 @@ func UnmarshalVolumePrototypeInstanceByImageContext(m map[string]json.RawMessage
 
 // VolumePrototypeInstanceBySourceSnapshotContext : VolumePrototypeInstanceBySourceSnapshotContext struct
 type VolumePrototypeInstanceBySourceSnapshotContext struct {
-	// The capacity to use for the volume (in gigabytes). The specified value must be at least the
-	// snapshot's`minimum_capacity`, and must be within the `boot_capacity` range of the volume's profile.
+	// The capacity to use for the volume (in gigabytes). Must be at least the snapshot's
+	// `minimum_capacity`. The maximum value may increase in the future.
+	//
+	// If unspecified, the capacity will be the source snapshot's `minimum_capacity`.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -77470,6 +77664,57 @@ func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (e
 	return
 }
 
+// BackupPolicyJobSourceInstanceReference : BackupPolicyJobSourceInstanceReference struct
+// This model "extends" BackupPolicyJobSource
+type BackupPolicyJobSourceInstanceReference struct {
+	// The CRN for this virtual server instance.
+	CRN *string `json:"crn" validate:"required"`
+
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *InstanceReferenceDeleted `json:"deleted,omitempty"`
+
+	// The URL for this virtual server instance.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this virtual server instance.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this virtual server instance. The name is unique across all virtual server instances in the region.
+	Name *string `json:"name" validate:"required"`
+}
+
+func (*BackupPolicyJobSourceInstanceReference) isaBackupPolicyJobSource() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyJobSourceInstanceReference unmarshals an instance of BackupPolicyJobSourceInstanceReference from the specified map of raw messages.
+func UnmarshalBackupPolicyJobSourceInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobSourceInstanceReference)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalInstanceReferenceDeleted)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // BackupPolicyJobSourceVolumeReference : BackupPolicyJobSourceVolumeReference struct
 // This model "extends" BackupPolicyJobSource
 type BackupPolicyJobSourceVolumeReference struct {
@@ -77535,6 +77780,554 @@ func UnmarshalBackupPolicyJobSourceVolumeReference(m map[string]json.RawMessage,
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyMatchResourceTypeInstance : BackupPolicyMatchResourceTypeInstance struct
+// This model "extends" BackupPolicy
+type BackupPolicyMatchResourceTypeInstance struct {
+	// The date and time that the backup policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this backup policy.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The URL for this backup policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The date and time that the most recent job for this backup policy completed.
+	//
+	// If absent, no job has yet completed for this backup policy.
+	LastJobCompletedAt *strfmt.DateTime `json:"last_job_completed_at,omitempty"`
+
+	// The lifecycle state of the backup policy.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
+	// be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name is unique across all backup policies in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The plans for the backup policy.
+	Plans []BackupPolicyPlanReference `json:"plans" validate:"required"`
+
+	// The resource group for this backup policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	IncludedContent []string `json:"included_content" validate:"required"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyMatchResourceTypeInstanceHealthStateDegradedConst     = "degraded"
+	BackupPolicyMatchResourceTypeInstanceHealthStateFaultedConst      = "faulted"
+	BackupPolicyMatchResourceTypeInstanceHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyMatchResourceTypeInstanceHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.LifecycleState property.
+// The lifecycle state of the backup policy.
+const (
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateDeletingConst  = "deleting"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateFailedConst    = "failed"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStatePendingConst   = "pending"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateStableConst    = "stable"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateSuspendedConst = "suspended"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateUpdatingConst  = "updating"
+	BackupPolicyMatchResourceTypeInstanceLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyMatchResourceTypeInstanceResourceTypeBackupPolicyConst = "backup_policy"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyMatchResourceTypeInstanceIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyMatchResourceTypeInstanceIncludedContentDataVolumesConst = "data_volumes"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeInstance.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
+const (
+	BackupPolicyMatchResourceTypeInstanceMatchResourceTypeInstanceConst = "instance"
+)
+
+func (*BackupPolicyMatchResourceTypeInstance) isaBackupPolicy() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyMatchResourceTypeInstance unmarshals an instance of BackupPolicyMatchResourceTypeInstance from the specified map of raw messages.
+func UnmarshalBackupPolicyMatchResourceTypeInstance(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyMatchResourceTypeInstance)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "last_job_completed_at", &obj.LastJobCompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyMatchResourceTypeVolume : BackupPolicyMatchResourceTypeVolume struct
+// This model "extends" BackupPolicy
+type BackupPolicyMatchResourceTypeVolume struct {
+	// The date and time that the backup policy was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The CRN for this backup policy.
+	CRN *string `json:"crn" validate:"required"`
+
+	// The reasons for the current `health_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	HealthReasons []BackupPolicyHealthReason `json:"health_reasons" validate:"required"`
+
+	// The health of this resource.
+	// - `ok`: No abnormal behavior detected
+	// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+	// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+	// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a
+	// lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also
+	// have this state.
+	HealthState *string `json:"health_state" validate:"required"`
+
+	// The URL for this backup policy.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy.
+	ID *string `json:"id" validate:"required"`
+
+	// The date and time that the most recent job for this backup policy completed.
+	//
+	// If absent, no job has yet completed for this backup policy.
+	LastJobCompletedAt *strfmt.DateTime `json:"last_job_completed_at,omitempty"`
+
+	// The lifecycle state of the backup policy.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will
+	// be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name is unique across all backup policies in the region.
+	Name *string `json:"name" validate:"required"`
+
+	// The plans for the backup policy.
+	Plans []BackupPolicyPlanReference `json:"plans" validate:"required"`
+
+	// The resource group for this backup policy.
+	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	Scope BackupPolicyScopeIntf `json:"scope" validate:"required"`
+
+	// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	//
+	// The enumerated values for this property may expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the
+	// unexpected property value was encountered.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.HealthState property.
+// The health of this resource.
+// - `ok`: No abnormal behavior detected
+// - `degraded`: Experiencing compromised performance, capacity, or connectivity
+// - `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated
+// - `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle
+// state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this
+// state.
+const (
+	BackupPolicyMatchResourceTypeVolumeHealthStateDegradedConst     = "degraded"
+	BackupPolicyMatchResourceTypeVolumeHealthStateFaultedConst      = "faulted"
+	BackupPolicyMatchResourceTypeVolumeHealthStateInapplicableConst = "inapplicable"
+	BackupPolicyMatchResourceTypeVolumeHealthStateOkConst           = "ok"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.LifecycleState property.
+// The lifecycle state of the backup policy.
+const (
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateDeletingConst  = "deleting"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateFailedConst    = "failed"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStatePendingConst   = "pending"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateStableConst    = "stable"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateSuspendedConst = "suspended"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateUpdatingConst  = "updating"
+	BackupPolicyMatchResourceTypeVolumeLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyMatchResourceTypeVolumeResourceTypeBackupPolicyConst = "backup_policy"
+)
+
+// Constants associated with the BackupPolicyMatchResourceTypeVolume.MatchResourceType property.
+// The resource type this backup policy applies to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+//
+// The enumerated values for this property may expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected
+// property value was encountered.
+const (
+	BackupPolicyMatchResourceTypeVolumeMatchResourceTypeVolumeConst = "volume"
+)
+
+func (*BackupPolicyMatchResourceTypeVolume) isaBackupPolicy() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyMatchResourceTypeVolume unmarshals an instance of BackupPolicyMatchResourceTypeVolume from the specified map of raw messages.
+func UnmarshalBackupPolicyMatchResourceTypeVolume(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyMatchResourceTypeVolume)
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "health_reasons", &obj.HealthReasons, UnmarshalBackupPolicyHealthReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "health_state", &obj.HealthState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "last_job_completed_at", &obj.LastJobCompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScope)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype : BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype struct
+// This model "extends" BackupPolicyPrototype
+type BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype struct {
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The included content for backups created using this policy:
+	// - `boot_volume`: Include the instance's boot volume.
+	// - `data_volumes`: Include the instance's data volumes.
+	IncludedContent []string `json:"included_content,omitempty"`
+
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype.IncludedContent property.
+// An item to include.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeIncludedContentBootVolumeConst  = "boot_volume"
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeIncludedContentDataVolumesConst = "data_volumes"
+)
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeMatchResourceTypeInstanceConst = "instance"
+)
+
+// NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype : Instantiate BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype(matchUserTags []string, matchResourceType string) (_model *BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype, err error) {
+	_model = &BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype{
+		MatchUserTags:     matchUserTags,
+		MatchResourceType: core.StringPtr(matchResourceType),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype unmarshals an instance of BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype)
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "included_content", &obj.IncludedContent)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype : BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype struct
+// This model "extends" BackupPolicyPrototype
+type BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype struct {
+	// The user tags this backup policy will apply to. Resources that have both a matching user tag and a matching type
+	// will be subject to the backup policy.
+	MatchUserTags []string `json:"match_user_tags" validate:"required"`
+
+	// The name for this backup policy. The name must not be used by another backup policy in the region. If unspecified,
+	// the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The prototype objects for backup plans to be created for this backup policy.
+	Plans []BackupPolicyPlanPrototype `json:"plans,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	Scope BackupPolicyScopePrototypeIntf `json:"scope,omitempty"`
+
+	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+	// will be subject to the backup policy.
+	MatchResourceType *string `json:"match_resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype.MatchResourceType property.
+// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
+// will be subject to the backup policy.
+const (
+	BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototypeMatchResourceTypeVolumeConst = "volume"
+)
+
+// NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype : Instantiate BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype (Generic Model Constructor)
+func (*VpcV1) NewBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype(matchUserTags []string, matchResourceType string) (_model *BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype, err error) {
+	_model = &BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype{
+		MatchUserTags:     matchUserTags,
+		MatchResourceType: core.StringPtr(matchResourceType),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype) isaBackupPolicyPrototype() bool {
+	return true
+}
+
+// UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype unmarshals an instance of BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype from the specified map of raw messages.
+func UnmarshalBackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyPrototypeBackupPolicyMatchResourceTypeVolumePrototype)
+	err = core.UnmarshalPrimitive(m, "match_user_tags", &obj.MatchUserTags)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "plans", &obj.Plans, UnmarshalBackupPolicyPlanPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "scope", &obj.Scope, UnmarshalBackupPolicyScopePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "match_resource_type", &obj.MatchResourceType)
 	if err != nil {
 		return
 	}
@@ -78157,9 +78950,16 @@ type BareMetalServerNetworkInterfaceByVlan struct {
 	// The bare metal server network interface type.
 	Type *string `json:"type" validate:"required"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float" validate:"required"`
 
 	// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
@@ -78535,9 +79335,16 @@ type BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVl
 	// The associated subnet.
 	Subnet SubnetIdentityIntf `json:"subnet" validate:"required"`
 
-	// Indicates if the interface can float to any other server within the same
-	// `resource_group`. The interface will float automatically if the network detects a GARP or RARP on another bare metal
-	// server in the resource group.  Applies only to `vlan` type interfaces.
+	// Indicates if the data path for the network interface can float to another bare metal server. Can only be `true` for
+	// network interfaces with an `interface_type` of `vlan`.
+	//
+	// If `true`, and the network detects traffic for this data path on another bare metal server in the resource group,
+	// the network interface will be automatically deleted from this bare metal server and a new network interface with the
+	// same `id`, `name` and `vlan` will be created on the other bare metal server.
+	//
+	// For the data path to float, the other bare metal server must be in the same
+	// `resource_group`, and must have a network interface with `interface_type` of `pci` with `allowed_vlans` including
+	// this network interface's `vlan`.
 	AllowInterfaceToFloat *bool `json:"allow_interface_to_float,omitempty"`
 
 	// - `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its array
@@ -93788,7 +94595,7 @@ func UnmarshalShareProfileIdentityByName(m map[string]json.RawMessage, result in
 // SharePrototypeShareBySize : Create a file share by size.
 // This model "extends" SharePrototype
 type SharePrototypeShareBySize struct {
-	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the `custom` or
+	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the
 	// `defined_performance` profile family, and the value must be in the range supported by the share's specified size.
 	//
 	// In addition, each client accessing the share will be restricted to 48,000 IOPS.
@@ -93928,11 +94735,11 @@ func UnmarshalSharePrototypeShareBySize(m map[string]json.RawMessage, result int
 	return
 }
 
-// SharePrototypeShareBySourceShare : Create a replica file share for an existing file share. The values for `access_control_mode`,
-// `encryption_key`, `initial_owner`, and `size` will be inherited from `source_share`.
+// SharePrototypeShareBySourceShare : Create a replica file share for an existing file share. The values for `initial_owner`,
+// `access_control_mode`, `encryption_key` and `size` will be inherited from `source_share`.
 // This model "extends" SharePrototype
 type SharePrototypeShareBySourceShare struct {
-	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the `custom` or
+	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the
 	// `defined_performance` profile family, and the value must be in the range supported by the share's specified size.
 	//
 	// In addition, each client accessing the share will be restricted to 48,000 IOPS.
@@ -93961,8 +94768,9 @@ type SharePrototypeShareBySourceShare struct {
 
 	// The root key to use to wrap the data encryption key for the share.
 	//
-	// This property must be specified if the `source_share` encryption type is
-	// `user_managed`, and must not be specified otherwise.
+	// This property must be specified if the `source_share` is in a different region and has
+	// an `encryption` type of `user_managed`, and must not be specified otherwise (its value
+	// will be inherited from `source_share`).
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
 
 	// The cron specification for the file share replication schedule.
@@ -93975,8 +94783,9 @@ type SharePrototypeShareBySourceShare struct {
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The source file share for this replica file share. The specified file share must not
-	// already have a replica, and must not be a replica. A source file share in another
-	// region must be specified using its CRN.
+	// already have a replica, and must not be a replica. If source file share is specified
+	// by CRN, it may be in an [associated partner
+	// region](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-replication).
 	SourceShare ShareIdentityIntf `json:"source_share" validate:"required"`
 }
 
@@ -94040,6 +94849,61 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "source_share", &obj.SourceShare, UnmarshalShareIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots : SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots struct
+// This model "extends" SnapshotConsistencyGroupPrototype
+type SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots struct {
+	// Indicates whether deleting the snapshot consistency group will also delete the snapshots in the group.
+	DeleteSnapshotsOnDelete *bool `json:"delete_snapshots_on_delete,omitempty"`
+
+	// The name for this snapshot consistency group. The name must be unique across all snapshot consistency groups in the
+	// region.
+	//
+	// If unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The data-consistent member snapshots to create.  All snapshots must specify a
+	// `source_volume` attached to the same virtual server instance.
+	Snapshots []SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem `json:"snapshots" validate:"required"`
+}
+
+// NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots : Instantiate SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots (Generic Model Constructor)
+func (*VpcV1) NewSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots(snapshots []SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem) (_model *SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots, err error) {
+	_model = &SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots{
+		Snapshots: snapshots,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots) isaSnapshotConsistencyGroupPrototype() bool {
+	return true
+}
+
+// UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots unmarshals an instance of SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots from the specified map of raw messages.
+func UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots)
+	err = core.UnmarshalPrimitive(m, "delete_snapshots_on_delete", &obj.DeleteSnapshotsOnDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "snapshots", &obj.Snapshots, UnmarshalSnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshotsSnapshotsItem)
 	if err != nil {
 		return
 	}
@@ -94731,6 +95595,14 @@ type VpcdnsResolverPrototypeVpcdnsResolverTypeManualPrototype struct {
 	//
 	// - have a unique `zone_affinity`, or
 	// - not have a `zone_affinity`.
+	//
+	// If `zone_affinity` is specified, exactly one DNS server must be specified for each zone in the region. The DHCP
+	// [Domain Name Server Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list this DNS
+	// server first, followed by unique DNS servers from other zones if available.
+	//
+	// If `zone_affinity` is not specified, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServerPrototype `json:"manual_servers" validate:"required"`
 
 	// The type of the DNS resolver to use.
@@ -94861,6 +95733,14 @@ type VpcdnsResolverTypeManual struct {
 	Servers []DnsServer `json:"servers" validate:"required"`
 
 	// The manually specified DNS servers for this VPC.
+	//
+	// If the DNS servers have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for a zone will list the DNS server with the
+	// affinity for that zone first, followed by the unique DNS servers from other zones.
+	//
+	// If the DNS servers do not have `zone_affinity`, the DHCP [Domain Name Server
+	// Option](https://datatracker.ietf.org/doc/html/rfc2132#section-3.8) for each zone will list all the manual DNS
+	// servers in the order specified.
 	ManualServers []DnsServer `json:"manual_servers" validate:"required"`
 
 	// The type of the DNS resolver used for the VPC.
@@ -96961,8 +97841,8 @@ type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext struct {
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
 	UserTags []string `json:"user_tags,omitempty"`
 
-	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
+	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -97119,555 +97999,6 @@ func UnmarshalVolumeIdentityByID(m map[string]json.RawMessage, result interface{
 	return
 }
 
-// VolumeProfileBootCapacityDependentRange : The permitted total capacity (in gigabytes) of a boot volume with this profile depends on its configuration.
-// This model "extends" VolumeProfileBootCapacity
-type VolumeProfileBootCapacityDependentRange struct {
-	// The maximum value for this profile field.
-	Max *int64 `json:"max" validate:"required"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min" validate:"required"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileBootCapacityDependentRange.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileBootCapacityDependentRangeTypeDependentConst      = "dependent"
-	VolumeProfileBootCapacityDependentRangeTypeDependentRangeConst = "dependent_range"
-)
-
-func (*VolumeProfileBootCapacityDependentRange) isaVolumeProfileBootCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileBootCapacityDependentRange unmarshals an instance of VolumeProfileBootCapacityDependentRange from the specified map of raw messages.
-func UnmarshalVolumeProfileBootCapacityDependentRange(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileBootCapacityDependentRange)
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileBootCapacityEnum : The permitted total capacities (in gigabytes) of a boot volume with this profile.
-// This model "extends" VolumeProfileBootCapacity
-type VolumeProfileBootCapacityEnum struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The permitted values for this profile field.
-	Values []int64 `json:"values" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileBootCapacityEnum.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileBootCapacityEnumTypeEnumConst = "enum"
-)
-
-func (*VolumeProfileBootCapacityEnum) isaVolumeProfileBootCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileBootCapacityEnum unmarshals an instance of VolumeProfileBootCapacityEnum from the specified map of raw messages.
-func UnmarshalVolumeProfileBootCapacityEnum(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileBootCapacityEnum)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileBootCapacityFixed : The permitted total capacity (in gigabytes) of a boot volume with this profile is fixed.
-// This model "extends" VolumeProfileBootCapacity
-type VolumeProfileBootCapacityFixed struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The value for this profile field.
-	Value *int64 `json:"value" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileBootCapacityFixed.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileBootCapacityFixedTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileBootCapacityFixed) isaVolumeProfileBootCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileBootCapacityFixed unmarshals an instance of VolumeProfileBootCapacityFixed from the specified map of raw messages.
-func UnmarshalVolumeProfileBootCapacityFixed(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileBootCapacityFixed)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileBootCapacityRange : The permitted total capacity range (in gigabytes) of a boot volume with this profile.
-// This model "extends" VolumeProfileBootCapacity
-type VolumeProfileBootCapacityRange struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
-	// The maximum value for this profile field.
-	Max *int64 `json:"max" validate:"required"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min" validate:"required"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileBootCapacityRange.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileBootCapacityRangeTypeRangeConst = "range"
-)
-
-func (*VolumeProfileBootCapacityRange) isaVolumeProfileBootCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileBootCapacityRange unmarshals an instance of VolumeProfileBootCapacityRange from the specified map of raw messages.
-func UnmarshalVolumeProfileBootCapacityRange(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileBootCapacityRange)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileCapacityDependentRange : The permitted total capacity (in gigabytes) of a data volume with this profile depends on its configuration.
-// This model "extends" VolumeProfileCapacity
-type VolumeProfileCapacityDependentRange struct {
-	// The maximum value for this profile field.
-	Max *int64 `json:"max" validate:"required"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min" validate:"required"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileCapacityDependentRange.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileCapacityDependentRangeTypeDependentConst      = "dependent"
-	VolumeProfileCapacityDependentRangeTypeDependentRangeConst = "dependent_range"
-)
-
-func (*VolumeProfileCapacityDependentRange) isaVolumeProfileCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileCapacityDependentRange unmarshals an instance of VolumeProfileCapacityDependentRange from the specified map of raw messages.
-func UnmarshalVolumeProfileCapacityDependentRange(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileCapacityDependentRange)
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileCapacityEnum : The permitted total capacities (in gigabytes) of a data volume with this profile.
-// This model "extends" VolumeProfileCapacity
-type VolumeProfileCapacityEnum struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The permitted values for this profile field.
-	Values []int64 `json:"values" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileCapacityEnum.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileCapacityEnumTypeEnumConst = "enum"
-)
-
-func (*VolumeProfileCapacityEnum) isaVolumeProfileCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileCapacityEnum unmarshals an instance of VolumeProfileCapacityEnum from the specified map of raw messages.
-func UnmarshalVolumeProfileCapacityEnum(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileCapacityEnum)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileCapacityFixed : The permitted total capacity (in gigabytes) of a data volume with this profile is fixed.
-// This model "extends" VolumeProfileCapacity
-type VolumeProfileCapacityFixed struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The value for this profile field.
-	Value *int64 `json:"value" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileCapacityFixed.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileCapacityFixedTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileCapacityFixed) isaVolumeProfileCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileCapacityFixed unmarshals an instance of VolumeProfileCapacityFixed from the specified map of raw messages.
-func UnmarshalVolumeProfileCapacityFixed(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileCapacityFixed)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileCapacityRange : The permitted total capacity range (in gigabytes) of a data volume with this profile.
-// This model "extends" VolumeProfileCapacity
-type VolumeProfileCapacityRange struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
-	// The maximum value for this profile field.
-	Max *int64 `json:"max" validate:"required"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min" validate:"required"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileCapacityRange.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileCapacityRangeTypeRangeConst = "range"
-)
-
-func (*VolumeProfileCapacityRange) isaVolumeProfileCapacity() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileCapacityRange unmarshals an instance of VolumeProfileCapacityRange from the specified map of raw messages.
-func UnmarshalVolumeProfileCapacityRange(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileCapacityRange)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileIopsDependentRange : The permitted IOPS range of a volume with this profile depends on its configuration.
-// This model "extends" VolumeProfileIops
-type VolumeProfileIopsDependentRange struct {
-	// The maximum value for this profile field.
-	Max *int64 `json:"max" validate:"required"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min" validate:"required"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileIopsDependentRange.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileIopsDependentRangeTypeDependentConst      = "dependent"
-	VolumeProfileIopsDependentRangeTypeDependentRangeConst = "dependent_range"
-)
-
-func (*VolumeProfileIopsDependentRange) isaVolumeProfileIops() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileIopsDependentRange unmarshals an instance of VolumeProfileIopsDependentRange from the specified map of raw messages.
-func UnmarshalVolumeProfileIopsDependentRange(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileIopsDependentRange)
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileIopsEnum : The permitted IOPS values of a volume with this profile.
-// This model "extends" VolumeProfileIops
-type VolumeProfileIopsEnum struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The permitted values for this profile field.
-	Values []int64 `json:"values" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileIopsEnum.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileIopsEnumTypeEnumConst = "enum"
-)
-
-func (*VolumeProfileIopsEnum) isaVolumeProfileIops() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileIopsEnum unmarshals an instance of VolumeProfileIopsEnum from the specified map of raw messages.
-func UnmarshalVolumeProfileIopsEnum(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileIopsEnum)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileIopsFixed : The permitted IOPS of a volume with this profile is fixed.
-// This model "extends" VolumeProfileIops
-type VolumeProfileIopsFixed struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The value for this profile field.
-	Value *int64 `json:"value" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileIopsFixed.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileIopsFixedTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileIopsFixed) isaVolumeProfileIops() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileIopsFixed unmarshals an instance of VolumeProfileIopsFixed from the specified map of raw messages.
-func UnmarshalVolumeProfileIopsFixed(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileIopsFixed)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileIopsRange : The permitted IOPS range of a volume with this profile.
-// This model "extends" VolumeProfileIops
-type VolumeProfileIopsRange struct {
-	// The default value for this profile field.
-	Default *int64 `json:"default" validate:"required"`
-
-	// The maximum value for this profile field.
-	Max *int64 `json:"max" validate:"required"`
-
-	// The minimum value for this profile field.
-	Min *int64 `json:"min" validate:"required"`
-
-	// The increment step value for this profile field.
-	Step *int64 `json:"step" validate:"required"`
-
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileIopsRange.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileIopsRangeTypeRangeConst = "range"
-)
-
-func (*VolumeProfileIopsRange) isaVolumeProfileIops() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileIopsRange unmarshals an instance of VolumeProfileIopsRange from the specified map of raw messages.
-func UnmarshalVolumeProfileIopsRange(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileIopsRange)
-	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "max", &obj.Max)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "min", &obj.Min)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "step", &obj.Step)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VolumeProfileIdentityByHref : VolumeProfileIdentityByHref struct
 // This model "extends" VolumeProfileIdentity
 type VolumeProfileIdentityByHref struct {
@@ -97730,132 +98061,6 @@ func UnmarshalVolumeProfileIdentityByName(m map[string]json.RawMessage, result i
 	return
 }
 
-// VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent : The support for capacity updates on unattached volumes of this profile depends on its configuration.
-// This model "extends" VolumeProfileUnattachedCapacityUpdateSupported
-type VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependentTypeDependentConst = "dependent"
-)
-
-func (*VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent) isaVolumeProfileUnattachedCapacityUpdateSupported() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent unmarshals an instance of VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent from the specified map of raw messages.
-func UnmarshalVolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateDependent)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed : The support for capacity updates on unattached volumes of this profile.
-// This model "extends" VolumeProfileUnattachedCapacityUpdateSupported
-type VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The value for this profile field.
-	Value *bool `json:"value" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixedTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed) isaVolumeProfileUnattachedCapacityUpdateSupported() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed unmarshals an instance of VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed from the specified map of raw messages.
-func UnmarshalVolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileUnattachedCapacityUpdateSupportedVolumeProfileUnattachedCapacityUpdateFixed)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent : The support for IOPS updates on unattached volumes of this profile depends on its configuration.
-// This model "extends" VolumeProfileUnattachedIopsUpdateSupported
-type VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependentTypeDependentConst = "dependent"
-)
-
-func (*VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent) isaVolumeProfileUnattachedIopsUpdateSupported() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent unmarshals an instance of VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent from the specified map of raw messages.
-func UnmarshalVolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateDependent)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed : The support for IOPS updates on unattached volumes of this profile.
-// This model "extends" VolumeProfileUnattachedIopsUpdateSupported
-type VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed struct {
-	// The type for this profile field.
-	Type *string `json:"type" validate:"required"`
-
-	// The value for this profile field.
-	Value *bool `json:"value" validate:"required"`
-}
-
-// Constants associated with the VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed.Type property.
-// The type for this profile field.
-const (
-	VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixedTypeFixedConst = "fixed"
-)
-
-func (*VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed) isaVolumeProfileUnattachedIopsUpdateSupported() bool {
-	return true
-}
-
-// UnmarshalVolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed unmarshals an instance of VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed from the specified map of raw messages.
-func UnmarshalVolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeProfileUnattachedIopsUpdateSupportedVolumeProfileUnattachedIopsUpdateFixed)
-	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VolumePrototypeVolumeByCapacity : VolumePrototypeVolumeByCapacity struct
 // This model "extends" VolumePrototype
 type VolumePrototypeVolumeByCapacity struct {
@@ -97878,8 +98083,8 @@ type VolumePrototypeVolumeByCapacity struct {
 	// The zone this volume will reside in.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
+	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity" validate:"required"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -97964,8 +98169,8 @@ type VolumePrototypeVolumeBySourceSnapshot struct {
 	// The zone this volume will reside in.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
-	// The capacity to use for the volume (in gigabytes). The specified value must be at least the snapshot's
-	// `minimum_capacity`, and must be within the `capacity` range of the volume's profile.
+	// The capacity to use for the volume (in gigabytes). Must be at least the snapshot's
+	// `minimum_capacity`. The maximum value may increase in the future.
 	//
 	// If unspecified, the capacity will be the source snapshot's `minimum_capacity`.
 	Capacity *int64 `json:"capacity,omitempty"`
@@ -101289,8 +101494,8 @@ type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototyp
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
 	UserTags []string `json:"user_tags,omitempty"`
 
-	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
+	// updating volumes may expand in the future.
 	Capacity *int64 `json:"capacity" validate:"required"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -101372,8 +101577,8 @@ type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototyp
 	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
 	UserTags []string `json:"user_tags,omitempty"`
 
-	// The capacity to use for the volume (in gigabytes). The specified value must be at least the snapshot's
-	// `minimum_capacity`, and must be within the `capacity` range of the volume's profile.
+	// The capacity to use for the volume (in gigabytes). Must be at least the snapshot's
+	// `minimum_capacity`. The maximum value may increase in the future.
 	//
 	// If unspecified, the capacity will be the source snapshot's `minimum_capacity`.
 	Capacity *int64 `json:"capacity,omitempty"`
@@ -103475,7 +103680,7 @@ func (pager *BackupPoliciesPager) HasNext() bool {
 }
 
 // GetNextWithContext returns the next page of results using the specified Context.
-func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page []BackupPolicyIntf, err error) {
 	if !pager.HasNext() {
 		return nil, fmt.Errorf("no more results available")
 	}
@@ -103506,9 +103711,9 @@ func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page 
 
 // GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
 // until all pages of results have been retrieved.
-func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicyIntf, err error) {
 	for pager.HasNext() {
-		var nextPage []BackupPolicy
+		var nextPage []BackupPolicyIntf
 		nextPage, err = pager.GetNextWithContext(ctx)
 		if err != nil {
 			return
@@ -103519,12 +103724,12 @@ func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allIte
 }
 
 // GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
-func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicyIntf, err error) {
 	return pager.GetNextWithContext(context.Background())
 }
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
-func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicy, err error) {
+func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicyIntf, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
@@ -104120,6 +104325,91 @@ func (pager *VolumesPager) GetNext() (page []Volume, err error) {
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *VolumesPager) GetAll() (allItems []Volume, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// SnapshotConsistencyGroupsPager can be used to simplify the use of the "ListSnapshotConsistencyGroups" method.
+type SnapshotConsistencyGroupsPager struct {
+	hasNext     bool
+	options     *ListSnapshotConsistencyGroupsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSnapshotConsistencyGroupsPager returns a new SnapshotConsistencyGroupsPager instance.
+func (vpc *VpcV1) NewSnapshotConsistencyGroupsPager(options *ListSnapshotConsistencyGroupsOptions) (pager *SnapshotConsistencyGroupsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSnapshotConsistencyGroupsOptions = *options
+	pager = &SnapshotConsistencyGroupsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SnapshotConsistencyGroupsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SnapshotConsistencyGroupsPager) GetNextWithContext(ctx context.Context) (page []SnapshotConsistencyGroup, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSnapshotConsistencyGroupsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.SnapshotConsistencyGroups
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SnapshotConsistencyGroupsPager) GetAllWithContext(ctx context.Context) (allItems []SnapshotConsistencyGroup, err error) {
+	for pager.HasNext() {
+		var nextPage []SnapshotConsistencyGroup
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotConsistencyGroupsPager) GetNext() (page []SnapshotConsistencyGroup, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotConsistencyGroupsPager) GetAll() (allItems []SnapshotConsistencyGroup, err error) {
 	return pager.GetAllWithContext(context.Background())
 }
 
