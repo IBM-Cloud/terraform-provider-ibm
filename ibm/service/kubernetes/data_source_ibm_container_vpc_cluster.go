@@ -421,7 +421,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	if !strings.HasSuffix(cls.MasterKubeVersion, _OPENSHIFT) {
 		albs, err := csClient.Albs().ListClusterAlbs(clusterID, targetEnv)
-		if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
+		if err != nil {
 			return fmt.Errorf("[ERROR] Error retrieving alb's of the cluster %s: %s", clusterID, err)
 		}
 

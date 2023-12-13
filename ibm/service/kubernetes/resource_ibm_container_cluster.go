@@ -857,12 +857,10 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			d.Set("private_vlan_id", workersByPool[0].PrivateVlan)
 		}
 		d.Set("machine_type", strings.Split(workersByPool[0].MachineType, ".encrypted")[0])
-		if workersByPool[0].MachineType != "free" {
-			if strings.HasSuffix(workersByPool[0].MachineType, ".encrypted") {
-				d.Set("disk_encryption", true)
-			} else {
-				d.Set("disk_encryption", false)
-			}
+		if strings.HasSuffix(workersByPool[0].MachineType, ".encrypted") {
+			d.Set("disk_encryption", true)
+		} else {
+			d.Set("disk_encryption", false)
 		}
 
 		if len(workersByPool) > 0 {
@@ -895,7 +893,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	albs, err := albsAPI.ListClusterALBs(clusterID, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") && !strings.Contains(err.Error(), "The specified cluster is a free cluster.") {
+	if err != nil && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
 
 		return fmt.Errorf("[ERROR] Error retrieving alb's of the cluster %s: %s", clusterID, err)
 	}
