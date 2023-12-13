@@ -55,6 +55,7 @@ func TestAccIBMSatelliteAttachHostScriptDataSourceBasicCoreos(t *testing.T) {
 				Config: testAccCheckIBMSatelliteAttachHostScriptDataSourceConfigCoreos(locationName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_satellite_attach_host_script.script", "host_provider", "ibm"),
+					resource.TestCheckResourceAttr("data.ibm_satellite_attach_host_script.script", "host_link_agent_endpoint", "testendpoint"),
 				),
 			},
 		},
@@ -75,5 +76,6 @@ data "ibm_satellite_attach_host_script" "script" {
 	labels         = ["env:prod"]
 	coreos_host	   = true
 	host_provider  = "ibm"
+	host_link_agent_endpoint = "testendpoint"
 }`, locationName)
 }

@@ -1094,8 +1094,16 @@ data "ibm_is_volumes" "example" {
 
 ## Backup Policy
 resource "ibm_is_backup_policy" "is_backup_policy" {
-  match_user_tags = ["tag1"]
-  name            = "my-backup-policy"
+  match_user_tags     = ["tag1"]
+  name                = "my-backup-policy"
+  match_resource_type = "volume"
+}
+
+resource "ibm_is_backup_policy" "is_backup_policy" {
+  match_user_tags     = ["tag1"]
+  name                = "my-backup-policy-instance"
+  match_resource_type = "instance"
+  included_content    = ["boot_volume", "data_volumes"]
 }
 
 resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
@@ -1407,4 +1415,29 @@ resource "ibm_is_share" "share" {
   replication_cron_spec = "5 * * * *"
   name    = "tfp-temp-crr"
   profile = "dp2"
+}
+//snapshot consistency group
+
+resource "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group_instance" {
+  delete_snapshots_on_delete = true
+  snapshots {
+    name          = "exmaple-snapshot"
+    source_volume = ibm_is_instance.instance.volume_attachments[0].volume_id
+  }
+  snapshots {
+    name          = "example-snapshot-1"
+    source_volume = ibm_is_instance.instance.volume_attachments[1].volume_id
+  }
+  name = "example-snapshot-consistency-group"
+}
+
+data "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group_instance" {
+  identifier = ibm_is_snapshot_consistency_group.is_snapshot_consistency_group_instance.id
+}
+data "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group_instance" {
+  name = "example-snapshot-consistency-group"
+}
+data "ibm_is_snapshot_consistency_groups" "is_snapshot_consistency_group_instance" {
+  depends_on = [ibm_is_snapshot_consistency_group.is_snapshot_consistency_group_instance]
+  name       = "example-snapshot-consistency-group"
 }
