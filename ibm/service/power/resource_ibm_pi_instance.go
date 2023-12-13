@@ -221,10 +221,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "PIN Policy of the Instance",
 			},
 			helpers.PIInstanceImageId: {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-				Description: "PI instance image id",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "PI instance image id",
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			helpers.PIInstanceProcessors: {
 				Type:          schema.TypeFloat,
