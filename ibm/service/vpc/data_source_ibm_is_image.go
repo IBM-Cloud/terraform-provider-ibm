@@ -54,7 +54,54 @@ func DataSourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "The status of this image",
 			},
-
+			"operating_system": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"architecture": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The operating system architecture",
+						},
+						"dedicated_host_only": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups",
+						},
+						"display_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A unique, display-friendly name for the operating system",
+						},
+						"family": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The software family for this operating system",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this operating system",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this operating system",
+						},
+						"vendor": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The vendor of the operating system",
+						},
+						"version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The major release version of this operating system",
+						},
+					},
+				},
+			},
 			"os": {
 				Type:        schema.TypeString,
 				Computed:    true,
