@@ -6,7 +6,7 @@ description: |-
 subcategory: "Secrets Manager"
 ---
 
-# ibm_sm_service_credentials_secret
+# ibm_sm_service_credentials_secret_metadata
 
 Provides a read-only data source for the metadata of an service credentials secret. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
