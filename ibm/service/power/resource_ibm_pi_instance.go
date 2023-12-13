@@ -267,7 +267,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			PISAPInstanceProfileID: {
 				Type:          schema.TypeString,
-				ForceNew:      true,
 				Optional:      true,
 				ConflictsWith: []string{helpers.PIInstanceProcessors, helpers.PIInstanceMemory, helpers.PIInstanceProcType},
 				Description:   "SAP Profile ID for the amount of cores and memory",
@@ -287,12 +286,14 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIInstanceReplicants: {
 				Type:        schema.TypeInt,
+				ForceNew:    true,
 				Optional:    true,
 				Default:     1,
 				Description: "PI Instance replicas count",
 			},
 			helpers.PIInstanceReplicationPolicy: {
 				Type:         schema.TypeString,
+				ForceNew:     true,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity", "none"}),
 				Default:      "none",
@@ -300,6 +301,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIInstanceReplicationScheme: {
 				Type:         schema.TypeString,
+				ForceNew:     true,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"prefix", "suffix"}),
 				Default:      "suffix",
