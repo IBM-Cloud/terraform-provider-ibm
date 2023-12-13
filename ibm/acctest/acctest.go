@@ -146,6 +146,7 @@ var (
 	SecretsManagerPublicCertificateCommonName                    string
 	SecretsManagerValidateManualDnsCisZoneId                     string
 	SecretsManagerImportedCertificatePathToCertificate           string
+	SecretsManagerServiceCredentialsCosCrn                       string
 	SecretsManagerSecretType                                     string
 	SecretsManagerSecretID                                       string
 )
@@ -1225,6 +1226,11 @@ func init() {
 	SecretsManagerImportedCertificatePathToCertificate = os.Getenv("SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE")
 	if SecretsManagerImportedCertificatePathToCertificate == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE for testing imported certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerServiceCredentialsCosCrn = os.Getenv("SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN")
+	if SecretsManagerServiceCredentialsCosCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
 	}
 
 	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
