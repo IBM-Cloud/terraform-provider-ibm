@@ -6,6 +6,7 @@ package database
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -50,8 +51,24 @@ const (
 	databaseTaskFailStatus     = "failed"
 )
 
+const (
+	databaseUserSpecialChars   = "_-"
+	opsManagerUserSpecialChars = "~!@#$%^&*()=+[]{}|;:,.<>/?_-"
+)
+
+const (
+	redisRBACRoleRegexPattern = `([+-][a-z]+\s?)+`
+)
+
+type DatabaseUser struct {
+	Username string
+	Password string
+	Role     string
+	Type     string
+}
+
 type userChange struct {
-	Old, New map[string]interface{}
+	Old, New *DatabaseUser
 }
 
 func retry(f func() error) (err error) {
@@ -84,7 +101,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 
 		CustomizeDiff: customdiff.All(
 			resourceIBMDatabaseInstanceDiff,
-			checkV5Groups),
+			validateGroupsDiff,
+			validateUsersDiff),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -154,11 +172,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description:  "The admin user password for the instance",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringLenBetween(10, 32),
-				Sensitive:    true,
+				Description: "The admin user password for the instance",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ValidateFunc: validation.All(
+					validation.StringLenBetween(15, 32),
+					DatabaseUserPasswordValidator("database"),
+				),
+				Sensitive: true,
 				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 				//  return true
 				// },
@@ -242,6 +263,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
+			"offline_restore": {
+				Description:      "Set offline restore mode for MongoDB Enterprise Edition",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
 			"users": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -258,7 +285,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							Sensitive:    true,
-							ValidateFunc: validation.StringLenBetween(10, 32),
+							ValidateFunc: validation.StringLenBetween(15, 32),
 						},
 						"type": {
 							Description:  "User type",
@@ -872,6 +899,7 @@ type Params struct {
 	RemoteLeaderID      string  `json:"remote_leader_id,omitempty"`
 	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
 	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
+	OfflineRestore      bool    `json:"offline_restore,omitempty"`
 }
 
 type Group struct {
@@ -968,50 +996,6 @@ func getGroups(instanceID string, meta interface{}) (groups []clouddatabasesv5.G
 	return groupsResponse.Groups, nil
 }
 
-// V5 Groups
-func checkGroupScaling(groupId string, resourceName string, value int, resource *GroupResource, nodeCount int) error {
-	if nodeCount == 0 {
-		nodeCount = 1
-	}
-	if resource.StepSize == 0 {
-		return fmt.Errorf("%s group must have members scaled > 0 before scaling %s", groupId, resourceName)
-	}
-	if value < resource.Minimum/nodeCount || value > resource.Maximum/nodeCount || value%(resource.StepSize/nodeCount) != 0 {
-		if !(value == 0 && resource.IsOptional) {
-			return fmt.Errorf("%s group %s must be >= %d and <= %d in increments of %d", groupId, resourceName, resource.Minimum/nodeCount, resource.Maximum/nodeCount, resource.StepSize/nodeCount)
-		}
-	}
-	if value != resource.Allocation/nodeCount && !resource.IsAdjustable {
-		return fmt.Errorf("%s can not change %s value after create", groupId, resourceName)
-	}
-	if value < resource.Allocation/nodeCount && !resource.CanScaleDown {
-		return fmt.Errorf("can not scale %s group %s below %d to %d", groupId, resourceName, resource.Allocation/nodeCount, value)
-	}
-	return nil
-}
-
-func checkGroupValue(name string, limits GroupResource, divider int, diff *schema.ResourceDiff) error {
-	if diff.HasChange(name) {
-		oldSetting, newSetting := diff.GetChange(name)
-		old := oldSetting.(int)
-		new := newSetting.(int)
-
-		if new < limits.Minimum/divider || new > limits.Maximum/divider || new%(limits.StepSize/divider) != 0 {
-			if !(new == 0 && limits.IsOptional) {
-				return fmt.Errorf("%s must be >= %d and <= %d in increments of %d", name, limits.Minimum/divider, limits.Maximum/divider/divider, limits.StepSize/divider)
-			}
-		}
-		if old != new && !limits.IsAdjustable {
-			return fmt.Errorf("%s can not change value after create", name)
-		}
-		if new < old && !limits.CanScaleDown {
-			return fmt.Errorf("%s can not scale down from %d to %d", name, old, new)
-		}
-		return nil
-	}
-	return nil
-}
-
 type CountLimit struct {
 	Units           string
 	AllocationCount int
@@ -1030,6 +1014,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	}
 
 	service := diff.Get("service").(string)
+	plan := diff.Get("plan").(string)
 
 	_, logicalReplicationSet := diff.GetOk("logical_replication_slot")
 
@@ -1084,6 +1069,11 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		if len(invalidFields) != 0 {
 			return fmt.Errorf("[ERROR] configuration contained invalid field(s): %s", invalidFields)
 		}
+	}
+
+	_, offlineRestoreOk := diff.GetOk("offline_restore")
+	if offlineRestoreOk && service != "databases-for-mongodb" && plan != "enterprise" {
+		return fmt.Errorf("[ERROR] offline_restore is only supported for databases-for-mongodb enterprise")
 	}
 
 	return nil
@@ -1217,6 +1207,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
 		params.PITRTimeStamp = &pitrTimeTrimmed
+	}
+
+	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
+		params.OfflineRestore = offlineRestore.(bool)
 	}
 
 	serviceEndpoint := d.Get("service_endpoints").(string)
@@ -1434,9 +1428,16 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 		}
 
-		for _, user := range userList.(*schema.Set).List() {
-			userEl := user.(map[string]interface{})
-			err := userUpdateCreate(userEl, instanceID, meta, d)
+		users := expandUsers(userList.(*schema.Set).List())
+		for _, user := range users {
+			// Note: Some db users exist after provisioning (i.e. admin, repl)
+			// so we must attempt both methods
+			err := user.Update(instanceID, d, meta)
+
+			if err != nil {
+				err = user.Create(instanceID, d, meta)
+			}
+
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -1481,11 +1482,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		service := d.Get("service").(string)
 		if service != "databases-for-postgresql" {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
-		}
-
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 		}
 
 		_, logicalReplicationList := d.GetChange("logical_replication_slot")
@@ -1983,65 +1979,38 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 	if d.HasChange("users") {
 		oldUsers, newUsers := d.GetChange("users")
-		userChanges := make(map[string]*userChange)
-		userKey := func(raw map[string]interface{}) string {
-			if raw["role"].(string) != "" {
-				return fmt.Sprintf("%s-%s-%s", raw["type"].(string), raw["role"].(string), raw["name"].(string))
-			} else {
-				return fmt.Sprintf("%s-%s", raw["type"].(string), raw["name"].(string))
-			}
-		}
-
-		for _, raw := range oldUsers.(*schema.Set).List() {
-			user := raw.(map[string]interface{})
-			k := userKey(user)
-			userChanges[k] = &userChange{Old: user}
-		}
-
-		for _, raw := range newUsers.(*schema.Set).List() {
-			user := raw.(map[string]interface{})
-			k := userKey(user)
-			if _, ok := userChanges[k]; !ok {
-				userChanges[k] = &userChange{}
-			}
-			userChanges[k].New = user
-		}
+		userChanges := expandUserChanges(oldUsers.(*schema.Set).List(), newUsers.(*schema.Set).List())
 
 		for _, change := range userChanges {
-			// Delete Old User
-			if change.Old != nil && change.New == nil {
-				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteDatabaseUserOptions{
-					ID:       &instanceID,
-					UserType: core.StringPtr(change.Old["type"].(string)),
-					Username: core.StringPtr(change.Old["name"].(string)),
-				}
-
-				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteDatabaseUser(deleteDatabaseUserOptions)
+			// Delete User
+			if change.isDelete() {
+				// Delete Old User
+				err = change.Old.Delete(instanceID, d, meta)
 
 				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Username, err, response))
-
+					return diag.FromErr(err)
 				}
-
-				taskID := *deleteDatabaseUserResponse.Task.ID
-				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) user (%s) delete task to complete: %s", icdId, *deleteDatabaseUserOptions.Username, err))
-				}
-
-				continue
 			}
 
-			if change.New != nil {
-				// No change
-				if change.Old != nil && change.Old["password"].(string) == change.New["password"].(string) && change.Old["name"].(string) == change.New["name"].(string) {
-					continue
+			if change.isCreate() || change.isUpdate() {
+
+				// Note: User Update is not supported for ops_manager user type
+				// Delete (ignoring errors), then re-create
+				if change.isUpdate() && !change.New.isUpdatable() {
+					change.Old.Delete(instanceID, d, meta)
+
+					err = change.New.Create(instanceID, d, meta)
+				} else {
+					// Note: Some db users exist after provisioning (i.e. admin, repl)
+					// so we must attempt both methods
+					err = change.New.Update(instanceID, d, meta)
+
+					// Create User if Update failed
+					if err != nil {
+						err = change.New.Create(instanceID, d, meta)
+					}
 				}
 
-				err := userUpdateCreate(change.New, instanceID, meta, d)
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -2107,24 +2076,24 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		if len(remove) > 0 {
 			for _, entry := range remove {
 				newEntry := entry.(map[string]interface{})
-				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteLogicalReplicationSlotOptions{
+				deleteLogicalReplicationSlotOptions := &clouddatabasesv5.DeleteLogicalReplicationSlotOptions{
 					ID:   &instanceID,
 					Name: core.StringPtr(newEntry["name"].(string)),
 				}
 
-				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteLogicalReplicationSlot(deleteDatabaseUserOptions)
+				deleteLogicalReplicationSlotResponse, response, err := cloudDatabasesClient.DeleteLogicalReplicationSlot(deleteLogicalReplicationSlotOptions)
 
 				if err != nil {
 					return diag.FromErr(fmt.Errorf(
-						"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Name, err, response))
+						"[ERROR] DeleteLogicalReplicationSlot (%s) failed %s\n%s", *deleteLogicalReplicationSlotOptions.Name, err, response))
 				}
 
-				taskID := *deleteDatabaseUserResponse.Task.ID
+				taskID := *deleteLogicalReplicationSlotResponse.Task.ID
 				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
 				if err != nil {
 					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteDatabaseUserOptions.Name, err))
+						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteLogicalReplicationSlotOptions.Name, err))
 				}
 			}
 		}
@@ -2330,7 +2299,6 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 	waitErr := waitForICDReady(meta, instanceID)
 	if waitErr != nil {
 		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
-
 	}
 
 	return stateConf.WaitForState()
@@ -2385,7 +2353,10 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 	delayDuration := 5 * time.Second
 
 	timeout := time.After(t)
-	delay := time.Tick(delayDuration)
+	ticker := time.NewTicker(delayDuration)
+	delay := ticker.C
+	defer ticker.Stop()
+
 	getTaskOptions := &clouddatabasesv5.GetTaskOptions{
 		ID: &taskId,
 	}
@@ -2732,7 +2703,28 @@ func expandGroups(_groups []interface{}) []*Group {
 	return groups
 }
 
-func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+func validateGroupScaling(groupId string, resourceName string, value int, resource *GroupResource, nodeCount int) error {
+	if nodeCount == 0 {
+		nodeCount = 1
+	}
+	if resource.StepSize == 0 {
+		return fmt.Errorf("%s group must have members scaled > 0 before scaling %s", groupId, resourceName)
+	}
+	if value < resource.Minimum/nodeCount || value > resource.Maximum/nodeCount || value%(resource.StepSize/nodeCount) != 0 {
+		if !(value == 0 && resource.IsOptional) {
+			return fmt.Errorf("%s group %s must be >= %d and <= %d in increments of %d", groupId, resourceName, resource.Minimum/nodeCount, resource.Maximum/nodeCount, resource.StepSize/nodeCount)
+		}
+	}
+	if value != resource.Allocation/nodeCount && !resource.IsAdjustable {
+		return fmt.Errorf("%s can not change %s value after create", groupId, resourceName)
+	}
+	if value < resource.Allocation/nodeCount && !resource.CanScaleDown {
+		return fmt.Errorf("can not scale %s group %s below %d to %d", groupId, resourceName, resource.Allocation/nodeCount, value)
+	}
+	return nil
+}
+
+func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	service := diff.Get("service").(string)
 	plan := diff.Get("plan").(string)
@@ -2756,7 +2748,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
 
-		// Check group_ids are unique
+		// validate group_ids are unique
 		groupIds = make([]string, 0, len(tfGroups))
 		for _, g := range tfGroups {
 			groupIds = append(groupIds, g.ID)
@@ -2788,28 +2780,28 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 			nodeCount := groupDefaults.Members.Allocation
 
 			if group.Members != nil {
-				err = checkGroupScaling(groupId, "members", group.Members.Allocation, groupDefaults.Members, 1)
+				err = validateGroupScaling(groupId, "members", group.Members.Allocation, groupDefaults.Members, 1)
 				if err != nil {
 					return err
 				}
 			}
 
 			if group.Memory != nil {
-				err = checkGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
+				err = validateGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
 					return err
 				}
 			}
 
 			if group.Disk != nil {
-				err = checkGroupScaling(groupId, "disk", group.Disk.Allocation, groupDefaults.Disk, nodeCount)
+				err = validateGroupScaling(groupId, "disk", group.Disk.Allocation, groupDefaults.Disk, nodeCount)
 				if err != nil {
 					return err
 				}
 			}
 
 			if group.CPU != nil {
-				err = checkGroupScaling(groupId, "cpu", group.CPU.Allocation, groupDefaults.CPU, nodeCount)
+				err = validateGroupScaling(groupId, "cpu", group.CPU.Allocation, groupDefaults.CPU, nodeCount)
 				if err != nil {
 					return err
 				}
@@ -2820,73 +2812,278 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 	return nil
 }
 
-// Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
-func userUpdateCreate(userData map[string]interface{}, instanceID string, meta interface{}, d *schema.ResourceData) (err error) {
-	cloudDatabasesClient, _ := meta.(conns.ClientSession).CloudDatabasesV5()
+func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	oldUsers, newUsers := diff.GetChange("users")
+	userChanges := expandUserChanges(oldUsers.(*schema.Set).List(), newUsers.(*schema.Set).List())
+
+	for _, change := range userChanges {
+		if change.isDelete() {
+			continue
+		}
+
+		if change.isCreate() || change.isUpdate() {
+			err = change.New.Validate()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func expandUsers(_users []interface{}) []*DatabaseUser {
+	if len(_users) == 0 {
+		return nil
+	}
+
+	users := make([]*DatabaseUser, 0, len(_users))
+
+	for _, userRaw := range _users {
+		if tfUser, ok := userRaw.(map[string]interface{}); ok {
+
+			user := DatabaseUser{
+				Username: tfUser["name"].(string),
+				Password: tfUser["password"].(string),
+				Role:     tfUser["role"].(string),
+				Type:     tfUser["type"].(string),
+			}
+
+			users = append(users, &user)
+		}
+	}
+
+	return users
+}
+
+func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userChanges []*userChange) {
+	oldUsers := expandUsers(_oldUsers)
+	newUsers := expandUsers(_newUsers)
+
+	userChangeMap := make(map[string]*userChange)
+
+	for _, user := range oldUsers {
+		userChangeMap[user.ID()] = &userChange{Old: user}
+	}
+
+	for _, user := range newUsers {
+		if _, ok := userChangeMap[user.ID()]; !ok {
+			userChangeMap[user.ID()] = &userChange{}
+		}
+		userChangeMap[user.ID()].New = user
+	}
+
+	userChanges = make([]*userChange, 0, len(userChangeMap))
+
+	for _, user := range userChangeMap {
+		userChanges = append(userChanges, user)
+	}
+
+	return userChanges
+}
+
+func (c *userChange) isDelete() bool {
+	return c.Old != nil && c.New == nil
+}
+
+func (c *userChange) isCreate() bool {
+	return c.Old == nil && c.New != nil
+}
+
+func (c *userChange) isUpdate() bool {
+	return c.New != nil &&
+		c.Old != nil &&
+		((c.Old.Password != c.New.Password) ||
+			(c.Old.Role != c.New.Role))
+}
+
+func (u *DatabaseUser) ID() (id string) {
+	return fmt.Sprintf("%s-%s", u.Type, u.Username)
+}
+
+func (u *DatabaseUser) Create(instanceID string, d *schema.ResourceData, meta interface{}) (err error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %w", err)
+	}
+
+	//Attempt to create user
+	userEntry := &clouddatabasesv5.User{
+		Username: core.StringPtr(u.Username),
+		Password: core.StringPtr(u.Password),
+	}
+
+	// User Role only for ops_manager user type
+	if u.Type == "ops_manager" && u.Role != "" {
+		userEntry.Role = core.StringPtr(u.Role)
+	}
+
+	createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
+		ID:       &instanceID,
+		UserType: core.StringPtr(u.Type),
+		User:     userEntry,
+	}
+
+	createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %w\n%s", *userEntry.Username, err, response)
+	}
+
+	taskID := *createDatabaseUserResponse.Task.ID
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %w", instanceID, *userEntry.Username, err)
+	}
+
+	return nil
+}
+
+func (u *DatabaseUser) Update(instanceID string, d *schema.ResourceData, meta interface{}) (err error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
 	// Attempt to update user password
 	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
-		Password: core.StringPtr(userData["password"].(string)),
+		Password: core.StringPtr(u.Password),
 	}
 
 	changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
 		ID:       &instanceID,
-		UserType: core.StringPtr(userData["type"].(string)),
-		Username: core.StringPtr(userData["name"].(string)),
+		UserType: core.StringPtr(u.Type),
+		Username: core.StringPtr(u.Username),
 		User:     passwordSettingUser,
 	}
 
 	changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
 
 	// user was found but an error occurs while triggering task
-	if response.StatusCode != 404 && err != nil {
-		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
+	if err != nil || (response.StatusCode < 200 || response.StatusCode >= 300) {
+		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %w\n%s", *changeUserPasswordOptions.Username, err, response)
 	}
 
-	updatePass := true // Assume that update password passed
+	taskID := *changeUserPasswordResponse.Task.ID
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
-	if userData["type"].(string) == "ops_manager" && response.StatusCode == 404 {
-		updatePass = false // when user_password api can't find an ops_manager user, it returns a 404 and does not get to the point of creating a task
-	} else {
-		// when user_password api can't find a database user, its task fails
-		taskID := *changeUserPasswordResponse.Task.ID
-		updatePass, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-		if err != nil {
-			log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
-		}
-	}
-
-	// Updating the password has failed
-	if !updatePass {
-		//Attempt to create user
-		userEntry := &clouddatabasesv5.User{
-			Username: core.StringPtr(userData["name"].(string)),
-			Password: core.StringPtr(userData["password"].(string)),
-		}
-
-		// User Role only for ops_manager user type
-		if userData["type"].(string) == "ops_manager" && userData["role"].(string) != "" {
-			userEntry.Role = core.StringPtr(userData["role"].(string))
-		}
-
-		createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-			ID:       &instanceID,
-			UserType: core.StringPtr(userData["type"].(string)),
-			User:     userEntry,
-		}
-
-		createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response)
-		}
-
-		taskID := *createDatabaseUserResponse.Task.ID
-		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err)
-		}
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %w", instanceID, *changeUserPasswordOptions.Username, err)
 	}
 
 	return nil
+}
+
+func (u *DatabaseUser) Delete(instanceID string, d *schema.ResourceData, meta interface{}) (err error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
+	deleteDatabaseUserOptions := &clouddatabasesv5.DeleteDatabaseUserOptions{
+		ID:       &instanceID,
+		UserType: core.StringPtr(u.Type),
+		Username: core.StringPtr(u.Username),
+	}
+
+	deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteDatabaseUser(deleteDatabaseUserOptions)
+
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Username, err, response)
+
+	}
+
+	taskID := *deleteDatabaseUserResponse.Task.ID
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	if err != nil {
+		return fmt.Errorf(
+			"[ERROR] Error waiting for database (%s) user (%s) delete task to complete: %s", instanceID, *deleteDatabaseUserOptions.Username, err)
+	}
+
+	return nil
+}
+
+func (u *DatabaseUser) isUpdatable() bool {
+	return u.Type != "ops_manager"
+}
+
+func (u *DatabaseUser) Validate() error {
+	var errs []error
+
+	var specialChars string
+	switch u.Type {
+	case "ops_manager":
+		specialChars = opsManagerUserSpecialChars
+	default:
+		specialChars = databaseUserSpecialChars
+	}
+
+	// Format for regexp
+	var specialCharPattern string
+	var bs strings.Builder
+	for i, c := range strings.Split(specialChars, "") {
+		if i > 0 {
+			bs.WriteByte('|')
+		}
+		bs.WriteString(regexp.QuoteMeta(c))
+	}
+
+	specialCharPattern = bs.String()
+
+	var allowedCharacters = regexp.MustCompile(fmt.Sprintf("^(?:[a-zA-Z0-9]|%s)+$", specialCharPattern))
+	var beginWithSpecialChar = regexp.MustCompile(fmt.Sprintf("^(?:%s)", specialCharPattern))
+	var containsLetter = regexp.MustCompile("[a-zA-Z]")
+	var containsNumber = regexp.MustCompile("[0-9]")
+	var containsSpecialChar = regexp.MustCompile(fmt.Sprintf("(?:%s)", specialCharPattern))
+
+	if u.Type == "ops_manager" && !containsSpecialChar.MatchString(u.Password) {
+		errs = append(errs, fmt.Errorf(
+			"password must contain at least one special character (%s)", specialChars))
+	}
+
+	if u.Type == "database" && beginWithSpecialChar.MatchString(u.Password) {
+		errs = append(errs, fmt.Errorf(
+			"password must not begin with a special character (%s)", specialChars))
+	}
+
+	if !containsLetter.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one letter"))
+	}
+
+	if !containsNumber.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must contain at least one number"))
+	}
+
+	if !allowedCharacters.MatchString(u.Password) {
+		errs = append(errs, errors.New("password must not contain invalid characters"))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	var b []byte
+	for i, err := range errs {
+		if i > 0 {
+			b = append(b, '\n')
+		}
+		b = append(b, err.Error()...)
+	}
+
+	return fmt.Errorf("database user (%s) validation error:\n%w", u.Username, errors.New(string(b)))
+}
+
+func DatabaseUserPasswordValidator(userType string) schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (warnings []string, errors []error) {
+		user := &DatabaseUser{Username: "admin", Type: userType, Password: i.(string)}
+		err := user.Validate()
+		if err != nil {
+			errors = append(errors, err)
+		}
+		return
+	}
 }

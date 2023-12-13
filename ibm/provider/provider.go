@@ -848,16 +848,19 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
 
 			// Added for Code Engine
-			"ibm_code_engine_app":        codeengine.DataSourceIbmCodeEngineApp(),
-			"ibm_code_engine_binding":    codeengine.DataSourceIbmCodeEngineBinding(),
-			"ibm_code_engine_build":      codeengine.DataSourceIbmCodeEngineBuild(),
-			"ibm_code_engine_config_map": codeengine.DataSourceIbmCodeEngineConfigMap(),
-			"ibm_code_engine_job":        codeengine.DataSourceIbmCodeEngineJob(),
-			"ibm_code_engine_project":    codeengine.DataSourceIbmCodeEngineProject(),
-			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
+			"ibm_code_engine_app":            codeengine.DataSourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":        codeengine.DataSourceIbmCodeEngineBinding(),
+			"ibm_code_engine_build":          codeengine.DataSourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map":     codeengine.DataSourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_domain_mapping": codeengine.DataSourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_job":            codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":        codeengine.DataSourceIbmCodeEngineProject(),
+			"ibm_code_engine_secret":         codeengine.DataSourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_event_notification": project.DataSourceIbmProjectEventNotification(),
+			"ibm_project":             project.DataSourceIbmProject(),
+			"ibm_project_config":      project.DataSourceIbmProjectConfig(),
+			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1168,6 +1171,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
 			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
 			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
+			"ibm_pi_workspace":                       power.ResourceIBMPIWorkspace(),
 
 			// Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),
@@ -1360,16 +1364,19 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMCdTektonPipeline(),
 
 			// Added for Code Engine
-			"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineApp(),
-			"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBinding(),
-			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
-			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
-			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
-			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
-			"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
+			"ibm_code_engine_app":            codeengine.ResourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":        codeengine.ResourceIbmCodeEngineBinding(),
+			"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProject(),
+			"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_instance": project.ResourceIbmProjectInstance(),
+			"ibm_project":             project.ResourceIbmProject(),
+			"ibm_project_config":      project.ResourceIbmProjectConfig(),
+			"ibm_project_environment": project.ResourceIbmProjectEnvironment(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1616,16 +1623,19 @@ func Validator() validate.ValidatorDict {
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
 
 				// // Added for Code Engine
-				"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineAppValidator(),
-				"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBindingValidator(),
-				"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuildValidator(),
-				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
-				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
-				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
-				"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
+				"ibm_code_engine_app":            codeengine.ResourceIbmCodeEngineAppValidator(),
+				"ibm_code_engine_binding":        codeengine.ResourceIbmCodeEngineBindingValidator(),
+				"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuildValidator(),
+				"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMapValidator(),
+				"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMappingValidator(),
+				"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProjectValidator(),
+				"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecretValidator(),
 
 				// Added for Project
-				"ibm_project_instance": project.ResourceIbmProjectInstanceValidator(),
+				"ibm_project":             project.ResourceIbmProjectValidator(),
+				"ibm_project_config":      project.ResourceIbmProjectConfigValidator(),
+				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

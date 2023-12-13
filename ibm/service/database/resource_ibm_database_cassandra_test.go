@@ -33,7 +33,7 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -49,7 +49,7 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -63,7 +63,7 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -93,7 +93,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
@@ -111,7 +111,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -125,7 +125,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -138,7 +138,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -173,7 +173,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "36864"),
@@ -194,7 +194,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "37248"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
@@ -212,7 +212,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "36864"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
@@ -229,7 +229,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "4"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "81920"),
@@ -266,7 +266,7 @@ func TestAccIBMDatabaseInstanceCassandraImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-cassandra"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "enterprise"),
-					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
 				),
 			},
 			{
@@ -295,10 +295,10 @@ func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string,
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -311,7 +311,7 @@ func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string,
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGroup string, name string) string {
@@ -327,14 +327,14 @@ func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGrou
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -351,7 +351,7 @@ func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGrou
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraReduced(databaseResourceGroup string, name string) string {
@@ -367,7 +367,7 @@ func testAccCheckIBMDatabaseInstanceCassandraReduced(databaseResourceGroup strin
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		timeouts {
 			create = "480m"
@@ -375,7 +375,7 @@ func testAccCheckIBMDatabaseInstanceCassandraReduced(databaseResourceGroup strin
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup string, name string) string {
@@ -391,19 +391,19 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup str
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
-		
+
 			memory {
 			  allocation_mb = 12288
 			}
-		
+
 			disk {
 			  allocation_mb = 20480
 			}
-		
+
 			cpu {
 			  allocation_count = 6
 			}
@@ -411,7 +411,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup str
 
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -424,7 +424,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup str
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResourceGroup string, name string) string {
@@ -441,7 +441,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 		version                      = "5.1"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -454,7 +454,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 			disk {
 			  allocation_mb = 20480
 			}
-		
+
 			cpu {
 			  allocation_count = 6
 			}
@@ -462,11 +462,11 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -483,7 +483,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup string, name string) string {
@@ -500,7 +500,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup s
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 		version                      = "5.1"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -524,7 +524,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup s
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup string, name string) string {
@@ -540,7 +540,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup 
 		service                      = "databases-for-cassandra"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -564,7 +564,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup 
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraGroupBasic(databaseResourceGroup string, name string) string {
@@ -581,7 +581,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupBasic(databaseResourceGroup st
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -600,7 +600,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupBasic(databaseResourceGroup st
 		}
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -613,7 +613,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupBasic(databaseResourceGroup st
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraGroupFullyspecified(databaseResourceGroup string, name string) string {
@@ -630,7 +630,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupFullyspecified(databaseResourc
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -649,11 +649,11 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupFullyspecified(databaseResourc
 		}
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -671,7 +671,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupFullyspecified(databaseResourc
 		}
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraGroupReduced(databaseResourceGroup string, name string) string {
@@ -688,7 +688,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupReduced(databaseResourceGroup 
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 		group_id = "member"
 			members {
@@ -711,7 +711,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupReduced(databaseResourceGroup 
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraGroupScaleOut(databaseResourceGroup string, name string) string {
@@ -728,7 +728,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupScaleOut(databaseResourceGroup
 		plan                         = "enterprise"
 		version                      = "5.1"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		group_id = "member"
@@ -759,7 +759,7 @@ func testAccCheckIBMDatabaseInstanceCassandraGroupScaleOut(databaseResourceGroup
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceCassandraImport(databaseResourceGroup string, name string) string {
@@ -783,5 +783,5 @@ func testAccCheckIBMDatabaseInstanceCassandraImport(databaseResourceGroup string
 		}
 
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }

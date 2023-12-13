@@ -8,6 +8,7 @@ The following types of resources are supported:
 * code_engine_binding
 * code_engine_build
 * code_engine_config_map
+* code_engine_domain_mapping
 * code_engine_job
 * code_engine_project
 * code_engine_secret
@@ -117,6 +118,20 @@ resource "ibm_code_engine_binding" "code_engine_secret_instance" {
 }
 ```
 
+code_engine_domain_mapping resource:
+
+```hcl
+resource "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_instance" {
+  project_id = var.code_engine_project_id
+  name       = var.code_engine_domain_mapping_name
+  component {
+    name          = var.code_engine_domain_mapping_component_name
+    resource_type = var.code_engine_domain_mapping_component_resource_type
+  }
+  tls_secret = var.code_engine_binding_secret_name
+}
+```
+
 ## CodeEngineV2 Data sources
 
 code_engine_project data source:
@@ -176,9 +191,18 @@ data "ibm_code_engine_secret" "code_engine_secret_instance" {
 code_engine_binding data source:
 
 ```hcl
-data "ibm_code_engine_secret" "code_engine_secret_instance" {
+data "ibm_code_engine_binding" "code_engine_binding_instance" {
   project_id = var.code_engine_project_id
   binding_id = var.code_engine_binding_id
+}
+```
+
+code_engine_domain_mapping data source:
+
+```hcl
+data "ibm_code_engine_domain_mapping" "code_engine_domain_mapping_instance" {
+  project_id = var.code_engine_project_id
+  name       = var.code_engine_domain_mapping_name
 }
 ```
 
@@ -226,7 +250,7 @@ data "ibm_code_engine_secret" "code_engine_secret_instance" {
 | data | The key-value pair for the config map. Values must be specified in `KEY=VALUE` format. Each `KEY` field must consist of alphanumeric characters, `-`, `_` or `.` and must not be exceed a max length of 253 characters. Each `VALUE` field can consists of any character and must not be exceed a max length of 1048576 characters. | `map(string)` | false |
 | image_reference | The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`. | `string` | true |
 | image_secret | The name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the job / job runs will be created but submitted job runs will fail, until this property is provided, too. This property must not be set on a job run, which references a job template. | `string` | false |
-| run_mode | The mode for runs of the job. Valid values are `task` and `daemon`. In `task` mode, the `max_execution_time` and `retry_limit` properties apply. In `daemon` mode, since there is no timeout and failed instances are restarted indefinitely, the `max_execution_time` and `retry_limit` properties are not allowed. | `string` | false |
+| run_mode | The mode for runs of the job. Valid values are `task` and `daemon`. In `task` mode, the `scale_max_execution_time` and `scale_retry_limit` properties apply. In `daemon` mode, since there is no timeout and failed instances are restarted indefinitely, the `scale_max_execution_time` and `scale_retry_limit` properties are not allowed. | `string` | false |
 | scale_array_spec | Define a custom set of array indices as comma-separated list containing single values and hyphen-separated ranges like `5,12-14,23,27`. Each instance can pick up its array index via environment variable `JOB_INDEX`. The number of unique array indices specified here determines the number of job instances to run. | `string` | false |
 | scale_max_execution_time | The maximum execution time in seconds for runs of the job. This property can only be specified if `run_mode` is `task`. | `number` | false |
 | scale_memory_limit | Optional amount of memory set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements). | `string` | false |
@@ -234,6 +258,7 @@ data "ibm_code_engine_secret" "code_engine_secret_instance" {
 | resource_group_id | Optional ID of the resource group for your project deployment. If this field is not defined, the default resource group of the account will be used. | `string` | false |
 | format | Specify the format of the secret. | `string` | true |
 | service_access | Properties for Service Access Secret Prototypes. | `` | false |
+| tls_secret | The name of the TLS secret that holds the certificate and private key of the domain mapping. | `string` | true |
 
 ## Outputs
 
@@ -244,5 +269,6 @@ data "ibm_code_engine_secret" "code_engine_secret_instance" {
 | code_engine_binding | code_engine_binding object |
 | code_engine_build | code_engine_build object |
 | code_engine_config_map | code_engine_config_map object |
+| code_engine_domain_mapping | code_engine_domain_mapping object |
 | code_engine_job | code_engine_job object |
 | code_engine_secret | code_engine_secret object |
