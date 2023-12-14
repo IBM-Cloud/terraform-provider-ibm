@@ -64,6 +64,18 @@ In addition to all argument references listed, you can access the following attr
 	- `created_at` - (String) The date and time that the backup policy job was created.
 	- `href` - (String) The URL for this backup policy job.
 	- `id` - (String) The unique identifier for this backup policy job.
+	- `source_instance` - (List) The source instance this backup was created from (may be [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
+	
+	 Nested scheme for `source_instance`:
+	 - `crn` - (String) The CRN for this virtual server instance.
+	 - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+		
+		 Nested scheme for `deleted`:
+		 - `more_info` - (String) Link to documentation about deleted resources.
+	 - `href` - (String) The URL for this virtual server instance.
+	 - `id` - (String) The unique identifier for this virtual server instance.
+	 - `name` - (String) The unique user-defined name for this virtual server instance.
+	 - `resource_type` - (String) The resource type.
 	- `job_type` - (String) The type of backup policy job.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the unexpected property value was encountered.
 	- `resource_type` - (String) The resource type.
 	- `source_volume` - (List) The source volume this backup was created from (may be [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources))
@@ -76,7 +88,13 @@ In addition to all argument references listed, you can access the following attr
 			- `more_info` - (String) Link to documentation about deleted resources.
 		- `href` - (String) The URL for this volume.
 		- `id` - (String) The unique identifier for this volume.
+		- `remote` - (List) If present, this property indicates that the referenced resource is remote to this region, and identifies the native region.
+			
+			Nested scheme for `remote`:
+			- `href` - (String) The URL for this region.
+			- `name` - (String) The globally unique name for this region.
 		- `name` - (String) The unique user-defined name for this volume.
+		- `resource_type` - (String) The resource type.
 	- `status` - (String) The status of the backup policy job.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy job on which the unexpected property value was encountered.
 	- `status_reasons` - (List) The reasons for the current status (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.
 		

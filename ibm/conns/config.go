@@ -29,7 +29,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/IBM/logs-router-go-sdk/ibmlogsrouteropenapi30v0"
+	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
@@ -229,7 +229,6 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
-	IbmLogsRouterOpenApi30V0() (*ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -301,6 +300,7 @@ type ClientSession interface {
 	CodeEngineV2() (*codeengine.CodeEngineV2, error)
 	ProjectV1() (*project.ProjectV1, error)
 	UsageReportsV4() (*usagereportsv4.UsageReportsV4, error)
+	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 }
 
 type clientSession struct {
@@ -544,10 +544,6 @@ type clientSession struct {
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
-	// Logs Routing
-	ibmLogsRouterOpenApi30Client    *ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0
-	ibmLogsRouterOpenApi30ClientErr error
-
 	// Schematics service options
 	schematicsClient    *schematicsv1.SchematicsV1
 	schematicsClientErr error
@@ -630,6 +626,9 @@ type clientSession struct {
 	// Usage Reports options
 	usageReportsClient    *usagereportsv4.UsageReportsV4
 	usageReportsClientErr error
+
+	mqcloudClient    *mqcloudv1.MqcloudV1
+	mqcloudClientErr error
 }
 
 // Usage Reports
@@ -1175,11 +1174,6 @@ func (session clientSession) MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3
 	return session.metricsRouterClient, session.metricsRouterClientErr
 }
 
-// Logs Router API
-func (session clientSession) IbmLogsRouterOpenApi30V0() (*ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0, error) {
-	return session.ibmLogsRouterOpenApi30Client, session.ibmLogsRouterOpenApi30ClientErr
-}
-
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
@@ -1212,6 +1206,13 @@ func (session clientSession) CodeEngineV2() (*codeengine.CodeEngineV2, error) {
 // Projects API Specification
 func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
+}
+
+// MQ on Cloud
+func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
+	sessionMqcloudClient := session.mqcloudClient
+	sessionMqcloudClient.EnableRetries(0, 0)
+	return session.mqcloudClient, session.mqcloudClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1307,7 +1308,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
 		session.projectClientErr = errEmptyBluemixCredentials
-		session.ibmLogsRouterOpenApi30ClientErr = errEmptyBluemixCredentials
+		session.mqcloudClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1688,22 +1689,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.catalogManagementClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	}
-
-	// LOGS ROUTER service
-	ibmLogsRouterOpenApi30ClientOptions := &ibmlogsrouteropenapi30v0.IbmLogsRouterOpenApi30V0Options{
-		Authenticator: authenticator,
-	}
-	session.ibmLogsRouterOpenApi30Client, err = ibmlogsrouteropenapi30v0.NewIbmLogsRouterOpenApi30V0(ibmLogsRouterOpenApi30ClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.ibmLogsRouterOpenApi30Client.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.ibmLogsRouterOpenApi30Client.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.ibmLogsRouterOpenApi30ClientErr = fmt.Errorf("Error occurred while configuring IBM logs-router service: %q", err)
 	}
 
 	// ATRACKER Version 2
@@ -3271,6 +3256,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
+	}
+
+	// MQ Cloud Service Configuration
+	mqCloudURL := ContructEndpoint(fmt.Sprintf("api.%s.mq2", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		mqCloudURL = ContructEndpoint(fmt.Sprintf("api.private.%s.mq2", c.Region), cloudEndpoint)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		mqCloudURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT", c.Region, mqCloudURL)
+	}
+
+	mqcloudClientOptions := &mqcloudv1.MqcloudV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
+	}
+
+	// Construct the service client for MQ Cloud.
+	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
+	if err != nil {
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ Cloud service: %q", err)
+	} else {
+		// Enable retries for API calls
+		session.mqcloudClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.mqcloudClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// Construct the service options.
