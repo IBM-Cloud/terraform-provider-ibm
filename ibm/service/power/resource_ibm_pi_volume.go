@@ -64,7 +64,7 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Computed:         true,
 				ValidateFunc:     validate.ValidateAllowedStringValues([]string{"tier0", "tier1", "tier3", "tier5k"}),
 				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "Type of disk, If not specified, default is tier3.",
+				Description:      "Type of disk, if disk type is not provided the disk type will default to tier3",
 			},
 			helpers.PIVolumePool: {
 				Type:             schema.TypeString,

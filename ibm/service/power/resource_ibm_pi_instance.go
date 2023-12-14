@@ -101,13 +101,13 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Storage type for server deployment; If not specified, default is tier3",
+				Description: "Storage type for server deployment; if pi_storage_type is not provided the storage type will default to tier3",
 			},
 			PIInstanceStoragePool: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Storage Pool for server deployment; if provided then storageAffinity will be ignored; Only valid when you deploy one of the IBM supplied stock images. Storage pool for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage pool the image was created in",
+				Description: "Storage Pool for server deployment; if provided then pi_storage_pool_affinity will be ignored; Only valid when you deploy one of the IBM supplied stock images. Storage pool for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage pool the image was created in",
 			},
 			PIAffinityPolicy: {
 				Type:         schema.TypeString,
