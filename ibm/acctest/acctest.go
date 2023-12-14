@@ -4,14 +4,22 @@
 package acctest
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
+	"sync"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+)
+
+const (
+	ProviderName          = "ibm"
+	ProviderNameAlternate = "ibmalternate"
 )
 
 var (
@@ -68,6 +76,7 @@ var (
 	UpdatedCertCRN                  string
 	SecretCRN                       string
 	SecretCRN2                      string
+	EnterpriseCRN                   string
 	InstanceCRN                     string
 	SecretGroupID                   string
 	RegionName                      string
@@ -145,7 +154,6 @@ var (
 	IksClusterVpcID           string
 	IksClusterSubnetID        string
 	IksClusterResourceGroupID string
-	IcdDbRegion               string
 	IcdDbDeploymentId         string
 	IcdDbBackupId             string
 	IcdDbTaskId               string
@@ -191,6 +199,7 @@ var (
 	PiStoragePool                   string
 	PiStorageType                   string
 	Pi_shared_processor_pool_id     string
+	Pi_resource_group_id            string
 )
 
 var (
@@ -228,6 +237,16 @@ var (
 
 // Enterprise Management
 var Account_to_be_imported string
+
+// Billing Snapshot Configuration
+var Cos_bucket string
+var Cos_location string
+var Cos_bucket_update string
+var Cos_location_update string
+var Cos_reports_folder string
+var Snapshot_date_from string
+var Snapshot_date_to string
+var Snapshot_month string
 
 // Secuity and Complinace Center
 var (
@@ -293,10 +312,21 @@ var (
 	CeProjectId         string
 	CeServiceInstanceID string
 	CeResourceKeyID     string
+	CeDomainMappingName string
+	CeTLSCert           string
+	CeTLSKey            string
+)
+
+// Satellite tests
+var (
+	SatelliteSSHPubKey string
 )
 
 // for IAM Identity
 var IamIdentityAssignmentTargetAccountId string
+
+// Projects
+var ProjectsConfigApiKey string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -305,6 +335,11 @@ func init() {
 	}
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
+
+	ProjectsConfigApiKey = os.Getenv("IBM_PROJECTS_CONFIG_APIKEY")
+	if ProjectsConfigApiKey == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PROJECTS_CONFIG_APIKEY for testing IBM Projects Config resources, the tests will fail if this is not set")
+	}
 
 	AppIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if AppIDTenantID == "" {
@@ -839,12 +874,6 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable ISSnapshotCRN for ibm_is_snapshot resource else it is set to default value 'crn:v1:bluemix:public:is:ca-tor:a/xxxxxxxx::snapshot:xxxx-xxxxc-xxx-xxxx-xxxx-xxxxxxxxxx'")
 	}
 
-	IcdDbRegion = os.Getenv("ICD_DB_REGION")
-	if IcdDbRegion == "" {
-		IcdDbRegion = "eu-gb"
-		fmt.Println("[INFO] Set the environment variable ICD_DB_REGION for testing ibm_cloud_databases else it is set to default value 'eu-gb'")
-	}
-
 	IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
 	if IcdDbDeploymentId == "" {
 		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
@@ -1036,6 +1065,12 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
 
+	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
+	if Pi_resource_group_id == "" {
+		Pi_resource_group_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
+	}
+
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if WorkspaceID == "" {
 		WorkspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -1215,6 +1250,38 @@ func init() {
 	Account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
 	if Account_to_be_imported == "" {
 		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
+	}
+	Cos_bucket = os.Getenv("COS_BUCKET")
+	if Cos_bucket == "" {
+		fmt.Println("[INFO] Set the environment variable COS_BUCKET for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Cos_location = os.Getenv("COS_LOCATION")
+	if Cos_location == "" {
+		fmt.Println("[INFO] Set the environment variable COS_LOCATION for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Cos_bucket_update = os.Getenv("COS_BUCKET_UPDATE")
+	if Cos_bucket_update == "" {
+		fmt.Println("[INFO] Set the environment variable COS_BUCKET_UPDATE for testing update operation on billing snapshot configuration API")
+	}
+	Cos_location_update = os.Getenv("COS_LOCATION_UPDATE")
+	if Cos_location_update == "" {
+		fmt.Println("[INFO] Set the environment variable COS_LOCATION_UPDATE for testing update operation on billing snapshot configuration API")
+	}
+	Cos_reports_folder = os.Getenv("COS_REPORTS_FOLDER")
+	if Cos_reports_folder == "" {
+		fmt.Println("[INFO] Set the environment variable COS_REPORTS_FOLDER for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Snapshot_date_from = os.Getenv("SNAPSHOT_DATE_FROM")
+	if Snapshot_date_from == "" {
+		fmt.Println("[INFO] Set the environment variable SNAPSHOT_DATE_FROM for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Snapshot_date_to = os.Getenv("SNAPSHOT_DATE_TO")
+	if Snapshot_date_to == "" {
+		fmt.Println("[INFO] Set the environment variable SNAPSHOT_DATE_TO for testing CRUD operations on billing snapshot configuration APIs")
+	}
+	Snapshot_month = os.Getenv("SNAPSHOT_MONTH")
+	if Snapshot_month == "" {
+		fmt.Println("[INFO] Set the environment variable SNAPSHOT_MONTH for testing CRUD operations on billing snapshot configuration APIs")
 	}
 	HpcsAdmin1 = os.Getenv("IBM_HPCS_ADMIN1")
 	if HpcsAdmin1 == "" {
@@ -1444,6 +1511,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
 
+	EnterpriseCRN = os.Getenv("ENTERPRISE_CRN")
+	if EnterpriseCRN == "" {
+		fmt.Println("[WARN] Set the environment variable ENTERPRISE_CRN for testing enterprise backup policy, the tests will fail if this is not set")
+	}
+
 	CeResourceGroupID = os.Getenv("IBM_CODE_ENGINE_RESOURCE_GROUP_ID")
 	if CeResourceGroupID == "" {
 		CeResourceGroupID = ""
@@ -1467,6 +1539,29 @@ func init() {
 		CeResourceKeyID = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_RESOURCE_KEY_ID with the ID of a resource key to access a service instance")
 	}
+
+	CeDomainMappingName = os.Getenv("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME")
+	if CeDomainMappingName == "" {
+		CeDomainMappingName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME with the name of a domain mapping")
+	}
+
+	CeTLSCert = os.Getenv("IBM_CODE_ENGINE_TLS_CERT")
+	if CeTLSCert == "" {
+		CeTLSCert = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT with the TLS certificate in base64 format")
+	}
+
+	CeTLSKey = os.Getenv("IBM_CODE_ENGINE_TLS_KEY")
+	if CeTLSKey == "" {
+		CeTLSKey = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY with a TLS key in base64 format")
+	}
+
+	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
+	if SatelliteSSHPubKey == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
+	}
 }
 
 var (
@@ -1474,10 +1569,18 @@ var (
 	TestAccProvider  *schema.Provider
 )
 
+// testAccProviderConfigure ensures Provider is only configured once
+//
+// The PreCheck(t) function is invoked for every test and this prevents
+// extraneous reconfiguration to the same values each time. However, this does
+// not prevent reconfiguration that may happen should the address of
+// Provider be errantly reused in ProviderFactories.
+var testAccProviderConfigure sync.Once
+
 func init() {
 	TestAccProvider = provider.Provider()
 	TestAccProviders = map[string]*schema.Provider{
-		"ibm": TestAccProvider,
+		ProviderName: TestAccProvider,
 	}
 }
 
@@ -1501,6 +1604,13 @@ func TestAccPreCheck(t *testing.T) {
 	if v := os.Getenv("IAAS_CLASSIC_USERNAME"); v == "" {
 		t.Fatal("IAAS_CLASSIC_USERNAME must be set for acceptance tests")
 	}
+
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(context.Background(), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider: %s", diags[0].Summary)
+		}
+	})
 }
 
 func TestAccPreCheckEnterprise(t *testing.T) {
@@ -1614,6 +1724,27 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	if CeProjectId == "" {
 		t.Fatal("IBM_CODE_ENGINE_PROJECT_INSTANCE_ID must be set for acceptance tests")
 	}
+	if CeServiceInstanceID == "" {
+		t.Fatal("IBM_CODE_ENGINE_SERVICE_INSTANCE_ID must be set for acceptance tests")
+	}
+	if CeResourceKeyID == "" {
+		t.Fatal("IBM_CODE_ENGINE_RESOURCE_KEY_ID must be set for acceptance tests")
+	}
+	if CeDomainMappingName == "" {
+		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME must be set for acceptance tests")
+	}
+	if CeTLSCert == "" {
+		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_CERT must be set for acceptance tests")
+	}
+	if CeTLSKey == "" {
+		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_KEY must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckUsage(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
 }
 
 func TestAccPreCheckScc(t *testing.T) {
@@ -1633,4 +1764,53 @@ func TestAccPreCheckScc(t *testing.T) {
 	if SccReportID == "" {
 		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
 	}
+}
+
+func TestAccPreCheckSatelliteSSH(t *testing.T) {
+	TestAccPreCheck(t)
+	if SatelliteSSHPubKey == "" {
+		t.Fatal("IBM_SATELLITE_SSH_PUB_KEY missing. Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a VALID ssh public key")
+	}
+}
+
+func TestAccProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		ProviderName:          func() (*schema.Provider, error) { return provider.Provider(), nil },
+		ProviderNameAlternate: func() (*schema.Provider, error) { return provider.Provider(), nil },
+	}
+}
+
+func Region() string {
+	region, _ := schema.MultiEnvDefaultFunc([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south")()
+
+	return region.(string)
+}
+
+func RegionAlternate() string {
+	region, _ := schema.MultiEnvDefaultFunc([]string{"IC_REGION_ALTERNATE", "IBMCLOUD_REGION_ALTERNATE"}, "eu-gb")()
+
+	return region.(string)
+}
+
+func ConfigAlternateRegionProvider() string {
+	return configNamedRegionalProvider(ProviderNameAlternate, RegionAlternate())
+}
+
+// ConfigCompose can be called to concatenate multiple strings to build test configurations
+func ConfigCompose(config ...string) string {
+	var str strings.Builder
+
+	for _, conf := range config {
+		str.WriteString(conf)
+	}
+
+	return str.String()
+}
+
+func configNamedRegionalProvider(providerName string, region string) string {
+	return fmt.Sprintf(`
+provider %[1]q {
+  region = %[2]q
+}
+`, providerName, region)
 }

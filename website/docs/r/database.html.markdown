@@ -31,7 +31,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -51,7 +51,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
     type     = "database"
   }
 
@@ -63,45 +63,6 @@ resource "ibm_database" "<your_database>" {
 
 output "ICD Etcd database connection string" {
   value  = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
-}
-
-```
-
-### **Deprecated** Sample database instance by using `node_` attributes
-Please Note this has been deprecated: Please use the `group` attribute instead
-An example to configure and deploy database by using `node_` attributes instead of `memory_`.
-
-```terraform
-data "ibm_resource_group" "group" {
-  name = "<your_group>"
-}
-
-resource "ibm_database" "<your_database>" {
-  name              = "<your_database_name>"
-  plan              = "standard"
-  location          = "eu-gb"
-  service           = "databases-for-etcd"
-  resource_group_id = data.ibm_resource_group.group.id
-  tags              = ["tag1", "tag2"]
-
-  adminpassword                = "password12"
-  node_count                = 3
-  node_memory_allocation_mb = 1024
-  node_disk_allocation_mb   = 20480
-  users {
-    name      = "user123"
-    password  = "password12"
-    type      = "database"
-  }
-
-  allowlist {
-    address     = "172.168.1.1/32"
-    description = "desc"
-  }
-}
-
-output "ICD Etcd database connection string" {
-  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
 }
 
 ```
@@ -122,7 +83,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -142,7 +103,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
 
   allowlist {
@@ -226,7 +187,7 @@ resource "ibm_database" "cassandra" {
   service                      = "databases-for-cassandra"
   plan                         = "enterprise"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -246,7 +207,7 @@ resource "ibm_database" "cassandra" {
 
   users {
     name      = "user123"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -278,7 +239,7 @@ resource "ibm_database" "mongodb" {
   service                      = "databases-for-mongodb"
   plan                         = "enterprise"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -300,7 +261,7 @@ resource "ibm_database" "mongodb" {
 
   users {
     name      = "dbuser"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -339,7 +300,7 @@ resource "ibm_database" "mongodb_enterprise" {
   service           = "databases-for-mongodb"
   plan              = "enterprise"
   location          = "us-south"
-  adminpassword     = "password12"
+  adminpassword     = "password12345678"
   tags              = ["one:two"]
 
   group {
@@ -414,7 +375,7 @@ resource "ibm_database" "edb" {
   service                      = "databases-for-enterprisedb"
   plan                         = "standard"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -436,7 +397,7 @@ resource "ibm_database" "edb" {
 
   users {
     name      = "user123"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -466,7 +427,7 @@ resource "ibm_database" "es" {
   service                      = "databases-for-elasticsearch"
   plan                         = "enterprise"
   location                     = "eu-gb"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
   version                      = "7.17"
   group {
     group_id = "member"
@@ -485,7 +446,52 @@ resource "ibm_database" "es" {
   }
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
+  }
+  allowlist {
+    address     = "172.168.1.2/32"
+    description = "desc1"
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
+### Sample Elasticsearch Platinum instance
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "es" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "es-platinum"
+  service                      = "databases-for-elasticsearch"
+  plan                         = "platinum"
+  location                     = "eu-gb"
+  adminpassword                = "password12345678"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    memory {
+      allocation_mb = 1024
+    }
+    disk {
+      allocation_mb = 5120
+    }
+    cpu {
+      allocation_count = 3
+    }
+  }
+  users {
+    name     = "user123"
+    password = "password12345678"
   }
   allowlist {
     address     = "172.168.1.2/32"
@@ -550,7 +556,7 @@ resource "ibm_database" "db" {
 
   users {
     name     = "repl"
-    password = "repl123456"
+    password = "repl12345password"
   }
 
   configuration                = <<CONFIGURATION
@@ -596,7 +602,7 @@ ICD create instance typically takes between 30 minutes to 45 minutes. Delete and
 ## Argument reference
 Review the argument reference that you can specify for your resource.
 
-- `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
+- `adminpassword` - (Optional, String)  The password for the database administrator. Password must be between 15 and 32 characters in length and contain a letter and a number. The only special characters allowed are `-_`.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
    - Nested scheme for `auto_scaling`:
@@ -661,18 +667,9 @@ Review the argument reference that you can specify for your resource.
       - Nested scheme for `cpu`:
         - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
-- `members_memory_allocation_mb` **Deprecated** - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
-- `members_disk_allocation_mb` **Deprecated** - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
-- `members_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment.
-- `node_count` **Deprecated** - (Optional, Integer) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/databases-for-postgresql?topic=cloud-databases-provisioning#provisioning-parameters
-- `node_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment per node.
-- `node_disk_allocation_mb` **Deprecated**  - (Optional, Integer) The disk size of the database per node. As above.
-- `node_memory_allocation_mb` **Deprecated** - (Optional,Integer) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/databases-for-postgresql?topic=cloud-databases-provisioning#provisioning-parameters
-
-  ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb`. `group` conflicts with `node_` and `members_` arguments. Either members, node, or group arguments have to be provided.
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
-- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), cassandra (`databases-for-cassandra`), and mongodb(`databases-for-mongodb`)
-* `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
+- `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
+- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), cassandra (`databases-for-cassandra`), and mongodb(`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
 - `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
@@ -685,7 +682,7 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for `users`:
   - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
-  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users
+  - `password` - (Required, String) The password for the user. Passwords must be between 15 and 32 characters in length and contain a letter and a number. Users with an `ops_manager` user type must have a password containing a special character `~!@#$%^&*()=+[]{}|;:,.<>/?_-` as well as a letter and a number. Other user types may only use special characters `-_`.
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
   - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
 
