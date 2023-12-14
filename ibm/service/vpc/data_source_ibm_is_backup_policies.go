@@ -233,7 +233,7 @@ func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.Resour
 	}
 
 	start := ""
-	matchBackupPolicies := []vpcv1.BackupPolicy{}
+	matchBackupPolicies := []vpcv1.BackupPolicyIntf{}
 
 	var resourceGroup string
 	if v, ok := d.GetOk("resource_group"); ok {
@@ -282,12 +282,12 @@ func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.Resour
 
 	d.SetId(dataSourceIBMIsBackupPoliciesID(d))
 
-	if matchBackupPolicies != nil {
-		err = d.Set("backup_policies", dataSourceBackupPolicyCollectionFlattenBackupPolicies(matchBackupPolicies))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting backup_policies %s", err))
-		}
-	}
+	// if matchBackupPolicies != nil {
+	// 	err = d.Set("backup_policies", dataSourceBackupPolicyCollectionFlattenBackupPolicies(matchBackupPolicies))
+	// 	if err != nil {
+	// 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting backup_policies %s", err))
+	// 	}
+	// }
 
 	return nil
 }
@@ -326,9 +326,9 @@ func dataSourceBackupPolicyCollectionBackupPoliciesToMap(backupPoliciesItem vpcv
 	if backupPoliciesItem.LastJobCompletedAt != nil {
 		backupPoliciesMap["last_job_completed_at"] = flex.DateTimeToString(backupPoliciesItem.LastJobCompletedAt)
 	}
-	if backupPoliciesItem.MatchResourceTypes != nil {
-		backupPoliciesMap["match_resource_types"] = backupPoliciesItem.MatchResourceTypes
-	}
+	// if backupPoliciesItem.MatchResourceTypes != nil {
+	// 	backupPoliciesMap["match_resource_types"] = backupPoliciesItem.MatchResourceTypes
+	// }
 	if backupPoliciesItem.MatchUserTags != nil {
 		backupPoliciesMap["match_user_tags"] = backupPoliciesItem.MatchUserTags
 	}

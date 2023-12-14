@@ -202,28 +202,29 @@ func resourceIBMIsBackupPolicyCreate(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	createBackupPolicyOptions := &vpcv1.CreateBackupPolicyOptions{}
+	createBackupPolicyOptions := &vpcv1.BackupPolicyPrototype{}
+	options := &vpcv1.CreateBackupPolicyOptions{}
 
 	if matchResourceType, ok := d.GetOk("match_resource_type"); ok {
 		matchResourceTypes := matchResourceType.(string)
-		matchResourceTypesList := []string{matchResourceTypes}
-		createBackupPolicyOptions.SetMatchResourceTypes(matchResourceTypesList)
-	} else if _, ok := d.GetOk("match_resource_types"); ok {
+		// matchResourceTypesList := []string{matchResourceTypes}
+		createBackupPolicyOptions.MatchResourceType = &matchResourceTypes
+	} /*else if _, ok := d.GetOk("match_resource_types"); ok {
 		createBackupPolicyOptions.SetMatchResourceTypes(flex.ExpandStringList((d.Get("match_resource_types").(*schema.Set)).List()))
-	}
+	}*/
 
 	if _, ok := d.GetOk("match_user_tags"); ok {
-		createBackupPolicyOptions.SetMatchUserTags((flex.ExpandStringList((d.Get("match_user_tags").(*schema.Set)).List())))
+		createBackupPolicyOptions.MatchUserTags = flex.ExpandStringList((d.Get("match_user_tags").(*schema.Set)).List())
 	}
 	if _, ok := d.GetOk("name"); ok {
-		createBackupPolicyOptions.SetName(d.Get("name").(string))
+		createBackupPolicyOptions.Name = core.StringPtr(d.Get("name").(string))
 	}
 	if resGroup, ok := d.GetOk("resource_group"); ok {
 		resourceGroupStr := resGroup.(string)
 		resourceGroup := vpcv1.ResourceGroupIdentity{
 			ID: &resourceGroupStr,
 		}
-		createBackupPolicyOptions.SetResourceGroup(&resourceGroup)
+		createBackupPolicyOptions.ResourceGroup = &resourceGroup
 	}
 
 	if _, ok := d.GetOk("scope"); ok {
@@ -234,15 +235,15 @@ func resourceIBMIsBackupPolicyCreate(context context.Context, d *schema.Resource
 				bkpPolicyScopePrototype.CRN = core.StringPtr(crnStr)
 			}
 		}
-		createBackupPolicyOptions.SetScope(&bkpPolicyScopePrototype)
+		createBackupPolicyOptions.Scope = &bkpPolicyScopePrototype
 	}
-
-	backupPolicy, response, err := vpcClient.CreateBackupPolicyWithContext(context, createBackupPolicyOptions)
+	options.BackupPolicyPrototype = createBackupPolicyOptions
+	backupPolicyIntf, response, err := vpcClient.CreateBackupPolicyWithContext(context, options)
 	if err != nil {
 		log.Printf("[DEBUG] CreateBackupPolicyWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("[ERROR] CreateBackupPolicyWithContext failed %s\n%s", err, response))
 	}
-
+	backupPolicy := backupPolicyIntf.(*vpcv1.BackupPolicy)
 	d.SetId(*backupPolicy.ID)
 
 	return resourceIBMIsBackupPolicyRead(context, d, meta)
@@ -258,7 +259,7 @@ func resourceIBMIsBackupPolicyRead(context context.Context, d *schema.ResourceDa
 
 	getBackupPolicyOptions.SetID(d.Id())
 
-	backupPolicy, response, err := vpcClient.GetBackupPolicyWithContext(context, getBackupPolicyOptions)
+	backupPolicyIntf, response, err := vpcClient.GetBackupPolicyWithContext(context, getBackupPolicyOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -267,19 +268,20 @@ func resourceIBMIsBackupPolicyRead(context context.Context, d *schema.ResourceDa
 		log.Printf("[DEBUG] GetBackupPolicyWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("[ERROR] GetBackupPolicyWithContext failed %s\n%s", err, response))
 	}
+	backupPolicy := backupPolicyIntf.(*vpcv1.BackupPolicy)
 
-	if backupPolicy.MatchResourceTypes != nil {
-		if err = d.Set("match_resource_types", backupPolicy.MatchResourceTypes); err != nil {
+	if backupPolicy.MatchResourceType != nil {
+		if err = d.Set("match_resource_types", backupPolicy.MatchResourceType); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_types: %s", err))
 		}
 	}
-	if backupPolicy.MatchResourceTypes != nil {
-		for _, matchResourceTypes := range backupPolicy.MatchResourceTypes {
-			if err = d.Set("match_resource_type", matchResourceTypes); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
-			}
-		}
-	}
+	// if backupPolicy.MatchResourceType != nil {
+	// 	for _, matchResourceTypes := range backupPolicy.MatchResourceType {
+	// 		if err = d.Set("match_resource_type", matchResourceTypes); err != nil {
+	// 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
+	// 		}
+	// 	}
+	// }
 	if backupPolicy.MatchUserTags != nil {
 		if err = d.Set("match_user_tags", backupPolicy.MatchUserTags); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_user_tags: %s", err))

@@ -223,13 +223,13 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 			log.Printf("[DEBUG] GetBackupPolicyWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("[ERROR] GetBackupPolicyWithContext failed %s\n%s", err, response))
 		}
-		backupPolicy = backupPolicyInfo
+		backupPolicy = backupPolicyInfo.(*vpcv1.BackupPolicy)
 
 	} else if v, ok := d.GetOk("name"); ok {
 
 		name := v.(string)
 		start := ""
-		allrecs := []vpcv1.BackupPolicy{}
+		allrecs := []vpcv1.BackupPolicyIntf{}
 		for {
 			listBackupPoliciesOptions := &vpcv1.ListBackupPoliciesOptions{}
 			if start != "" {
@@ -249,9 +249,10 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 				break
 			}
 		}
-		for _, backupPolicyInfo := range allrecs {
+		for _, backupPolicyIntf := range allrecs {
+			backupPolicyInfo := backupPolicyIntf.(*vpcv1.BackupPolicy)
 			if *backupPolicyInfo.Name == name {
-				backupPolicy = &backupPolicyInfo
+				backupPolicy = backupPolicyInfo
 				break
 			}
 		}
@@ -316,11 +317,11 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	matchResourceType := make([]string, 0)
-	if backupPolicy.MatchResourceTypes != nil {
-		for _, matchResourceTyp := range backupPolicy.MatchResourceTypes {
-			matchResourceType = append(matchResourceType, matchResourceTyp)
-		}
+	var matchResourceType string
+	if backupPolicy.MatchResourceType != nil {
+		// for _, matchResourceTyp := range backupPolicy.MatchResourceType {
+		matchResourceType = *backupPolicy.MatchResourceType
+		// }
 	}
 	d.Set("match_resource_types", matchResourceType)
 

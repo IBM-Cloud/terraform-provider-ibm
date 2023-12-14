@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2023-12-06
+// API Version: 2023-12-13
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -47,7 +47,7 @@ type VpcV1 struct {
 	generation *int64
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
-	// and `2023-12-06`.
+	// and `2023-12-13`.
 	Version *string
 }
 
@@ -64,7 +64,7 @@ type VpcV1Options struct {
 	Authenticator core.Authenticator
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
-	// and `2023-12-06`.
+	// and `2023-12-13`.
 	Version *string
 }
 
@@ -122,7 +122,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-12-05")
+		options.Version = core.StringPtr("2023-12-12")
 	}
 
 	service = &VpcV1{
@@ -64562,6 +64562,12 @@ type Share struct {
 	// This property will be absent if no jobs have been created for this file share.
 	LatestJob *ShareJob `json:"latest_job,omitempty"`
 
+	// Information about the latest synchronization for this file share.
+	//
+	// This property will be present when the `replication_role` is `replica` and at least
+	// one replication sync has been completed.
+	LatestSync *ShareLatestSync `json:"latest_sync,omitempty"`
+
 	// The lifecycle state of the file share.
 	LifecycleState *string `json:"lifecycle_state" validate:"required"`
 
@@ -64595,6 +64601,8 @@ type Share struct {
 	// The replication status of the file share.
 	//
 	// * `active`: This share is actively participating in replication, and the replica's data is up-to-date with the
+	// replication schedule.
+	// * `degraded`: This is share is participating in replication, but the replica's data has fallen behind the
 	// replication schedule.
 	// * `failover_pending`: This share is performing a replication failover.
 	// * `initializing`: This share is initializing replication.
@@ -64683,12 +64691,15 @@ const (
 //
 // * `active`: This share is actively participating in replication, and the replica's data is up-to-date with the
 // replication schedule.
+// * `degraded`: This is share is participating in replication, but the replica's data has fallen behind the replication
+// schedule.
 // * `failover_pending`: This share is performing a replication failover.
 // * `initializing`: This share is initializing replication.
 // * `none`: This share is not participating in replication.
 // * `split_pending`: This share is performing a replication split.
 const (
 	ShareReplicationStatusActiveConst          = "active"
+	ShareReplicationStatusDegradedConst        = "degraded"
 	ShareReplicationStatusFailoverPendingConst = "failover_pending"
 	ShareReplicationStatusInitializingConst    = "initializing"
 	ShareReplicationStatusNoneConst            = "none"
@@ -64737,6 +64748,10 @@ func UnmarshalShare(m map[string]json.RawMessage, result interface{}) (err error
 		return
 	}
 	err = core.UnmarshalModel(m, "latest_job", &obj.LatestJob, UnmarshalShareJob)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "latest_sync", &obj.LatestSync, UnmarshalShareLatestSync)
 	if err != nil {
 		return
 	}
@@ -65084,6 +65099,40 @@ func UnmarshalShareJobStatusReason(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ShareLatestSync : Information about the latest synchronization for this file share.
+//
+// This property will be present when the `replication_role` is `replica` and at least one replication sync has been
+// completed.
+type ShareLatestSync struct {
+	// The completed date and time of last synchronization between the replica share and its source.
+	CompletedAt *strfmt.DateTime `json:"completed_at" validate:"required"`
+
+	// The data transferred (in bytes) in the last synchronization between the replica and its source.
+	DataTransferred *int64 `json:"data_transferred" validate:"required"`
+
+	// The start date and time of last synchronization between the replica share and its source.
+	StartedAt *strfmt.DateTime `json:"started_at" validate:"required"`
+}
+
+// UnmarshalShareLatestSync unmarshals an instance of ShareLatestSync from the specified map of raw messages.
+func UnmarshalShareLatestSync(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ShareLatestSync)
+	err = core.UnmarshalPrimitive(m, "completed_at", &obj.CompletedAt)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "data_transferred", &obj.DataTransferred)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "started_at", &obj.StartedAt)
 	if err != nil {
 		return
 	}
@@ -66149,7 +66198,9 @@ type SharePrototype struct {
 	ReplicationCronSpec *string `json:"replication_cron_spec,omitempty"`
 
 	// The source file share for this replica file share. The specified file share must not
-	// already have a replica, and must not be a replica.
+	// already have a replica, and must not be a replica. If source file share is specified
+	// by CRN, it may be in an [associated partner
+	// region](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-replication).
 	SourceShare ShareIdentityIntf `json:"source_share,omitempty"`
 }
 
@@ -66346,6 +66397,10 @@ type ShareReference struct {
 	// The name for this share. The name is unique across all shares in the region.
 	Name *string `json:"name" validate:"required"`
 
+	// If present, this property indicates that the resource associated with this reference
+	// is remote and therefore may not be directly retrievable.
+	Remote *ShareRemote `json:"remote,omitempty"`
+
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 }
@@ -66379,6 +66434,10 @@ func UnmarshalShareReference(m map[string]json.RawMessage, result interface{}) (
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalShareRemote)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
 	if err != nil {
 		return
@@ -66398,6 +66457,25 @@ type ShareReferenceDeleted struct {
 func UnmarshalShareReferenceDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(ShareReferenceDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// ShareRemote : If present, this property indicates that the resource associated with this reference is remote and therefore may not
+// be directly retrievable.
+type ShareRemote struct {
+	// If present, this property indicates that the referenced resource is remote to this
+	// region, and identifies the native region.
+	Region *RegionReference `json:"region,omitempty"`
+}
+
+// UnmarshalShareRemote unmarshals an instance of ShareRemote from the specified map of raw messages.
+func UnmarshalShareRemote(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ShareRemote)
+	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionReference)
 	if err != nil {
 		return
 	}
@@ -94657,8 +94735,8 @@ func UnmarshalSharePrototypeShareBySize(m map[string]json.RawMessage, result int
 	return
 }
 
-// SharePrototypeShareBySourceShare : Create a replica file share for an existing file share. The values for `access_control_mode`,
-// `encryption_key`, `initial_owner`, and `size` will be inherited from `source_share`.
+// SharePrototypeShareBySourceShare : Create a replica file share for an existing file share. The values for `initial_owner`,
+// `access_control_mode`, `encryption_key` and `size` will be inherited from `source_share`.
 // This model "extends" SharePrototype
 type SharePrototypeShareBySourceShare struct {
 	// The maximum input/output operations per second (IOPS) for the file share. The share must be in the
@@ -94688,6 +94766,13 @@ type SharePrototypeShareBySourceShare struct {
 	// For a replica share, this must be a different zone in the same region as the source share.
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
+	// The root key to use to wrap the data encryption key for the share.
+	//
+	// This property must be specified if the `source_share` is in a different region and has
+	// an `encryption` type of `user_managed`, and must not be specified otherwise (its value
+	// will be inherited from `source_share`).
+	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
+
 	// The cron specification for the file share replication schedule.
 	//
 	// Replication of a share can be scheduled to occur at most once per hour.
@@ -94698,7 +94783,9 @@ type SharePrototypeShareBySourceShare struct {
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
 	// The source file share for this replica file share. The specified file share must not
-	// already have a replica, and must not be a replica.
+	// already have a replica, and must not be a replica. If source file share is specified
+	// by CRN, it may be in an [associated partner
+	// region](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-replication).
 	SourceShare ShareIdentityIntf `json:"source_share" validate:"required"`
 }
 
@@ -94746,6 +94833,10 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 		return
 	}
 	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
 	if err != nil {
 		return
 	}
