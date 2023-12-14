@@ -31,7 +31,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -51,7 +51,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
     type     = "database"
   }
 
@@ -83,7 +83,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -103,7 +103,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
 
   allowlist {
@@ -187,7 +187,7 @@ resource "ibm_database" "cassandra" {
   service                      = "databases-for-cassandra"
   plan                         = "enterprise"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -207,7 +207,7 @@ resource "ibm_database" "cassandra" {
 
   users {
     name      = "user123"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -239,7 +239,7 @@ resource "ibm_database" "mongodb" {
   service                      = "databases-for-mongodb"
   plan                         = "enterprise"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -261,7 +261,7 @@ resource "ibm_database" "mongodb" {
 
   users {
     name      = "dbuser"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -300,7 +300,7 @@ resource "ibm_database" "mongodb_enterprise" {
   service           = "databases-for-mongodb"
   plan              = "enterprise"
   location          = "us-south"
-  adminpassword     = "password12"
+  adminpassword     = "password12345678"
   tags              = ["one:two"]
 
   group {
@@ -375,7 +375,7 @@ resource "ibm_database" "edb" {
   service                      = "databases-for-enterprisedb"
   plan                         = "standard"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -397,7 +397,7 @@ resource "ibm_database" "edb" {
 
   users {
     name      = "user123"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -427,7 +427,7 @@ resource "ibm_database" "es" {
   service                      = "databases-for-elasticsearch"
   plan                         = "enterprise"
   location                     = "eu-gb"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
   version                      = "7.17"
   group {
     group_id = "member"
@@ -446,7 +446,7 @@ resource "ibm_database" "es" {
   }
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
   allowlist {
     address     = "172.168.1.2/32"
@@ -473,7 +473,7 @@ resource "ibm_database" "es" {
   service                      = "databases-for-elasticsearch"
   plan                         = "platinum"
   location                     = "eu-gb"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
   group {
     group_id = "member"
     members {
@@ -491,7 +491,7 @@ resource "ibm_database" "es" {
   }
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
   allowlist {
     address     = "172.168.1.2/32"
@@ -556,7 +556,7 @@ resource "ibm_database" "db" {
 
   users {
     name     = "repl"
-    password = "repl123456"
+    password = "repl12345password"
   }
 
   configuration                = <<CONFIGURATION
@@ -602,7 +602,7 @@ ICD create instance typically takes between 30 minutes to 45 minutes. Delete and
 ## Argument reference
 Review the argument reference that you can specify for your resource.
 
-- `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
+- `adminpassword` - (Optional, String)  The password for the database administrator. Password must be between 15 and 32 characters in length and contain a letter and a number. The only special characters allowed are `-_`.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
    - Nested scheme for `auto_scaling`:
@@ -682,7 +682,7 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for `users`:
   - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
-  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users
+  - `password` - (Required, String) The password for the user. Passwords must be between 15 and 32 characters in length and contain a letter and a number. Users with an `ops_manager` user type must have a password containing a special character `~!@#$%^&*()=+[]{}|;:,.<>/?_-` as well as a letter and a number. Other user types may only use special characters `-_`.
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
   - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
 
