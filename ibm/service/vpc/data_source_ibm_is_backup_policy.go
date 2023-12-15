@@ -69,6 +69,17 @@ func DataSourceIBMIsBackupPolicy() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"match_resource_type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
+			},
+			"included_content": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The included content for backups created using this policy",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"match_user_tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -229,7 +240,7 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 
 		name := v.(string)
 		start := ""
-		allrecs := []vpcv1.BackupPolicyIntf{}
+		allrecs := []vpcv1.BackupPolicy{}
 		for {
 			listBackupPoliciesOptions := &vpcv1.ListBackupPoliciesOptions{}
 			if start != "" {
@@ -244,15 +255,17 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 				break
 			}
 			start = flex.GetNext(backupPolicyCollection.Next)
-			allrecs = append(allrecs, backupPolicyCollection.BackupPolicies...)
+			for _, backupPolicyInfo := range backupPolicyCollection.BackupPolicies {
+				backupPolicies := backupPolicyInfo.(*vpcv1.BackupPolicy)
+				allrecs = append(allrecs, *backupPolicies)
+			}
 			if start == "" {
 				break
 			}
 		}
-		for _, backupPolicyIntf := range allrecs {
-			backupPolicyInfo := backupPolicyIntf.(*vpcv1.BackupPolicy)
+		for _, backupPolicyInfo := range allrecs {
 			if *backupPolicyInfo.Name == name {
-				backupPolicy = backupPolicyInfo
+				backupPolicy = &backupPolicyInfo
 				break
 			}
 		}
@@ -317,13 +330,20 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	var matchResourceType string
 	if backupPolicy.MatchResourceType != nil {
-		// for _, matchResourceTyp := range backupPolicy.MatchResourceType {
-		matchResourceType = *backupPolicy.MatchResourceType
-		// }
+		if err = d.Set("match_resource_types", []string{*backupPolicy.MatchResourceType}); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_types: %s", err))
+		}
+		if err = d.Set("match_resource_type", *backupPolicy.MatchResourceType); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
+		}
 	}
-	d.Set("match_resource_types", matchResourceType)
+
+	if backupPolicy.IncludedContent != nil {
+		if err = d.Set("included_content", backupPolicy.IncludedContent); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting included_content: %s", err))
+		}
+	}
 
 	matchUserTags := make([]string, 0)
 	if backupPolicy.MatchUserTags != nil {
