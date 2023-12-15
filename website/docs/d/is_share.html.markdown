@@ -48,7 +48,7 @@ The following attributes are exported:
 - `created_at` - The date and time that the file share is created.
 - `crn` - The CRN for this share.
 - `encryption` - The type of encryption used for this file share.
-- `encryption_key` - The CRN of the key used to encrypt this file share. Nested `encryption_key` blocks have the following structure:
+- `encryption_key` - The CRN of the key used to encrypt this file share.
 - `href` - The URL for this share.
 - `iops` - The maximum input/output operation performance bandwidth per second for the file share.
 - `latest_sync` - (List) Information about the latest synchronization for this file share.
