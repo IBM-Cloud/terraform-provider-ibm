@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021, 2022, 2023.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2023-12-13
+// API Version: today
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -47,12 +47,12 @@ type VpcV1 struct {
 	generation *int64
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
-	// and `2023-12-13`.
+	// and `2023-12-15`.
 	Version *string
 }
 
 // DefaultServiceURL is the default URL to make service requests to.
-const DefaultServiceURL = "https://us-south.iaas.cloud.ibm.com/v1"
+const DefaultServiceURL = "https://au-syd.iaas.cloud.ibm.com/v1"
 
 // DefaultServiceName is the default key used to find external configuration information.
 const DefaultServiceName = "vpc"
@@ -64,7 +64,7 @@ type VpcV1Options struct {
 	Authenticator core.Authenticator
 
 	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2023-12-05`
-	// and `2023-12-13`.
+	// and `2023-12-15`.
 	Version *string
 }
 
@@ -21068,9 +21068,6 @@ func (vpc *VpcV1) CreateLoadBalancerWithContext(ctx context.Context, createLoadB
 	if createLoadBalancerOptions.Subnets != nil {
 		body["subnets"] = createLoadBalancerOptions.Subnets
 	}
-	if createLoadBalancerOptions.Datapath != nil {
-		body["datapath"] = createLoadBalancerOptions.Datapath
-	}
 	if createLoadBalancerOptions.Dns != nil {
 		body["dns"] = createLoadBalancerOptions.Dns
 	}
@@ -31131,9 +31128,6 @@ type CreateLoadBalancerOptions struct {
 	// Load balancers in the `network` family allow only one subnet to be specified.
 	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
 
-	// The datapath logging configuration for this load balancer.
-	Datapath *LoadBalancerLoggingDatapathPrototype `json:"datapath,omitempty"`
-
 	// The DNS configuration for this load balancer.
 	//
 	// If unspecified, DNS `A` records for this load balancer's `hostname` property will be added
@@ -31146,7 +31140,7 @@ type CreateLoadBalancerOptions struct {
 
 	// The logging configuration to use for this load balancer. See [VPC Datapath
 	// Logging](https://cloud.ibm.com/docs/vpc?topic=vpc-datapath-logging) on the logging
-	// format, fields and permitted values.
+	// format, fields and permitted values. If unspecified, `datapath.active` will be `false`.
 	//
 	// To activate logging, the load balancer profile must support the specified logging type.
 	Logging *LoadBalancerLoggingPrototype `json:"logging,omitempty"`
@@ -31198,12 +31192,6 @@ func (_options *CreateLoadBalancerOptions) SetIsPublic(isPublic bool) *CreateLoa
 // SetSubnets : Allow user to set Subnets
 func (_options *CreateLoadBalancerOptions) SetSubnets(subnets []SubnetIdentityIntf) *CreateLoadBalancerOptions {
 	_options.Subnets = subnets
-	return _options
-}
-
-// SetDatapath : Allow user to set Datapath
-func (_options *CreateLoadBalancerOptions) SetDatapath(datapath *LoadBalancerLoggingDatapathPrototype) *CreateLoadBalancerOptions {
-	_options.Datapath = datapath
 	return _options
 }
 
@@ -54666,7 +54654,7 @@ type LoadBalancerListener struct {
 	CertificateInstance *CertificateInstanceReference `json:"certificate_instance,omitempty"`
 
 	// The connection limit of the listener.
-	ConnectionLimit *int64 `json:"connection_limit,omitempty"`
+	ConnectionLimit *int64 `json:"connection_limit" validate:"required"`
 
 	// The date and time that this listener was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
@@ -55378,7 +55366,9 @@ type LoadBalancerListenerPolicyReference struct {
 	// The policy's unique identifier.
 	ID *string `json:"id" validate:"required"`
 
-	Name interface{} `json:"name" validate:"required"`
+	// The name for this load balancer listener policy. The name is unique across all policies for the load balancer
+	// listener.
+	Name *string `json:"name" validate:"required"`
 }
 
 // UnmarshalLoadBalancerListenerPolicyReference unmarshals an instance of LoadBalancerListenerPolicyReference from the specified map of raw messages.
