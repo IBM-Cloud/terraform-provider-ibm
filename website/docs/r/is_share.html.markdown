@@ -8,7 +8,7 @@ subcategory: "VPC infrastructure"
 
 # ibm\_is_share
 
-Provides a resource for Share. This allows Share to be created, updated and deleted.
+Provides a resource for Share. This allows Share to be created, updated and deleted. For more information, about share replication, see [Share replication](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-replication).
 
 ~> **NOTE**
   New shares should be created with profile `dp2`. Old Tiered profiles will be deprecated soon.
