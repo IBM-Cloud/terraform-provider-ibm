@@ -483,7 +483,9 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if sharesItem.LatestSync != nil {
 		latest_sync := make(map[string]interface{})
 		latest_sync["completed_at"] = flex.DateTimeToString(sharesItem.LatestSync.CompletedAt)
-		latest_sync["data_transferred"] = *sharesItem.LatestSync.DataTransferred
+		if sharesItem.LatestSync.DataTransferred != nil {
+			latest_sync["data_transferred"] = *sharesItem.LatestSync.DataTransferred
+		}
 		latest_sync["started_at"] = flex.DateTimeToString(sharesItem.LatestSync.CompletedAt)
 		latest_syncs = append(latest_syncs, latest_sync)
 	}

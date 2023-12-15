@@ -1120,7 +1120,9 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 	if share.LatestSync != nil {
 		latest_sync := make(map[string]interface{})
 		latest_sync["completed_at"] = flex.DateTimeToString(share.LatestSync.CompletedAt)
-		latest_sync["data_transferred"] = *share.LatestSync.DataTransferred
+		if share.LatestSync.DataTransferred != nil {
+			latest_sync["data_transferred"] = *share.LatestSync.DataTransferred
+		}
 		latest_sync["started_at"] = flex.DateTimeToString(share.LatestSync.CompletedAt)
 		latest_syncs = append(latest_syncs, latest_sync)
 	}
