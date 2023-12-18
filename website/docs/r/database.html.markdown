@@ -684,7 +684,7 @@ Review the argument reference that you can specify for your resource.
   - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
   - `password` - (Required, String) The password for the user. Passwords must be between 15 and 32 characters in length and contain a letter and a number. Users with an `ops_manager` user type must have a password containing a special character `~!@#$%^&*()=+[]{}|;:,.<>/?_-` as well as a letter and a number. Other user types may only use special characters `-_`.
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
-  - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
+  - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type or Redis 6.0 and above. Example roles for `ops_manager`: `group_read_only`, `group_data_access_admin`. For, Redis 6.0 and above, `role` must be in Redis ACL syntax for adding and removing command categories i.e. `+@category` or  `-@category`. Allowed command categories are `all`, `admin`, `read`, `write`. Example Redis `role`: `-@all +@read`
 
 - `allowlist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 

@@ -60,3 +60,4 @@ In addition to all argument reference list, you can access the following attribu
 - `state` - (String) The state of the volume.
 - `volume_pool` - (String) Volume pool, name of storage pool where the volume is located.
 - `wwn` - (String) The world wide name of the volume.
+- `io_throttle_rate` -(String) Amount of iops assigned to the volume.

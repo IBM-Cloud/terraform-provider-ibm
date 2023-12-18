@@ -104,6 +104,8 @@ var (
 	DedicatedHostGroupFamily        string
 	DedicatedHostGroupClass         string
 	ShareProfileName                string
+	SourceShareCRN                  string
+	ShareEncryptionKey              string
 	VNIId                           string
 	VolumeProfileName               string
 	VSIUnattachedBootVolumeID       string
@@ -846,6 +848,18 @@ func init() {
 	if ShareProfileName == "" {
 		ShareProfileName = "dp2" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
+	}
+
+	SourceShareCRN = os.Getenv("IS_SOURCE_SHARE_CRN")
+	if SourceShareCRN == "" {
+		SourceShareCRN = "crn:v1:staging:public:is:us-east-1:a/efe5afc483594adaa8325e2b4d1290df::share:r142-a106f162-86e4-4d7f-be75-193cc55a93e9" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
+	}
+
+	ShareEncryptionKey = os.Getenv("IS_SHARE_ENCRYPTION_KEY")
+	if ShareEncryptionKey == "" {
+		ShareEncryptionKey = "crn:v1:staging:public:kms:us-south:a/efe5afc483594adaa8325e2b4d1290df:1be45161-6dae-44ca-b248-837f98004057:key:3dd21cc5-cc20-4f7c-bc62-8ec9a8a3d1bd" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
 	}
 
 	VolumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
