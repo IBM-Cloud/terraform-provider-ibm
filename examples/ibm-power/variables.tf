@@ -1,4 +1,4 @@
-# Service // Account
+## Service // Account
 variable "ibm_cloud_api_key" {
   description = "API Key"
   type        = string
@@ -15,12 +15,13 @@ variable "zone" {
   default     = "<e.g dal12>"
 }
 
-# Workspace
+## Workspace
 variable "workspace_name" {
   description = "Workspace Name"
   type = string
   default = "<name>"
 }
+# See available datacenter regions at: https://cloud.ibm.com/apidocs/power-cloud#endpoint
 variable "datacenter" {
   description = "Datacenter Region"
   type = string
@@ -32,7 +33,7 @@ variable "resource_group_id" {
   default = "<name>"
 }
 
-# Image
+## Image
 variable "image_name" {
   description = "Name of the image in the image catalog"
   type        = string
@@ -44,7 +45,7 @@ variable "image_id" {
   default     = "<id>"
 }
 
-# Private Network
+## Private Network
 variable "network_name" {
   description = "Name of the network"
   type        = string
@@ -66,7 +67,7 @@ variable "network_dns" {
   default     = "<e.g 10.1.0.68>"
 }
 
-# Volume
+## Volume
 variable "volume_name" {
   description = "Name of the volume"
   type        = string
@@ -88,7 +89,7 @@ variable "volume_type" {
   default     = "<e.g tier3>"
 }
 
-# Instance
+## Instance
 variable "instance_name" {
   description = "Name of the instance"
   type        = string
@@ -120,7 +121,7 @@ variable "sys_type" {
   default     = "<e.g s922>"
 }
 
-# SSH Key
+## SSH Key
 variable "ssh_key_name" {
   description = "Name of the ssh key to be used"
   type        = string
