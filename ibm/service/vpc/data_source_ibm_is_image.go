@@ -65,7 +65,7 @@ func DataSourceIBMISImage() *schema.Resource {
 							Description: "The operating system architecture",
 						},
 						"dedicated_host_only": {
-							Type:        schema.TypeString,
+							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups",
 						},
@@ -262,6 +262,14 @@ func imageGetByName(d *schema.ResourceData, meta interface{}, name, visibility s
 	}
 	d.Set(isImageAccessTags, accesstags)
 	d.Set("visibility", *image.Visibility)
+
+	if image.OperatingSystem != nil {
+		operatingSystemList := []map[string]interface{}{}
+		operatingSystemMap := dataSourceIBMISImageOperatingSystemToMap(*image.OperatingSystem)
+		operatingSystemList = append(operatingSystemList, operatingSystemMap)
+		d.Set("operating_system", operatingSystemList)
+	}
+
 	d.Set("os", *image.OperatingSystem.Name)
 	d.Set("architecture", *image.OperatingSystem.Architecture)
 	d.Set("crn", *image.CRN)
@@ -342,6 +350,36 @@ func imageGetById(d *schema.ResourceData, meta interface{}, identifier string) e
 		d.Set(isImageCatalogOffering, catalogOfferingList)
 	}
 	return nil
+}
+
+func dataSourceIBMISImageOperatingSystemToMap(operatingSystemItem vpcv1.OperatingSystem) (operatingSystemMap map[string]interface{}) {
+	operatingSystemMap = map[string]interface{}{}
+
+	if operatingSystemItem.Architecture != nil {
+		operatingSystemMap["architecture"] = operatingSystemItem.Architecture
+	}
+	if operatingSystemItem.DedicatedHostOnly != nil {
+		operatingSystemMap["dedicated_host_only"] = operatingSystemItem.DedicatedHostOnly
+	}
+	if operatingSystemItem.DisplayName != nil {
+		operatingSystemMap["display_name"] = operatingSystemItem.DisplayName
+	}
+	if operatingSystemItem.Family != nil {
+		operatingSystemMap["family"] = operatingSystemItem.Family
+	}
+	if operatingSystemItem.Href != nil {
+		operatingSystemMap["href"] = operatingSystemItem.Href
+	}
+	if operatingSystemItem.Name != nil {
+		operatingSystemMap["name"] = operatingSystemItem.Name
+	}
+	if operatingSystemItem.Vendor != nil {
+		operatingSystemMap["vendor"] = operatingSystemItem.Vendor
+	}
+	if operatingSystemItem.Version != nil {
+		operatingSystemMap["version"] = operatingSystemItem.Version
+	}
+	return operatingSystemMap
 }
 
 func dataSourceImageCollectionCatalogOfferingToMap(imageCatalogOfferingItem vpcv1.ImageCatalogOffering) (imageCatalogOfferingMap map[string]interface{}) {
