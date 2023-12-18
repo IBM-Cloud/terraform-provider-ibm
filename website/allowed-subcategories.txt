@@ -26,6 +26,7 @@ Internet services
 Key Management Service
 Kubernetes Service
 Metrics Router
+MQ on Cloud
 Object Storage
 Power Systems
 Project
