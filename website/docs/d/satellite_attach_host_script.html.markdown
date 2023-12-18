@@ -21,14 +21,15 @@ data "ibm_satellite_attach_host_script" "script" {
 }
 ```
 
-###  Sample to read satellite host script to attach AWS EC2 host to Satellite control plane
+###  Sample to read satellite host script to attach AWS EC2 host to Satellite control plane and uses reduced firewall requirements.
 
 ```terraform
 data "ibm_satellite_attach_host_script" "script" {
-  location          = var.location
-  labels            = var.labels
-  script_dir        = "/tmp"
-  host_provider     = "aws"
+  location                 = var.location
+  labels                   = var.labels
+  script_dir               = "/tmp"
+  host_provider            = "aws"
+  host_link_agent_endpoint = "c-01-ws.us-south.link.satellite.cloud.ibm.com"
 }
 ```
 ###  Sample to read satellite host script to attach IBM host to Satellite control plane
@@ -38,11 +39,11 @@ data "ibm_satellite_attach_host_script" "script" {
   location      = var.location
   custom_script = <<EOF
 subscription-manager refresh
-subscription-manager repos --enable rhel-server-rhscl-7-rpms
-subscription-manager repos --enable rhel-7-server-optional-rpms
-subscription-manager repos --enable rhel-7-server-rh-common-rpms
-subscription-manager repos --enable rhel-7-server-supplementary-rpms
-subscription-manager repos --enable rhel-7-server-extras-rpms
+subscription-manager release --set=8
+subscription-manager repos --enable rhel-8-for-x86_64-baseos-rpms 
+subscription-manager repos --enable rhel-8-for-x86_64-appstream-rpms
+subscription-manager repos --disable='*eus*'
+yum install container-selinux -y
 EOF
 }
 
@@ -57,6 +58,7 @@ Review the argument references that you can specify for your data source.
 - `host_provider` - (Optional, String) The name of host provider, such as `ibm`, `aws` or `azure`.
 - `labels` - (Optional, Set(Strings)) The set of key-value pairs to label the host, such as `["cpu:4"]` to describe the host capabilities.
 - `script_dir` - (Optional, String) The directory path to store the generated script.
+- `host_link_agent_endpoint` - (Optional, String) The endpoint that the link agent uses to connect to the link tunnel server. Required for reduced firewall support.
 
 ## Attributes reference
 In addition to the argument reference list, you can access the following attribute reference after your resource is created.

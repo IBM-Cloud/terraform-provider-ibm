@@ -122,6 +122,14 @@ var (
 	HpcsInstanceID                  string
 )
 
+// MQ on Cloud
+var (
+	MqcloudInstanceID     string
+	MqcloudQueueManagerID string
+	MqcloudKSCertFilePath string
+	MqcloudTSCertFilePath string
+)
+
 // Secrets Manager
 var (
 	SecretsManagerInstanceID                                     string
@@ -138,6 +146,7 @@ var (
 	SecretsManagerPublicCertificateCommonName                    string
 	SecretsManagerValidateManualDnsCisZoneId                     string
 	SecretsManagerImportedCertificatePathToCertificate           string
+	SecretsManagerServiceCredentialsCosCrn                       string
 	SecretsManagerSecretType                                     string
 	SecretsManagerSecretID                                       string
 )
@@ -1219,6 +1228,11 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE for testing imported certificate's tests, else tests fail if not set correctly")
 	}
 
+	SecretsManagerServiceCredentialsCosCrn = os.Getenv("SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN")
+	if SecretsManagerServiceCredentialsCosCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
+	}
+
 	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
 	if SecretsManagerSecretType == "" {
 		SecretsManagerSecretType = "username_password"
@@ -1562,6 +1576,24 @@ func init() {
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
 	}
+
+	MqcloudInstanceID = os.Getenv("IBM_MQCLOUD_INSTANCE_ID")
+	if MqcloudInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_INSTANCE_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	MqcloudQueueManagerID = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_ID")
+	if MqcloudQueueManagerID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudKSCertFilePath = os.Getenv("IBM_MQCLOUD_KS_CERT_PATH")
+	if MqcloudKSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_KS_CERT_PATH for ibm_mqcloud_keystore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudTSCertFilePath = os.Getenv("IBM_MQCLOUD_TS_CERT_PATH")
+	if MqcloudTSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TS_CERT_PATH for ibm_mqcloud_truststore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
 }
 
 var (
@@ -1770,6 +1802,22 @@ func TestAccPreCheckSatelliteSSH(t *testing.T) {
 	TestAccPreCheck(t)
 	if SatelliteSSHPubKey == "" {
 		t.Fatal("IBM_SATELLITE_SSH_PUB_KEY missing. Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a VALID ssh public key")
+	}
+}
+
+func TestAccPreCheckMqcloud(t *testing.T) {
+	TestAccPreCheck(t)
+	if MqcloudInstanceID == "" {
+		t.Fatal("IBM_MQCLOUD_INSTANCE_ID must be set for acceptance tests")
+	}
+	if MqcloudQueueManagerID == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_ID must be set for acceptance tests")
+	}
+	if MqcloudTSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_TS_CERT_PATH must be set for acceptance tests")
+	}
+	if MqcloudKSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_KS_CERT_PATH must be set for acceptance tests")
 	}
 }
 
