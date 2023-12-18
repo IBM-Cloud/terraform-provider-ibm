@@ -74,6 +74,30 @@ func DataSourceIBMISImages() *schema.Resource {
 							Computed:    true,
 							Description: "The status of this image",
 						},
+						"status_reasons": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current status (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the status reason.",
+									},
+									"message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the status reason.",
+									},
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about this status reason.",
+									},
+								},
+							},
+						},
 						"visibility": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -136,6 +160,30 @@ func DataSourceIBMISImages() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The operating system architecture",
+						},
+						"resource_group": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The resource group for this IPsec policy.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this resource group.",
+									},
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this resource group.",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user-defined name for this resource group.",
+									},
+								},
+							},
 						},
 						"crn": {
 							Type:        schema.TypeString,
@@ -330,6 +378,15 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 			"visibility":   *image.Visibility,
 			"os":           *image.OperatingSystem.Name,
 			"architecture": *image.OperatingSystem.Architecture,
+		}
+		if len(image.StatusReasons) > 0 {
+			l["status_reasons"] = dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons)
+		}
+		if image.ResourceGroup != nil {
+			resourceGroupList := []map[string]interface{}{}
+			resourceGroupMap := dataSourceImageResourceGroupToMap(*image.ResourceGroup)
+			resourceGroupList = append(resourceGroupList, resourceGroupMap)
+			l["resource_group"] = resourceGroupList
 		}
 		if image.OperatingSystem != nil {
 			operatingSystemList := []map[string]interface{}{}
