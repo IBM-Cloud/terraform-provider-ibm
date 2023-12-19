@@ -1142,7 +1142,9 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinitionPr
 			}
 			inputs[k] = string(bytes)
 		}
-		modelMap["inputs"] = inputs
+		if len(inputs) > 0 {
+			modelMap["inputs"] = inputs
+		}
 	}
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
@@ -1153,7 +1155,9 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinitionPr
 			}
 			settings[k] = string(bytes)
 		}
-		modelMap["settings"] = settings
+		if len(settings) > 0 {
+			modelMap["settings"] = settings
+		}
 	}
 	if model.ComplianceProfile != nil {
 		complianceProfileMap, err := resourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
