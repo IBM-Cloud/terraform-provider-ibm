@@ -174,8 +174,6 @@ github.com/IBM/secrets-manager-go-sdk/v2 v2.0.2 h1:+Svh1OmoFxMBnZQSOUtp2UUzrOGFs
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.2/go.mod h1:WII+LS4VkQYykmq65NWSuPb5xGNvsqkcK1aCWZoU2x4=
 github.com/IBM/vpc-beta-go-sdk v0.6.0 h1:wfM3AcW3zOM3xsRtZ+EA6+sESlGUjQ6Yf4n5QQyz4uc=
 github.com/IBM/vpc-beta-go-sdk v0.6.0/go.mod h1:fzHDAQIqH/5yJmYsKodKHLcqxMDT+yfH6vZjdiw8CQA=
-github.com/IBM/vpc-go-sdk v0.45.0 h1:RFbUZH5vBRGAEW5+jRzbDlxB+a+GvG9EBhyYO52Tvrs=
-github.com/IBM/vpc-go-sdk v0.45.0/go.mod h1:4Hs5d/aClmsxAzwDQkwG+ri0vW2ykPJdpM6hDLRwKcA=
 github.com/IBM/vpc-go-sdk v0.46.0 h1:OwXH3oaYgYmzt559n77AteSpNsW4H1PoeHcR4EOolzk=
 github.com/IBM/vpc-go-sdk v0.46.0/go.mod h1:4Hs5d/aClmsxAzwDQkwG+ri0vW2ykPJdpM6hDLRwKcA=
 github.com/Jeffail/gabs v1.1.1 h1:V0uzR08Hj22EX8+8QMhyI9sX2hwRu+/RJhJUmnwda/E=
@@ -1642,8 +1640,8 @@ golang.org/x/crypto v0.7.0/go.mod h1:pYwdfH91IfpZVANVyUOhSIPZaFoJGxTFbZhFTx+dXZU
 golang.org/x/crypto v0.11.0/go.mod h1:xgJhtzW8F9jGdVFWZESrid1U1bjeNy4zgy5cRr/CIio=
 golang.org/x/crypto v0.12.0/go.mod h1:NF0Gs7EO5K4qLn+Ylc+fih8BSTeIjAP05siRnAh98yw=
 golang.org/x/crypto v0.14.0/go.mod h1:MVFd36DqK4CsrnJYDkBA3VC4m2GkXAM0PvzMCn4JQf4=
-golang.org/x/crypto v0.16.0 h1:mMMrFzRSCF0GvB7Ne27XVtVAaXLrPmgPC7/v0tkwHaY=
-golang.org/x/crypto v0.16.0/go.mod h1:gCAAfMLgwOJRpTjQ2zCCt2OcSfYMTeZVSRtQlPC7Nq4=
+golang.org/x/crypto v0.17.0 h1:r8bRNjWL3GshPW3gkd+RpvzWrZAwPS49OmTGZ/uhM4k=
+golang.org/x/crypto v0.17.0/go.mod h1:gCAAfMLgwOJRpTjQ2zCCt2OcSfYMTeZVSRtQlPC7Nq4=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522/go.mod h1:ZjyILWgesfNpC6sMxTJOJm9Kp84zZh5NQWvqDGG3Qr8=
