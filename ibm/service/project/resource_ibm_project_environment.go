@@ -176,6 +176,11 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A URL.",
+			},
 			"project_environment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -278,6 +283,9 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 	}
 	if err = d.Set("modified_at", flex.DateTimeToString(environment.ModifiedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
+	}
+	if err = d.Set("href", environment.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 	if err = d.Set("project_environment_id", environment.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting project_environment_id: %s", err))
@@ -460,7 +468,9 @@ func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap(m
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
+		if len(authorizationsMap) > 0 {
+			modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
+		}
 	}
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
