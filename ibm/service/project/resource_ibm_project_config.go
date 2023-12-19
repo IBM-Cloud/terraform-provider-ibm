@@ -1070,7 +1070,7 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model projectv
 		if model.LocatorID != nil {
 			modelMap["locator_id"] = model.LocatorID
 		}
-		if model.ResourceCrns != nil {
+		if model.ResourceCrns != nil && len(model.ResourceCrns) > 0 {
 			modelMap["resource_crns"] = model.ResourceCrns
 		}
 		return modelMap, nil
@@ -1201,7 +1201,9 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefini
 			}
 			inputs[k] = string(bytes)
 		}
-		modelMap["inputs"] = inputs
+		if len(inputs) > 0 {
+			modelMap["inputs"] = inputs
+		}
 	}
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
@@ -1212,9 +1214,11 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefini
 			}
 			settings[k] = string(bytes)
 		}
-		modelMap["settings"] = settings
+		if len(settings) > 0 {
+			modelMap["settings"] = settings
+		}
 	}
-	if model.ResourceCrns != nil {
+	if model.ResourceCrns != nil && len(model.ResourceCrns) > 0 {
 		modelMap["resource_crns"] = model.ResourceCrns
 	}
 	return modelMap, nil
