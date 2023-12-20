@@ -45,7 +45,7 @@ resource "ibm_project_environment" "project_environment_instance" {
 
 // Create project_config data source
 data "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project_config.project_config_instance.project_id
+  project_id = ibm_project.project_instance.id
   project_config_id = ibm_project_config.project_config_instance.project_config_id
 }
 

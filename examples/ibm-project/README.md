@@ -30,7 +30,7 @@ Run `terraform destroy` when you don't need these resources.
 
 ```hcl
 resource "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project.project_instance.project_id
+  project_id = ibm_project.project_instance.id
   definition = var.project_config_definition
 }
 ```
@@ -99,7 +99,7 @@ resource "ibm_project" "project_instance" {
 
 ```hcl
 resource "ibm_project_environment" "project_environment_instance" {
-  project_id = ibm_project.project_instance.project_id
+  project_id = ibm_project.project_instance.id
   definition = var.project_environment_definition
 }
 ```
@@ -163,7 +163,7 @@ data "ibm_project_config" "project_config_instance" {
 
 ```hcl
 data "ibm_project" "project_instance" {
-  project_id = ibm_project.project_instance.project_environment_instance
+  project_id = ibm_project.project_instance.id
 }
 ```
 

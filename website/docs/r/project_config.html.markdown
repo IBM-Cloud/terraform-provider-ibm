@@ -143,7 +143,7 @@ Nested schema for **outputs**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `name` - (String) The variable name.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-	* `value` - (String) Can be any value - a string, number, boolean, array, or object.
+	* `value` - (Map) Can be any value - a string, number, boolean, array, or object.
 * `project` - (List) The project referenced by this resource.
 Nested schema for **project**:
 	* `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
