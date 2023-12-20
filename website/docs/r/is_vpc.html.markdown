@@ -83,6 +83,22 @@ resource "ibm_is_vpc" "example-system" {
 	}
 }
 
+// delegated type resolver
+
+resource "ibm_is_vpc" "example-delegated" {
+  // required : add a dependency on ibm dns custom resolver of the hub vpc
+	depends_on = [ ibm_dns_custom_resolver.example-hub ]
+	name = "example-hub-false-delegated"
+	dns {
+		enable_hub = false
+		resolver {
+			type = "delegated"
+			vpc_id = ibm_is_vpc.example.id
+			dns_binding_name = "example-vpc-binding"
+		}
+	}
+}
+
 ```
 
 ## Timeouts
@@ -116,6 +132,9 @@ Review the argument references that you can specify for your resource.
   - `resolver` - (Optional, List) The zone list this backup policy plan will create snapshot clones in.
     Nested scheme for `resolver`:
 
+      - `dns_binding_id` - (String) The VPC dns binding id whose DNS resolver provides the DNS server addresses for this VPC. (If any)
+      - `dns_binding_name` - (Optional, String) The VPC dns binding name whose DNS resolver provides the DNS server addresses for this VPC. Only applicable for `delegated`, providing value would create binding with this name.
+
         ~> **Note:** 
           `manual_servers` must be set if and only if `dns.resolver.type` is manual.
       - `manual_servers` - (Optional, List) The DNS servers to use for this VPC, replacing any existing servers. All the DNS servers must either: **have a unique zone_affinity**, or **not have a zone_affinity**.
@@ -139,7 +158,7 @@ Review the argument references that you can specify for your resource.
         ~> **Note:** 
               Updating from `manual` requires dns resolver `manual_servers` to be specified as null.<br/>
               Updating to `manual` requires dns resolver `manual_servers` to be specified and not empty.<br/>
-              Updating from `delegated` requires `dns.resolver.vpc` to be specified as null.
+              Updating from `delegated` requires `dns.resolver.vpc` to be specified as null. If type is `delegated` while creation then `vpc_id` is required
       - `vpc_id` - (Optional, List) (update only) The VPC ID to provide DNS server addresses for this VPC. The specified VPC must be configured with a DNS Services custom resolver and must be in one of this VPC's DNS resolution bindings. Mutually exclusive with `vpc_crn`
 
         ~> **Note:** 

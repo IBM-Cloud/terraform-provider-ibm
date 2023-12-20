@@ -57,10 +57,10 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_replication_enabled` - (Optional, Bool) Indicates if the volume should be replication enabled or not.
 - `pi_volume_name` - (Required, String) The name of the volume.
-- `pi_volume_pool` - (Optional, String) Volume pool where the volume will be created; if provided then `pi_volume_type` and `pi_affinity_policy` values will be ignored.
+- `pi_volume_pool` - (Optional, String) Volume pool where the volume will be created; if provided then `pi_affinity_policy` values will be ignored.
 - `pi_volume_shareable` - (Required, Bool) If set to **true**, the volume can be shared across Power Systems Virtual Server instances. If set to **false**, you can attach it only to one instance. 
 - `pi_volume_size`  - (Required, Integer) The size of the volume in gigabytes. 
-- `pi_volume_type` - (Optional, String) Type of Disk, required if `pi_affinity_policy` and `pi_volume_pool` not provided, otherwise ignored. Supported values are `ssd`, `standard`, `tier1`, and `tier3`.
+- `pi_volume_type` - (Optional, String) Type of disk, if diskType is not provided the disk type will default to `tier3`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

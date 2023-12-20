@@ -34,7 +34,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-etcd"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "root"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "9216"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "184320"),
@@ -54,7 +54,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-etcd"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "193536"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
@@ -68,7 +68,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-etcd"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "9216"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "193536"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
@@ -102,7 +102,7 @@ func TestAccIBMDatabaseInstanceEtcdImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-etcd"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
 				),
 			},
 			{
@@ -124,14 +124,14 @@ func testAccCheckIBMDatabaseInstanceEtcdBasic(databaseResourceGroup string, name
 		is_default = true
 		# name = "%[1]s"
 	  }
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-etcd"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -143,14 +143,14 @@ func testAccCheckIBMDatabaseInstanceEtcdBasic(databaseResourceGroup string, name
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup string, name string) string {
@@ -159,14 +159,14 @@ func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup str
 		is_default = true
 		# name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-etcd"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -178,11 +178,11 @@ func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup str
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -193,8 +193,8 @@ func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup str
 		  description = "desc"
 		}
 	}
-	  
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceEtcdReduced(databaseResourceGroup string, name string) string {
@@ -203,14 +203,14 @@ func testAccCheckIBMDatabaseInstanceEtcdReduced(databaseResourceGroup string, na
 		is_default = true
 		# name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
 		service                      = "databases-for-etcd"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -221,7 +221,7 @@ func testAccCheckIBMDatabaseInstanceEtcdReduced(databaseResourceGroup string, na
 			}
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceEtcdImport(databaseResourceGroup string, name string) string {
@@ -230,7 +230,7 @@ func testAccCheckIBMDatabaseInstanceEtcdImport(databaseResourceGroup string, nam
 		is_default = true
 		# name = "%[1]s"
 	}
-	  
+
 	resource "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
@@ -238,5 +238,5 @@ func testAccCheckIBMDatabaseInstanceEtcdImport(databaseResourceGroup string, nam
 		plan              = "standard"
 		location          = "%[3]s"
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }

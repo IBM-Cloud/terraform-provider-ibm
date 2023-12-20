@@ -37,8 +37,10 @@ Review the argument references that you can specify for your data source.
 - `resource_group` - (Optional, String) Filter snapshot collection by resource group id of the snapshot.
 - `source_image` - (Optional, String) Filter snapshot collection by source image of the snapshot.
 - `source_volume` - (Optional, String) Filter snapshot collection by source volume of the snapshot.
-- `backup_policy_plan_tag` - Filters the collection to resources with the exact tag value.
-- `backup_policy_plan_id` - Filters the collection to backup policy jobs with the backup plan with the specified identifier
+- `backup_policy_plan_tag` - (Optional, String)Filters the collection to resources with the exact tag value.
+- `backup_policy_plan_id` - (Optional, String)Filters the collection to backup policy jobs with the backup plan with the specified identifier
+- `snapshot_consistency_group_id` - (Optional, String)Filters the collection to snapshots with snapshot consistency group with the specified identifier.
+- `snapshot_consistency_group_crn` - (Optional, String)Filters the collection to snapshots with snapshot consistency group with the specified identifier.
 - `snapshot_copies_id` - Filters the collection to snapshots with copies with the specified identifier.
 - `snapshot_copies_name` - Filters the collection to snapshots with copies with the exact specified name.
 - `snapshot_copies_crn` - Filters the collection to snapshots with copies with the specified CRN.
@@ -94,6 +96,18 @@ In addition to all argument reference list, you can access the following attribu
   - `operating_system` - (String) The globally unique name for the operating system included in this image.  
   - `resource_type` - (String) The resource type.
   - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
+  - `snapshot_consistency_group` - (List) The snapshot consistency group which created this snapshot.
+
+    Nested scheme for `snapshot_consistency_group`:
+    - `crn` - (String) The CRN of this snapshot consistency group.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+    
+      Nested scheme for `deleted`:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for the snapshot consistency group.
+    - `id` - (String) The unique identifier for the snapshot consistency group.
+    - `name` - (String) TThe name for the snapshot consistency group. The name is unique across all snapshot consistency groups in the region.
+    - `resource_type` - (String) The resource type.
   - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.
   - `source_snapshot` - (String) If present, the source snapshot this snapshot was created from.
     

@@ -17,10 +17,10 @@ resource "ibm_container_ingress_secret_opaque" "secret" {
   secret_name="mySecretName"
   secret_namespace="mySecretNamespace"
   persistence = true
-  fields = {
+  fields {
     crn = "cert:region:crn"
   }
-  fields = {
+  fields {
     field_name = "myFieldName"
     crn = "cert:region:crn"
   }
