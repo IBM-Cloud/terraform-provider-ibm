@@ -5,6 +5,7 @@ package project
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -135,7 +136,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 						"workspace_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "An existing schematics workspace CRN.",
+							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
 						},
 						"validate_pre_script": &schema.Schema{
 							Type:        schema.TypeList,
@@ -377,22 +378,22 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 						"locator_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A unique concatenation of catalogID.versionID that identifies the DA in the catalog.",
+							Description: "A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.",
 						},
 						"inputs": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "The input variables for configuration definition and environment.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{},
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
 							},
 						},
 						"settings": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{},
+							Description: "Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
 							},
 						},
 					},
@@ -626,18 +627,26 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *proje
 	}
 	modelMap["locator_id"] = model.LocatorID
 	if model.Inputs != nil {
-		inputsMap, err := dataSourceIbmProjectConfigInputVariableToMap(model.Inputs)
-		if err != nil {
-			return modelMap, err
+		inputs := make(map[string]interface{})
+		for k, v := range model.Inputs {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			inputs[k] = string(bytes)
 		}
-		modelMap["inputs"] = []map[string]interface{}{inputsMap}
+		modelMap["inputs"] = inputs
 	}
 	if model.Settings != nil {
-		settingsMap, err := dataSourceIbmProjectConfigProjectConfigSettingToMap(model.Settings)
-		if err != nil {
-			return modelMap, err
+		settings := make(map[string]interface{})
+		for k, v := range model.Settings {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			settings[k] = string(bytes)
 		}
-		modelMap["settings"] = []map[string]interface{}{settingsMap}
+		modelMap["settings"] = settings
 	}
 	return modelMap, nil
 }
@@ -673,15 +682,5 @@ func dataSourceIbmProjectConfigProjectComplianceProfileToMap(model *projectv1.Pr
 	if model.ProfileName != nil {
 		modelMap["profile_name"] = model.ProfileName
 	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProjectConfigInputVariableToMap(model *projectv1.InputVariable) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	return modelMap, nil
-}
-
-func dataSourceIbmProjectConfigProjectConfigSettingToMap(model *projectv1.ProjectConfigSetting) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
