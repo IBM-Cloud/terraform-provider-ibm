@@ -380,7 +380,9 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(m
 		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Inputs = newMap
+		if len(newMap) > 0 {
+			model.Inputs = newMap
+		}
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
@@ -445,7 +447,9 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionProperties(modelMap 
 		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Inputs = newMap
+		if len(newMap) > 0 {
+			model.Inputs = newMap
+		}
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))

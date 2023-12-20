@@ -598,13 +598,17 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Inputs = newMap
+		if len(newMap) > 0 {
+			model.Inputs = newMap
+		}
 	}
 	if modelMap["settings"] != nil {
 		bytes, _ := json.Marshal(modelMap["settings"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Settings = newMap
+		if len(newMap) > 0 {
+			model.Settings = newMap
+		}
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
@@ -616,7 +620,7 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
-	if modelMap["resource_crns"] != nil {
+	if modelMap["resource_crns"] != nil && len(modelMap["resource_crns"].([]interface{})) > 0 {
 		resourceCrns := []string{}
 		for _, resourceCrnsItem := range modelMap["resource_crns"].([]interface{}) {
 			resourceCrns = append(resourceCrns, resourceCrnsItem.(string))
@@ -682,13 +686,17 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlockDAConfigDefinit
 		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Inputs = newMap
+		if len(newMap) > 0 {
+			model.Inputs = newMap
+		}
 	}
 	if modelMap["settings"] != nil {
 		bytes, _ := json.Marshal(modelMap["settings"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Settings = newMap
+		if len(newMap) > 0 {
+			model.Settings = newMap
+		}
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
@@ -725,15 +733,19 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlockResourceConfigD
 		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Inputs = newMap
+		if len(newMap) > 0 {
+			model.Inputs = newMap
+		}
 	}
 	if modelMap["settings"] != nil {
 		bytes, _ := json.Marshal(modelMap["settings"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Settings = newMap
+		if len(newMap) > 0 {
+			model.Settings = newMap
+		}
 	}
-	if modelMap["resource_crns"] != nil {
+	if modelMap["resource_crns"] != nil && len(modelMap["resource_crns"].([]interface{})) > 0 {
 		resourceCrns := []string{}
 		for _, resourceCrnsItem := range modelMap["resource_crns"].([]interface{}) {
 			resourceCrns = append(resourceCrns, resourceCrnsItem.(string))
@@ -778,7 +790,9 @@ func resourceIbmProjectMapToEnvironmentDefinitionRequiredProperties(modelMap map
 		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
 		newMap := make(map[string]interface{})
 		json.Unmarshal(bytes, &newMap)
-		model.Inputs = newMap
+		if len(newMap) > 0 {
+			model.Inputs = newMap
+		}
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
