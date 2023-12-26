@@ -39,6 +39,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -484,6 +485,8 @@ func Provider() *schema.Provider {
 			"ibm_is_snapshot_clone":                  vpc.DataSourceSnapshotClone(),
 			"ibm_is_snapshot_clones":                 vpc.DataSourceSnapshotClones(),
 			"ibm_is_snapshot":                        vpc.DataSourceSnapshot(),
+			"ibm_is_snapshot_consistency_group":      vpc.DataSourceIBMIsSnapshotConsistencyGroup(),
+			"ibm_is_snapshot_consistency_groups":     vpc.DataSourceIBMIsSnapshotConsistencyGroups(),
 			"ibm_is_snapshots":                       vpc.DataSourceSnapshots(),
 			"ibm_is_share":                           vpc.DataSourceIbmIsShare(),
 			"ibm_is_source_share":                    vpc.DataSourceIbmIsSourceShare(),
@@ -744,6 +747,14 @@ func Provider() *schema.Provider {
 			// Metrics Router
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
+
+			// MQ on Cloud
+			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
+			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
+			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),
+			"ibm_mqcloud_user":                   mqcloud.DataSourceIbmMqcloudUser(),
+			"ibm_mqcloud_truststore_certificate": mqcloud.DataSourceIbmMqcloudTruststoreCertificate(),
+			"ibm_mqcloud_keystore_certificate":   mqcloud.DataSourceIbmMqcloudKeystoreCertificate(),
 
 			// Security and Complaince Center(soon to be deprecated)
 			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
@@ -1082,6 +1093,7 @@ func Provider() *schema.Provider {
 			"ibm_is_subnet_routing_table_attachment":        vpc.ResourceIBMISSubnetRoutingTableAttachment(),
 			"ibm_is_ssh_key":                                vpc.ResourceIBMISSSHKey(),
 			"ibm_is_snapshot":                               vpc.ResourceIBMSnapshot(),
+			"ibm_is_snapshot_consistency_group":             vpc.ResourceIBMIsSnapshotConsistencyGroup(),
 			"ibm_is_volume":                                 vpc.ResourceIBMISVolume(),
 			"ibm_is_vpn_gateway":                            vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                 vpc.ResourceIBMISVPNGatewayConnection(),
@@ -1279,6 +1291,13 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
 			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
 
+			// MQ on Cloud
+			"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManager(),
+			"ibm_mqcloud_application":            mqcloud.ResourceIbmMqcloudApplication(),
+			"ibm_mqcloud_user":                   mqcloud.ResourceIbmMqcloudUser(),
+			"ibm_mqcloud_keystore_certificate":   mqcloud.ResourceIbmMqcloudKeystoreCertificate(),
+			"ibm_mqcloud_truststore_certificate": mqcloud.ResourceIbmMqcloudTruststoreCertificate(),
+
 			// Security and Compliance Center(soon to be deprecated)
 			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
 			"ibm_scc_rule_attachment":     scc.ResourceIBMSccRuleAttachment(),
@@ -1464,6 +1483,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_key_template":                        hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
 
+				// MQ on Cloud
+				"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
+				"ibm_mqcloud_application":            mqcloud.ResourceIbmMqcloudApplicationValidator(),
+				"ibm_mqcloud_user":                   mqcloud.ResourceIbmMqcloudUserValidator(),
+				"ibm_mqcloud_keystore_certificate":   mqcloud.ResourceIbmMqcloudKeystoreCertificateValidator(),
+				"ibm_mqcloud_truststore_certificate": mqcloud.ResourceIbmMqcloudTruststoreCertificateValidator(),
+
 				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
 				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
 
@@ -1509,6 +1535,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_share_replica_operations":         vpc.ResourceIbmIsShareReplicaOperationsValidator(),
 				"ibm_is_share_mount_target":               vpc.ResourceIBMIsShareMountTargetValidator(),
 				"ibm_is_snapshot":                         vpc.ResourceIBMISSnapshotValidator(),
+				"ibm_is_snapshot_consistency_group":       vpc.ResourceIBMIsSnapshotConsistencyGroupValidator(),
 				"ibm_is_ssh_key":                          vpc.ResourceIBMISSHKeyValidator(),
 				"ibm_is_subnet":                           vpc.ResourceIBMISSubnetValidator(),
 				"ibm_is_subnet_reserved_ip":               vpc.ResourceIBMISSubnetReservedIPValidator(),
@@ -1641,14 +1668,15 @@ func Validator() validate.ValidatorDict {
 				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
-				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
-				"ibm_is_snapshot":        vpc.DataSourceIBMISSnapshotValidator(),
-				"ibm_is_images":          vpc.DataSourceIBMISImagesValidator(),
-				"ibm_dl_offering_speeds": directlink.DataSourceIBMDLOfferingSpeedsValidator(),
-				"ibm_dl_routers":         directlink.DataSourceIBMDLRoutersValidator(),
-				"ibm_resource_instance":  resourcecontroller.DataSourceIBMResourceInstanceValidator(),
-				"ibm_resource_key":       resourcecontroller.DataSourceIBMResourceKeyValidator(),
-				"ibm_resource_group":     resourcemanager.DataSourceIBMResourceGroupValidator(),
+				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
+				"ibm_is_snapshot_consistency_group": vpc.DataSourceIBMISSnapshotConsistencyGroupValidator(),
+				"ibm_is_snapshot":                   vpc.DataSourceIBMISSnapshotValidator(),
+				"ibm_is_images":                     vpc.DataSourceIBMISImagesValidator(),
+				"ibm_dl_offering_speeds":            directlink.DataSourceIBMDLOfferingSpeedsValidator(),
+				"ibm_dl_routers":                    directlink.DataSourceIBMDLRoutersValidator(),
+				"ibm_resource_instance":             resourcecontroller.DataSourceIBMResourceInstanceValidator(),
+				"ibm_resource_key":                  resourcecontroller.DataSourceIBMResourceKeyValidator(),
+				"ibm_resource_group":                resourcemanager.DataSourceIBMResourceGroupValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),
