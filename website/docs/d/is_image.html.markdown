@@ -25,7 +25,7 @@ provider "ibm" {
 ```terraform
 
 data "ibm_is_image" "example" {
-  name = "centos-7.x-amd64"
+  name = "ibm-centos-7-9-minimal-amd64-12"
 }
 ```
 ```terraform
