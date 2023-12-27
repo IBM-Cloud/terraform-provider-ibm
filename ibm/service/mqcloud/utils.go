@@ -31,9 +31,9 @@ const qmCreating = "initializing"
 const isQueueManagerDeleting = "true"
 const isQueueManagerDeleteDone = "true"
 const reservedDeploymentPlan = "reserved-deployment"
-const enforceReservedDeploymentPlan = true
+const enforceReservedDeploymentPlan = false
 
-// waitForQmStatusUpdate Waits for QM to be in running state
+// waitForQmStatusUpdate waits for Queue Manager to be in running state
 func waitForQmStatusUpdate(context context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
@@ -58,7 +58,6 @@ func waitForQmStatusUpdate(context context.Context, d *schema.ResourceData, meta
 			if queueManagerStatus == nil || queueManagerStatus.Status == nil {
 				return nil, "", fmt.Errorf("queueManagerStatus or queueManagerStatus.Status is nil")
 			}
-			fmt.Println("The queue manager is currently in the " + *queueManagerStatus.Status + " state ....")
 
 			if *queueManagerStatus.Status == "running" {
 				return queueManagerStatus, qmStatus, nil
@@ -135,7 +134,7 @@ func checkSIPlan(d *schema.ResourceData, meta interface{}) error {
 	}
 	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to retrieve resource instance: %s, Response: %s", err, response)
+		return fmt.Errorf("[ERROR] Failed to retrieve Resource Instance: %s, Response: %s", err, response)
 	}
 
 	// Creating a Resource Catalog Client
@@ -148,7 +147,7 @@ func checkSIPlan(d *schema.ResourceData, meta interface{}) error {
 	// Checking the service plan
 	plan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to retrieve service plan: %s", err)
+		return fmt.Errorf("[ERROR] Failed to retrieve Service Plan: %s", err)
 	}
 
 	// Update cache
