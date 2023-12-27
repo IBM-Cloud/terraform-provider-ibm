@@ -31,7 +31,7 @@ const qmCreating = "initializing"
 const isQueueManagerDeleting = "true"
 const isQueueManagerDeleteDone = "true"
 const reservedDeploymentPlan = "reserved-deployment"
-const enforceReservedDeploymentPlan = false
+const enforceReservedDeploymentPlan = true
 
 // waitForQmStatusUpdate waits for Queue Manager to be in running state
 func waitForQmStatusUpdate(context context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
