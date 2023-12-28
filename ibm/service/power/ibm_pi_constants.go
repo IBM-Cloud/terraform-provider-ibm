@@ -16,6 +16,29 @@ const (
 	Attr_Key             = "ssh_key"
 	Attr_KeyName         = "name"
 
+	// Arguments
+	Arg_SAP = "sap"
+	Arg_VTL = "vtl"
+
+	//Attributes
+	Attr_CreationDate    = "creation_date"
+	Attr_Description     = "description"
+	Attr_Href            = "href"
+	Attr_Images          = "images"
+	Attr_ImageID         = "image_id"
+	Attr_Name            = "name"
+	Attr_Architecture    = "architecture"
+	Attr_ContainerFormat = "container_format"
+	Attr_DiskFormat      = "disk_format"
+	Attr_Endianness      = "endianness"
+	Attr_HypervisorType  = "hypervisor_type"
+	Attr_ImageType       = "image_type"
+	Attr_LastUpdateDate  = "last_update_date"
+	Attr_OperatingSystem = "operating_system"
+	Attr_State           = "state"
+	Attr_StoragePool     = "storage_pool"
+	Attr_StorageType     = "storage_type"
+
 	// SAP Profile
 	PISAPProfiles         = "profiles"
 	PISAPProfileCertified = "certified"
