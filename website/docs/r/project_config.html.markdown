@@ -23,7 +23,7 @@ resource "ibm_project_config" "project_config_instance" {
     }
     locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.145be7c1-9ec4-4719-b586-584ee52fbed0-global"
     inputs = {
-      name = "app_repo_name"
+      app_repo_name = "static-website-repo"
     }
   }
   project_id = ibm_project.project_instance.id
@@ -34,7 +34,7 @@ resource "ibm_project_config" "project_config_instance" {
 
 You can specify the following arguments for this resource.
 
-* `definition` - (Required, List) The name and description of a project configuration.
+* `definition` - (Required, List) 
 Nested schema for **definition**:
 	* `authorizations` - (Optional, List) The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.
 	Nested schema for **authorizations**:
@@ -61,10 +61,12 @@ Nested schema for **definition**:
 	* `environment_id` - (Optional, String) The ID of the project environment.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `inputs` - (Optional, Map) The input variables for configuration definition and environment.
-	* `locator_id` - (Required, Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.
+	* `locator_id` - (Optional, Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (Required, String) The configuration name. It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
+	* `resource_crns` - (Optional, List) The CRNs of resources associated with this configuration.
+	  * Constraints: The list items must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`. The maximum length is `110` items. The minimum length is `0` items.
 	* `settings` - (Optional, Map) Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
@@ -127,6 +129,8 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the project_config.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+* `href` - (String) A URL.
+  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 * `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
 * `last_saved_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
@@ -139,7 +143,7 @@ Nested schema for **outputs**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `name` - (String) The variable name.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-	* `value` - (String) Can be any value - a string, number, boolean, array, or object.
+	* `value` - (Map) Can be any value - a string, number, boolean, array, or object.
 * `project` - (List) The project referenced by this resource.
 Nested schema for **project**:
 	* `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
@@ -155,7 +159,7 @@ Nested schema for **project**:
 * `project_config_id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `state` - (String) The state of the configuration.
-  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
+  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
 * `update_available` - (Boolean) The flag that indicates whether a configuration update is available.
 * `version` - (Integer) The version of the configuration.
 
