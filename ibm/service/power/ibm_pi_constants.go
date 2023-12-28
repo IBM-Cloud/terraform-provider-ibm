@@ -4,7 +4,24 @@ import "time"
 
 const (
 	// used by all
-	Arg_CloudInstanceID = "pi_cloud_instance_id"
+	Arg_CloudInstanceID        = "pi_cloud_instance_id"
+	Arg_CloudConnectionName    = "pi_cloud_connection_name"
+	Attr_ClassicEnabled        = "classic_enabled"
+	Attr_ConnectionMode        = "connection_mode"
+	Attr_GlobalRouting         = "global_routing"
+	Attr_GreDestinationAddress = "gre_destination_address"
+	Attr_GreSourceAddress      = "gre_source_address"
+	Attr_IBMIPAddress          = "ibm_ip_address"
+	Attr_Metered               = "metered"
+	Attr_Networks              = "networks"
+	Attr_Port                  = "port"
+	Attr_Speed                 = "speed"
+	Attr_UserIPAddress         = "user_ip_address"
+	Attr_VPCCRNs               = "vpc_crns"
+	Attr_VPCEnabled            = "vpc_enabled"
+	Attr_Name                  = "name"
+	Attr_Connections           = "connections"
+	Attr_CloudConnectionID     = "cloud_connection_id"
 
 	// Keys
 	Arg_KeyName = "pi_key_name"
