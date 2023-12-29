@@ -15,6 +15,13 @@ const (
 	Attr_KeyCreationDate = "creation_date"
 	Attr_Key             = "ssh_key"
 	Attr_KeyName         = "name"
+	Arg_SAPProfileID     = "pi_sap_profile_id"
+	Attr_Certified       = "certified"
+	Attr_Cores           = "cores"
+	Attr_Memory          = "memory"
+	Attr_Type            = "type"
+	Attr_Profiles        = "profiles"
+	Attr_ProfileID       = "profile_id"
 
 	// SAP Profile
 	PISAPProfiles         = "profiles"
