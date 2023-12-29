@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance_volumes"
@@ -8,26 +7,25 @@ description: |-
 ---
 
 # ibm_pi_instance_volumes
-Retrieves information about a persistent storage volume that is mounted to a Power Systems Virtual Server instance. For more information, about power instance volume, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
+Retrieves information about the persistent storage volumes that are mounted to a Power Systems Virtual Server instance. For more information, about power instance volume, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
 
 ## Example usage
-The following example retrieves information about the `volume_1` volume that is mounted to the Power Systems Virtual Server instance with the ID.
+The following example retrieves information about the volumes attached to the `terraform-test-instance` instance.
 
 ```terraform
 data "ibm_pi_instance_volumes" "ds_volumes" {
-  pi_instance_name     = "volume_1"
+  pi_instance_name     = "terraform-test-instance"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
 **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
-  
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -39,13 +37,13 @@ data "ibm_pi_instance_volumes" "ds_volumes" {
 Review the argument references that you can specify for your data source. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_volume_name` - (Required, String) The name of the volume for which you want to retrieve detailed information.
+- `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `boot_volume_id` - (String) The unique identifier of the boot volume.
-- `instance_volumes` - List of volumes - List of volumes attached to instance.
+- `instance_volumes` - (List) List of volumes attached to instance.
 
   Nested scheme for `instance_volumes`:
   - `bootable`- (Bool) Indicates if the volume is boot capable.
