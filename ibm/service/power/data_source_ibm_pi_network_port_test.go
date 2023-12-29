@@ -12,24 +12,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMPINetworkDataSource_basic(t *testing.T) {
+func TestAccIBMPINetworkPortDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPINetworkDataSourceConfig(),
+				Config: testAccCheckIBMPINetworkPortDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_network.testacc_ds_network", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_network_port.testacc_ds_network_port", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPINetworkDataSourceConfig() string {
+func testAccCheckIBMPINetworkPortDataSourceConfig() string {
 	return fmt.Sprintf(`
-		data "ibm_pi_network" "testacc_ds_network" {
+		data "ibm_pi_network_port" "testacc_ds_network_port" {
 			pi_network_name = "%s"
 			pi_cloud_instance_id = "%s"
 		}`, acc.Pi_network_name, acc.Pi_cloud_instance_id)
