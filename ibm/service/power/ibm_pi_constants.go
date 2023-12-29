@@ -15,6 +15,18 @@ const (
 	Attr_KeyCreationDate = "creation_date"
 	Attr_Key             = "ssh_key"
 	Attr_KeyName         = "name"
+	Arg_ImageName        = "pi_image_name"
+	Attr_Architecture    = "architecture"
+	Attr_Hypervisor      = "hypervisor"
+	Attr_ImageType       = "image_type"
+	Attr_Size            = "size"
+	Attr_State           = "state"
+	Attr_StoragePool     = "storage_pool"
+	Attr_StorageType     = "storage_type"
+	Attr_ImageInfo       = "image_info"
+	Attr_Href            = "href"
+	Attr_ID              = "id"
+	Attr_Name            = "name"
 
 	// SAP Profile
 	PISAPProfiles         = "profiles"
