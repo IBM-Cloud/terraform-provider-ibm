@@ -10,11 +10,15 @@ const (
 	Arg_KeyName = "pi_key_name"
 	Arg_Key     = "pi_ssh_key"
 
-	Attr_KeyID           = "key_id"
-	Attr_Keys            = "keys"
-	Attr_KeyCreationDate = "creation_date"
-	Attr_Key             = "ssh_key"
-	Attr_KeyName         = "name"
+	Attr_KeyID                     = "key_id"
+	Attr_Keys                      = "keys"
+	Attr_KeyCreationDate           = "creation_date"
+	Attr_Key                       = "ssh_key"
+	Attr_KeyName                   = "name"
+	Attr_Location                  = "location"
+	Attr_ReplicationSites          = "replication_sites"
+	Attr_IsActive                  = "is_active"
+	Attr_DisasterRecoveryLocations = "disaster_recovery_locations"
 
 	// SAP Profile
 	PISAPProfiles         = "profiles"
