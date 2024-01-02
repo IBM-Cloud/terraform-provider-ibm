@@ -15,7 +15,7 @@ Create, update, and delete mqcloud_queue_managers with this resource.
 ```hcl
 resource "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
   display_name = "A test queue manager"
-  location = "reserved-eu-fr-cluster-f884"
+  location = "reserved-eu-de-cluster-f884"
   name = "testqm"
   service_instance_guid = var.service_instance_guid
   size = "lite"
