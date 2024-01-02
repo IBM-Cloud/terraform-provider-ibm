@@ -18,6 +18,7 @@ import (
 )
 
 func TestAccIbmMqcloudUserBasic(t *testing.T) {
+	t.Parallel()
 	var conf mqcloudv1.UserDetails
 	serviceInstanceGuid := acc.MqcloudInstanceID
 	name := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
@@ -37,30 +38,6 @@ func TestAccIbmMqcloudUserBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "email", email),
 				),
 			},
-		},
-	})
-}
-
-func TestAccIbmMqcloudUserAllArgs(t *testing.T) {
-	var conf mqcloudv1.UserDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
-	name := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
-	email := fmt.Sprintf("tfemail%d@ibm.com", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmMqcloudUserDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIbmMqcloudUserConfig(serviceInstanceGuid, name, email),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmMqcloudUserExists("ibm_mqcloud_user.mqcloud_user_instance", conf),
-					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "service_instance_guid", serviceInstanceGuid),
-					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "email", email),
-				),
-			},
 			{
 				ResourceName:      "ibm_mqcloud_user.mqcloud_user_instance",
 				ImportState:       true,
@@ -72,17 +49,6 @@ func TestAccIbmMqcloudUserAllArgs(t *testing.T) {
 
 func testAccCheckIbmMqcloudUserConfigBasic(serviceInstanceGuid string, name string, email string) string {
 	return fmt.Sprintf(`
-		resource "ibm_mqcloud_user" "mqcloud_user_instance" {
-			service_instance_guid = "%s"
-			name = "%s"
-			email = "%s"
-		}
-	`, serviceInstanceGuid, name, email)
-}
-
-func testAccCheckIbmMqcloudUserConfig(serviceInstanceGuid string, name string, email string) string {
-	return fmt.Sprintf(`
-
 		resource "ibm_mqcloud_user" "mqcloud_user_instance" {
 			service_instance_guid = "%s"
 			name = "%s"

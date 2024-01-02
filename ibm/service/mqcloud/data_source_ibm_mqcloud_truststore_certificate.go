@@ -156,7 +156,7 @@ func dataSourceIbmMqcloudTruststoreCertificateRead(context context.Context, d *s
 
 	if suppliedFilter {
 		if len(trustStoreCertificateDetailsCollection.TrustStore) == 0 {
-			return diag.FromErr(fmt.Errorf("no TrustStore found with label %s", label))
+			return diag.FromErr(fmt.Errorf("No Trust Store Certificate found with label: \"%s\"", label))
 		}
 		d.SetId(label)
 	} else {
@@ -179,7 +179,7 @@ func dataSourceIbmMqcloudTruststoreCertificateRead(context context.Context, d *s
 		}
 	}
 	if err = d.Set("trust_store", trustStore); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting trust_store %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting trust_store: %s", err))
 	}
 
 	return nil

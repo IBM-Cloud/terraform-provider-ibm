@@ -62,7 +62,7 @@ require (
 )
 
 require (
-	github.com/IBM/mqcloud-go-sdk v0.0.0-20231207105140-14d858932788
+	github.com/IBM/mqcloud-go-sdk v0.0.4
 	github.com/IBM/sarama v1.41.2
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1
