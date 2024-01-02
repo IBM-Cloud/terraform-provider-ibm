@@ -106,9 +106,13 @@ func testAccCheckIbmSchematicsAgentDeployExists(n string, obj *schematicsv1.Agen
 		}
 
 		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			XFeatureAgents: core.BoolPtr(true),
-			Profile:        core.StringPtr("detailed"),
+			// XFeatureAgents: core.BoolPtr(true),
+			Profile: core.StringPtr("detailed"),
 		}
+		ff := map[string]string{
+			"X-Feature-Agents": "true",
+		}
+		getAgentDataOptions.Headers = ff
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -138,8 +142,8 @@ func testAccCheckIbmSchematicsAgentDeployDestroy(s *terraform.State) error {
 		}
 
 		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			XFeatureAgents: core.BoolPtr(true),
-			Profile:        core.StringPtr("detailed"),
+			// XFeatureAgents: core.BoolPtr(true),
+			Profile: core.StringPtr("detailed"),
 		}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
