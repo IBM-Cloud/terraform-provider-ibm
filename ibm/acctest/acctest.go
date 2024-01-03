@@ -104,6 +104,8 @@ var (
 	DedicatedHostGroupFamily        string
 	DedicatedHostGroupClass         string
 	ShareProfileName                string
+	SourceShareCRN                  string
+	ShareEncryptionKey              string
 	VNIId                           string
 	VolumeProfileName               string
 	VSIUnattachedBootVolumeID       string
@@ -122,6 +124,18 @@ var (
 	HpcsInstanceID                  string
 )
 
+// MQ on Cloud
+var (
+	MqcloudConfigEndpoint            string
+	MqcloudInstanceID                string
+	MqcloudQueueManagerID            string
+	MqcloudKSCertFilePath            string
+	MqcloudTSCertFilePath            string
+	MqCloudQueueManagerLocation      string
+	MqCloudQueueManagerVersion       string
+	MqCloudQueueManagerVersionUpdate string
+)
+
 // Secrets Manager
 var (
 	SecretsManagerInstanceID                                     string
@@ -138,6 +152,7 @@ var (
 	SecretsManagerPublicCertificateCommonName                    string
 	SecretsManagerValidateManualDnsCisZoneId                     string
 	SecretsManagerImportedCertificatePathToCertificate           string
+	SecretsManagerServiceCredentialsCosCrn                       string
 	SecretsManagerSecretType                                     string
 	SecretsManagerSecretID                                       string
 )
@@ -839,6 +854,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
 	}
 
+	SourceShareCRN = os.Getenv("IS_SOURCE_SHARE_CRN")
+	if SourceShareCRN == "" {
+		SourceShareCRN = "crn:v1:staging:public:is:us-east-1:a/efe5afc483594adaa8325e2b4d1290df::share:r142-a106f162-86e4-4d7f-be75-193cc55a93e9" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
+	}
+
+	ShareEncryptionKey = os.Getenv("IS_SHARE_ENCRYPTION_KEY")
+	if ShareEncryptionKey == "" {
+		ShareEncryptionKey = "crn:v1:staging:public:kms:us-south:a/efe5afc483594adaa8325e2b4d1290df:1be45161-6dae-44ca-b248-837f98004057:key:3dd21cc5-cc20-4f7c-bc62-8ec9a8a3d1bd" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
+	}
+
 	VolumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
 	if VolumeProfileName == "" {
 		VolumeProfileName = "general-purpose"
@@ -1219,6 +1246,11 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE for testing imported certificate's tests, else tests fail if not set correctly")
 	}
 
+	SecretsManagerServiceCredentialsCosCrn = os.Getenv("SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN")
+	if SecretsManagerServiceCredentialsCosCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
+	}
+
 	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
 	if SecretsManagerSecretType == "" {
 		SecretsManagerSecretType = "username_password"
@@ -1562,6 +1594,40 @@ func init() {
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
 	}
+
+	MqcloudConfigEndpoint = os.Getenv("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT")
+	if MqcloudConfigEndpoint == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT for ibm_mqcloud service else tests will fail if this is not set correctly")
+	}
+
+	MqcloudInstanceID = os.Getenv("IBM_MQCLOUD_INSTANCE_ID")
+	if MqcloudInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_INSTANCE_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudQueueManagerID = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_ID")
+	if MqcloudQueueManagerID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudKSCertFilePath = os.Getenv("IBM_MQCLOUD_KS_CERT_PATH")
+	if MqcloudKSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_KS_CERT_PATH for ibm_mqcloud_keystore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudTSCertFilePath = os.Getenv("IBM_MQCLOUD_TS_CERT_PATH")
+	if MqcloudTSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TS_CERT_PATH for ibm_mqcloud_truststore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerLocation = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_LOCATION"))
+	if MqCloudQueueManagerLocation == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_LOCATION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerVersion = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSION"))
+	if MqCloudQueueManagerVersion == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerVersionUpdate = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE"))
+	if MqCloudQueueManagerVersionUpdate == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
 }
 
 var (
@@ -1770,6 +1836,34 @@ func TestAccPreCheckSatelliteSSH(t *testing.T) {
 	TestAccPreCheck(t)
 	if SatelliteSSHPubKey == "" {
 		t.Fatal("IBM_SATELLITE_SSH_PUB_KEY missing. Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a VALID ssh public key")
+	}
+}
+
+func TestAccPreCheckMqcloud(t *testing.T) {
+	TestAccPreCheck(t)
+	if MqcloudConfigEndpoint == "" {
+		t.Fatal("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT must be set for acceptance tests")
+	}
+	if MqcloudInstanceID == "" {
+		t.Fatal("IBM_MQCLOUD_INSTANCE_ID must be set for acceptance tests")
+	}
+	if MqcloudQueueManagerID == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_ID must be set for acceptance tests")
+	}
+	if MqcloudTSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_TS_CERT_PATH must be set for acceptance tests")
+	}
+	if MqcloudKSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_KS_CERT_PATH must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerLocation == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_LOCATION must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerVersion == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSION must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerVersionUpdate == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE must be set for acceptance tests")
 	}
 }
 

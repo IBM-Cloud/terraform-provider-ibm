@@ -35,7 +35,7 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the project_config.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 
-* `definition` - (List) The name and description of a project configuration.
+* `definition` - (List) 
 Nested schema for **definition**:
 	* `authorizations` - (List) The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.
 	Nested schema for **authorizations**:
@@ -61,14 +61,17 @@ Nested schema for **definition**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `environment_id` - (String) The ID of the project environment.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `inputs` - (List) The input variables for configuration definition and environment.
-	Nested schema for **inputs**:
-	* `locator_id` - (Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog.
+	* `inputs` - (Map) The input variables for configuration definition and environment.
+	* `locator_id` - (Forces new resource, String) A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 	* `name` - (String) The configuration name. It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
-	* `settings` - (List) Schematics environment variables to use to deploy the configuration.Settings are only available if they were specified when the configuration was initially created.
-	Nested schema for **settings**:
+	* `resource_crns` - (List) The CRNs of resources associated with this configuration.
+	  * Constraints: The list items must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`. The maximum length is `110` items. The minimum length is `0` items.
+	* `settings` - (Map) Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.
+
+* `href` - (String) A URL.
+  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 
 * `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
 
@@ -86,7 +89,7 @@ Nested schema for **outputs**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `name` - (String) The variable name.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
-	* `value` - (String) Can be any value - a string, number, boolean, array, or object.
+	* `value` - (Map) Can be any value - a string, number, boolean, array, or object.
 
 * `project` - (List) The project referenced by this resource.
 Nested schema for **project**:
@@ -151,11 +154,11 @@ Nested schema for **schematics**:
 		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 		* `type` - (String) The type of the script.
 		  * Constraints: The maximum length is `7` characters. The minimum length is `7` characters. The value must match regular expression `/^(ansible)$/`.
-	* `workspace_crn` - (String) An existing schematics workspace CRN.
-	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
+	* `workspace_crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`.
 
 * `state` - (String) The state of the configuration.
-  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
+  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
 
 * `update_available` - (Boolean) The flag that indicates whether a configuration update is available.
 
