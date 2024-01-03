@@ -132,25 +132,23 @@ func TestAccIbmCodeEngineSecretDataSourceSSHAuth(t *testing.T) {
 func TestAccIbmCodeEngineSecretDataSourceTls(t *testing.T) {
 	secretFormat := "tls"
 	secretName := fmt.Sprintf("tf-data-secret-tls-%d", acctest.RandIntRange(10, 1000))
-	secretData := `{
-		"tls_cert" = "---BEGIN CERTIFICATE--- ---END CERTIFICATE---",
-    "tls_key"  = "---BEGIN PRIVATE KEY--- ---END PRIVATE KEY---",
-	}`
+	tlsKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
+	tlsCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
 
 	projectID := acc.CeProjectId
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCodeEngine(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID, secretFormat, secretName, secretData),
+				Config: testAccCheckIbmCodeEngineSecretDataSourceTLSConfigBasic(projectID, tlsKey, tlsCert, secretFormat, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "format", secretFormat),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "name", secretName),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "data.tls_cert", "---BEGIN CERTIFICATE--- ---END CERTIFICATE---"),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "data.tls_key", "---BEGIN PRIVATE KEY--- ---END PRIVATE KEY---"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_secret.code_engine_secret_instance", "data.tls_cert"),
+					resource.TestCheckResourceAttrSet("data.ibm_code_engine_secret.code_engine_secret_instance", "data.tls_key"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_tls_v2"),
 				),
 			},
@@ -206,6 +204,38 @@ func testAccCheckIbmCodeEngineSecretDataSourceConfigBasic(projectID string, secr
 			name = ibm_code_engine_secret.code_engine_secret_instance.name
 		}
 	`, projectID, secretFormat, secretName, secretData)
+}
+
+func testAccCheckIbmCodeEngineSecretDataSourceTLSConfigBasic(projectID string, tlsKey string, tlsCert string, secretFormat string, secretName string) string {
+	return fmt.Sprintf(`
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			project_id = "%s"
+		}
+
+		variable "tls_secret_data" {
+			type = map(string)
+  			default = {
+   				"tls_key" = <<EOT
+%s
+EOT
+				"tls_cert" = <<EOT
+%s
+EOT
+			}
+		}
+
+		resource "ibm_code_engine_secret" "code_engine_secret_instance" {
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
+			format = "%s"
+			name = "%s"
+			data = var.tls_secret_data
+		}
+
+		data "ibm_code_engine_secret" "code_engine_secret_instance" {
+			project_id = ibm_code_engine_secret.code_engine_secret_instance.project_id
+			name = ibm_code_engine_secret.code_engine_secret_instance.name
+		}
+	`, projectID, tlsKey, tlsCert, secretFormat, secretName)
 }
 
 func testAccCheckIbmCodeEngineServiceAccessSecretDataSourceConfigBasic(projectID string, format string, name string, resourceKeyId string, serviceInstanceId string) string {

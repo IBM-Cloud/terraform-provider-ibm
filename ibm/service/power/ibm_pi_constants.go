@@ -172,4 +172,10 @@ const (
 	Attr_DatacenterStatus       = "pi_datacenter_status"
 	Attr_DatacenterType         = "pi_datacenter_type"
 	Attr_DatacenterHref         = "pi_datacenter_href"
+
+	// IBM PI Workspace
+	PIWorkspaceName          = "pi_name"
+	PIWorkspaceDatacenter    = "pi_datacenter"
+	PIWorkspaceResourceGroup = "pi_resource_group_id"
+	PIWorkspacePlan          = "pi_plan"
 )

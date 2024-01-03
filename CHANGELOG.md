@@ -1,3 +1,235 @@
+# 1.61.0-beta0 (Dec 20, 2023)
+Features
+* Support for MQ on Cloud
+    - **Datasources**
+       - ibm_mqcloud_queue_manager
+       - ibm_mqcloud_queue_manager_status
+       - ibm_mqcloud_application 
+       - ibm_mqcloud_user
+       - ibm_mqcloud_keystore_certificate
+       - ibm_mqcloud_truststore_certificate
+    - **Resources**
+       - ibm_mqcloud_queue_manager
+       - ibm_mqcloud_application 
+       - ibm_mqcloud_user
+       - ibm_mqcloud_keystore_certificate
+       - ibm_mqcloud_truststore_certificate
+* Support for Secret Manager
+     - **Datasources**
+        - ibm_sm_service_credentials_secret_metadata
+        - ibm_sm_service_credentials_secret
+     - **Resources**
+        - ibm_sm_service_credentials_secret
+* Support for VPC
+     - **Datasources**
+        - ibm_is_snapshot_consistency_group
+        - ibm_is_snapshot_consistency_groups
+     - **Resources**
+        - ibm_is_snapshot_consistency_group
+
+Enhancements
+* feat(Cloud Databases): Database user password complexity validation ([4931](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4931))
+* Update pi_user_data to accept string input ([4974](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4974))
+* support host_link_agent_endpoint for Satellite host ([4970](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4970))
+* Add mtu and accessConfig flags to subnet create commands for terraform ([4690](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4690))
+* feat(Cloud Databases): Redis Database User RBAC support ([4982](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4982))
+* fix(Cloud Databases): fix Unwrap return value for go 1.18 compat ([4991](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4991))
+* update issue fixed ibm_is_subnet_reserved_ip ([4988](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4988))
+* Adding Flexible IOPS ([4992](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4992))
+* Removing Support For Power VPN Create ([4993](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4993))
+* Feature(share-crr): Share cross region replication ([4995](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4995))
+* Enhancement: Added operating system attributes to is images datasources ([4998](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4998))
+* added enhancement to one step delegate resolver in is_vpc ([5000](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5000))
+* resolved delete issue for the floated nics on bm server ([5001](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5001))
+
+BugFixes
+* Fix IBM pi documentation bug ([4969](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4969))
+
+# 1.60.1 (Nov 09, 2023)
+
+BugFixes
+* Regenerate Projects TF to fix generated doc and samples
+ ([4961](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4961))
+
+# 1.60.0 (Nov 29, 2023)
+Features
+* Support for Projects
+   - **Datasources**
+       - ibm_project
+       - ibm_project_config 
+       - ibm_project_environment
+   - **Resources**
+        - ibm_project
+        - ibm_project_config 
+        - ibm_project_environment
+
+* Support for Code Engine
+   - **Datasources**
+       - ibm_code_engine_domain_mapping
+   - **Resources**
+        - ibm_code_engine_domain_mapping
+
+* Support for Power Instance
+   - **Resources**
+        - ibm_pi_workspace
+
+Enhancements
+* support offline restore for MongoDB EE PITR ([4601](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4601))
+* bump ContinuousDelivery Go SDK version ([4918](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4918))
+* Added nest conditions to rule.conditions IAM Policies ([4896](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4896))
+* Updates to SCC tool ([4920](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4920))
+* Add entitlement option to Satellite cluster/workerpool create ([4894](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4894))
+* VPC ID Filter is added when Subnet Name is specified ([4892](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4892))
+* add optional account id to kms config ([4944](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4944))
+
+BugFixes
+* resolved nil pointer issue on vpn gateway resource ([4903](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4903))
+* Private/direct COS endpoint settings conflicts with IBM Cloud docs, VPE options, and COS config endpoint ([4919](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4919))
+* add missing required argument name to the doc ([4909](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4909))
+* Fix wrong sintax in doc for Ingress Secret Opaque ([4917](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4917))
+* schematics agent doc fixes ([4933](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4933))
+* Fix some job parameters for code engine ([4923](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4923))
+* CIS - remove deafult value for min_tls_version ([4947](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4947))
+* Update Power Workspace/s and Datacenter/s DataSource Documentation ([4904](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4904))
+* validation on encryption with catalog images fixed ([4940](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4940))
+* issue-13603-fix attachment terraform ([4952](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4952))
+* Fixed catalog service extensions and values metadata params of workspace ds ([4957](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4957))
+
+# 1.60.0-beta1 (Nov 23, 2023)
+Features
+* Support for Projects
+   - **Datasources**
+       - ibm_project
+       - ibm_project_config 
+       - ibm_project_environment
+   - **Resources**
+        - ibm_project
+        - ibm_project_config 
+        - ibm_project_environment
+
+* Support for Code Engine
+   - **Datasources**
+       - ibm_code_engine_domain_mapping
+   - **Resources**
+        - ibm_code_engine_domain_mapping
+
+* Support for Power Instance
+   - **Resources**
+        - ibm_pi_workspace
+
+Enhancements
+* support offline restore for MongoDB EE PITR ([4601](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4601))
+* bump ContinuousDelivery Go SDK version ([4918](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4918))
+* Added nest conditions to rule.conditions IAM Policies ([4896](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4896))
+* Updates to SCC tool ([4920](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4920))
+* Add entitlement option to Satellite cluster/workerpool create ([4894](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4894))
+* VPC ID Filter is added when Subnet Name is specified ([4892](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4892))
+* add optional account id to kms config ([4944](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4944))
+
+BugFixes
+* resolved nil pointer issue on vpn gateway resource ([4903](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4903))
+* Private/direct COS endpoint settings conflicts with IBM Cloud docs, VPE options, and COS config endpoint ([4919](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4919))
+* add missing required argument name to the doc ([4909](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4909))
+* Fix wrong sintax in doc for Ingress Secret Opaque ([4917](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4917))
+* schematics agent doc fixes ([4933](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4933))
+* Fix some job parameters for code engine ([4923](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4923))
+* CIS - remove deafult value for min_tls_version ([4947](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4947))
+* Update Power Workspace/s and Datacenter/s DataSource Documentation ([4904](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4904))
+* validation on encryption with catalog images fixed ([4940](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4940))
+
+# 1.60.0-beta0 (Nov 15, 2023)
+Features
+* Support for Projects
+   - **Datasources**
+       - ibm_project
+       - ibm_project_config 
+   - **Resources**
+        - ibm_project
+        - ibm_project_config 
+Enhancements
+* support offline restore for MongoDB EE PITR ([4601](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4601))
+* bump ContinuousDelivery Go SDK version ([4918](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4918))
+* Added nest conditions to rule.conditions IAM Policies ([4896](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4896))
+* Updates to SCC tool ([4920](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4920))
+
+BugFixes
+* resolved nil pointer issue on vpn gateway resource ([4903](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4903))
+* Private/direct COS endpoint settings conflicts with IBM Cloud docs, VPE options, and COS config endpoint ([4919](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4919))
+* add missing required argument name to the doc ([4909](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4909))
+
+# 1.59.1 (Nov 20, 2023)
+
+Bug Fixes
+* ibm_schematics_workspace: provider crash during terraform plan ([4907](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4907))
+
+
+# 1.59.0 (Oct 30, 2023)
+
+Features
+* Support Usage Reports
+    - **Datasources**
+        - ibm_billing_snapshot_list
+    - **Resources**
+        - ibm_billing_report_snapshot
+
+* Support Power Instance
+    - **Datasources**
+        - ibm_pi_workspace
+        - ibm_pi_workspaces
+        - ibm_pi_datacenter
+        - ibm_pi_datacenters
+
+* Support Schematics Agents
+    - **Datasources**
+        - ibm_schematics_policies
+        - ibm_schematics_policy
+        - ibm_schematics_agents
+        - ibm_schematics_agent
+        - ibm_schematics_agent_prs
+        - ibm_schematics_agent_deploy
+        - ibm_schematics_agent_health
+    - **Resources**
+        - ibm_schematics_policy
+        - ibm_schematics_agent
+        - ibm_schematics_agent_prs
+        - ibm_schematics_agent_deploy
+        - ibm_schematics_agent_health
+
+* Support Event Notification
+    - **Datasources**
+        - ibm_en_destination_custom_email
+        - ibm_en_subscription_custom_email
+    - **Resources**
+        - ibm_en_destination_custom_email
+        - ibm_en_subscription_custom_email
+
+
+Enhancements
+* Get secret by name ([4825](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4825))
+* VPN for VPC: Customer should be able to recover their gateway or server for unhealthy status ([4858](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4858))
+* support for tf 1.5 in schematics workspace ([4853](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4853))
+* Deprecated match_resource_types and Intoduced match_resource_type ([4863](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4863))
+* Enterprise BaaS feature ([4845](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4845))
+* sarama golang library update ([4810](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4810))
+* Adding NUMA and Profile Status to instance, instance profile and dedicated hosts ([4871](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4871))
+* update terraform as per latest eventstreams go sdk release 1.4.0 ([4862](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4862))
+* Add path to invoke update without determining changed CRN data, add validator for name of secrets ([4859](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4859))
+* Feature: ReplicationEnabledField for Storage Pool ([4875](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4875))
+* Remove deprecated scaling attributes ([4481](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4481))
+* update CD Go SDK version ([4887](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4887))
+* Adding updates to the scc resources/datasources ([4865](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4865))
+* Add support for Elasticsearch Platinum ([4712](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4712))
+* Add support for security groups for network load balancers ([4888](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4888))
+
+
+Bug Fixes
+* Fix handling of bundle_certs in Secrets Manager public cert ([4854](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4854))
+* add description in docs for Key Protect ([4846](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4846))
+* Update iam_service_policy.html.markdown ([4836](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4836))
+* v1.58.0 ibm_container_cluster_config: new endpoint_type returning self-signed private endpoint ([4861](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4861))
+* Doc correction: Share mount target doc corrections ([4889](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4889))
+* Fix indentation for subcategory ([4891](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4891))
+
 # 1.59.0-beta0 (Oct 25, 2023)
 
 Features

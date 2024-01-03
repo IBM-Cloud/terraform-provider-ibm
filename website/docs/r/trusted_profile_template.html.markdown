@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_trusted_profile_template"
 description: |-
-	Manages IAM trusted profile templates
+  Manages IAM trusted profile templates
 subcategory: "Identity & Access Management (IAM)"
 ---
 
