@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2023, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power
@@ -110,8 +110,8 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 		body.TargetStorageTier = v.(string)
 	}
 
-	if v, ok := d.GetOk(helpers.PIReplicationEnabled); ok {
-		value := v.(bool)
+	if !d.GetRawConfig().GetAttr(helpers.PIReplicationEnabled).IsNull() {
+		value := d.Get(helpers.PIReplicationEnabled).(bool)
 		body.TargetReplicationEnabled = &value
 	}
 
@@ -150,7 +150,9 @@ func resourceIBMPIVolumeCloneRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.Set("volume_clone_task_id", vcTaskID)
-	d.Set("volume_clone_status", volCloneTask.Status)
+	if volCloneTask.Status != nil {
+		d.Set("volume_clone_status", *volCloneTask.Status)
+	}
 	d.Set("volume_clone_failure_reason", volCloneTask.FailedReason)
 	if volCloneTask.PercentComplete != nil {
 		d.Set("volume_clone_percent_complete", *volCloneTask.PercentComplete)
@@ -186,7 +188,7 @@ func isWaitForIBMPIVolumeCloneCompletion(ctx context.Context, client *st.IBMPICl
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{PIVolumeCloneRunning},
-		Target:     []string{PIVolumeCloneDone},
+		Target:     []string{PIVolumeCloneCompleted},
 		Refresh:    isIBMPIVolumeCloneRefreshFunc(client, id),
 		Delay:      10 * time.Second,
 		MinTimeout: 2 * time.Minute,
@@ -203,8 +205,8 @@ func isIBMPIVolumeCloneRefreshFunc(client *st.IBMPICloneVolumeClient, id string)
 			return nil, "", err
 		}
 
-		if *volClone.Status == PIVolumeCloneDone {
-			return volClone, PIVolumeCloneDone, nil
+		if *volClone.Status == PIVolumeCloneCompleted {
+			return volClone, PIVolumeCloneCompleted, nil
 		}
 
 		return volClone, PIVolumeCloneRunning, nil

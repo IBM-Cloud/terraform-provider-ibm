@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2023, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power_test
@@ -31,8 +31,8 @@ func TestAccIBMPIVolumeClone_basic(t *testing.T) {
 func testAccCheckIBMPIVolumeCloneBasicConfig() string {
 	return fmt.Sprintf(`
 data "ibm_pi_volume_clone" "testacc_ds_volume_clone" {
-    pi_volume_clone_task_id   	= "%s"
-    pi_cloud_instance_id 		= "%s"
+    pi_volume_clone_task_id		= "%s"
+    pi_cloud_instance_id		= "%s"
 }`, acc.Pi_volume_clone_task_id, acc.Pi_cloud_instance_id)
 
 }

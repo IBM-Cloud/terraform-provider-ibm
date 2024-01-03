@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2023, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power
@@ -64,8 +64,10 @@ func dataSourceIBMPIVolumeCloneRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(PIVolumeCloneTaskID)
-	d.Set("volume_clone_status", volClone.Status)
+	d.SetId(d.Get(PIVolumeCloneTaskID).(string))
+	if volClone.Status != nil {
+		d.Set("volume_clone_status", *volClone.Status)
+	}
 	d.Set("volume_clone_failure_reason", volClone.FailedReason)
 	if volClone.PercentComplete != nil {
 		d.Set("volume_clone_percent_complete", *volClone.PercentComplete)
