@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20231204080125-462fa9e436bc
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231116055201-2a84da7b9bd6
-	github.com/IBM-Cloud/power-go-client v1.5.7
+	github.com/IBM-Cloud/power-go-client v1.5.8
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
@@ -38,7 +38,7 @@ require (
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
-	github.com/go-openapi/strfmt v0.21.9
+	github.com/go-openapi/strfmt v0.21.10
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.4.0
@@ -102,15 +102,15 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-openapi/analysis v0.21.4 // indirect
-	github.com/go-openapi/errors v0.20.4 // indirect
-	github.com/go-openapi/jsonpointer v0.20.0 // indirect
-	github.com/go-openapi/jsonreference v0.20.2 // indirect
-	github.com/go-openapi/loads v0.21.2 // indirect
+	github.com/go-openapi/analysis v0.21.5 // indirect
+	github.com/go-openapi/errors v0.21.0 // indirect
+	github.com/go-openapi/jsonpointer v0.20.1 // indirect
+	github.com/go-openapi/jsonreference v0.20.3 // indirect
+	github.com/go-openapi/loads v0.21.3 // indirect
 	github.com/go-openapi/runtime v0.26.0 // indirect
-	github.com/go-openapi/spec v0.20.11 // indirect
-	github.com/go-openapi/swag v0.22.4 // indirect
-	github.com/go-openapi/validate v0.22.3 // indirect
+	github.com/go-openapi/spec v0.20.12 // indirect
+	github.com/go-openapi/swag v0.22.5 // indirect
+	github.com/go-openapi/validate v0.22.4 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
