@@ -157,6 +157,10 @@ const (
 	Attr_WorkspaceName         = "pi_workspace_name"
 	Attr_WorkspaceStatus       = "pi_workspace_status"
 	Attr_WorkspaceType         = "pi_workspace_type"
+	Attr_Members               = "members"
+	Attr_Name                  = "name"
+	Attr_Policy                = "policy"
+	Attr_SPPPlacementGroups    = "spp_placement_groups"
 
 	// Datacenter
 	Arg_DatacenterZone          = "pi_datacenter_zone"
