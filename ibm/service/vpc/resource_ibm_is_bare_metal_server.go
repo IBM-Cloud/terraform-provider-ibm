@@ -1361,9 +1361,11 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	d.SetId(*bms.ID)
 	d.Set(isBareMetalServerBandwidth, bms.Bandwidth)
-	bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
-	bmsBootTarget := bmsBootTargetIntf.ID
-	d.Set(isBareMetalServerBootTarget, bmsBootTarget)
+	if bms.BootTarget != nil {
+		bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
+		bmsBootTarget := bmsBootTargetIntf.ID
+		d.Set(isBareMetalServerBootTarget, bmsBootTarget)
+	}
 	cpuList := make([]map[string]interface{}, 0)
 	if bms.Cpu != nil {
 		currentCPU := map[string]interface{}{}
