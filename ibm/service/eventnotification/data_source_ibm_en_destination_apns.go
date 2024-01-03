@@ -250,9 +250,6 @@ func enAPNSDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf
 	if params.PreProd != nil {
 		paramsMap["pre_prod"] = params.PreProd
 	}
-	// if params.CollectFailedEvents != nil {
-	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
-	// }
 
 	return paramsMap
 }

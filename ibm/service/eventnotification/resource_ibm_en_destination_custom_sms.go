@@ -50,30 +50,6 @@ func ResourceIBMEnCustomSMSDestination() *schema.Resource {
 				Optional:    true,
 				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
 			},
-			// "config": {
-			// 	Type:        schema.TypeList,
-			// 	MaxItems:    1,
-			// 	Optional:    true,
-			// 	Description: "Payload describing a destination configuration.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"params": {
-			// 				Type:     schema.TypeList,
-			// 				MaxItems: 1,
-			// 				Optional: true,
-			// 				Elem: &schema.Resource{
-			// 					Schema: map[string]*schema.Schema{
-			// 						"url": {
-			// 							Type:        schema.TypeString,
-			// 							Required:    true,
-			// 							Description: "Slack webhook url.",
-			// 						},
-			// 					},
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// },
 			"destination_id": {
 				Type:        schema.TypeString,
 				Computed:    true,

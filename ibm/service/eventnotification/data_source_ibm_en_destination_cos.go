@@ -203,8 +203,5 @@ func enCOSDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf)
 		paramsMap["endpoint"] = params.Endpoint
 	}
 
-	// if params.CollectFailedEvents != nil {
-	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
-	// }
 	return paramsMap
 }

@@ -28,43 +28,43 @@ func DataSourceIBMEnTemplates() *schema.Resource {
 			"search_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Filter the source by name or type.",
+				Description: "Filter the template by name or type.",
 			},
 			"total_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Total number of sources.",
+				Description: "Total number of templates.",
 			},
 			"templates": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of sources.",
+				Description: "List of templates.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Source ID.",
+							Description: "Template ID.",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Source name.",
+							Description: "Template name.",
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "description of the source.",
+							Description: "description of the template.",
 						},
 						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Source type.",
+							Description: "template type smtp_custom.notification/smtp_custom.invitation.",
 						},
 						"subscription_count": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Topic count.",
+							Description: "Subscription count.",
 						},
 						"subscription_names": {
 							Type:        schema.TypeList,

@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_chrome'
+page_title: 'IBM : ibm_en_destination_custom_sms'
 description: |-
-  Get information about a chrome destination
+  Get information about a Custom SMS destination
 ---
 
-# ibm_en_destination_chrome
+# ibm_en_destination_custom_sms
 
-Provides a read-only data source for Cbrome destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Custom SMS destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_destination_chrome" "chrome_en_destination" {
+data "ibm_en_destination_custom_sms" "custom_sms_en_destination" {
   instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
-  destination_id = ibm_en_destination_chrome.chrome_destination.destination_id
+  destination_id = ibm_en_destination_custom_sms.destination1.destination_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `chrome_en_destination`.
+- `id` - The unique identifier of the `custom_sms_en_destination`.
 
 - `name` - (String) Destination name.
 
@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Destination type push_chrome.
+- `type` - (String) Destination type smtp_custom.
 
 - `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
@@ -52,10 +52,6 @@ In addition to all argument references listed, you can access the following attr
 
   Nested scheme for **params**:
 
-  - `website_url` - (String) URL of website.
-
-  - `api_key` - (String) api key for FCM website project
-
-  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
+  - `domain` - (String) The Custom Domain.
 
 - `updated_at` - (String) Last updated time.

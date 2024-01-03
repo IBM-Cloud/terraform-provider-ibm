@@ -45,7 +45,7 @@ func ResourceIBMEnEmailTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Destination ID.",
+				Description: "The type of template",
 			},
 			"params": {
 				Type:     schema.TypeList,

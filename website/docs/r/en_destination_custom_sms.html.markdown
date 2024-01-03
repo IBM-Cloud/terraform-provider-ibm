@@ -1,32 +1,26 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_cf'
+page_title: 'IBM : ibm_en_destination_custom_sms'
 description: |-
-  Manages Event Notification Cloud Function destinations.
+  Manages Event Notification Custom SMS destination.
 ---
 
-# ibm_en_destination_cf
+# ibm_en_destination_custom_sms
 
-Create, update, or delete a IBM Cloud Functions destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a Custom SMS destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination_cf" "cf_en_destination" {
+resource "ibm_en_destination_custom_sms" "custom_sms_en_destination" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
-  name                  = "Cloud Function Test Destination"
-  type                  = "ibmcf"
+  name                  = "Custom SMS EN Destination"
+  type                  = "sms_custom"
   collect_failed_events = true
-  description           = "Destination Chrome for event notification"
-  config {
-    params {
-      api_key     = "XYZ"
-      website_url = "https://www.ibmcfendpoint.com/*"
-    }
-  }
+  description           = "Destination Custom SMS for event notification"
 }
-```
+```         
 
 ## Argument reference
 
@@ -38,26 +32,15 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) ibmcf.
+- `type` - (Required, String) sms_custom.
 
 - `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
-
-- `config` - (Optional, List) Payload describing a destination configuration.
-
-  Nested scheme for **config**:
-
-  - `params` - (Required, List)
-
-  Nested scheme for **params**:
-
-  - `url` - (Required, string) URL of IBM Cloud Functions Trigger EndPoint.
-  - `api_key` - (Required, string) APIKey with access of IBM Cloud Functions IAM Namespace.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `cf_en_destination`.
+- `id` - (String) The unique identifier of the `custom_sms_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -66,7 +49,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination_cf` resource by using `id`.
+You can import the `ibm_en_destination_custom_sms` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -81,5 +64,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination_cf.cf_en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_custom_sms.custom_domain_sms_en_destination <instance_guid>/<destination_id>
 ```

@@ -194,8 +194,5 @@ func enCFDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) 
 		paramsMap["api_key"] = params.APIKey
 	}
 
-	// if params.CollectFailedEvents != nil {
-	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
-	// }
 	return paramsMap
 }

@@ -1,23 +1,23 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_sms'
+page_title: 'IBM : ibm_en_subscription_custom_sms'
 description: |-
-  Manages Event Notifications SMS subscription.
+  Manages Event Notifications Custom SMS subscription.
 ---
 
-# ibm_en_subscription_sms
+# ibm_en_subscription_custom_sms
 
-Create, update, or delete a SMS subscription by using IBM Cloud™ Event Notifications.
+Create, update, or delete a Custom SMS Destination subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage for SMS Subscription Creation
 
 ```terraform
 resource "ibm_en_subscription_sms" "sms_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name             = "News Subscription"
-  description      = "SMS subscription for news alert"
-  destination_id   = [for s in toset(data.ibm_en_destinations.destinations.destinations): s.id if s.type == "sms_ibm"].0
+  name             = "Non IBM SMS Destination Subscription"
+  description      = "Custom SMS Destination subscription"
+  destination_id   = ibm_en_destination_custom_sms.custom_sms_en_destination.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     invited = ["+15678923404", "+19643567389"]
@@ -28,11 +28,11 @@ resource "ibm_en_subscription_sms" "sms_subscription" {
 ## Example usage for SMS Subscription Updation
 
 ```terraform
-resource "ibm_en_subscription_sms" "sms_subscription" {
+resource "ibm_en_subscription_custom_sms" "custom_sms_subscription" {
   instance_guid    = "my_instance_guid"
-  name             = "IBM SMS Certificate Subscription"
+  name             = "Non IBM SMS Destination Subscription"
   description      = "Subscription for Certificate expiration alert"
-  destination_id   = [for s in toset(data.ibm_en_destinations.destinations.destinations): s.id if s.type == "sms_ibm"].0
+  destination_id   = ibm_en_destination_custom_sms.custom_sms_en_destination.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
      add = ["+19643744902"]
@@ -68,7 +68,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `sms_subscription`.
+- `id` - (String) The unique identifier of the `custon_sms_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -76,7 +76,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription_sms` resource by using `id`.
+You can import the `ibm_en_subscription_custom_sms` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -89,5 +89,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_sms.sms_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_custom_sms.custom_sms_subscription <instance_guid>/<subscription_id>
 ```

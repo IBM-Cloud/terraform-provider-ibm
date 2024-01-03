@@ -185,8 +185,5 @@ func enCustomEmailDestinationConfigParamsToMap(paramsItem en.DestinationConfigOn
 		paramsMap["domain"] = params.Domain
 	}
 
-	// if params.CollectFailedEvents != nil {
-	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
-	// }
 	return paramsMap
 }

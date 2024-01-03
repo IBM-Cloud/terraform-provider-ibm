@@ -27,22 +27,22 @@ func DataSourceIBMEnEmailTemplate() *schema.Resource {
 			"template_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Unique identifier for Destination.",
+				Description: "Unique identifier for Template.",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination name.",
+				Description: "Template name.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination description.",
+				Description: "Templaten description.",
 			},
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type slack.",
+				Description: "Template type smtp_custom.notification/smtp_custom.invitation.",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,

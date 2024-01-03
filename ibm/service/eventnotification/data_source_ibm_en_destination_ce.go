@@ -214,8 +214,5 @@ func enCodeEngineDestinationConfigParamsToMap(paramsItem en.DestinationConfigOne
 	if params.SensitiveHeaders != nil {
 		paramsMap["sensitive_headers"] = params.SensitiveHeaders
 	}
-	// if params.CollectFailedEvents != nil {
-	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
-	// }
 	return paramsMap
 }

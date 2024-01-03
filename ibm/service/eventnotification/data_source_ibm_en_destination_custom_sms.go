@@ -50,28 +50,6 @@ func DataSourceIBMEnCustomSMSDestination() *schema.Resource {
 				Computed:    true,
 				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
 			},
-			// "config": {
-			// 	Type:        schema.TypeList,
-			// 	Computed:    true,
-			// 	Description: "Payload describing a destination configuration.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"params": {
-			// 				Type:     schema.TypeList,
-			// 				Computed: true,
-			// 				Elem: &schema.Resource{
-			// 					Schema: map[string]*schema.Schema{
-			// 						"domain": {
-			// 							Type:        schema.TypeString,
-			// 							Computed:    true,
-			// 							Description: "The custom doamin",
-			// 						},
-			// 					},
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// },
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -185,8 +163,5 @@ func enCustomSMSDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneO
 		paramsMap["domain"] = params.Domain
 	}
 
-	// if params.CollectFailedEvents != nil {
-	// 	paramsMap["collect_failed_events"] = params.CollectFailedEvents
-	// }
 	return paramsMap
 }
