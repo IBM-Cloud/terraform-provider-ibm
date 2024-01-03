@@ -111,8 +111,7 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if !d.GetRawConfig().GetAttr(helpers.PIReplicationEnabled).IsNull() {
-		value := d.Get(helpers.PIReplicationEnabled).(bool)
-		body.TargetReplicationEnabled = &value
+		body.TargetReplicationEnabled = flex.PtrToBool(d.Get(helpers.PIReplicationEnabled).(bool))
 	}
 
 	client := st.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
