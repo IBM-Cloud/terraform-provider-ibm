@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,62 +14,61 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-const (
-	Workspaces = "workspaces"
-)
-
 func DatasourceIBMPIWorkspaces() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIWorkspacesRead,
 		Schema: map[string]*schema.Schema{
+			// Arguments
 			Arg_CloudInstanceID: {
-				Type:         schema.TypeString,
+				Description:  "The GUID of the service instance associated with an account.",
 				Required:     true,
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			Workspaces: {
+
+			// Attributes
+			Attr_Workspaces: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-
 						Attr_WorkspaceCapabilities: {
-							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "Workspace Capabilities",
+							Description: "Workspace Capabilities.",
 							Elem: &schema.Schema{
 								Type: schema.TypeBool,
 							},
+							Type: schema.TypeMap,
 						},
 						Attr_WorkspaceDetails: {
-							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "Workspace information",
+							Description: "Workspace information.",
+							Type:        schema.TypeMap,
 						},
 						Attr_WorkspaceID: {
-							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Workspace ID",
+							Description: "Workspace ID.",
+							Type:        schema.TypeString,
 						},
 						Attr_WorkspaceLocation: {
-							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "Workspace location",
+							Description: "Workspace location.",
+							Type:        schema.TypeMap,
 						},
 						Attr_WorkspaceName: {
-							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Workspace name",
+							Description: "Workspace name.",
+							Type:        schema.TypeString,
 						},
 						Attr_WorkspaceStatus: {
-							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Workspace status",
+							Description: "Workspace status, active, critical, failed, provisioning.",
+							Type:        schema.TypeString,
 						},
 						Attr_WorkspaceType: {
-							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Workspace type",
+							Description: "Workspace type, off-premises or on-premises.",
+							Type:        schema.TypeString,
 						},
 					},
 				},
@@ -79,13 +77,12 @@ func DatasourceIBMPIWorkspaces() *schema.Resource {
 	}
 }
 func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 	wsData, err := client.GetAll()
 	if err != nil {
@@ -95,26 +92,26 @@ func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, 
 	for _, ws := range wsData.Workspaces {
 		if ws != nil {
 			workspace := map[string]interface{}{
-				Attr_WorkspaceName:         ws.Name,
-				Attr_WorkspaceID:           ws.ID,
-				Attr_WorkspaceStatus:       ws.Status,
-				Attr_WorkspaceType:         ws.Type,
 				Attr_WorkspaceCapabilities: ws.Capabilities,
 				Attr_WorkspaceDetails: map[string]interface{}{
-					WorkspaceCreationDate: ws.Details.CreationDate.String(),
-					WorkspaceCRN:          *ws.Details.Crn,
+					Attr_CreationDate: ws.Details.CreationDate.String(),
+					Attr_CRN:          *ws.Details.Crn,
 				},
+				Attr_WorkspaceID: ws.ID,
 				Attr_WorkspaceLocation: map[string]interface{}{
-					WorkspaceRegion: *ws.Location.Region,
-					WorkspaceType:   ws.Location.Type,
-					WorkspaceUrl:    ws.Location.URL,
+					Attr_Region: *ws.Location.Region,
+					Attr_Type:   ws.Location.Type,
+					Attr_URL:    ws.Location.URL,
 				},
+				Attr_WorkspaceName:   ws.Name,
+				Attr_WorkspaceStatus: ws.Status,
+				Attr_WorkspaceType:   ws.Type,
 			}
 			workspaces = append(workspaces, workspace)
 		}
 	}
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set(Workspaces, workspaces)
+	d.Set(Attr_Workspaces, workspaces)
 	return nil
 }
