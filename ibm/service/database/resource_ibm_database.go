@@ -89,8 +89,13 @@ func (e *databaseUserValidationError) Error() string {
 	return fmt.Sprintf("database user (%s) validation error:\n%s", e.user.Username, string(b))
 }
 
-func (e *databaseUserValidationError) Unwrap() []error {
-	return e.errs
+func (e *databaseUserValidationError) Unwrap() error {
+	if e == nil || len(e.errs) == 0 {
+		return nil
+	}
+
+	// only return the first
+	return e.errs[0]
 }
 
 type userChange struct {
