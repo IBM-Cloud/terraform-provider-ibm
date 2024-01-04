@@ -388,15 +388,16 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 		return fmt.Errorf("[ERROR] Error while attaching volume for instance %s: %q", instanceId, err)
 	}
 	d.SetId(makeTerraformVolAttID(instanceId, *instanceVolAtt.ID))
-	_, err = isWaitForInstanceVolumeAttached(sess, d, instanceId, *instanceVolAtt.ID)
+	volAtt, err := isWaitForInstanceVolumeAttached(sess, d, instanceId, *instanceVolAtt.ID)
 	if err != nil {
 		return err
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isInstanceVolAttTags); ok || v != "" {
+		volAttRef := volAtt.(*vpcv1.VolumeAttachment)
 		oldList, newList := d.GetChange(isInstanceVolAttTags)
-		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instanceVolAtt.Volume.CRN, "", isInstanceUserTagType)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *volAttRef.Volume.CRN, "", isInstanceUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance volume attachment (%s) tags: %s", d.Id(), err)
