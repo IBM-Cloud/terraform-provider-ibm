@@ -182,7 +182,7 @@ func dataSourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.Res
 
 	if suppliedFilter {
 		if len(allItems) == 0 {
-			return diag.FromErr(fmt.Errorf("No Queue Managers found with name %s", name))
+			return diag.FromErr(fmt.Errorf("No Queue Manager found with name: \"%s\"", name))
 		}
 		d.SetId(name)
 	} else {
@@ -200,7 +200,7 @@ func dataSourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.Res
 	}
 
 	if err = d.Set("queue_managers", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting queue_managers %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting queue_managers: %s", err))
 	}
 
 	return nil
