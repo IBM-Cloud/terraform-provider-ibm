@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_tenant"
@@ -19,15 +18,13 @@ data "ibm_pi_tenant" "ds_tenant" {
 }
 ```
 
-**Note**
+**Notes**
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
 
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
-
-  Example usage:
-  
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -43,12 +40,12 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `creation_date` - (Timestamp) The timestamp when the tenant was created.
-- `cloud_instances` - (List) A list with the regions and Power Systems Virtual Server instance IDs that the tenant owns.
+- `cloud_instances` - (Set) Set of regions and Power Systems Virtual Server instance IDs that the tenant owns.
 
   Nested scheme for `cloud_instances`:
 	- `cloud_instance_id` - (String) The unique identifier of the cloud instance.
 	- `region` - (String) The region of the cloud instance.
+- `creation_date` - (String) Date of tenant creation.
 - `enabled` - (Bool) Indicates if the tenant is enabled for the Power Systems Virtual Server instance ID.
 - `id` - (String) The ID of the tenant.
 - `tenant_name` -  (String) The name of the tenant.
