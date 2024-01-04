@@ -46,12 +46,6 @@ func DataSourceIBMPIKey() *schema.Resource {
 				Computed:    true,
 				Description: "SSH RSA key",
 			},
-			"sshkey": {
-				Type:       schema.TypeString,
-				Sensitive:  true,
-				Computed:   true,
-				Deprecated: "This field is deprecated, use ssh_key instead",
-			},
 		},
 	}
 }
@@ -78,7 +72,6 @@ func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta in
 	d.SetId(*sshkeydata.Name)
 	d.Set(Attr_KeyCreationDate, sshkeydata.CreationDate.String())
 	d.Set(Attr_Key, sshkeydata.SSHKey)
-	d.Set("sshkey", sshkeydata.SSHKey) // TODO: deprecated, to remove
 
 	return nil
 }

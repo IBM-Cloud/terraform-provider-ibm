@@ -32,7 +32,6 @@ Review the argument references that you can specify for your resource.
  In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the key. The ID is composed of `<pi_cloud_instance_id>/<pi_key_name>`.
-- `key_id` - (Deprecated, String) User defined name for the SSH key.
 - `name` - (String) User defined name for the SSH key
 - `creation_date` - (String) Date of SSH Key creation. 
 - `ssh_key` - (String) SSH RSA key.
