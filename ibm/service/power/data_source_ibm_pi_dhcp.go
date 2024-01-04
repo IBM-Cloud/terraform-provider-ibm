@@ -60,12 +60,6 @@ func DataSourceIBMPIDhcp() *schema.Resource {
 					},
 				},
 			},
-			Attr_DhcpNetworkDeprecated: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the DHCP Server private network",
-				Deprecated:  "This field is deprecated, use network_id instead",
-			},
 			Attr_DhcpNetworkID: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -115,7 +109,6 @@ func dataSourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta i
 	if dhcpServer.Network != nil {
 		dhcpNetwork := dhcpServer.Network
 		if dhcpNetwork.ID != nil {
-			d.Set(Attr_DhcpNetworkDeprecated, *dhcpNetwork.ID)
 			d.Set(Attr_DhcpNetworkID, *dhcpNetwork.ID)
 		}
 		if dhcpNetwork.Name != nil {

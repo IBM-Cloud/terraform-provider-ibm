@@ -33,7 +33,6 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `servers`:
   - `dhcp_id` - (String) The ID of the DHCP Server.
-  - `network` - (Deprecated, String) The ID of the DHCP Server private network.
   - `network_id`- (String) The ID of the DHCP Server private network.
   - `network_name` - The name of the DHCP Server private network.
   - `status` - (String) The status of the DHCP Server.
