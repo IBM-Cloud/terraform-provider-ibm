@@ -61,7 +61,6 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<pi_cloud_instance_id>/<power_network_port_id>/<id>`.
 - `macaddress` - (String) The MAC address of the port.
 - `network_port_id` - (String) The ID of the port.
-- `port_id` - (Deprecated, String) The ID of the port.
 - `public_ip` - (String) The public IP associated with the port.
 - `status` - (String) The status of the port.
 
