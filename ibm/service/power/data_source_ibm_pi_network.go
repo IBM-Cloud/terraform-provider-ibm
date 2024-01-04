@@ -63,19 +63,15 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"name": {
-				Type:       schema.TypeString,
-				Computed:   true,
-				Deprecated: "This field is deprecated, use pi_network_name instead",
-			},
 			"dns": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"jumbo": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:       schema.TypeBool,
+				Computed:   true,
+				Deprecated: "This field is deprecated, use mtu instead.",
 			},
 			"mtu": {
 				Type:     schema.TypeInt,
@@ -122,9 +118,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 	if networkdata.IPAddressMetrics.Utilization != nil {
 		d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
-	}
-	if networkdata.Name != nil {
-		d.Set("name", networkdata.Name)
 	}
 	if len(networkdata.DNSServers) > 0 {
 		d.Set("dns", networkdata.DNSServers)
