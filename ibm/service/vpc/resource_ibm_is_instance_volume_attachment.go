@@ -293,24 +293,24 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 			volnamestr := volname.(string)
 			volProtoVol.Name = &volnamestr
 		}
-		var userTags *schema.Set
-		if v, ok := d.GetOk(isInstanceVolAttTags); ok {
-			userTags = v.(*schema.Set)
-			if userTags != nil && userTags.Len() != 0 {
-				userTagsArray := make([]string, userTags.Len())
-				for i, userTag := range userTags.List() {
-					userTagStr := userTag.(string)
-					userTagsArray[i] = userTagStr
-				}
-				schematicTags := os.Getenv("IC_ENV_TAGS")
-				var envTags []string
-				if schematicTags != "" {
-					envTags = strings.Split(schematicTags, ",")
-					userTagsArray = append(userTagsArray, envTags...)
-				}
-				volProtoVol.UserTags = userTagsArray
-			}
-		}
+		// var userTags *schema.Set
+		// if v, ok := d.GetOk(isInstanceVolAttTags); ok {
+		// 	userTags = v.(*schema.Set)
+		// 	if userTags != nil && userTags.Len() != 0 {
+		// 		userTagsArray := make([]string, userTags.Len())
+		// 		for i, userTag := range userTags.List() {
+		// 			userTagStr := userTag.(string)
+		// 			userTagsArray[i] = userTagStr
+		// 		}
+		// 		schematicTags := os.Getenv("IC_ENV_TAGS")
+		// 		var envTags []string
+		// 		if schematicTags != "" {
+		// 			envTags = strings.Split(schematicTags, ",")
+		// 			userTagsArray = append(userTagsArray, envTags...)
+		// 		}
+		// 		volProtoVol.UserTags = userTagsArray
+		// 	}
+		// }
 		volSnapshotStr := ""
 		if volSnapshot, ok := d.GetOk(isInstanceVolumeSnapshot); ok {
 			volSnapshotStr = volSnapshot.(string)
@@ -391,6 +391,16 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 	_, err = isWaitForInstanceVolumeAttached(sess, d, instanceId, *instanceVolAtt.ID)
 	if err != nil {
 		return err
+	}
+
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk(isInstanceVolAttTags); ok || v != "" {
+		oldList, newList := d.GetChange(isInstanceVolAttTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *instanceVolAtt.Volume.CRN, "", isInstanceUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource instance volume attachment (%s) tags: %s", d.Id(), err)
+		}
 	}
 	log.Printf("[INFO] Instance (%s) volume attachment : %s", instanceId, *instanceVolAtt.ID)
 	return nil
@@ -476,6 +486,12 @@ func instanceVolumeAttachmentGet(d *schema.ResourceData, meta interface{}, insta
 	if volumeDetail.SourceSnapshot != nil {
 		d.Set(isInstanceVolumeSnapshot, *volumeDetail.SourceSnapshot.ID)
 	}
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *volumeDetail.CRN, "", isInstanceUserTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource Instance  volume attachment (%s) tags: %s", d.Id(), err)
+	}
+	d.Set(isInstanceTags, tags)
 	return nil
 }
 
@@ -487,6 +503,17 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 	instanceId, id, err := parseVolAttTerraformID(d.Id())
 	if err != nil {
 		return err
+	}
+	if volumecrnok, ok := d.GetOk("volume_crn"); ok {
+		volumecrn := volumecrnok.(string)
+		if d.HasChange(isInstanceTags) {
+			oldList, newList := d.GetChange(isInstanceTags)
+			err = flex.UpdateTagsUsingCRN(oldList, newList, meta, volumecrn)
+			if err != nil {
+				log.Printf(
+					"Error on update of resource Instance volume attachment (%s) tags: %s", d.Id(), err)
+			}
+		}
 	}
 	updateInstanceVolAttOptions := &vpcv1.UpdateInstanceVolumeAttachmentOptions{
 		InstanceID: &instanceId,
@@ -548,7 +575,7 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		volId = volIdOk.(string)
 	}
 
-	if volId != "" && (d.HasChange(isInstanceVolIops) || d.HasChange(isInstanceVolProfile) || d.HasChange(isInstanceVolAttTags)) {
+	if volId != "" && (d.HasChange(isInstanceVolIops) || d.HasChange(isInstanceVolProfile)) { // || d.HasChange(isInstanceVolAttTags)
 		insId := d.Get(isInstanceId).(string)
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &insId,
@@ -590,26 +617,26 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 			iops := int64(d.Get(isVolumeIops).(int))
 			volumeProfilePatchModel.Iops = &iops
 		}
-		if d.HasChange(isInstanceVolAttTags) && !d.IsNewResource() {
-			if v, ok := d.GetOk(isInstanceVolAttTags); ok {
-				userTags := v.(*schema.Set)
-				if userTags != nil && userTags.Len() != 0 {
-					userTagsArray := make([]string, userTags.Len())
-					for i, userTag := range userTags.List() {
-						userTagStr := userTag.(string)
-						userTagsArray[i] = userTagStr
-					}
-					schematicTags := os.Getenv("IC_ENV_TAGS")
-					var envTags []string
-					if schematicTags != "" {
-						envTags = strings.Split(schematicTags, ",")
-						userTagsArray = append(userTagsArray, envTags...)
-					}
-					volumeProfilePatchModel.UserTags = userTagsArray
-				}
-			}
+		// if d.HasChange(isInstanceVolAttTags) && !d.IsNewResource() {
+		// 	if v, ok := d.GetOk(isInstanceVolAttTags); ok {
+		// 		userTags := v.(*schema.Set)
+		// 		if userTags != nil && userTags.Len() != 0 {
+		// 			userTagsArray := make([]string, userTags.Len())
+		// 			for i, userTag := range userTags.List() {
+		// 				userTagStr := userTag.(string)
+		// 				userTagsArray[i] = userTagStr
+		// 			}
+		// 			schematicTags := os.Getenv("IC_ENV_TAGS")
+		// 			var envTags []string
+		// 			if schematicTags != "" {
+		// 				envTags = strings.Split(schematicTags, ",")
+		// 				userTagsArray = append(userTagsArray, envTags...)
+		// 			}
+		// 			volumeProfilePatchModel.UserTags = userTagsArray
+		// 		}
+		// 	}
 
-		}
+		// }
 
 		volumeProfilePatch, err := volumeProfilePatchModel.AsPatch()
 		if err != nil {
