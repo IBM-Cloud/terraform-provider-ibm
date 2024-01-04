@@ -29,9 +29,8 @@ func TestAccIBMPIVolumeGroupStorageDetailsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMPIVolumeGroupStorageDetailsDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume_group_storage_details" "testacc_volume_group_storage_details" {
-    pi_volume_group_id   = "%[1]s"
-    pi_cloud_instance_id = "%[2]s"
-}`, acc.Pi_volume_group_id, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_volume_group_storage_details" "testacc_volume_group_storage_details" {
+			pi_volume_group_id   = "%[1]s"
+			pi_cloud_instance_id = "%[2]s"
+		}`, acc.Pi_volume_group_id, acc.Pi_cloud_instance_id)
 }
