@@ -89,6 +89,18 @@ variable "volume_type" {
   default     = "<e.g tier3>"
 }
 
+## SSH Key
+variable "ssh_key_name" {
+  description = "Name of the ssh key to be used"
+  type        = string
+  default     = "<name>"
+}
+variable "ssh_key_rsa" {
+  description = "Public ssh key"
+  type        = string
+  default     = "<rsa value>"
+}
+
 ## Instance
 variable "instance_name" {
   description = "Name of the instance"
@@ -119,16 +131,4 @@ variable "sys_type" {
   description = "Instance System Type"
   type        = string
   default     = "<e.g s922>"
-}
-
-## SSH Key
-variable "ssh_key_name" {
-  description = "Name of the ssh key to be used"
-  type        = string
-  default     = "<name>"
-}
-variable "ssh_key_rsa" {
-  description = "Public ssh key"
-  type        = string
-  default     = "<rsa value>"
 }
