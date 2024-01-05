@@ -14,14 +14,15 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 )
 
 func TestAccIbmMqcloudQueueManagerBasic(t *testing.T) {
 	t.Parallel()
 	var conf mqcloudv1.QueueManagerDetails
 	serviceInstanceGuid := acc.MqcloudInstanceID
-	name := "queue_manager_basic"
-	location := "ibmcloud_eu_de"
+	name := fmt.Sprintf("tf_queue_manager_basic%d", acctest.RandIntRange(10, 100))
+	location := acc.MqCloudQueueManagerLocation
 	size := "small"
 
 	resource.Test(t, resource.TestCase{
@@ -47,12 +48,12 @@ func TestAccIbmMqcloudQueueManagerAllArgs(t *testing.T) {
 	t.Parallel()
 	var conf mqcloudv1.QueueManagerDetails
 	serviceInstanceGuid := acc.MqcloudInstanceID
-	name := "queue_manager_allargs"
-	displayName := "queue_manager_allargs"
-	location := "ibmcloud_eu_de"
+	name := fmt.Sprintf("tf_queue_manager_allargs%d", acctest.RandIntRange(10, 100))
+	displayName := name
+	location := acc.MqCloudQueueManagerLocation
 	size := "small"
-	version := "9.3.3_3"
-	versionUpdate := "9.3.4_1"
+	version := acc.MqCloudQueueManagerVersion
+	versionUpdate := acc.MqCloudQueueManagerVersionUpdate
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },

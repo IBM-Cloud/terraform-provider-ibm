@@ -30,6 +30,7 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "location"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "state"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
 				),

@@ -30,6 +30,7 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
   service_instance_guid = var.mqcloud_keystore_certificate_service_instance_guid
   queue_manager_id = var.mqcloud_keystore_certificate_queue_manager_id
   label = var.mqcloud_keystore_certificate_label
+  certificate_file = var.mqcloud_keystore_certificate_certificate_file
 }
 
 // Provision mqcloud_truststore_certificate resource instance
@@ -37,6 +38,7 @@ resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_in
   service_instance_guid = var.mqcloud_truststore_certificate_service_instance_guid
   queue_manager_id = var.mqcloud_truststore_certificate_queue_manager_id
   label = var.mqcloud_truststore_certificate_label
+  certificate_file = var.mqcloud_truststore_certificate_certificate_file
 }
 
 // Data source is not linked to a resource instance
@@ -44,9 +46,8 @@ resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_in
 /*
 // Create mqcloud_queue_manager data source
 data "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
-  service_instance_guid = var.mqcloud_queue_manager_service_instance_guid
-  
-  name = var.mqcloud_queue_manager_name
+  service_instance_guid = var.data_mqcloud_queue_manager_service_instance_guid
+  name = var.data_mqcloud_queue_manager_name
 }
 */
 
@@ -65,8 +66,8 @@ data "ibm_mqcloud_queue_manager_status" "mqcloud_queue_manager_status_instance" 
 /*
 // Create mqcloud_application data source
 data "ibm_mqcloud_application" "mqcloud_application_instance" {
-  service_instance_guid = var.mqcloud_application_service_instance_guid
-  name = var.mqcloud_application_name
+  service_instance_guid = var.data_mqcloud_application_service_instance_guid
+  name = var.data_mqcloud_application_name
 }
 */
 
@@ -75,8 +76,8 @@ data "ibm_mqcloud_application" "mqcloud_application_instance" {
 /*
 // Create mqcloud_user data source
 data "ibm_mqcloud_user" "mqcloud_user_instance" {
-  service_instance_guid = var.mqcloud_user_service_instance_guid
-  name = var.mqcloud_user_name
+  service_instance_guid = var.data_mqcloud_user_service_instance_guid
+  name = var.data_mqcloud_user_name
 }
 */
 
@@ -85,9 +86,9 @@ data "ibm_mqcloud_user" "mqcloud_user_instance" {
 /*
 // Create mqcloud_truststore_certificate data source
 data "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_instance" {
-  service_instance_guid = var.mqcloud_truststore_certificate_service_instance_guid
-  queue_manager_id = var.mqcloud_truststore_certificate_queue_manager_id
-  label = var.mqcloud_truststore_certificate_label
+  service_instance_guid = var.data_mqcloud_truststore_certificate_service_instance_guid
+  queue_manager_id = var.data_mqcloud_truststore_certificate_queue_manager_id
+  label = var.data_mqcloud_truststore_certificate_label
 }
 */
 
@@ -96,8 +97,8 @@ data "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_instan
 /*
 // Create mqcloud_keystore_certificate data source
 data "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instance" {
-  service_instance_guid = var.mqcloud_keystore_certificate_service_instance_guid
-  queue_manager_id = var.mqcloud_keystore_certificate_queue_manager_id
-  label = var.mqcloud_keystore_certificate_label
+  service_instance_guid = var.data_mqcloud_keystore_certificate_service_instance_guid
+  queue_manager_id = var.data_mqcloud_keystore_certificate_queue_manager_id
+  label = var.data_mqcloud_keystore_certificate_label
 }
 */

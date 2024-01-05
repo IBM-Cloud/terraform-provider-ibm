@@ -169,7 +169,7 @@ func dataSourceIbmMqcloudKeystoreCertificateRead(context context.Context, d *sch
 
 	if suppliedFilter {
 		if len(keyStoreCertificateDetailsCollection.KeyStore) == 0 {
-			return diag.FromErr(fmt.Errorf("no KeyStore found with label %s", label))
+			return diag.FromErr(fmt.Errorf("No Key Store Certificate found with label: \"%s\"", label))
 		}
 		d.SetId(label)
 	} else {
@@ -192,7 +192,7 @@ func dataSourceIbmMqcloudKeystoreCertificateRead(context context.Context, d *sch
 		}
 	}
 	if err = d.Set("key_store", keyStore); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting key_store %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting key_store: %s", err))
 	}
 
 	return nil
