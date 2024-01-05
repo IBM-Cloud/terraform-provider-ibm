@@ -89,6 +89,38 @@ func TestAccIBMISVPCRoutingTable_acceptRoutesFrom(t *testing.T) {
 	})
 }
 
+// advertise_routes_to
+func TestAccIBMISVPCRoutingTable_advertiseRoutesTO(t *testing.T) {
+	var vpcRouteTables string
+	name1 := fmt.Sprintf("tfvpc-create-%d", acctest.RandIntRange(10, 100))
+	routeTableName := fmt.Sprintf("tfvpcrt-create-%d", acctest.RandIntRange(10, 100))
+	routeTableName1 := fmt.Sprintf("tfvpcrt-up-create-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCRouteTableDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPCRouteTableConfig(routeTableName, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCRouteTableExists("ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", vpcRouteTables),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPCRouteTableConfig(routeTableName1, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCRouteTableExists("ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", vpcRouteTables),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISVPCRouteTableDestroy(s *terraform.State) error {
 	//userDetails, _ := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 
