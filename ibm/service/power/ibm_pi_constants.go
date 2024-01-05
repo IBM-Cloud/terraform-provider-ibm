@@ -291,7 +291,6 @@ const (
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
 
-	//Arg_CloudInstanceID                 = "pi_cloud_instance_id"
 	PIInstanceDeploymentType            = "pi_deployment_type"
 	PIInstanceMigratable                = "pi_migratable"
 	PIInstanceNetwork                   = "pi_network"
