@@ -252,14 +252,15 @@ func resourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.Resou
 	var queueManagerDetails *mqcloudv1.QueueManagerDetails
 	var response *core.DetailedResponse
 
-	err = resource.RetryContext(context, 10*time.Second, func() *resource.RetryError {
+	err = resource.RetryContext(context, 150*time.Second, func() *resource.RetryError {
 		queueManagerDetails, response, err = mqcloudClient.GetQueueManagerWithContext(context, getQueueManagerOptions)
-		if err != nil || response == nil {
-			if response.StatusCode == 404 {
-				return resource.RetryableError(err)
+		if err != nil || queueManagerDetails == nil {
+			if response != nil && response.StatusCode == 404 {
+				return resource.RetryableError(fmt.Errorf("Queue Manager not found, retrying"))
 			}
 			return resource.NonRetryableError(err)
 		}
+
 		return nil
 	})
 
