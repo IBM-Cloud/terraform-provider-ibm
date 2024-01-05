@@ -127,7 +127,7 @@ func dataSourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceDat
 
 	if suppliedFilter {
 		if len(allItems) == 0 {
-			return diag.FromErr(fmt.Errorf("No Users found with name %s", name))
+			return diag.FromErr(fmt.Errorf("No User found with name: \"%s\"", name))
 		}
 		d.SetId(name)
 	} else {
@@ -145,7 +145,7 @@ func dataSourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceDat
 	}
 
 	if err = d.Set("users", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting users %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting users: %s", err))
 	}
 
 	return nil
