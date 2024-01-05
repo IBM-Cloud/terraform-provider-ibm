@@ -72,6 +72,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `resource_type` - (String) The resource type.
 		- Constraints: Allowable values are: `vpn_gateway`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
 	- `action` - (String) The action to perform with a packet matching the route.
+	- `advertise` - (Boolean) Indicates whether this route will be advertised to the ingress sources specified by the `advertise_routes_to` routing table property.
 	- `destination` - (String) The destination of the route.
 	- `next_hop` - (String) The next hop address of the route.
 	- `origin` - (String) The origin of this route:- `service`: route was directly created by a service - `user`: route was directly created by a userThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.

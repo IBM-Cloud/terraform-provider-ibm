@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -15,8 +16,8 @@ import (
 func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
 	t.Parallel()
 	queueManagerDetailsServiceInstanceGuid := acc.MqcloudInstanceID
-	queueManagerDetailsName := "queue_manager_ds_basic"
-	queueManagerDetailsLocation := "ibmcloud_eu_de"
+	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_basic%d", acctest.RandIntRange(10, 100))
+	queueManagerDetailsLocation := acc.MqCloudQueueManagerLocation
 	queueManagerDetailsSize := "small"
 
 	resource.Test(t, resource.TestCase{
@@ -41,11 +42,11 @@ func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
 func TestAccIbmMqcloudQueueManagerDataSourceAllArgs(t *testing.T) {
 	t.Parallel()
 	queueManagerDetailsServiceInstanceGuid := acc.MqcloudInstanceID
-	queueManagerDetailsName := "queue_manager_ds_allargs"
-	queueManagerDetailsDisplayName := "queue_manager_ds_allargs"
-	queueManagerDetailsLocation := "ibmcloud_eu_de"
+	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_allargs%d", acctest.RandIntRange(10, 100))
+	queueManagerDetailsDisplayName := queueManagerDetailsName
+	queueManagerDetailsLocation := acc.MqCloudQueueManagerLocation
 	queueManagerDetailsSize := "small"
-	queueManagerDetailsVersion := "9.3.3_3"
+	queueManagerDetailsVersion := acc.MqCloudQueueManagerVersion
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckMqcloud(t) },

@@ -18,6 +18,7 @@ import (
 )
 
 func TestAccIbmMqcloudKeystoreCertificateBasic(t *testing.T) {
+	t.Parallel()
 	var conf mqcloudv1.KeyStoreCertificateDetails
 	serviceInstanceGuid := acc.MqcloudInstanceID
 	queueManagerID := acc.MqcloudQueueManagerID
@@ -38,35 +39,11 @@ func TestAccIbmMqcloudKeystoreCertificateBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_mqcloud_keystore_certificate.mqcloud_keystore_certificate_instance", "label", label),
 				),
 			},
-		},
-	})
-}
-
-func TestAccIbmMqcloudKeystoreCertificateAllArgs(t *testing.T) {
-	var conf mqcloudv1.KeyStoreCertificateDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
-	queueManagerID := acc.MqcloudQueueManagerID
-	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
-	certificateFile := acc.MqcloudKSCertFilePath
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmMqcloudKeystoreCertificateDestroy,
-		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmMqcloudKeystoreCertificateConfig(serviceInstanceGuid, queueManagerID, label, certificateFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmMqcloudKeystoreCertificateExists("ibm_mqcloud_keystore_certificate.mqcloud_keystore_certificate_instance", conf),
-					resource.TestCheckResourceAttr("ibm_mqcloud_keystore_certificate.mqcloud_keystore_certificate_instance", "service_instance_guid", serviceInstanceGuid),
-					resource.TestCheckResourceAttr("ibm_mqcloud_keystore_certificate.mqcloud_keystore_certificate_instance", "queue_manager_id", queueManagerID),
-					resource.TestCheckResourceAttr("ibm_mqcloud_keystore_certificate.mqcloud_keystore_certificate_instance", "label", label),
-				),
-			},
-			{
-				ResourceName:      "ibm_mqcloud_keystore_certificate.mqcloud_keystore_certificate_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_mqcloud_keystore_certificate.mqcloud_keystore_certificate_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"certificate_file"},
 			},
 		},
 	})
@@ -78,19 +55,7 @@ func testAccCheckIbmMqcloudKeystoreCertificateConfigBasic(serviceInstanceGuid st
 			service_instance_guid = "%s"
 			queue_manager_id = "%s"
 			label = "%s"
-			certificate_file = "%s"
-		}
-	`, serviceInstanceGuid, queueManagerID, label, certificateFile)
-}
-
-func testAccCheckIbmMqcloudKeystoreCertificateConfig(serviceInstanceGuid string, queueManagerID string, label string, certificateFile string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instance" {
-			service_instance_guid = "%s"
-			queue_manager_id = "%s"
-			label = "%s"
-			certificate_file = "%s"
+			certificate_file = filebase64("%s")
 		}
 	`, serviceInstanceGuid, queueManagerID, label, certificateFile)
 }

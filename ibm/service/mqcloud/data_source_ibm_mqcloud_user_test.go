@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccIbmMqcloudUserDataSourceBasic(t *testing.T) {
+	t.Parallel()
 	userDetailsServiceInstanceGuid := acc.MqcloudInstanceID
 	userDetailsName := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
 	userDetailsEmail := fmt.Sprintf("tfemail%d@ibm.com", acctest.RandIntRange(10, 100))
@@ -36,48 +37,7 @@ func TestAccIbmMqcloudUserDataSourceBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmMqcloudUserDataSourceAllArgs(t *testing.T) {
-	userDetailsServiceInstanceGuid := acc.MqcloudInstanceID
-	userDetailsName := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
-	userDetailsEmail := fmt.Sprintf("tfemail%d@ibm.com", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckMqcloud(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIbmMqcloudUserDataSourceConfig(userDetailsServiceInstanceGuid, userDetailsName, userDetailsEmail),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_mqcloud_user.mqcloud_user_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_mqcloud_user.mqcloud_user_instance", "service_instance_guid"),
-					resource.TestCheckResourceAttrSet("data.ibm_mqcloud_user.mqcloud_user_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_mqcloud_user.mqcloud_user_instance", "users.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_mqcloud_user.mqcloud_user_instance", "users.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_mqcloud_user.mqcloud_user_instance", "users.0.name", userDetailsName),
-					resource.TestCheckResourceAttr("data.ibm_mqcloud_user.mqcloud_user_instance", "users.0.email", userDetailsEmail),
-					resource.TestCheckResourceAttrSet("data.ibm_mqcloud_user.mqcloud_user_instance", "users.0.href"),
-				),
-			},
-		},
-	})
-}
-
 func testAccCheckIbmMqcloudUserDataSourceConfigBasic(userDetailsServiceInstanceGuid string, userDetailsName string, userDetailsEmail string) string {
-	return fmt.Sprintf(`
-		resource "ibm_mqcloud_user" "mqcloud_user_instance" {
-			service_instance_guid = "%s"
-			name = "%s"
-			email = "%s"
-		}
-
-		data "ibm_mqcloud_user" "mqcloud_user_instance" {
-			service_instance_guid = ibm_mqcloud_user.mqcloud_user_instance.service_instance_guid
-			name = ibm_mqcloud_user.mqcloud_user_instance.name
-		}
-	`, userDetailsServiceInstanceGuid, userDetailsName, userDetailsEmail)
-}
-
-func testAccCheckIbmMqcloudUserDataSourceConfig(userDetailsServiceInstanceGuid string, userDetailsName string, userDetailsEmail string) string {
 	return fmt.Sprintf(`
 		resource "ibm_mqcloud_user" "mqcloud_user_instance" {
 			service_instance_guid = "%s"

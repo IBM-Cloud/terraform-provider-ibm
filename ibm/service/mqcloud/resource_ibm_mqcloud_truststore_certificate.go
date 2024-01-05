@@ -4,12 +4,12 @@
 package mqcloud
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,7 +47,13 @@ func ResourceIbmMqcloudTruststoreCertificate() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_truststore_certificate", "label"),
-				Description:  "Certificate label in queue manager store.",
+				Description:  "The label to use for the certificate to be uploaded.",
+			},
+			"certificate_file": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The filename and path of the certificate to be uploaded.",
 			},
 			"certificate_type": {
 				Type:        schema.TypeString,
@@ -104,12 +110,6 @@ func ResourceIbmMqcloudTruststoreCertificate() *schema.Resource {
 				Computed:    true,
 				Description: "Id of the certificate.",
 			},
-			"certificate_file": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The filename and path of the certificate to be uploaded.",
-			},
 		},
 	}
 }
@@ -165,18 +165,11 @@ func resourceIbmMqcloudTruststoreCertificateCreate(context context.Context, d *s
 	createTrustStorePemCertificateOptions.SetServiceInstanceGuid(d.Get("service_instance_guid").(string))
 	createTrustStorePemCertificateOptions.SetQueueManagerID(d.Get("queue_manager_id").(string))
 	createTrustStorePemCertificateOptions.SetLabel(d.Get("label").(string))
-	//Custom code to read certs and pass to SDK
-	certBytes, err := os.ReadFile(d.Get("certificate_file").(string)) // just pass the file name
+	certificateFileBytes, err := base64.StdEncoding.DecodeString(d.Get("certificate_file").(string))
 	if err != nil {
-		fmt.Print(err)
+		return diag.FromErr(err)
 	}
-	certString := string(certBytes) // convert content to a 'string'
-	rc := io.NopCloser(strings.NewReader(certString))
-	// certificateFileModel, err := resourceIbmMqcloudTruststoreCertificateMapToio.ReadCloser(d.Get("certificate_file.0").(map[string]interface{}))
-	// if err != nil {
-	// 	return diag.FromErr(err)
-	// }
-	createTrustStorePemCertificateOptions.SetCertificateFile(rc)
+	createTrustStorePemCertificateOptions.SetCertificateFile(io.NopCloser(bytes.NewReader(certificateFileBytes)))
 
 	trustStoreCertificateDetails, response, err := mqcloudClient.CreateTrustStorePemCertificateWithContext(context, createTrustStorePemCertificateOptions)
 	if err != nil {
@@ -215,15 +208,12 @@ func resourceIbmMqcloudTruststoreCertificateRead(context context.Context, d *sch
 		log.Printf("[DEBUG] GetTrustStoreCertificateWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetTrustStoreCertificateWithContext failed %s\n%s", err, response))
 	}
+
 	if err = d.Set("service_instance_guid", parts[0]); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting service_instance_guid: %s", err))
 	}
 	if err = d.Set("queue_manager_id", parts[1]); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting queue_manager_id: %s", err))
-	}
-	downloadCertificatePath := "./certificates/truststore/" + *trustStoreCertificateDetails.Label + ".pem"
-	if err = d.Set("certificate_file", downloadCertificatePath); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting certificate_file: %s", err))
 	}
 	if err = d.Set("label", trustStoreCertificateDetails.Label); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
