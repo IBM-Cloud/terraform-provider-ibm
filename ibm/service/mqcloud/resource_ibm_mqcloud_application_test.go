@@ -17,6 +17,7 @@ import (
 )
 
 func TestAccIbmMqcloudApplicationBasic(t *testing.T) {
+	t.Parallel()
 	var conf mqcloudv1.ApplicationDetails
 	serviceInstanceGuid := acc.MqcloudInstanceID
 	name := "appbasic"
@@ -34,28 +35,6 @@ func TestAccIbmMqcloudApplicationBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_mqcloud_application.mqcloud_application_instance", "name", name),
 				),
 			},
-		},
-	})
-}
-
-func TestAccIbmMqcloudApplicationAllArgs(t *testing.T) {
-	var conf mqcloudv1.ApplicationDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
-	name := "appallargs"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmMqcloudApplicationDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIbmMqcloudApplicationConfig(serviceInstanceGuid, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmMqcloudApplicationExists("ibm_mqcloud_application.mqcloud_application_instance", conf),
-					resource.TestCheckResourceAttr("ibm_mqcloud_application.mqcloud_application_instance", "service_instance_guid", serviceInstanceGuid),
-					resource.TestCheckResourceAttr("ibm_mqcloud_application.mqcloud_application_instance", "name", name),
-				),
-			},
 			{
 				ResourceName:      "ibm_mqcloud_application.mqcloud_application_instance",
 				ImportState:       true,
@@ -67,16 +46,6 @@ func TestAccIbmMqcloudApplicationAllArgs(t *testing.T) {
 
 func testAccCheckIbmMqcloudApplicationConfigBasic(serviceInstanceGuid string, name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_mqcloud_application" "mqcloud_application_instance" {
-			service_instance_guid = "%s"
-			name = "%s"
-		}
-	`, serviceInstanceGuid, name)
-}
-
-func testAccCheckIbmMqcloudApplicationConfig(serviceInstanceGuid string, name string) string {
-	return fmt.Sprintf(`
-
 		resource "ibm_mqcloud_application" "mqcloud_application_instance" {
 			service_instance_guid = "%s"
 			name = "%s"
