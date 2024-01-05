@@ -246,6 +246,7 @@ const (
 	Attr_SharedProcessorPoolInstanceStatus           = "status"
 	Attr_SharedProcessorPoolInstanceVcpus            = "vcpus"
 	Attr_SharedProcessorPoolHostID                   = "host_id"
+	Arg_PIInstanceSharedProcessorPool                = "pi_shared_processor_pool"
 
 	// TODO: Second Half Cleanup, remove extra variables
 
