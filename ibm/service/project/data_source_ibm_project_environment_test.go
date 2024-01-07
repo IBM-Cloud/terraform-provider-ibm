@@ -26,6 +26,7 @@ func TestAccIbmProjectEnvironmentDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "project.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "modified_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_environment.project_environment_instance", "definition.#"),
 				),
 			},

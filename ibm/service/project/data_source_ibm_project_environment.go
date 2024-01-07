@@ -85,6 +85,11 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A URL.",
+			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -216,6 +221,10 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 
 	if err = d.Set("modified_at", flex.DateTimeToString(environment.ModifiedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
+	}
+
+	if err = d.Set("href", environment.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	definition := []map[string]interface{}{}
