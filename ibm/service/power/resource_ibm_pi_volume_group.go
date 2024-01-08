@@ -76,7 +76,7 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 				Computed:    true,
 				Description: "Volume Group Replication Status",
 			},
-			"status_description_errors": vgStatusDescriptionErrors(),
+			//"status_description_errors": vgStatusDescriptionErrors(),
 			"consistency_group_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
