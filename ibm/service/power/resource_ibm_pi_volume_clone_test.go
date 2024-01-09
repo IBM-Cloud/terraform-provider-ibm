@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023, 2024 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power_test
@@ -19,6 +19,7 @@ import (
 )
 
 func TestAccIBMPIVolumeClone(t *testing.T) {
+	resVolumeClone := "ibm_pi_volume_clone.power_volume_clone"
 	name := fmt.Sprintf("tf-pi-volume-clone-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -27,9 +28,12 @@ func TestAccIBMPIVolumeClone(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIVolumeCloneConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIVolumeCloneExists("ibm_pi_volume_clone.power_volume_clone"),
-					resource.TestCheckResourceAttrSet("ibm_pi_volume_clone.power_volume_clone", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_volume_clone.power_volume_clone", "volume_clone_status"),
+					testAccCheckIBMPIVolumeCloneExists(resVolumeClone),
+					resource.TestCheckResourceAttrSet(resVolumeClone, "id"),
+					resource.TestCheckResourceAttrSet(resVolumeClone, "status"),
+					resource.TestCheckResourceAttr(resVolumeClone, "status", "completed"),
+					resource.TestCheckResourceAttrSet(resVolumeClone, "percent_complete"),
+					resource.TestCheckResourceAttr(resVolumeClone, "percent_complete", "100"),
 				),
 			},
 		},
@@ -74,7 +78,7 @@ func testAccCheckIBMPIVolumeCloneConfig(name string) string {
 	resource "ibm_pi_volume_clone" "power_volume_clone" {
 		pi_cloud_instance_id   			= "%[1]s"
 		pi_volume_clone_name     		= "%[2]s"
-		pi_volume_ids 					= [ibm_pi_volume.power_volume[0].volume_id,ibm_pi_volume.power_volume[1].volume_id]
+		pi_volume_ids 					= ibm_pi_volume.power_volume.*.volume_id
 		pi_target_storage_tier 			= "%[3]s"
 		pi_replication_enabled 			= %[4]v
 	}

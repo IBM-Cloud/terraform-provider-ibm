@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023, 2024 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power_test
@@ -21,7 +21,7 @@ func TestAccIBMPIVolumeClone_basic(t *testing.T) {
 				Config: testAccCheckIBMPIVolumeCloneBasicConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pi_volume_clone.testacc_ds_volume_clone", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pi_volume_clone.testacc_ds_volume_clone", "volume_clone_status"),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_volume_clone.testacc_ds_volume_clone", "status"),
 				),
 			},
 		},

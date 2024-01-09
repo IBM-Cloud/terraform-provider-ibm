@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023, 2024 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power
@@ -22,30 +22,31 @@ func DataSourceIBMPIVolumeClone() *schema.Resource {
 			PIVolumeCloneTaskID: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Clone task ID",
+				Description:  "The ID of the volume clone task.",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			Arg_CloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
+				Description:  "The GUID of the service instance associated with an account.",
 			},
 			// Computed attributes
 			"cloned_volumes": clonedVolumesSchema(),
-			"volume_clone_failure_reason": {
+			"failure_reason": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The reason the clone volumes task has failed",
+				Description: "The reason the clone volumes task has failed.",
 			},
-			"volume_clone_percent_complete": {
+			"percent_complete": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Clone task completion percentage",
+				Description: "The completion percentage of the volume clone task.",
 			},
-			"volume_clone_status": {
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Status of the clone volumes task",
+				Description: "The status of the volume clone task.",
 			},
 		},
 	}
@@ -66,11 +67,11 @@ func dataSourceIBMPIVolumeCloneRead(ctx context.Context, d *schema.ResourceData,
 
 	d.SetId(d.Get(PIVolumeCloneTaskID).(string))
 	if volClone.Status != nil {
-		d.Set("volume_clone_status", *volClone.Status)
+		d.Set("status", *volClone.Status)
 	}
-	d.Set("volume_clone_failure_reason", volClone.FailedReason)
+	d.Set("failure_reason", volClone.FailedReason)
 	if volClone.PercentComplete != nil {
-		d.Set("volume_clone_percent_complete", *volClone.PercentComplete)
+		d.Set("percent_complete", *volClone.PercentComplete)
 	}
 	d.Set("cloned_volumes", flattenClonedVolumes(volClone.ClonedVolumes))
 

@@ -145,16 +145,18 @@ const (
 
 	// status
 	// common status states
-	StatusShutoff          = "SHUTOFF"
-	StatusActive           = "ACTIVE"
-	StatusResize           = "RESIZE"
-	StatusError            = "ERROR"
-	StatusBuild            = "BUILD"
-	StatusPending          = "PENDING"
-	SctionStart            = "start"
-	SctionStop             = "stop"
-	PIVolumeCloneCompleted = "completed"
-	PIVolumeCloneRunning   = "running"
+	StatusShutoff = "SHUTOFF"
+	StatusActive  = "ACTIVE"
+	StatusResize  = "RESIZE"
+	StatusError   = "ERROR"
+	StatusBuild   = "BUILD"
+	StatusPending = "PENDING"
+	SctionStart   = "start"
+	SctionStop    = "stop"
+
+	// volume clone task status
+	VolumeCloneCompleted = "completed"
+	VolumeCloneRunning   = "running"
 
 	// Workspaces
 	Attr_WorkspaceCapabilities = "pi_workspace_capabilities"

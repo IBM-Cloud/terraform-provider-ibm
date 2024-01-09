@@ -15,8 +15,8 @@ The following example retrieves information about the volume clone task that is 
 
 ```terraform
 data "ibm_pi_volume_clone" "ds_volume_clone" {
-  pi_cloud_instance_id   		= "<value of the cloud_instance_id>"
-  pi_volume_clone_task_id     	= "<clone task id>"
+  pi_cloud_instance_id        = "<value of the cloud_instance_id>"
+  pi_volume_clone_task_id     = "<clone task id>"
 }
 ```
 
@@ -48,8 +48,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `cloned_volumes`:
   - `clone_volume_id` - (String) The ID of the newly cloned volume.
   - `source_volume_id` - (String) The ID of the source volume.
+- `failure_reason` - (String) The reason for the failure of the clone volume task.
 - `id` - (String) The unique identifier of the volume clone task.
-- `volume_clone_failure_reason` - (String) The reason for the failure of the clone volume task.
-- `volume_clone_percent_complete` - (Integer) The completion percentage of the volume clone task.
-- `volume_clone_status` - (String) The status of the volume clone task.
-- `volume_clone_task_id` - (String) The ID of the volume clone task.
+- `percent_complete` - (Integer) The completion percentage of the volume clone task.
+- `status` - (String) The status of the volume clone task.
