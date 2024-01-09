@@ -474,6 +474,37 @@ func TestAccIBMIAMServicePolicy_With_ServiceGroupID(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServicePolicy_With_Attribute_Based_Condition(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Policy Attribute Based Condition Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMServicePolicyUpdateAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Policy Attribute Based Condition Update for test scenario"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -1070,6 +1101,140 @@ func testAccCheckIBMIAMServiceUpdatePolicyWithServiceGroupId(name string) string
 			rule_operator = "and"
 		  	pattern = "time-based-conditions:once"
 			description = "IAM Service Profile Policy with service_group_id"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID"  {
+			name = "%s"
+		}
+
+		resource "ibm_iam_service_policy" "policy" {
+			iam_service_id     = ibm_iam_service_id.serviceID.id
+			roles  = ["Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Service Policy Attribute Based Condition Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyUpdateAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID"  {
+			name = "%s"
+		}
+
+		resource "ibm_iam_service_policy" "policy" {
+			iam_service_id     = ibm_iam_service_id.serviceID.id
+			roles  = ["Reader", "Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Service Policy Attribute Based Condition Update for test scenario"
 		}
 	`, name)
 }

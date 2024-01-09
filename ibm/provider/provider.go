@@ -39,6 +39,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -484,6 +485,8 @@ func Provider() *schema.Provider {
 			"ibm_is_snapshot_clone":                  vpc.DataSourceSnapshotClone(),
 			"ibm_is_snapshot_clones":                 vpc.DataSourceSnapshotClones(),
 			"ibm_is_snapshot":                        vpc.DataSourceSnapshot(),
+			"ibm_is_snapshot_consistency_group":      vpc.DataSourceIBMIsSnapshotConsistencyGroup(),
+			"ibm_is_snapshot_consistency_groups":     vpc.DataSourceIBMIsSnapshotConsistencyGroups(),
 			"ibm_is_snapshots":                       vpc.DataSourceSnapshots(),
 			"ibm_is_share":                           vpc.DataSourceIbmIsShare(),
 			"ibm_is_source_share":                    vpc.DataSourceIbmIsSourceShare(),
@@ -701,6 +704,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_public_certificate_metadata":                                 secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPublicCertificateMetadata()),
 			"ibm_sm_private_certificate_metadata":                                secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateMetadata()),
 			"ibm_sm_iam_credentials_secret_metadata":                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecretMetadata()),
+			"ibm_sm_service_credentials_secret_metadata":                         secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecretMetadata()),
 			"ibm_sm_kv_secret_metadata":                                          secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecretMetadata()),
 			"ibm_sm_username_password_secret_metadata":                           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecretMetadata()),
 			"ibm_sm_arbitrary_secret":                                            secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmArbitrarySecret()),
@@ -710,6 +714,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmIamCredentialsSecret()),
 			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmKvSecret()),
 			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmUsernamePasswordSecret()),
+			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
 			// //Added for Satellite
@@ -742,6 +747,14 @@ func Provider() *schema.Provider {
 			// Metrics Router
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
+
+			// MQ on Cloud
+			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
+			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
+			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),
+			"ibm_mqcloud_user":                   mqcloud.DataSourceIbmMqcloudUser(),
+			"ibm_mqcloud_truststore_certificate": mqcloud.DataSourceIbmMqcloudTruststoreCertificate(),
+			"ibm_mqcloud_keystore_certificate":   mqcloud.DataSourceIbmMqcloudKeystoreCertificate(),
 
 			// Security and Complaince Center(soon to be deprecated)
 			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
@@ -848,16 +861,19 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
 
 			// Added for Code Engine
-			"ibm_code_engine_app":        codeengine.DataSourceIbmCodeEngineApp(),
-			"ibm_code_engine_binding":    codeengine.DataSourceIbmCodeEngineBinding(),
-			"ibm_code_engine_build":      codeengine.DataSourceIbmCodeEngineBuild(),
-			"ibm_code_engine_config_map": codeengine.DataSourceIbmCodeEngineConfigMap(),
-			"ibm_code_engine_job":        codeengine.DataSourceIbmCodeEngineJob(),
-			"ibm_code_engine_project":    codeengine.DataSourceIbmCodeEngineProject(),
-			"ibm_code_engine_secret":     codeengine.DataSourceIbmCodeEngineSecret(),
+			"ibm_code_engine_app":            codeengine.DataSourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":        codeengine.DataSourceIbmCodeEngineBinding(),
+			"ibm_code_engine_build":          codeengine.DataSourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map":     codeengine.DataSourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_domain_mapping": codeengine.DataSourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_job":            codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":        codeengine.DataSourceIbmCodeEngineProject(),
+			"ibm_code_engine_secret":         codeengine.DataSourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_event_notification": project.DataSourceIbmProjectEventNotification(),
+			"ibm_project":             project.DataSourceIbmProject(),
+			"ibm_project_config":      project.DataSourceIbmProjectConfig(),
+			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1077,6 +1093,7 @@ func Provider() *schema.Provider {
 			"ibm_is_subnet_routing_table_attachment":        vpc.ResourceIBMISSubnetRoutingTableAttachment(),
 			"ibm_is_ssh_key":                                vpc.ResourceIBMISSSHKey(),
 			"ibm_is_snapshot":                               vpc.ResourceIBMSnapshot(),
+			"ibm_is_snapshot_consistency_group":             vpc.ResourceIBMIsSnapshotConsistencyGroup(),
 			"ibm_is_volume":                                 vpc.ResourceIBMISVolume(),
 			"ibm_is_vpn_gateway":                            vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                 vpc.ResourceIBMISVPNGatewayConnection(),
@@ -1168,6 +1185,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
 			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
 			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
+			"ibm_pi_workspace":                       power.ResourceIBMPIWorkspace(),
 
 			// Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),
@@ -1233,6 +1251,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_public_certificate":                                          secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificate()),
 			"ibm_sm_private_certificate":                                         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificate()),
 			"ibm_sm_iam_credentials_secret":                                      secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmIamCredentialsSecret()),
+			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_username_password_secret":                                    secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmUsernamePasswordSecret()),
 			"ibm_sm_kv_secret":                                                   secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmKvSecret()),
 			"ibm_sm_public_certificate_configuration_ca_lets_encrypt":            secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPublicCertificateConfigurationCALetsEncrypt()),
@@ -1271,6 +1290,13 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_target":   metricsrouter.ResourceIBMMetricsRouterTarget(),
 			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
 			"ibm_metrics_router_settings": metricsrouter.ResourceIBMMetricsRouterSettings(),
+
+			// MQ on Cloud
+			"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManager(),
+			"ibm_mqcloud_application":            mqcloud.ResourceIbmMqcloudApplication(),
+			"ibm_mqcloud_user":                   mqcloud.ResourceIbmMqcloudUser(),
+			"ibm_mqcloud_keystore_certificate":   mqcloud.ResourceIbmMqcloudKeystoreCertificate(),
+			"ibm_mqcloud_truststore_certificate": mqcloud.ResourceIbmMqcloudTruststoreCertificate(),
 
 			// Security and Compliance Center(soon to be deprecated)
 			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
@@ -1360,16 +1386,19 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMCdTektonPipeline(),
 
 			// Added for Code Engine
-			"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineApp(),
-			"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBinding(),
-			"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuild(),
-			"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMap(),
-			"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJob(),
-			"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProject(),
-			"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecret(),
+			"ibm_code_engine_app":            codeengine.ResourceIbmCodeEngineApp(),
+			"ibm_code_engine_binding":        codeengine.ResourceIbmCodeEngineBinding(),
+			"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuild(),
+			"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMap(),
+			"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProject(),
+			"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecret(),
 
 			// Added for Project
-			"ibm_project_instance": project.ResourceIbmProjectInstance(),
+			"ibm_project":             project.ResourceIbmProject(),
+			"ibm_project_config":      project.ResourceIbmProjectConfig(),
+			"ibm_project_environment": project.ResourceIbmProjectEnvironment(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1454,6 +1483,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_key_template":                        hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
 
+				// MQ on Cloud
+				"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
+				"ibm_mqcloud_application":            mqcloud.ResourceIbmMqcloudApplicationValidator(),
+				"ibm_mqcloud_user":                   mqcloud.ResourceIbmMqcloudUserValidator(),
+				"ibm_mqcloud_keystore_certificate":   mqcloud.ResourceIbmMqcloudKeystoreCertificateValidator(),
+				"ibm_mqcloud_truststore_certificate": mqcloud.ResourceIbmMqcloudTruststoreCertificateValidator(),
+
 				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
 				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
 
@@ -1499,6 +1535,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_share_replica_operations":         vpc.ResourceIbmIsShareReplicaOperationsValidator(),
 				"ibm_is_share_mount_target":               vpc.ResourceIBMIsShareMountTargetValidator(),
 				"ibm_is_snapshot":                         vpc.ResourceIBMISSnapshotValidator(),
+				"ibm_is_snapshot_consistency_group":       vpc.ResourceIBMIsSnapshotConsistencyGroupValidator(),
 				"ibm_is_ssh_key":                          vpc.ResourceIBMISSHKeyValidator(),
 				"ibm_is_subnet":                           vpc.ResourceIBMISSubnetValidator(),
 				"ibm_is_subnet_reserved_ip":               vpc.ResourceIBMISSubnetReservedIPValidator(),
@@ -1616,26 +1653,30 @@ func Validator() validate.ValidatorDict {
 				"ibm_sm_public_certificate_configuration_dns_classic_infrastructure": secretsmanager.ResourceIbmSmPublicCertificateConfigurationDNSClassicInfrastructureValidator(),
 
 				// // Added for Code Engine
-				"ibm_code_engine_app":        codeengine.ResourceIbmCodeEngineAppValidator(),
-				"ibm_code_engine_binding":    codeengine.ResourceIbmCodeEngineBindingValidator(),
-				"ibm_code_engine_build":      codeengine.ResourceIbmCodeEngineBuildValidator(),
-				"ibm_code_engine_config_map": codeengine.ResourceIbmCodeEngineConfigMapValidator(),
-				"ibm_code_engine_job":        codeengine.ResourceIbmCodeEngineJobValidator(),
-				"ibm_code_engine_project":    codeengine.ResourceIbmCodeEngineProjectValidator(),
-				"ibm_code_engine_secret":     codeengine.ResourceIbmCodeEngineSecretValidator(),
+				"ibm_code_engine_app":            codeengine.ResourceIbmCodeEngineAppValidator(),
+				"ibm_code_engine_binding":        codeengine.ResourceIbmCodeEngineBindingValidator(),
+				"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuildValidator(),
+				"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMapValidator(),
+				"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMappingValidator(),
+				"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProjectValidator(),
+				"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecretValidator(),
 
 				// Added for Project
-				"ibm_project_instance": project.ResourceIbmProjectInstanceValidator(),
+				"ibm_project":             project.ResourceIbmProjectValidator(),
+				"ibm_project_config":      project.ResourceIbmProjectConfigValidator(),
+				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
-				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
-				"ibm_is_snapshot":        vpc.DataSourceIBMISSnapshotValidator(),
-				"ibm_is_images":          vpc.DataSourceIBMISImagesValidator(),
-				"ibm_dl_offering_speeds": directlink.DataSourceIBMDLOfferingSpeedsValidator(),
-				"ibm_dl_routers":         directlink.DataSourceIBMDLRoutersValidator(),
-				"ibm_resource_instance":  resourcecontroller.DataSourceIBMResourceInstanceValidator(),
-				"ibm_resource_key":       resourcecontroller.DataSourceIBMResourceKeyValidator(),
-				"ibm_resource_group":     resourcemanager.DataSourceIBMResourceGroupValidator(),
+				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
+				"ibm_is_snapshot_consistency_group": vpc.DataSourceIBMISSnapshotConsistencyGroupValidator(),
+				"ibm_is_snapshot":                   vpc.DataSourceIBMISSnapshotValidator(),
+				"ibm_is_images":                     vpc.DataSourceIBMISImagesValidator(),
+				"ibm_dl_offering_speeds":            directlink.DataSourceIBMDLOfferingSpeedsValidator(),
+				"ibm_dl_routers":                    directlink.DataSourceIBMDLRoutersValidator(),
+				"ibm_resource_instance":             resourcecontroller.DataSourceIBMResourceInstanceValidator(),
+				"ibm_resource_key":                  resourcecontroller.DataSourceIBMResourceKeyValidator(),
+				"ibm_resource_group":                resourcemanager.DataSourceIBMResourceGroupValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),

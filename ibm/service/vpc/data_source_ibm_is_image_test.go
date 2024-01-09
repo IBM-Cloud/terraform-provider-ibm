@@ -34,6 +34,33 @@ func TestAccIBMISImageDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISImageDataSource_All(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageDataSourceAllConfig(imageName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.dedicated_host_only"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.display_name"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.vendor"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.version"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.architecture"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "resource_group.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "resource_group.0.name"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISImageDataSource_ilc(t *testing.T) {
 	resName := "data.ibm_is_image.test1"
 	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
@@ -142,6 +169,16 @@ func testAccCheckIBMISImageDataSourceConfig(imageName string) string {
 	data "ibm_is_image" "test1" {
 		name = ibm_is_image.isExampleImage.name
 	}`, acc.Image_cos_url, imageName, acc.Image_operating_system)
+}
+
+func testAccCheckIBMISImageDataSourceAllConfig(imageName string) string {
+	return fmt.Sprintf(`
+	data "ibm_is_images" "test1" {
+		status = "available"
+	}
+	data "ibm_is_image" "test1" {
+		name = data.ibm_is_images.test1.images.0.name
+	}`)
 }
 
 func testAccCheckIBMISImageDataSourceConfigIlc(imageName string) string {

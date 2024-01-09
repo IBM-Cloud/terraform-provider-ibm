@@ -202,8 +202,72 @@ resource "ibm_iam_user_policy" "policy" {
     value    = "IAM"
   }
 }
-
 ```
+
+### User Policy by using Attribute Based Condition
+`rule_conditions` can be used in conjunction with `pattern = attribute-based-condition:resource:literal-and-wildcard` and `rule_operator` to implement more complex policy conditions. **Note** Currently, a policy resource created without `rule_conditions`, `pattern`, and `rule_operator` cannot be updated including those conditions on update.
+
+```terraform
+resource "ibm_iam_user_policy" "policy" {
+  ibm_id = "test@in.ibm.com"
+  roles  = ["Writer"]
+  resource_attributes {
+    value = "cloud-object-storage"
+    operator = "stringEquals"
+    name = "serviceName"
+  }
+  resource_attributes {
+    value = "cos-instance"
+    operator = "stringEquals"
+    name = "serviceInstance"
+  }
+  resource_attributes {
+    value = "bucket"
+    operator = "stringEquals"
+    name = "resourceType"
+  }
+  resource_attributes {
+    value = "fgac-tf-test"
+    operator = "stringEquals"
+    name = "resource"
+  }
+  rule_conditions {
+    operator = "and"
+    conditions {
+      key = "{{resource.attributes.prefix}}"
+      operator = "stringMatch"
+      value = ["folder1/subfolder1/*"]
+    }
+    conditions {
+      key = "{{resource.attributes.delimiter}}"
+      operator = "stringEqualsAnyOf"
+      value = ["/",""]
+    }
+  }
+  rule_conditions {
+    key = "{{resource.attributes.path}}"
+    operator = "stringMatch"
+    value = ["folder1/subfolder1/*"]
+  }
+  rule_conditions {
+    operator = "and"
+    conditions {
+      key = "{{resource.attributes.delimiter}}"
+      operator = "stringExists"
+      value = ["false"]
+    }
+    conditions {
+      key = "{{resource.attributes.prefix}}"
+      operator = "stringExists"
+      value = ["false"]
+    }
+  }
+  rule_operator = "or"
+  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+  description = "IAM User Policy Attribute Based Condition Creation for test scenario"
+}
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -242,9 +306,15 @@ Review the argument references that you can specify for your resource.
 - `rule_conditions` - (Optional, List) A nested block describing the rule conditions of this policy.
 
   Nested schema for `rule_conditions`:
-  - `key` - (Required, String) The key of a rule condition.
+  - `key` - (Optional, String) The key of a rule condition.
   - `operator` - (Required, String) The operator of a rule condition.
-  - `value` - (Required, List) The valjue of a rule condition.
+  - `value` - (Optional, List) The value of a rule condition.
+  - `conditions` - (Optional, List) A nested block describing additional conditions of this policy.
+
+     Nested schema for `conditions`:
+      - `key` - (Required, String) The key of a condition.
+      - `operator` - (Required, String) The operator of a condition.
+      - `value` - (Required, List) The value of a condition.
 
 - `rule_operator` - (Optional, String) The operator used to evaluate multiple rule conditions, e.g., all must be satisfied with `and`.
 

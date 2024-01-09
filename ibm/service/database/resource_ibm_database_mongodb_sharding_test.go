@@ -34,7 +34,7 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
@@ -53,7 +53,7 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "86016"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
@@ -70,7 +70,7 @@ func TestAccIBMMongoDBShardingDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
@@ -94,7 +94,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -106,7 +106,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		  type     = "database"
 		}
 		allowlist {
@@ -119,7 +119,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResourceGroup string, name string) string {
@@ -134,7 +134,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -149,7 +149,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		  type     = "database"
 		}
 		users {
@@ -171,7 +171,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup string, name string) string {
@@ -186,7 +186,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise-sharding"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -203,5 +203,5 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingReduced(databaseResourceGroup
 			delete = "15m"
 		}
 	  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }

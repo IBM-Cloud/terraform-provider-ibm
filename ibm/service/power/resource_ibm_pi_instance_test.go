@@ -41,6 +41,7 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 		pi_volume_name       = "%[2]s"
 		pi_volume_shareable  = true
 		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_type       = "%[6]s"
 		pi_cloud_instance_id = "%[1]s"
 	  }
 	  resource "ibm_pi_instance" "power_instance" {
@@ -53,11 +54,53 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 		pi_sys_type           = "s922"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
 		pi_health_status      = "%[5]s"
 		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
 		pi_network {
 			network_id = data.ibm_pi_network.power_networks.id
 		}
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
+}
+
+func testAccCheckIBMPIInstanceUserDataConfig(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_key" "key" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_key_name          = "%[2]s"
+		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEArb2aK0mekAdbYdY9rwcmeNSxqVCwez3WZTYEq+1Nwju0x5/vQFPSD2Kp9LpKBbxx3OVLN4VffgGUJznz9DAr7veLkWaf3iwEil6U4rdrhBo32TuDtoBwiczkZ9gn1uJzfIaCJAJdnO80Kv9k0smbQFq5CSb9H+F5VGyFue/iVd5/b30MLYFAz6Jg1GGWgw8yzA4Gq+nO7HtyuA2FnvXdNA3yK/NmrTiPCdJAtEPZkGu9LcelkQ8y90ArlKfjtfzGzYDE4WhOufFxyWxciUePh425J2eZvElnXSdGha+FCfYjQcvqpCVoBAG70U4fJBGjB+HL/GpCXLyiYXPrSnzC9w=="
+	  }
+	  data "ibm_pi_image" "power_image" {
+		pi_image_name        = "%[3]s"
+		pi_cloud_instance_id = "%[1]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+		pi_volume_size       = 20
+		pi_volume_name       = "%[2]s"
+		pi_volume_shareable  = true
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_cloud_instance_id = "%[1]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+		pi_memory             = "2"
+		pi_processors         = "0.25"
+		pi_instance_name      = "%[2]s"
+		pi_proc_type          = "shared"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_sys_type           = "s922"
+		pi_cloud_instance_id  = "%[1]s"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_health_status      = "%[5]s"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_user_data          = "this is test user data"
 	  }
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus)
 }
@@ -229,6 +272,25 @@ func TestAccIBMPIInstanceBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMPIInstanceConfig(name, helpers.PIInstanceHealthWarning),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPIInstanceUserData(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceUserDataConfig(name, helpers.PIInstanceHealthWarning),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),

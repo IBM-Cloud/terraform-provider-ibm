@@ -43,6 +43,11 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `id` -  The unique identifier of the BackupPolicyPlan.
+- `included_content` - (Optional, List) The included content for backups created using this policy. 
+
+~> **Note**
+  `boot_volume`: Include the instance's boot volume.</br>
+  `data_volumes`: Include the instance's data volumes.
 - `active` - (Boolean) Indicates whether the plan is active.
 - `attach_user_tags` - (List) User tags to attach to each resource created by this plan.
 - `copy_user_tags` - (Boolean) Indicates whether to copy the source's user tags to the created resource.
