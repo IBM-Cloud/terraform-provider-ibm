@@ -23,7 +23,7 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
-	github.com/IBM/networking-go-sdk v0.42.2
+	github.com/IBM/networking-go-sdk v0.44.0
 	github.com/IBM/platform-services-go-sdk v0.55.0
 	github.com/IBM/project-go-sdk v0.1.6
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
@@ -98,7 +98,7 @@ require (
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/frankban/quicktest v1.14.3 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
