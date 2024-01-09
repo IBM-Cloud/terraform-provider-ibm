@@ -18,10 +18,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-const (
-	PIConsoleLanguageCode = "pi_language_code"
-)
-
 func ResourceIBMPIInstanceConsoleLanguage() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIInstanceConsoleLanguageCreate,
