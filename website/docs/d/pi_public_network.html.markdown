@@ -23,7 +23,7 @@ data "ibm_pi_public_network" "ds_public_network" {
   - `region` - `lon`
   - `zone` - `lon04`
 
- Example usage:
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
