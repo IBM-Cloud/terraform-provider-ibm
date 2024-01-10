@@ -67,7 +67,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_network_port` resource can be imported by using `power_instance_id`, `pi_network_name`  and `port_id`.
+The `ibm_pi_network_port` resource can be imported by using `power_instance_id`, `pi_network_name`  and `network_port_id`.
 
 **Example**
 
