@@ -291,7 +291,13 @@ const (
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
 
-	//Arg_CloudInstanceID                 = "pi_cloud_instance_id"
+	PICloudConnectionId                 = "cloud_connection_id"
+	PICloudConnectionStatus             = "status"
+	PICloudConnectionIBMIPAddress       = "ibm_ip_address"
+	PICloudConnectionUserIPAddress      = "user_ip_address"
+	PICloudConnectionPort               = "port"
+	PICloudConnectionClassicGreSource   = "gre_source_address"
+	PICloudConnectionConnectionMode     = "connection_mode"
 	PIInstanceDeploymentType            = "pi_deployment_type"
 	PIInstanceMigratable                = "pi_migratable"
 	PIInstanceNetwork                   = "pi_network"

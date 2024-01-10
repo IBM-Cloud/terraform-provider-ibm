@@ -15,19 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-const (
-	PICloudConnectionId               = "cloud_connection_id"
-	PICloudConnectionStatus           = "status"
-	PICloudConnectionIBMIPAddress     = "ibm_ip_address"
-	PICloudConnectionUserIPAddress    = "user_ip_address"
-	PICloudConnectionPort             = "port"
-	PICloudConnectionClassicGreSource = "gre_source_address"
-	PICloudConnectionConnectionMode   = "connection_mode"
-)
-
 func DataSourceIBMPICloudConnection() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMAttr_Read,
+		ReadContext: dataSourceIBMPICloudConnectionRead,
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
@@ -120,7 +110,7 @@ func DataSourceIBMPICloudConnection() *schema.Resource {
 	}
 }
 
-func dataSourceIBMAttr_Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
