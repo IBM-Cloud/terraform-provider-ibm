@@ -13,7 +13,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 )
 
@@ -205,7 +204,7 @@ func testAccCheckIbmSchematicsAgentExists(n string, obj schematicsv1.AgentData) 
 		}
 
 		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			XFeatureAgents: core.BoolPtr(true),
+			// XFeatureAgents: core.BoolPtr(true),
 		}
 
 		getAgentDataOptions.SetAgentID(rs.Primary.ID)
@@ -231,8 +230,12 @@ func testAccCheckIbmSchematicsAgentDestroy(s *terraform.State) error {
 		}
 
 		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			XFeatureAgents: core.BoolPtr(true),
+			// XFeatureAgents: core.BoolPtr(true),
 		}
+		ff := map[string]string{
+			"X-Feature-Agents": "true",
+		}
+		getAgentDataOptions.Headers = ff
 
 		getAgentDataOptions.SetAgentID(rs.Primary.ID)
 
