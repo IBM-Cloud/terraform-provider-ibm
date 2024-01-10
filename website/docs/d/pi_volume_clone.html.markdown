@@ -45,6 +45,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `cloned_volumes` - (List of objects) The List of cloned volumes.
+  
   Nested scheme for `cloned_volumes`:
   - `clone_volume_id` - (String) The ID of the newly cloned volume.
   - `source_volume_id` - (String) The ID of the source volume.
