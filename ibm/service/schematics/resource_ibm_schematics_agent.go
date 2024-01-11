@@ -785,6 +785,15 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 	}
 
 	updateAgentDataOptions := &schematicsv1.UpdateAgentDataOptions{}
+	session, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	iamRefreshToken := session.Config.IAMRefreshToken
+	ff := map[string]string{
+		"refresh_token": iamRefreshToken,
+	}
+	updateAgentDataOptions.Headers = ff
 
 	updateAgentDataOptions.SetAgentID(d.Id())
 
