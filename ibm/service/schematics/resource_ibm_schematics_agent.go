@@ -581,7 +581,7 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 		createAgentDataOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createAgentDataOptions.SetTags(d.Get("tags").([]string))
+		createAgentDataOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("agent_metadata"); ok {
 		var agentMetadata []schematicsv1.AgentMetadataInfo
@@ -825,7 +825,7 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 		hasChange = true
 	}
 	if d.HasChange("tags") {
-		updateAgentDataOptions.SetTags(d.Get("tags").([]string))
+		updateAgentDataOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
 		hasChange = true
 	}
 	if d.HasChange("agent_metadata") {

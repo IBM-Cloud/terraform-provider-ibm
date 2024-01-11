@@ -303,7 +303,7 @@ func resourceIbmSchematicsPolicyCreate(context context.Context, d *schema.Resour
 		createPolicyOptions.SetResourceGroup(d.Get("resource_group").(string))
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createPolicyOptions.SetTags(d.Get("tags").([]string))
+		createPolicyOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("location"); ok {
 		createPolicyOptions.SetLocation(d.Get("location").(string))
@@ -480,7 +480,7 @@ func resourceIbmSchematicsPolicyUpdate(context context.Context, d *schema.Resour
 		hasChange = true
 	}
 	if d.HasChange("tags") {
-		// TODO: handle Tags of type TypeList -- not primitive, not model
+		updatePolicyOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
 		hasChange = true
 	}
 	if d.HasChange("location") {
