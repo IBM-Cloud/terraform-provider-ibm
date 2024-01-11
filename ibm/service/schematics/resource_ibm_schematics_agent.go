@@ -559,13 +559,7 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	createAgentDataOptions := &schematicsv1.CreateAgentDataOptions{
-		// XFeatureAgents: core.BoolPtr(true),
-	}
-	ff := map[string]string{
-		"X-Feature-Agents": "true",
-	}
-	createAgentDataOptions.Headers = ff
+	createAgentDataOptions := &schematicsv1.CreateAgentDataOptions{}
 
 	createAgentDataOptions.SetName(d.Get("name").(string))
 	createAgentDataOptions.SetResourceGroup(d.Get("resource_group").(string))
@@ -640,13 +634,8 @@ func resourceIbmSchematicsAgentRead(context context.Context, d *schema.ResourceD
 	}
 
 	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-		// XFeatureAgents: core.BoolPtr(true),
 		Profile: core.StringPtr("detailed"),
 	}
-	ff := map[string]string{
-		"X-Feature-Agents": "true",
-	}
-	getAgentDataOptions.Headers = ff
 
 	getAgentDataOptions.SetAgentID(d.Id())
 
@@ -795,13 +784,7 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	updateAgentDataOptions := &schematicsv1.UpdateAgentDataOptions{
-		// XFeatureAgents: core.BoolPtr(true),
-	}
-	ff := map[string]string{
-		"X-Feature-Agents": "true",
-	}
-	updateAgentDataOptions.Headers = ff
+	updateAgentDataOptions := &schematicsv1.UpdateAgentDataOptions{}
 
 	updateAgentDataOptions.SetAgentID(d.Id())
 
@@ -889,13 +872,7 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	deleteAgentDataOptions := &schematicsv1.DeleteAgentDataOptions{
-		// XFeatureAgents: core.BoolPtr(true),
-	}
-	ff := map[string]string{
-		"X-Feature-Agents": "true",
-	}
-	deleteAgentDataOptions.Headers = ff
+	deleteAgentDataOptions := &schematicsv1.DeleteAgentDataOptions{}
 
 	deleteAgentDataOptions.SetAgentID(d.Id())
 

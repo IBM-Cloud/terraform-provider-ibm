@@ -102,9 +102,8 @@ func resourceIbmSchematicsAgentDeployCreate(context context.Context, d *schema.R
 
 	deployAgentJobOptions := &schematicsv1.DeployAgentJobOptions{}
 	ff := map[string]string{
-		"X-Feature-Agents": "true",
-		"Authorization":    iamAccessToken,
-		"refresh_token":    iamRefreshToken,
+		"Authorization": iamAccessToken,
+		"refresh_token": iamRefreshToken,
 	}
 	deployAgentJobOptions.Headers = ff
 	deployAgentJobOptions.SetAgentID(d.Get("agent_id").(string))
@@ -154,10 +153,6 @@ func agentRefreshFunc(schematicsClient *schematicsv1.SchematicsV1, id string) re
 			AgentID: core.StringPtr(id),
 			Profile: core.StringPtr("detailed"),
 		}
-		ff := map[string]string{
-			"X-Feature-Agents": "true",
-		}
-		getAgentDataOptions.Headers = ff
 
 		agent, response, err := schematicsClient.GetAgentData(getAgentDataOptions)
 		if err != nil {
@@ -184,10 +179,6 @@ func resourceIbmSchematicsAgentDeployRead(context context.Context, d *schema.Res
 	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
 		Profile: core.StringPtr("detailed"),
 	}
-	ff := map[string]string{
-		"X-Feature-Agents": "true",
-	}
-	getAgentDataOptions.Headers = ff
 
 	getAgentDataOptions.SetAgentID(parts[0])
 	agentData, response, err := schematicsClient.GetAgentDataWithContext(context, getAgentDataOptions)
@@ -243,9 +234,8 @@ func resourceIbmSchematicsAgentDeployUpdate(context context.Context, d *schema.R
 	iamRefreshToken := session.Config.IAMRefreshToken
 	deployAgentJobOptions := &schematicsv1.DeployAgentJobOptions{}
 	ff := map[string]string{
-		"X-Feature-Agents": "true",
-		"Authorization":    iamAccessToken,
-		"refresh_token":    iamRefreshToken,
+		"Authorization": iamAccessToken,
+		"refresh_token": iamRefreshToken,
 	}
 	deployAgentJobOptions.Headers = ff
 

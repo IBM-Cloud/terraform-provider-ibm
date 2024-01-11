@@ -203,9 +203,7 @@ func testAccCheckIbmSchematicsAgentExists(n string, obj schematicsv1.AgentData) 
 			return err
 		}
 
-		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			// XFeatureAgents: core.BoolPtr(true),
-		}
+		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{}
 
 		getAgentDataOptions.SetAgentID(rs.Primary.ID)
 
@@ -229,13 +227,7 @@ func testAccCheckIbmSchematicsAgentDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			// XFeatureAgents: core.BoolPtr(true),
-		}
-		ff := map[string]string{
-			"X-Feature-Agents": "true",
-		}
-		getAgentDataOptions.Headers = ff
+		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{}
 
 		getAgentDataOptions.SetAgentID(rs.Primary.ID)
 
