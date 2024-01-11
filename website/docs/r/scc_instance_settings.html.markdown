@@ -14,6 +14,7 @@ Create, update, and delete scc_instance_settingss with this resource.
 
 ```hcl
 resource "ibm_scc_instance_settings" "scc_instance_settings_instance" {
+  instance_id = "00000000-1111-2222-3333-444444444444"
   event_notifications {
 		instance_crn = "<event_notifications_crn>"
   }
@@ -28,6 +29,7 @@ resource "ibm_scc_instance_settings" "scc_instance_settings_instance" {
 
 You can specify the following arguments for this resource.
 
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
 * `event_notifications` - (Optional, List) The Event Notifications settings.
 Nested schema for **event_notifications**:
 	* `instance_crn` - (Optional, String) The Event Notifications instance CRN.
@@ -46,7 +48,6 @@ Nested schema for **object_storage**:
 	* `instance_crn` - (Optional, String) The connected Cloud Object Storage instance CRN.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}|$/`.
 	* `updated_on` - (Computed, String) The date when the bucket connection was updated.
-* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance
 
 ## Attribute Reference
 
