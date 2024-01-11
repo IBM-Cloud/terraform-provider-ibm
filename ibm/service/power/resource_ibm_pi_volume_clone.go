@@ -97,7 +97,7 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	vcName := d.Get(PIVolumeCloneName).(string)
 	volids := flex.ExpandStringList((d.Get(PIVolumeIds).(*schema.Set)).List())
 

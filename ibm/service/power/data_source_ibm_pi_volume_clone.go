@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -58,7 +57,7 @@ func dataSourceIBMPIVolumeCloneRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	client := st.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
 	volClone, err := client.Get(d.Get(PIVolumeCloneTaskID).(string))
 	if err != nil {
