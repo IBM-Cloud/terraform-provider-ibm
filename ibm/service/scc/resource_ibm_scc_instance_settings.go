@@ -1,10 +1,8 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
-// Licensed under the Mozilla Public License v2.0
-
 package scc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -26,22 +24,10 @@ func ResourceIbmSccInstanceSettings() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"x_correlation_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_instance_settings", "x_correlation_id"),
-				Description:  "The supplied or generated value of this header is logged for a request, and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"x_request_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_instance_settings", "x_request_id"),
-				Description:  "The supplied or generated value of this header is logged for a request, and repeated in a response header  for the corresponding response.  The same value is not used for downstream requests and retries of those requests.  If a value of this header is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
 			"event_notifications": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "The Event Notifications settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -57,20 +43,8 @@ func ResourceIbmSccInstanceSettings() *schema.Resource {
 						},
 						"source_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The connected Security and Compliance Center instance CRN.",
-						},
-						"source_description": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Default:     "This source is used for integration with IBM Cloud Security and Compliance Center.",
-							Description: "The description of the source of the Event Notifications.",
-						},
-						"source_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Default:     "compliance",
-							Description: "The name of the source of the Event Notifications.",
 						},
 					},
 				},
@@ -78,7 +52,7 @@ func ResourceIbmSccInstanceSettings() *schema.Resource {
 			"object_storage": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "The Cloud Object Storage settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -94,12 +68,12 @@ func ResourceIbmSccInstanceSettings() *schema.Resource {
 						},
 						"bucket_location": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The connected Cloud Object Storage bucket location.",
 						},
 						"bucket_endpoint": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The connected Cloud Object Storage bucket endpoint.",
 						},
 						"updated_on": &schema.Schema{
@@ -118,16 +92,7 @@ func ResourceIbmSccInstanceSettingsValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "x_correlation_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 ,\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             1024,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "x_request_id",
+			Identifier:                 "instance_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
@@ -148,29 +113,36 @@ func resourceIbmSccInstanceSettingsCreate(context context.Context, d *schema.Res
 	}
 
 	updateSettingsOptions := &securityandcompliancecenterapiv3.UpdateSettingsOptions{}
-  instance_id := d.Get("instance_id").(string)
-  updateSettingsOptions.SetInstanceID(instance_id)
+	instance_id := d.Get("instance_id").(string)
+	updateSettingsOptions.SetInstanceID(instance_id)
 
+	var eventNotificationsModel *securityandcompliancecenterapiv3.EventNotifications
 	if _, ok := d.GetOk("event_notifications"); ok {
-		eventNotificationsModel, err := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
+		eventNotificationsData, err := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateSettingsOptions.SetEventNotifications(eventNotificationsModel)
+		eventNotificationsModel = eventNotificationsData
+		eventNotificationsModel.SourceName = core.StringPtr("compliance")
+		eventNotificationsModel.SourceDescription = core.StringPtr("This source is used for integration with IBM Cloud Security and Compliance Center.")
+	} else {
+		eventNotificationsModel = &securityandcompliancecenterapiv3.EventNotifications{}
+		eventNotificationsModel.InstanceCrn = core.StringPtr("")
 	}
+	updateSettingsOptions.SetEventNotifications(eventNotificationsModel)
+
+	var objectStorageModel *securityandcompliancecenterapiv3.ObjectStorage
 	if _, ok := d.GetOk("object_storage"); ok {
-		objectStorageModel, err := resourceIbmSccInstanceSettingsMapToObjectStorage(d.Get("object_storage.0").(map[string]interface{}))
+		objectStorageData, err := resourceIbmSccInstanceSettingsMapToObjectStorage(d.Get("object_storage.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateSettingsOptions.SetObjectStorage(objectStorageModel)
+		objectStorageModel = objectStorageData
+	} else {
+		objectStorageModel := &securityandcompliancecenterapiv3.ObjectStorage{}
+		objectStorageModel.InstanceCrn = core.StringPtr("")
 	}
-	if _, ok := d.GetOk("x_correlation_id"); ok {
-		updateSettingsOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-	}
-	if _, ok := d.GetOk("x_request_id"); ok {
-		updateSettingsOptions.SetXRequestID(d.Get("x_request_id").(string))
-	}
+	updateSettingsOptions.SetObjectStorage(objectStorageModel)
 
 	_, response, err := adminClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 	if err != nil {
@@ -190,6 +162,8 @@ func resourceIbmSccInstanceSettingsRead(context context.Context, d *schema.Resou
 	}
 
 	getSettingsOptions := &securityandcompliancecenterapiv3.GetSettingsOptions{}
+	instance_id := d.Id()
+	getSettingsOptions.SetInstanceID(instance_id)
 
 	settings, response, err := adminClient.GetSettingsWithContext(context, getSettingsOptions)
 	if err != nil {
@@ -201,6 +175,9 @@ func resourceIbmSccInstanceSettingsRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("GetSettingsWithContext failed %s\n%s", err, response))
 	}
 
+	if err = d.Set("instance_id", instance_id); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
 	if !core.IsNil(settings.EventNotifications) {
 		eventNotificationsMap, err := resourceIbmSccInstanceSettingsEventNotificationsToMap(settings.EventNotifications)
 		if err != nil {
@@ -230,21 +207,19 @@ func resourceIbmSccInstanceSettingsUpdate(context context.Context, d *schema.Res
 	}
 
 	updateSettingsOptions := &securityandcompliancecenterapiv3.UpdateSettingsOptions{}
+	instance_id := d.Get("instance_id").(string)
+	updateSettingsOptions.SetInstanceID(instance_id)
 
 	hasChange := false
 
-	if d.HasChange("x_correlation_id") {
-		updateSettingsOptions.SetXCorrelationID(d.Get("x_correlation_id").(string))
-		hasChange = true
-	}
-	if d.HasChange("x_request_id") {
-		updateSettingsOptions.SetXRequestID(d.Get("x_request_id").(string))
-		hasChange = true
-	}
 	if d.HasChange("event_notifications") {
 		eventNotifications, err := resourceIbmSccInstanceSettingsMapToEventNotifications(d.Get("event_notifications.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+		if eventNotifications.InstanceCrn != nil && *eventNotifications.InstanceCrn != "" {
+			eventNotifications.SourceName = core.StringPtr("compliance")
+			eventNotifications.SourceDescription = core.StringPtr("This source is used for integration with IBM Cloud Security and Compliance Center.")
 		}
 		updateSettingsOptions.SetEventNotifications(eventNotifications)
 		hasChange = true
@@ -270,18 +245,6 @@ func resourceIbmSccInstanceSettingsUpdate(context context.Context, d *schema.Res
 }
 
 func resourceIbmSccInstanceSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	adminClient, err := meta.(conns.ClientSession).SecurityAndComplianceCenterV3()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getSettingsOptions := &securityandcompliancecenterapiv3.GetSettingsOptions{}
-
-	_, response, err := adminClient.GetSettingsWithContext(context, getSettingsOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetSettingsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSettingsWithContext failed %s\n%s", err, response))
-	}
 
 	d.SetId("")
 
@@ -303,22 +266,22 @@ func resourceIbmSccInstanceSettingsMapToEventNotifications(modelMap map[string]i
 	if modelMap["source_id"] != nil && modelMap["source_id"].(string) != "" {
 		model.SourceID = core.StringPtr(modelMap["source_id"].(string))
 	}
-	if modelMap["source_description"] != nil && modelMap["source_description"].(string) != "" {
-		model.SourceDescription = core.StringPtr(modelMap["source_description"].(string))
-	}
-	if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
-		model.SourceName = core.StringPtr(modelMap["source_name"].(string))
-	}
 	return model, nil
 }
 
 func resourceIbmSccInstanceSettingsMapToObjectStorage(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.ObjectStorage, error) {
 	model := &securityandcompliancecenterapiv3.ObjectStorage{}
+	instanceCrnSet := false
 	if modelMap["instance_crn"] != nil && modelMap["instance_crn"].(string) != "" {
 		model.InstanceCrn = core.StringPtr(modelMap["instance_crn"].(string))
+		instanceCrnSet = true
 	}
 	if modelMap["bucket"] != nil && modelMap["bucket"].(string) != "" {
-		model.Bucket = core.StringPtr(modelMap["bucket"].(string))
+		if instanceCrnSet {
+			model.Bucket = core.StringPtr(modelMap["bucket"].(string))
+		} else {
+			return model, errors.New(`object_storage.instance_crn cannot be empty`)
+		}
 	}
 	if modelMap["bucket_location"] != nil && modelMap["bucket_location"].(string) != "" {
 		model.BucketLocation = core.StringPtr(modelMap["bucket_location"].(string))

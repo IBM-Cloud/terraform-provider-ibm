@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -25,9 +24,9 @@ func TestAccIbmSccInstanceSettingsBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccInstanceSettingsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccInstanceSettingsConfigBasic(),
+				Config: testAccCheckIbmSccInstanceSettingsConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings", conf),
+					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings_instance", conf),
 				),
 			},
 		},
@@ -36,12 +35,6 @@ func TestAccIbmSccInstanceSettingsBasic(t *testing.T) {
 
 func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Settings
-	xCorrelationID := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestID := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
-	settingsID := fmt.Sprintf("tf_settings_id_%d", acctest.RandIntRange(10, 100))
-	xCorrelationIDUpdate := fmt.Sprintf("tf_x_correlation_id_%d", acctest.RandIntRange(10, 100))
-	xRequestIDUpdate := fmt.Sprintf("tf_x_request_id_%d", acctest.RandIntRange(10, 100))
-	settingsIDUpdate := fmt.Sprintf("tf_settings_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -49,24 +42,19 @@ func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccInstanceSettingsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccInstanceSettingsConfig(xCorrelationID, xRequestID, settingsID),
+				Config: testAccCheckIbmSccInstanceSettingsConfigBasic(acc.SccInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings", conf),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_correlation_id", xCorrelationID),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_request_id", xRequestID),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "settings_id", settingsID),
+					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings_instance", conf),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccInstanceSettingsConfig(xCorrelationIDUpdate, xRequestIDUpdate, settingsIDUpdate),
+				Config: testAccCheckIbmSccInstanceSettingsConfig(acc.SccInstanceID, acc.SccEventNotificationsCRN, acc.SccObjectStorageCRN, acc.SccObjectStorageBucket),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_correlation_id", xCorrelationIDUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "x_request_id", xRequestIDUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_instance_settings.scc_instance_settings", "settings_id", settingsIDUpdate),
+					testAccCheckIbmSccInstanceSettingsExists("ibm_scc_instance_settings.scc_instance_settings_instance", conf),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_scc_instance_settings.scc_instance_settings",
+				ResourceName:      "ibm_scc_instance_settings.scc_instance_settings_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -74,36 +62,29 @@ func TestAccIbmSccInstanceSettingsAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccInstanceSettingsConfigBasic() string {
+func testAccCheckIbmSccInstanceSettingsConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_instance_settings" "scc_instance_settings_instance" {
+      instance_id = "%s"
+			event_notifications { }
+			object_storage { }
 		}
-	`)
+	`, instanceID)
 }
 
-func testAccCheckIbmSccInstanceSettingsConfig(xCorrelationID string, xRequestID string, settingsID string) string {
+func testAccCheckIbmSccInstanceSettingsConfig(instanceID, enInstanceCRN, objStorInstanceCRN, objStorBucket string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_scc_instance_settings" "scc_instance_settings_instance" {
-			x_correlation_id = "%s"
-			x_request_id = "%s"
+			instance_id = "%s"
 			event_notifications {
-				instance_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/ff88f007f9ff4622aac4fbc0eda36255:7199ae60-a214-4dd8-9bf7-ce571de49d01::"
-				updated_on = "2021-01-31T09:44:12Z"
-				source_id = "crn:v1:bluemix:public:event-notifications:us-south:a/ff88f007f9ff4622aac4fbc0eda36255:b8b07245-0bbe-4478-b11c-0dce523105fd::"
-				source_description = "source_description"
-				source_name = "source_name"
+				instance_crn = "%s"
 			}
 			object_storage {
-				instance_crn = "instance_crn"
-				bucket = "bucket"
-				bucket_location = "bucket_location"
-				bucket_endpoint = "bucket_endpoint"
-				updated_on = "2021-01-31T09:44:12Z"
+				instance_crn = "%s"
+				bucket = "%s"
 			}
-			settings_id = "%s"
 		}
-	`, xCorrelationID, xRequestID, settingsID)
+	`, instanceID, enInstanceCRN, objStorInstanceCRN, objStorBucket)
 }
 
 func testAccCheckIbmSccInstanceSettingsExists(n string, obj securityandcompliancecenterapiv3.Settings) resource.TestCheckFunc {
@@ -120,6 +101,8 @@ func testAccCheckIbmSccInstanceSettingsExists(n string, obj securityandcomplianc
 		}
 
 		getSettingsOptions := &securityandcompliancecenterapiv3.GetSettingsOptions{}
+		instanceID := acc.SccInstanceID
+		getSettingsOptions.SetInstanceID(instanceID)
 
 		settings, _, err := adminClient.GetSettings(getSettingsOptions)
 		if err != nil {
@@ -142,11 +125,12 @@ func testAccCheckIbmSccInstanceSettingsDestroy(s *terraform.State) error {
 		}
 
 		getSettingsOptions := &securityandcompliancecenterapiv3.GetSettingsOptions{}
+		instanceID := acc.SccInstanceID
+		getSettingsOptions.SetInstanceID(instanceID)
 
-		// Try to find the key
+		// Deleting a instance_settings_resource doesn't delete the entity
 		_, response, err := adminClient.GetSettings(getSettingsOptions)
-
-		if response.StatusCode != 404 {
+		if response.StatusCode != 200 {
 			return fmt.Errorf("Error checking for scc_instance_settings (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}

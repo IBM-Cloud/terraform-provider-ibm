@@ -1305,6 +1305,7 @@ func Provider() *schema.Provider {
 			"ibm_scc_template_attachment": scc.ResourceIBMSccTemplateAttachment(),
 
 			// Security and Compliance Center
+			"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettings(),
 			"ibm_scc_rule":                   scc.ResourceIbmSccRule(),
 			"ibm_scc_control_library":        scc.ResourceIbmSccControlLibrary(),
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
@@ -1576,6 +1577,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
 
 				// Added for SCC
+				"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettingsValidator(),
 				"ibm_scc_rule":                   scc.ResourceIbmSccRuleValidator(),
 				"ibm_scc_control_library":        scc.ResourceIbmSccControlLibraryValidator(),
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),
