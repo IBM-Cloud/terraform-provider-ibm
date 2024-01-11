@@ -15,10 +15,6 @@ import (
 )
 
 // Datasource to list available console languages for an instance
-const (
-	ConsoleLanguageCode = "Code"
-)
-
 func DataSourceIBMPIInstanceConsoleLanguages() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIInstanceConsoleLanguagesRead,

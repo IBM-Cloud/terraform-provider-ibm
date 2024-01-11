@@ -283,6 +283,8 @@ const (
 	Arg_PVMInstanceHealthStatus       = "pi_health_status"
 	Arg_PIInstanceSharedProcessorPool = "pi_shared_processor_pool"
 
+	ConsoleLanguageCode = "Code"
+
 	PVMInstanceHealthOk      = "OK"
 	PVMInstanceHealthWarning = "WARNING"
 
