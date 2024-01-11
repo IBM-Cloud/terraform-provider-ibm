@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_pi_vpn_connection
-Create, update, or delete a VPN connection. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
+Create, update, delete a VPN connection. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
 The following example creates a VPN Connection.

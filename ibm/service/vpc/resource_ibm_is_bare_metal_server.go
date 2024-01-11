@@ -696,7 +696,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	createoptions := &vpcv1.CreateBareMetalServerOptions{}
+	createbmsoptions := &vpcv1.CreateBareMetalServerOptions{}
 	options := &vpcv1.BareMetalServerPrototype{}
 	var imageStr string
 	if image, ok := d.GetOk(isBareMetalServerImage); ok {
@@ -706,8 +706,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	// enable secure boot
 
 	if _, ok := d.GetOkExists(isBareMetalServerEnableSecureBoot); ok {
-		enablesecureboot := d.Get(isBareMetalServerEnableSecureBoot).(bool)
-		options.EnableSecureBoot = &enablesecureboot
+		options.EnableSecureBoot = core.BoolPtr(d.Get(isBareMetalServerEnableSecureBoot).(bool))
 	}
 
 	// trusted_platform_module
@@ -1302,8 +1301,8 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 			ID: &vpc,
 		}
 	}
-	createoptions.BareMetalServerPrototype = options
-	bms, response, err := sess.CreateBareMetalServerWithContext(context, createoptions)
+	createbmsoptions.BareMetalServerPrototype = options
+	bms, response, err := sess.CreateBareMetalServerWithContext(context, createbmsoptions)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server err %s\n%s", err, response))
 	}
@@ -1362,9 +1361,11 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	d.SetId(*bms.ID)
 	d.Set(isBareMetalServerBandwidth, bms.Bandwidth)
-	bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
-	bmsBootTarget := bmsBootTargetIntf.ID
-	d.Set(isBareMetalServerBootTarget, bmsBootTarget)
+	if bms.BootTarget != nil {
+		bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
+		bmsBootTarget := bmsBootTargetIntf.ID
+		d.Set(isBareMetalServerBootTarget, bmsBootTarget)
+	}
 	cpuList := make([]map[string]interface{}, 0)
 	if bms.Cpu != nil {
 		currentCPU := map[string]interface{}{}

@@ -46,12 +46,16 @@ resource "ibm_is_backup_policy" "ent-baas-example1" {
 ## Argument Reference
 
 Review the argument reference that you can specify for your resource.
+- `included_content` - (Optional, List) The included content for backups created using this policy. Allowed values are `boot_volume`, `data_volumes`.
 
+~> **Note**
+  `boot_volume`: Include the instance's boot volume.</br>
+  `data_volumes`: Include the instance's data volumes.
 - `match_resource_types` - (Optional, List) A resource type this backup policy applies to. Resources that have both a matching type and a matching user tag will be subject to the backup policy. The default value is `["volume"]`.
-  
+
 ~> **Note**
   `match_resource_types` is deprecated. Please use `match_resource_type` instead.
-- `match_resource_type` - (Optional, String) The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag will be subject to the backup policy. The default value is `["volume"]`.
+- `match_resource_type` - (Optional, String) The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag will be subject to the backup policy. The default value is `["volume"]`. Allowed values are `volume`,`instance`.
 - `match_user_tags` - (Required, List) The user tags this backup policy applies to. Resources that have both a matching user tag and a matching type will be subject to the backup policy.
 - `name` - (Required, String) The user-defined name for this backup policy. Names must be unique within the region this backup policy resides in. 
 - `resource_group` - (Optional, List) The resource group id, to use. If unspecified, the account's [default resource group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.

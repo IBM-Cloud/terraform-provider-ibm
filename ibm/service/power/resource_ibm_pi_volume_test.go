@@ -214,6 +214,55 @@ func testAccCheckIBMPIVolumeGRSBasicConfig(name, piCloudInstanceId, piStoragePoo
 		pi_volume_shareable    = true
 		pi_cloud_instance_id   = "%[2]s"
 		pi_replication_enabled = %[4]v
+		pi_volume_type       = "tier3"
 	  }
 	`, name, piCloudInstanceId, piStoragePool, replicationEnabled)
+}
+
+// TestAccIBMPIVolumeUpdate test the volume update
+func TestAccIBMPIVolumeUpdate(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+	sType := acc.PiStorageType // tier 3
+	sTypeUpdate := "tier1"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIVolumeUpdateStorageConfig(name, sType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIVolumeUpdateStorageConfig(name, sTypeUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttrSet("ibm_pi_volume.power_volume", "pi_volume_type"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIVolumeUpdateStorageConfig(name, piStorageType string) string {
+	return testAccCheckIBMPIVolumeUpdateBasicConfig(name, acc.Pi_cloud_instance_id, acc.PiStoragePool, piStorageType)
+}
+
+func testAccCheckIBMPIVolumeUpdateBasicConfig(name, piCloudInstanceId, piStoragePool, piStorageType string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume"{
+		pi_volume_size         = 20
+		pi_volume_name         = "%[1]s"
+		pi_volume_pool         = "%[3]s"
+		pi_volume_shareable    = true
+		pi_cloud_instance_id   = "%[2]s"
+		pi_volume_type = "%[4]v"
+	  }
+	`, name, piCloudInstanceId, piStoragePool, piStorageType)
 }

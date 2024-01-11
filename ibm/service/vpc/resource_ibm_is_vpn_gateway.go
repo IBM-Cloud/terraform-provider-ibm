@@ -566,8 +566,8 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(flex.ResourceCRN, *vpnGateway.CRN)
 	d.Set(isVPNGatewayCRN, *vpnGateway.CRN)
 	if vpnGateway.ResourceGroup != nil {
-		d.Set(flex.ResourceGroupName, *vpnGateway.ResourceGroup.Name)
-		d.Set(isVPNGatewayResourceGroup, *vpnGateway.ResourceGroup.ID)
+		d.Set(flex.ResourceGroupName, vpnGateway.ResourceGroup.Name)
+		d.Set(isVPNGatewayResourceGroup, vpnGateway.ResourceGroup.ID)
 	}
 	d.Set(isVPNGatewayMode, *vpnGateway.Mode)
 	if vpnGateway.Members != nil {

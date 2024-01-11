@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_pi_network
-Retrieve information about the network that your Power Systems Virtual Server instance is connected to. For more information, about power virtual server instance network, see [setting up an IBM i network install server](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-preparing-install-server).
+Retrieve information about the network that your Power Systems Virtual Server instance is connected to. For more information, about power virtual server instance network, see [setting up an IBM network install server](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-subnet).
 
 ## Example usage
 
@@ -53,4 +53,6 @@ In addition to all argument reference list, you can access the following attribu
 - `used_ip_count` - (Float) The number of used IP addresses.
 - `used_ip_percent` - (Float) The percentage of IP addresses used.
 - `vlan_id` - (String) The VLAN ID that the network is connected to.
-- `jumbo` - (Bool) MTU Jumbo option of the network.
+- `jumbo` - (Bool) MTU Jumbo option of the network (for multi-zone locations only). `deprecated`
+- `mtu` - (Bool) Maximum Transmission Unit option of the network.
+- `access_config` - (String) The network communication configuration option of the network (for satellite locations only).
