@@ -10,7 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete scc_instance with this resource.
 
-~> NOTE: This is documenation of the resource `ibm_resource_instance` catering the service `Security and Compliance Center`. For more about on the Terraform resource, click [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance)
+~> NOTE: This document details how to use the resource `ibm_resource_instance` targeting the service `Security and Compliance Center`. For more information about the Terraform resource `ibm_resource_instance`, click [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance)
 
 ## Example Usage
 
