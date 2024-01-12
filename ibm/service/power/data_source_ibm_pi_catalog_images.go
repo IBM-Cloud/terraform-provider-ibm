@@ -138,14 +138,8 @@ func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
-	includeSAP := false
-	if s, ok := d.GetOk(Arg_SAP); ok {
-		includeSAP = s.(bool)
-	}
-	includeVTL := false
-	if v, ok := d.GetOk(Arg_VTL); ok {
-		includeVTL = v.(bool)
-	}
+	includeSAP := d.Get(Arg_SAP).(bool)
+	includeVTL := d.Get(Arg_VTL).(bool)
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 	stockImages, err := imageC.GetAllStockImages(includeSAP, includeVTL)
 	if err != nil {
