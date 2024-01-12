@@ -788,30 +788,27 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
-		var license bool
+		var licenseCSS bool
+		var licensePHA bool
+		var licenseRDS bool
 		sl := &models.SoftwareLicenses{}
-		if d.HasChange(PIInstanceIbmiCSS) {
-			if ibmiCSS, ok := d.GetOk(PIInstanceIbmiCSS); ok {
-				license = ibmiCSS.(bool)
-				sl.IbmiCSS = &license
-			}
+
+		ibmiCSS := d.Get(PIInstanceIbmiCSS)
+		licenseCSS = ibmiCSS.(bool)
+		sl.IbmiCSS = &licenseCSS
+
+		ibmiPHA := d.Get(PIInstanceIbmiPHA)
+		licensePHA = ibmiPHA.(bool)
+		sl.IbmiPHA = &licensePHA
+
+		ibmrdsUsers := d.Get(PIInstanceIbmiRDSUsers)
+		if ibmrdsUsers.(int) < 0 {
+			return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
 		}
-		if d.HasChange(PIInstanceIbmiPHA) {
-			if ibmiPHA, ok := d.GetOk(PIInstanceIbmiPHA); ok {
-				license = ibmiPHA.(bool)
-				sl.IbmiPHA = &license
-			}
-		}
-		if d.HasChange(PIInstanceIbmiRDSUsers) {
-			if ibmrdsUsers, ok := d.GetOk(PIInstanceIbmiRDSUsers); ok {
-				if ibmrdsUsers.(int) < 0 {
-					return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
-				}
-				license = ibmrdsUsers.(int) > 0
-				sl.IbmiRDS = &license
-				sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
-			}
-		}
+		licenseRDS = ibmrdsUsers.(int) > 0
+		sl.IbmiRDS = &licenseRDS
+		sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
+
 		updatebody := &models.PVMInstanceUpdate{SoftwareLicenses: sl}
 		_, err = client.Update(instanceID, updatebody)
 		if err != nil {
@@ -1396,7 +1393,6 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 			sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
 		}
 		body.SoftwareLicenses = sl
-
 	}
 
 	pvmList, err := client.Create(body)
