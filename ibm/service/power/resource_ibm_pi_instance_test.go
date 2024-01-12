@@ -176,8 +176,7 @@ func testAccCheckIBMPIInstanceIBMiLicense(name, instanceHealthStatus string, IBM
 			}
 			pi_ibmi_css 		  = %[6]t
 			pi_ibmi_rds_users 	  = %[7]d
-		  }
-		`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, IBMiCSS, IBMiRDSUsers)
+		  }`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, IBMiCSS, IBMiRDSUsers)
 }
 
 func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {

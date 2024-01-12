@@ -574,7 +574,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChange(helpers.PIInstanceProcType) {
-
 		// Stop the lpar
 		if d.Get("status") == "SHUTOFF" {
 			log.Printf("the lpar is in the shutoff state. Nothing to do . Moving on ")
@@ -627,7 +626,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	// Start of the change for Memory and Processors
 	if d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange("pi_migratable") {
-
 		maxMemLpar := d.Get("max_memory").(float64)
 		maxCPULpar := d.Get("max_processors").(float64)
 		//log.Printf("the required memory is set to [%d] and current max memory is set to  [%d] ", int(mem), int(maxMemLpar))
@@ -687,7 +685,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	// License repository capacity will be updated only if service instance is a vtl instance
 	// might need to check if lrc was set
 	if d.HasChange(helpers.PIInstanceLicenseRepositoryCapacity) {
-
 		lrc := d.Get(helpers.PIInstanceLicenseRepositoryCapacity).(int64)
 		body := &models.PVMInstanceUpdate{
 			LicenseRepositoryCapacity: lrc,
@@ -748,7 +745,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChange(helpers.PIPlacementGroupID) {
-
 		pgClient := st.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
 
 		oldRaw, newRaw := d.GetChange(helpers.PIPlacementGroupID)
@@ -783,9 +779,15 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 	if d.HasChanges(PIInstanceIbmiCSS, PIInstanceIbmiPHA, PIInstanceIbmiRDSUsers) {
-		if d.Get("status") != "ACTIVE" {
-			return diag.Errorf("software licenses change requires the lpar to be in an active state")
+		if d.Get("status") == "ACTIVE" {
+			log.Printf("the lpar is in the Active state, continuing with update")
+		} else {
+			_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
+
 		var license bool
 		sl := &models.SoftwareLicenses{}
 		if d.HasChange(PIInstanceIbmiCSS) {
@@ -819,13 +821,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		log.Printf("software license %s", PIInstanceIbmiCSS)
-		return diag.Errorf("software licenses change requires the lpar to be in an active state")
 	}
 
 	return resourceIBMPIInstanceRead(ctx, d, meta)
-
 }
 
 func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
