@@ -24,12 +24,12 @@ resource "ibm_resource_instance" "openpages_instance" {
   }
 }
 
-To provison your instance with the correct configuraiton, update the `parameters_json` field with appropriate values.
+To provison your instance with the correct configuration, update the `parameters_json` field with the appropriate values.
 ```
 
 ## Dependencies
 
-- The owner of the `ibmcloud_api_key` has permission to create an OpenPages instance under specified resource group.
+- The owner of the `ibmcloud_api_key` has permission to create an OpenPages instance under the specified resource group.
 
 ## Configuration
 
@@ -37,20 +37,20 @@ To provison your instance with the correct configuraiton, update the `parameters
 
 ## Running the configuration
 
-For planning phase
+For the planning phase
 
 ```bash
 terraform init
 terraform plan
 ```
 
-For apply phase
+For the apply phase
 
 ```bash
 terraform apply
 ```
 
-For destroy
+For the destroy
 
 ```bash
 terraform destroy
