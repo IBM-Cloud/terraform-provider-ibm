@@ -1193,6 +1193,10 @@ func PtrToString(s string) *string {
 	return &s
 }
 
+func PtrToBool(b bool) *bool {
+	return &b
+}
+
 func IntValue(i64 *int64) (i int) {
 	if i64 != nil {
 		i = int(*i64)
