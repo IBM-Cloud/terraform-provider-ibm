@@ -266,12 +266,13 @@ var Snapshot_month string
 // Secuity and Complinace Center
 var (
 	SccApiEndpoint            string
-	SccProviderTypeAttributes string
-	SccReportID               string
-	SccInstanceID             string
 	SccEventNotificationsCRN  string
+	SccInstanceID             string
 	SccObjectStorageCRN       string
 	SccObjectStorageBucket    string
+	SccProviderTypeAttributes string
+	SccProviderTypeID         string
+	SccReportID               string
 )
 
 // ROKS Cluster
@@ -1404,6 +1405,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC PROVIDER TYPE ATTRIBUTE")
 	}
 
+	SccProviderTypeID = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ID")
+	if SccProviderTypeID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC PROVIDER TYPE ID")
+	}
+
 	SccEventNotificationsCRN = os.Getenv("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
 	if SccEventNotificationsCRN == "" {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
@@ -1839,6 +1845,10 @@ func TestAccPreCheckScc(t *testing.T) {
 
 	if SccProviderTypeAttributes == "" {
 		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC provider_type JSON object")
+	}
+
+	if SccProviderTypeID == "" {
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ID missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC provider_type ID")
 	}
 
 	if SccInstanceID == "" {
