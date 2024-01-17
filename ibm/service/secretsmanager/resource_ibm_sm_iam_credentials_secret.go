@@ -407,6 +407,24 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 
+	// Call get version metadata API to get the current version_custom_metadata
+	getVersionMetdataOptions := &secretsmanagerv2.GetSecretVersionMetadataOptions{}
+	getVersionMetdataOptions.SetSecretID(secretId)
+	getVersionMetdataOptions.SetID("current")
+
+	versionMetadataIntf, response, err := secretsManagerClient.GetSecretVersionMetadataWithContext(context, getVersionMetdataOptions)
+	if err != nil {
+		log.Printf("[DEBUG] GetSecretVersionMetadataWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response))
+	}
+
+	versionMetadata := versionMetadataIntf.(*secretsmanagerv2.IAMCredentialsSecretVersionMetadata)
+	if versionMetadata.VersionCustomMetadata != nil {
+		if err = d.Set("version_custom_metadata", versionMetadata.VersionCustomMetadata); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version_custom_metadata: %s", err))
+		}
+	}
+
 	return nil
 }
 
@@ -478,7 +496,7 @@ func resourceIbmSmIamCredentialsSecretUpdate(context context.Context, d *schema.
 		// Apply change to version_custom_metadata in current version
 		secretVersionMetadataPatchModel := new(secretsmanagerv2.SecretVersionMetadataPatch)
 		secretVersionMetadataPatchModel.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
-		secretVersionMetadataPatchModelAsPatch, _ := secretVersionMetadataPatchModel.AsPatch()
+		secretVersionMetadataPatchModelAsPatch, _ := secretVersionMetadataAsPatchFunction(secretVersionMetadataPatchModel)
 
 		updateSecretVersionOptions := &secretsmanagerv2.UpdateSecretVersionMetadataOptions{}
 		updateSecretVersionOptions.SetSecretID(secretId)
