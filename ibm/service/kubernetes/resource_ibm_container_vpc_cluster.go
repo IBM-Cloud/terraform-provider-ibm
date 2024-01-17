@@ -331,6 +331,15 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
 
+			"security_groups": {
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Description:      "Allow user to set which security groups added to their workers",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              flex.ResourceIBMVPCHash,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
+
 			//Get Cluster info Request
 			"state": {
 				Type:     schema.TypeString,
@@ -594,6 +603,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	// Update params with Cloud Object Store instance CRN id option if provided
 	if v, ok := d.GetOk("cos_instance_crn"); ok {
 		params.CosInstanceCRN = v.(string)
+	}
+
+	if v, ok := d.GetOk("security_groups"); ok {
+		securityGroups := flex.FlattenSet(v.(*schema.Set))
+		params.SecurityGroupIDs = securityGroups
 	}
 
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)

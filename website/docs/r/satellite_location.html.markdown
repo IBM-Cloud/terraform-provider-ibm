@@ -44,6 +44,23 @@ resource "ibm_satellite_location" "create_location" {
 }
 ```
 
+### Sample to create location and specify pod- and service subnet
+
+```terraform
+data "ibm_resource_group" "group" {
+    name = "Default"
+}
+
+resource "ibm_satellite_location" "create_location" {
+  location          = var.location
+  zones             = var.location_zones
+  managed_from      = var.managed_from
+  resource_group_id = data.ibm_resource_group.group.id
+  pod_subnet        = var.pod_subnet // "10.42.0.0/16"
+  service_subnet    = var.service_subnet // "192.168.42.0/24"
+}
+```
+
 ## Timeouts
 
 The `ibm_satellite_location` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -74,6 +91,8 @@ Review the argument references that you can specify for your resource.
 - `logging_account_id` - (Optional, String) The account ID for IBM Log Analysis with LogDNA log forwarding.
 - `managed_from` - (Required, String) The IBM Cloud regions that you can choose from to manage your Satellite location. To list available multizone regions, run `ibmcloud ks locations`. For more information, refer to [supported IBM Cloud locations](https://cloud.ibm.com/docs/satellite?topic=satellite-sat-regions).
 - `zones`- Array of Strings - Optional- The names for the host zones. For high availability, allocate your hosts across these three zones based on your infrastructure provider zones. For example, `us-east-1`, `us-east-2`, `us-east-3` .
+- `service_subnet` - (String) Custom subnet CIDR to provide private IP addresses for services
+- `pod_subnet` - (String) Custom subnet CIDR to provide private IP addresses for pods
 
 
 ## Attribute reference

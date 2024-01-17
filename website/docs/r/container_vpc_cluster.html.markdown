@@ -218,6 +218,7 @@ Review the argument references that you can specify for your resource.
 - `crk` - (Optional, String) Root Key ID for boot volume encryption.
 - `kms_instance_id` - (Optional, String) Instance ID for boot volume encryption.
 - `kms_account_id` - (Optional, String) Account ID for boot volume encryption, if other account is providing the kms.
+- `security_groups` - (Optional, List) Enables users to define specific security groups for their workers.
 
 **Note**
 

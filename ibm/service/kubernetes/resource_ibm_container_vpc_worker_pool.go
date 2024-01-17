@@ -220,6 +220,15 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Computed:    true,
 				Description: "Autoscaling is enabled on the workerpool",
 			},
+
+			"security_groups": {
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Description:      "Allow user to set which security groups added to their workers",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              flex.ResourceIBMVPCHash,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
 		},
 	}
 }
@@ -311,6 +320,11 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 			WorkerCount: d.Get("worker_count").(int),
 			Zones:       zone,
 		},
+	}
+
+	if v, ok := d.GetOk("security_groups"); ok {
+		securityGroups := flex.FlattenSet(v.(*schema.Set))
+		params.SecurityGroupIDs = securityGroups
 	}
 
 	if kmsid, ok := d.GetOk("kms_instance_id"); ok {

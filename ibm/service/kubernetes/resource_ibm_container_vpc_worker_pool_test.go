@@ -85,6 +85,31 @@ func TestAccIBMContainerVpcClusterWorkerPoolDedicatedHost(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerVpcClusterWorkerPoolSecurityGroups(t *testing.T) {
+
+	name := fmt.Sprintf("tf-vpc-worker-pool-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMVpcContainerWorkerPoolSecurityGroups(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "cx2.2x4"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMVpcContainerWorkerPoolDestroy(s *terraform.State) error {
 
 	wpClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
@@ -169,6 +194,70 @@ func testAccCheckIBMVpcContainerWorkerPoolBasic(name string) string {
 		"test"  = "test-pool"
 		"test1" = "test-pool1"
 	  }
+	}
+		`, name)
+}
+
+func testAccCheckIBMVpcContainerWorkerPoolSecurityGroups(name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
+	}
+	resource "ibm_is_vpc" "vpc" {
+		name = "%[1]s"
+	}
+	resource "ibm_is_security_group" "security_group1" {
+		name = "%[1]s-security-group-1"
+		vpc  = ibm_is_vpc.vpc.id
+	}
+	resource "ibm_is_security_group" "security_group2" {
+		name = "%[1]s-security-group-2"
+		vpc  = ibm_is_vpc.vpc.id
+	}
+	resource "ibm_is_subnet" "subnet1" {
+		name                     = "%[1]s-subnet-1"
+		vpc                      = ibm_is_vpc.vpc.id
+		zone                     = "us-south-1"
+		total_ipv4_address_count = 256
+	}
+	resource "ibm_is_subnet" "subnet2" {
+		name                     = "%[1]s-subnet-2"
+		vpc                      = ibm_is_vpc.vpc.id
+		zone                     = "us-south-2"
+		total_ipv4_address_count = 256
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "%[1]s"
+	  vpc_id            = ibm_is_vpc.vpc.id
+	  flavor            = "cx2.2x4"
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
+	  zones {
+		subnet_id = ibm_is_subnet.subnet1.id
+		name      = ibm_is_subnet.subnet1.zone
+	  }
+	  security_groups = [ 
+		ibm_is_security_group.security_group1.id,
+		"cluster",
+	  ]
+	}
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = ibm_container_vpc_cluster.cluster.id
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "cx2.2x4"
+	  vpc_id            = ibm_is_vpc.vpc.id
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  zones {
+		subnet_id = ibm_is_subnet.subnet2.id
+		name      = ibm_is_subnet.subnet2.zone
+	  }
+	  security_groups = [ 
+		ibm_is_security_group.security_group2.id,
+	  ]
+
 	}
 		`, name)
 }
