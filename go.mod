@@ -23,11 +23,11 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
-	github.com/IBM/networking-go-sdk v0.42.2
+	github.com/IBM/networking-go-sdk v0.44.0
 	github.com/IBM/platform-services-go-sdk v0.55.0
 	github.com/IBM/project-go-sdk v0.1.6
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
-	github.com/IBM/scc-go-sdk/v5 v5.1.3
+	github.com/IBM/scc-go-sdk/v5 v5.1.4
 	github.com/IBM/schematics-go-sdk v0.2.3
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.2
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
@@ -98,7 +98,7 @@ require (
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/frankban/quicktest v1.14.3 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -210,7 +210,7 @@ require (
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
