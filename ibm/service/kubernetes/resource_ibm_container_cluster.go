@@ -754,7 +754,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	return resourceIBMContainerClusterRead(d, meta)
+	return resourceIBMContainerClusterUpdate(d, meta)
 }
 
 func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) error {
