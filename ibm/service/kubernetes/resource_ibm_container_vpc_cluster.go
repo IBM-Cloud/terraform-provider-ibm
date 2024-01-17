@@ -674,7 +674,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	return resourceIBMContainerVpcClusterRead(d, meta)
+	return resourceIBMContainerVpcClusterUpdate(d, meta)
 
 }
 

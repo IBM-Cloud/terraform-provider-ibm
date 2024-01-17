@@ -389,7 +389,7 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 		}
 	}
 
-	return resourceIBMContainerVpcWorkerPoolUpdate(d, meta)
+	return resourceIBMContainerVpcWorkerPoolRead(d, meta)
 }
 
 func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
