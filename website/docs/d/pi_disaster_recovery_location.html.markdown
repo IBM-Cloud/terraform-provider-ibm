@@ -44,5 +44,5 @@ In addition to all argument reference list, you can access the following attribu
 - `replication_sites` - (List) List of replication sites.
 
   Nested scheme for `replication_sites`:
-  - `is_active` - (Bool) Indicates the location is active or not, `true` if location is active , otherwise it is `false`.
+  - `is_active` - (Boolean) Indicates the location is active or not, `true` if location is active , otherwise it is `false`.
   - `location` - (String) The region zone of the location.
