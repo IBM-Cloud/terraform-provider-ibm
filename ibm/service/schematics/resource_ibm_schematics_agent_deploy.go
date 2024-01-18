@@ -129,17 +129,21 @@ func resourceIbmSchematicsAgentDeployCreate(context context.Context, d *schema.R
 }
 
 const (
-	agentProvisioningTriggered = "Triggered deployment"
-	agentProvisioningDone      = "success"
-	agentProvisioningPending   = "PENDING"
-	agentProvisioninFailed     = "Job Failed"
+	agentProvisioningStatusCodeJobCancelled      = "job_cancelled"
+	agentProvisioningStatusCodeJobFailed         = "job_failed"
+	agentProvisioningStatusCodeJobFinished       = "job_finished"
+	agentProvisioningStatusCodeJobInProgress     = "job_in_progress"
+	agentProvisioningStatusCodeJobPending        = "job_pending"
+	agentProvisioningStatusCodeJobReadyToExecute = "job_ready_to_execute"
+	agentProvisioningStatusCodeJobStopInProgress = "job_stop_in_progress"
+	agentProvisioningStatusCodeJobStopped        = "job_stopped"
 )
 
 func isWaitForAgentAvailable(context context.Context, schematicsClient *schematicsv1.SchematicsV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for agent (%s) to be available.", id)
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", agentProvisioningPending, agentProvisioningTriggered},
-		Target:     []string{agentProvisioningDone, agentProvisioninFailed, ""},
+		Pending:    []string{"retry", agentProvisioningStatusCodeJobInProgress, agentProvisioningStatusCodeJobPending, agentProvisioningStatusCodeJobReadyToExecute, agentProvisioningStatusCodeJobStopInProgress},
+		Target:     []string{agentProvisioningStatusCodeJobFinished, agentProvisioningStatusCodeJobFailed, agentProvisioningStatusCodeJobCancelled, agentProvisioningStatusCodeJobStopped, ""},
 		Refresh:    agentRefreshFunc(schematicsClient, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
@@ -158,10 +162,10 @@ func agentRefreshFunc(schematicsClient *schematicsv1.SchematicsV1, id string) re
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Agent: %s\n%s", err, response)
 		}
-		if *agent.RecentDeployJob.StatusMessage == agentProvisioninFailed || *agent.RecentDeployJob.StatusMessage == agentProvisioningDone {
-			return agent, agentProvisioningDone, nil
+		if agent.RecentDeployJob.StatusCode != nil {
+			return agent, *agent.RecentDeployJob.StatusCode, nil
 		}
-		return agent, agentProvisioningPending, nil
+		return agent, agentProvisioningStatusCodeJobPending, nil
 	}
 }
 
