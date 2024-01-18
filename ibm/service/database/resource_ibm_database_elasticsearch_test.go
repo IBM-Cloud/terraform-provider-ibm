@@ -328,7 +328,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 
 		group {
 			group_id = "member"
-  
+			memory {
+				allocation_mb = 2048
+			}
 			host_flavor {
 				id = "multitenant"
 			}
@@ -376,7 +378,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 
 		group {
 			group_id = "member"
-  
+			memory {
+				allocation_mb = 2048
+			}
 			host_flavor {
 				id = "multitenant"
 			}
@@ -409,7 +413,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 
 		group {
 			group_id = "member"
-  
+			memory {
+				allocation_mb = 2048
+			}
 			host_flavor {
 				id = "multitenant"
 			}
