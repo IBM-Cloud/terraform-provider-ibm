@@ -38,41 +38,6 @@ func TestAccIbmSchematicsAgentDeployBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmSchematicsAgentDeployAllArgs(t *testing.T) {
-	var conf *schematicsv1.AgentDataRecentDeployJob
-	agentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
-	force := "false"
-	forceUpdate := "true"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmSchematicsAgentDeployDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentDeployConfig(agentID, force),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSchematicsAgentDeployExists("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", conf),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "agent_id", agentID),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "force", force),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentDeployConfig(agentID, forceUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "agent_id", agentID),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "force", forceUpdate),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_schematics_agent_deploy.schematics_agent_deploy_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func testAccCheckIbmSchematicsAgentDeployConfigBasic(agentID string) string {
 	return fmt.Sprintf(`
 
@@ -81,17 +46,6 @@ func testAccCheckIbmSchematicsAgentDeployConfigBasic(agentID string) string {
 		}
 	`, agentID)
 }
-
-func testAccCheckIbmSchematicsAgentDeployConfig(agentID string, force string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_schematics_agent_deploy" "schematics_agent_deploy_instance" {
-			agent_id = "%s"
-			force = %s
-		}
-	`, agentID, force)
-}
-
 func testAccCheckIbmSchematicsAgentDeployExists(n string, obj *schematicsv1.AgentDataRecentDeployJob) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {

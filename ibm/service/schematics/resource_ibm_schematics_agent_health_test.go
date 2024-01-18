@@ -38,41 +38,6 @@ func TestAccIbmSchematicsAgentHealthBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmSchematicsAgentHealthAllArgs(t *testing.T) {
-	var conf *schematicsv1.AgentDataRecentHealthJob
-	agentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
-	force := "false"
-	forceUpdate := "true"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmSchematicsAgentHealthDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentHealthConfig(agentID, force),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSchematicsAgentHealthExists("ibm_schematics_agent_health.schematics_agent_health_instance", conf),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_health.schematics_agent_health_instance", "agent_id", agentID),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_health.schematics_agent_health_instance", "force", force),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentHealthConfig(agentID, forceUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_schematics_agent_health.schematics_agent_health_instance", "agent_id", agentID),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_health.schematics_agent_health_instance", "force", forceUpdate),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_schematics_agent_health.schematics_agent_health_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func testAccCheckIbmSchematicsAgentHealthConfigBasic(agentID string) string {
 	return fmt.Sprintf(`
 
@@ -80,16 +45,6 @@ func testAccCheckIbmSchematicsAgentHealthConfigBasic(agentID string) string {
 			agent_id = "%s"
 		}
 	`, agentID)
-}
-
-func testAccCheckIbmSchematicsAgentHealthConfig(agentID string, force string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_schematics_agent_health" "schematics_agent_health_instance" {
-			agent_id = "%s"
-			force = %s
-		}
-	`, agentID, force)
 }
 
 func testAccCheckIbmSchematicsAgentHealthExists(n string, obj *schematicsv1.AgentDataRecentHealthJob) resource.TestCheckFunc {

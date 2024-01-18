@@ -35,7 +35,6 @@ func ResourceIbmSchematicsAgent() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The name of the agent (must be unique, for an account).",
 			},
 			"resource_group": &schema.Schema{
@@ -844,6 +843,10 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 	if d.HasChange("schematics_location") || d.HasChange("agent_location") {
 		updateAgentDataOptions.SetSchematicsLocation(d.Get("schematics_location").(string))
 		updateAgentDataOptions.SetAgentLocation(d.Get("agent_location").(string))
+		hasChange = true
+	}
+	if d.HasChange("name") {
+		updateAgentDataOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 	if d.HasChange("version") {
