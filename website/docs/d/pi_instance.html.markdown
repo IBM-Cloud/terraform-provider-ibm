@@ -86,8 +86,7 @@ In addition to all argument reference list, you can access the following attribu
 - `volumes` - (List of strings) The list of volume IDs that are attached to the instance.
 
   **Notes** Ibmi software licenses for IBMi virtual server instances --software licenses currently only supports IBMi instances
-- `ibm_css` - (Bool) IBMi Cloud Storage Solution.
-- `ibmi_dbq` - (Bool) IBMi DBQ.
-- `ibmi_pha` - (Bool) IBMi Power High Availability.
-- `ibmi_rds` - (Bool) IBMi Rational Dev Studio.
+- `ibm_css` - (Boolean) IBMi Cloud Storage Solution.
+- `ibmi_pha` - (Boolean) IBMi Power High Availability.
+- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
 - `ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.

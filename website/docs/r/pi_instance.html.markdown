@@ -132,10 +132,9 @@ In addition to all argument reference list, you can access the following attribu
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.
-- `ibm_css` - (Bool) IBMi Cloud Storage Solution.
-- `ibmi_dbq` - (Bool) IBMi DBQ.
-- `ibmi_pha` - (Bool) IBMi Power High Availability.
-- `ibmi_rds` - (Bool) IBMi Rational Dev Studio.
+- `ibm_css` - (Boolean) IBMi Cloud Storage Solution.
+- `ibmi_pha` - (Boolean) IBMi Power High Availability.
+- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
 - `ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
 ## Import
 
