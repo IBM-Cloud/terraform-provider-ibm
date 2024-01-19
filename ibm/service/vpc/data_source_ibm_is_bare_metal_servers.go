@@ -521,9 +521,11 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 		l["id"] = *bms.ID
 		l[isBareMetalServerBandwidth] = *bms.Bandwidth
-		bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
-		bmsBootTarget := bmsBootTargetIntf.ID
-		l[isBareMetalServerBootTarget] = bmsBootTarget
+		if bms.BootTarget != nil {
+			bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
+			bmsBootTarget := bmsBootTargetIntf.ID
+			l[isBareMetalServerBootTarget] = bmsBootTarget
+		}
 		cpuList := make([]map[string]interface{}, 0)
 		if bms.Cpu != nil {
 			currentCPU := map[string]interface{}{}
