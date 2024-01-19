@@ -42,9 +42,9 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `auxiliary` - (Bool) Indicates if the volume is auxiliary or not.
+- `auxiliary` - (Boolean) Indicates if the volume is auxiliary or not.
 - `auxiliary_volume_name` - (String) The auxiliary volume name.
-- `bootable` -  (Bool) Indicates if the volume is boot capable.
+- `bootable` -  (Boolean) Indicates if the volume is boot capable.
 - `consistency_group_name` - (String) Consistency group name if volume is a part of volume group.
 - `disk_type` - (String) The disk type that is used for the volume.
 - `group_id` - (String) The volume group id in which the volume belongs.
@@ -52,7 +52,7 @@ In addition to all argument reference list, you can access the following attribu
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
-- `replication_enabled` - (Bool) Indicates if the volume should be replication enabled or not.
+- `replication_enabled` - (Boolean) Indicates if the volume should be replication enabled or not.
 - `replication_status` - (String) The replication status of the volume.
 - `replication_type` - (String) The replication type of the volume, `metro` or `global`.
 - `shareable` - (String) Indicates if the volume is shareable between VMs. 

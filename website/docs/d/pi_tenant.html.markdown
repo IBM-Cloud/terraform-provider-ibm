@@ -46,6 +46,6 @@ In addition to all argument reference list, you can access the following attribu
 	- `cloud_instance_id` - (String) The unique identifier of the cloud instance.
 	- `region` - (String) The region of the cloud instance.
 - `creation_date` - (String) Date of tenant creation.
-- `enabled` - (Bool) Indicates if the tenant is enabled for the Power Systems Virtual Server instance ID.
+- `enabled` - (Boolean) Indicates if the tenant is enabled for the Power Systems Virtual Server instance ID.
 - `id` - (String) The ID of the tenant.
 - `tenant_name` -  (String) The name of the tenant.
