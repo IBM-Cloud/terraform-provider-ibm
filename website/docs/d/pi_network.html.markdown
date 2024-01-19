@@ -46,8 +46,8 @@ In addition to all argument reference list, you can access the following attribu
 - `dns`- (Set) The DNS Servers for the network.
 - `gateway` - (String) The network gateway that is attached to your network.
 - `id` - (String) The ID of the network.
-- `jumbo` - (Deprecated, Bool) MTU Jumbo option of the network (for multi-zone locations only).
-- `mtu` - (Bool) Maximum Transmission Unit option of the network.
+- `jumbo` - (Deprecated, Boolean) MTU Jumbo option of the network (for multi-zone locations only).
+- `mtu` - (Boolean) Maximum Transmission Unit option of the network.
 - `type` - (String) The type of network.
 - `used_ip_count` - (Float) The number of used IP addresses.
 - `used_ip_percent` - (Float) The percentage of IP addresses used.
