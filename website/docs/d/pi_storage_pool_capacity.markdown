@@ -41,7 +41,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `max_allocation_size` - (Integer) Maximum allocation storage size (GB).
-- `replication_enabled` - (Bool) Replication status of the storage pool.
+- `replication_enabled` - (Boolean) Replication status of the storage pool.
 - `storage_type` - (String) Storage type of the storage pool.
 - `total_capacity` - (Integer) Total pool capacity (GB).
 
