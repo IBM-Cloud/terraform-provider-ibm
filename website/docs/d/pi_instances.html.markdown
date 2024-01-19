@@ -67,6 +67,6 @@ In addition to all argument reference list, you can access the following attribu
   - `pvm_instance_id` - (String) The unique identifier of the instance.
   - `status` - (String) The status of the instance.
   - `storage_pool` - (String) The storage Pool where server is deployed.
-  - `storage_pool_affinity` - (Bool) Indicates if all volumes attached to the server must reside in the same storage pool.
+  - `storage_pool_affinity` - (Boolean) Indicates if all volumes attached to the server must reside in the same storage pool.
   - `storage_type` - (String) The storage type where server is deployed.
   - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
