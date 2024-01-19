@@ -40,7 +40,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `certified` - (Bool) Has certification been performed on profile.
+- `certified` - (Boolean) Has certification been performed on profile.
 - `cores` - (Integer) Amount of cores.
 - `memory` - (Integer) Amount of memory (in GB).
 - `type` - (String) Type of profile.

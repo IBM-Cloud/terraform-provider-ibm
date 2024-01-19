@@ -41,7 +41,7 @@ In addition to all argument reference list, you can access the following attribu
 - `profiles` - (List) List of all the SAP Profiles.
 
   Nested scheme for `profiles`:
-  - `certified` - (Bool) Has certification been performed on profile.
+  - `certified` - (Boolean) Has certification been performed on profile.
   - `cores` - (Integer) Amount of cores.
   - `memory` - (Integer) Amount of memory (in GB).
   - `profile_id` - (String) SAP Profile ID.
