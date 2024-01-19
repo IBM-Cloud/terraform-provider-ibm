@@ -8,6 +8,7 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -121,6 +122,11 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 	d.Set(PIWorkspaceName, controller.Name)
+	wsDetails := map[string]interface{}{
+		WorkspaceCreationDate: controller.CreatedAt,
+		WorkspaceCRN:          controller.CRN,
+	}
+	d.Set(Attr_WorkspaceDetails, flex.Flatten(wsDetails))
 
 	return nil
 }
