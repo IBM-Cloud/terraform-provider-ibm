@@ -46,12 +46,12 @@ In addition to all argument reference list, you can access the following attribu
 - `instance_volumes` - (List) List of volumes attached to instance.
 
   Nested scheme for `instance_volumes`:
-  - `bootable`- (Bool) Indicates if the volume is boot capable.
+  - `bootable`- (Boolean) Indicates if the volume is boot capable.
   - `href` - (String) The hyper link of the volume.
   - `id` - (String) The unique identifier of the volume.
   - `name` - (String) The name of the volume.
   - `pool` - (String) Volume pool, name of storage pool where the volume is located.
-  - `shareable` - (Bool) Indicates if the volume is shareable between VMs.
+  - `shareable` - (Boolean) Indicates if the volume is shareable between VMs.
   - `size` - (Integer) The size of this volume in gigabytes.
   - `state` - (String) The state of the volume.
   - `type` - (String) The disk type that is used for this volume.
