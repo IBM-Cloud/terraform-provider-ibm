@@ -619,6 +619,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_system_pools":                           power.DataSourceIBMPISystemPools(),
 			"ibm_pi_tenant":                                 power.DataSourceIBMPITenant(),
 			"ibm_pi_volume":                                 power.DataSourceIBMPIVolume(),
+			"ibm_pi_volume_clone":                           power.DataSourceIBMPIVolumeClone(),
 			"ibm_pi_volume_group":                           power.DataSourceIBMPIVolumeGroup(),
 			"ibm_pi_volume_groups":                          power.DataSourceIBMPIVolumeGroups(),
 			"ibm_pi_volume_group_details":                   power.DataSourceIBMPIVolumeGroupDetails(),
@@ -1164,6 +1165,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
 			"ibm_pi_volume_onboarding":               power.ResourceIBMPIVolumeOnboarding(),
 			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
+			"ibm_pi_volume_clone":                    power.ResourceIBMPIVolumeClone(),
 			"ibm_pi_volume_group_action":             power.ResourceIBMPIVolumeGroupAction(),
 			"ibm_pi_network":                         power.ResourceIBMPINetwork(),
 			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
@@ -1305,6 +1307,7 @@ func Provider() *schema.Provider {
 			"ibm_scc_template_attachment": scc.ResourceIBMSccTemplateAttachment(),
 
 			// Security and Compliance Center
+			"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettings(),
 			"ibm_scc_rule":                   scc.ResourceIbmSccRule(),
 			"ibm_scc_control_library":        scc.ResourceIbmSccControlLibrary(),
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
@@ -1576,6 +1579,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
 
 				// Added for SCC
+				"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettingsValidator(),
 				"ibm_scc_rule":                   scc.ResourceIbmSccRuleValidator(),
 				"ibm_scc_control_library":        scc.ResourceIbmSccControlLibraryValidator(),
 				"ibm_scc_profile":                scc.ResourceIbmSccProfileValidator(),

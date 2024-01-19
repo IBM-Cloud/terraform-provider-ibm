@@ -149,7 +149,7 @@ func resourceIBMSatelliteHostCreate(d *schema.ResourceData, meta interface{}) er
 	labels := make(map[string]string)
 	if _, ok := d.GetOk(hostLabels); ok {
 		l := d.Get(hostLabels).(*schema.Set)
-		labels = flex.FlattenHostLabels(l.List())
+		labels = flex.FlattenKeyValues(l.List())
 		hostAssignOptions.Labels = labels
 	} else {
 		hostAssignOptions.Labels = labels
@@ -268,7 +268,7 @@ func resourceIBMSatelliteHostUpdate(d *schema.ResourceData, meta interface{}) er
 		labels := make(map[string]string)
 		if _, ok := d.GetOk(hostLabels); ok {
 			l := d.Get(hostLabels).(*schema.Set)
-			labels = flex.FlattenHostLabels(l.List())
+			labels = flex.FlattenKeyValues(l.List())
 			updateHostOptions.Labels = labels
 		}
 		response, err := satClient.UpdateSatelliteHost(updateHostOptions)
