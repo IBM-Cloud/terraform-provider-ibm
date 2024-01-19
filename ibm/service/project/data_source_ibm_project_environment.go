@@ -5,7 +5,6 @@ package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -277,11 +276,7 @@ func dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			inputs[k] = string(bytes)
+			inputs[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["inputs"] = inputs
 	}

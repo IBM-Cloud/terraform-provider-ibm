@@ -5,7 +5,6 @@ package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -531,11 +530,7 @@ func dataSourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (m
 	if model.Value != nil {
 		value := make(map[string]interface{})
 		for k, v := range model.Value {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			value[k] = string(bytes)
+			value[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["value"] = value
 	}
@@ -650,22 +645,14 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model projec
 		if model.Inputs != nil {
 			inputs := make(map[string]interface{})
 			for k, v := range model.Inputs {
-				bytes, err := json.Marshal(v)
-				if err != nil {
-					return modelMap, err
-				}
-				inputs[k] = string(bytes)
+				inputs[k] = fmt.Sprintf("%v", v)
 			}
 			modelMap["inputs"] = inputs
 		}
 		if model.Settings != nil {
 			settings := make(map[string]interface{})
 			for k, v := range model.Settings {
-				bytes, err := json.Marshal(v)
-				if err != nil {
-					return modelMap, err
-				}
-				settings[k] = string(bytes)
+				settings[k] = fmt.Sprintf("%v", v)
 			}
 			modelMap["settings"] = settings
 		}
@@ -743,22 +730,14 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinition
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			inputs[k] = string(bytes)
+			inputs[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["inputs"] = inputs
 	}
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
 		for k, v := range model.Settings {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			settings[k] = string(bytes)
+			settings[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["settings"] = settings
 	}
@@ -796,22 +775,14 @@ func dataSourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefi
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			inputs[k] = string(bytes)
+			inputs[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["inputs"] = inputs
 	}
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
 		for k, v := range model.Settings {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			settings[k] = string(bytes)
+			settings[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["settings"] = settings
 	}

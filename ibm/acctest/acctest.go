@@ -214,6 +214,8 @@ var (
 	PiStoragePool                   string
 	PiStorageType                   string
 	Pi_shared_processor_pool_id     string
+	Pi_target_storage_tier          string
+	Pi_volume_clone_task_id         string
 	Pi_resource_group_id            string
 )
 
@@ -266,9 +268,13 @@ var Snapshot_month string
 // Secuity and Complinace Center
 var (
 	SccApiEndpoint            string
-	SccProviderTypeAttributes string
-	SccReportID               string
+	SccEventNotificationsCRN  string
 	SccInstanceID             string
+	SccObjectStorageCRN       string
+	SccObjectStorageBucket    string
+	SccProviderTypeAttributes string
+	SccProviderTypeID         string
+	SccReportID               string
 )
 
 // ROKS Cluster
@@ -1092,6 +1098,18 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
 
+	Pi_target_storage_tier = os.Getenv("PI_TARGET_STORAGE_TIER")
+	if Pi_target_storage_tier == "" {
+		Pi_target_storage_tier = "terraform-test-tier"
+		fmt.Println("[INFO] Set the environment variable PI_TARGET_STORAGE_TIER for testing Pi_target_storage_tier resource else it is set to default value 'terraform-test-tier'")
+	}
+
+	Pi_volume_clone_task_id = os.Getenv("PI_VOLUME_CLONE_TASK_ID")
+	if Pi_volume_clone_task_id == "" {
+		Pi_volume_clone_task_id = "terraform-test-volume-clone-task-id"
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_CLONE_TASK_ID for testing Pi_volume_clone_task_id resource else it is set to default value 'terraform-test-volume-clone-task-id'")
+	}
+
 	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
 	if Pi_resource_group_id == "" {
 		Pi_resource_group_id = ""
@@ -1399,6 +1417,26 @@ func init() {
 	SccProviderTypeAttributes = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
 	if SccProviderTypeAttributes == "" {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC PROVIDER TYPE ATTRIBUTE")
+	}
+
+	SccProviderTypeID = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ID")
+	if SccProviderTypeID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC PROVIDER TYPE ID")
+	}
+
+	SccEventNotificationsCRN = os.Getenv("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
+	if SccEventNotificationsCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
+	}
+
+	SccObjectStorageCRN = os.Getenv("IBMCLOUD_SCC_OBJECT_STORAGE_CRN")
+	if SccObjectStorageCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid cloud object storage crn")
+	}
+
+	SccObjectStorageBucket = os.Getenv("IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET")
+	if SccObjectStorageBucket == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid cloud object storage bucket")
 	}
 
 	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
@@ -1820,7 +1858,11 @@ func TestAccPreCheckScc(t *testing.T) {
 	}
 
 	if SccProviderTypeAttributes == "" {
-		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID ATTRIBUTE")
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC provider_type JSON object")
+	}
+
+	if SccProviderTypeID == "" {
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ID missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC provider_type ID")
 	}
 
 	if SccInstanceID == "" {
@@ -1828,7 +1870,19 @@ func TestAccPreCheckScc(t *testing.T) {
 	}
 
 	if SccReportID == "" {
-		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
+		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID SCC REPORT_ID")
+	}
+
+	if SccEventNotificationsCRN == "" {
+		t.Fatal("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN missing. Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN with a valid EN CRN")
+	}
+
+	if SccObjectStorageCRN == "" {
+		t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid COS CRN")
+	}
+
+	if SccObjectStorageBucket == "" {
+		t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid COS bucket")
 	}
 }
 

@@ -251,6 +251,15 @@ func FlattenUsersSet(userList *schema.Set) []string {
 	return users
 }
 
+func FlattenSet(set *schema.Set) []string {
+	setList := set.List()
+	elems := make([]string, 0, len(setList))
+	for _, elem := range setList {
+		elems = append(elems, elem.(string))
+	}
+	return elems
+}
+
 func ExpandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo {
 	members := make([]datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo, 0, len(configured))
 	for _, lRaw := range configured {
@@ -422,6 +431,19 @@ func FlattenZones(list []containerv1.WorkerPoolZoneResponse) []map[string]interf
 			"zone":         zone.WorkerPoolZone.ID,
 			"private_vlan": zone.WorkerPoolZone.WorkerPoolZoneNetwork.PrivateVLAN,
 			"public_vlan":  zone.WorkerPoolZone.WorkerPoolZoneNetwork.PublicVLAN,
+			"worker_count": zone.WorkerCount,
+		}
+		zones[i] = l
+	}
+	return zones
+}
+
+func FlattenZonesv2(list []containerv2.ZoneResp) []map[string]interface{} {
+	zones := make([]map[string]interface{}, len(list))
+	for i, zone := range list {
+		l := map[string]interface{}{
+			"zone":         zone.ID,
+			"subnets":      zone.Subnets,
 			"worker_count": zone.WorkerCount,
 		}
 		zones[i] = l
@@ -1169,6 +1191,10 @@ func ptrToInt(i int) *int {
 
 func PtrToString(s string) *string {
 	return &s
+}
+
+func PtrToBool(b bool) *bool {
+	return &b
 }
 
 func IntValue(i64 *int64) (i int) {
@@ -3242,13 +3268,13 @@ func FlattenOpaqueSecret(fields containerv2.Fields) []map[string]interface{} {
 	return flattenedOpaqueSecret
 }
 
-// flattenHostLabels ..
-func FlattenHostLabels(hostLabels []interface{}) map[string]string {
+// flatten the provided key-value pairs
+func FlattenKeyValues(keyValues []interface{}) map[string]string {
 	labels := make(map[string]string)
-	for _, v := range hostLabels {
+	for _, v := range keyValues {
 		parts := strings.Split(v.(string), ":")
 		if len(parts) != 2 {
-			log.Fatal("Entered label " + v.(string) + "is in incorrect format.")
+			log.Fatal("Entered key-value " + v.(string) + "is in incorrect format.")
 		}
 		labels[parts[0]] = parts[1]
 	}
