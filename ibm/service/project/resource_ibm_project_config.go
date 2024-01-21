@@ -1059,11 +1059,7 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model projectv
 		if model.Inputs != nil {
 			inputs := make(map[string]interface{})
 			for k, v := range model.Inputs {
-				bytes, err := json.Marshal(v)
-				if err != nil {
-					return modelMap, err
-				}
-				inputs[k] = string(bytes)
+				inputs[k] = fmt.Sprintf("%v", v)
 			}
 			if len(inputs) > 0 {
 				modelMap["inputs"] = inputs
@@ -1072,11 +1068,7 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model projectv
 		if model.Settings != nil {
 			settings := make(map[string]interface{})
 			for k, v := range model.Settings {
-				bytes, err := json.Marshal(v)
-				if err != nil {
-					return modelMap, err
-				}
-				settings[k] = string(bytes)
+				settings[k] = fmt.Sprintf("%v", v)
 			}
 			if len(settings) > 0 {
 				modelMap["settings"] = settings
@@ -1160,11 +1152,7 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinitionPr
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			inputs[k] = string(bytes)
+			inputs[k] = fmt.Sprintf("%v", v)
 		}
 		if len(inputs) > 0 {
 			modelMap["inputs"] = inputs
@@ -1173,11 +1161,7 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinitionPr
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
 		for k, v := range model.Settings {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			settings[k] = string(bytes)
+			settings[k] = fmt.Sprintf("%v", v)
 		}
 		if len(settings) > 0 {
 			modelMap["settings"] = settings
@@ -1219,11 +1203,7 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefini
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			inputs[k] = string(bytes)
+			inputs[k] = fmt.Sprintf("%v", v)
 		}
 		if len(inputs) > 0 {
 			modelMap["inputs"] = inputs
@@ -1232,11 +1212,7 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefini
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
 		for k, v := range model.Settings {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			settings[k] = string(bytes)
+			settings[k] = fmt.Sprintf("%v", v)
 		}
 		if len(settings) > 0 {
 			modelMap["settings"] = settings
@@ -1257,11 +1233,7 @@ func resourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map
 	if model.Value != nil {
 		value := make(map[string]interface{})
 		for k, v := range model.Value {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			value[k] = string(bytes)
+			value[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["value"] = value
 	}
