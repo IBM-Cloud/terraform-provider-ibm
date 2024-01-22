@@ -55,7 +55,7 @@ In addition to all argument reference listed, you can access the following attri
 
     Nested schema for `pi_workspace_details`:
   - `creation_date` - (String) Workspace creation date.
-  - `crn` - (String) Workspace crn.
+  - `crn` - (String) Workspace Target crn.
 - `pi_workspace_location` - (Map) Workspace location.
 
     Nested schema for `Workspace location`:
