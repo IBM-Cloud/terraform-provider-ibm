@@ -65,6 +65,14 @@ func ResourceIBMISVPCRoutingTable() *schema.Resource {
 				Set:         schema.HashString,
 				Description: "The filters specifying the resources that may create routes in this routing table, The resource type: vpn_gateway or vpn_server",
 			},
+			"advertise_routes_to": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Set:         schema.HashString,
+				Description: "The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			rtRouteDirectLinkIngress: {
 				Type:        schema.TypeBool,
 				ForceNew:    false,
@@ -209,6 +217,15 @@ func resourceIBMISVPCRoutingTableCreate(d *schema.ResourceData, meta interface{}
 		}
 		createVpcRoutingTableOptions.AcceptRoutesFrom = aroutes
 	}
+	if _, ok := d.GetOk("advertise_routes_to"); ok {
+		var advertiseRoutesToList []string
+		advertiseRoutesTo := d.Get("advertise_routes_to").(*schema.Set)
+
+		for _, val := range advertiseRoutesTo.List() {
+			advertiseRoutesToList = append(advertiseRoutesToList, val.(string))
+		}
+		createVpcRoutingTableOptions.AdvertiseRoutesTo = advertiseRoutesToList
+	}
 
 	if _, ok := d.GetOk(rtRouteInternetIngress); ok {
 		rtRouteInternetIngress := d.Get(rtRouteInternetIngress).(bool)
@@ -263,12 +280,22 @@ func resourceIBMISVPCRoutingTableRead(d *schema.ResourceData, meta interface{}) 
 	d.Set(rtRouteVPCZoneIngress, routeTable.RouteVPCZoneIngress)
 	d.Set(rtIsDefault, routeTable.IsDefault)
 	acceptRoutesFromArray := make([]string, 0)
+	advertiseRoutesToArray := make([]string, 0)
 	for i := 0; i < len(routeTable.AcceptRoutesFrom); i++ {
 		acceptRoutesFromArray = append(acceptRoutesFromArray, string(*(routeTable.AcceptRoutesFrom[i].ResourceType)))
 	}
 	if err = d.Set("accept_routes_from_resource_type", acceptRoutesFromArray); err != nil {
 		return fmt.Errorf("[ERROR] Error setting accept_routes_from_resource_type: %s", err)
 	}
+
+	for i := 0; i < len(routeTable.AdvertiseRoutesTo); i++ {
+		advertiseRoutesToArray = append(advertiseRoutesToArray, routeTable.AdvertiseRoutesTo[i])
+	}
+
+	if err = d.Set("advertise_routes_to", advertiseRoutesToArray); err != nil {
+		return fmt.Errorf("[ERROR] Error setting advertise_routes_to: %s", err)
+	}
+
 	subnets := make([]map[string]interface{}, 0)
 
 	for _, s := range routeTable.Subnets {
@@ -307,17 +334,38 @@ func resourceIBMISVPCRoutingTableUpdate(d *schema.ResourceData, meta interface{}
 		routingTablePatchModel.Name = core.StringPtr(name)
 		hasChange = true
 	}
+	removeAcceptRoutesFromFilter := false
 	if d.HasChange("accept_routes_from_resource_type") {
 		var aroutes []vpcv1.ResourceFilter
 		acptRoutes := d.Get("accept_routes_from_resource_type").(*schema.Set)
-		for _, val := range acptRoutes.List() {
-			value := val.(string)
-			resourceFilter := vpcv1.ResourceFilter{
-				ResourceType: &value,
+		if len(acptRoutes.List()) == 0 {
+			removeAcceptRoutesFromFilter = true
+		} else {
+			for _, val := range acptRoutes.List() {
+				value := val.(string)
+				resourceFilter := vpcv1.ResourceFilter{
+					ResourceType: &value,
+				}
+				aroutes = append(aroutes, resourceFilter)
 			}
-			aroutes = append(aroutes, resourceFilter)
 		}
 		routingTablePatchModel.AcceptRoutesFrom = aroutes
+		hasChange = true
+	}
+	removeAdvertiseRoutesTo := false
+	if d.HasChange("advertise_routes_to") {
+		var advertiseRoutesToList []string
+		advertiseRoutesTo := d.Get("advertise_routes_to").(*schema.Set)
+
+		if len(advertiseRoutesTo.List()) == 0 {
+			removeAdvertiseRoutesTo = true
+		} else {
+			for _, val := range advertiseRoutesTo.List() {
+				advertiseRoutesToList = append(advertiseRoutesToList, val.(string))
+			}
+		}
+
+		routingTablePatchModel.AdvertiseRoutesTo = advertiseRoutesToList
 		hasChange = true
 	}
 	if d.HasChange(rtRouteDirectLinkIngress) {
@@ -348,6 +396,12 @@ func resourceIBMISVPCRoutingTableUpdate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("[ERROR] Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
 	}
 
+	if removeAdvertiseRoutesTo {
+		routingTablePatchModelAsPatch["advertise_routes_to"] = []string{}
+	}
+	if removeAcceptRoutesFromFilter {
+		routingTablePatchModelAsPatch["accept_routes_from"] = []vpcv1.ResourceFilter{}
+	}
 	updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
 	_, response, err := sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
 	if err != nil {
