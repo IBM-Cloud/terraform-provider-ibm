@@ -117,7 +117,7 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
-	cloudConnectionName := d.Get(Attr_Name).(string)
+	cloudConnectionName := d.Get(Arg_CloudConnectionName).(string)
 	client := instance.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
 
 	// Get API does not work with name for Cloud Connection hence using GetAll (max 2)
