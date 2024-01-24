@@ -716,7 +716,13 @@ Review the argument reference that you can specify for your resource.
 
     - `host_flavor` (Set, Optional)
       - Nested scheme for `host_flavor`:
-        - `id` - (Optional, String) Host flavor per-member. Examples: b3c.4x16.encrypted
+        - `id` - (Optional, String) **Beta feature:** The hosting infrastructure identifier. Selecting `multitenant` places your database on a logically separated, multi-tenanted machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes provides a machine with hypervisor-level isolation.
+          - `b3c.4x16.encrypted`
+          - `b3c.8x32.encrypted`
+          - `m3c.8x64.encrypted`
+          - `b3c.16x64.encrypted`
+          - `b3c.32x128.encrypted`
+          - `m3c.30x240.encrypted`
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
