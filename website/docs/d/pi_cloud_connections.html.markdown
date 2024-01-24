@@ -57,4 +57,4 @@ In addition to all argument reference list, you can access the following attribu
   - `status` - (String) Link status.
   - `user_ip_address` - (String) User IP address.
   - `vpc_crns` - (Set) Set of VPCs attached to this cloud connection.
-  - `vpc_enabled` - (Bool) Enable VPC for this cloud connection.
+  - `vpc_enabled` - (Boolean) Enable VPC for this cloud connection.
