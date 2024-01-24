@@ -1,3 +1,29 @@
+# 1.62.0-beta0 (Jan 21, 2024)
+Features
+* Support for Power Virtual Instance
+    - **Datasources**
+        - ibm_pi_volume_clone
+    - **Resources**
+        - ibm_pi_volume_clone
+Enhancements
+* Support security groups for Kuberentes workers ([4953](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4953))
+* Support service_subnet, pod_subnet for Satellite location ([4953](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4953))
+*  Add resource instance sample config code part in the website doc ([5023](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5023))
+* fix(vpc-routing-table): support removing of advertise routes and accept routes from array ([5039](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5039))
+* support parameters for resource instance datasource ([5065](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5065))
+* remove forcenew from workerpool fields in cluster resource and added ApplyOnce ([4955](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4955))
+* SM fixes ([5045](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5045))
+
+BugFixes
+* CD scc doc updates ([4984](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4984))
+* Fix mtu requirement bug ([5027](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5027))
+* listing all the connection for transit gateway over the pagination set ([5033](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5033))
+* Projects issue #2672 - "Terraform sees inputs as changed ([5042](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5033))
+* added a nil check on data source of bm servers ([5062](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5062))
+* Soft remove the datasources for secretManager v1 ([5063](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5063))
+* Schematics agent related fixes for GA ([5041](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5041))
+
+     
 # 1.61.0 (Jan 05, 2024)
 Features
 * Support for MQ on Cloud
