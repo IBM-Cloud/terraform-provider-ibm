@@ -530,6 +530,19 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 								},
 							},
 						},
+						"host_flavor": {
+							Optional: true,
+							Type:     schema.TypeSet,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -658,6 +671,29 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Can the disk size be scaled down as well as up",
+									},
+								},
+							},
+						},
+						"host_flavor": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor id",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor name",
+									},
+									"hosting_size": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor size",
 									},
 								},
 							},
@@ -931,6 +967,7 @@ type Params struct {
 	Memory              int     `json:"members_memory_allocation_mb,omitempty"`
 	Disk                int     `json:"members_disk_allocation_mb,omitempty"`
 	CPU                 int     `json:"members_cpu_allocation_count,omitempty"`
+	HostFlavor          string  `json:"members_host_flavor,omitempty"`
 	KeyProtectInstance  string  `json:"disk_encryption_instance_crn,omitempty"`
 	ServiceEndpoints    string  `json:"service-endpoints,omitempty"`
 	BackupID            string  `json:"backup-id,omitempty"`
@@ -941,11 +978,12 @@ type Params struct {
 }
 
 type Group struct {
-	ID      string
-	Members *GroupResource
-	Memory  *GroupResource
-	Disk    *GroupResource
-	CPU     *GroupResource
+	ID         string
+	Members    *GroupResource
+	Memory     *GroupResource
+	Disk       *GroupResource
+	CPU        *GroupResource
+	HostFlavor *HostFlavorGroupResource
 }
 
 type GroupResource struct {
@@ -957,6 +995,10 @@ type GroupResource struct {
 	IsAdjustable bool
 	IsOptional   bool
 	CanScaleDown bool
+}
+
+type HostFlavorGroupResource struct {
+	ID string
 }
 
 func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
@@ -1212,6 +1254,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if memberGroup.CPU != nil {
 				params.CPU = memberGroup.CPU.Allocation * initialNodeCount
 			}
+
+			if memberGroup.HostFlavor != nil {
+				params.HostFlavor = memberGroup.HostFlavor.ID
+			}
 		}
 	}
 	if version, ok := d.GetOk("version"); ok {
@@ -1316,8 +1362,11 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
+			if g.HostFlavor != nil && g.HostFlavor.ID != currentGroup.HostFlavor.ID {
+				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
+			}
 
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil {
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
 				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
 					ID:      instance.ID,
 					GroupID: &g.ID,
@@ -1669,11 +1718,14 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	d.Set("adminuser", deployment.AdminUsernames["database"])
 	d.Set("version", deployment.Version)
 
-	groupList, err := icdClient.Groups().GetGroups(icdId)
+	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
+		ID: core.StringPtr(instanceID),
+	}
+	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database groups: %s", err))
 	}
-	if groupList.Groups[0].Members.AllocationCount == 0 {
+	if len(groupList.Groups) == 0 || groupList.Groups[0].Members == nil || groupList.Groups[0].Members.AllocationCount == nil || *groupList.Groups[0].Members.AllocationCount == 0 {
 		return diag.FromErr(fmt.Errorf("[ERROR] This database appears to have have 0 members. Unable to proceed"))
 	}
 
@@ -1882,8 +1934,11 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
 			}
+			if group.HostFlavor != nil && group.HostFlavor.ID != currentGroup.HostFlavor.ID {
+				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
+			}
 
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil {
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
 				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
 					ID:      &instanceID,
 					GroupID: &group.ID,
@@ -2295,7 +2350,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 				return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 			}
-			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, err)
+			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, cdbErr)
 		}
 		return nil
 	})
@@ -2679,6 +2734,11 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 			CanScaleDown: *g.CPU.CanScaleDown,
 		}
 
+		group.HostFlavor = &HostFlavorGroupResource{}
+		if g.HostFlavor != nil {
+			group.HostFlavor.ID = *g.HostFlavor.ID
+		}
+
 		groups = append(groups, group)
 	}
 
@@ -2724,6 +2784,13 @@ func expandGroups(_groups []interface{}) []*Group {
 				}
 			}
 
+			if hostflavorSet, ok := tfGroup["host_flavor"].(*schema.Set); ok {
+				hostflavor := hostflavorSet.List()
+				if len(hostflavor) != 0 {
+					group.HostFlavor = &HostFlavorGroupResource{ID: hostflavor[0].(map[string]interface{})["id"].(string)}
+				}
+			}
+
 			groups = append(groups, &group)
 		}
 	}
@@ -2759,6 +2826,13 @@ func validateGroupScaling(groupId string, resourceName string, value int, resour
 	}
 	if value < resource.Allocation/nodeCount && !resource.CanScaleDown {
 		return fmt.Errorf("can not scale %s group %s below %d to %d", groupId, resourceName, resource.Allocation/nodeCount, value)
+	}
+	return nil
+}
+
+func validateGroupHostFlavor(groupId string, resourceName string, group *Group) error {
+	if group.CPU != nil || group.Memory != nil {
+		return fmt.Errorf("%s must not be set with cpu and memory", resourceName)
 	}
 	return nil
 }
@@ -2820,6 +2894,13 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 
 			if group.Members != nil {
 				err = validateGroupScaling(groupId, "members", group.Members.Allocation, groupDefaults.Members, 1)
+				if err != nil {
+					return err
+				}
+			}
+
+			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
+				err = validateGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
 					return err
 				}

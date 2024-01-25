@@ -5,7 +5,6 @@ package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -84,6 +83,11 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A URL.",
 			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
@@ -218,6 +222,10 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
 	}
 
+	if err = d.Set("href", environment.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+
 	definition := []map[string]interface{}{}
 	if environment.Definition != nil {
 		modelMap, err := dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap(environment.Definition)
@@ -268,11 +276,7 @@ func dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				return modelMap, err
-			}
-			inputs[k] = string(bytes)
+			inputs[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["inputs"] = inputs
 	}

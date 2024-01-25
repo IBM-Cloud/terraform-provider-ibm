@@ -364,14 +364,12 @@ func resourceIBMPIVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if d.HasChanges(helpers.PIReplicationEnabled, helpers.PIVolumeType) {
-		var replicationEnabled bool
 		volActionBody := models.VolumeAction{}
-		if v, ok := d.GetOk(helpers.PIReplicationEnabled); ok {
-			replicationEnabled = v.(bool)
-			volActionBody.ReplicationEnabled = &replicationEnabled
+		if d.HasChange(helpers.PIReplicationEnabled) {
+			volActionBody.ReplicationEnabled = flex.PtrToBool(d.Get(helpers.PIReplicationEnabled).(bool))
 		}
-		if v, ok := d.GetOk(helpers.PIVolumeType); ok {
-			volActionBody.TargetStorageTier = flex.PtrToString(v.(string))
+		if d.HasChange(helpers.PIVolumeType) {
+			volActionBody.TargetStorageTier = flex.PtrToString(d.Get(helpers.PIVolumeType).(string))
 		}
 		err = client.VolumeAction(volumeID, &volActionBody)
 		if err != nil {

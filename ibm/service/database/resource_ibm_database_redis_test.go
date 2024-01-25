@@ -175,7 +175,10 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 1024
 			}
 		}
@@ -215,7 +218,10 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 			memory {
 				allocation_mb = 1152
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 2048
 			}
 		}
@@ -250,7 +256,10 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 2048
 			}
 		}
@@ -272,12 +281,26 @@ func testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup string, 
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
 
+		group {
+			group_id = "member"
+
+			memory {
+				allocation_mb = 1024
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 2048
+			}
+		}
+
 		users {
 			name = "coolguy"
-      password = "securepassword123"
-      role     = "-@all +@read"
-	  }
-  }
+    		password = "securepassword123"
+      		role     = "-@all +@read"
+	 	}
+  	}
 				`, databaseResourceGroup, name, acc.Region())
 }
 

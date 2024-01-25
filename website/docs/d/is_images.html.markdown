@@ -65,7 +65,29 @@ You can access the following attribute references after your data source is crea
   - `id` - (String) The unique identifier for this image.
   - `name` - (String) The name for this image.
   - `os` - (String) The name of the Operating System.
+  - `operating_system` - (List) The operating system details. 
+    
+      Nested scheme for `operating_system`:
+      - `architecture` - (String) The operating system architecture.
+      - `dedicated_host_only` - (Bool) Images with this operating system can only be used on dedicated hosts or dedicated host groups.
+      - `display_name` - (String) A unique, display-friendly name for the operating system.
+      - `family` - (String) The software family for this operating system.
+      - `href` - (String) The URL for this operating system.
+      - `name` - (String) The globally unique name for this operating system.
+      - `vendor` - (String) The vendor of the operating system.
+      - `version` - (String) The major release version of this operating system.
+  - `resource_group` - (List) The resource group object, for this image.
+      Nested scheme for `resource_group`:
+      - `href` - (String) The URL for this resource group.
+      - `id` - (String) The unique identifier for this resource group.
+      - `name` - (String) The user-defined name for this resource group.
   - `status` - (String) The status of this image.
+  - `status_reasons` - (List) The reasons for the current status (if any).
+
+        Nested scheme for `status_reasons`:
+      - `code` - (String) The status reason code
+      - `message` - (String) An explanation of the status reason
+      - `more_info` - (String) Link to documentation about this status reason
   - `visibility` - (String) The visibility of the image public or private.
   - `source_volume` - The source volume id of the image.
 

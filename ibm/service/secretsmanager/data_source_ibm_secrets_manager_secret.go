@@ -20,8 +20,10 @@ import (
 
 func DataSourceIBMSecretsManagerSecret() *schema.Resource {
 	return &schema.Resource{
-		ReadContext:        dataSourceIBMSecretsManagerSecretRead,
-		DeprecationMessage: "Data Source Removal: Data Source ibm_secrets_manager_secret is deprecated and will be removed. Use ibm_sm_<secret_type>_secret for managing secret of a specific type.",
+		ReadContext: func(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+			return diag.Errorf("Data Source Removal: Data Source ibm_secrets_manager_secret is removed. Use ibm_sm_<secret_type>_secret for managing secret of a specific type")
+		},
+		DeprecationMessage: "Data Source Removal: Data Source ibm_secrets_manager_secret is removed. Use ibm_sm_<secret_type>_secret for managing secret of a specific type.",
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
 				Type:        schema.TypeString,
